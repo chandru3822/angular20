@@ -450,3 +450,124 @@ $$
 CREATE TRIGGER hoa_custom_field_value_audit_trg
   after INSERT or update or delete ON brs.feat_db_hoa_custom_field_value
   FOR EACH ROW EXECUTE PROCEDURE brs.hoa_audit();
+
+
+-- ### INCENTIVES ###
+drop trigger if exists incentives_custom_field_value_audit_trg ON brs.feat_db_incentive_custom_field_value;
+
+drop function if exists brs.incentive_audit();
+CREATE OR REPLACE FUNCTION brs.incentive_audit()
+  RETURNS TRIGGER AS $$
+BEGIN
+  IF (TG_OP = 'INSERT') THEN
+    insert into brs.feat_db_incentive_custom_field_value_audit(feat_db_incentive_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+    values(new.id,null,case when new.date_value is not null then new.date_value::text
+                            when new.timestamp_value is not null then new.timestamp_value::text
+                            when new.text_value is not null then new.text_value
+                            when new.numeric_value is not null then new.numeric_value::text
+                            when new.int_value is not null then new.int_value::text
+                            when new.int_array_value is not null then new.int_array_value::text
+                            when new.boolean_value is not null then new.boolean_value::text end,
+           now(),
+           new.modified_by_id);
+  elsif (TG_OP = 'UPDATE') THEN
+    insert into brs.feat_db_incentive_custom_field_value_audit(feat_db_incentive_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+    values(old.id,case when old.date_value is not null then old.date_value::text
+                       when old.timestamp_value is not null then old.timestamp_value::text
+                       when old.text_value is not null then old.text_value
+                       when old.numeric_value is not null then old.numeric_value::text
+                       when old.int_value is not null then old.int_value::text
+                       when old.int_array_value is not null then old.int_array_value::text
+                       when old.boolean_value is not null then old.boolean_value::text end,
+           case when new.date_value is not null then new.date_value::text
+                when new.timestamp_value is not null then new.timestamp_value::text
+                when new.text_value is not null then new.text_value
+                when new.numeric_value is not null then new.numeric_value::text
+                when new.int_value is not null then new.int_value::text
+                when new.int_array_value is not null then new.int_array_value::text
+                when new.boolean_value is not null then new.boolean_value::text end,
+           now(),
+           new.modified_by_id);
+  ELSIF (TG_OP = 'DELETE') THEN
+    insert into brs.feat_db_incentive_custom_field_value_audit(feat_db_incentive_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+    values(old.id,case when old.date_value is not null then old.date_value::text
+                       when old.timestamp_value is not null then old.timestamp_value::text
+                       when old.text_value is not null then old.text_value
+                       when old.numeric_value is not null then old.numeric_value::text
+                       when old.int_value is not null then old.int_value::text
+                       when old.int_array_value is not null then old.int_array_value::text
+                       when old.boolean_value is not null then old.boolean_value::text end,
+           null,
+           now(),
+           new.modified_by_id);
+  end if;
+
+  RETURN NULL;
+END
+$$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER incentive_custom_field_value_audit_trg
+  after INSERT or update or delete ON brs.feat_db_incentive_custom_field_value
+  FOR EACH ROW EXECUTE PROCEDURE brs.incentive_audit();
+
+
+-- ### SUPPLIERS ###
+drop trigger if exists supplier_custom_field_value_audit_trg ON brs.feat_db_supplier_custom_field_value;
+
+drop function if exists brs.supplier_audit();
+CREATE OR REPLACE FUNCTION brs.supplier_audit()
+  RETURNS TRIGGER AS $$
+BEGIN
+  IF (TG_OP = 'INSERT') THEN
+    insert into brs.feat_db_supplier_custom_field_value_audit(feat_db_supplier_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+    values(new.id,null,case when new.date_value is not null then new.date_value::text
+                            when new.timestamp_value is not null then new.timestamp_value::text
+                            when new.text_value is not null then new.text_value
+                            when new.numeric_value is not null then new.numeric_value::text
+                            when new.int_value is not null then new.int_value::text
+                            when new.int_array_value is not null then new.int_array_value::text
+                            when new.boolean_value is not null then new.boolean_value::text end,
+           now(),
+           new.modified_by_id);
+  elsif (TG_OP = 'UPDATE') THEN
+    insert into brs.feat_db_supplier_custom_field_value_audit(feat_db_supplier_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+    values(old.id,case when old.date_value is not null then old.date_value::text
+                       when old.timestamp_value is not null then old.timestamp_value::text
+                       when old.text_value is not null then old.text_value
+                       when old.numeric_value is not null then old.numeric_value::text
+                       when old.int_value is not null then old.int_value::text
+                       when old.int_array_value is not null then old.int_array_value::text
+                       when old.boolean_value is not null then old.boolean_value::text end,
+           case when new.date_value is not null then new.date_value::text
+                when new.timestamp_value is not null then new.timestamp_value::text
+                when new.text_value is not null then new.text_value
+                when new.numeric_value is not null then new.numeric_value::text
+                when new.int_value is not null then new.int_value::text
+                when new.int_array_value is not null then new.int_array_value::text
+                when new.boolean_value is not null then new.boolean_value::text end,
+           now(),
+           new.modified_by_id);
+  ELSIF (TG_OP = 'DELETE') THEN
+    insert into brs.feat_db_supplier_custom_field_value_audit(feat_db_supplier_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+    values(old.id,case when old.date_value is not null then old.date_value::text
+                       when old.timestamp_value is not null then old.timestamp_value::text
+                       when old.text_value is not null then old.text_value
+                       when old.numeric_value is not null then old.numeric_value::text
+                       when old.int_value is not null then old.int_value::text
+                       when old.int_array_value is not null then old.int_array_value::text
+                       when old.boolean_value is not null then old.boolean_value::text end,
+           null,
+           now(),
+           new.modified_by_id);
+  end if;
+
+  RETURN NULL;
+END
+$$
+  LANGUAGE plpgsql;
+
+CREATE TRIGGER supplier_custom_field_value_audit_trg
+  after INSERT or update or delete ON brs.feat_db_supplier_custom_field_value
+  FOR EACH ROW EXECUTE PROCEDURE brs.supplier_audit();
+

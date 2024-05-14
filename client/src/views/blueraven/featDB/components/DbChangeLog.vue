@@ -16,27 +16,56 @@
       :expand-all="searchValue.length > 0"
       :query="searchValue.toLowerCase()"/>
     <a-btn
-      :disabled="items.length < visibleCards"
+      :disabled="btnIsDisabled"
       class="mb-2 ml-2"
       variant="text"
-      :text="(items.length > visibleCards) ? 'Load More' : 'No Additional Results'"
+      :text="btnIsDisabled ? 'No Additional Results' : 'Load More'"
       @click="visibleCards+=10"
     ></a-btn>
   </v-card>
 </template>
 
 <script setup>
-import {ref, computed, defineProps, onMounted, getCurrentInstance, toRefs, onBeforeMount, onBeforeUnmount} from 'vue'
+import {ref, computed, defineProps, onMounted, getCurrentInstance, toRefs, watch} from 'vue'
 import moment from "moment";
 import DbChangeLogItem from "./DbChangeLogItem.vue"
 import cloneDeep from "lodash.clonedeep"
 
 const props = defineProps({
   historyList: Array,
+  showChangeLog: Boolean,
 })
 
-const { historyList } = toRefs(props)
+const { historyList, showChangeLog } = toRefs(props)
 const visibleCards = ref(5)
+const btnIsDisabled = computed(() => {
+  if (searchValue.value.length > 0) {
+    return true
+  }
+  return items.value.length <= visibleCards.value;
+})
+
+watch(showChangeLog, () => {
+  console.log(showChangeLog.value)
+  if (showChangeLog.value === false) {
+    visibleCards.value = 5
+  }
+})
+
+watch(historyList, () => {
+  if (historyList.value?.length > items.value?.length) {
+    items.value = []
+    historyList.value.forEach((p) => {
+      items.value.push({
+        'title': p.field_name,
+        'updatedValue': p.updated_value,
+        'previousValue': p.previous_value,
+        'modifiedBy': p.modified_by,
+        'dateModified': `${moment(Date.parse(p.date_modified)).format('MM/DD/yyyy')} at ${moment(Date.parse(p.date_modified)).format('hh:mm a')}`
+      })
+    })
+  }
+})
 
 const items = ref([])
 const cardSlices = computed(() => {
@@ -47,7 +76,7 @@ const cardSlices = computed(() => {
               i?.previousValue?.toLowerCase()?.includes(searchValue.value) ||
               i?.modifiedBy?.toLowerCase()?.includes(searchValue.value) ||
               i?.dateModified?.toLowerCase()?.includes(searchValue.value))
-    }).slice(0, visibleCards.value)
+    })
   }
   return items.value.slice(0, visibleCards.value)
 })

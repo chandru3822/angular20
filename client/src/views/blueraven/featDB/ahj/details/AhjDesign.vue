@@ -2,7 +2,7 @@
   <v-card class="design-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="form-btns py-1" cols="12">
-        <v-menu content-class="db-change-log-menu" v-if="hasManageAccess" max-height="450" :close-on-content-click="false" offset-y>
+        <v-menu v-model="showChangeLog" content-class="db-change-log-menu" v-if="hasManageAccess" max-height="450" :close-on-content-click="false" offset-y>
           <template v-slot:activator="{on: menu, attrs }">
             <v-tooltip top>
               <template v-slot:activator="{ on: tooltip }">
@@ -18,7 +18,7 @@
               <span>History</span>
             </v-tooltip>
           </template>
-          <DbChangeLog :history-list="changeLog"/>
+          <DbChangeLog :history-list="changeLog" :show-change-log="showChangeLog"/>
         </v-menu>
         <a-btn
             variant="text"
@@ -233,7 +233,8 @@ const getAhjDesign = async() => {
     window.document.title = `AHJ - ${data.ahjName}`
     ahjDesign.value = cloneDeep(data)
     ahjDesign.value.updateAllInArea = "";
-    handleHidingGlobalLoader( status)
+    await getChangeLog()
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error retrieving AHJ Design')
