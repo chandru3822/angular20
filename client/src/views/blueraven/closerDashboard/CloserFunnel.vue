@@ -20,10 +20,10 @@
         <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
           <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
-        <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
+        <div v-if="!apptsCreatedPipelineDataLoading && apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
              :style="{'margin-top': showApptsCreatedPipelineCustomDates && windowInnerWidth < 1135 ? '77px' :
                                  showApptsCreatedPipelineCustomDates && windowInnerWidth >= 1135 ? '83px' : '59px'}"></div>
-        <table class="funnel-table" v-if="apptsCreatedPipelineData.length > 0">
+        <table class="funnel-table" v-if="!apptsCreatedPipelineDataLoading && apptsCreatedPipelineData.length > 0">
           <tr class="funnel-tr">
             <th class="funnel-th"></th>
             <th class="funnel-th">SOURCE</th>
@@ -92,7 +92,7 @@
                         bg-color="white"
                         density="compact"
                         return-object
-                        @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
+                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="grey--text text-caption">
                     {{ brsProvidedSourceModel.length }} Checked
@@ -123,7 +123,7 @@
                         bg-color="white"
                         density="compact"
                         return-object
-                        @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
+                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="grey--text text-caption">
                     {{ selfGenSourceModel.length }} Checked
@@ -182,7 +182,7 @@
                             density="compact"
                             multiple
                             hide-details
-                            @input="areaValuesChanged = true"
+                            @blur="regionLoad(false)"
                             return-object>
               <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text text-caption">
@@ -223,7 +223,7 @@
                             multiple
                             variant="outlined"
                             density="compact"
-                            @input="regionValuesChanged = true"
+                            @blur="districtLoad(false)"
                             hide-details
                             return-object
                             ref="regionSelect">
@@ -268,7 +268,7 @@
                             variant="outlined"
                             density="compact"
                             hide-details
-                            @input="districtValuesChanged = true"
+                            @blur="officeLoad(false)"
                             return-object>
               <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text text-caption">
@@ -309,7 +309,7 @@
                             variant="outlined"
                             density="compact"
                             multiple
-                            @input="officeValuesChanged = true"
+                            @blur="repLoad(false)"
                             hide-details
                             return-object
                             ref="officeSelect">
@@ -351,7 +351,7 @@
                             variant="outlined"
                             density="compact"
                             multiple
-                            @input="repValuesChanged = true"
+                            @blur="[repValuesChanged = true, doRepWatcher()]"
                             hide-details
                             return-object
                             ref="repSelect">
@@ -1294,7 +1294,8 @@ const parseFunnelDate = (date) => {
 }
 
 const loadFunnels = async() => {
-  if (apptsCreatedPipelineData.value?.length === 0) {
+  //we only show the appts created pipeline if they can see all projects. so don't load the data for it unless that is true too
+  if (userCanViewAllProjects.value && apptsCreatedPipelineData.value?.length === 0) {
     loadSources()
   }
 
@@ -1329,7 +1330,6 @@ const funnelAllReps = () => {
     {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
   ]
 
-  // apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
   apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
 }
 
@@ -1401,8 +1401,6 @@ const apptsCreatedPipelineLoad = async(start, end) => {
 }
 
 const apptsToFdcPipelineLoad = async(start, end, useRepDataInstead) => {
-  apptsToFdcPipelineLoaded.value = false
-  apptsToFdcPipelineDataLoading.value = true
   let reps = []
   let orgs = []
 
@@ -1410,6 +1408,9 @@ const apptsToFdcPipelineLoad = async(start, end, useRepDataInstead) => {
     apptsToFdcPipelineData.value = []
     return
   }
+
+  apptsToFdcPipelineLoaded.value = false
+  apptsToFdcPipelineDataLoading.value = true
 
   officeModel.value.forEach(org => orgs.push(org.org_id))
 
@@ -1513,6 +1514,15 @@ const getPercentage = (numerator, denominator) => {
     return 0
   }
 }
+
+const stringifySelectedModel = (selectedModel, keyName) => {
+  return JSON.stringify(selectedModel.map((sm) => {
+    let obj = {}
+    obj[keyName] = sm.org_id
+    return obj
+  }))
+}
+
 const areaLoad = async(preSelectLists) => {
   if (!currentUserId.value) return
 
@@ -1547,23 +1557,8 @@ const areaLoad = async(preSelectLists) => {
 const regionLoad = async(preSelectLists) => {
   if (!currentUserId.value) return
 
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
-
-  // if (!selectAllDistricts.value) {
-  //   regionModel.value = []
-  //   regionData.value = []
-  //   officeModel.value = []
-  //   officeData.value = []
-  //   repModel.value = []
-  //   repData.value = []
-  //   apptsToFdcPipelineData.value = []
-  //
-  //   // if (districts?.length === 0) return
-  // }
+  //reset the selected regions every time the regions re-load
+  regionModel.value = []
 
   // reset these values when the regions change
   districtModel.value = []
@@ -1571,60 +1566,47 @@ const regionLoad = async(preSelectLists) => {
   repModel.value = []
 
 
-  await getCloserRegions(currentUserId.value, JSON.stringify(areas), false).then(res => {
-    regionData.value = res
+  regionData.value = await getCloserRegions(currentUserId.value, stringifySelectedModel(areaModel.value, 'area_id'), false)
 
+  if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+    regionModel.value = regionData.value.filter(od => od.active)
+  } else if (preSelectLists) {
+    regionModel.value = cloneDeep(regionData.value)
+  }
 
-        if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-          regionModel.value = regionData.value.filter(od => od.active)
-        } else if (preSelectLists) {
-          regionModel.value = cloneDeep(regionData.value)
-        }
-
-    if (!initialPageLoad.value) {
-      districtLoad(preSelectLists, true)
-      // repLoad(preSelectLists, true)
-    }
-  })
+  if (!initialPageLoad.value) {
+    districtLoad(preSelectLists, true)
+  }
 
   apptsToFdcPipelineData.value = []
 }
 const districtLoad = async(preSelectLists) => {
   if (!currentUserId.value) return
 
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
+  //reset the selected districts every time the districts re-load
+  districtModel.value = []
 
-  let regions = regionModel.value.map(function (region) {
-    return {
-      region_id: region.org_id
-    }
-  })
-  await getCloserDistricts(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), false).then(res => {
-    if (res?.length > 0) {
-      districtData.value = res
-    }
+  districtData.value = await getCloserDistricts(currentUserId.value,
+      stringifySelectedModel(areaModel.value, 'area_id'),
+      stringifySelectedModel(regionModel.value, 'region_id'),
+      false)
 
-    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-      districtModel.value = districtData.value.filter(od => od.active)
-    } else if (preSelectLists) {
-      districtModel.value = cloneDeep(districtData.value)
-    }
+  if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+    districtModel.value = districtData.value.filter(od => od.active)
+  } else if (preSelectLists) {
+    districtModel.value = cloneDeep(districtData.value)
+  }
 
-    // reset these values when the districts change
-    // regionModel.value = []
-    officeModel.value = []
-    repModel.value = []
+  // reset these values when the districts change
+  // regionModel.value = []
+  officeModel.value = []
+  repModel.value = []
 
-    if (!initialPageLoad.value) {
-      officeLoad(preSelectLists, true)
-      // officeLoad(preSelectLists, true)
-      // repLoad(preSelectLists, true)
-    }
-  })
+  if (!initialPageLoad.value) {
+    officeLoad(preSelectLists, true)
+    // officeLoad(preSelectLists, true)
+    // repLoad(preSelectLists, true)
+  }
 
 
   apptsToFdcPipelineData.value = []
@@ -1633,51 +1615,27 @@ const districtLoad = async(preSelectLists) => {
 const officeLoad = async(preSelectLists) => {
   if (!currentUserId.value) return
 
-
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
-
-  let regions = regionModel.value.map(function (region) {
-    return {
-      region_id: region.org_id
-    }
-  })
-
-  let districts = districtModel.value.map(function (district) {
-    return {
-      district_id: district.org_id
-    }
-  })
-
-  // if (!selectAllRegions.value) {
-  //   officeModel.value = []
-  //   officeData.value = []
-  //   repModel.value = []
-  //   repData.value = []
-  //   apptsToFdcPipelineData.value = []
-  //
-  //   // if (regions?.length === 0) return
-  // }
+  //reset the selected offices every time the offices re-load
+  officeModel.value = []
 
   // reset these values when the offices change
   repModel.value = []
 
-  await getCloserOffices(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), false).then(res => {
-    officeData.value = res
+  officeData.value = await getCloserOffices(currentUserId.value,
+      stringifySelectedModel(areaModel.value, 'area_id'),
+      stringifySelectedModel(regionModel.value, 'region_id'),
+      stringifySelectedModel(districtModel.value, 'district_id'),
+      false)
 
-    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-      officeModel.value = officeData.value.filter(od => od.active)
-    } else if (preSelectLists) {
-      officeModel.value = cloneDeep(officeData.value)
-    }
+  if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+    officeModel.value = officeData.value.filter(od => od.active)
+  } else if (preSelectLists) {
+    officeModel.value = cloneDeep(officeData.value)
+  }
 
-    if (!initialPageLoad.value) {
-      repLoad(preSelectLists, true)
-    }
-  })
+  if (!initialPageLoad.value) {
+    repLoad(preSelectLists, true)
+  }
 
   apptsToFdcPipelineData.value = []
   // repData.value = []
@@ -1691,60 +1649,32 @@ const repLoad = async(preSelectLists) => {
 
   if (!currentUserId.value) return
 
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
+  repData.value = await getCloserReps(currentUserId.value,
+      stringifySelectedModel(areaModel.value, 'area_id'),
+      stringifySelectedModel(regionModel.value, 'region_id'),
+      stringifySelectedModel(districtModel.value, 'district_id'),
+      stringifySelectedModel(officeModel.value, 'office_id'))
 
-  let regions = regionModel.value.map(function (region) {
-    return {
-      region_id: region.org_id
-    }
-  })
+  repDataMaster.value = cloneDeep(repData.value)
 
-  let districts = districtModel.value.map(function (district) {
-    return {
-      district_id: district.org_id
-    }
-  })
+  if (preSelectLists) {
+    repModel.value = cloneDeep(repData.value)
+  }
 
-  let offices = officeModel.value.map(function (office) {
-    return {
-      office_id: office.org_id
-    }
-  })
+  apptsToFdcPipelineData.value = []
 
-  // if (!selectAllOffices.value) {
-  //   repModel.value = []
-  //   repData.value = []
-  //   apptsToFdcPipelineData.value = []
-  //
-  //   // if (offices?.length === 0) return
-  // }
+  if (repModel.value.length > 0) {
+    apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
+  }
 
-  await getCloserReps(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), JSON.stringify(offices)).then(res => {
-    repData.value = res
-
-    repDataMaster.value = cloneDeep(res)
-
-    if (preSelectLists) {
-      repModel.value = cloneDeep(repData.value)
-    }
-
-    apptsToFdcPipelineData.value = []
-
-    if (repModel.value.length > 0) {
-      apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
-    }
-  })
   initialPageLoad.value = false
   dropdownValuesLoading.value = false
 }
-const updateApptsCreatedPipelineCalendar = () => {
+const updateApptsCreatedPipelineCalendar = async () => {
   appts_created_pipeline_menu1.value = false
   appts_created_pipeline_menu2.value = false
-  apptsCreatedPipelineLoad(appts_created_pipeline_dt1.value, appts_created_pipeline_dt2.value)
+  await apptsCreatedPipelineLoad(appts_created_pipeline_dt1.value, appts_created_pipeline_dt2.value)
+  apptsCreatedPipelineCustomSelectorIsOpen.value = false
 }
 const updateApptsToFdcPipelineCalendar = () => {
   appts_to_fdc_pipeline_menu1.value = false
@@ -2024,9 +1954,9 @@ const filteredFunnelDrilldownItems = (filteredItems) => {
   funnelDrilldownRowCount.value = filteredItems.length
 }
 const toggleSelectAllBrsProvidedSources = () => {
-  vueInstance.$nextTick(() => {
     if (selectAllBrsProvidedSources.value) {
       brsProvidedSourceModel.value = []
+      //this makes the zeroed out row when nothing is selected
       apptsCreatedPipelineData.value[0] = {
         id: 12,
         name: 'BRS provided appointments created',
@@ -2036,14 +1966,12 @@ const toggleSelectAllBrsProvidedSources = () => {
       }
     } else {
       brsProvidedSourceModel.value = cloneDeep(brsProvidedSourceData.value)
-      apptsCreatedPipelineLoad(appts_created_pipeline_dt1.value, appts_created_pipeline_dt2.value)
     }
-  })
 }
 const toggleSelectAllSelfGenSources = () => {
-  vueInstance.$nextTick(() => {
     if (selectAllSelfGenSources.value) {
       selfGenSourceModel.value = []
+      //this makes the zeroed out row when nothing is selected
       apptsCreatedPipelineData.value[1] = {
         id: 13,
         name: 'Self-gen appointments created',
@@ -2053,12 +1981,9 @@ const toggleSelectAllSelfGenSources = () => {
       }
     } else {
       selfGenSourceModel.value = cloneDeep(selfGenSourceData.value)
-      apptsCreatedPipelineLoad(appts_created_pipeline_dt1.value, appts_created_pipeline_dt2.value)
     }
-  })
 }
 const toggleSelectAllAreas = () => {
-  vueInstance.$nextTick(() => {
     if (selectAllAreas.value) {
       areaModel.value = []
       regionData.value = []
@@ -2072,13 +1997,11 @@ const toggleSelectAllAreas = () => {
       apptsToFdcPipelineData.value = []
     } else {
       areaModel.value = cloneDeep(areaData.value)
-      repModel.value = [] // in case the user previously clicked the 'All Reps' button
-      // regionLoad(false)
+      // in case the user previously clicked the 'All Reps' button
+      repModel.value = []
     }
-  })
 }
 const toggleSelectAllRegions = () => {
-  vueInstance.$nextTick(() => {
     if (selectAllRegions.value) {
       regionModel.value = []
       officeData.value = []
@@ -2088,12 +2011,9 @@ const toggleSelectAllRegions = () => {
       apptsToFdcPipelineData.value = []
     } else {
       regionModel.value = cloneDeep(regionData.value)
-      // officeLoad(false)
     }
-  })
 }
 const toggleSelectAllDistricts = () => {
-  vueInstance.$nextTick(() => {
     if (selectAllDistricts.value) {
       districtModel.value = []
       regionData.value = []
@@ -2108,10 +2028,8 @@ const toggleSelectAllDistricts = () => {
       // repModel.value = [] // in case the user previously clicked the 'All Reps' button
       // regionLoad(false)
     }
-  })
 }
 const toggleSelectAllOffices = () => {
-  vueInstance.$nextTick(() => {
     if (selectAllOffices.value) {
       officeModel.value = []
       repData.value = []
@@ -2119,30 +2037,29 @@ const toggleSelectAllOffices = () => {
       apptsToFdcPipelineData.value = []
     } else {
       officeModel.value = cloneDeep(officeData.value)
-      // repLoad(false)
     }
-  })
 }
 const toggleSelectAllReps = () => {
-  vueInstance.$nextTick(() => {
-    if (selectAllReps.value) {
-      repModel.value = []
-      repLengthOverride.value = false
-      apptsToFdcPipelineData.value = []
+  if (selectAllReps.value) {
+    repModel.value = []
+    repLengthOverride.value = false
+    apptsToFdcPipelineData.value = []
+  } else {
+    if (repDataSelectAll.value && repData.value?.length > maxRepLimit.value) {
+      //this is different than clicking the All Reps button and needs to be filtered.
+      // -2 was updated to mean - select all reps in the selected orgs
+      repLengthOverride.value = true
+      repModel.value = [
+        {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
+      ]
+      repData.value = [
+        {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
+      ]
+      // doRepWatcher()
     } else {
-      if (repDataSelectAll.value && repData.value?.length > maxRepLimit.value) {
-        //this is different than clicking the All Reps button and needs to be filtered.
-        // -2 was updated to mean - select all reps in the selected orgs
-        repLengthOverride.value = true
-        repModel.value = [
-          {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
-        ]
-        doRepWatcher()
-      } else {
-        repModel.value = cloneDeep(repData.value)
-      }
+      repModel.value = cloneDeep(repData.value)
     }
-  })
+  }
 }
 const closeFunnelDrilldownDialog = () => {
   funnelDrilldownDialog.value = false
@@ -2151,49 +2068,14 @@ const closeFunnelDrilldownDialog = () => {
 
 onMounted(async () => {
   if (userStore.details.userPositions?.length > 0) {
-    let positionId = null
+    let primaryPosition = userStore.details.userPositions.find(p => !p.endDate && !p.archived && p.primaryFlag)
+    let positionId = primaryPosition.positionId
+    currentUserOrgId.value = primaryPosition.orgId
 
-    isCloser.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    isCloserMgr.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    isCloserDistrictMgr.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 517 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    let fakeCloserMgr = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 326 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    isCloserRegional.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    if (isCloser.value) {
-      positionId = 1
-    } else if (isCloserMgr.value) {
-      positionId = 2
-    } else if (isCloserDistrictMgr.value) {
-      positionId = 517
-    } else if (isCloserRegional.value) {
-      positionId = 3
-    } else if (fakeCloserMgr) {
-      positionId = 326
-    }
-
-    if (isCloser.value || isCloserMgr.value || isCloserDistrictMgr.value || isCloserRegional.value) {
-      currentUserOrgId.value = userStore.details.userPositions.filter(position => {
-        return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
-      })[0]?.orgId
-    }
-
-    if (fakeCloserMgr || isCloserDistrictMgr.value) {
-      isCloserMgr.value = true
-    }
+    isCloser.value = positionId === 1
+    isCloserDistrictMgr.value = positionId === 517
+    isCloserMgr.value = positionId === 2 || positionId === 326 || isCloserDistrictMgr.value
+    isCloserRegional.value = positionId === 3
   }
 
   await loadFunnels()
@@ -2202,80 +2084,6 @@ onMounted(async () => {
   //vuetify selects/autocompletes have a bug with the select all feature being used at the same time as the @blur event
   //the @blur event should only be called when the menu is closed, but in a select all it is called when the select all button is clicked. wreaks havoc.
   //this sucks but fixes that issue re: https://github.com/vuetifyjs/vuetify/issues/11488
-  myDynamicAreaWatcher.value = vueInstance.$watch(
-      () => areaSelect.value.isMenuActive,
-      (val) => {
-        // if val is false = blur aka the menu is being closed. true = menu is being opened
-        if (!val) {
-          if (areaValuesChanged.value) {
-            // reset these values when the districts change
-            regionModel.value = []
-            officeModel.value = []
-            repModel.value = []
-            repDataSelectAll.value = false
-            regionLoad(false)
-            // officeLoad(false)
-            // repLoad(false)
-            areaValuesChanged.value = false
-          }
-        }
-      })
-  myDynamicRegionWatcher.value = vueInstance.$watch(
-      () => regionSelect.value.isMenuActive,
-      (val) => {
-        // if val is false = blur aka the menu is being closed. true = menu is being opened
-        if (!val) {
-          if (regionValuesChanged.value) {
-            // reset these values when the regions change
-            districtModel.value = []
-            officeModel.value = []
-            repModel.value = []
-            repDataSelectAll.value = false
-            districtLoad(false)
-            // repLoad(false)
-            regionValuesChanged.value = false
-          }
-        }
-      })
-  myDynamicDistrictWatcher.value = vueInstance.$watch(
-      () => districtSelect.value.isMenuActive,
-      (val) => {
-        // if val is false = blur aka the menu is being closed. true = menu is being opened
-        if (!val) {
-          if (districtValuesChanged.value) {
-            // reset these values when the districts change
-            officeModel.value = []
-            repModel.value = []
-            repDataSelectAll.value = false
-            officeLoad(false)
-            // officeLoad(false)
-            // repLoad(false)
-            districtValuesChanged.value = false
-          }
-        }
-      })
-  myDynamicOfficeWatcher.value = vueInstance.$watch(
-      () => officeSelect.value.isMenuActive,
-      (val) => {
-        // if val is false = blur aka the menu is being closed. true = menu is being opened
-        if (!val) {
-          if (officeValuesChanged.value) {
-            // reset these values when the offices change
-            repModel.value = []
-            repDataSelectAll.value = false
-            repLoad(false)
-            officeValuesChanged.value = false
-          }
-        }
-      })
-  myDynamicRepWatcher.value = vueInstance.$watch(
-      () => repSelect.value.isMenuActive,
-      (val) => {
-        // if val is false = blur aka the menu is being closed. true = menu is being opened
-        if (!val && repModel.value.length > 0) {
-          doRepWatcher()
-        }
-      })
 })
 </script>
 
