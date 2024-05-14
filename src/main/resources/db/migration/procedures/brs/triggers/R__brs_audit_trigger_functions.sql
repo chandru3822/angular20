@@ -453,7 +453,7 @@ CREATE TRIGGER hoa_custom_field_value_audit_trg
 
 
 -- ### INCENTIVES ###
-drop trigger if exists incentives_custom_field_value_audit_trg ON brs.feat_db_incentive_custom_field_value;
+drop trigger if exists incentive_custom_field_value_audit_trg ON brs.feat_db_incentive_custom_field_value;
 
 drop function if exists brs.incentive_audit();
 CREATE OR REPLACE FUNCTION brs.incentive_audit()
