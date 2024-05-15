@@ -20,6 +20,7 @@ import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroup
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
@@ -153,7 +154,7 @@ public class BlueravenProposalService {
       .body(Resource.class);
   }
 
-  public AuroraDesignWrappedDTO duplicateExistingProposalAi(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean useExactDesign) {
+  public AuroraDesignWrappedDTO duplicateExistingProposalAi(String auroraUserId, Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean useExactDesign) {
     //this function needs to:
     //try/catch finding a design by id
     //if successful, try/catch finding all designs on that same project and getting the first one ever created
@@ -166,6 +167,8 @@ public class BlueravenProposalService {
       //get the design object for a design id we know of
       AuroraProxy.DesignSummary designSummary = auroraProxy.getDesignSummary(designId);
       if(designSummary.getProjectId().isPresent()) {
+        //update the owner in aurora to the person creating the new design
+        auroraProxy.updateAuroraProjectOwner(designSummary.getProjectId().get(), auroraUserId);
 
         //if not using the exact design id passed in then, using the project id of ^^ that design, get all designs for that project in aurora
         AuroraDesignListDTO designsForProject = new AuroraDesignListDTO();
@@ -232,23 +235,58 @@ public class BlueravenProposalService {
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
-    //first check for any existing design id on a Create Proposal Design step, if found use the oldest, then do duplicateExistingProposalAi
-    Optional<String> oldestDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getOldestDesignIdForProject, params, String.class);
-    if(oldestDesignId.isPresent()) {
-      return duplicateExistingProposalAi(projectId, oldestDesignId.get(), values, false);
-    } else {
-      //then check for any existing design id on a Create Predesign step, if found use the oldest then do new function to be made
-      Optional<String> createPredesignDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getDesignIdForCreatePredesignStep, params, String.class);
-      if(createPredesignDesignId.isPresent()) {
-        return duplicateExistingProposalAi(projectId, createPredesignDesignId.get(), values, true);
+    //first check to see if they are an existing aurora user
+    Optional<String> auroraUserId = getAuroraUserId();
+
+    if(auroraUserId.isPresent()) {
+      //then check for any existing design id on a Create Proposal Design step, if found use the oldest, then do duplicateExistingProposalAi
+      Optional<String> oldestDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getOldestDesignIdForProject, params, String.class);
+      if(oldestDesignId.isPresent()) {
+        return duplicateExistingProposalAi(auroraUserId.get(), projectId, oldestDesignId.get(), values, false);
       } else {
-        //if none of those then createNewAuroraProjectAndDesign
-        return createNewAuroraProjectAndDesign(projectId, values);
+        //then check for any existing design id on a Create Predesign step, if found use the oldest then do new function to be made
+        Optional<String> createPredesignDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getDesignIdForCreatePredesignStep, params, String.class);
+        if(createPredesignDesignId.isPresent()) {
+          return duplicateExistingProposalAi(auroraUserId.get(), projectId, createPredesignDesignId.get(), values, true);
+        } else {
+          //if none of those then createNewAuroraProjectAndDesign
+          return createNewAuroraProjectAndDesign(auroraUserId.get(), projectId, values);
+        }
       }
+    } else {
+      throw new RuntimeException("You can't create an Aurora design without an Aurora account. Contact SalesHR to get an Aurora account created.");
     }
   }
 
-  public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+  public Optional<String> getAuroraUserId() {
+    User currentUser = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.getId());
+
+    Optional<String> auroraUserId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getAuroraUserId, params, String.class);
+
+    //if we dont have it stored locally try to find it from aurora then save it locally
+    if(auroraUserId.isEmpty()) {
+      try {
+        AuroraUserListDTO users = auroraProxy.getUserList();
+        Optional<AuroraUser> matchingUser = users.getUsers().stream().filter(u -> u.getEmail().equals(currentUser.getEmail())).findFirst();
+        if(matchingUser.isPresent()) {
+          //if an aurora user id was found, save it locally
+          params.put("auroraUserId", matchingUser.get().getId());
+          //todo: change to prod cfga id
+          sqlCache.queryBySql(ProposalQuery.saveAuroraUserId, params, String.class);
+          //return that id
+          return Optional.ofNullable(matchingUser.get().getId());
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    return auroraUserId;
+  }
+
+  public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(String auroraUserId, Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
     //this function needs to:
     //try/catch creating an aurora project
     //if successful, try/catch creating an aurora design with that project
@@ -261,7 +299,7 @@ public class BlueravenProposalService {
       Optional<com.albatross.api.v1.flow.model.CustomFieldValue> nameFieldValue = values.stream().filter(v -> v.getCustomFieldGroupAssignmentId() == 26300).findFirst();
       if (nameFieldValue.isPresent()) {
         Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
-        AuroraProjectDTO auroraProject = auroraProxy.createProject(project);
+        AuroraProjectDTO auroraProject = auroraProxy.createProject(project, auroraUserId);
         if (null != auroraProject.getId()) {
           AuroraDesignWrappedDTO auroraDesign = auroraProxy.createDesign(auroraProject.getId(), nameFieldValue.get().getTextValue());
           if (null != auroraDesign.getId()) {
