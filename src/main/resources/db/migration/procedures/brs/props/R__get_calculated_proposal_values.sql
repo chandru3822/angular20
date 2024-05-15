@@ -712,8 +712,11 @@ BEGIN
         (applied_by_default is true and v_state_id = any(states)) or
          (applied_by_default is true and states is null));
 
-  select string_agg(trim(v_site_survey_items, E'\n\r\t '), ',')::text
-  into v_site_survey_items;
+  select string_agg(name,',')
+  into v_site_survey_items
+  from flow.list_of_value v
+  where v.id = any(v_site_survey_item_ids)
+    and parent_id = 19823;
 
   --raise notice 'v_site_survey_items = %',v_site_survey_items;
 
