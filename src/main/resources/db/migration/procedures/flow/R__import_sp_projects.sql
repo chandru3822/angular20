@@ -17,6 +17,8 @@ DECLARE
   v_sp_project_id                                    text;
   v_current_milestone                                text;
   v_current_milestone_id                             bigint;
+  v_current_critical_path_task_status                text;
+  v_current_critical_path_task_status_id             bigint;
   v_current_critical_path_task_name                  text;
   v_current_critical_path_task_name_id               bigint;
   v_utility                                          text;
@@ -55,7 +57,7 @@ DECLARE
   v_utility_account_number                           text;
   v_meter_number                                     text;
   v_interconnection_application_submitted_to_utility text;
-  v_Site_Survey_PhotoCircle_Link                     text;
+  v_site_survey_gocanvas_link                        text;
   v_mpu_required                                     text;
   v_mpu_required_id                                  bigint;
   v_reroof_required                                  text;
@@ -162,6 +164,7 @@ DECLARE
 BEGIN
   select p_record ->> 'Project_ID',
          p_record ->> 'current_milestone',
+         p_record ->> 'current_critical_path_task_status',
          p_record ->> 'current_critical_path_task_name',
          p_record ->> 'utility',
          p_record ->> 'email',
@@ -194,7 +197,7 @@ BEGIN
          p_record ->> 'utility_account_number',
          p_record ->> 'meter_number',
          p_record ->> 'Interconnection_Application_Submitted_to_Utility',
-         p_record ->> 'Site_Survey_PhotoCircle_Link',
+         p_record ->> 'Site_Survey_GoCanvas_Link',
          p_record ->> 'MPU_required',
          p_record ->> 'Reroof_required',
          p_record ->> 'Trenching_required',
@@ -273,6 +276,7 @@ BEGIN
   into
     v_sp_project_id,
     v_current_milestone,
+    v_current_critical_path_task_status,
     v_current_critical_path_task_name,
     v_utility,
     v_email,
@@ -305,7 +309,7 @@ BEGIN
     v_utility_account_number,
     v_meter_number,
     v_interconnection_application_submitted_to_utility,
-    v_Site_Survey_PhotoCircle_Link,
+    v_site_survey_gocanvas_link,
     v_mpu_required,
     v_reroof_required,
     v_trenching_required,
@@ -399,9 +403,9 @@ BEGIN
 
       insert into flow.contact (contact_type_id, first_name, last_name, street1, street2, postal_code, phone, email,
                                 date_created, date_modified, created_by_id, modified_by_id,
-                                company_id, archived, owner_user_position_id, company_state_id,city)
+                                company_id, archived, owner_user_position_id, company_state_id, city)
       values (1, v_first_name, v_last_name, v_street_1, v_street_2, v_postal_code, v_phone, v_email,
-              now(), now(), 2384850, 2384850, 3, false, 105806, v_company_state_id,v_city)
+              now(), now(), 2384850, 2384850, 3, false, 105806, v_company_state_id, v_city)
       returning id into v_contact_id;
 
       perform flow.set_contact_cfv(v_contact_id, 2384850, 395, 24629::text);
@@ -409,7 +413,7 @@ BEGIN
 
       insert into flow.project (contact_id, company_process_id, project_name, date_created, date_modified,
                                 created_by_id, modified_by_id, company_project_status_type_id, user_position_id,
-                                street1, street2, postal_code, company_state_id, company_country_id, archived,city)
+                                street1, street2, postal_code, company_state_id, company_country_id, archived, city)
         (select v_contact_id,
                 1,
                 concat(v_first_name, ' ', v_last_name),
@@ -444,6 +448,19 @@ BEGIN
           and lower(lov.name) = lower(v_current_milestone);
         if v_current_milestone_id is not null then
           perform flow.set_pps_cfv(v_project_id, 2384850, 27056, v_current_milestone_id::text); --v_current_milestone
+        end if;
+      end if;
+
+      if v_current_critical_path_task_status is not null and v_current_critical_path_task_status != '' then
+        select lov.id
+        into v_current_critical_path_task_status_id
+        from flow.list_of_value lov
+        where parent_id = 24665
+          and lower(lov.name) = lower(v_current_critical_path_task_status);
+
+        if v_current_critical_path_task_status_id is not null then
+          perform flow.set_pps_cfv(v_project_id, 2384850, 27219,
+                                    v_current_critical_path_task_status_id::text); --v_current_critical_path_task_name
         end if;
       end if;
 
@@ -606,10 +623,10 @@ BEGIN
                                  v_interconnection_application_submitted_to_utility::text); --v_interconnection_application_submitted_to_utility
       end if;
 
-      if v_Site_Survey_PhotoCircle_Link is not null and
-         v_Site_Survey_PhotoCircle_Link != '' then
+      if v_site_survey_gocanvas_link is not null and
+         v_site_survey_gocanvas_link != '' then
         perform flow.set_pps_cfv(v_project_id, 2384850, 27102,
-                                 v_Site_Survey_PhotoCircle_Link::text); --v_Site_Survey_PhotoCircle_Link
+                                 v_site_survey_gocanvas_link::text); --v_Site_Survey_PhotoCircle_Link
       end if;
 
       if v_mpu_required is not null and v_mpu_required != '' then
