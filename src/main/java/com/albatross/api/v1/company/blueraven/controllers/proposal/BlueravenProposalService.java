@@ -254,7 +254,10 @@ public class BlueravenProposalService {
         }
       }
     } else {
-      throw new RuntimeException("You can't create an Aurora design without an Aurora account. Contact SalesHR to get an Aurora account created.");
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "You can't create an Aurora design without an Aurora account. Contact SalesHR to get an Aurora account created.",
+        new Exception());
     }
   }
 
@@ -273,7 +276,6 @@ public class BlueravenProposalService {
         if(matchingUser.isPresent()) {
           //if an aurora user id was found, save it locally
           params.put("auroraUserId", matchingUser.get().getId());
-          //todo: change to prod cfga id
           sqlCache.queryBySql(ProposalQuery.saveAuroraUserId, params, String.class);
           //return that id
           return Optional.ofNullable(matchingUser.get().getId());
