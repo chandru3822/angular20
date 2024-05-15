@@ -188,8 +188,8 @@ const router = new Router({
           meta: {title: 'Albatross - Road Map'},
           props: true,
           component: () => {
-            if (userStore.userHasFeature('ROAD_MAP')) {
-              return import("./views/blueraven/RoadMap.vue")
+            if (store.getters.userHasFeature('ROAD_MAP')) {
+              return import("./views/RoadMap.vue")
             } else {
               return accessDenied()
             }
@@ -2115,7 +2115,7 @@ async function getUser() {
 }
 
 function accessDenied() {
-  let maintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE?.toLowerCase() === 'true' || process.env.VUE_APP_MAINTENANCE_MODE === true
+  let maintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE?.toLowerCase() === 'true'
   if (maintenanceMode) {
     return import( './views/SiteUnderMaintenance.vue')
   } else {
