@@ -106,12 +106,13 @@ public class CloserDashboardService {
   }
 
   public List<CloserTableScore> getRoundRobinLeadAllocationRank(
-      Integer roundRobinId, Integer timeInterval) {
+      Integer roundRobinId, String startDate, String endDate) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("roundRobinId", roundRobinId);
-    params.put("timeInterval", timeInterval);
-    params.put("currentUserId", securityService.getCurrentUser().getId());
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
 
+    System.out.println(params);
     List<CloserTableScore> roundRobinLeadAllocationData =
         sqlCache.queryBySql(
             CloserDashboardQuery.getRoundRobinLeadAllocationRank,
@@ -157,10 +158,11 @@ public class CloserDashboardService {
     }
   }
 
-  public List<CloserTableScore> getRepRankings(Integer timeInterval, Long selectedOrgId) {
+  public List<CloserTableScore> getRepRankings(String startDate, String endDate, Long selectedOrgId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", securityService.getCurrentUser().getId());
-    params.put("timeInterval", timeInterval);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
     params.put("selectedOrgId", selectedOrgId);
 
     List<CloserTableScore> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserRankings, params, CloserTableScore.class);
@@ -171,10 +173,10 @@ public class CloserDashboardService {
     return closerTableScores;
   }
 
-  public List<CloserTableScore> getCloserOrgRankings(Integer timeInterval) {
+  public List<CloserTableScore> getCloserOrgRankings(String startDate, String endDate) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", securityService.getCurrentUser().getId());
-    params.put("timeInterval", timeInterval);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
 
     List<CloserTableScore> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserOrgRankings, params, CloserTableScore.class);
 
@@ -405,7 +407,6 @@ public class CloserDashboardService {
     parameters.addValue("appointmentTypeIds", appointmentTypeIds);
     parameters.addValue("leadSourceIds", leadSourceIds);
     parameters.addValue("hideInactive", hideInactive);
-    System.out.println(parameters);
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }

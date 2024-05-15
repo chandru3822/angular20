@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
+import com.albatross.api.v1.company.blueraven.models.CloserDashboardDateRange;
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
@@ -7,6 +8,8 @@ import com.albatross.api.v1.company.blueraven.services.SetterDashboardService;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Created by Joseph Canto on 2020-07-06.
@@ -59,17 +62,17 @@ public class SetterDashboardController {
   }
 
   @GetMapping(value = "/topReps")
-  public String topReps(@RequestParam int limit, @RequestParam int days, @RequestParam String interval) {
+  public String topReps(@RequestParam int limit, @RequestParam int days, @RequestParam String interval, @RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate) {
     return setterDashboardService.topReps(limit, days, interval);
   }
 
   @GetMapping(value = "/topOffices")
-  public String topOffices(@RequestParam int limit, @RequestParam int days, @RequestParam String interval) {
+  public String topOffices(@RequestParam int limit, @RequestParam int days, @RequestParam String interval, @RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate) {
     return setterDashboardService.topOffices(limit, days, interval);
   }
 
   @GetMapping(value = "/officeRanking")
-  public String officeRanking(@RequestParam int limit, @RequestParam int days, @RequestParam String interval) {
+  public String officeRanking(@RequestParam int limit, @RequestParam int days, @RequestParam String interval, @RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate) {
     return setterDashboardService.officeRanking(limit, days, interval);
   }
 
@@ -106,5 +109,10 @@ public class SetterDashboardController {
   @PostMapping(value = "/funnelDrilldown")
   public String funnelDrilldown(@RequestBody FunnelRequest funnelRequest) {
     return setterDashboardService.funnelDrilldown(funnelRequest);
+  }
+
+  @GetMapping(value = "/dropdownValues")
+  public List<CloserDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
+    return setterDashboardService.getDropdownValues(today);
   }
 }

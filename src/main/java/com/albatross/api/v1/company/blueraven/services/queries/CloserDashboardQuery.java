@@ -151,7 +151,7 @@ public class CloserDashboardQuery {
 
   //language=PostgreSQL
   public final static String getRoundRobinLeadAllocationRank = """
-    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:roundRobinId::bigint, :timeInterval::bigint, :currentUserId::bigint)
+    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:roundRobinId::bigint, :startDate::date, :endDate::date)
     """;
 
   //language=PostgreSQL
@@ -200,12 +200,12 @@ public class CloserDashboardQuery {
 
   //language=PostgreSQL
   public final static String getCloserRankings = """
-    select * from brs.get_closer_rep_rankings(:timeInterval::bigint, :selectedOrgId::bigint)
+    select * from brs.get_closer_rep_rankings(:startDate::date, :endDate::date, :selectedOrgId::bigint)
     """;
 
   //language=PostgreSQL
   public final static String getCloserOrgRankings = """
-    select * from brs.get_closer_org_rankings(:timeInterval)
+    select * from brs.get_closer_org_rankings(:startDate::date, :endDate::date)
     """;
 
   //language=PostgreSQL
