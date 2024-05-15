@@ -142,7 +142,7 @@
             <div>{{ projectContact.city }}, {{ projectContact.state }} {{ projectContact.postalCode }}</div>
           </div>
         </v-col>
-        <v-col cols="5">
+        <v-col :cols="projectNameChanged ? 5 : 6">
           <span class="label-medium">New Address</span>
         <div
             v-if="project && (project.street1 || project.city || project.state || project.postalCode)"
@@ -151,7 +151,7 @@
           <span>{{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
         </div>
         </v-col>
-        <v-col col="1"><v-checkbox v-model="updateContactAddressSelected" :disabled="!projectNameChanged"/></v-col>
+        <v-col v-if="projectNameChanged" col="1"><v-checkbox v-model="updateContactAddressSelected" /></v-col>
       </v-row>
     <template v-slot:no>Do Not Update</template>
       <template v-slot:yes>Update Contact</template>

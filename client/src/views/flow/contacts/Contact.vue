@@ -23,6 +23,7 @@
                 :disabled="!userCanEdit"
                 label="Contact First Name"
                 class="body-large"
+                @change="contactNameChanged = true"
             ></a-text-field>
             <a-text-field
                 class="body-large"
@@ -32,6 +33,7 @@
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Contact Last Name"
+                @change="contactNameChanged = true"
             ></a-text-field>
             <a-text-field
                 class="body-large"
@@ -150,6 +152,57 @@
                         @close-dialog="deleteContactConfirm = false">
       <span class="bold error-text">WARNING:</span> This cannot be undone. Are you sure you want to delete this contact?
     </ConfirmationDialog>
+    <!--    modal to prompt contact address update -->
+    <ConfirmationDialog v-if="contact?.projects?.length > 0"  :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
+                        @cancel="[contactAddressChanged = false, contactNameChanged=false, updateProjectAddressSelected=true, updateProjectNameSelected=true]" @confirm="updateProjectInfo"
+    >
+      <template v-slot:title>Update Project Information</template>
+      <span v-html="updateProjectDialogText"/>
+      <v-row v-if="contactNameChanged">
+        <v-col cols="5">
+          <span class="label-medium">Current Project Names</span>
+          <div v-for="(p, index) in contact.projects"
+              class="body-medium text-wrap">
+            <span v-if="contact.projects.length > 1" class="label-small">Project {{index + 1}}</span>
+            <div> {{p.projectName}}</div>
+
+          </div>
+        </v-col>
+        <v-col :cols="contactAddressChanged ? 5 : 6">
+          <span class="label-medium">New Project Name</span>
+          <div
+              class="body-medium text-wrap">
+            {{ contact.firstName }} {{contact.lastName }}
+          </div>
+        </v-col>
+        <v-col col="1" v-if="contactAddressChanged" ><v-checkbox v-model="updateProjectNameSelected"/></v-col>
+      </v-row>
+      <v-row v-if="contactAddressChanged">
+        <v-col cols="5">
+          <span class="label-medium">Current Project Addresses</span>
+          <div
+              v-for="(p,index) in contact.projects"
+              class="body-medium text-wrap">
+            <span v-if="contact.projects.length > 1" class="label-small">Project {{index + 1}}</span>
+            <div>{{ p.street1 }}</div>
+            <div>{{ p.city }}, {{ p.state }} {{ p.postalCode }}</div>
+          </div>
+        </v-col>
+        <v-col :cols="contactNameChanged ? 5 : 6">
+          <span class="label-medium">New Address</span>
+          <div
+              v-if="contact && (contact.street1 || contact.city || contact.state || contact.postalCode)"
+              class="body-medium text-wrap">
+            <span>{{ contact.street1 }}</span><br/>
+            <span>{{ contact.city }}, {{ contact.state }} {{ contact.postalCode }}</span>
+          </div>
+        </v-col>
+        <v-col v-if="contactNameChanged" col="1"><v-checkbox v-model="updateProjectAddressSelected" /></v-col>
+      </v-row>
+      <template v-slot:no>Do Not Update</template>
+      <template v-slot:yes>Update Projects</template>
+    </ConfirmationDialog>
+    <!--    end dialog -->
     <!--    end dialogs -->
     <ThreeColumnLayout :header-text="contact.fullName"
                        :auto-overflow-left="false" :show-right-collapse-btn="true">
@@ -620,7 +673,10 @@ const addressChanged = ref(false)
 const notesComponent = ref(null)
 const contactEditForm = ref(null)
 const contactForm = ref(null)
-
+const contactAddressChanged = ref(false)
+const updateProjectAddressSelected = ref(true)
+const contactNameChanged = ref(false)
+const updateProjectNameSelected = ref(true)
 
 const is7oaksAdmin  = computed(() => {
   return userStore.isSystemAdmin
@@ -771,17 +827,25 @@ const validateForm = async() => {
 }
 const saveContactAddressFields = async () => {
   appStore.loading = true
+  let addressChanged = false
+  if(tempContact.value.street1 !== contact.value.street1 ||
+      tempContact.value.city !== contact.value.city ||
+      tempContact.value.postalCode !== contact.value.postalCode ||
+      tempContact.value.companyStateId !== contact.value.companyStateId ||
+      tempContact.value.companyCountryId !== contact.value.companyCountryId
+  ){
+    addressChanged = true
+  }
   try {
     //temp contact holds all the changes in case they cancel. use those values
     tempContact.value.ownerUserPositionId = tempContact.value.owner?.userPositionId || null
     const {status} = await postRequest(`/contact`, tempContact.value)
     appStore.showSnack('SUCCESS', 'Contact Updated')
-
+    contactAddressChanged.value = addressChanged
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Fields')
-
     appStore.loading = false
   }
 }
@@ -885,6 +949,39 @@ const getOwners = async() => {
 
   }
 }
+const updateProjectInfo = async () => {
+  if(updateProjectAddressSelected.value && contactAddressChanged.value){
+    console.log('yep')
+  }
+  if(updateProjectNameSelected.value && contactNameChanged.value) {
+    //project.value.fullName = contact.value.fullName
+  }
+ contactAddressChanged.value = false
+  contactNameChanged.value = false
+  // try {
+  //   const {status} = await postRequest(`/contact`, projectContact.value)
+  //   appStore.showSnack('SUCCESS', 'Contact Updated')
+  // } catch (e) {
+  //   logError(e)
+  //   appStore.showSnack('ERROR', 'Error Saving Fields')
+  // }
+  updateProjectNameSelected.value = true
+  updateProjectAddressSelected.value = true
+}
+
+const updateProjectDialogText = computed(() => {
+  if(contactAddressChanged.value && contactNameChanged.value){
+    return `The project name and address have changed. Would you also like to update the projects <b></b>?<br/>
+Please select the information you would like to update.`
+  }
+  else if(contactAddressChanged.value){
+    return `The address for <b></b> has changed.  Would you also like to update the contact <b></b> to the new address?`
+  }
+  else if(contactNameChanged.value){
+    return `The project name has changed.  Would you also like to update the contact <b></b> to the new name?`
+  }
+})
+
 const getAvailableProcesses = async() => {
   try {
     processesLoading.value = true
