@@ -56,14 +56,14 @@ public class ProposalQuery {
   public final static String getAuroraUserId = """
     select text_value
     from flow.user_custom_field_value ucfv
-    where ucfv.custom_field_group_assignment_id = 27135 --aurora user id cfga
+    where ucfv.custom_field_group_assignment_id = 27264 --aurora user id cfga
     and ucfv.text_value is not null
     and ucfv.user_id = :userId
   """;
 
   //language=PostgreSQL
   public final static String saveAuroraUserId = """
-    select from flow.set_user_cfv(:userId::int, 3, :userId::int, 27135, :auroraUserId::text, true)
+    select from flow.set_user_cfv(:userId::int, 3, :userId::int, 27264, :auroraUserId::text, true)
   """;
 
   //language=PostgreSQL
