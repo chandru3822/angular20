@@ -1144,6 +1144,14 @@ BEGIN
     end if;
   end if;
 
+  if v_financier_id = 19203 then
+    if coalesce(v_number_of_batteries,0) > 0  then
+      v_maximum_dollar_per_watt_for_solar = 12.5::numeric;
+    else
+      v_maximum_dollar_per_watt_for_solar = 8.0::numeric;
+    end if;
+  end if;
+
   --raise notice 'v_non_solar_cap = %',v_non_solar_cap;
   --raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
 
@@ -1639,7 +1647,7 @@ BEGIN
                                                else 0::numeric end)
                                             , 0) else 0::numeric end
                                           ,0)
-                                      when v_financier_id = 24153 then --EnFin has a single cap that changes depending on what's added. Ancillary costs can't be excluded
+                                      when v_financier_id in (24153,19203) then --EnFin and Sunlight has a single cap that changes depending on what's added. Ancillary costs can't be excluded
                                         greatest(
                                           coalesce(
                                             (coalesce(v_total_amount_to_be_financed,0) +
@@ -2080,7 +2088,7 @@ BEGIN
                    (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
             coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
     raise exception 'Solar Costs exceed the maximum allowable value.';
-  elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id = 24153 and
+  elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id in (24153,19203) and
     round(v_total_loan_amount/(v_system_size * 1000),2) >
       coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
     raise exception 'Solar Costs exceed the maximum allowable value.';

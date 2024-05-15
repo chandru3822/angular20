@@ -691,6 +691,8 @@ const addReceivingUserToOverridePlan = async(overridePlanId) => {
     userId: userId.value,
     m1Allocation: 0,
     m2Allocation: 0,
+    redLineM1Allocation: 0,
+    redLineM2Allocation: 0
   }
   try {
     const {status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
