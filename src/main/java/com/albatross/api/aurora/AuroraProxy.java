@@ -83,6 +83,45 @@ public class AuroraProxy {
                 .trim();
     }
 
+  public void updateAuroraProjectOwner(String projectId, String auroraUserId) {
+    AuroraProjectDTO project = new AuroraProjectDTO();
+    project.setOwnerId(auroraUserId);
+
+    RestClient client2 = RestClient.builder().baseUrl(host).build();
+    ResponseEntity<AuroraProjectDTO> res = client2
+      .put()
+      .uri("/tenants/%s/projects/%s".formatted(tenantId, projectId))
+      .header("Authorization", "Bearer " + tokenV2022)
+      .body(project)
+      .contentType(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .toEntity(AuroraProjectDTO.class);
+
+    if (res != null && res.getStatusCode() != HttpStatus.OK) {
+      throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
+    }
+  }
+
+  public AuroraUserListDTO getUserList() throws IOException {
+    try {
+      ResponseEntity<AuroraUserListDTO> res = client
+        .get()
+        .uri("/tenants/%s/users".formatted(tenantId))
+        .header("Authorization", "Bearer " + tokenV2022)
+        .retrieve()
+        .toEntity(AuroraUserListDTO.class)
+        .timeout(Duration.ofSeconds(30))
+        .onErrorMap(Exception.class, e -> e)
+        .block();
+
+      return res.getBody();
+    } catch (Exception e) {
+      String msg = "AURORA: Failed to find user list";
+      log.debug(msg, e);
+      throw new IOException(msg, e);
+    }
+  }
+
   public AuroraDesignListDTO getDesignsForProject(@NotBlank String projectId) throws IOException {
     try {
       ResponseEntity<AuroraDesignListDTO> res = client
@@ -124,7 +163,7 @@ public class AuroraProxy {
     }
   }
 
-    public AuroraProjectDTO createProject(com.albatross.api.v1.flow.model.project.Project flowProject) throws IOException {
+    public AuroraProjectDTO createProject(com.albatross.api.v1.flow.model.project.Project flowProject, String auroraUserId) throws IOException {
         try {
             String stringProjectId = flowProject.getId().toString();
             //if not prod then wrap the projectId string in **TEST**
@@ -133,6 +172,7 @@ public class AuroraProxy {
             AuroraProjectDTO project = new AuroraProjectDTO();
             project.setExternalProviderId(stringProjectId);
             project.setName(auroraProjectName);
+            project.setOwnerId(auroraUserId);
             project.setCustomerFirstName(flowProject.getFirstName());
             project.setCustomerLastName(flowProject.getLastName());
             project.setCustomerPhone(null != flowProject.getMobile() ? flowProject.getMobile() : flowProject.getPhone());

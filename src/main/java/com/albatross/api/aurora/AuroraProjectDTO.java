@@ -1,18 +1,15 @@
 package com.albatross.api.aurora;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 
 @Data
 @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeName("project")
 public class AuroraProjectDTO {
 
     //note: this is the aurora unique id, not our project id
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("id")
     private String id;
 
@@ -34,4 +31,7 @@ public class AuroraProjectDTO {
 
     @JsonProperty("address")
     private String address;
+
+    @JsonProperty("owner_id")
+    private String ownerId;
 }
