@@ -189,7 +189,7 @@ const router = new Router({
           props: true,
           component: () => {
             if (store.getters.userHasFeature('ROAD_MAP')) {
-              return import("./views/RoadMap.vue")
+              return import("./views/blueraven/RoadMap.vue")
             } else {
               return accessDenied()
             }
