@@ -681,7 +681,7 @@
           ></a-btn>
         </div>
       </div>
-      <v-row v-if="fdcPipelineExpanded" class="pipeline-header-container">
+      <v-row v-if="fdcPipelineExpanded" class="pipeline-header-container other-filters">
         <div id="pipeline-header-right-side">
           Other Filters:
           <a-select
@@ -1628,6 +1628,7 @@ const dropdownValuesLoading = ref(true)
 const dropdownValues = ref([])
 const isCloser = ref(false)
 const isCloserMgr = ref(false)
+const isCloserDistrictMgr = ref(false)
 const selectedFunnel = ref({})
 const isCloserRegional = ref(false)
 const userCanViewAll = ref(userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'))
@@ -3831,6 +3832,9 @@ const closeFunnelDrilldownDialog = () => {
 <style lang="scss" scoped>
 #all-reps-btn{
   text-transform: none;
+}
+.other-filters{
+  padding-left: 22px!important;
 }
 .disabled-export{
   color: var(--v-grey-lighten1) !important;
