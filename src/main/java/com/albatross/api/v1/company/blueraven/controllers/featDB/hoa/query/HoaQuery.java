@@ -121,11 +121,13 @@ public class HoaQuery {
            ORDER BY lov.name
     """;
 
+  //language=PostgreSQL
   public final static String getHoaHistory = """
     select
         cf.id,
         cf.field_name,
         case
+            when dt.id = 1 or dt.id = 2 then hcfva.old_value::text
             when dt.id = 6 and cdt.has_list_values is false then hcfva.old_value
             when dt.id = 6 and cdt.has_list_values is true then (
                 select lov.name from brs.list_of_value lov where lov.id = hcfva.old_value::bigint
@@ -138,6 +140,7 @@ public class HoaQuery {
             when dt.id = 13 then hcfva.old_value::text
             end as previous_value,
         case
+            when dt.id = 1 or dt.id = 2 then hcfva.new_value::text
             when dt.id = 6 and cdt.has_list_values is false then hcfva.new_value
             when dt.id = 6 and cdt.has_list_values is true then (
                 select lov.name from brs.list_of_value lov where lov.id = hcfva.new_value::bigint

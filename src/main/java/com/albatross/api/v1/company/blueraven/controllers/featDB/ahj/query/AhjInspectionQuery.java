@@ -211,11 +211,13 @@ public class AhjInspectionQuery {
            AND ahj.archived IS FALSE
     """;
 
+  //language=PostgreSQL
   public final static String getAhjHistory = """
         select
           cf.id,
           cf.field_name,
           case
+              when dt.id = 1 or dt.id = 2 then aicfva.old_value::text
               when dt.id = 6 and cdt.has_list_values is false then aicfva.old_value
               when dt.id = 6 and cdt.has_list_values is true then (
                   select lov.name from brs.list_of_value lov where lov.id = aicfva.old_value::bigint
@@ -228,6 +230,7 @@ public class AhjInspectionQuery {
                 when dt.id = 13 then aicfva.old_value::text
               end as previous_value,
           case
+              when dt.id = 1 or dt.id = 2 then aicfva.new_value::text
               when dt.id = 6 and cdt.has_list_values is false then aicfva.new_value
               when dt.id = 6 and cdt.has_list_values is true then (
                   select lov.name from brs.list_of_value lov where lov.id = aicfva.new_value::bigint

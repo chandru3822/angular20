@@ -323,11 +323,11 @@ const ahjId = computed(() => {
   return parseInt(route.params.ahjId)
 })
 
-onMounted(() => {
+onMounted(async () => {
   getAhjInspection().then(() => {
     getCustomFieldGroupAssignmentsForScreen().then(() => dataReady.value = true)
   })
-  getChangeLog()
+  await getChangeLog()
 })
 
 const getChangeLog = async() => {
