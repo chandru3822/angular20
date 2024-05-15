@@ -81,11 +81,14 @@ public class AhjPermitQuery {
          WHERE lov.id = :metroId
            AND ahj.archived IS FALSE
     """;
+
+  //language=PostgreSQL
   public final static String getAhjHistory = """
         select
             cf.id,
             cf.field_name,
             case
+                when dt.id = 1 or dt.id = 2 then apcfva.old_value::text
                 when dt.id = 6 and cdt.has_list_values is false then apcfva.old_value
                 when dt.id = 6 and cdt.has_list_values is true then (
                     select lov.name from brs.list_of_value lov where lov.id = apcfva.old_value::bigint
@@ -98,6 +101,7 @@ public class AhjPermitQuery {
                 when dt.id = 13 then apcfva.old_value::text
                 end as previous_value,
             case
+                when dt.id = 1 or dt.id = 2 then apcfva.new_value::text
                 when dt.id = 6 and cdt.has_list_values is false then apcfva.new_value
                 when dt.id = 6 and cdt.has_list_values is true then (
                     select lov.name from brs.list_of_value lov where lov.id = apcfva.new_value::bigint

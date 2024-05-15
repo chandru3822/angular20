@@ -138,11 +138,13 @@ public class IncentiveQuery {
           ORDER BY lov.name
     """;
 
+  //language=PostgreSQL
   public final static String getIncentiveHistory = """
         select
           cf.id,
           cf.field_name,
           case
+              when dt.id = 1 or dt.id = 2 then icfva.old_value::text
               when dt.id = 6 and cdt.has_list_values is false then icfva.old_value
               when dt.id = 6 and cdt.has_list_values is true then (
                   select lov.name from brs.list_of_value lov where lov.id = icfva.old_value::bigint
@@ -155,6 +157,7 @@ public class IncentiveQuery {
               when dt.id = 13 then icfva.old_value::text
               end as previous_value,
           case
+              when dt.id = 1 or dt.id = 2 then icfva.new_value::text
               when dt.id = 6 and cdt.has_list_values is false then icfva.new_value
               when dt.id = 6 and cdt.has_list_values is true then (
                   select lov.name from brs.list_of_value lov where lov.id = icfva.new_value::bigint

@@ -102,11 +102,13 @@ public class SupplierQuery {
           WHERE h.id = :id
     """;
 
+    //language=PostgreSQL
     public final static String getSupplierHistory = """
       select
           cf.id,
           cf.field_name,
           case
+              when dt.id = 1 or dt.id = 2 then scfva.old_value::text
               when dt.id = 6 and cdt.has_list_values is false then scfva.old_value
               when dt.id = 6 and cdt.has_list_values is true then (
                   select lov.name from brs.list_of_value lov where lov.id = scfva.old_value::bigint
@@ -119,6 +121,7 @@ public class SupplierQuery {
             when dt.id = 13 then scfva.old_value::text
               end as previous_value,
           case
+              when dt.id = 1 or dt.id = 2 then scfva.new_value::text
               when dt.id = 6 and cdt.has_list_values is false then scfva.new_value
               when dt.id = 6 and cdt.has_list_values is true then (
                   select lov.name from brs.list_of_value lov where lov.id = scfva.new_value::bigint

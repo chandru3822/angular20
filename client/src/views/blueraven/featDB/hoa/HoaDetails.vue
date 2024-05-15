@@ -271,6 +271,7 @@ const saveHoa = async() => {
     hoa.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "HOA saved")
+    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)

@@ -233,7 +233,6 @@ const getAhjDesign = async() => {
     window.document.title = `AHJ - ${data.ahjName}`
     ahjDesign.value = cloneDeep(data)
     ahjDesign.value.updateAllInArea = "";
-    await getChangeLog()
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
