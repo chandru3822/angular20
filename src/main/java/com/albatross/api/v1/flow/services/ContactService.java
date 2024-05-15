@@ -250,7 +250,7 @@ public class ContactService {
     Long contactId = cId;
     Contact newContact = new Contact();
     if(null != request.getContact()) {
-      newContact = updateContact(request.getContact());
+      newContact = updateContact(request.getContact(), false);
       contactId = newContact.getId();
     }
 
@@ -270,7 +270,7 @@ public class ContactService {
     return new ResponseEntity<>(responseBody, HttpStatus.OK);
   }
 
-  public Contact updateContact(Contact contact) throws Exception {
+  public Contact updateContact(Contact contact, Boolean updateProjectName) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -332,7 +332,7 @@ public class ContactService {
       // add update when we add that to the UI
       sqlCache.updateBySql(ContactQuery.updateContact, params);
 
-      if (!existingContact.getProjects().isEmpty()
+      if (updateProjectName != null && updateProjectName != false && !existingContact.getProjects().isEmpty()
           && !existingContact
               .getProjects()
               .get(0)
