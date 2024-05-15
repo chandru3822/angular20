@@ -28,7 +28,11 @@ const store = vueInstance.$store
 const incentiveDataLoaded = ref(false)
 const currentQuarter = ref(moment().quarter())
 const pitchCounts = ref({q1: 0, q2: 0, q3: 0, q4: 0})
+const userOfficeId = ref(null)
+const userOffice = ref('')
+const isSetter = ref(false)
 const isSetterMgr = ref(false)
+const isSetterRegional = ref(false)
 const setterDashContainer = ref(null)
 
 const currentUserId = computed(() => {
@@ -53,6 +57,7 @@ const yearlyPointTotal = computed(() => {
 
 onMounted(async() => {
   let userPositions = userStore.details.userPositions
+
   if (userPositions?.length > 0) {
     userOfficeId.value = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
     userOffice.value = userPositions.filter(position => position.orgId === userOfficeId.value)[0].hierarchy.filter(orgLevel => orgLevel.orgId === userOfficeId.value)[0].orgName

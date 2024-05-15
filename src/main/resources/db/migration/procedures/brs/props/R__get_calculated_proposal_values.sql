@@ -510,6 +510,7 @@ v_denver_care_rebate_amount_number numeric;
 v_site_survey_resource_type_id bigint;
 v_loan_term_id bigint;
   v_other_oregon_discount numeric;
+v_site_survey_item_ids bigint[];
 
 BEGIN
   select proposal_id,
@@ -698,12 +699,18 @@ BEGIN
 
   --raise notice 'v_small_system_size_adder_amount = % ',v_small_system_size_adder_amount;
 
-  with t as (select adder_name, val
-             from brs.get_proposal_site_survey_adders(v_version_id))
-  select string_agg(t.adder_name, ',')
-  into v_site_survey_items
+
+  with t as (select adder_name, val,applied_by_default,array_agg(p::integer) filter (where states is not null) as states
+             from brs.get_proposal_site_survey_adders(v_version_id)
+                    left join jsonb_array_elements_text(states) p on true
+             group by adder_name, val, applied_by_default
+             )
+  select string_agg(t.adder_name, ','),array_agg(val)
+  into v_site_survey_items,v_site_survey_item_ids
   from t
-  where val = any (v_site_survey_time_adders);
+  where (val = any (v_site_survey_time_adders) or
+        (applied_by_default is true and v_state_id = any(states)) or
+         (applied_by_default is true and states is null));
 
   select string_agg(trim(v_site_survey_items, E'\n\r\t '), ',')::text
   into v_site_survey_items;
@@ -2147,7 +2154,7 @@ BEGIN
                                          bp_plus_amount, aurora_design_id,loan_type, filename, financial_option,
                                          site_survey_time_estimate,
                                          site_survey_resource_type_id,
-                                         site_survey_resource_type, site_survey_items, number_of_batteries,
+                                         site_survey_resource_type,site_survey_item_ids, site_survey_items, number_of_batteries,
                                          estimated_backup_days,
                                          solar_rebate_for_hic,
                                          full_commission_discount_amount,
@@ -2261,6 +2268,7 @@ BEGIN
             v_site_survey_time_estimate,
             v_site_survey_resource_type_id,
             v_site_survey_resource_type,
+            v_site_survey_item_ids,
             v_site_survey_items,
             v_number_of_batteries,
             v_estimated_backup_days,

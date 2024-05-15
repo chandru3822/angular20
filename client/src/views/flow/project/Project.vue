@@ -20,6 +20,7 @@
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Project Name"
+              @change="[projectNameChanged = true, tempFirstName = tempProject.projectName.slice(0,tempProject.projectName.trim().lastIndexOf(' ')), tempLastName = tempProject.projectName.slice(tempProject.projectName.trim().lastIndexOf(' '))]"
           />
           <a-text-field
               v-model="tempProject.street1"
@@ -105,13 +106,34 @@
     </ConfirmationDialog>
     <!--    end dialog -->
     <!--    modal to prompt contact address update -->
-    <ConfirmationDialog v-if="projectContact && contactLoading === false"  :open-dialog="!showEditProjectModal && projectAddressChanged"
-                        @cancel="projectAddressChanged = false" @confirm="updateContactAddress"
+    <ConfirmationDialog v-if="projectContact && contactLoading === false"  :open-dialog="!showEditProjectModal && (projectAddressChanged || projectNameChanged)" :disable-confirm="!updateContactNameSelected && !updateContactAddressSelected"
+                        @cancel="[projectAddressChanged = false, projectNameChanged=false, updateContactAddressSelected=true, updateContactNameSelected=true]" @confirm="updateContactInfo"
     >
       <template v-slot:title>Update Contact Information</template>
-      The address for <b>{{project.projectName}}</b> has changed.  Would you also like to update the contact <b>{{projectContact.fullName}}</b> to the new address?
-      <v-row>
-        <v-col>
+      <span v-html="updateContactDialogText"/>
+      <v-row v-if="projectNameChanged">
+        <v-col cols="5">
+          <span class="label-medium">Current Contact Name</span>
+          <div
+              class="body-medium text-wrap">
+            <span class="label-small">First Name:</span>
+            <div> {{ projectContact.firstName}}</div>
+            <span class="label-small">Last Name:</span>
+            <div> {{ projectContact.lastName}}</div>
+          </div>
+        </v-col>
+        <v-col :cols="projectAddressChanged ? 5 : 6">
+          <span class="label-medium">New Contact Name</span>
+          <div
+              class="body-medium text-wrap">
+            <a-text-field v-model="tempFirstName" label="First Name" :disabled="!updateContactNameSelected"></a-text-field>
+            <a-text-field v-model="tempLastName" label="Last Name" :disabled="!updateContactNameSelected"></a-text-field>
+          </div>
+        </v-col>
+        <v-col col="1" v-if="projectAddressChanged" ><v-checkbox v-model="updateContactNameSelected"/></v-col>
+      </v-row>
+      <v-row v-if="projectAddressChanged">
+        <v-col cols="5">
           <span class="label-medium">Current Contact Address</span>
           <div
               v-if="projectContact && (projectContact.street1 || projectContact.city || projectContact.state || projectContact.postalCode)"
@@ -120,7 +142,7 @@
             <div>{{ projectContact.city }}, {{ projectContact.state }} {{ projectContact.postalCode }}</div>
           </div>
         </v-col>
-        <v-col>
+        <v-col cols="5">
           <span class="label-medium">New Address</span>
         <div
             v-if="project && (project.street1 || project.city || project.state || project.postalCode)"
@@ -129,6 +151,7 @@
           <span>{{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
         </div>
         </v-col>
+        <v-col col="1"><v-checkbox v-model="updateContactAddressSelected" :disabled="!projectNameChanged"/></v-col>
       </v-row>
     <template v-slot:no>Do Not Update</template>
       <template v-slot:yes>Update Contact</template>
@@ -412,6 +435,11 @@ const pageOverviewMenuItem = ref({})
 const updateKeyProp = ref(0)
 const projectEditForm = ref(null)
 const projectAddressChanged = ref(false)
+const updateContactAddressSelected = ref(true)
+const projectNameChanged = ref(false)
+const updateContactNameSelected = ref(true)
+const tempFirstName = ref('')
+const tempLastName = ref('')
 const projectContact = ref({})
 const contactLoading = ref(false)
 
@@ -767,9 +795,26 @@ const saveProjectAddressFields = async () => {
   }
 }
 
+watch(projectNameChanged, () => {
+  if(projectNameChanged.value === true && !projectContact.value.id){
+    getContact()
+  }
+})
 watch(projectAddressChanged, () => {
   if(projectAddressChanged.value === true && !projectContact.value.id){
     getContact()
+  }
+})
+const updateContactDialogText = computed(() => {
+  if(projectAddressChanged.value && projectNameChanged.value){
+    return `The project name and address have changed. Would you also like to update the contact <b>${projectContact.value.fullName}</b>?<br/>
+Please select the information you would like to update.`
+  }
+  else if(projectAddressChanged.value){
+    return `The address for <b>${project.value.projectName}</b> has changed.  Would you also like to update the contact <b>${projectContact.value.fullName}</b> to the new address?`
+  }
+  else if(projectNameChanged.value){
+    return `The project name has changed.  Would you also like to update the contact <b>${projectContact.value.fullName}</b> to the new name?`
   }
 })
 
@@ -786,13 +831,16 @@ const getContact = async () => {
 
   }
 }
-const updateContactAddress = async () =>{
+const updateContactInfo = async () => {
+  if(updateContactAddressSelected.value && projectAddressChanged.value){
+    updateContactAddress()
+  }
+  if(updateContactNameSelected.value && projectNameChanged.value) {
+    projectContact.value.firstName = tempFirstName
+    projectContact.value.lastName = tempLastName
+  }
   projectAddressChanged.value = false
-  projectContact.value.street1 = project.value.street1
-  projectContact.value.street2 = project.value.street2
-  projectContact.value.city = project.value.city
-  projectContact.value.stateId = project.value.stateId
-  projectContact.value.postalCode = project.value.postalCode
+  projectNameChanged.value = false
   try {
     const {status} = await postRequest(`/contact`, projectContact.value)
     appStore.showSnack('SUCCESS', 'Contact Updated')
@@ -800,6 +848,15 @@ const updateContactAddress = async () =>{
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Fields')
   }
+  updateContactNameSelected.value = true
+  updateContactAddressSelected.value = true
+}
+const updateContactAddress = () =>{
+  projectContact.value.street1 = project.value.street1
+  projectContact.value.street2 = project.value.street2
+  projectContact.value.city = project.value.city
+  projectContact.value.stateId = project.value.stateId
+  projectContact.value.postalCode = project.value.postalCode
 }
 
 const getOwners = async () => {

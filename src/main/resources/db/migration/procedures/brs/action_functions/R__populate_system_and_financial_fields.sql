@@ -12,7 +12,7 @@ declare
     v_company_id bigint;
     v_number_of_arrays bigint;
     v_number_of_pitch bigint;
-    v_loan_type varchar;
+    v_financier_id bigint;
     v_closer_commission_forfeiture_amount numeric;
     v_commission_forfeited_by_closer_amount numeric;
 BEGIN
@@ -37,8 +37,8 @@ BEGIN
       and cf2.parent_custom_field_id = 10495;
 
 
-    select substring(loan_type,1,position(' ' in loan_type)-1),closer_commission_forfeiture_amount
-    into v_loan_type,v_closer_commission_forfeiture_amount
+    select financier_id,closer_commission_forfeiture_amount
+    into v_financier_id,v_closer_commission_forfeiture_amount
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
@@ -48,9 +48,6 @@ BEGIN
     inner join flow.project_process_step_custom_field_value v on v.project_process_step_id = p.id and v.custom_field_group_assignment_id = 24999
     where p.project_id = p_project_id;
 
-    if v_loan_type = 'SunPower' then
-      v_loan_type = 'SunPower Financial';
-    end if;
 
     select cp.company_id
     into v_company_id
@@ -247,7 +244,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10307
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), case when v_loan_type != 'Cash' then
+                               and cfg.process_step_id = p_process_step_id), case when v_financier_id != 721 then
                                                                                 plh.loan_amount::numeric
                                                                                 else 0.00::numeric end,
                            (select cfga.id
@@ -359,11 +356,11 @@ BEGIN
                              where cf.parent_custom_field_id = 10429
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id),( case when (v_loan_type = 'Cash' and plh.loan_amount::numeric is null) then 0.00::numeric
-                                                                                   when (v_loan_type = 'Cash' and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric +
+                               and cfg.process_step_id = p_process_step_id),( case when (v_financier_id = 721 and plh.loan_amount::numeric is null) then 0.00::numeric
+                                                                                   when (v_financier_id = 721 and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric +
                                                                                                                                                                  coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
-                                                                                   when (v_loan_type != 'Cash' and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
-                                                                                   when (v_loan_type != 'Cash' and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
+                                                                                   when (v_financier_id != 721 and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
+                                                                                   when (v_financier_id != 721 and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
                                                                                    else 0.00::numeric end)) as me
                  from brs.proposal_log_history plh
                  inner join brs.project_details pd on pd.project_id = plh.project_id
