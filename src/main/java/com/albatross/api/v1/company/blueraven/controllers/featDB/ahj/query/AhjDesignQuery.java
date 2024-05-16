@@ -52,7 +52,12 @@ public class AhjDesignQuery {
             cf.id,
             cf.field_name,
             case
-                 when dt.id = 1 or dt.id = 2 then adcfva.old_value::text
+                 when dt.id = 1 then adcfva.old_value::text
+                 when dt.id = 2 then
+                   case
+                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
+                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                   end
                  when dt.id = 6 and cdt.has_list_values is false then adcfva.old_value
                  when dt.id = 6 and cdt.has_list_values is true then (
                      select lov.name from brs.list_of_value lov where lov.id = adcfva.old_value::bigint
@@ -65,7 +70,12 @@ public class AhjDesignQuery {
                  when dt.id = 13 then adcfva.old_value::text
             end as previous_value,
             case
-                when dt.id = 1 or dt.id = 2 then adcfva.new_value::text
+                when dt.id = 1 then adcfva.new_value::text
+                when dt.id = 2 then
+                   case
+                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
+                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                   end
                 when dt.id = 6 and cdt.has_list_values is false then adcfva.new_value
                 when dt.id = 6 and cdt.has_list_values is true then (
                     select lov.name from brs.list_of_value lov where lov.id = adcfva.new_value::bigint
