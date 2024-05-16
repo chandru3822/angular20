@@ -23,6 +23,7 @@
                 :disabled="!userCanEdit"
                 label="Contact First Name"
                 class="body-large"
+                @change="contactNameChanged = true"
             ></a-text-field>
             <a-text-field
                 class="body-large"
@@ -32,6 +33,7 @@
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Contact Last Name"
+                @change="contactNameChanged = true"
             ></a-text-field>
             <a-text-field
                 class="body-large"
@@ -42,7 +44,7 @@
                 :disabled="!userCanEdit"
                 :maxlength="100"
                 counter
-                @change="tempContact.reloadCoordinates = true"
+                @change="[tempContact.reloadCoordinates = true, contactAddressChanged = true]"
             ></a-text-field>
             <a-text-field
                 id="qa-city-field"
@@ -51,7 +53,7 @@
                 label="City"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
-                @change="tempContact.reloadCoordinates = true"
+                @change="[tempContact.reloadCoordinates = true, contactAddressChanged = true]"
             ></a-text-field>
             <a-text-field
                 class="body-large"
@@ -63,7 +65,7 @@
                 :disabled="!userCanEdit"
                 :maxlength="10"
                 :rules="postalCodeRules"
-                @change="tempContact.reloadCoordinates = true"
+                @change="[tempContact.reloadCoordinates = true, contactAddressChanged = true]"
                 label="Postal Code"
             ></a-text-field>
             <a-autocomplete v-model="tempContact.companyStateId"
@@ -76,7 +78,7 @@
                             :loading="statesLoading"
                             item-title="state"
                             item-value="id"
-                            @input="tempContact.reloadCoordinates = true"
+                            @input="[tempContact.reloadCoordinates = true, contactAddressChanged = true]"
             ></a-autocomplete>
             <a-select v-model="tempContact.companyCountryId"
                       class="body-large"
@@ -86,7 +88,7 @@
                       id="qa-country-field"
                       :disabled="!userCanEdit"
                       :loading="countriesLoading"
-                      @input="tempContact.reloadCoordinates = true"
+                      @input="[tempContact.reloadCoordinates = true, contactAddressChanged = true]"
                       item-title="country"
                       item-value="id"
             ></a-select>
@@ -150,6 +152,57 @@
                         @close-dialog="deleteContactConfirm = false">
       <span class="bold error-text">WARNING:</span> This cannot be undone. Are you sure you want to delete this contact?
     </ConfirmationDialog>
+    <!--    modal to prompt contact address update -->
+    <ConfirmationDialog v-if="contact?.projects?.length > 0"  :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
+                        @cancel="cancelUpdateProject" @confirm="updateProjectInfo"
+    >
+      <template v-slot:title>Update Project Information</template>
+      <span v-html="updateProjectDialogText"/>
+      <v-row v-if="contactNameChanged">
+        <v-col cols="5">
+          <span class="label-medium">Current Project Names</span>
+          <div v-for="(p, index) in contact.projects"
+              class="body-medium text-wrap">
+            <span v-if="contact.projects.length > 1" class="label-small">Project {{index + 1}}</span>
+            <div> {{p.projectName}}</div>
+
+          </div>
+        </v-col>
+        <v-col :cols="contactAddressChanged ? 5 : 6">
+          <span class="label-medium">New Project Name</span>
+          <div
+              class="body-medium text-wrap">
+            {{ tempContact.firstName }} {{tempContact.lastName }}
+          </div>
+        </v-col>
+        <v-col col="1" v-if="contactAddressChanged" ><v-checkbox v-model="updateProjectNameSelected"/></v-col>
+      </v-row>
+      <v-row v-if="contactAddressChanged">
+        <v-col cols="5">
+          <span class="label-medium">Current Project Addresses</span>
+          <div
+              v-for="(p,index) in contact.projects"
+              class="body-medium text-wrap">
+            <span v-if="contact.projects.length > 1" class="label-small">Project {{index + 1}}</span>
+            <div>{{ p.street1 }}</div>
+            <div>{{ p.city }}, {{ p.state }} {{ p.postalCode }}</div>
+          </div>
+        </v-col>
+        <v-col :cols="contactNameChanged ? 5 : 6">
+          <span class="label-medium">New Address</span>
+          <div
+              v-if="contact && (tempContact.street1 || tempContact.city || tempContact.state || tempContact.postalCode)"
+              class="body-medium text-wrap">
+            <span>{{ tempContact.street1 }}</span><br/>
+            <span>{{ tempContact.city }}, {{ tempContact.state }} {{ tempContact.postalCode }}</span>
+          </div>
+        </v-col>
+        <v-col v-if="contactNameChanged" col="1"><v-checkbox v-model="updateProjectAddressSelected" /></v-col>
+      </v-row>
+      <template v-slot:no>Do Not Update</template>
+      <template v-slot:yes>Update Projects</template>
+    </ConfirmationDialog>
+    <!--    end dialog -->
     <!--    end dialogs -->
     <ThreeColumnLayout :header-text="contact.fullName"
                        :auto-overflow-left="false" :show-right-collapse-btn="true">
@@ -544,7 +597,7 @@ import {
   postRequest,
   formatPhoneNumber,
   getRequestWithParams,
-  getSnackbar, logError, postRequestWithRequestParams, getProjectPath
+  getSnackbar, logError, postRequestWithRequestParams, getProjectPath, putRequestWithRequestParams
 } from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
@@ -620,7 +673,10 @@ const addressChanged = ref(false)
 const notesComponent = ref(null)
 const contactEditForm = ref(null)
 const contactForm = ref(null)
-
+const contactAddressChanged = ref(false)
+const updateProjectAddressSelected = ref(true)
+const contactNameChanged = ref(false)
+const updateProjectNameSelected = ref(true)
 
 const is7oaksAdmin  = computed(() => {
   return userStore.isSystemAdmin
@@ -757,17 +813,45 @@ const selectSelf = () => {
   let match = availableOwners.value.find(o => o.userId === userStore.details.id) || {}
   vueInstance.$set(tempContact.value, 'owner', match)
 }
-const validateForm = async() => {
-  if (contactEditForm.value.validate()) {
-    //these could be combined - just dont have time atm
-    saveContactAddressFields()
 
-    // updateOwner()
-
-    //set project values if they hit save
-    contact.value = cloneDeep(tempContact.value)
-    showEditModal.value = false
+const didAddressChange = () => {
+  if(tempContact.value.street1 !== contact.value.street1 ||
+      tempContact.value.city !== contact.value.city ||
+      tempContact.value.postalCode !== contact.value.postalCode ||
+      tempContact.value.companyStateId !== contact.value.companyStateId ||
+      tempContact.value.companyCountryId !== contact.value.companyCountryId
+  ){
+    contactAddressChanged.value = true
   }
+  return contactAddressChanged.value
+}
+
+const checkForAddressOrNameChange = () => {
+  if(contactAddressChanged || contactNameChanged){
+    showEditModal.value = false
+  } else {
+    validateForm()
+  }
+}
+const cancelUpdateProject = () => {
+  contactAddressChanged.value = false
+  contactNameChanged.value = false
+  updateProjectAddressSelected.value = true
+  updateProjectNameSelected.value = true
+}
+
+const validateForm = async() => {
+    if (contactEditForm.value.validate()) {
+      //these could be combined - just dont have time atm
+      saveContactAddressFields()
+
+      // updateOwner()
+
+      //set project values if they hit save
+      contact.value = cloneDeep(tempContact.value)
+      showEditModal.value = false
+    }
+
 }
 const saveContactAddressFields = async () => {
   appStore.loading = true
@@ -776,12 +860,10 @@ const saveContactAddressFields = async () => {
     tempContact.value.ownerUserPositionId = tempContact.value.owner?.userPositionId || null
     const {status} = await postRequest(`/contact`, tempContact.value)
     appStore.showSnack('SUCCESS', 'Contact Updated')
-
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Fields')
-
     appStore.loading = false
   }
 }
@@ -885,6 +967,37 @@ const getOwners = async() => {
 
   }
 }
+const updateProjectInfo = async () => {
+  let params = {
+    updateProjectName: updateProjectNameSelected.value && contactNameChanged.value,
+    updateProjectAddress: updateProjectAddressSelected.value && contactAddressChanged.value
+  }
+   try {
+     const {status} = await putRequestWithRequestParams(`/project/contactProjects`, contact.value, params)
+    appStore.showSnack('SUCCESS', 'Projects Updated')
+  } catch (e) {
+    logError(e)
+    appStore.showSnack('ERROR', 'Error Saving Projects')
+  }
+  contactAddressChanged.value = false
+  contactNameChanged.value = false
+  updateProjectAddressSelected.value = true
+  updateProjectNameSelected.value = true
+}
+
+const updateProjectDialogText = computed(() => {
+  if(contactAddressChanged.value && contactNameChanged.value){
+    return `The project name and address have changed. Would you also like to update the projects <b></b>?<br/>
+Please select the information you would like to update.`
+  }
+  else if(contactAddressChanged.value){
+    return `The address for <b></b> has changed.  Would you also like to update the contact <b></b> to the new address?`
+  }
+  else if(contactNameChanged.value){
+    return `The project name has changed.  Would you also like to update the contact <b></b> to the new name?`
+  }
+})
+
 const getAvailableProcesses = async() => {
   try {
     processesLoading.value = true

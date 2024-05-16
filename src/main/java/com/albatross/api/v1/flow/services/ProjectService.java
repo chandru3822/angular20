@@ -402,6 +402,49 @@ public class ProjectService {
     sqlCache.updateBySql(ProjectQuery.update, params);
   }
 
+  public void updateProjectFromContact(Contact contact, Boolean updateProjectName, Boolean updateProjectAddress) throws Exception{
+        User currentUser = securityService.getCurrentUser();
+        if (updateProjectName != null && updateProjectName && !contact.getProjects().isEmpty()
+                && !contact
+                .getProjects()
+                .get(0)
+                .getProjectName()
+                .equals(contact.getFirstName() + " " + contact.getLastName())) {
+            sqlCache.updateBySql(ProjectQuery.updateNameByContactId,
+                    Map.of(
+                            "contactId",
+                            contact.getId(),
+                            "name",
+                            contact.getFirstName() + " " + contact.getLastName(),
+                            "userId",
+                            currentUser.trueUserId()));
+        }
+        if(null != updateProjectAddress && updateProjectAddress && !contact.getProjects().isEmpty()){
+
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("contactId", contact.getId());
+            params.put("modifiedById", currentUser.trueUserId());
+            params.put("street1", contact.getStreet1());
+            params.put("city", contact.getCity());
+            params.put("companyStateId", contact.getCompanyStateId());
+            params.put("postalCode", contact.getPostalCode());
+            params.put("companyCountryId", contact.getCompanyCountryId());
+            params.put("latitude", contact.getLatitude());//this should have already been updated when the contact was updated
+            params.put("longitude", contact.getLongitude());
+            String timezone = null;
+            if (null != contact.getLatitude() && null != contact.getLongitude()) {
+                // if we have a lat/long then attempt to load the timezone
+                try {
+                    timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+                } catch (Exception e) {
+                    //do nothing because the getTimezone function already logged this error
+                }
+            }
+            params.put("timezone", timezone);
+            sqlCache.updateBySql(ProjectQuery.updateAddressByContactId, params);
+        }
+    }
+
   public void updateProjectOwner(Long projectId, Owner owner) {
     User currentUser = securityService.getCurrentUser();
 

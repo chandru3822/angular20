@@ -2,10 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.DensitySearch;
-import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
@@ -104,6 +101,12 @@ public class ProjectController {
     //    currently only saves the address fields
     projectService.updateProject(project);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PutMapping(value = "/contactProjects")
+  public ResponseEntity<Void> updateProjectsFromContact(@RequestParam Boolean updateProjectName, @RequestParam Boolean updateProjectAddress, @RequestBody Contact contact) throws Exception {
+      projectService.updateProjectFromContact(contact, updateProjectName, updateProjectAddress);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @PutMapping(value = "/{projectId}/owner")
