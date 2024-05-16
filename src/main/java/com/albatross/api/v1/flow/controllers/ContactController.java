@@ -54,8 +54,8 @@ public class ContactController {
 
 
   @PostMapping(value = "")
-    public Contact updateContact(@RequestParam(required = false) Boolean updateProjectName,@RequestBody Contact contact) throws Exception {
-        return contactService.updateContact(contact, updateProjectName);
+    public Contact updateContact(@RequestBody Contact contact) throws Exception {
+        return contactService.updateContact(contact);
     }
 
     //temporary

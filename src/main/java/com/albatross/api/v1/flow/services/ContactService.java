@@ -14,7 +14,6 @@ import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.ActivityQuery;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.ContactQuery;
-import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -250,7 +249,7 @@ public class ContactService {
     Long contactId = cId;
     Contact newContact = new Contact();
     if(null != request.getContact()) {
-      newContact = updateContact(request.getContact(), false);
+      newContact = updateContact(request.getContact());
       contactId = newContact.getId();
     }
 
@@ -270,7 +269,7 @@ public class ContactService {
     return new ResponseEntity<>(responseBody, HttpStatus.OK);
   }
 
-  public Contact updateContact(Contact contact, Boolean updateProjectName) throws Exception {
+  public Contact updateContact(Contact contact) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -332,21 +331,6 @@ public class ContactService {
       // add update when we add that to the UI
       sqlCache.updateBySql(ContactQuery.updateContact, params);
 
-      if (updateProjectName != null && updateProjectName != false && !existingContact.getProjects().isEmpty()
-          && !existingContact
-              .getProjects()
-              .get(0)
-              .getProjectName()
-              .equals(contact.getFirstName() + " " + contact.getLastName())) {
-        sqlCache.updateBySql(ProjectQuery.updateNameByContactId,
-            Map.of(
-                "contactId",
-                id,
-                "name",
-                contact.getFirstName() + " " + contact.getLastName(),
-                "userId",
-                currentUser.trueUserId()));
-      }
     } else {
       // load contact geo location
       List<Double> coordinates = new ArrayList<>();

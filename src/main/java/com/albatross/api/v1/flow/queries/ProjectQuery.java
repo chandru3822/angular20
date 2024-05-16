@@ -745,6 +745,21 @@ set project_name = :name,
 where contact_id = :contactId
     """;
 
+    public final static String updateAddressByContactId = """
+update flow.project
+set street1 = :street1,
+    city = :city,
+    company_state_id = :companyStateId,
+    company_country_id = :companyCountryId,
+    postal_code = :postalCode,
+    modified_by_id = :modifiedById,
+    date_modified = now(),
+    latitude = :latitude,
+    longitude = :longitude,
+    time_zone = :timezone
+where contact_id = :contactId
+                   """;
+
   //language=PostgreSQL
   public final static String getProjectInstallationScopeOfWork = """
     select lov.name from flow.project_process_step_custom_field_value ppscfv
