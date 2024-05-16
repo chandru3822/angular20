@@ -657,7 +657,7 @@ const requestAIDesign = async () => {
     appStore.loading = false
      appStore.showSnack(
       'ERROR',
-      e?.data?.message || 'There was an error requesting a new design'
+      e?.data?.message || e?.data?.detail || 'There was an error requesting a new design'
     )
   } finally {
     showAIDesignRequestForm.value = false

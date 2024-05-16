@@ -272,7 +272,7 @@ public class BlueravenProposalService {
     if(auroraUserId.isEmpty()) {
       try {
         AuroraUserListDTO users = auroraProxy.getUserList();
-        Optional<AuroraUser> matchingUser = users.getUsers().stream().filter(u -> u.getEmail().equals(currentUser.getEmail())).findFirst();
+        Optional<AuroraUser> matchingUser = users.getUsers().stream().filter(u -> u.getEmail().equalsIgnoreCase(currentUser.getEmail())).findFirst();
         if(matchingUser.isPresent()) {
           //if an aurora user id was found, save it locally
           params.put("auroraUserId", matchingUser.get().getId());
