@@ -998,7 +998,7 @@ BEGIN
   elsif v_virtual_sales_price_adjustment is not null and v_virtual_sales_base_price is not null and
         v_commission_strategy_id = 24103 then
     v_adjusted_price_per_watt  = v_virtual_sales_base_price + v_virtual_sales_price_adjustment;
-  elsif v_commission_strategy_id is not null then
+  elsif v_commission_strategy_id is not null and v_commission_strategy_id not in (24103,24102,24443)  then
     v_adjusted_price_per_watt =
         v_maximum_funding_amount_per_watt +
         v_max_price_adjustment;
