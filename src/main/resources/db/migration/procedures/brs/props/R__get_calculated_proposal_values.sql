@@ -973,7 +973,7 @@ BEGIN
                              end;
   --raise notice 'v_max_price_adjustment = %',v_max_price_adjustment;
 
-  if v_dealer is not null then
+  if v_commission_strategy_id = 24443 and v_dealer is not null then
     v_adjusted_price_per_watt = coalesce(v_dealer_redline_price, 0) + coalesce(v_dealer_markup, 0);
   elsif v_commission_strategy_id = 24102 then
     v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
@@ -995,9 +995,10 @@ BEGIN
     --raise notice 'v_lead_source_discount = %',v_lead_source_discount;
     --raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
     --raise notice 'v_red_line_funding_amount = %',v_red_line_funding_amount;
-  elsif v_virtual_sales_price_adjustment is not null and v_virtual_sales_base_price is not null then
+  elsif v_virtual_sales_price_adjustment is not null and v_virtual_sales_base_price is not null and
+        v_commission_strategy_id = 24103 then
     v_adjusted_price_per_watt  = v_virtual_sales_base_price + v_virtual_sales_price_adjustment;
-  else
+  elsif v_commission_strategy_id is not null then
     v_adjusted_price_per_watt =
         v_maximum_funding_amount_per_watt +
         v_max_price_adjustment;
@@ -1378,7 +1379,7 @@ BEGIN
   --raise notice 'v_system_size_cutoff % ',v_system_size_cutoff;
 
   v_odoe_rebate = 0::numeric;
-  if v_odoe_rebate_id is not null and (v_version_id <= 130 or v_system_size >= 9)  then
+  if v_odoe_rebate_id is not null and (v_version_id <= 130 or v_system_size >= 9 or v_version_id = 132)  then
     select *
     into v_odoe_rebate
     from brs.get_rebate_for_standard_low_income(v_aurora_design_summary,
