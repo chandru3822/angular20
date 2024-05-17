@@ -1,10 +1,10 @@
 import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 
 /**Values that can be changed for new theme*/
-const firstMilestone = "Bronze"
-const secondMilestone = "Silver"
-const thirdMilestone = "Gold"
-const fourthMilestone = "Platinum"
+const firstMilestone = "Lightweight"
+const secondMilestone = "Welterweight"
+const thirdMilestone = "Middleweight"
+const fourthMilestone = "Heavyweight"
 
 //Closers
 const closerFirstMilestoneGoal = 10
