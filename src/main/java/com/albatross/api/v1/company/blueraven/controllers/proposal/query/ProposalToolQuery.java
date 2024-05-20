@@ -88,11 +88,7 @@ public class ProposalToolQuery {
                               and vw.proposal_group_uuid not in (select distinct g.proposal_group_uuid
                                                                  from brs.proposal_version_custom_field_group g
                                                                  where g.archived is not null
-                                                                   and g.proposal_version_id <=
-                                                                       (select proposal_version_id
-                                                                        from brs.primary_company_proposal_version
-                                                                        where company_id = 3
-                                                                        limit 1))
+                                                                   and g.proposal_version_id <= :versionId)
                             order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.id desc)
          select json_build_object('pk', vv.proposal_group_uuid,
                                         'archived', grp.archived is not null,
