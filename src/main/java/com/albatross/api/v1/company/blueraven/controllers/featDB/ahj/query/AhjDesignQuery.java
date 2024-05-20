@@ -53,15 +53,13 @@ public class AhjDesignQuery {
             cf.field_name,
             case
                  when dt.id = 1 then adcfva.old_value::text
-                 when dt.id = 2 then
-                   case
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(adcfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
-                   end
-                 when dt.id = 6 and cdt.has_list_values is false then adcfva.old_value
-                 when dt.id = 6 and cdt.has_list_values is true then (
-                     select lov.name from brs.list_of_value lov where lov.id = adcfva.old_value::bigint
-                 )::text
+                 when dt.id = 2 then adcfva.old_value
+                 when dt.id = 6 and cdt.has_list_values = true then
+                    case
+                        when adcfva.old_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = adcfva.old_value::bigint)::text
+                        else adcfva.old_value
+                    end
+                 when dt.id = 6 then adcfva.old_value
                  when dt.id = 5 then adcfva.old_value
                  when dt.id = 4 then adcfva.old_value::text
                  when dt.id = 7 then (
@@ -71,15 +69,13 @@ public class AhjDesignQuery {
             end as previous_value,
             case
                 when dt.id = 1 then adcfva.new_value::text
-                when dt.id = 2 then
-                   case
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(adcfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
-                   end
-                when dt.id = 6 and cdt.has_list_values is false then adcfva.new_value
-                when dt.id = 6 and cdt.has_list_values is true then (
-                    select lov.name from brs.list_of_value lov where lov.id = adcfva.new_value::bigint
-                )::text
+                when dt.id = 2 then adcfva.new_value
+                when dt.id = 6 and cdt.has_list_values = true then
+                    case
+                        when adcfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = adcfva.new_value::bigint)::text
+                        else adcfva.new_value
+                    end
+                when dt.id = 6 then adcfva.new_value
                 when dt.id = 5 then adcfva.new_value
                 when dt.id = 4 then adcfva.new_value::text
                 when dt.id = 7 then (
@@ -88,7 +84,8 @@ public class AhjDesignQuery {
                 when dt.id = 13 then adcfva.new_value::text
                 end as updated_value,
             adcfva.date_modified,
-            concat(u.first_name, ' ', u.last_name) as modified_by
+            concat(u.first_name, ' ', u.last_name) as modified_by,
+            dt.id as dataType
         from brs.feat_db_ahj_design_custom_field_value_audit adcfva
                  join brs.feat_db_ahj_design_custom_field_value adcfv on adcfv.id = adcfva.ahj_design_custom_field_value_id
                  join brs.feat_db_ahj_design ahjd on adcfv.ahj_design_id = ahjd.id

@@ -5,7 +5,8 @@ import java.util.Date;
 
 @Data
 public class DatabaseHistory {
-    private String field_name, previous_value, updated_value, modified_by;
-    private Date date_modified;
+    private String fieldName, previousValue, updatedValue, modifiedBy;
+    private Date dateModified;
+    private Integer dataType;
 }
 

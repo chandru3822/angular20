@@ -14,7 +14,8 @@
       :modified-by="item.modifiedBy"
       :date-modified="item.dateModified"
       :expand-all="searchValue.length > 0"
-      :query="searchValue.toLowerCase()"/>
+      :query="searchValue.toLowerCase()"
+      :data-type="item.dataType"/>
     <a-btn
       :disabled="btnIsDisabled"
       class="mb-2 ml-2"
@@ -27,7 +28,6 @@
 
 <script setup>
 import {ref, computed, defineProps, onMounted, getCurrentInstance, toRefs, watch} from 'vue'
-import moment from "moment";
 import DbChangeLogItem from "./DbChangeLogItem.vue"
 import cloneDeep from "lodash.clonedeep"
 
@@ -35,7 +35,6 @@ const props = defineProps({
   historyList: Array,
   showChangeLog: Boolean,
 })
-
 const { historyList, showChangeLog } = toRefs(props)
 const visibleCards = ref(5)
 const btnIsDisabled = computed(() => {
@@ -46,7 +45,6 @@ const btnIsDisabled = computed(() => {
 })
 
 watch(showChangeLog, () => {
-  console.log(showChangeLog.value)
   if (showChangeLog.value === false) {
     visibleCards.value = 5
   }
@@ -57,11 +55,12 @@ watch(historyList, () => {
     items.value = []
     historyList.value.forEach((p) => {
       items.value.push({
-        'title': p.field_name,
-        'updatedValue': p.updated_value,
-        'previousValue': p.previous_value,
-        'modifiedBy': p.modified_by,
-        'dateModified': `${moment(Date.parse(p.date_modified)).format('MM/DD/yyyy')} at ${moment(Date.parse(p.date_modified)).format('hh:mm a')}`
+        'title': p.fieldName,
+        'updatedValue': p.updatedValue,
+        'previousValue': p.previousValue,
+        'modifiedBy': p.modifiedBy,
+        'dateModified': p.dateModified,
+        'dataType': p.dataType
       })
     })
   }
@@ -87,11 +86,12 @@ const vueInstance = getCurrentInstance().proxy
 onMounted(() => {
   historyList.value.forEach((p) => {
     items.value.push({
-      'title': p.field_name,
-      'updatedValue': p.updated_value,
-      'previousValue': p.previous_value,
-      'modifiedBy': p.modified_by,
-      'dateModified': `${moment(Date.parse(p.date_modified)).format('MM/DD/yyyy')} at ${moment(Date.parse(p.date_modified)).format('hh:mm a')}`
+      'title': p.fieldName,
+      'updatedValue': p.updatedValue,
+      'previousValue': p.previousValue,
+      'modifiedBy': p.modifiedBy,
+      'dateModified': p.dateModified,
+      'dataType': p.dataType
     })
   })
   historyBackup.value = cloneDeep(historyList.value)

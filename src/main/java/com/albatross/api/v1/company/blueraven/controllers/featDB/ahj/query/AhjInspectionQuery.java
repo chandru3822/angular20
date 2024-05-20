@@ -218,15 +218,13 @@ public class AhjInspectionQuery {
           cf.field_name,
           case
               when dt.id = 1 then aicfva.old_value::text
-                when dt.id = 2 then
+              when dt.id = 2 then aicfva.old_value
+              when dt.id = 6 and cdt.has_list_values = true then
                   case
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(aicfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(aicfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(aicfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(aicfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                      when aicfva.old_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = aicfva.old_value::bigint)::text
+                      else aicfva.old_value
                   end
-              when dt.id = 6 and cdt.has_list_values is false then aicfva.old_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = aicfva.old_value::bigint
-              )::text
+              when dt.id = 6 then aicfva.old_value
               when dt.id = 5 then aicfva.old_value
               when dt.id = 4 then aicfva.old_value::text
               when dt.id = 7 then (
@@ -236,15 +234,13 @@ public class AhjInspectionQuery {
               end as previous_value,
           case
               when dt.id = 1 then aicfva.new_value::text
-                when dt.id = 2 then
+              when dt.id = 2 then aicfva.new_value
+              when dt.id = 6 and cdt.has_list_values = true then
                   case
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(aicfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(aicfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(aicfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(aicfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                      when aicfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = aicfva.new_value::bigint)::text
+                      else aicfva.new_value
                   end
-              when dt.id = 6 and cdt.has_list_values is false then aicfva.new_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = aicfva.new_value::bigint
-              )::text
+              when dt.id = 6 then aicfva.new_value
               when dt.id = 5 then aicfva.new_value
               when dt.id = 4 then aicfva.new_value::text
               when dt.id = 7 then (

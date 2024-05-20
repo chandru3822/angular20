@@ -109,15 +109,13 @@ public class SupplierQuery {
           cf.field_name,
           case
               when dt.id = 1 then scfva.old_value::text
-              when dt.id = 2 then
+              when dt.id = 2 then scfva.old_value
+              when dt.id = 6 and cdt.has_list_values = true then
                 case
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(scfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(scfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(scfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(scfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                    when scfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = scfva.old_value::bigint)::text
+                    else scfva.new_value
                 end
-              when dt.id = 6 and cdt.has_list_values is false then scfva.old_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = scfva.old_value::bigint
-              )::text
+              when dt.id = 6 then scfva.old_value
               when dt.id = 5 then scfva.old_value
               when dt.id = 4 then scfva.old_value::text
               when dt.id = 7 then (
@@ -127,16 +125,13 @@ public class SupplierQuery {
               end as previous_value,
           case
               when dt.id = 1 then scfva.new_value::text
-              when dt.id = 2 then
+              when dt.id = 2 then scfva.new_value
+              when dt.id = 6 and cdt.has_list_values = true then
                 case
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(scfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(scfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(scfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(scfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                    when scfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = scfva.new_value::bigint)::text
+                    else scfva.new_value
                 end
-              when dt.id = 6 and cdt.has_list_values is false then scfva.old_value
-              when dt.id = 6 and cdt.has_list_values is false then scfva.new_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = scfva.new_value::bigint
-              )::text
+              when dt.id = 6 then scfva.new_value
               when dt.id = 5 then scfva.new_value
               when dt.id = 4 then scfva.new_value::text
               when dt.id = 7 then (
@@ -145,7 +140,8 @@ public class SupplierQuery {
               when dt.id = 13 then scfva.new_value::text
               end as updated_value,
           scfva.date_modified,
-          concat(u.first_name, ' ', u.last_name) as modified_by
+          concat(u.first_name, ' ', u.last_name) as modified_by,
+          dt.id as dataType
       from brs.feat_db_supplier_custom_field_value_audit scfva
                join brs.feat_db_supplier_custom_field_value scfv on scfv.id = scfva.feat_db_supplier_custom_field_value_id
                join brs.feat_db_supplier supplier on scfv.feat_db_supplier_id = supplier.id

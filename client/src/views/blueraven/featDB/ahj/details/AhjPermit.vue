@@ -127,6 +127,7 @@
             <a-btn
                 v-if="ahjPermit.updateAllInArea?.length > 0"
                 class="mr-0 save-btn"
+                variant="text"
                 color="primary"
                 @click="saveConfirmDialog = true"
                 text="Save"
@@ -136,6 +137,7 @@
                 class="mr-0 save-btn"
                 color="primary"
                 @click="updateAhjPermit"
+                text="Save"
             ></a-btn>
           </v-card-actions>
         </v-card>

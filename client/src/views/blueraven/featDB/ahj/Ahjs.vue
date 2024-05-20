@@ -165,6 +165,7 @@ import cloneDeep from 'lodash.clonedeep'
 import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest,  } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getActiveStates} from '@/services/stateService'
+import { onBeforeRouteLeave } from 'vue-router/composables'
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {FEAT_DB_TABS, FILTER_DEFAULTS} from "@/views/blueraven/featDB/FeatDbConstants";

@@ -145,15 +145,13 @@ public class IncentiveQuery {
           cf.field_name,
           case
               when dt.id = 1 then icfva.old_value::text
-              when dt.id = 2 then
+              when dt.id = 2 then icfva.old_value
+              when dt.id = 6 and cdt.has_list_values = true then
                 case
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(icfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(icfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(icfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(icfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                    when icfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = icfva.old_value::bigint)::text
+                    else icfva.new_value
                 end
-              when dt.id = 6 and cdt.has_list_values is false then icfva.old_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = icfva.old_value::bigint
-              )::text
+              when dt.id = 6 then icfva.old_value
               when dt.id = 5 then icfva.old_value
               when dt.id = 4 then icfva.old_value::text
               when dt.id = 7 then (
@@ -163,15 +161,13 @@ public class IncentiveQuery {
               end as previous_value,
           case
               when dt.id = 1 then icfva.new_value::text
-              when dt.id = 2 then
+              when dt.id = 2 then icfva.new_value
+              when dt.id = 6 and cdt.has_list_values = true then
                 case
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(icfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(icfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(icfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(icfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                    when icfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = icfva.new_value::bigint)::text
+                    else icfva.new_value
                 end
-              when dt.id = 6 and cdt.has_list_values is false then icfva.new_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = icfva.new_value::bigint
-              )::text
+              when dt.id = 6 then icfva.new_value
               when dt.id = 5 then icfva.new_value
               when dt.id = 4 then icfva.new_value::text
               when dt.id = 7 then (
@@ -180,7 +176,8 @@ public class IncentiveQuery {
               when dt.id = 13 then icfva.new_value::text
               end as updated_value,
           icfva.date_modified,
-          concat(u.first_name, ' ', u.last_name) as modified_by
+          concat(u.first_name, ' ', u.last_name) as modified_by,
+          dt.id as dataType
       from brs.feat_db_incentive_custom_field_value_audit icfva
                join brs.feat_db_incentive_custom_field_value icfv on icfv.id = icfva.feat_db_incentive_custom_field_value_id
                join brs.feat_db_incentive incentive on icfv.feat_db_incentive_id = incentive.id

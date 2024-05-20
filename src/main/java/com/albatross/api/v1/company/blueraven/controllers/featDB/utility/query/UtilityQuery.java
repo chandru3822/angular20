@@ -105,15 +105,13 @@ public class UtilityQuery {
           cf.field_name,
           case
               when dt.id = 1 then ucfva.old_value::text
-              when dt.id = 2 then
+              when dt.id = 2 then ucfva.old_value
+              when dt.id = 6 and cdt.has_list_values = true then
                 case
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(ucfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(ucfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(ucfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(ucfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                    when ucfva.old_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = ucfva.old_value::bigint)::text
+                    else ucfva.old_value
                 end
-              when dt.id = 6 and cdt.has_list_values is false then ucfva.old_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = ucfva.old_value::bigint
-              )::text
+              when dt.id = 6 then ucfva.old_value
               when dt.id = 5 then ucfva.old_value
               when dt.id = 4 then ucfva.old_value::text
               when dt.id = 7 then (
@@ -123,15 +121,13 @@ public class UtilityQuery {
               end as previous_value,
           case
               when dt.id = 1 then ucfva.new_value::text
-              when dt.id = 2 then
+              when dt.id = 2 then ucfva.new_value
+              when dt.id = 6 and cdt.has_list_values = true then
                 case
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(ucfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(ucfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                    when EXTRACT(HOUR FROM TO_TIMESTAMP(ucfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(ucfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
+                    when ucfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = ucfva.new_value::bigint)::text
+                    else ucfva.new_value
                 end
-              when dt.id = 6 and cdt.has_list_values is false then ucfva.new_value
-              when dt.id = 6 and cdt.has_list_values is true then (
-                  select lov.name from brs.list_of_value lov where lov.id = ucfva.new_value::bigint
-              )::text
+              when dt.id = 6 then ucfva.new_value
               when dt.id = 5 then ucfva.new_value
               when dt.id = 4 then ucfva.new_value::text
               when dt.id = 7 then (
@@ -140,7 +136,8 @@ public class UtilityQuery {
               when dt.id = 13 then ucfva.new_value::text
               end as updated_value,
           ucfva.date_modified,
-          concat(u.first_name, ' ', u.last_name) as modified_by
+          concat(u.first_name, ' ', u.last_name) as modified_by,
+          dt.id as dataType
         from brs.feat_db_utility_custom_field_value_audit ucfva
                  join brs.feat_db_utility_custom_field_value adcfv on adcfv.id = ucfva.utility_custom_field_value_id
                  join brs.feat_db_utility util on adcfv.utility_id = util.id

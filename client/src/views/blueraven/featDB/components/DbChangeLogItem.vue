@@ -13,16 +13,32 @@
 <!--      UPDATED VALUES-->
       <span class="default-text-color" v-if="query.length > 0" :inner-html.prop="`Updated: ${updatedValueData}` | searchHighlight(query)"/>
       <span v-else class="default-text-color">
+        <template v-if="dataType === 1 && updatedValue   !== null">
+          Previous: {{ updatedValueData | formatDate('date', 'MMM DD, y') }}
+        </template>
+        <template v-else-if="dataType === 2 && updatedValue !== null">
+          Updated: {{ updatedValueData | formatDate('timestamp', 'MMMM DD, YYYY, hh:mm A') }}
+        </template>
+        <template v-else>
           Updated: {{ updatedValueData }}
+        </template>
         <a class="seeValue" v-if="!seeMoreUpdatedValues && showUpdatedSeeButton && expandAll === false" @click="seeMoreUpdatedValues = !seeMoreUpdatedValues">...see more</a>
         <a class="seeValue"  v-if="seeMoreUpdatedValues && showUpdatedSeeButton && expandAll === false" @click="seeMoreUpdatedValues = !seeMoreUpdatedValues">...see less</a>
       </span>
       <br>
 
 <!--      PREVIOUS VALUES-->
-      <span class="previousValue" v-if="query.length > 0" :inner-html.prop="`Previous: ${previousValue}` | searchHighlight(query)"/>
+      <span class="previousValue" v-if="query.length > 0" :inner-html.prop="`Previous: ${previousValueData}` | searchHighlight(query)"/>
       <span v-else class="previousValue">
+        <template v-if="dataType === 1 && previousValue !== null">
+          Previous: {{ previousValueData | formatDate('date', 'MMM DD, y') }}
+        </template>
+        <template v-else-if="dataType === 2 && previousValue !== null">
+          Previous: {{ previousValueData | formatDate('timestamp', 'MMMM DD, YYYY, hh:mm A') }}
+        </template>
+        <template v-else>
           Previous: {{ previousValueData }}
+        </template>
         <a class="seeValue" v-if="!seeMorePreviousValues && showPreviousSeeButton && expandAll === false" @click="seeMorePreviousValues = !seeMorePreviousValues">...see more</a>
         <a class="seeValue"  v-if="seeMorePreviousValues && showPreviousSeeButton && expandAll === false" @click="seeMorePreviousValues = !seeMorePreviousValues">...see less</a>
       </span>
@@ -31,14 +47,14 @@
 <!--      USER AND DATE-->
       <span class="user-and-date" v-if="query.length > 0" :inner-html.prop="`${modifiedBy} | ${dateModified}` | searchHighlight(query)"/>
       <span v-if="query.length === 0" class="user-and-date">
-        {{ modifiedBy }} | {{ dateModified }}
+          {{ modifiedBy }} | {{ dateModified | formatDate('timestamp', 'MM/DD/YYYY') }} at {{ dateModified | formatDate('timestamp', 'hh:mm a') }}
       </span>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup>
-import { ref, toRefs, defineProps, computed } from 'vue'
+import { ref, toRefs, defineProps, computed, onMounted } from 'vue'
 
 const props = defineProps({
   title: {
@@ -56,6 +72,9 @@ const props = defineProps({
   dateModified: {
     required: true,
   },
+  dataType: {
+    required: true,
+  },
   expandAll: {
     required: false,
     default: false,
@@ -66,7 +85,11 @@ const props = defineProps({
   }
 })
 
-const { title, updatedValue, previousValue, modifiedBy, dateModified, expandAll, query } = toRefs(props)
+
+
+const { title, updatedValue, previousValue, modifiedBy, dateModified, expandAll, query, dataType } = toRefs(props)
+
+
 const seeMoreUpdatedValues = ref(false)
 const seeMorePreviousValues = ref(false)
 

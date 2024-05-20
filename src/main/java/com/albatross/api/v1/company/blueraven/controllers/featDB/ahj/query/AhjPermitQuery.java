@@ -89,42 +89,39 @@ public class AhjPermitQuery {
             cf.field_name,
             case
                 when dt.id = 1 then apcfva.old_value::text
-                when dt.id = 2 then
-                  case
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(apcfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(apcfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(apcfva.old_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(apcfva.old_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
-                  end
-                when dt.id = 6 and cdt.has_list_values is false then apcfva.old_value
-                when dt.id = 6 and cdt.has_list_values is true then (
-                    select lov.name from brs.list_of_value lov where lov.id = apcfva.old_value::bigint
-                )::text
+                when dt.id = 2 then apcfva.old_value
+                when dt.id = 6 and cdt.has_list_values = true then
+                    case
+                        when apcfva.old_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = apcfva.old_value::bigint)::text
+                        else apcfva.old_value
+                    end
+                when dt.id = 6 then apcfva.old_value
                 when dt.id = 5 then apcfva.old_value
                 when dt.id = 4 then apcfva.old_value::text
                 when dt.id = 7 then (
-                  with ids as (select unnest(string_to_array(substring(apcfva.old_value from '[0-9, ]+'), ','))::int AS int_id)
-                  select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+                    with ids as (select unnest(string_to_array(substring(apcfva.old_value from '[0-9, ]+'), ','))::int AS int_id)
+                    select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
                 when dt.id = 13 then apcfva.old_value::text
                 end as previous_value,
             case
                 when dt.id = 1 then apcfva.new_value::text
-                when dt.id = 2 then
-                  case
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(apcfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) < 12 THEN to_char(TO_TIMESTAMP(apcfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS AM')
-                      when EXTRACT(HOUR FROM TO_TIMESTAMP(apcfva.new_value, 'YYYY-MM-DD HH24:MI:SS')) > 12 THEN to_char(TO_TIMESTAMP(apcfva.new_value, 'YYYY-MM-DD HH24:MI:SS'), 'MM/DD/YYYY HH12:MI:SS PM')
-                  end
-                when dt.id = 6 and cdt.has_list_values is false then apcfva.new_value
-                when dt.id = 6 and cdt.has_list_values is true then (
-                    select lov.name from brs.list_of_value lov where lov.id = apcfva.new_value::bigint
-                )::text
+                when dt.id = 2 then apcfva.new_value
+                when dt.id = 6 and cdt.has_list_values = true then
+                    case
+                        when apcfva.new_value ~ '^[0-9]+$' then (select lov.name from brs.list_of_value lov where lov.id = apcfva.new_value::bigint)::text
+                        else apcfva.new_value
+                    end
+                when dt.id = 6 then apcfva.new_value
                 when dt.id = 5 then apcfva.new_value
                 when dt.id = 4 then apcfva.new_value::text
                 when dt.id = 7 then (
-                  with ids as (select unnest(string_to_array(substring(apcfva.new_value from '[0-9, ]+'), ','))::int AS int_id)
-                  select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
-              when dt.id = 13 then apcfva.new_value::text
+                    with ids as (select unnest(string_to_array(substring(apcfva.new_value from '[0-9, ]+'), ','))::int AS int_id)
+                    select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+                when dt.id = 13 then apcfva.new_value::text
                 end as updated_value,
             apcfva.date_modified,
-            concat(u.first_name, ' ', u.last_name) as modified_by
+            concat(u.first_name, ' ', u.last_name) as modified_by,
+            dt.id as dataType
         from brs.feat_db_ahj_permit_custom_field_value_audit apcfva
                  join brs.feat_db_ahj_permit_custom_field_value adcfv on adcfv.id = apcfva.ahj_permit_custom_field_value_id
                  join brs.feat_db_ahj_permit ahjd on adcfv.ahj_permit_id = ahjd.id
@@ -135,7 +132,7 @@ public class AhjPermitQuery {
                  join flow.data_type dt on cdt.data_type_id = dt.id
                  join flow."user" u on apcfva.modified_by_id= u.id
         where ahj_id = :ahjId
-        order by apcfva.date_modified desc;
+        order by apcfva.date_modified desc
     """;
 
 
