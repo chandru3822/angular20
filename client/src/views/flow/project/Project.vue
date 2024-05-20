@@ -806,6 +806,7 @@ watch(projectAddressChanged, () => {
   }
 })
 const updateContactDialogText = computed(() => {
+
   if(projectAddressChanged.value && projectNameChanged.value){
     return `The project name and address have changed. Would you also like to update the contact <b>${projectContact.value.fullName}</b>?<br/>
 Please select the information you would like to update.`
@@ -855,7 +856,7 @@ const updateContactAddress = () =>{
   projectContact.value.street1 = project.value.street1
   projectContact.value.street2 = project.value.street2
   projectContact.value.city = project.value.city
-  projectContact.value.stateId = project.value.stateId
+  projectContact.value.companyStateId = project.value.companyStateId
   projectContact.value.postalCode = project.value.postalCode
 }
 
