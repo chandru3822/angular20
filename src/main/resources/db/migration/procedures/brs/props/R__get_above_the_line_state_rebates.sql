@@ -1,9 +1,14 @@
 drop function if exists brs.get_above_the_line_state_rebates(p_version_id bigint, p_state_id bigint,
                                                              p_system_size numeric,
                                                              p_total_system_cost_before_rebates numeric);
+drop function if exists brs.get_above_the_line_state_rebates(p_version_id bigint, p_state_id bigint,
+                                                             p_system_size numeric,
+                                                             p_total_system_cost_before_rebates numeric,
+                                                             p_rebate_id bigint[]);
 CREATE OR REPLACE FUNCTION brs.get_above_the_line_state_rebates(p_version_id bigint, p_state_id bigint,
                                                                 p_system_size numeric,
-                                                                p_total_system_cost_before_rebates numeric)
+                                                                p_total_system_cost_before_rebates numeric,
+                                                                p_rebate_id bigint[])
   returns table
           (
             above_the_line_state_rebate_amount numeric,
@@ -30,6 +35,23 @@ BEGIN
     where state_id = p_state_id
       and rebate_type_id = 454
       and rebate_applied_at = 1762
+      and (selectable_by_user is null or selectable_by_user is false)
+    union
+    select rebate_amount,
+           unit_type_id,
+           rebate_cap_amount,
+           rebate_cap_percent_of_total,
+           max_amount_captured_first_year,
+           first_year_cap_on_rebate,
+           rebate
+    from brs.get_proposal_rebates(p_version_id)
+    where state_id = p_state_id
+      and rebate_type_id = 454
+      and rebate_applied_at = 1762
+      and p_rebate_id is not null
+      and selectable_by_user is true
+      and rebate_id = any (p_rebate_id)
+
     loop
       v_state_rebate_amount = 0::numeric;
       select brs.get_amount_by_unit_type(p_system_size, 'PROPOSAL_REBATE',

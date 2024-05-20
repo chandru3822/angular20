@@ -989,7 +989,10 @@ BEGIN
                                    else 0 end
       end;
     v_adjusted_price_per_watt =
-          coalesce(v_red_line_funding_amount, 0) + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
+          case when  v_commission_strategy_id = 24102 and v_dealer = 2291 and v_version_id > 137 then
+                 coalesce(v_dealer_redline_price, 0)
+          else
+            coalesce(v_red_line_funding_amount, 0) end + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
     --raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
     --raise notice 'v_redline_markup = %',v_redline_markup;
     --raise notice 'v_lead_source_discount = %',v_lead_source_discount;
@@ -1341,8 +1344,8 @@ BEGIN
   --       v_csu_rebate = v_csu_rebate * v_system_size * 1000;
   -- end if;
 
-  ----raise notice 'v_csu_rebate = %',v_csu_rebate;
-  ----raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
+  ------raise notice 'v_csu_rebate = %',v_csu_rebate;
+  ------raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
 
 
   -- select *
@@ -1430,7 +1433,8 @@ BEGIN
   into v_above_the_line_state_rebate_amount,v_above_the_line_state_rebates
   from brs.get_above_the_line_state_rebates(v_version_id, v_state_id,
                                             v_system_size,
-                                            v_total_system_cost_before_rebates);
+                                            v_total_system_cost_before_rebates,
+                                            v_qualifies_for_incentive);
 
   --raise notice 'v_above_the_line_state_rebate_amount = %',v_above_the_line_state_rebate_amount;
   --raise notice 'v_above_the_line_state_rebates = %',v_above_the_line_state_rebates;
@@ -2075,7 +2079,7 @@ BEGIN
                                              coalesce(v_ancillary_percent_cap_down_payment, 0)) /
                                             (1 - v_dealer_fee)) / v_total_loan_amount, 2) >
                                      coalesce(v_non_solar_cap, 0) then
-    raise exception 'Ancillary Costs exceed the maximum allowable value.';
+    --raise exception 'Ancillary Costs exceed the maximum allowable value.';
   end if;
 
   --raise notice 'new value %',round(v_total_loan_amount/(v_system_size * 1000),2);
@@ -2088,11 +2092,11 @@ BEGIN
                     coalesce(v_ancillary_percent_cap_down_payment, 0)) /
                    (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
             coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
-    raise exception 'Solar Costs exceed the maximum allowable value.';
+    --raise exception 'Solar Costs exceed the maximum allowable value.';
   elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id in (24153,19203) and
     round(v_total_loan_amount/(v_system_size * 1000),2) >
       coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
-    raise exception 'Solar Costs exceed the maximum allowable value.';
+    --raise exception 'Solar Costs exceed the maximum allowable value.';
   elsif v_maximum_dollar_per_watt_for_solar is not null and
     round((v_total_loan_amount -
            coalesce(v_storage_cost_with_fees, 0) -
@@ -2100,7 +2104,7 @@ BEGIN
             coalesce(v_ancillary_percent_cap_down_payment, 0)) /
            (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
       coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
-    raise exception 'Solar Costs exceed the maximum allowable value.';
+    --raise exception 'Solar Costs exceed the maximum allowable value.';
   end if;
 
   if p_insert_prop_log_history is true then
