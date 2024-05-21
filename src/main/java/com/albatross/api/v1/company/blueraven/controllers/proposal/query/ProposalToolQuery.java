@@ -89,7 +89,7 @@ public class ProposalToolQuery {
                                                                  from brs.proposal_version_custom_field_group g
                                                                  where g.archived is not null
                                                                    and g.proposal_version_id <= :versionId)
-                            order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.id desc)
+                            order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.date_modified desc)
          select json_build_object('pk', vv.proposal_group_uuid,
                                         'archived', grp.archived is not null,
                                         'versionId', max(case
@@ -162,7 +162,7 @@ public class ProposalToolQuery {
         from brs.proposal_version_custom_field_value_vw
         where proposal_version_id <= :versionId
           and object_code = :objectCode
-        order by proposal_group_uuid, custom_field_group_assignment_id, id desc)
+        order by proposal_group_uuid, custom_field_group_assignment_id, date_modified desc)
     select json_build_object('pk',  proposal_group_uuid, 'versionId', max(proposal_version_id))::jsonb || json_object_agg(field_id, value)::jsonb as row
     from version_values
     where proposal_group_uuid = :groupUUID
@@ -351,7 +351,7 @@ where a.int_value not in (select t.int_value from t where t.is_match is false)
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null
                                                                 and proposal_version_id <= :versionId)
-                            order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
+                            order by proposal_group_uuid, custom_field_group_assignment_id, date_modified desc),
          grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
                                                     'fields',
                                                     array_to_json(array_agg(jsonb_strip_nulls(
@@ -388,7 +388,7 @@ where a.int_value not in (select t.int_value from t where t.is_match is false)
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null
                                                                 and proposal_version_id <= :versionId)
-                            order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
+                            order by proposal_group_uuid, custom_field_group_assignment_id, date_modified desc),
          grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
                                                     'fields',
                                                     array_to_json(array_agg(jsonb_strip_nulls(
@@ -443,7 +443,7 @@ where a.int_value not in (select t.int_value from t where t.is_match is false)
                                                            and company_id = 3
                                                          order by date_modified desc
                                                          limit 1))
-             order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.id desc),
+             order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.date_modified desc),
      x as (select vv.proposal_group_uuid,
                   grp.archived is not null                               as archived,
                   vv.object_type,

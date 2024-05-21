@@ -73,7 +73,7 @@ BEGIN
                                                                                           from brs.primary_company_proposal_version
                                                                                           where company_id = 3
                                                                                           limit 1))
-                          order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
+                          order by proposal_group_uuid, custom_field_group_assignment_id, date_modified desc),
        grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
                                                   'fields',
                                                   array_to_json(array_agg(jsonb_strip_nulls(

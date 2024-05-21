@@ -54,7 +54,7 @@ BEGIN
                                                                      from brs.proposal_version_custom_field_group g
                                                                      where proposal_version_id <= V_PROPOSAL_VERSION_ID
                                                                        and archived is not null)
-                                order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.id desc),
+                                order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.date_modified desc),
              grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
                                                         'fields',
                                                         array_to_json(array_agg(jsonb_strip_nulls(

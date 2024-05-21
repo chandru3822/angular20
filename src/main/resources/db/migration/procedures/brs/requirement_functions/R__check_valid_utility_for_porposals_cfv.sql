@@ -31,7 +31,7 @@ BEGIN
                                                         where company_id = 3
                                                         limit 1)
                             and object_code = 'PROPOSAL_PRICING'
-                          order by proposal_group_uuid, custom_field_group_assignment_id, id desc)
+                          order by proposal_group_uuid, custom_field_group_assignment_id, date_modified desc)
   select distinct (value ->> 'intValue')::bigint as utility_id
   into v_found_utility_id
   from version_values
