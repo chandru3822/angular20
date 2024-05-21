@@ -259,6 +259,7 @@ public class Five9Service {
     populateCronContactLists(Five9Query.getContactIdsDigitalSalDevRetargets, "digital_retarget");
     populateCronContactLists(Five9Query.getContactIdsVirtualSalDevRetargets, "virtual_retarget");
     populateCronContactLists(Five9Query.getContactIdsInsideSalesPitchedNotBooked, "digitalleads_pnb");
+    populateCronContactLists(Five9Query.getContactIdsBreezePostFDA, "digital_breeze_postFDAx");
   }
 
   private void populateCronContactLists(String contactListQuery, String five9ContactListName) {
@@ -274,9 +275,10 @@ public class Five9Service {
 
       try {
         final Long leadLevel = values.stream()
-          .filter(cfv -> cfv.getFieldName() != null)
+          .filter(cfv -> cfv != null && cfv.getFieldName() != null)
           .filter(cfv -> cfv.getFieldName().equals("Lead Level"))
           .map(CustomFieldValue::getIntValue)
+          .filter(Objects::nonNull)
           .findFirst()
           .orElse(null);
 
