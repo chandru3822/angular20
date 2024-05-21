@@ -62,6 +62,7 @@ declare
     v_user_ids bigint[];
     v_count bigint;
     v_position_ids bigint[];
+    v_cfga_id bigint;
 BEGIN
 
 --   if (TG_OP = 'INSERT') and new.end_date is null then
@@ -92,6 +93,24 @@ BEGIN
         where up.id != old.id;
 
     ELSIF (TG_OP = 'UPDATE' or TG_OP = 'INSERT') then
+      select (select string_to_array(value, ',')
+              from flow.company_configuration_value
+              where code = 'CLOSER_POSITION_IDS')::bigint[]
+      into v_position_ids;
+
+      if new.position_id = any(v_position_ids) then
+        select ucfv.id
+        into v_cfga_id
+        from flow.user_custom_field_value ucfv
+        where ucfv.user_id = new.user_id and
+              ucfv.custom_field_group_assignment_id = 26897 and
+              (ucfv.int_array_value is not null or ucfv.int_array_value != '{}');
+
+        if v_cfga_id is null then
+          perform flow.set_user_cfv(new.user_id::integer, 3::integer, new.created_by_id::integer,26897::integer, '{24102}'::text );
+        end if;
+      end if;
+
         v_user_id = new.user_id;
         v_count = 1;
     end if;

@@ -1,6 +1,6 @@
 drop function if exists brs.get_commissions_earned(p_project_ids bigint, p_code text);
-drop function if exists brs.get_commissions_earned(p_project_ids bigint, p_code text,p_from_booking boolean);
-CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_id bigint, p_code text,p_from_booking boolean default false)
+drop function if exists brs.get_commissions_earned(p_project_ids bigint, p_code text, p_from_booking boolean);
+CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_id bigint, p_code text, p_from_booking boolean default false)
   RETURNS NUMERIC AS
 $BODY$
 DECLARE
@@ -13,17 +13,22 @@ DECLARE
   v_cancelled_date            timestamp;
   v_desired_commission_amount numeric;
   v_allocation_m1             numeric;
+  v_allocation_m2             numeric;
   v_total_commission_amount   numeric;
   v_milestone_2               bigint;
   v_milestone_1               bigint;
   v_commission_strategy_id    bigint;
+  v_fee_type_id               bigint;
 BEGIN
 
-  select c.allocation
-  into v_allocation_m1
+  select c.allocation, fee_type_id, a.allocation
+  into v_allocation_m1,v_fee_type_id,v_allocation_m2
   from brs.financial_details fd
+         inner join brs.commission_plan p on p.id = fd.commission_plan_id
          inner join brs.commission_plan_allocation c
-                    on c.commission_plan_id = fd.commission_plan_id and c.milestone_id = 1
+                    on c.commission_plan_id = p.id and c.milestone_id = 1
+         left join brs.commission_plan_allocation a on a.commission_plan_id = p.id and
+                                                       a.milestone_id = 2
   where fd.project_id = p_project_id;
 
 
@@ -35,7 +40,7 @@ BEGIN
          primary_financier,
          desired_commission_amount,
          commission_strategy_id
-  from brs.get_commission_data(p_project_id,p_from_booking)
+  from brs.get_commission_data(p_project_id, p_from_booking)
   into v_cancelled_date,
     v_interest_rate,
     v_loan_term,
@@ -65,23 +70,33 @@ BEGIN
     and pps.process_step_id = 175
     and ppscfv.date_value is not null;
 
+  raise notice 'v_commission_strategy_id %',v_commission_strategy_id;
+
   if v_commission_strategy_id = 24102 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
-    elsif v_total_commission_amount <= v_allocation_m1 * v_system_size then
-      v_total = v_total_commission_amount;
-    else
-      v_total = v_allocation_m1 * v_system_size;
+    elsif v_fee_type_id = 1 then
+      if v_total_commission_amount <= v_allocation_m1 * v_system_size then
+        v_total = v_total_commission_amount;
+      else
+        v_total = v_allocation_m1 * v_system_size;
+      end if;
+    elsif v_fee_type_id = 3 then
+      v_total = v_total_commission_amount * v_allocation_m1;
     end if;
   elsif v_commission_strategy_id = 24102 and p_code = 'M2' and v_milestone_2 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
-    elsif v_total_commission_amount <= v_allocation_m1 * v_system_size then
-      v_total = 0.00::numeric;
-    else
-      v_total = v_total_commission_amount - v_allocation_m1 * v_system_size;
+    elsif v_fee_type_id = 1 then
+      if v_total_commission_amount <= v_allocation_m1 * v_system_size then
+        v_total = 0.00::numeric;
+      else
+        v_total = v_total_commission_amount - v_allocation_m1 * v_system_size;
+      end if;
+    elsif v_fee_type_id = 3 then
+      v_total = v_total_commission_amount * v_allocation_m2;
     end if;
 
   elsif p_code = 'M1' then
@@ -98,17 +113,18 @@ BEGIN
                                                                                                     case
                                                                                                       when cpsa.fee_type_id = 1
                                                                                                         then coalesce(
-                                                                                                          case
-                                                                                                            when v_primary_financier =
-                                                                                                                 722 and
-                                                                                                                 v_loan_term =
-                                                                                                                 427 and
-                                                                                                                 v_interest_rate =
-                                                                                                                 2.99
-                                                                                                              then 0
-                                                                                                            else v_system_size::numeric end *
-                                                                                                          cpsa.fee_amount,
-                                                                                                          0)
+                                                                                                        case
+                                                                                                          when
+                                                                                                            v_primary_financier =
+                                                                                                            722 and
+                                                                                                            v_loan_term =
+                                                                                                            427 and
+                                                                                                            v_interest_rate =
+                                                                                                            2.99
+                                                                                                            then 0
+                                                                                                          else v_system_size::numeric end *
+                                                                                                        cpsa.fee_amount,
+                                                                                                        0)
                                                                                                       else coalesce(cpsa.fee_amount, 0) end
                                                                                                   else 0 end, 2),
                                      0) end total
@@ -139,17 +155,18 @@ BEGIN
                                                                                                     case
                                                                                                       when cpsa.fee_type_id = 1
                                                                                                         then coalesce(
-                                                                                                          case
-                                                                                                            when v_primary_financier =
-                                                                                                                 722 and
-                                                                                                                 v_loan_term =
-                                                                                                                 427 and
-                                                                                                                 v_interest_rate =
-                                                                                                                 2.99
-                                                                                                              then 0
-                                                                                                            else v_system_size::numeric end *
-                                                                                                          cpsa.fee_amount,
-                                                                                                          0)
+                                                                                                        case
+                                                                                                          when
+                                                                                                            v_primary_financier =
+                                                                                                            722 and
+                                                                                                            v_loan_term =
+                                                                                                            427 and
+                                                                                                            v_interest_rate =
+                                                                                                            2.99
+                                                                                                            then 0
+                                                                                                          else v_system_size::numeric end *
+                                                                                                        cpsa.fee_amount,
+                                                                                                        0)
                                                                                                       else coalesce(cpsa.fee_amount, 0) end
                                                                                                   else 0 end, 2),
                                      0) end total
