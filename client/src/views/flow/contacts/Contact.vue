@@ -843,11 +843,15 @@ const cancelUpdateProject = () => {
 const validateForm = async() => {
     if (contactEditForm.value.validate()) {
       //these could be combined - just dont have time atm
-      saveContactAddressFields()
+      await saveContactAddressFields()
 
       // updateOwner()
 
-      //set project values if they hit save
+      //set contact values if they hit save, have to update state stuff differently cuz there are multiple values needed
+      let selectedState = states.value.find(s => s.id === tempContact.value.companyStateId)
+      tempContact.value.state = selectedState?.state || null
+      tempContact.value.stateAbbreviation = selectedState?.abbreviation || null
+      tempContact.value.fullName = `${tempContact.value.firstName} ${tempContact.value.lastName}`
       contact.value = cloneDeep(tempContact.value)
       showEditModal.value = false
     }
