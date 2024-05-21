@@ -11,6 +11,7 @@
       :color="snackbar.color"
       :class="snackbar.fontClass"
       :vertical="snackbar.mode === 'vertical'"
+      class="pt-15"
   >
     <div v-if="snackbar.displayAsHtml" v-html="snackbar.text"></div>
     <span v-else>{{ snackbar.text }}</span>
