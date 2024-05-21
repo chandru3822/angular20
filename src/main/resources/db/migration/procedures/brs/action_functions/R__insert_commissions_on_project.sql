@@ -31,6 +31,7 @@ declare
   v_fdc_month integer;
   v_fdc_day integer;
   v_residual_date date;
+  v_cp_commission_strategy_id bigint;
 
 BEGIN
 
@@ -158,29 +159,30 @@ BEGIN
       and p.main is true;
   end if;
 
-  if v_commission_strategy_id = 24102 then
+  select cp.id, cp.name, cps.status_type,cp.commission_strategy_type_id
+  into v_commission_plan_id,v_commission_plan,v_commission_status,v_cp_commission_strategy_id
+  from brs.commission_plan cp
+         inner join brs.commission_plan_user cpu on cpu.commission_plan_id = cp.id and cpu.user_id = v_user_id
+         left join brs.commission_plan_status cps on cps.id = cp.status_id
+  where case
+          when p_is_override is false and p_id is not null then
+            cp.id = p_id
+          when p_id is null then
+            coalesce(v_start_date, ((now() at time zone 'UTC') at time zone 'US/Mountain'))::date >= cpu.start_date
+              and case
+                    when cpu.end_date is not null then
+                      coalesce(v_start_date, ((now() at time zone 'UTC') at time zone 'US/Mountain'))::date <=
+                      cpu.end_date
+                    else 1 = 1 end
+              and cp.position_id = 1
+          end;
+
+  if v_commission_strategy_id = 24102 and v_cp_commission_strategy_id != 1 then
     select cp.id, cp.name, cps.status_type
     into v_commission_plan_id,v_commission_plan,v_commission_status
     from brs.commission_plan cp
            left join brs.commission_plan_status cps on cps.id = cp.status_id
     where cp.id = 63;----TODO this is hard coded!!!!  Need to find another way.
-  else
-    select cp.id, cp.name, cps.status_type
-    into v_commission_plan_id,v_commission_plan,v_commission_status
-    from brs.commission_plan cp
-           inner join brs.commission_plan_user cpu on cpu.commission_plan_id = cp.id and cpu.user_id = v_user_id
-           left join brs.commission_plan_status cps on cps.id = cp.status_id
-    where case
-            when p_is_override is false and p_id is not null then
-              cp.id = p_id
-            when p_id is null then
-              coalesce(v_start_date, ((now() at time zone 'UTC') at time zone 'US/Mountain'))::date >= cpu.start_date
-                and case
-                      when cpu.end_date is not null then
-                        coalesce(v_start_date, ((now() at time zone 'UTC') at time zone 'US/Mountain'))::date <= cpu.end_date
-                      else 1 = 1 end
-                and cp.position_id = 1
-            end;
   end if;
 
   if v_user_id is not null and v_commission_plan_id is not null and v_commission_plan_found < 1 then
