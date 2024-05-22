@@ -56,7 +56,8 @@ public class ProjectProcessStepController {
 
       int index = 0;
       for (ProjectProcessStepAction a : pps.getActions()) {
-        pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), a, pps));
+        ProjectProcessStepAction actionResult = projectProcessStepService.getActionResult(a.getId(), a, pps);
+        pps.getActions().set(index, actionResult);
         index++;
       }
       //do the same thing for banners which are technically just actions of actionTypeId = 3
@@ -68,9 +69,7 @@ public class ProjectProcessStepController {
 
       return new ResponseEntity<>(pps, HttpStatus.OK);
     } catch (Exception e) {
-      final String errMessage =
-
-          "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
+      final String errMessage = "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
@@ -128,16 +127,7 @@ public class ProjectProcessStepController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
 
-      List<Long> requirementIds =
-        action.getProcessStepLogicList().stream()
-          .filter(step -> step.getProcessStepRequirementId() != null)
-          .map(ProcessStepLogic::getProcessStepRequirementId)
-          .collect(Collectors.toList());
-      List<ProjectProcessStepRequirement> requirements =
-        projectProcessStepRequirementService.getByProjectProcessStepId(
-          pps.getProjectProcessStepId(), requirementIds);
-      ProjectProcessStepAction actionResult =
-        projectProcessStepService.canPerformAction(action, pps, requirements);
+      ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps);
       boolean canPerform = actionResult.getCanPerform();
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

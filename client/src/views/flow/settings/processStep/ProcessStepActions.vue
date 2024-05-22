@@ -197,7 +197,8 @@
                       <a-autocomplete
                           v-model="item.stupidSelectedStatuses"
                           :items="statuses"
-                          label="Process Step Statuses"
+                          label="Action can perform only in statuses of"
+                          class="mt-4 mb-6"
                           density="compact"
                           item-value="uid"
                           return-object
@@ -1218,7 +1219,7 @@ const statuses = computed(() => {
     stats.push({uid: UUID(), text: 'SELECT ALL', isSelectAll: true, isRoot: false})
 
     return stats.concat(props.processStep?.companyProcessStepStatusTypes.map(s => ({
-        id: s.id,
+        id: s.companyProcessStepStatusTypeId,
         text: `${s.processStepStatusType} (${s.rootProcessStepStatusType})`,
         categoryId: categories.value.find(c => c.text === s.rootProcessStepStatusType)?.id,
         isRoot: false,

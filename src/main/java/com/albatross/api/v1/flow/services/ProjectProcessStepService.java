@@ -485,31 +485,14 @@ public class ProjectProcessStepService {
     return sqlCache.queryBySql(ProjectProcessStepQuery.getIdsByAutoTriggerActionsAndReqs, params, new SingleColumnRowMapper<>(Long.class));
   }
 
-  public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
+  public ProjectProcessStepAction   getActionResult(Long actionId, Long ppsId) throws Exception {
     ProjectProcessStep pps = getProjectProcessStep(ppsId);
     ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
     return getActionResult(actionId, action, pps);
   }
 
   public ProjectProcessStepAction getActionResult(Long actionId, ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
-
-    List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
-      .filter(step -> step.getProcessStepRequirementId() != null)
-      .map(ProcessStepLogic::getProcessStepRequirementId)
-      .collect(Collectors.toList());
-    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-    ProjectProcessStepAction actionResult = canPerformAction(action, pps, requirements);
-
-    ProjectProcessStepAction minimalResult = new ProjectProcessStepAction();
-
-    minimalResult.setId(actionId);
-    minimalResult.setActionName(actionResult.getActionName());
-    minimalResult.setCanPerform(pps.getProcessStepStatusTypeId() == 1 && actionResult.getCanPerform());
-    minimalResult.setMultipleUses(actionResult.getMultipleUses());
-    minimalResult.setAlreadyTriggered(actionResult.getAlreadyTriggered());
-    minimalResult.setTriggerAutomatically(actionResult.getTriggerAutomatically());
-
-    return actionResult;
+      return canPerformAction(action, pps);
   }
 
   /************************************************************* ACTION LOGIC ********************************************************************************/
@@ -614,15 +597,7 @@ public class ProjectProcessStepService {
             // which might potentially enable this one to get lighter also
             ProjectProcessStep updatedPps = this.getProjectProcessStep(ppsId);
 
-            List<Long> reqIds = action.getProcessStepLogicList().stream()
-              .filter(step -> step.getProcessStepRequirementId() != null)
-              .map(ProcessStepLogic::getProcessStepRequirementId)
-              .collect(Collectors.toList());
-
-            List<ProjectProcessStepRequirement> reqs = updatedPps.getAutoTriggeredActionRequirements().stream()
-              .filter(r -> reqIds.contains(r.getId()))
-              .collect(Collectors.toList());
-            ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps, reqs);
+            ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps);
             if (actionResult.getCanPerform()) {
               performedActions.add(action.getId());
               PpsActionResult ppsActionResult = this.performAction(action, updatedPps, performedActions);
@@ -769,7 +744,7 @@ public class ProjectProcessStepService {
     return actionResult;
   }
 
-  public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
+  public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
     // Allow actions to be triggered only once per PPS
     if (action.getAlreadyTriggered() && !action.getMultipleUses()) {
       action.setCanPerform(false);
@@ -791,6 +766,23 @@ public class ProjectProcessStepService {
       action.setCanPerform(false);
       return action;
     }
+
+    if (action.getActionTypeId() == 2) {
+        // Check assigned PS statuses/categories for actionTypeId 2 (buttons)
+        boolean isInAssignedCategory = action.getProcessStepStatusTypeIds().contains(pps.getProcessStepStatusTypeId());
+        boolean isInAssignedStatus = action.getCompanyProcessStepStatusTypeIds().contains(pps.getCompanyProcessStepStatusTypeId());
+        boolean assignedStatusSet = !action.getProcessStepStatusTypeIds().isEmpty() || !action.getCompanyProcessStepStatusTypeIds().isEmpty();
+        if (assignedStatusSet && !isInAssignedCategory && !isInAssignedStatus) {
+            action.setCanPerform(false);
+            return action;
+        }
+    }
+
+    List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
+                                       .map(ProcessStepLogic::getProcessStepRequirementId)
+                                       .filter(Objects::nonNull)
+                                       .toList();
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
 
     // If there are not any requirements, then it can be completed
     if (requirements.isEmpty()) {

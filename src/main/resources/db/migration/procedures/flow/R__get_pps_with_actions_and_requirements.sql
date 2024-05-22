@@ -149,6 +149,8 @@ BEGIN
                     psa.company_project_status_type_id as "companyProjectStatusTypeId",
                     psa.display_order as "displayOrder",
                     psa.always_enabled as "alwaysEnabled",
+                    coalesce(psa.company_process_step_status_type_ids, array[]::bigint[]) as "companyProcessStepStatusTypeIds",
+                    coalesce(psa.process_step_status_type_ids, array[]::bigint[]) as "processStepStatusTypeIds",
                     cpsst.process_step_status_type_id as "processStepStatusTypeId",
                     cpsst.process_step_status_type as "processStepStatusType",
                     at.action_type as "actionType",
@@ -309,7 +311,8 @@ BEGIN
                                           and psl.archived is not true
                                         ORDER BY psl.sql_order ) logic), '[]') AS "processStepLogicList",
                       psa.always_enabled as "alwaysEnabled",
-                      psa.display_order as "displayOrder"
+                      psa.display_order as "displayOrder",
+                      psa.action_type_id as "actionTypeId"
                     from flow.process_step_action psa
                     where psa.process_step_id = ps.id and
                       psa.archived is not true and
