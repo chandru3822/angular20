@@ -56,15 +56,20 @@ public class ProjectProcessStepController {
 
       int index = 0;
       for (ProjectProcessStepAction a : pps.getActions()) {
-        ProjectProcessStepAction actionResult = projectProcessStepService.getActionResult(a.getId(), a, pps);
-        pps.getActions().set(index, actionResult);
-        index++;
+          var action = projectProcessStepService.canPerformAction(a, pps);
+          // Remove data the frontend doesn't need to lighten the payload
+          action.setProcessStepLogicList(new ArrayList<>());
+          pps.getActions().set(index, action);
+          index++;
       }
       //do the same thing for banners which are technically just actions of actionTypeId = 3
       int bannerIndex = 0;
       for (ProjectProcessStepAction a : pps.getBanners()) {
-        pps.getBanners().set(bannerIndex, projectProcessStepService.getActionResult(a.getId(), a, pps));
-        bannerIndex++;
+          var banner = projectProcessStepService.canPerformAction(a, pps);
+          // Remove data the frontend doesn't need to lighten the payload
+          banner.setProcessStepLogicList(new ArrayList<>());
+          pps.getBanners().set(bannerIndex, banner);
+          bannerIndex++;
       }
 
       return new ResponseEntity<>(pps, HttpStatus.OK);

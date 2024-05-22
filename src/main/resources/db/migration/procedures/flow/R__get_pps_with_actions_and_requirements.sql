@@ -77,62 +77,6 @@ BEGIN
                 ) o
              ) as owner,
              psp.id as "processStepProcessId",
-             coalesce((select array_to_json(array_agg(row_to_json(r))) from (
-                select
-                    id,
-                    project_id as "projectId",
-                    process_step_requirement_type_id as "processStepRequirementTypeId",
-                    process_step_id as "processStepId",
-                    operator_type_id as "operatorTypeId",
-                    requirement_value as "requirementValue",
-                    custom_field_group_assignment_id as "customFieldGroupAssignmentId",
-                    company_function_id as "companyFunctionId",
-                    requirement_nbr as "requirementNbr",
-                    date_created as "dateCreated",
-                    date_modified as "dateModified",
-                    immutable as "immutable",
-                    created_by_id as "createdById",
-                    modified_by_id as "modifiedById",
-                    archived as "archived",
-                    secondary_requirement_value as "secondaryRequirementValue",
-                    data_type_requirement_id as "dataTypeRequirementId",
-                    list_of_value_id as "listOfValueId",
-                    list_of_value_ids as "listOfValueIds",
-                    operator_type as "operatorType",
-                    process_step_requirement_type as "processStepRequirementType",
-                    id as "parentId",
-                    custom_value as "customValue",
-                    process_step_name as "parentName",
-                    field_name as "fieldName",
-                    custom_field_sql as "customFieldSql",
-                    custom_field_sql_smartlist as "customFieldSqlSmartlist",
-                    company_system_list_id as "companySystemListId",
-                    system_list_option_id as "systemListOptionId",
-                    custom_sql_option_id as "customSqlOptionId",
-                    time_zone as "timeZone",
-                    project_process_step_id as "projectProcessStepId",
-                    text_value as "textValue",
-                    date_value as "dateValue",
-                    timestamp_value as "timestampValue",
-                    boolean_value as "booleanValue",
-                    numeric_value as "numericValue",
-                    reference_process_step_id as "referenceProcessStepId",
-                    fail_if_no_reference_step_found as "failIfNoReferenceStepFound",
-                    int_value as "intValue",
-                    int_array_value as "intArrayValue",
-                    system_list_option_ids as "systemListOptionIds",
-                    data_type_requirement as "dataTypeRequirement",
-                    list_of_value as "listOfValue",
-                    list_of_values as list_of_values,
-                    data_type_id as "dataTypeId",
-                    has_list_values as "hasListValues",
-                    company_function_name as "companyFunctionName",
-                    function_name as "functionName",
-                    requirement_param_dynamic_values as "requirementParamDynamicValues",
-                    company_function_params as "companyFunctionParams",
-                    available_list_of_values as "availableListOfValues"
-                from flow.get_project_process_step_requirements_with_values(p_project_process_step_id::bigint, reqs.ids::bigint[])
-            ) r), '[]') as "autoTriggeredActionRequirements",
              coalesce((select array_to_json(array_agg(row_to_json(a))) from (
                 select
                     psa.id,
@@ -207,44 +151,6 @@ BEGIN
                                             and psacp.archived is not true
                                           order by psacp.display_order, ps.process_step_name
                                       ) children), '[]') AS "processStepActionChildProcesses",
-                    coalesce((
-                                 SELECT array_to_json(array_agg(row_to_json(childFn)))
-                                 FROM (
-                                          SELECT psacf.id,
-                                                 psacf.archived,
-                                                 psacf.process_step_action_id as "processStepActionId",
-                                                 psacf.company_function_id as "companyFunctionId",
-                                                 psacf.display_order as "displayOrder",
-                                                 psacf.created_by_id as "createdById",
-                                                 psacf.modified_by_id as "modifiedById",
-                                                 cf.company_function_name as "companyFunctionName",
-                                                 coalesce((
-                                                              SELECT array_to_json(array_agg(row_to_json(params)))
-                                                              FROM (
-                                                                       select apdv.id,
-                                                                              apdv.archived,
-                                                                              dfp.db_function_id as "dbFunctionId",
-                                                                              dfp.parameter_name as "parameterName",
-                                                                              dfp.data_type_id as "dataTypeId",
-                                                                              dfp.description,
-                                                                              dfp.nullable,
-                                                                              apdv.db_function_param_id as "dbFunctionParamId",
-                                                                              apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
-                                                                              apdv.dynamic_value as "dynamicValue"
-                                                                       from flow.db_function_param dfp
-                                                                                left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_action_company_function_id = psacf.id
-                                                                       where dfp.db_function_id = cf.db_function_id
-                                                                         and dfp.parameter_type_id = 2
-                                                                         and apdv.archived is not true
-                                                                         and dfp.archived is not true
-                                                                       order by dfp.display_order
-                                                                   ) params), '[]') AS "actionParamDynamicValues"
-                                          FROM flow.process_step_action_company_function psacf
-                                                   inner join flow.company_function cf on cf.id = psacf.company_function_id
-                                          WHERE psacf.process_step_action_id = psa.id
-                                            and psacf.archived is not true
-                                          order by psacf.display_order, cf.company_function_name
-                                      ) childFn), '[]') AS "processStepActionChildFunctions",
                     coalesce((
                                  SELECT array_to_json(array_agg(row_to_json(links)))
                                  FROM (

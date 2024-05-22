@@ -463,10 +463,6 @@ public class ProjectProcessStepService {
       };
       bw.registerCustomEditor(List.class, "actions", new JsonCollectionDeserializer(actionsRef, objectMapper));
 
-      TypeReference<List<ProjectProcessStepRequirement>> requirementsRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "autoTriggeredActionRequirements", new JsonCollectionDeserializer(requirementsRef, objectMapper));
-
       TypeReference<List<ProjectProcessStepEvent>> ppsEventsRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "projectProcessStepEvents", new JsonCollectionDeserializer(ppsEventsRef, objectMapper));
@@ -485,40 +481,20 @@ public class ProjectProcessStepService {
     return sqlCache.queryBySql(ProjectProcessStepQuery.getIdsByAutoTriggerActionsAndReqs, params, new SingleColumnRowMapper<>(Long.class));
   }
 
-  public ProjectProcessStepAction   getActionResult(Long actionId, Long ppsId) throws Exception {
+  public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
     ProjectProcessStep pps = getProjectProcessStep(ppsId);
-    ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
-    return getActionResult(actionId, action, pps);
-  }
-
-  public ProjectProcessStepAction getActionResult(Long actionId, ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
-      return canPerformAction(action, pps);
+    ProjectProcessStepAction action = pps.getActions().stream()
+                                         .filter(a -> a.getId().equals(actionId))
+                                         .findFirst()
+                                         .orElse(null);
+    if (action == null) {
+        throw new RuntimeException("Unable to find given ppsId");
+    }
+    return canPerformAction(action, pps);
   }
 
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
-//  public List<Long> performInitialAutoTriggers() {
-//
-//    User cronUser = new User();
-//    cronUser.setId(SystemSettings.CRON_USER.getId());
-//
-//    final List<Map<String, Object>> results = sqlCache.queryBySql(ProjectProcessStepQuery.getInitialAutoTriggerPps, null, new ColumnMapRowMapper());
-//
-//    List<Long> createdPpsIds = new ArrayList<>();
-//
-//    for(Map<String, Object> result: results) {
-//      cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
-//      List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()), null);
-//      if (!newPpsIds.isEmpty()) {
-//        createdPpsIds.addAll(newPpsIds);
-//      }
-//    }
-//
-//    log.info("TRIGGERS: PPSs created by initial auto triggers: " + createdPpsIds.size());
-//    log.info("TRIGGERS: PPS ids created by initial auto triggers: " + createdPpsIds);
-//
-//    return createdPpsIds;
-//  }
   public void performTimeBasedAutoTriggers() {
 
     User cronUser = new User();
