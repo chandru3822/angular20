@@ -99,13 +99,13 @@ public class Five9Query {
                      from brs.project_details pd
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
-                             'US/Mountain') :: date between current_date - 180 and current_date - 30)
+                             'US/Mountain') :: date between current_date - 180 and current_date - 10)
                        and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
-                       AND ((select ccfv.int_value
-                            from flow.contact_custom_field_value ccfv
-                            where ccfv.custom_field_group_assignment_id = 20977
-                              and ccfv.contact_id = pd.contact_id) in
-                           (1, 2, 40)) -- contacts with certain lead level
+                       AND (COALESCE((select ccfv.int_value
+                               from flow.contact_custom_field_value ccfv
+                               where ccfv.custom_field_group_assignment_id = 20977
+                               and ccfv.contact_id = pd.contact_id), 0) in
+                               (0, 1, 2, 40)) -- contacts with certain lead level
                        AND pd.complete_date_booking is null
                        AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
                                                          from flow.company_configuration_value
@@ -114,6 +114,17 @@ public class Five9Query {
     select id
     from results
     where (next_event is null or next_event < current_date - 10)  -- Make sure latest Closer Appointment is at least 10 days old
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsBreezePostFDA = """
+    select pd.contact_id             as id
+     from brs.project_details pd
+     where pd.cancelled_date is not null
+       and (((pd.cancelled_date at time zone 'UTC') at time zone
+             'US/Mountain') :: date between current_date - 180 and current_date - 10)  -- Make sure latest Cancelled Date is between 10-180 days old
+       and pd.final_design_signed_date is not null  -- Final Design Agreement date is not null
+       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Setter Gen', 'Organic', 'Organic with Referral')
     """;
 
   //language=PostgreSQL
