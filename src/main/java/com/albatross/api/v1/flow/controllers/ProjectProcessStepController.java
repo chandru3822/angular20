@@ -120,8 +120,7 @@ public class ProjectProcessStepController {
     @PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
       List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
-      ProjectProcessStep pps =
-        projectProcessStepService.getProjectProcessStep(projectProcessStepId);
+      ProjectProcessStep pps = projectProcessStepService.getPpsForAutotrigger(projectProcessStepId);
       ProjectProcessStepAction action =
         pps.getActions().stream()
           .filter(a -> a.getId().equals(actionId))
@@ -143,8 +142,7 @@ public class ProjectProcessStepController {
       actionResultToReturn.setChildFunctionReturnedStrings(ppsActionResult.getChildFunctionReturnedStrings());
 
       // Since something on the PPS might have changed, run autotriggers for it
-      actionResults.add(projectProcessStepService.performAutoTriggerActions(
-        projectProcessStepId, securityService.getCurrentUserDetails()));
+      actionResults.add(projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails()));
 
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
       // Consolidate to projectProcessStepService
@@ -152,14 +150,11 @@ public class ProjectProcessStepController {
       List<Long> cfgaIds = cfgaService.getIdsByPPSId(projectProcessStepId);
 
       if (!cfgaIds.isEmpty()) {
-        List<Long> ppsIds =
-          projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
-            pps.getProjectId(), null, cfgaIds);
+        List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
         for (Long ppsId : ppsIds) {
           // Don't re-check the ppsId we just previously did
           if (!ppsId.equals(projectProcessStepId)) {
-            actionResults.add(projectProcessStepService.performAutoTriggerActions(
-              ppsId, securityService.getCurrentUserDetails()));
+            actionResults.add(projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails()));
           }
         }
       }
@@ -167,19 +162,18 @@ public class ProjectProcessStepController {
       // check for any actions using this PS - Status as a requirement - NOT including SELF (because
       // that creates a potential infinite loop) if active
       // run auto triggers for those actions
-      List<ProjectProcessStep> steps =
-        sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
+      List<ProjectProcessStep> steps = sqlCache.queryBySql(
+          ProjectProcessStepQuery.getUsingStatusByPpsIds,
           Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
-          ProjectProcessStep.class);
+          ProjectProcessStep.class
+      );
       for (ProjectProcessStep step : steps) {
         // only run if the referring PPS is active
         if (step.getProcessStepStatusTypeId() == 1) {
-          actionResults.add(projectProcessStepService.performAutoTriggerActions(
-            step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
+          actionResults.add(projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
         }
       }
-      ProjectProcessStepStatus status =
-        projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
+      ProjectProcessStepStatus status = projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
 
       boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
       projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, pps.getProjectId(), null);
@@ -190,11 +184,8 @@ public class ProjectProcessStepController {
       actionResultToReturn.setProcessStepStatusType(status.getProcessStepStatusType());
       actionResultToReturn.setCompanyProcessStepStatusType(status.getCompanyProcessStepStatusType());
 
-
       //map in the returned strings from the child functions.
       //todo: make this work for more than route urls the frontend should follow, but for now that is all this does - keep mobile in mind if changes made
-
-
       return new ResponseEntity<>(actionResultToReturn, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =

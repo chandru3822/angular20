@@ -30,7 +30,6 @@ BEGIN
              ps.id as "processStepId",
              ps.company_id as "companyId",
              ps.readonly,
-             ps.readonly_allow as "readonlyAllow",
              case when (select psat.id
                         from flow.process_step_attachment_type psat
                         where psat.process_step_id = ps.id
@@ -61,21 +60,6 @@ BEGIN
              cpsst.process_step_status_type as "processStepStatusType",
              cpsst.id as "companyProcessStepStatusTypeId",
              ps.process_step_name as "processStepName",
-             (
-                 select row_to_json(o) from (
-                    select
-                        u.id as "userId",
-                        u.first_name as "firstName",
-                        u.last_name as "lastName",
-                        up.id as "userPositionId",
-                        concat(u.first_name, ' ', u.last_name) AS "fullName",
-                        p.position
-                    from flow.user u
-                             inner join flow.user_position up on up.user_id = u.id
-                             inner join flow.position p on p.id = up.position_id
-                    where up.id = pps.user_position_id
-                ) o
-             ) as owner,
              psp.id as "processStepProcessId",
              coalesce((select array_to_json(array_agg(row_to_json(a))) from (
                 select

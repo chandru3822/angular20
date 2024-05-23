@@ -236,7 +236,7 @@ public class ProjectProcessStepService {
 
   public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, Long cancelledCompanyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
-    ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
+    ProjectProcessStep pps = getPpsForAutotrigger(projectProcessStepId);
 
     if (pps == null) {
       throw new RuntimeException("The given process step does not exist");
@@ -310,7 +310,23 @@ public class ProjectProcessStepService {
     } else {
       return ResponseEntity.badRequest().body("Project Process Step is already assigned to another user. Please refresh page.");
     }
+  }
 
+  public ProjectProcessStep getPpsForAutotrigger(Long ppsId) {
+      var user = securityService.getCurrentUser();
+      try {
+          String json = sqlCache.queryForObjectBySql(
+              ProjectProcessStepQuery.getProjectProcessStep,
+              Map.of("ppsId", ppsId, "companyId", user.getCompanyId()),
+              String.class
+          );
+          if (json == null) {
+              throw new RuntimeException();
+          }
+          return om.readValue(json, new TypeReference<>() {});
+      } catch (Exception e) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new RuntimeException());
+      }
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
@@ -400,7 +416,7 @@ public class ProjectProcessStepService {
 
   @Transactional
   public void deleteProjectProcessStep(Long projectProcessStepId) {
-    ProjectProcessStep deletingStep = this.getProjectProcessStep(projectProcessStepId);
+    ProjectProcessStep deletingStep = getPpsForAutotrigger(projectProcessStepId);
 
     if (deletingStep != null) {
       if (deletingStep.getMain()) {
@@ -418,8 +434,11 @@ public class ProjectProcessStepService {
       actParams.put("newStatusId", null);
       sqlCache.queryBySql(ActivityQuery.addSystemActivityWithoutProjectId, actParams, String.class);
 
-      sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId,
-        "currentUserId", securityService.getCurrentUser().trueUserId()), String.class);
+      sqlCache.queryBySql(
+          ProjectProcessStepQuery.delete,
+          Map.of("projectProcessStepId", projectProcessStepId, "currentUserId", securityService.getCurrentUser().trueUserId()),
+          String.class
+      );
     }
   }
 
@@ -466,7 +485,7 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
-    ProjectProcessStep pps = getProjectProcessStep(ppsId);
+    ProjectProcessStep pps = getPpsForAutotrigger(ppsId);
     ProjectProcessStepAction action = pps.getActions().stream()
                                          .filter(a -> a.getId().equals(actionId))
                                          .findFirst()
@@ -538,7 +557,7 @@ public class ProjectProcessStepService {
     // Set the security context so we have user details in the async downline
     securityService.setCurrentUserDetails(userDetails);
 
-    ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
+    ProjectProcessStep pps = getPpsForAutotrigger(ppsId);
 
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
@@ -623,8 +642,7 @@ public class ProjectProcessStepService {
      */
 
     var runStatusTriggers = false;
-    var childFunctionsRan = false;
-    PpsActionResult actionResult = new PpsActionResult();
+    PpsActionResult actionResult;
     List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
 
     User user = securityService.getCurrentUser();
@@ -634,6 +652,7 @@ public class ProjectProcessStepService {
       runStatusTriggers = true;
     }
 
+    //@TODO: Adds extra DB hit every action. Potential for adding to queue
     //remove process step owner if needed (BR request, dont hate)
     if (action.getRemoveProcessStepOwner()) {
       this.removeOwner(pps.getProjectProcessStepId());
@@ -646,6 +665,7 @@ public class ProjectProcessStepService {
 
     actionResult = performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
 
+    //@TODO: Sending SMS should not happen real time when performing actions. Add it to a queue for async operation
     //sends sms to contact if any are present in the configs
     performSmsTemplates(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getContactId());
 
