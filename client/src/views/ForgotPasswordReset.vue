@@ -138,7 +138,7 @@
             await router.push('/login')
           } catch (e) {
             console.error('*** ERROR ***', e)
-            let msg = e?.data?.message ?? 'Error Retrieving Account Details'
+            let msg = e?.data?.status === 406 ? 'You must select a different password' : e?.data?.message || 'Error Retrieving Account Details'
             appStore.showSnack('ERROR', msg)
             appStore.loading = false
           }
