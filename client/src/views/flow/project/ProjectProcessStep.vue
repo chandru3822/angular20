@@ -508,7 +508,7 @@ const loadAllPageDetails = async() => {
   processStepLoading.value = true
   //if you add a new item to requests make sure it returns the request status
   const psStatus = await getProcessStep(true)
-  const requests = [getCustomFieldGroups()]
+  const requests = [getCustomFieldGroups(), getPPsEvents()]
   await Promise.all(requests).then(async (statusVals) => {
     let success = psStatus === 200
     statusVals.forEach(status => {
@@ -568,7 +568,6 @@ const getProcessStep = async (reloadAll) => {
       processStepReadOnly.value = processStep.value.readonly && !userStore.userHasAnyPosition(processStep.value.whiteListedPositions?.map(wlp => wlp.positionId))
       processStepId.value = processStep.value.processStepId
       // contactId.value = processStep.value.contactId
-      existingEvents.value = processStep.value.projectProcessStepEvents
       projectStore.pps = processStep.value
       projectStore.linkLabel = `${processStep.value.processStepName} (${processStep.value.projectProcessStepId})`
       projectStore.linkId = processStep.value.projectProcessStepId
@@ -589,6 +588,20 @@ const getProcessStep = async (reloadAll) => {
     logError(e)
   }
 }
+
+const getPPsEvents = async () => {
+    try {
+        const {data, status} = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event`)
+        existingEvents.value = data
+        processStep.value.projectProcessStepEvents = data
+        return status
+    } catch (e) {
+        logError(e)
+        appStore.showSnack('ERROR', 'Error retrieving project events')
+    }
+
+}
+
 const getCustomFieldGroups = async() => {
   try {
     const {

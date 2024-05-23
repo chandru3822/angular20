@@ -315,30 +315,14 @@ public class ProjectProcessStepService {
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
     User user = securityService.getCurrentUser();
-    Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
     HashMap<String, Object> params = new HashMap<>();
     params.put("stepId", stepId);
     params.put("companyId", user.getCompanyId());
-    params.put("systemAdmin", systemAdmin);
-    params.put("userPositions", userPositionIds);
 
     try {
       String json = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getProjectProcessStep, params, String.class);
       if (null != json) {
-        ProjectProcessStep step = om.readValue(json, new TypeReference<>() {
-        });
-
-        for (ProjectProcessStepEvent event : step.getProjectProcessStepEvents()) {
-          if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
-            HashMap<String, Object> moreParams = new HashMap<>();
-            moreParams.put("objectTypeId", 6); //6 is the event object type
-            moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
-            moreParams.put("primaryId", event.getId());
-            List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
-            event.setCustomFieldDisplayValue(cfvs.get(0));
-          }
-        }
+        ProjectProcessStep step = om.readValue(json, new TypeReference<>() {});
 
         if(!step.getReadonlyAllow() && (step.getWhiteListedPositions() == null || step.getWhiteListedPositions().size() == 0)){
           step.setReadonly(false);

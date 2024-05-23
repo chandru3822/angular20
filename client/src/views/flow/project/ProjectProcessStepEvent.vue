@@ -1177,11 +1177,6 @@ const checkFieldsForUnique = () => {
     checkForSchedulingConflicts();
   }
 }
-const filterProjectProcessStepEvents = () => {
-  return projectProcessStepEvents.value ? projectProcessStepEvents.value.filter(ppse => {
-    return !ppse.archived
-  }) : []
-}
 </script>
 
 <style lang="scss">

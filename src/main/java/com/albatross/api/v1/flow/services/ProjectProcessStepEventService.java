@@ -81,6 +81,32 @@ public class ProjectProcessStepEventService {
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
+  private final UserPositionService userPositionService;
+
+  public List<ProjectProcessStepEvent> getByPpsId(Long ppsId) {
+      User user = securityService.getCurrentUser();
+      Map<String, Object> params = new HashMap<>();
+      params.put("ppsId", ppsId);
+      params.put("companyId", user.getCompanyId());
+      params.put("isSystemAdmin", user.getHighestCompanyId() == 1L);
+      params.put("userPositions", userPositionService.getAllActiveUserPositionIds(user));
+
+      var events = sqlCache.queryBySql(ProjectProcessStepEventQuery.getByPpsId, params, new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
+
+      for (ProjectProcessStepEvent event : events) {
+          if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+              HashMap<String, Object> moreParams = new HashMap<>();
+              moreParams.put("objectTypeId", 6); //6 is the event object type
+              moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+              moreParams.put("primaryId", event.getId());
+              List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
+              event.setCustomFieldDisplayValue(cfvs.get(0));
+          }
+      }
+
+      return events;
+  }
+
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
     Long projectProcessStepId, Long processStepEventId) throws Exception {
     User user = securityService.getCurrentUser();

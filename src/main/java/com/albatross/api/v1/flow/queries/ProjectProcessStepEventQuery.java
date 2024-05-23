@@ -2,6 +2,91 @@ package com.albatross.api.v1.flow.queries;
 
 public class ProjectProcessStepEventQuery {
 
+    //language=PostgreSQL
+    public final static String getByPpsId = """
+        select
+            ppse.id,
+            ppse.archived,
+            ppse.process_step_event_id as "processStepEventId",
+            ppse.company_event_status_type_id as "companyEventStatusTypeId",
+            cest.event_status_type as "eventStatusType",
+            cest.event_status_type_id as "eventStatusTypeId",
+            ppse.created_by_id as "createdById",
+            ppse.start_time as "startTime",
+            ppse.end_time as "endTime",
+            ppse.resource_id as "resourceId",
+            e.start_time_read_only as "startTimeReadOnly",
+            e.end_time_read_only as "endTimeReadOnly",
+            e.resource_read_only as "resourceReadOnly",
+            pps.project_id as "projectId",
+            pps.id as "projectProcessStepId",
+            case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
+            ppse.modified_by_id as "modifiedById",
+            pse.event_id as "eventId",
+            e.event_name as "eventName",
+            (
+                select cfga.id
+                from flow.project_process_step_event_custom_field_value ppsecfv
+                inner join flow.custom_field_group_assignment cfga on ppsecfv.custom_field_group_assignment_id = cfga.id and
+                                                                      cfga.archived is false and
+                                                                      cfga.display_on_snippet is true
+                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                where ppsecfv.project_process_step_event_id = ppse.id
+            ) as "customFieldDisplayValueGroupAssignmentId"
+        from flow.project_process_step_event ppse
+        inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+        inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+        inner join flow.event e on pse.event_id = e.id
+        inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+        inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+        inner join flow.system_list sl on sl.id = csl.system_list_id
+        left join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+        left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+        left join flow.user u on u.id = up.user_id
+        left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
+        where
+            ppse.project_process_step_id = :ppsId and
+            ppse.archived is not true and
+            case
+                when e.hidden and e.hidden_allow and :isSystemAdmin is false then
+                    pse.event_id = (
+                        select wlp2.event_id
+                        from flow.white_listed_position wlp2
+                        where
+                            wlp2.event_id = pse.event_id and
+                            wlp2.white_list_type_id = 17 and
+                            wlp2.company_id = :companyId and
+                            wlp2.archived is not true and
+                            wlp2.position_id = any(:userPositions) limit 1
+                    )
+                when e.hidden and not e.hidden_allow and :isSystemAdmin is false then
+                    case when (
+                        select wlp2.event_id
+                        from flow.white_listed_position wlp2
+                        where
+                            wlp2.event_id = pse.event_id and
+                            wlp2.white_list_type_id = 17 and
+                            wlp2.company_id = :companyId and
+                            wlp2.archived is not true
+                        limit 1
+                    ) is null then true
+                    else pse.event_id = (
+                        select wlp2.event_id
+                        from flow.white_listed_position wlp2
+                        where
+                            wlp2.event_id = pse.event_id and
+                            wlp2.white_list_type_id = 17 and
+                            wlp2.company_id = :companyId and
+                            not wlp2.position_id = any(:userPositions) and
+                            wlp2.archived is not true
+                        limit 1
+                    )
+                end
+                else 1=1
+            end
+        order by ppse.start_time, ppse.end_time, resource, e.event_name
+    """;
+
   //language=PostgreSQL
   public final static String getEventAttachmentTypes = """
         select eat.id,

@@ -35,7 +35,7 @@ public class ProjectProcessStepQuery {
 
   //language=PostgreSQL
   public final static String getProjectProcessStep = """
-    select * from flow.get_pps_with_actions_and_requirements(:stepId::bigint, :companyId::bigint, :systemAdmin::boolean, array[ :userPositions ]::bigint[])
+    select * from flow.get_pps_with_actions_and_requirements(:stepId::bigint, :companyId::bigint)
   """;
 
   //language=PostgreSQL
