@@ -14,7 +14,8 @@
         :class="{ selected: selected && selected.id === child.id }"
         @click="handleClick(child)"
       >
-        #{{ child.id }} - {{ child.blockType }}
+<!--        #{{ child.id }} - {{ child.blockType }}-->
+        {{ child.displayName }}
         <span v-if="child.modified">*</span>
       </div>
       <nested-tree

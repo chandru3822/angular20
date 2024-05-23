@@ -19,6 +19,7 @@
     :class="['text-none', props.customClasses]"
     :to="props.to"
     :type="props.btnType"
+    :value="props.value"
     @click="$emit('click')"
   >
     <slot name="default">
@@ -100,7 +101,8 @@ const props = defineProps({
   btnType: {
     type: String,
     default: 'button'
-  }
+  },
+  value: String
 })
 </script>
 

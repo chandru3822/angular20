@@ -23,6 +23,7 @@ public class ProposalTemplateQuery {
                                   ptv.theme_key               as "themeKey",
                                   ptbt.id                     as "blockTypeId",
                                   ptbt.block_type             as "blockType",
+                                  ptb.block_name             as "blockName",
                                   ptbk.id                     as "blockKindId",
                                   ptbk.block_kind             as "blockKind",
                                   ptb.block_style             as "blockStyle",

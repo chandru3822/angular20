@@ -162,6 +162,9 @@ export default defineStore('proposalStore', () => {
         'blueraven',
         {}
       )
+        for(let b of data?.blocks){
+            b.displayName = `#${ b.id } - ${b.blockName ? b.blockName : 'Unnamed'}: ${ b.blockType }`
+        }
 
       //set as baseline
       setBaseline({

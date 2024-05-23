@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-subheader class="pl-0">{{ label }} - {{ size }}</v-subheader>
+    <div class="pl-0 label-large">{{ label }} - {{ size }}</div>
     <div class="d-flex flex-row align-end">
       <v-slider
         class="flex-grow-1 flex-shrink-0"
@@ -51,7 +51,6 @@ watch(
   value,
   (newVal) => {
     const args = newVal?.split(/(\d+)/)?.filter((x) => x !== '')
-
     if (args?.length === 2) {
       size.value = args[0]
       unit.value = args[1]

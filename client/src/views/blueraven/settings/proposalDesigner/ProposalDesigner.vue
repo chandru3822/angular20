@@ -1,6 +1,7 @@
 <template>
   <div id="designer">
     <div class="toolbar">
+      <div id="props-designer-toolbar-left">
       <v-tooltip bottom>
         <template #activator="{ on, attrs }">
           <a-btn
@@ -76,6 +77,24 @@
         </template>
         <span>Generate PDF Preview</span>
       </v-tooltip>
+      </div>
+      <div id="props-designer-toolbar-right">
+        <v-tooltip bottom>
+          <template #activator="{ on, attrs }">
+            <a-btn
+                v-bind="attrs"
+                :activation-handler="on"
+                @click="[ addBlock = !addBlock]"
+                variant="text"
+                icon
+                color="primary"
+                prepend-icon="mdi-toy-brick-plus"
+            ></a-btn>
+          </template>
+          <span>Add Block</span>
+        </v-tooltip>
+
+      </div>
     </div>
 
     <div class="proposal-designer">
@@ -104,7 +123,7 @@
             <v-card v-if="selected">
               <div class="sticky-header">
                 <v-card-title>
-                  <v-tooltip>
+                  <v-tooltip left>
                     <template #activator="{ on, attrs }">
                       <a-btn
                         v-bind="attrs"
@@ -119,17 +138,26 @@
                     </template>
                     <span>Focus</span>
                   </v-tooltip>
-                  {{ selected.blockType }}
+                  {{ selected.blockName || 'No Name' }}: {{selected.blockType}}
                   <span v-if="selected.modified">*</span>
                 </v-card-title>
-                <v-card-subtitle
-                  class="clickable"
+                <v-card-subtitle class="px-6 pb-0 d-flex align-baseline"><span class="grey--text text--darken-1 label-small pr-1">Parent: </span>
+                  <v-tooltip right>
+                    <template #activator="{ on, attrs }">
+                  <span
+                  class="clickable primary--text d-flex"
                   v-if="parent"
                   @click="selectNode(parent.id)"
-                  >^ {{ parent.blockType }}
+                  v-bind="attrs"
+                  v-on="on"
+                  >{{ parent.displayName }}
+                </span>
+                    </template>
+                    <span>Go to Parent</span>
+                  </v-tooltip>
                 </v-card-subtitle>
               </div>
-              <div class="pa-4">
+              <div class="px-4">
                 <image-panel
                   v-if="selected && selected.blockType === 'ImageBlock'"
                   @input="updateValue"
@@ -147,6 +175,12 @@
                   @input="updateVisibility"
                 />
               </div>
+            </v-card>
+            <div v-else-if="addBlock">
+              <AddComponentWidget :existing-blocks="pages"></AddComponentWidget>
+            </div>
+            <v-card flat v-else>
+              <v-card-text>Please select a block to edit</v-card-text>
             </v-card>
           </v-tab-item>
           <v-tab-item>
@@ -184,6 +218,7 @@ import {
 import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from './store.js'
 import { storeToRefs } from 'pinia'
+import AddComponentWidget from "@/views/blueraven/settings/proposalDesigner/panel/AddComponentWidget.vue";
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
@@ -234,6 +269,7 @@ const defaultDocument = {
 const tabs = ref(null)
 const debug = ref(false)
 const editable = ref(true)
+const addBlock = ref(false)
 const activeEditor = ref(undefined)
 const viewportEl = ref(null)
 
@@ -307,7 +343,15 @@ const save = async () => {
   appStore.loading = false
 }
 
+const showAddBlock = () => {
+  selectNode(null)
+  addBlock.value = true
+}
+
 const selectNode = (id) => {
+  if(addBlock.value){
+    addBlock.value = false
+  }
   store.setSelected(id)
 }
 
@@ -338,7 +382,6 @@ watch(selectedId, async () => {
   if (!block || block.blockType !== 'TextBlock') {
     return
   }
-
   const content = block.blockValue ?? defaultDocument
   activeEditor.value = new Editor({
     content,
@@ -366,6 +409,8 @@ watch(selectedId, async () => {
   z-index: 100;
   background-color: white;
   padding: 10px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .proposal-designer {

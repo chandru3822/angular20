@@ -1,6 +1,7 @@
 <template>
   <v-card flat>
-    <v-card-title>Advanced</v-card-title>
+    <v-card-title class="px-0">Advanced</v-card-title>
+    <v-card-text>
     <a-text-field
       density="compact"
       variant="outlined"
@@ -30,7 +31,7 @@
           </template>
 
           <v-card>
-            <v-card-title class="text-h5 grey lighten-2">
+            <v-card-title class="albatross-header-2 lighten-2 pb-1">
               Allowed Variables
             </v-card-title>
 
@@ -57,6 +58,7 @@
         </v-dialog>
       </template>
     </a-text-field>
+    </v-card-text>
   </v-card>
 </template>
 <script setup>
