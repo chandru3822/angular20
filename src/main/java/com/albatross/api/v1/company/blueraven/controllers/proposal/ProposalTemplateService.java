@@ -335,6 +335,7 @@ public class ProposalTemplateService {
             map.put("blockTypeId", block.getBlockTypeId());
             map.put("blockKindId", block.getBlockKindId());
             map.put("blockStyle", getPGobject(block.getBlockStyle()));
+            map.put("blockName", block.getBlockName());
             map.put("blockValue", getPGobject(block.getBlockValue()));
             map.put("visibility", block.getVisibility());
             map.put("blockOrder", block.getBlockOrder());

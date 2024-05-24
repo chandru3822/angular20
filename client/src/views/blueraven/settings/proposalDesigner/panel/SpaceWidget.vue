@@ -164,7 +164,6 @@ const onChange = (updated) => {
   Object.keys(updated).forEach((key) => {
     paddingOptions.value[key] = updated[key]
   })
-  debugger
   let val = ''
   if (toggle.value === 'all') {
     val = paddingOptions.value.all

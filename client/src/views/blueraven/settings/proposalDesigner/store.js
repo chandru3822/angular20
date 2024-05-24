@@ -127,6 +127,23 @@ export default defineStore('proposalStore', () => {
     }
   }
 
+  const setName = ({ blockId, name }) => {
+    const found = findById(blockId)
+    if (found) {
+      template.value = template.value.map((block) => {
+        if (block.id !== blockId) {
+          return block
+        }
+        return { ...block, modified: true, blockName: name, displayName: writeDisplayName({...block, blockName: name}) }
+      })
+      done.value.push(cloneDeep(template.value))
+    }
+  }
+
+  const writeDisplayName = (block) => {
+      return `#${ block.id } - ${block.blockName ? block.blockName : 'Unnamed'}: ${ block.blockType }`
+  }
+
   const setVisibility = ({ blockId, visibility }) => {
     const found = findById(blockId)
     if (found) {
@@ -163,7 +180,7 @@ export default defineStore('proposalStore', () => {
         {}
       )
         for(let b of data?.blocks){
-            b.displayName = `#${ b.id } - ${b.blockName ? b.blockName : 'Unnamed'}: ${ b.blockType }`
+            b.displayName = writeDisplayName(b)
         }
 
       //set as baseline
@@ -287,6 +304,7 @@ export default defineStore('proposalStore', () => {
     setTemplate,
     setStyle,
     setValue,
+    setName,
     setVisibility,
     updatePosition,
     fetchTemplate,

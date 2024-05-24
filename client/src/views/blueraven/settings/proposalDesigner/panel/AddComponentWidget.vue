@@ -1,52 +1,27 @@
 <template>
   <v-card flat>
-    <v-card-title>Add Component</v-card-title>
+    <v-card-title>Add Component Block</v-card-title>
     <div class="d-flex flex-column px-4">
       <a-select
           density="compact"
+          variant="outlined"
           v-model="newComponent"
           :items="availableBlocks"
           item-title="label"
           item-value="id"
           return-object
-          single-line
+          label="Block Type"
       />
+      <div v-if="newComponent && newComponent !== PAGE_BLOCK">
+        <v-card flat class="text-left px-3" color="transparent">
+          <v-card-title class="px-0 pt-0">Parent</v-card-title>
+
+        </v-card>
+      </div>
       <div v-if="newComponent === PAGE_BLOCK" class="pb-4">
       <v-card flat class="text-left px-3" color="transparent">
-        Location:
-        <v-btn-toggle
-            v-model="location"
-            group
-        >
-        <a-btn
-            size="small"
-            class="mx-0 mt-1 primary--text"
-            color="unset"
-            text="FIRST PAGE"
-            value="firstPage"
-        ></a-btn>
-          <a-btn
-            size="small"
-            class="mx-0 mt-1 primary--text"
-            color="unset"
-            text="BEFORE BLOCK"
-            value="before"
-        ></a-btn>
-          <a-btn
-            size="small"
-            class="mx-0 mt-1 primary--text"
-            color="unset"
-            text="AFTER BLOCK"
-            value="after"
-        ></a-btn>
-        <a-btn
-            size="small"
-            class="mx-0 mt-1 primary--text"
-            color="unset"
-            text="LAST PAGE"
-            value="lastPage"
-        ></a-btn>
-        </v-btn-toggle>
+        <v-card-title class="px-0 pt-0">Location</v-card-title>
+        <InsertLocationWidget attr="pageLocation" :existing-blocks="existingBlocks"/>
       </v-card>
         <v-card flat color="transparent" v-if="location === 1 || location === 2">
           Select an existing block
@@ -61,15 +36,16 @@
           />
         </v-card>
       </div>
+<!--      <div v-if-->
       <div class="d-flex justify-end">
         <v-col cols="2">
-        <a-btn text="Cancel" variant="outlined"/>
+        <a-btn text="Cancel" variant="outlined" @click="emit('cancel')"/>
         </v-col>
         <v-col cols="10">
       <a-btn
           class="one-hunned"
         color="primary"
-        :disabled="!newComponent"
+        :disabled="newComponentReadyToAdd"
         @click="add(newComponent)"
         text="Add"
       ></a-btn>
@@ -82,11 +58,14 @@
 import { computed, ref } from 'vue'
 import useProposalStore from '../store.js'
 import {typeOf} from "uri-js/dist/esnext/util.js";
+import InsertLocationWidget from "@/views/blueraven/settings/proposalDesigner/panel/InsertLocationWidget.vue";
 
 const store = useProposalStore()
 const props = defineProps({
   existingBlocks:Array,
 })
+
+const selected = computed(() => store.selectedBlock)
 
 const PAGE_BLOCK = {
   id:'PageBlock',
@@ -140,12 +119,20 @@ const AVAILABLE = {
 const BLOCK_TYPES = [PAGE_BLOCK,TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
 const location = ref(null)
 const newComponent = ref(null)
-const relativeBlock = ref(null)
 
-const emit = defineEmits(['input'])
+const emit = defineEmits(['cancel'])
 
 const availableBlocks = computed(() => {
   return BLOCK_TYPES
+})
+const newComponentReadyToAdd = computed(() => {
+  if(!newComponent){
+    return false
+  }
+  if(newComponent.value === PAGE_BLOCK){
+    return location !== null
+  }
+  return true
 })
 const add = ({ id, typeId, value }) => {
   emit('input', { blockType: id, blockTypeId: typeId, blockValue: value })

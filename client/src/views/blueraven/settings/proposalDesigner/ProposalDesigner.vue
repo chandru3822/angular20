@@ -88,7 +88,7 @@
                 variant="text"
                 icon
                 color="primary"
-                prepend-icon="mdi-toy-brick-plus"
+                :prepend-icon="addBlock ? 'close' : 'mdi-toy-brick-plus'"
             ></a-btn>
           </template>
           <span>Add Block</span>
@@ -120,9 +120,12 @@
         </v-tabs>
         <v-tabs-items v-model="tabs" class="tabs-scrollable">
           <v-tab-item>
-            <v-card v-if="selected">
+            <div v-if="addBlock">
+              <AddComponentWidget :existing-blocks="pages" @cancel="addBlock = false"></AddComponentWidget>
+            </div>
+            <v-card v-else-if="selected">
               <div class="sticky-header">
-                <v-card-title>
+                <v-card-title class="d-flex">
                   <v-tooltip left>
                     <template #activator="{ on, attrs }">
                       <a-btn
@@ -138,15 +141,53 @@
                     </template>
                     <span>Focus</span>
                   </v-tooltip>
-                  {{ selected.blockName || 'No Name' }}: {{selected.blockType}}
+                  <span v-if="!editBlockName">{{selected.displayName}}</span>
+                  <a-text-field v-else
+                                type="string"
+                                color="primary"
+                                v-model="editedBlockName"
+                                label="Block Name"
+                  ></a-text-field>
                   <span v-if="selected.modified">*</span>
+                  <v-spacer/>
+                  <v-tooltip left  v-if="!editBlockName">
+                    <template #activator="{ on, attrs }">
+                      <a-btn
+                          v-bind="attrs"
+                          :activation-handler="on"
+                          @click="editBlockName = true"
+                          :disabled="!selected"
+                      icon
+                      variant="text"
+                      prepend-icon="edit"/>
+                    </template>
+                    Edit Block Name
+                  </v-tooltip>
+                  <a-btn
+                      v-if="editBlockName"
+                      v-bind="attrs"
+                      :activation-handler="on"
+                      @click="updateName(editedBlockName)"
+                      :disabled="!selected"
+                      icon
+                      variant="text"
+                      prepend-icon="check"/>
+                  <a-btn
+                      v-if="editBlockName"
+                      v-bind="attrs"
+                      :activation-handler="on"
+                      @click="editBlockName = false"
+                      :disabled="!selected"
+                      icon
+                      variant="text"
+                      prepend-icon="close"/>
                 </v-card-title>
-                <v-card-subtitle class="px-6 pb-0 d-flex align-baseline"><span class="grey--text text--darken-1 label-small pr-1">Parent: </span>
+                <v-card-subtitle v-if="parent" class="px-6 pb-0 d-flex align-baseline">
+                  <span class="grey--text text--darken-1 label-small pr-1">Parent: </span>
                   <v-tooltip right>
                     <template #activator="{ on, attrs }">
                   <span
                   class="clickable primary--text d-flex"
-                  v-if="parent"
                   @click="selectNode(parent.id)"
                   v-bind="attrs"
                   v-on="on"
@@ -176,9 +217,7 @@
                 />
               </div>
             </v-card>
-            <div v-else-if="addBlock">
-              <AddComponentWidget :existing-blocks="pages"></AddComponentWidget>
-            </div>
+
             <v-card flat v-else>
               <v-card-text>Please select a block to edit</v-card-text>
             </v-card>
@@ -270,6 +309,8 @@ const tabs = ref(null)
 const debug = ref(false)
 const editable = ref(true)
 const addBlock = ref(false)
+const editBlockName = ref(false)
+const editedBlockName = ref(null)
 const activeEditor = ref(undefined)
 const viewportEl = ref(null)
 
@@ -295,6 +336,15 @@ const updateValue = (value) => {
     value
   })
 }
+const updateName = (name) => {
+  store.setName({
+    blockId: selected.value.id,
+    name
+  })
+  editBlockName.value = false
+  editedBlockName.value = null
+}
+
 const updateStyles = (styles) => {
   store.setStyle({
     blockId: selected.value.id,
@@ -344,14 +394,10 @@ const save = async () => {
 }
 
 const showAddBlock = () => {
-  selectNode(null)
   addBlock.value = true
 }
 
 const selectNode = (id) => {
-  if(addBlock.value){
-    addBlock.value = false
-  }
   store.setSelected(id)
 }
 
