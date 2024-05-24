@@ -230,7 +230,12 @@ const getExtensions = ({ tags = [] } = {}) => {
   const mention = Mention.configure({
     suggestion: suggestion({ tags }),
     renderText({ options, node }) {
-      return `${options.suggestion.char}VARIABLE${options.suggestion.endChar}`
+        const nodeIdArray = node.attrs.id.split("_")
+        let displayText = ''
+        for(let i = 0; i < 3 && i <= nodeIdArray.length && displayText.length < 10; i++){
+            displayText += `${nodeIdArray[i]} `
+        }
+        return `${options.suggestion.char}${displayText.trimEnd()}${options.suggestion.endChar}`
     },
     HTMLAttributes: {
       class: 'replacement'
