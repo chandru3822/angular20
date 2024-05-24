@@ -125,7 +125,7 @@
             </div>
             <v-card v-else-if="selected">
               <div class="sticky-header">
-                <v-card-title class="d-flex">
+                <v-card-title class="d-flex ml-n2">
                   <v-tooltip left>
                     <template #activator="{ on, attrs }">
                       <a-btn

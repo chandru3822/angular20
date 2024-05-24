@@ -84,21 +84,24 @@
     <!--    -->
     <fragment v-if="type === 'PageBlock' || type === 'ContainerBlock'">
       <div>
-        <v-card-title>Background</v-card-title>
-        <div>
+        <v-card-title class="px-0">Background</v-card-title>
+        <v-card-text>
           <image-selector-widget ref="imageSelector" />
           <a-btn
             @click="openSelectImage('@backgroundImage')"
             color="unset"
+            variant="outlined"
             text="Open Image"
+            size="small"
           ></a-btn>
           <a-btn
             variant="text"
             @click="doUpdateStyles({ '@backgroundImage': undefined })"
             color="unset"
             text="Clear Image"
+            size="small"
           ></a-btn>
-        </div>
+        </v-card-text>
 
         <a-select
           density="compact"
