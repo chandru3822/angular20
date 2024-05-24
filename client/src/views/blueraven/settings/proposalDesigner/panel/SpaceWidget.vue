@@ -28,7 +28,7 @@
       <size-widget
         label="All"
         attr="all"
-        :value="all"
+        :value="paddingOptions.all"
         :min="min"
         :max="max"
         @input="onChange"
@@ -38,7 +38,7 @@
       <size-widget
         label="Vertical"
         attr="vertical"
-        :value="vertical"
+        :value="paddingOptions.vertical"
         :min="min"
         :max="max"
         @input="onChange"
@@ -46,7 +46,7 @@
       <size-widget
         label="Horizontal"
         attr="horizontal"
-        :value="horizontal"
+        :value="paddingOptions.horizontal"
         :min="min"
         :max="max"
         @input="onChange"
@@ -56,7 +56,7 @@
       <size-widget
         label="Top"
         attr="top"
-        :value="top"
+        :value="paddingOptions.top"
         :min="min"
         :max="max"
         @input="onChange"
@@ -64,7 +64,7 @@
       <size-widget
         label="Right"
         attr="right"
-        :value="right"
+        :value="paddingOptions.right"
         :min="min"
         :max="max"
         @input="onChange"
@@ -72,7 +72,7 @@
       <size-widget
         label="Bottom"
         attr="bottom"
-        :value="bottom"
+        :value="paddingOptions.bottom"
         :min="min"
         :max="max"
         @input="onChange"
@@ -80,7 +80,7 @@
       <size-widget
         label="Left"
         attr="left"
-        :value="left"
+        :value="paddingOptions.left"
         :min="min"
         :max="max"
         @input="onChange"
@@ -110,13 +110,16 @@ const props = defineProps({
     default: 50
   }
 })
-const all = ref(null)
-const horizontal = ref(null)
-const vertical = ref(null)
-const top = ref(null)
-const right = ref(null)
-const bottom = ref(null)
-const left = ref(null)
+const paddingOptions = ref({
+  all:null,
+  horizontal: null,
+  vertical: null,
+  top: null,
+  right: null,
+  bottom: null,
+  left: null,
+})
+
 const toggle = ref(null)
 
 const { value } = toRefs(props)
@@ -124,35 +127,34 @@ const { value } = toRefs(props)
 watch(
   value,
   (newVal) => {
-    top.value = null
-    right.value = null
-    bottom.value = null
-    left.value = null
-    horizontal.value = null
-    vertical.value = null
-    all.value = null
+    paddingOptions.value.top = null
+    paddingOptions.value.right = null
+    paddingOptions.value.bottom = null
+    paddingOptions.value.left = null
+    paddingOptions.value.horizontal = null
+    paddingOptions.value.vertical = null
+    paddingOptions.value.all = null
 
     const args = newVal?.split(' ') ?? []
     if (args.length === 0) {
       return
     }
-
     if (args?.length === 4) {
       toggle.value = 'custom'
 
-      top.value = args[0]
-      right.value = args[1]
-      bottom.value = args[2]
-      left.value = args[3]
+      paddingOptions.value.top = args[0]
+      paddingOptions.value.top = args[0]
+      paddingOptions.value.right = args[1]
+      paddingOptions.value.bottom = args[2]
+      paddingOptions.value.left = args[3]
     } else if (args?.length === 2) {
       toggle.value = 'hv'
 
-      vertical.value = args[0]
-      horizontal.value = args[1]
+      paddingOptions.value.vertical = args[0]
+      paddingOptions.value.horizontal = args[1]
     } else {
       toggle.value = 'all'
-
-      all.value = args[0]
+      paddingOptions.value.all = args[0]
     }
   },
   { immediate: true }
@@ -160,18 +162,18 @@ watch(
 
 const onChange = (updated) => {
   Object.keys(updated).forEach((key) => {
-    this[key] = updated[key]
+    paddingOptions.value[key] = updated[key]
   })
-
+  debugger
   let val = ''
   if (toggle.value === 'all') {
-    val = all.value
+    val = paddingOptions.value.all
   } else if (toggle.value === 'hv') {
-    val = [vertical.value, horizontal.value]
+    val = [paddingOptions.value.vertical, paddingOptions.value.horizontal]
       .map((x) => (x?.trim()?.length > 1 ? x : '0'))
       .join(' ')
   } else if (toggle.value === 'custom') {
-    val = [top.value, right.value, bottom.value, left.value]
+    val = [paddingOptions.value.top, paddingOptions.value.right, paddingOptions.value.bottom, paddingOptions.value.left]
       .map((x) => (x?.trim()?.length > 1 ? x : '0'))
       .join(' ')
   } else {
