@@ -294,9 +294,10 @@ const filteredIncentives = computed(() => {
       if (!incentive[filterName]) {
         return false
       }
-
-      if (filter.value !== null && filter.value !== undefined) {
-        return incentive[filterName].toLowerCase().includes(filter.value.toLowerCase())
+      if (filter.value !== null && filter.value !== undefined && incentiveFilters.value[filterName].type === 'text') {
+        return incentive[filterName].toLowerCase().includes(filter.value.toLowerCase()) // use includes when filtering text
+      } else if (filter.value !== null && filter.value !== undefined) {
+        return incentive[filterName].toLowerCase() === filter.value.toLowerCase() // use === when filtering dropdowns
       } else if (filter.value === undefined) {
         filter.value = []
       } else {
