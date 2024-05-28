@@ -63,6 +63,7 @@ public class ProposalTemplateQuery {
            ptb.block_value             as "blockValue",
            ptb.block_order             as "blockOrder",
            ptb.version,
+           ptb.block_name,             as "blockName",
            ptb.parent_id               as "parentId",
            ptb.visibility,
            ptb.block_uuid              as "blockUUID"

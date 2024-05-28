@@ -342,7 +342,6 @@ const updateName = (name) => {
     name
   })
   editBlockName.value = false
-  editedBlockName.value = null
 }
 
 const updateStyles = (styles) => {
@@ -424,7 +423,7 @@ watch(selectedId, async () => {
     activeEditor.value.destroy()
     activeEditor.value = undefined
   }
-
+  editedBlockName.value = selected.value?.blockName
   if (!block || block.blockType !== 'TextBlock') {
     return
   }
