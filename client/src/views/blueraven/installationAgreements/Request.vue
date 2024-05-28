@@ -248,7 +248,6 @@ const updateSunpowerApp = async() => {
   try {
     appStore.loading = true
     const {status} = await postRequest('/install-agreement/updateSunpowerApp/' + requestItem.value.projectId + '/' + requestItem.value.proposalNbr, {}, 'blueraven')
-    requestDialog.value = false;
     handleHidingGlobalLoader( status)
     appStore.showSnack('SUCCESS', 'SunPower loan application updated')
 
