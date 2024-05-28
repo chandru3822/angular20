@@ -339,11 +339,11 @@
             :options="toolbarOptions"
             class="rich-text-editor albatross-body-2"
             :class="
-              ({
+              [{
                 'rich-text-editor-required': required && !field.richTextValue,
                 'rich-text-editor-readonly': readonly || (locked && lockFeature)
               },
-              customClass)
+              customClass]
             "
             :readonly="readonly"
             :disabled="readonly || (locked && lockFeature)"
@@ -708,7 +708,7 @@ const selectSelf = () => {
   //border-top: solid 1px #ccc !important;
   border: none;
   border-radius: 0.25em;
-  background-color: var(--v-grey-lighten3);
+  background-color: var(--v-grey-lighten3) !important;
   padding: 0.25em 0.0625em;
 }
 
