@@ -7,11 +7,18 @@ drop function if exists brs.get_below_the_line_utility_rebates(p_version_id bigi
                                                                   p_total_system_cost numeric,
                                                                   p_state_id bigint, p_rebate_id bigint[],
                                                                   p_storage_capacity numeric);
+drop function if exists brs.get_below_the_line_utility_rebates(p_version_id bigint, p_utility_company_id bigint,
+                                                               p_aurora_design_summary jsonb, p_system_size numeric,
+                                                               p_total_system_cost numeric,
+                                                               p_state_id bigint, p_rebate_id bigint[],
+                                                               p_storage_capacity numeric,
+                                                               p_storage_type_id bigint);
 CREATE OR REPLACE FUNCTION brs.get_below_the_line_utility_rebates(p_version_id bigint, p_utility_company_id bigint,
                                                                   p_aurora_design_summary jsonb, p_system_size numeric,
                                                                   p_total_system_cost numeric,
                                                                   p_state_id bigint, p_rebate_id bigint[],
-                                                                  p_storage_capacity numeric)
+                                                                  p_storage_capacity numeric,
+                                                                  p_storage_type_id bigint)
   returns table
           (
             below_the_line_utility_rebate_amount numeric,
@@ -39,7 +46,8 @@ BEGIN
            first_year_cap_on_rebate,
            selectable_by_user,
            odoe_battery_rebate_amount,
-           odoe_battery_rebate_cap_amount
+           odoe_battery_rebate_cap_amount,
+           applicable_storage_types
     from brs.get_proposal_rebates(p_version_id)
     where rebate_type_id = 455
       and rebate_applied_at = 1763
@@ -90,18 +98,18 @@ BEGIN
             least(v_utility_rebate_amount, x.rebate_cap_percent_of_total * p_total_system_cost);
         end if;
       end if;
-      raise notice 'v_utility_rebate_amount^^^^^^^^^^^^^^^^^^^^^^^^^^^55555555555 = %',v_utility_rebate_amount;
+      --raise notice 'v_utility_rebate_amount^^^^^^^^^^^^^^^^^^^^^^^^^^^55555555555 = %',v_utility_rebate_amount;
 
       if x.first_year_cap_on_rebate is not null and x.first_year_cap_on_rebate = 462 then
         v_below_the_line_utility_rebate_first_year_cap =
             coalesce(v_below_the_line_utility_rebate_first_year_cap,0) + least(coalesce(v_utility_rebate_amount, 0), x.max_amount_captured_first_year);
       end if;
-      if x.odoe_battery_rebate_amount is not null and x.odoe_battery_rebate_amount > 0 then
+      if x.odoe_battery_rebate_amount is not null and x.odoe_battery_rebate_amount > 0 and (x.applicable_storage_types = '{}' or p_storage_type_id = any(x.applicable_storage_types)) then
         v_utility_rebate_amount = v_utility_rebate_amount +
                                   least((coalesce(p_storage_capacity,0) * x.odoe_battery_rebate_amount * 1000)::numeric,
                                         x.odoe_battery_rebate_cap_amount);
       end if;
-      raise notice 'below the line v_utility_rebate_amount^^^^^^^^^^^^^^^^^^^^^^^^^^^ = %',v_utility_rebate_amount;
+     -- raise notice 'below the line v_utility_rebate_amount^^^^^^^^^^^^^^^^^^^^^^^^^^^ = %',v_utility_rebate_amount;
       v_below_the_line_utility_rebate_amount = coalesce(v_below_the_line_utility_rebate_amount,0) + coalesce(round(v_utility_rebate_amount,2), 0);
       v_rebates = COALESCE(v_rebates, '{}'::jsonb) || jsonb_build_object(x.rebate, round(v_utility_rebate_amount,2));
      -- raise notice 'v_below_the_line_utility_rebate_amount*************************************** = %',v_below_the_line_utility_rebate_amount;
