@@ -117,6 +117,7 @@
         <v-tabs v-model="tabs">
           <v-tab>Editor</v-tab>
           <v-tab>Tree</v-tab>
+          <v-tab>Tree 2</v-tab>
         </v-tabs>
         <v-tabs-items v-model="tabs" class="tabs-scrollable">
           <v-tab-item>
@@ -227,6 +228,15 @@
               <nested-tree :children="pages" @select="focusNode" />
             </v-card>
           </v-tab-item>
+          <v-tab-item>
+            <v-chip label outlined color="primary--text" class="ml-4 sort-chip align-self-center albatross-body-2 flex-shrink-0"
+                    @click="sortbyId = !sortbyId">
+              {{ sortbyId ? 'Sort by Id' : 'Sort by doc order' }}
+            </v-chip>
+            <v-card class="mx-auto pa-4" flat>
+              <nested-tree2 :children="pages" :sort-by-id="sortbyId" @select="focusNode" id="props-designer-tree"/>
+            </v-card>
+          </v-tab-item>
         </v-tabs-items>
       </div>
     </div>
@@ -238,6 +248,7 @@ import Viewport from './viewport/Viewport'
 import StylePanel from './panel/Style'
 import ImagePanel from './panel/Image'
 import NestedTree from './panel/NestedTree'
+import NestedTree2 from "./panel/NestedTree2.vue";
 import TextMenuWidget from './panel/TextMenuWidget'
 import AdvancedPanel from './panel/Advanced.vue'
 import ProposalTemplate from './ProposalTemplate'
@@ -258,6 +269,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from './store.js'
 import { storeToRefs } from 'pinia'
 import AddComponentWidget from "@/views/blueraven/settings/proposalDesigner/panel/AddComponentWidget.vue";
+import {sort} from "rrule/dist/esm/dateutil.js";
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
@@ -313,6 +325,7 @@ const editBlockName = ref(false)
 const editedBlockName = ref(null)
 const activeEditor = ref(undefined)
 const viewportEl = ref(null)
+const sortbyId = ref(true)
 
 const editor = {}
 Object.defineProperty(editor, 'current', {
