@@ -8,8 +8,7 @@
     @start="dragging = true"
     @end="dragging = false"
   >
-    <v-expansion-panels flat multiple :value="expanded">
-    <v-expansion-panel class="node-group transparent" :key="child.id" v-for="child in sortedChildren">
+    <div class="node-group transparent" :key="child.id" v-for="child in sortedChildren">
       <div
         class="node d-flex justify-space-between body-large align-center"
         :class="{ selected: selected && selected.id === child.id }"
@@ -22,21 +21,22 @@
         </div>
         <a-btn v-if="hasChildren(child.id)"
             :variant="selected && selected.id === child.id ? '': 'text'"
-               :prepend-icon="child.expanded ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+               :prepend-icon="child.expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
                :custom-classes="selected && selected.id === child.id ? 'white--text' : ''"
                @click.native.stop = expandCollapseNode(child)
         />
       </div>
-      <v-expansion-panel-content class="pa-0 node-container">
+      <v-expand-transition>
+      <div v-show="isExpanded(child)" class="pa-0 node-container">
       <nested-tree2
         class="node-sub"
         v-on="$listeners"
         :children="filterByParentId(child.id)"
         :sort-by-id="sortById"
       />
-      </v-expansion-panel-content>
-    </v-expansion-panel>
-    </v-expansion-panels>
+      </div>
+      </v-expand-transition>
+    </div>
   </draggable>
 </template>
 
@@ -116,6 +116,12 @@ const hasChildren = (parent) => {
 const handleClick = (node) => {
   store.setSelected(node.id)
   emit('select', node.id)
+}
+
+const isExpanded = (node) => {
+  const itemIndex = sortedChildren.value.indexOf(node) //index of the item in the children prop
+  const index = expanded.value.indexOf(itemIndex) //index of the itemIndex in the expanded ref which determines which elements in the list are expanded/collapsed
+  return index >= 0
 }
 
 const expandCollapseNode = (node) => {
