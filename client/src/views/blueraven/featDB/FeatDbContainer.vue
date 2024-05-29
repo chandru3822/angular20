@@ -18,7 +18,9 @@
         </v-toolbar>
       </v-col>
     </v-row>
-    <router-view></router-view>
+    <router-view
+      :nameSearch="nameSearchValue"
+      @updateNameSearch="updateNameSearch"></router-view>
   </v-container>
 </template>
 
@@ -38,17 +40,23 @@
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
 
+  const nameSearchValue = ref('')
+
   const tabs = ref(FEAT_DB_TABS)
 
 
-      const isActiveBtn = (btn)  => {
-        return btn.pathMatches.some(pm => {
-          return route.path.includes(pm)
-        })
-      }
-      const hasAccess = (tab) => {
-        return userStore.userHasFeatureAccessLevel(tab.featureCode, 'VIEW')
-      }
+  const isActiveBtn = (btn)  => {
+    return btn.pathMatches.some(pm => {
+      return route.path.includes(pm)
+    })
+  }
+  const hasAccess = (tab) => {
+    return userStore.userHasFeatureAccessLevel(tab.featureCode, 'VIEW')
+  }
+
+  const updateNameSearch = (newSearchValue) => {
+    nameSearchValue.value = newSearchValue
+  }
 </script>
 
 <style lang="scss" scoped>

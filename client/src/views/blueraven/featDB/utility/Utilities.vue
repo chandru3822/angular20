@@ -179,7 +179,8 @@ import constants from '@/helpers/constants'
 
 import {getActiveStates} from '@/services/stateService'
 import {FILTER_DEFAULTS, FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import { getCurrentInstance, computed, ref, onMounted, watch, defineProps} from 'vue'
+import {onBeforeRouteLeave} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
@@ -208,6 +209,12 @@ const utilityDialog = ref(false)
 const addMode = ref(false)
 const utilityFilters = ref([])
 const metroAreas = ref([])
+
+const props = defineProps({
+  nameSearch: String,
+})
+
+const emit = defineEmits(['updateNameSearch'])
 
 const filteredUtilities = computed(() => {
   return utilities.value && utilities.value.filter(utility => {
@@ -296,8 +303,19 @@ const getActiveMetroAreas = async () => {
     appStore.loading = false
   }
 }
+
+onBeforeRouteLeave((to, from, next) => {
+  if (to.path.includes('database')) {
+    emit('updateNameSearch', utilityFilters.value['name'].value)
+  } else {
+    emit('updateNameSearch', '')
+  }
+  next()
+})
+
 const initFilters = () => {
   utilityFilters.value = cloneDeep(FILTER_DEFAULTS)
+  utilityFilters.value['name'].value = props.nameSearch
 }
 const addItem = () => {
   getActiveMetroAreas()

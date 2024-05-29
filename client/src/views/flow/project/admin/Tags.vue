@@ -28,7 +28,7 @@
               </template>
 
               <v-card class="pa-5">
-                <a-select
+                <a-autocomplete
                     v-model="selectedTag"
                     :items="availableTags"
                     @input="addTagToProject"
@@ -37,7 +37,7 @@
                     label="Select an Available Tag"
                     item-title="tagName"
                     item-value="id"
-                ></a-select>
+                ></a-autocomplete>
               </v-card>
             </v-menu>
           </v-toolbar-items>

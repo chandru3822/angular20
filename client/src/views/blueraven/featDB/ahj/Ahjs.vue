@@ -169,7 +169,7 @@ import { onBeforeRouteLeave } from 'vue-router/composables'
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {FEAT_DB_TABS, FILTER_DEFAULTS} from "@/views/blueraven/featDB/FeatDbConstants";
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {getCurrentInstance, computed, ref, onMounted, watch, defineProps, onBeforeMount} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
@@ -181,6 +181,10 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
+const props = defineProps({
+  nameSearch: String
+})
+const emit = defineEmits(['updateNameSearch'])
 
 const dataLoading = ref(true)
 const tabs = ref(FEAT_DB_TABS)
@@ -252,8 +256,18 @@ onMounted(() => {
   })
 })
 
+onBeforeRouteLeave((to, from, next) => {
+  if (to.path.includes('database')) {
+    emit('updateNameSearch', ahjFilters.value['name'].value)
+  } else {
+    emit('updateNameSearch', '')
+  }
+  next()
+})
+
 const initFilters = () => {
   ahjFilters.value = cloneDeep(FILTER_DEFAULTS)
+  ahjFilters.value['name'].value = props.nameSearch
 }
 const fetchAhjs = async ()  => {
   appStore.loading = true

@@ -345,7 +345,7 @@ const positionsLoading = ref(false)
 const hiddenPositionsChanged = ref(false)
 const sql = ref('')
 const defaultFields = ref([])
-const defaultCheckboxHeaders = ref([{text: "Field Name", value: "value", show: true}, {text: "Show", value: "show", show: true}])
+const defaultCheckboxHeaders = ref([{text: "Field Name", value: "text", show: true}, {text: "Show", value: "show", show: true}])
 const editDefaultFields = ref(false)
 const allowedMinutesStep = ref(m => m % 60 === 0)
 const noScheduleDefault = ref([

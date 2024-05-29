@@ -337,13 +337,13 @@
           </div>
           <quill-editor
             :options="toolbarOptions"
-            class="rich-text-editor albatross-body-2"
+            class="cvi-rich-text-editor albatross-body-2"
             :class="
-              ({
-                'rich-text-editor-required': required && !field.richTextValue,
-                'rich-text-editor-readonly': readonly || (locked && lockFeature)
+              [{
+                'cvi-rich-text-editor-required': required && !field.richTextValue,
+                'cvi-rich-text-editor-readonly': readonly || (locked && lockFeature)
               },
-              customClass)
+              customClass]
             "
             :readonly="readonly"
             :disabled="readonly || (locked && lockFeature)"
@@ -351,7 +351,7 @@
             v-model="field.richTextValue"
           />
           <div
-            class="rich-text-label error--text"
+            class="cvi-rich-text-label error--text"
             v-if="required && !field.richTextValue"
           >
             Field is required
@@ -690,7 +690,15 @@ const selectSelf = () => {
 </script>
 
 <style lang="scss">
-.rich-text-editor .ql-container {
+.cvi-rich-text-editor-readonly .ql-container {
+  //border-top: solid 1px #ccc !important;
+  border: none;
+  border-radius: 0.25em;
+  background-color: var(--v-grey-lighten3);
+  padding: 16px;
+}
+
+.cvi-rich-text-editor .ql-container {
   height: auto !important;
   width: 100%;
   color: rgba(0, 0, 0, 0.87); //default-text-color
@@ -700,23 +708,17 @@ const selectSelf = () => {
   line-height: 1.6;
 }
 
-.rich-text-editor-readonly .ql-toolbar {
+.cvi-rich-text-editor-readonly .ql-toolbar {
   display: none;
 }
 
-.rich-text-editor-readonly .ql-container {
-  //border-top: solid 1px #ccc !important;
-  border: none;
-  border-radius: 0.25em;
-  background-color: var(--v-grey-lighten3);
-  padding: 0.25em 0.0625em;
-}
 
-.rich-text-editor-required {
+
+.cvi-rich-text-editor-required {
   border: solid 2px red !important;
 }
 
-.rich-text-label {
+.cvi-rich-text-label {
   font-size: 11px;
   font-family: Lato, sans-serif;
 }

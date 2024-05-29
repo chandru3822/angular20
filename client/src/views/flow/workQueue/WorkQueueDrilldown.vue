@@ -107,6 +107,11 @@
                   </v-chip>
                 </div>
               </td>
+              <td class="text-left" v-if="useProcessStepHeaders && !hiddenHeaders.includes('Project ID')">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Project ID'] }}
+                </router-link>
+              </td>
               <td class="text-left" v-if="useProcessStepHeaders && !hiddenHeaders.includes('Process Step Name')">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Process Step Name'] }}
@@ -147,7 +152,7 @@
                 </router-link>
               </td>
               <template v-for="c in customColumns">
-                <td v-if="!hiddenHeaders.includes(c.name)">
+                <td v-if="!hiddenHeaders.includes(c.name) || customHeaders.includes(c.name)">
                   <div v-if="!useProcessStepHeaders && c.name === 'Project Name'"
                        class="remove-left-margin"
                        :class="{'pt-2': item.tags && item.tags.length > 0}">
@@ -330,6 +335,11 @@ const hiddenHeaders = computed(() => {
   return headers.value.filter(h => h.show !== true).map(h => h.value)
 })
 
+const customHeaders = computed(() => {
+  console.log("Custom Headers", headers.value.filter(h => h?.isDefault === false))
+  return headers.value.filter(h => h?.isDefault === false).map(h => h?.value)
+})
+
 onMounted(async() => {
   cachedFilters.value = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
   hideFutureFollowUps.value = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
@@ -466,13 +476,14 @@ const getWorkDetails = async() => {
     filteredResults.value = cloneDeep(results.value)
     if (useProcessStepHeaders.value) {
       headers.value = [
-        {text: 'Project', value: 'Project Name', show: true},
-        {text: 'Process Step', value: 'Process Step Name', show: true},
-        {text: 'Status', value: 'Process Step Status Type', show: true},
-        {text: 'Days In Queue', value: 'Days In Queue', show: true},
-        {text: 'State', value: 'State Abbreviation', show: true},
-        {text: 'Owner', value: 'Owner', show: true},
-        {text: 'Active Process Steps', value: 'Active Process Steps', show: true},
+        {text: 'Project', value: 'Project Name', show: true, isDefault: true},
+        {text: 'Project ID', value: 'Project ID', show: true, isDefault: true},
+        {text: 'Process Step', value: 'Process Step Name', show: true, isDefault: true},
+        {text: 'Status', value: 'Process Step Status Type', show: true, isDefault: true},
+        {text: 'Days In Queue', value: 'Days In Queue', show: true, isDefault: true},
+        {text: 'State', value: 'State Abbreviation', show: true, isDefault: true},
+        {text: 'Owner', value: 'Owner', show: true, isDefault: true},
+        {text: 'Active Process Steps', value: 'Active Process Steps', show: true, isDefault: true},
       ]
     }
 
@@ -507,7 +518,8 @@ const getWorkDetails = async() => {
             return newA.localeCompare(newB)
           }
         },
-        show: true
+        show: true,
+        isDefault: c?.objectType === null
       })
     })
     if (queueHasNotes.value) {

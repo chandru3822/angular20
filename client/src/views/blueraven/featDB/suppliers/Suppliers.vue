@@ -186,9 +186,9 @@ import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
 import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import { getCurrentInstance, computed, ref, onMounted, watch, defineProps } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
@@ -217,6 +217,12 @@ const addMode = ref(false)
 const supplierToDelete = ref(null)
 const duplicateDialog = ref(false)
 const duplicateSupplierMatch = ref(null)
+
+const props = defineProps({
+  nameSearch: String,
+})
+
+const emit = defineEmits(['updateNameSearch'])
 
 
 const filteredSuppliers = computed(() => {
@@ -253,9 +259,23 @@ const supplierToDeleteName = computed(() => {
 })
 
 onMounted(async() => {
+  initFilters()
   fetchStates()
   await fetchSuppliers()
 })
+
+onBeforeRouteLeave((to, from, next) => {
+  if (to.path.includes('database')) {
+    emit('updateNameSearch', supplierFilters.value['name'].value)
+  } else {
+    emit('updateNameSearch', '')
+  }
+  next()
+})
+
+const initFilters = () => {
+  supplierFilters.value['name'].value = props.nameSearch
+}
 
 const fetchSuppliers = async() => {
   appStore.loading = true

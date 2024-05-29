@@ -332,7 +332,7 @@ BEGIN
                           where pswqt2.process_step_id = pps.process_step_id
                             and pswqt2.archived is false)
       loop
-        update flow.work_queue_cycle
+        update flow.work_queue_cycle w1
         set date_exited_queue = now(),
             modified_by_id    = new.modified_by_id,
             date_modified = now()
@@ -344,7 +344,8 @@ BEGIN
            where ((x.company_process_status_type_id = process.company_process_status_type_id or
                    x.process_status_type_id = process.process_step_status_type_id) and
                   (new.company_project_status_type_id = process.company_project_status_type_id or
-                   v_new_project_status_type_id = process.project_status_type_id)))
+                   v_new_project_status_type_id = process.project_status_type_id)) and
+             w1.process_step_work_queue_type_process_step_status_type_id = process.process_step_work_queue_type_process_step_status_type_id)
           and date_exited_queue is null;
 
         insert into flow.work_queue_cycle(project_process_step_id,
