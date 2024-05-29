@@ -3812,7 +3812,7 @@ public class SmartlistServicev1 {
       //event fields
       defaultFields.append(" select ")
                    .append("flow.project.project_name as \"Project Name\", ")
-				   .append("flow.project.id as \"Project ID\", ")
+                   .append("flow.project.id as \"Project ID\", ")
                    .append("flow.event.event_name \"Event Name\", ")
                    .append("flow.project_process_step.id \"projectProcessStepId\", ")
                    .append("flow.project.id as \"projectId\", ")
@@ -5061,9 +5061,9 @@ public class SmartlistServicev1 {
     var projectName = new SmartlistFieldAssignment();
     projectName.setName("Project Name");
     defaultFields.add(projectName);
-//	var projectId = new SmartlistFieldAssignment();
-//	projectName.setName("Project ID");
-//	defaultFields.add(projectId);
+    var projectId = new SmartlistFieldAssignment();
+    projectId.setName("Project ID");
+    defaultFields.add(projectId);
     var event = new SmartlistFieldAssignment();
     event.setName("Event Name");
     defaultFields.add(event);

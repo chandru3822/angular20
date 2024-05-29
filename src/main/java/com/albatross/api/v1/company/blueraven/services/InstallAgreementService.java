@@ -99,11 +99,11 @@ public class InstallAgreementService {
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
     // first create disclosure doc through SREC
-    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
-
-    if (!srecSuccessful) {
-      throw new RuntimeException("Unable to create disclosure document");
-    }
+//    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
+//
+//    if (!srecSuccessful) {
+//      throw new RuntimeException("Unable to create disclosure document");
+//    }
 
     final String result = createRequest(request);
     if (result == null || result.trim().isEmpty()) {
@@ -283,6 +283,9 @@ public class InstallAgreementService {
         }
       }
     }
+    else if (iEnFinProject(financier) && request.getIsSpanish()) {
+      throw new RuntimeException("EnFin does not currently allow Spanish HICs. Please send an English HIC or switch financiers.");
+    }
 
     Boolean createPandaDoc = true;
     try {
@@ -319,6 +322,10 @@ public class InstallAgreementService {
 
   public Boolean isGoodLeapProject(String financier) {
     return financier != null && (financier.equalsIgnoreCase("loanpal") || financier.equalsIgnoreCase("goodleap"));
+  }
+
+  public Boolean iEnFinProject(String financier) {
+    return financier != null && financier.equalsIgnoreCase("enfin");
   }
 
   public Boolean isSunlightProject(String financier) {

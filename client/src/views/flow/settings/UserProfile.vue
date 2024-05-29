@@ -475,7 +475,8 @@ const saveUser = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let errorMsg = e?.message ? 'Error Saving User: ' + e.message : e?.data?.message ? 'Error Saving User: ' + e.data.message :'Error Saving User'
+    let additionalMsg = e?.message || e?.data?.message || e?.data?.detail
+    let errorMsg = additionalMsg ? 'Error Saving User: ' + additionalMsg : 'Error Saving User'
     appStore.showSnack('ERROR', errorMsg)
     appStore.loading = false
   }

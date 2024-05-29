@@ -1277,11 +1277,11 @@ BEGIN
     v_ill_srec_rebate_amount =
         ((brs.get_system_production_year(v_first_year_production_estimate, v_panel_degradation_factor, 15) *
           v_inverter_efficiency) / 1000) * case
-                                             when v_system_size <= 10::numeric then
+                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac end <= 10::numeric then
                                                v_il_srec_less_10
-                                             when v_system_size > 10::numeric and v_system_size < 25::numeric then
+                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac end > 10::numeric and case when v_version_id <= 141 then v_system_size else v_system_size_ac end < 25::numeric then
                                                v_il_srec_between_10_25
-                                             when v_system_size >= 25 then
+                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac end >= 25 then
                                                v_il_srec_greater_25 end * v_srec_realization;
 
     if v_srec_rebate_cap_amount is not null then
@@ -1415,7 +1415,8 @@ BEGIN
                                               v_aurora_design_summary,v_system_size,
                                               v_total_system_cost_before_rebates,
                                               v_state_id,v_qualifies_for_incentive,
-                                                v_storage_capacity);
+                                                v_storage_capacity,
+                                              v_storage_type_id);
 
   --raise notice 'v_above_the_line_utility_rebate_amount = %',v_above_the_line_utility_rebate_amount;
   --raise notice 'v_above_the_line_utility_rebates = %',v_above_the_line_utility_rebates;
@@ -1790,7 +1791,7 @@ BEGIN
                                               v_aurora_design_summary,v_system_size,
                                               (coalesce(v_total_loan_amount, 0) + coalesce(v_down_payment_amount, 0) +
                                                coalesce(v_required_down_payment, 0)),
-                                              v_state_id,v_qualifies_for_incentive,v_storage_capacity);
+                                              v_state_id,v_qualifies_for_incentive,v_storage_capacity,v_storage_type_id);
 
   --raise notice 'v_below_the_line_utility_rebate_amount = %',v_below_the_line_utility_rebate_amount;
   --raise notice 'v_below_the_line_utility_rebates = %',v_below_the_line_utility_rebates;
