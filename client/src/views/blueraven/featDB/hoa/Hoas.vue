@@ -213,7 +213,8 @@ import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
 import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import { getCurrentInstance, computed, ref, onMounted, watch, defineProps } from 'vue'
+import {onBeforeRouteLeave} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
@@ -224,7 +225,11 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const props = defineProps({
+  nameSearch: String
+})
 
+const emit = defineEmits('updateNameSearch')
 
 const dataLoading = ref(true)
 const hoaFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},managementCompany: {value: '', type: 'text', model: 'managementCompany'}})
@@ -287,11 +292,23 @@ const hoaToDeleteName = computed(()=> {
 })
 
 onMounted(() => {
+  initFilters()
   fetchStates()
   fetchHoas()
 })
 
+onBeforeRouteLeave((to, from, next) => {
+  if (to.path.includes('database')) {
+    emit('updateNameSearch', hoaFilters.value['name'].value)
+  } else {
+    emit('updateNameSearch', '')
+  }
+  next()
+})
 
+const initFilters = () => {
+  hoaFilters.value['name'].value = props.nameSearch
+}
 const getActiveManagementCompanies = async()  => {
   appStore.loading = true
   try {
