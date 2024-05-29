@@ -119,6 +119,9 @@ public class CloserDashboardService {
             params,
           CloserTableScore.class);
 
+    for(CloserTableScore closerTableScore : roundRobinLeadAllocationData){
+      closerTableScore.setScore(Math.round(closerTableScore.getScore() * 10000.0) / 100.0);
+    }
     getUserImages(roundRobinLeadAllocationData);
 
     return roundRobinLeadAllocationData;

@@ -587,7 +587,7 @@ const loadOfficeFdcRankData = async() => {
     processRankingData(cloneDeep(data), 'Office FDC Rank')
     for(let rankingData of officeFdcRankingData.value){
       rankingData.leadGenFdcPercentage = rankingData.leadGenFdcPercentage + '%'
-      rankingData.score = Math.round(rankingData.score * 10000) / 100 + '%'
+      rankingData.score = rankingData.score + '%'
     }
     officeFdcRankLoading.value = false
   } catch (e) {
@@ -656,7 +656,7 @@ const loadRoundRobinLeadAllocationRankData = async() =>
     processRankingData(data, 'Round Robin Lead Allocation Rank')
     for(let rankingData of leadAllocationRankingData.value){
       rankingData.leadGenFdcPercentage = rankingData.leadGenFdcPercentage + '%'
-      rankingData.score = Math.round(rankingData.score * 10000) / 100 + '%'
+      rankingData.score =rankingData.score+ '%'
     }
     roundRobinRanksLoading.value = false
   } catch (e) {
