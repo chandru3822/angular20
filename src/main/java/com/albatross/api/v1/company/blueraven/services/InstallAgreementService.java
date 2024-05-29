@@ -283,6 +283,9 @@ public class InstallAgreementService {
         }
       }
     }
+    else if (iEnFinProject(financier) && request.getIsSpanish()) {
+      throw new RuntimeException("EnFin does not currently allow Spanish HICs. Please send an English HIC or switch financiers.");
+    }
 
     Boolean createPandaDoc = true;
     try {
@@ -319,6 +322,10 @@ public class InstallAgreementService {
 
   public Boolean isGoodLeapProject(String financier) {
     return financier != null && (financier.equalsIgnoreCase("loanpal") || financier.equalsIgnoreCase("goodleap"));
+  }
+
+  public Boolean iEnFinProject(String financier) {
+    return financier != null && financier.equalsIgnoreCase("enfin");
   }
 
   public Boolean isSunlightProject(String financier) {

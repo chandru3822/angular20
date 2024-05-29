@@ -56,7 +56,7 @@ public class Five9Service {
 
     String url = "";
     String contactListName = "";
-    formatterCreatedDate.setTimeZone(TimeZone.getTimeZone("US/Mountain"));
+    formatterCreatedDate.setTimeZone(TimeZone.getTimeZone("UTC"));
     try {
       GenesysService.CustomContact contact = genesysService.getContact(contactId, true);
       String phone = contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "";

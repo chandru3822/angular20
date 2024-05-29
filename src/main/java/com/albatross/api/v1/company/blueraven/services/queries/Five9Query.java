@@ -15,7 +15,7 @@ public class Five9Query {
     select pd.complete_date_booking
         from flow.contact c
         inner join brs.project_details pd on c.id = pd.contact_id
-        where pd.archived is false
+        where c.id = :contactId and pd.archived is false
         order by pd.complete_date_booking desc limit 1
     """;
 
@@ -34,10 +34,11 @@ public class Five9Query {
             where ccfv.custom_field_group_assignment_id = 399
               and ccfv.contact_id = pd.contact_id) in
            (700, 19205, 697)) -- contacts that are new, scheduled, or attempted contact
-      AND ((select ccfv.int_value
-            from flow.contact_custom_field_value ccfv
-            where ccfv.custom_field_group_assignment_id = 20977
-              and ccfv.contact_id = pd.contact_id) in (1, 2, 40)) -- contacts with certain lead level
+      AND (COALESCE((select ccfv.int_value
+                       from flow.contact_custom_field_value ccfv
+                       where ccfv.custom_field_group_assignment_id = 20977
+                       and ccfv.contact_id = pd.contact_id), 0) in
+                       (0, 1, 2, 40)) -- contacts with certain lead level
     AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 30 -- Closer appointment within past 30 days
       and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 2 -- Closer appointment at least 2 days old
       and (select ppscfv.int_value
