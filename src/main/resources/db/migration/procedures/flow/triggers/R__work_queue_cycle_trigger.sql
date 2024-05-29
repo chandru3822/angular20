@@ -1,3 +1,4 @@
+drop trigger if exists create_work_queue_cycle_trg ON flow.project_process_step;
 drop function if exists flow.create_work_queue_cycle();
 CREATE OR REPLACE FUNCTION flow.create_work_queue_cycle()
   RETURNS TRIGGER AS
@@ -169,7 +170,6 @@ END
 $$
   LANGUAGE plpgsql;
 
-drop trigger if exists create_work_queue_cycle_trg ON flow.project_process_step;
 CREATE TRIGGER create_work_queue_cycle_trg
   after INSERT or update of company_process_step_status_type_id
   ON flow.project_process_step
