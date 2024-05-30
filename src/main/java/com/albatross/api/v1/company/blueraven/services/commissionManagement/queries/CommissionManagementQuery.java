@@ -845,6 +845,11 @@ FROM (SELECT cp.id,
     """;
 
   //language=PostgreSQL
+  public final static String updateProjectCommissionPlan = """
+      call brs.change_commission_plan(:projectId::bigint, :newPlanId::bigint)
+    """;
+
+  //language=PostgreSQL
   public final static String checkProjectOwnerOnPlan = """
       select id
       from brs.commission_plan_user opau

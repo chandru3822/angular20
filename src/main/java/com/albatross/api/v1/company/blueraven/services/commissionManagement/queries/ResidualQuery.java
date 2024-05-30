@@ -257,14 +257,15 @@ public class ResidualQuery {
     VALUES (:planId, :userId, :startDate, :endDate, now(), :currentUserId, :currentUserId)
     """;
 
-  //language=PostgreSQL
-  public final static String updateUserResidualPlans = """
-    update brs.user_residual ur
-    set residual_plan_id = :planId,
-        date_modified = now(),
-        modified_by_id = :currentUserId
-    where user_id = :userId
-    """;
+  //keller had me take this out _rn
+//  //language=PostgreSQL
+//  public final static String updateUserResidualPlans = """
+//    update brs.user_residual ur
+//    set residual_plan_id = :planId,
+//        date_modified = now(),
+//        modified_by_id = :currentUserId
+//    where user_id = :userId
+//    """;
 
   //language=PostgreSQL
   public final static String getResidualPlanUsers = """
