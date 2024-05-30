@@ -47,8 +47,10 @@ import AnnouncementModal from "@/components/AnnouncementModal.vue";
 
 import {computed, ref} from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 const appStore = useAppStore()
+const fileStore = useFileStore()
 
 const announcementAlert = ref({})
 const showModal = ref(false)
@@ -71,7 +73,6 @@ const closeModal = () => {
   selectedAnnouncement.value = {}
 }
 const openModal = async(item) => {
-  menuOpen.value = false
   showModal.value = true
   loadComplete.value = false
   await getAttachment(item)
