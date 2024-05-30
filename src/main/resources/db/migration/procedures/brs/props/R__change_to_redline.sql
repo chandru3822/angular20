@@ -1,5 +1,5 @@
 drop procedure if exists brs.change_to_redline(
-  p_project_id bigint);
+  p_project_id bigint,boolean);
 CREATE OR REPLACE procedure brs.change_to_redline(
   p_project_id bigint,
   p_update_all_plh boolean default false)
