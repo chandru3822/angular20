@@ -66,14 +66,30 @@
             ></a-btn>
           </div>
         </div>
-        <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
+        <div>
           <ActionButton
+              v-for="action in enabledActions"
+              :key="action.id"
+              class="d-inline-block ma-1"
               :action-result="action"
               :can-perform-action="action.canPerform"
               :complete-action="validateActionRequirements"
               :follow-multiple-links="followMultipleLinks"
           />
         </div>
+          <div v-if="showUnperformableActions">
+              <div class="my-3">Other actions:</div>
+
+              <ActionButton
+                  v-for="action in otherActions"
+                  :key="action.id"
+                  class="d-inline-block ma-1"
+                  :action-result="action"
+                  :can-perform-action="action.canPerform"
+                  :complete-action="validateActionRequirements"
+                  :follow-multiple-links="followMultipleLinks"
+              />
+          </div>
       </div>
       <div v-if="selectedEvent.hasAttachmentTypesAssigned" class="px-6">
         <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header">
@@ -400,7 +416,6 @@
 import {
   getRequest,
   logError,
-
   getRequestWithParams,
   putRequest,
   postRequest,
@@ -434,7 +449,6 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 
 const vuetify = vueInstance.$vuetify
 
@@ -442,7 +456,7 @@ const props = defineProps({
   project: Object,
   splitValueColumns: Boolean
 })
-const { project, splitValueColumns } = toRefs(props)
+const { project } = toRefs(props)
 
 const selectedEvent = ref({})
 const projectMismatch = ref(false)
@@ -457,7 +471,6 @@ const attemptedAction = ref({})
 const companyEventStatuses = ref([])
 const saveErrorMsg = ref('')
 const eventActionMissingRequirements = ref(false)
-const menuOpen = ref(false)
 const dirtyCfvs = ref([])
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const eventSaveOverrideRequired = ref(false)
@@ -474,7 +487,6 @@ const inPersonSearchLoading = ref(false)
 const remoteSearchLoading = ref(false)
 const mostRecentSearchWasRemote = ref(false)
 const schedulerLoading = ref(true)
-const closerApptOverride = ref(false)
 const minDate = ref(moment().format('YYYY-MM-DDTHH:mm:ssZ'))
 const closerApptSaved = ref(false)
 const searchedTimeSlots = ref(false)
@@ -558,23 +570,19 @@ const userCanEdit = computed(() => {
 const userCanManage = computed(() => {
   return userStore.userHasFeatureAccessLevel('EVENTS', 'MANAGE')
 })
-const userCanAdd = computed(() => {
-  return userStore.userHasFeatureAccessLevel('EVENTS', 'ADD')
-})
 const userIsScheduler = computed(() => {
   return userStore.details.userPositions?.some(p => p.scheduler)
 })
-const filteredActions = computed(() => {
-  if (!selectedEvent.value?.eventActions) {
-    return []
-  }
 
-  if (showUnperformableActions.value) {
-    return selectedEvent.value.eventActions
-  } else {
-    return selectedEvent.value.eventActions.filter(a => a.canPerform === true)
-  }
+const enabledActions = computed(() => {
+    return selectedEvent.value?.eventActions?.filter(a => a.canPerform === true) ?? []
 })
+
+// non-enabled actions
+const otherActions = computed(() => {
+    return selectedEvent.value?.eventActions?.filter(a => a.canPerform !== true) ?? []
+})
+
 const toggleViewButtonText = computed(() => {
   if(showRoundRobin.value){
     return 'Manually Assign Resources'

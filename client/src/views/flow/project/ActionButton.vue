@@ -32,11 +32,7 @@
 
 <script setup>
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-
+import {toRefs} from 'vue'
 
 const props = defineProps({
   actionResult: Object,
@@ -53,7 +49,7 @@ const getColor = () => {
 
 <style lang="scss">
 .action-button > .v-btn__content {
-  color: white !important;
+  color: var(--grey-lighten2);
   text-transform: none;
   //the next two lines allow the button text to wrap on mobile when names are very long
   white-space: normal;
