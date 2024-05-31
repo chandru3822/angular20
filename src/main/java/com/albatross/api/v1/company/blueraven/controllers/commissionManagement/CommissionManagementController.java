@@ -29,6 +29,12 @@ public class CommissionManagementController {
     return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
   }
 
+  @PostMapping(value = "/{newPlanId}/reassign")
+  public String updateProjectCommissionPlan(@PathVariable Long newPlanId,
+                                            @RequestBody AccountSearchRequest request) {
+    return commissionManagementService.updateProjectCommissionPlan(newPlanId, request);
+  }
+
   @PostMapping(value = "/{id}/assignToPlan")
   public void saveProjectToPlan(@PathVariable Long id,
                                 @RequestParam Long projectId) {

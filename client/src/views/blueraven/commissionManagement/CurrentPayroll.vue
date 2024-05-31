@@ -168,6 +168,7 @@
               :items="accountingData"
               :fixed-header="true"
               :search="debouncedSearch"
+              :key="keyRefreshThing"
               :footer-props="footerProps"
               :mobile-breakpoint="0"
               :show-select="payrollStatus.showSelect"
@@ -189,7 +190,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2, 'error--text': item.closer_is_terminated }" v-if="positionId === 1">
+              <tr :class="{'shaded-row': index % 2, 'error--text': item.closer_is_terminated }" v-if="commissionPositionId === 1">
                 <td v-if="payrollStatus.showSelect">
                   <v-checkbox color="primary" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
@@ -211,7 +212,17 @@
                 <td class="text-left">{{item.proof_of_homeowners_insurance_obtained_date | formatDate('date') }}</td>
                 <td class="text-left">{{item.proof_of_howmeowners_insurance_required }}</td>
                 <td class="text-left">{{item.substantial_completion_date | formatDate('date') }}</td>
-                <td class="text-left">{{item.commission_plan }}</td>
+                <td class="text-left">
+                  <a-autocomplete
+                      v-model="item.commission_plan_id"
+                      :items="commissionPlans"
+                      item-title="name"
+                      @input="updateProjectCommissionPlan(item)"
+                      hide-details
+                      item-value="id"
+                      label=""
+                  />
+                </td>
                 <td class="text-left">{{item.commission_strategy_name }}</td>
                 <td class="text-left">{{item.commission_earned || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
@@ -439,6 +450,8 @@
   import { useBrsStore } from '@/stores/BrsStore.js'
   import { useAppStore } from '@/stores/AppStore.js'
   import debounce from 'lodash.debounce'
+  import {storeToRefs} from "pinia";
+  import {getCommissionPlans} from "@/services/commissionService.js";
 
   const route = useRoute()
   const userStore = useUserStore()
@@ -448,13 +461,14 @@
   const store = vueInstance.$store
      const filters = vueInstance.$filters
 
+  const { commissionPositionId } = storeToRefs(brsStore)
         const dataLoading = ref(true)
         const selectAll = ref(false)
         const customers = ref([])
         const customerSearch = ref(null)
         const customersLoading = ref(false)
-        const positionId = ref(brsStore.commissionPositionId)
         const reps = ref([])
+        const commissionPlans = ref([])
         const repSearch = ref(null)
         const repsLoading = ref(false)
         const approveConfirm = ref(false)
@@ -467,6 +481,7 @@
         const accountingData = ref([])
         const masterSelectedPayrollIds = ref([])
         const currentPayroll = ref({})
+        const keyRefreshThing = ref(0)
         const payrollStatus = ref({})
         const accountingSearch = ref({})
         const totalPay = ref(null)
@@ -502,7 +517,7 @@
           {text: 'HOI', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
           {text: 'HOI-R', value: 'proof_of_howmeowners_insurance_required', show: true},
           {text: 'SC', value: 'substantial_completion_date', show: true},
-          {text: 'Commission Plan', value: 'commission_plan', show: true},
+          {text: 'Commission Plan', value: 'commission_plan', width: 300, show: true},
           {text: 'Commission Strategy', value: 'commission_strategy_name', show: true},
           {text: 'Commissions Earned', value: 'commission_earned', show: true},
           {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
@@ -552,7 +567,7 @@
         return userStore.timezone.value
       })
       const headers = computed(() => {
-        return positionId.value === 1 ? closerHeaders.value : setterHeaders.value
+        return commissionPositionId.value === 1 ? closerHeaders.value : setterHeaders.value
       })
 
       watch(customerSearch, (val) => {
@@ -574,8 +589,14 @@
         reps.value = []
         getRepsDebounced(val)
       })
-      onMounted(() => {
-        getCurrentPayroll()
+      onMounted(async () => {
+        let requests = [
+            getPlans(),
+            getCurrentPayroll()
+        ]
+        await Promise.all(requests).then(() => {
+          // appStore.loading = false
+        })
       })
 
       const getCurrentMaxAdjustment = (item)=> {
@@ -662,6 +683,28 @@
           appStore.loading = false
         }
       }
+      const updateProjectCommissionPlan = async (item) => {
+        appStore.loading = true
+        try {
+          let params = {
+            payrollId: currentPayroll.value.id,
+            periodEnd: currentPayroll.value.periodEnd,
+            projectId: item.project_id,
+            positionId: commissionPositionId.value
+          }
+          const {data} = await postRequest(`/commissionManagement/${item.commission_plan_id}/reassign`, params, 'blueraven')
+          appStore.showSnack('SUCCESS', 'Successfully Updated')
+          let matchingIndex = accountingData.value.findIndex(o => o.project_id === item.project_id)
+          //if we dont find a match (should never happen), but unset the row so they have to refresh
+          accountingData.value[matchingIndex] = data && data[0] ? data[0] : []
+          appStore.loading = false
+          keyRefreshThing.value++
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          appStore.showSnack('ERROR', 'Error Updating')
+          appStore.loading = false
+        }
+      }
       const saveChangesToPayroll = async (keepLoading) => {
         let params = {
           description: currentPayroll.value.description,
@@ -728,10 +771,20 @@
             payrollStatus.value = {}
         }
       }
+      const getPlans = async () => {
+        try {
+          const {data, status} = await getCommissionPlans(commissionPositionId.value)
+          commissionPlans.value = data
+          handleHidingGlobalLoader(status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          appStore.showSnack('ERROR', 'Error Loading Commissions')
+        }
+      }
       const getCurrentPayroll = async () => {
         appStore.loading = true
         try {
-          const {data, status} = await getRequest(`/payroll/current/${positionId.value}`, 'blueraven', [])
+          const {data, status} = await getRequest(`/payroll/current/${commissionPositionId.value}`, 'blueraven', [])
           currentPayroll.value = data
 
           masterSelectedPayrollIds.value = cloneDeep(currentPayroll.value.selectedProjectIds)
@@ -760,7 +813,7 @@
             projectId: accountingSearch.value.projectId,
             customerId: accountingSearch.value.customerId,
             salesRepId: accountingSearch.value.salesRepId,
-            positionId: positionId.value
+            positionId: commissionPositionId.value
           }
           if(currentPayroll.value?.status !== 'PENDING' && currentPayroll.value?.status !== 'REJECTED') {
             params.selectedProjectIds = currentPayroll.value.selectedProjectIds

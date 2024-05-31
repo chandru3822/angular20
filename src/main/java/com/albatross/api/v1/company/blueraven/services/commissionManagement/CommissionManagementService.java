@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
+import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.OverrideManagementQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,6 +67,29 @@ public class CommissionManagementService {
     }
 
     return getCommissionPlanDetails(planId);
+  }
+
+  public String updateProjectCommissionPlan(Long newPlanId, AccountSearchRequest request) {
+    if (null != newPlanId && null != request && null != request.getProjectId() && null != request.getPayrollId() && null != request.getPeriodEnd()) {
+      User currentUser = securityService.getCurrentUser();
+
+      Map<String, Object> params = new HashMap<>();
+      params.put("userId", currentUser.trueUserId());
+      params.put("newPlanId", newPlanId);
+      params.put("projectId", request.getProjectId());
+
+      //change the project plan, then return 1 row
+      sqlCache.updateBySql(CommissionManagementQuery.updateProjectCommissionPlan, params);
+
+      try {
+        String accountReview = payroll.getAccountReview(request);
+        return accountReview;
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "COMMISSIONS: Error Updating Project Commission Plan", new Exception());
+    }
   }
 
   public void saveProjectToPlan(Long planId, Long projectId) {
