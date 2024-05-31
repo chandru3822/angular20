@@ -142,66 +142,19 @@ const expandCollapseNode = (node) => {
 const checkMove = debounce((evt) => {
   const { draggedContext: active, relatedContext: target } = evt ?? {}
 
-  if (!active || !active.element) {
+  const draggedItem = active?.element
+  const targetItem = target?.element
+  const isPage = draggedItem?.blockType === 'PageBlock'
+  if (!draggedItem || !isPage && targetItem?.parentId === undefined || isPage && targetItem?.parentId !== undefined) {
     return false
   }
-
-  const isSameParent = active?.element?.parentId === target?.element?.parentId
-  if (!isSameParent) {
-    return false
-  }
-
-  const prev = target.list[target.index - 1]
-
-  const pos = prev
-    ? (prev?.blockOrder - target?.element?.blockOrder) / 2 +
-      target?.element?.blockOrder
-    : target?.element?.blockOrder + 1
-
-  // console.log({active, target, pos})
-
-  //
-  // const draggedItem = draggedContext?.element
-  // const targetItem = relatedContext?.element
-  //
-  // if (!targetItem) {
-  //   return
-  // }
-  //
-  // const isPage = draggedItem?.blockType === 'PageBlock'
-  // if (!isPage && targetItem?.parentId === undefined || isPage && targetItem?.parentId !== undefined) {
-  //   return false
-  // }
-  //
-  // const canDrop = false
-  //
-  // const isTextBlock = draggedItem?.blockType === 'TextBlock' && targetItem?.blockType === 'TextBlock'
-  //
-  // const isRoot = targetItem?.parentId === undefined
-  //
-  // const isSameParent = draggedItem?.parentId === targetItem?.parentId
-  //
-  // const targetChildren = this.$store.getters.filterByParentId(targetItem?.parentId)
-  //   .slice()
-  //   .sort(blockOrderSorter)
-  //
-  // const indexOf = targetChildren.indexOf(targetItem)
-  // const next =  targetChildren[indexOf + 1]
-  //
-  //
-  // console.log({ indexOf, targetItem, next })
-  //
-  // let newOrder = targetChildren?.blockOrder + 1
-  // if (next){
-  //   newOrder = Math.abs(((targetItem?.blockOrder - next?.blockOrder) / 2)) + next?.blockOrder
-  // }
-  //
-  // // console.log({ draggedItem, targetItem })
   store.updatePosition({
-    blockId: active?.element.id,
-    pos,
-    parentId: target?.element?.parentId
+    blockId: draggedItem.id,
+    parentId: targetItem.parentId,
+    position: active.futureIndex + 1
   })
+  emit('list-reordered')
+  return true
 }, 250)
 </script>
 <style lang="scss" scoped>

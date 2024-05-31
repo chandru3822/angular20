@@ -229,10 +229,14 @@
             </v-card>
           </v-tab-item>
           <v-tab-item>
-            <v-chip label outlined color="primary--text" class="ml-4 sort-chip align-self-center albatross-body-2 flex-shrink-0"
+            <div class="d-flex justify-space-between align-center px-4" >
+            <v-chip label outlined color="primary--text" class="mt-4 mb-0 sort-chip align-self-center albatross-body-2 flex-shrink-0"
                     @click="sortbyId = !sortbyId">
-              {{ sortbyId ? 'Sort by Id' : 'Sort by doc order' }}
+              {{ sortbyId ? 'Sort by doc order' :'Sort by Id'}}
             </v-chip>
+              <a-btn variant="text"
+                     color="primary">Collapse All</a-btn>
+            </div>
             <v-card class="mx-auto pa-4" flat>
               <nested-tree2 :children="pages" :sort-by-id="sortbyId" @select="focusNode" id="props-designer-tree"/>
             </v-card>
