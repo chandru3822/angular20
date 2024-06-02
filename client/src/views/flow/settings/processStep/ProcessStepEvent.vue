@@ -1438,10 +1438,10 @@ const updateAction = async (action) => {
     }
 
     appStore.showSnack('SUCCESS', 'Action Updated')
-    // appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Updating Action')
+  } finally {
     appStore.loading = false
   }
 }
