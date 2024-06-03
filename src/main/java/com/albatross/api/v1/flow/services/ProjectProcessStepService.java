@@ -316,7 +316,7 @@ public class ProjectProcessStepService {
       var user = securityService.getCurrentUser();
       try {
           String json = sqlCache.queryForObjectBySql(
-              ProjectProcessStepQuery.getProjectProcessStep,
+              ProjectProcessStepQuery.getPPSForAutotrigger,
               Map.of("ppsId", ppsId, "companyId", user.getCompanyId()),
               String.class
           );

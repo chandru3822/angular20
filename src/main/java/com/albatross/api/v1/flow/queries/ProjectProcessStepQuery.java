@@ -39,6 +39,11 @@ public class ProjectProcessStepQuery {
   """;
 
   //language=PostgreSQL
+  public final static String getPPSForAutotrigger = """
+      select * from flow.get_pps_for_autotrigger(:ppsId::bigint, :companyId::bigint)
+  """;
+
+  //language=PostgreSQL
     public final static String getOneCustomFieldValue = """
 select * from flow.get_one_cfv(:objectTypeId::bigint, :cfgaId::bigint, :primaryId::bigint)
 """;
