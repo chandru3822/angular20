@@ -1,39 +1,47 @@
 <template>
   <div class="announcement-container">
-    <v-dialog v-model="showModal" :max-width="765"
-              content-class="modal-content">
-      <AnnouncementModal :announcement="selectedAnnouncement"
-                         :close-callback="closeModal">
+    <v-dialog
+      v-model="showModal"
+      :max-width="765"
+      content-class="modal-content"
+    >
+      <AnnouncementModal
+        :announcement="selectedAnnouncement"
+        :close-callback="closeModal"
+      >
       </AnnouncementModal>
     </v-dialog>
-    <v-alert v-for="(a, idx) in unseenAnnouncements"
-			 :key="idx"
-             elevation="1"
-             :max-width="320"
-             :min-width="320"
-             class="announcement-alert pr-0 py-3"
-             color="white"
+    <v-alert
+      v-for="(a, idx) in unseenAnnouncements"
+      :key="idx"
+      elevation="1"
+      :max-width="320"
+      :min-width="320"
+      class="announcement-alert pr-0 py-3"
+      color="white"
     >
       <div class="d-inline-block">
         {{ a.alertText }}
       </div>
 
-      <div class="d-inline-block text-right pr-4"
-           :style="{'min-width': a.expandable ? '150px' : '50px'}">
+      <div
+        class="d-inline-block text-right pr-4"
+        :style="{ 'min-width': a.expandable ? '150px' : '50px' }"
+      >
         <a-btn
-            variant="text"
-            color="primary"
-            class="learn-more-btn text-transform-unset"
-            v-if="a.expandable"
-            @click="[ markAnnouncement(a, true, true, true), openModal(a)]"
-            text="Learn More"
+          variant="text"
+          color="primary"
+          class="learn-more-btn text-transform-unset"
+          v-if="a.expandable"
+          @click=";[markAnnouncement(a, true, true, true), openModal(a)]"
+          text="Learn More"
         ></a-btn>
         <a-btn
-            variant="text"
-            size="x-small"
-            class="px-1 close-x"
-            @click="markAnnouncement(a, false, true, false)"
-            prepend-icon="clear"
+          variant="text"
+          size="x-small"
+          class="px-1 close-x"
+          @click="markAnnouncement(a, false, true, false)"
+          prepend-icon="clear"
         ></a-btn>
       </div>
     </v-alert>
@@ -42,29 +50,29 @@
 
 <script setup>
 import moment from 'moment'
-import { postRequestWithRequestParams} from "@/helpers/helpers.js";
-import AnnouncementModal from "@/components/AnnouncementModal.vue";
+import { postRequestWithRequestParams } from '@/helpers/helpers.js'
+import AnnouncementModal from '@/components/AnnouncementModal.vue'
 
-import {computed, ref} from 'vue'
+import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
 const appStore = useAppStore()
 const fileStore = useFileStore()
-
-const announcementAlert = ref({})
 const showModal = ref(false)
 const selectedAnnouncement = ref({})
 const loadComplete = ref(false)
 
 const unseenAnnouncements = computed(() => {
   if (Array.isArray(appStore.announcements)) {
-	  return appStore.announcements?.filter(a => !a.seen &&
-		  (moment().isBetween(moment(a.startTime), moment(a.endTime))
-			  || (moment().isAfter((moment(a.startTime))) && a.endTime == null))
-	  )
+    return appStore?.announcements?.filter(
+      (a) =>
+        !a.seen &&
+        (moment().isBetween(moment(a.startTime), moment(a.endTime)) ||
+          (moment().isAfter(moment(a.startTime)) && a.endTime == null))
+    )
   } else {
-	  return []
+    return []
   }
 })
 
@@ -72,13 +80,13 @@ const closeModal = () => {
   showModal.value = false
   selectedAnnouncement.value = {}
 }
-const openModal = async(item) => {
+const openModal = async (item) => {
   showModal.value = true
   loadComplete.value = false
   await getAttachment(item)
   selectedAnnouncement.value = item
 }
-const getAttachment = async(item) => {
+const getAttachment = async (item) => {
   try {
     await fileStore.getOne({
       attachmentTypeId: 990,
@@ -89,13 +97,13 @@ const getAttachment = async(item) => {
         loadComplete.value = true
       }
     })
-  } catch(e) {
+  } catch (e) {
     console.error('*** ERROR ***', e)
     loadComplete.value = true
   }
 }
-const markAnnouncement = async(item, read, seen, alerted) => {
-  if(!item.seen) {
+const markAnnouncement = async (item, read, seen, alerted) => {
+  if (!item.seen) {
     try {
       let params = {
         seen,
@@ -105,18 +113,21 @@ const markAnnouncement = async(item, read, seen, alerted) => {
       item.seen = seen
       item.read = read
       item.alerted = alerted
-      await postRequestWithRequestParams(`/announcements/${item.id}/mark`, {}, params)
+      await postRequestWithRequestParams(
+        `/announcements/${item.id}/mark`,
+        {},
+        params
+      )
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error Marking Announcement As Seen')
-
     }
   }
 }
 </script>
 
 <style lang="scss">
-.announcement-alert .v-alert__content{
+.announcement-alert .v-alert__content {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -124,10 +135,6 @@ const markAnnouncement = async(item, read, seen, alerted) => {
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-.announcement-alert {
-
-}
-
 .announcement-container {
   position: absolute;
   right: 50px;
@@ -145,7 +152,7 @@ const markAnnouncement = async(item, read, seen, alerted) => {
 
 .rich-text-editor-readonly .ql-container {
   //border-top: solid 1px #ccc !important;
-  border:none;
+  border: none;
   border-radius: 0.25em;
   background-color: #fff;
   padding: 0;
@@ -158,7 +165,7 @@ const markAnnouncement = async(item, read, seen, alerted) => {
 .rich-text-editor .ql-container {
   height: auto !important;
   width: 100%;
-  color: rgba(0,0,0,0.87); //default-text-color
+  color: rgba(0, 0, 0, 0.87); //default-text-color
   font-size: 1rem; //body-large
   font-weight: 400;
   font-family: lato;

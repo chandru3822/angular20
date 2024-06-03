@@ -129,7 +129,7 @@ const menuWidth = computed(() => {
 })
 const hasUnalertedAnnouncements = computed(() => {
   if (Array.isArray(appStore.announcements)) {
-	  return appStore.announcements?.filter((a) => !a.alerted)?.length > 0 || false
+	  return appStore?.announcements?.filter((a) => !a.alerted)?.length > 0 || false
   } else {
 	  return false
   }

@@ -4,6 +4,7 @@ import Chat from 'vue-beautiful-chat'
 import App from '@/App.vue'
 import router from '@/router'
 import pinia from '@/store'
+import logger from '@/logger.js'
 import axios from 'axios'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
@@ -18,9 +19,9 @@ import { requestInterceptor, responseInterceptor } from '@/helpers/interceptors'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
-const { VITE_GA_ID } = import.meta.env
-Vue.config.productionTip = false
+const { VITE_GA_ID, VITE_SENTRY_DSN } = import.meta.env
 
+Vue.config.productionTip = false
 Vue.prototype.$filters = Vue.options.filters
 
 Vue.filter('currency', function (value, symbol, digits) {
@@ -132,6 +133,10 @@ Vue.use(
 )
 
 Vue.use(Chat)
+
+if (VITE_SENTRY_DSN) {
+  logger(VITE_SENTRY_DSN, router)
+}
 
 new Vue({
   router,
