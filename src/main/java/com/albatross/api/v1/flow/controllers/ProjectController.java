@@ -50,10 +50,11 @@ public class ProjectController {
     @RequestParam(required = false) String sortColumn,
     @RequestParam(required = false) String sortDirection,
     @RequestParam(required = false) Boolean includeCommissionDetails,
+    @RequestParam(required = false) String searchColumn,
     Pageable pageable) {
     return new ResponseEntity<>(
       projectService.searchProjects(
-        query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, includeCommissionDetails, pageable),
+        query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, includeCommissionDetails, pageable, searchColumn),
       HttpStatus.OK);
   }
 

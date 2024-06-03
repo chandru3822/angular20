@@ -9,15 +9,13 @@
         <v-card
             class="white elevation-1 mt-3 px-3 pt-1 square-card"
         >
-          <a-text-field
-              class="pt-3"
-              prepend-inner-icon="search"
-              clearable
-              label="Search projects..."
-              v-model="searchQuery"
-              @input="searchProjects"
-              @click:clear="searchProjects()"
-              :keyup.enter="closeKeyboard"
+          <SuperSearch
+            class="mb-3 pa-0"
+            :filter-options="headers"
+            v-model="searchQuery"
+            @click:clear="searchProjects"
+            :keyup.enter="closeKeyboard"
+            @updateQuery="setSearchQuery"
           />
 
           <v-spacer/>
@@ -48,17 +46,14 @@
 
           <template #item.id="{item: project, index}" class="text-left py-0 pl-4 clickable">
             <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
-              {{project.id}}
+              <span v-if="searchQuery?.length > 0" :inner-html.prop="project?.id?.toString() | searchHighlight(searchQuery)"></span>
+              <span v-else>{{project?.id}}</span>
             </router-link>
           </template>
           <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
             <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
-              {{project.projectName}}
-            </router-link>
-          </template>
-          <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
-            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
-              {{project.stateAbbreviation}}
+              <span v-if="searchQuery?.length > 0" :inner-html.prop="project.projectName | searchHighlight(searchQuery)"></span>
+              <span v-else>{{project.projectName}}</span>
             </router-link>
           </template>
           <template #item.projectStatusType="{item: project, index}" class="text-left clickable">
@@ -66,10 +61,54 @@
               {{project.projectStatusType}}
             </router-link>
           </template>
+          <template #item.street1="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              <span v-if="searchQuery?.length > 0" :inner-html.prop="project.street1 | searchHighlight(searchQuery)"></span>
+              <span v-else>{{project.street1}}</span>
+            </router-link>
+          </template>
+          <template #item.city="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              <span v-if="searchQuery?.length > 0" :inner-html.prop="project.city | searchHighlight(searchQuery)"></span>
+              <span v-else>{{project.city}}</span>
+            </router-link>
+          </template>
+          <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              <span v-if="searchQuery?.length > 0" :inner-html.prop="project.stateAbbreviation | searchHighlight(searchQuery)"></span>
+              <span v-else>{{project.stateAbbreviation}}</span>
+            </router-link>
+          </template>
+          <template #item.postalCode="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              <span v-if="searchQuery?.length > 0" :inner-html.prop="project?.postalCode?.toString() | searchHighlight(searchQuery)"></span>
+              <span v-else>{{project?.postalCode}}</span>
+            </router-link>
+          </template>
+          <template #item.contact.phone="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              <div>
+                <span v-if="searchQuery?.length > 0 && project.contact.phone" :inner-html.prop="reformatPhone(project.contact.phone) | searchHighlight(reformatPhone(searchQuery))"></span>
+                <span v-if="searchQuery?.length === 0 && project.contact.phone"> {{ reformatPhone(project.contact.phone) }} </span>
+                <br v-if="project.contact.phone && project.contact.mobile">
+                <span v-if="searchQuery?.length > 0 && project.contact.mobile" :inner-html.prop="reformatPhone(project.contact.mobile) | searchHighlight(reformatPhone(searchQuery))"></span>
+                <span v-if="searchQuery?.length === 0 && project.contact.mobile"> {{ reformatPhone(project.contact.mobile) }} </span>
+              </div>
+            </router-link>
+          </template>
           <template #item.dateCreated="{item: project, index}" class="text-left clickable">
             <span class="clickable">
               <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
-                {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
+                <span v-if="searchQuery?.length > 0" :inner-html.prop="project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY') | searchHighlight(searchQuery)"></span>
+                <span v-else>{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>
+              </router-link>
+            </span>
+          </template>
+          <template #item.contact.email="{item: project, index}" class="text-left clickable">
+            <span class="clickable">
+              <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+                <span v-if="searchQuery?.length > 0" :inner-html.prop="project.contact.email | searchHighlight(searchQuery)" class="wrap-email"></span>
+                <span v-else>{{project.contact.email }}</span>
               </router-link>
             </span>
           </template>
@@ -89,6 +128,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import SuperSearch from "@/components/SuperSearch.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -103,11 +143,16 @@ const initialLoad = ref(true)
 const pageableTable = ref(null)
 const options = ref({itemsPerPage: 100})
 const headers = ref([
-  {text: 'ID', value: 'id', show: true},
+  {text: 'ID', value: 'id', show: true, width: '100px'},
   {text: 'Name', value: 'projectName', show: true},
-  {text: 'State', value: 'stateAbbreviation', show: true},
   {text: 'Status', value: 'projectStatusType', show: true},
-  {text: 'Date Created', value: 'dateCreated', show: true}
+  {text: 'Street', value: 'street1', show: true},
+  {text: 'City', value: 'city', show: true, width: '150px'},
+  {text: 'State', value: 'stateAbbreviation', show: true, width: '75px'},
+  {text: 'Zip', value: 'postalCode', show: true, width: '100px'},
+  {text: 'Phone', value: 'contact.phone', show: true, width: '150px'},
+  {text: 'Email', value: 'contact.email', show: true},
+  {text: 'Date Created', value: 'dateCreated', show: true, width: '125px'},
 ])
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
@@ -121,11 +166,27 @@ const page = ref(1)
 const isProjectsLoading = ref(false)
 const showConfirmDialog = ref(false)
 const source = ref(null)
+const columnFilterName = ref('')
 
 const useSavedFilter = computed(() => {
   return route.params.useSavedFilter
 })
 
+const reformatPhone = (phoneNumber) => {
+  return phoneNumber.replace(/\D/g, '')
+}
+
+const setSearchQuery = (newValue, columnName="") => {
+  searchQuery.value = newValue?.trim()
+  if (columnName !== "") {
+    columnFilterName.value = headers.value.find(f => f.text === columnName.replace(":", '')).value
+    console.log(columnFilterName.value)
+  } else {
+    columnFilterName.value = ''
+  }
+
+  searchProjects()
+}
 onMounted(() => {
   if(useSavedFilter.value === 'true') {
     searchQuery.value = localStorage.getItem('projectSearch') || ''
@@ -176,7 +237,8 @@ const getProjects = async() => {
       params: {
         query: searchQuery.value,
         page: page - 1,
-        size: itemsPerPage
+        size: itemsPerPage,
+        searchColumn: columnFilterName.value
       }
     }, null, [])
     projects.value = data.content || []

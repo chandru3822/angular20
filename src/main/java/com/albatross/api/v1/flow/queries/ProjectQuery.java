@@ -141,7 +141,8 @@ select *
                                   :offset::bigint,
                                   :companyProjectStatusTypeId::bigint,
                                   :sortColumn::character varying,
-                                  :sortDirection::character varying)
+                                  :sortDirection::character varying,
+                                  :searchColumn::character varying)
     """;
 
 
