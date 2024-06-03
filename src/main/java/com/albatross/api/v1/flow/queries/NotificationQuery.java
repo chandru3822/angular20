@@ -73,4 +73,20 @@ public class NotificationQuery {
       and user_id = :userId
     """;
 
+  //language=PostgreSQL
+  public final static String getAllUnprocessedPushNotifications = """
+    select *
+    from flow.push_notification_queue pnq
+    where pnq.processed is false
+  """;
+
+  //language=PostgreSQL
+  public final static String markPushNotificationProcessed = """
+    update flow.push_notification_queue pnq
+      set processed = true,
+      date_modified = now(),
+      date_processed = now()
+    where pnq.id = :id
+  """;
+
 }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RoundRobinAllocationUser {
 
-  private Long roundRobinUserId, roundRobinId, userId, companyTimezoneId;
+  private Long roundRobinUserId, roundRobinId, userId, companyTimezoneId, leadLimit, appointmentCount;
   private String fullName, timezone;
   private Double prescribedAllocation, targetLeadAllocation, manualAllocationWhole, manualAllocation;
   private Boolean edit = false;

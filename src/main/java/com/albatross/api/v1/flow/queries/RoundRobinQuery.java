@@ -256,6 +256,7 @@ public class RoundRobinQuery {
   public final static String updateRoundRobinUser = """
     update flow.round_robin_user
        set company_timezone_id = :companyTimezoneId,
+           lead_limit = :leadLimit,
            modified_by_id = :modifiedById,
            date_modified = now()
        where id = :rruId
@@ -280,6 +281,7 @@ public class RoundRobinQuery {
                pczu.user_id,
                pczu.company_timezone_id,
                t.timezone,
+               pczu.lead_limit,
                pczu.round_robin_user_type_id,
                pczu.archived
         from flow.round_robin_user pczu

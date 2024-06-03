@@ -225,6 +225,7 @@ public class RoundRobinService {
     params.put("rruId", rruId);
     params.put("modifiedById", user.trueUserId());
     params.put("companyTimezoneId", roundRobinUser.getCompanyTimezoneId());
+    params.put("leadLimit", roundRobinUser.getLeadLimit());
 
     sqlCache.updateBySql(RoundRobinQuery.updateRoundRobinUser, params);
 

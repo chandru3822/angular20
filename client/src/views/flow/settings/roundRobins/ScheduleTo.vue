@@ -104,7 +104,7 @@
                 size="x-small"
                 variant="text"
                 v-if="item.edit"
-                @click="saveUserTimezone(item)"
+                @click="editUser(item)"
                 prepend-icon="save"
             ></a-btn>
 
@@ -131,7 +131,7 @@
                           hide-details
                           :disabled="!userCanEdit"
                           :readonly="!userCanEdit"
-                          @input="[item.dirty = true, valuesUpdated = true, getTotalManualAllocation()]"
+                          @input="[item.dirty = true, valuesUpdated = true]"
                           class="ml-2 allocation-input d-inline-block"
                           v-model.number="item.manualAllocationWhole"></a-text-field>
             <span class="ml-2">%</span>
@@ -146,6 +146,29 @@
               <span>{{ getAllocationValue(item.targetLeadAllocation) }}</span>
             </v-tooltip>
             <span v-else>--</span>
+          </template>
+          <template #item.leadLimit="{item}">
+            <div class="d-flex">
+              <a-text-field
+                  type="number"
+                  variant="solo"
+                  single-line
+                  density="compact"
+                  hide-details
+                  :disabled="!userCanEdit"
+                  :readonly="!userCanEdit"
+                  @input="item.dirty = true"
+                  v-model.number="item.leadLimit"/>
+
+              <a-btn v-if="item.dirty"
+                  variant="text"
+                  size="small"
+                  @click="editUser(item)"
+                  color="primary"
+                  prepend-icon="save"
+              ></a-btn>
+            </div>
+
           </template>
           <template #item.icons="{item}" class="text-right">
             <a-btn
@@ -239,9 +262,6 @@ const search = ref('')
 const expanded = ref([])
 const newUserCompanyTimezoneId = ref(null)
 const selectedIndex = ref(null)
-const totalManualAllocation = ref(null)
-const totalTargetLeadAllocation = ref(null)
-const totalPrescribedAllocation = ref(null)
 const roundRobin = ref({})
 const userHeaders = ref([])
 const companyTimezones = ref([])
@@ -258,6 +278,8 @@ onMounted(async() => {
     {text: 'Prescribed Allocation', value: 'prescribedAllocation', show: true},
     {text: 'Manually Set Allocation', value: 'manuallySetAllocation', width: '175px', show: true},
     {text: 'Adjusted Allocation', value: 'targetLeadAllocation', show: true},
+    {text: 'Lead Limit', value: 'leadLimit', show: true},
+    {text: 'Appt Count', value: 'appointmentCount', show: true},
     {text: '', value: 'icons', show: true, align: 'end'},
   ]
   if (roundRobin.value?.remote) {
@@ -270,6 +292,21 @@ const roundRobinId = computed(() => {
 })
 const is7oaksAdmin = computed(() => {
   return userStore.isSystemAdmin
+})
+const totalManualAllocation = computed(() => {
+  return sumBy(scheduleToUsers.value, function (o) {
+    return o.manualAllocationWhole ? o.manualAllocationWhole : 0
+  })
+})
+const totalPrescribedAllocation = computed(() => {
+  return sumBy(scheduleToUsers.value, function (o) {
+    return o.prescribedAllocation
+  })
+})
+const totalTargetLeadAllocation = computed(() => {
+  return sumBy(scheduleToUsers.value, function (o) {
+    return o.targetLeadAllocation
+  })
 })
 const userCanAdd = computed(() => {
   return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
@@ -312,29 +349,12 @@ const getCompanyTimezones = async () => {
   }
 }
 
-const getTotalManualAllocation = () => {
-  totalManualAllocation.value = sumBy(scheduleToUsers.value, function (o) {
-    return o.manualAllocationWhole ? o.manualAllocationWhole : 0
-  })
-}
-const getOtherTotals = () => {
-  totalPrescribedAllocation.value = sumBy(scheduleToUsers.value, function (o) {
-    return o.prescribedAllocation
-  })
-  totalTargetLeadAllocation.value = sumBy(scheduleToUsers.value, function (o) {
-    return o.targetLeadAllocation
-  })
-}
 const getScheduleToUsers = async () => {
   appStore.loading = true
   try {
     const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}/scheduleTo`)
     scheduleToUsers.value = data
     dataLoading.value = false
-    getTotalManualAllocation()
-    if (is7oaksAdmin.value) {
-      getOtherTotals()
-    }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -350,14 +370,10 @@ const saveAllocationChanges = async () => {
       r.manualAllocation = r.manualAllocationWhole ? r.manualAllocationWhole / 100 : null
     })
     if (updatedRows?.length > 0) {
-      const {data} = await putRequest(`/roundRobin/${roundRobinId.value}/userAllocation`, updatedRows)
+      const {data, status} = await putRequest(`/roundRobin/${roundRobinId.value}/userAllocation`, updatedRows)
       scheduleToUsers.value = data
-      getTotalManualAllocation()
-      if (is7oaksAdmin.value) {
-        getOtherTotals()
-      }
+      handleHidingGlobalLoader(status)
     }
-    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Allocation Changes')
@@ -370,10 +386,6 @@ const deleteUserFromRoundRobin = async () => {
   try {
     const {data, status} = await putRequest(`/roundRobin/${roundRobinId.value}/user/${user.roundRobinUserId}/delete`)
     scheduleToUsers.value = data
-    getTotalManualAllocation()
-    if (is7oaksAdmin.value) {
-      getOtherTotals()
-    }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -392,10 +404,6 @@ const addUserToRoundRobin = async (selected) => {
     const {data, status} = await postRequest(`/roundRobin/${roundRobinId.value}/saveScheduleToUser`, params)
     scheduleToUsers.value = data
     newUserCompanyTimezoneId.value = null
-    getTotalManualAllocation()
-    if (is7oaksAdmin.value) {
-      getOtherTotals()
-    }
     addUser.value = false
     selectedUser.value = {}
     handleHidingGlobalLoader(status)
@@ -431,16 +439,19 @@ const getRoundRobinDetails = async () => {
     appStore.loading = false
   }
 }
-const saveUserTimezone = async (user) => {
+
+const editUser = async (user) => {
   appStore.loading = true
   try {
     const {data, status} = await putRequest(`/roundRobin/user/${user.roundRobinUserId}`, user)
     user.timezone = data.timezone
     user.edit = false
+    user.dirty = false
     appStore.showSnack('SUCCESS', 'User Updated')
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Updating User')
+  } finally {
     appStore.loading = false
   }
 }

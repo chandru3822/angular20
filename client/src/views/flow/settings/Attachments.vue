@@ -86,7 +86,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
                   <td class="text-left clickable">
-                    <router-link :to="getPath()" class="router-link-td">
+                    <router-link :to="getPath(item.id)" class="router-link-td">
                       {{ item.attachmentType }}
                     </router-link>
                   </td>

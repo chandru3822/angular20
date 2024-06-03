@@ -28,6 +28,11 @@ public class FallbackPushNotificationService implements PushNotificationService 
   }
 
   @Override
+  public void sendUnprocessedPushNotifications() {
+    log.info("Processing Push Notification Queue");
+  }
+
+  @Override
   public void pruneTokens() {
 
   }

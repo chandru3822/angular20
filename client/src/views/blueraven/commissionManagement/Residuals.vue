@@ -686,7 +686,7 @@ const exportResiduals = async () => {
   appStore.loading = true
   try {
     let filename = 'Residuals.csv';
-    let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC,Qualified FDC This Period,FDA Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Current Clawback,Existing Clawback,Total Clawback,Adjustment/Override,Total';
+    let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC, LTD kW,Qualified Projects This Period, Qualified kW This Period,Projects Not Qualified This Period, Required Quota For MonthRequired FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Current Clawback,Existing Clawback,Total Clawback,Adjustment/Override,Total';
     csvData += '\n';
 
     residuals.value.forEach(p => {

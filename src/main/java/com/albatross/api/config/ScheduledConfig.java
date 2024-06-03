@@ -1,5 +1,7 @@
 package com.albatross.api.config;
 
+import com.albatross.api.notification.NotificationService;
+import com.albatross.api.push.PushNotificationService;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
@@ -35,6 +37,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
   private final SMSService smsService;
   private final MailService mailService;
+  private final PushNotificationService pushNotificationService;
   private final AvailabilityService availabilityService;
   private final ProjectProcessStepService projectProcessStepService;
   private final MessagingService messagingService;
@@ -49,6 +52,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
   @Value(value = "${app.cron.sendEmail.enabled:false}")
   private Boolean sendEmailNotifications;
+
+  @Value(value = "${app.cron.sendPushNotifications.enabled:false}")
+  private Boolean sendPushNotifications;
 
   @Value(value = "${app.home_url}")
   private String homeUrl;
@@ -171,6 +177,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void sendUnprocessedEmails() throws InterruptedException {
     if (sendEmailNotifications) {
       mailService.sendUnprocessedEmails();
+    }
+  }
+
+  //    every  minute
+  @Scheduled(fixedDelayString = "${app.cron.sendPushNotifications.delay:60000}")
+  public void sendUnprocessedPushNotifications() {
+    if (sendPushNotifications) {
+      pushNotificationService.sendUnprocessedPushNotifications();
     }
   }
 

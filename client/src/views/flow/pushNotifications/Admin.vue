@@ -1,6 +1,11 @@
 <template>
   <v-form ref="form" @submit.prevent="sendPushNotifications">
     <v-container>
+      <v-card class="pa-4 mb-4" color="secondary" width="200" v-if="is7oaksAdmin">
+        7 Oaks Only: <br>
+        <a-btn class="mt-2" :loading="processingQueue"
+               @click="processPushNotificationQueue()">Process Queue</a-btn>
+      </v-card>
       <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">
           Test Push Notifications
@@ -53,12 +58,20 @@
 <script setup>
 import { getRequest, postRequest } from '@/helpers/helpers'
 import { computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+
+const userStore = useUserStore()
 
 const title = ref('')
 const message = ref('')
 const selected = ref([])
 const users = ref([])
 const form = ref(null)
+const processingQueue = ref(false)
+
+const is7oaksAdmin = computed(() => {
+  return userStore.isSystemAdmin
+})
 
 onMounted(() => {
   Promise.allSettled([getPushNotificationUsers()])
@@ -82,6 +95,18 @@ const getPushNotificationUsers = async () => {
     console.error(e)
   }
 }
+
+const processPushNotificationQueue = async () => {
+  try {
+    processingQueue.value = true
+    await postRequest('/push/processQueue', {})
+  } catch (e) {
+    console.error(e)
+  } finally {
+    processingQueue.value = false
+  }
+}
+
 const sendPushNotifications = async () => {
   try {
     if (title.value && message.value && selected.value?.length > 0) {
