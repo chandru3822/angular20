@@ -14,12 +14,12 @@ CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id bigint,
 AS
 $BODY$
 declare
-  v_timezone text;
-v_uses_total_lead_allocation boolean;
-  v_round_robin_id bigint;
+  v_timezone                   text;
+  v_uses_total_lead_allocation boolean;
+  v_round_robin_id             bigint;
 BEGIN
 
-  select coalesce(t.timezone, p.time_zone),pcz.uses_total_lead_allocation,pcz.id
+  select coalesce(t.timezone, p.time_zone), pcz.uses_total_lead_allocation, pcz.id
   into v_timezone,v_uses_total_lead_allocation,v_round_robin_id
   from flow.project p
          inner join flow.postal_code pc on pc.postal_code = substr(
@@ -29,16 +29,18 @@ BEGIN
          left join flow.timezone t on ct.timezone_id = t.id
   where p.id = p_project_id;
 
-  create temp table exclude_by_appointment as (
-    select foo.user_id,foo.lead_limit,foo.appointment_count
-    from (
-           select rru.user_id,coalesce(lead_limit,0) as lead_limit,coalesce((select appointment_count from brs.get_appointment_count(rru.user_id)),0) as appointment_count
-           from  flow.round_robin_user rru
-           where rru.round_robin_id = 5
-             and archived is false and
-             round_robin_user_type_id = 1) as foo
-    where foo.appointment_count >= foo.lead_limit
-  );
+  create temp table exclude_by_appointment as (select foo.user_id, foo.lead_limit, foo.appointment_count
+                                               from (select rru.user_id,
+                                                            lead_limit  as lead_limit,
+                                                            coalesce((select appointment_count
+                                                                      from brs.get_appointment_count(rru.user_id)),
+                                                                     0) as appointment_count
+                                                     from flow.round_robin_user rru
+                                                     where rru.round_robin_id = 5
+                                                       and archived is false
+                                                       and round_robin_user_type_id = 1) as foo
+                                               where lead_limit is not null
+                                                 and foo.appointment_count >= foo.lead_limit);
 
   if p_remote is false and v_timezone is not null then
     create temp table excluded_appointments as (with user_ids as (select up.user_id,
@@ -190,169 +192,194 @@ BEGIN
   if p_remote is false and v_timezone is not null then
     EXECUTE 'SET TIME ZONE ''' || v_timezone || ''';';
 
-    create temp table available_time_slots as (
-      select true, array_agg(distinct foo2.user_id)::bigint array as users, foo2.scheduled_start_time
-      from (select user_id,
-                   foo1.scheduled_start_time,
-                   scheduled_end_time,
-                   (select count(1) < 1
-                    from excluded_appointments
-                    where excluded_appointments.user_id = foo1.user_id
-                      and (tsrange(foo1.scheduled_start_time, foo1.scheduled_end_time, '[]')
-                            && tsrange(excluded_appointments.start_time, excluded_appointments.end_time, '[]'))
-            ) as available
-            from (select user_id,
-                         available_times                                                          as scheduled_start_time,
-                         (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time
-                  from (select pczu.user_id,
-                               ($$'$$ || p_available_date::date || $$'$$ || rst.start_time)::timestamp with time zone at time zone
-                               'UTC' as available_times,
-                               90    as default_appointment_length
-                        from flow.project p
-                               inner join flow.postal_code pc on pc.postal_code = substr(
-                          trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and
-                                                                                  pc.archived is false
-                               inner join flow.round_robin pcz
-                                          on pcz.id = pc.round_robin_id and pcz.archived is false
-                               inner join flow.round_robin_user pczu on pczu.round_robin_id = pcz.id and
-                                                                             pczu.round_robin_user_type_id =
-                                                                             1 and pczu.archived is false
-                               inner join flow.resource_schedule rs
-                                          on rs.user_id = pczu.user_id and rs.archived is false
-                               inner join flow.company_user_status cus on cus.user_id = pczu.user_id
-                               inner join flow.user_status_type ust
-                                          on cus.user_status_type_id = ust.id and ust.has_access is true and
-                                             ust.company_id = 3 and ust.archived is false
-                               inner join flow.user_position up
-                                          on up.user_id = pczu.user_id and primary_flag is true and up.archived is false
-                               inner join flow.position p1 on p1.id = up.position_id and p1.schedulable is true
-                               inner join flow.resource_schedule_availability rsa
-                                          on rsa.resource_schedule_id = rs.id
-                                            and rsa.archived is false
-                                            and rsa.day_of_week_id = extract(dow from p_available_date::date)
-                               inner join flow.resource_slot_schedule rss
-                                          on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
-                               inner join flow.resource_slot_time rst
-                                          on rss.id = rst.resource_slot_schedule_id and rst.archived is false
-                               inner join flow.user_company uc
-                                          on uc.user_id = rs.user_id and uc.company_id = 3 and uc.archived is false
-                               left join flow.excluded_resource_slot_time erst
-                                         on erst.resource_slot_time_id = rst.id and
-                                            erst.resource_schedule_availability_id = rsa.id
-                                           and erst.archived is false
-                        where p.id = p_project_id
-                          and erst.id is null
-                          and pcz.remote is false
-                          and case
-                                when rs.end_date is not null then
-                                  p_available_date::date between rs.start_date and rs.end_date
-                                else
-                                  p_available_date::date >= rs.start_date end) as foo) as foo1
-          where not exists  (select user_id from exclude_by_appointment eba
-                                                             where foo1.user_id = eba.user_id)) as foo2
-      where foo2.available is true
-        and foo2.scheduled_start_time at time zone 'UTC' at time zone v_timezone > now() + interval '30 minutes'
-      group by foo2.scheduled_start_time
-      order by foo2.scheduled_start_time);
+    create temp table available_time_slots as (select true,
+                                                      array_agg(distinct foo2.user_id)::bigint array as users,
+                                                      foo2.scheduled_start_time
+                                               from (select user_id,
+                                                            foo1.scheduled_start_time,
+                                                            scheduled_end_time,
+                                                            (select count(1) < 1
+                                                             from excluded_appointments
+                                                             where excluded_appointments.user_id = foo1.user_id
+                                                               and (
+                                                               tsrange(foo1.scheduled_start_time, foo1.scheduled_end_time, '[]')
+                                                                 && tsrange(excluded_appointments.start_time,
+                                                                            excluded_appointments.end_time,
+                                                                            '[]'))) as available
+                                                     from (select user_id,
+                                                                  available_times                                                          as scheduled_start_time,
+                                                                  (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time
+                                                           from (select pczu.user_id,
+                                                                        ($$'$$ || p_available_date::date || $$'$$ || rst.start_time)::timestamp with time zone at time zone
+                                                                        'UTC' as available_times,
+                                                                        90    as default_appointment_length
+                                                                 from flow.project p
+                                                                        inner join flow.postal_code pc
+                                                                                   on pc.postal_code = substr(
+                                                                                     trim(both ',' from
+                                                                                          trim(both ' ' from trim(both '	' from p.postal_code))),
+                                                                                     1, 5) and
+                                                                                      pc.archived is false
+                                                                        inner join flow.round_robin pcz
+                                                                                   on pcz.id = pc.round_robin_id and pcz.archived is false
+                                                                        inner join flow.round_robin_user pczu
+                                                                                   on pczu.round_robin_id = pcz.id and
+                                                                                      pczu.round_robin_user_type_id =
+                                                                                      1 and pczu.archived is false
+                                                                        inner join flow.resource_schedule rs
+                                                                                   on rs.user_id = pczu.user_id and rs.archived is false
+                                                                        inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+                                                                        inner join flow.user_status_type ust
+                                                                                   on cus.user_status_type_id =
+                                                                                      ust.id and
+                                                                                      ust.has_access is true and
+                                                                                      ust.company_id = 3 and
+                                                                                      ust.archived is false
+                                                                        inner join flow.user_position up
+                                                                                   on up.user_id = pczu.user_id and
+                                                                                      primary_flag is true and
+                                                                                      up.archived is false
+                                                                        inner join flow.position p1 on p1.id = up.position_id and p1.schedulable is true
+                                                                        inner join flow.resource_schedule_availability rsa
+                                                                                   on rsa.resource_schedule_id = rs.id
+                                                                                     and rsa.archived is false
+                                                                                     and rsa.day_of_week_id =
+                                                                                         extract(dow from p_available_date::date)
+                                                                        inner join flow.resource_slot_schedule rss
+                                                                                   on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
+                                                                        inner join flow.resource_slot_time rst
+                                                                                   on rss.id = rst.resource_slot_schedule_id and rst.archived is false
+                                                                        inner join flow.user_company uc
+                                                                                   on uc.user_id = rs.user_id and uc.company_id = 3 and uc.archived is false
+                                                                        left join flow.excluded_resource_slot_time erst
+                                                                                  on erst.resource_slot_time_id =
+                                                                                     rst.id and
+                                                                                     erst.resource_schedule_availability_id =
+                                                                                     rsa.id
+                                                                                    and erst.archived is false
+                                                                 where p.id = p_project_id
+                                                                   and erst.id is null
+                                                                   and pcz.remote is false
+                                                                   and case
+                                                                         when rs.end_date is not null then
+                                                                           p_available_date::date between rs.start_date and rs.end_date
+                                                                         else
+                                                                           p_available_date::date >= rs.start_date end) as foo) as foo1
+                                                     where not exists  (select user_id
+                                                                        from exclude_by_appointment eba
+                                                                        where foo1.user_id = eba.user_id)) as foo2
+                                               where foo2.available is true
+                                                 and
+                                                 foo2.scheduled_start_time at time zone 'UTC' at time zone v_timezone >
+                                                 now() + interval '30 minutes'
+                                               group by foo2.scheduled_start_time
+                                               order by foo2.scheduled_start_time);
   elsif p_remote is false and v_timezone is null then
-    select false::boolean, array []::bigint[], null::timestamp,null::bigint;
+    select false::boolean, array []::bigint[], null::timestamp, null::bigint;
   else
-    create temp table available_time_slots as (
-      select true, array_agg(distinct foo2.user_id)::bigint array as users, foo2.scheduled_start_time
-      from (select user_id,
-                   foo1.scheduled_start_time,
-                   scheduled_end_time,
-                   (select count(1) < 1
-                    from excluded_appointments
-                    where excluded_appointments.user_id = foo1.user_id
-                      and (tsrange(foo1.scheduled_start_time, foo1.scheduled_end_time, '[]')
-                        && tsrange(excluded_appointments.start_time, excluded_appointments.end_time, '[]'))
-                    ) as available,
-                   pczu_timezone
-            from (select user_id,
-                         available_times                                                          as scheduled_start_time,
-                         (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time,
-                         pczu_timezone
-                  from (select pczu.user_id,
-                               ((($$'$$ || p_available_date::date || $$'$$ || rst.start_time)::timestamp at time zone
-                                 coalesce(t1.timezone, t.timezone))::timestamp with time zone at time zone
-                                'UTC')                           as available_times,
-                               60                                as default_appointment_length,
-                               coalesce(t1.timezone, t.timezone) as pczu_timezone
-                        from flow.round_robin pcz
-                               inner join flow.company_timezone ct on ct.id = pcz.company_timezone_id
-                               inner join flow.timezone t on t.id = ct.timezone_id
-                               inner join flow.round_robin_user pczu on pczu.round_robin_id = pcz.id and
-                                                                             pczu.round_robin_user_type_id =
-                                                                             1 and pczu.archived is false
-                               left join flow.company_timezone ct1 on ct1.id = pczu.company_timezone_id
-                               left join flow.timezone t1 on t1.id = ct1.timezone_id
-                               inner join flow.resource_schedule rs
-                                          on rs.user_id = pczu.user_id and rs.archived is false
-                               inner join flow.company_user_status cus on cus.user_id = pczu.user_id
-                               inner join flow.user_status_type ust
-                                          on cus.user_status_type_id = ust.id and ust.has_access is true and
-                                             ust.company_id = 3 and ust.archived is false
-                               inner join flow.resource_schedule_availability rsa
-                                          on rsa.resource_schedule_id = rs.id
-                                            and rsa.archived is false
-                                            and rsa.day_of_week_id = extract(dow from p_available_date::date)
-                               inner join flow.resource_slot_schedule rss
-                                          on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
-                               inner join flow.resource_slot_time rst
-                                          on rss.id = rst.resource_slot_schedule_id and rst.archived is false
-                               inner join flow.user_company uc
-                                          on uc.user_id = rs.user_id and uc.company_id = 3 and uc.archived is false
-                               left join flow.excluded_resource_slot_time erst
-                                         on erst.resource_slot_time_id = rst.id and
-                                            erst.resource_schedule_availability_id = rsa.id
-                                           and erst.archived is false
-                        where pcz.remote is true
-                          and pcz.archived is false
-                          and erst.id is null
-                          and case
-                                when rs.end_date is not null then
-                                  p_available_date::date between rs.start_date and rs.end_date
-                                else
-                                  p_available_date::date >= rs.start_date end) as foo) as foo1
-            where not exists  (select user_id from exclude_by_appointment eba
-                               where foo1.user_id = eba.user_id)) as foo2
-      where foo2.available is true
-        and foo2.scheduled_start_time at time zone 'UTC' at time zone pczu_timezone >
-            now() at time zone pczu_timezone + interval '30 minutes'
-      group by foo2.scheduled_start_time
-      order by foo2.scheduled_start_time);
+    create temp table available_time_slots as (select true,
+                                                      array_agg(distinct foo2.user_id)::bigint array as users,
+                                                      foo2.scheduled_start_time
+                                               from (select user_id,
+                                                            foo1.scheduled_start_time,
+                                                            scheduled_end_time,
+                                                            (select count(1) < 1
+                                                             from excluded_appointments
+                                                             where excluded_appointments.user_id = foo1.user_id
+                                                               and (
+                                                               tsrange(foo1.scheduled_start_time, foo1.scheduled_end_time, '[]')
+                                                                 && tsrange(excluded_appointments.start_time,
+                                                                            excluded_appointments.end_time,
+                                                                            '[]'))) as available,
+                                                            pczu_timezone
+                                                     from (select user_id,
+                                                                  available_times                                                          as scheduled_start_time,
+                                                                  (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time,
+                                                                  pczu_timezone
+                                                           from (select pczu.user_id,
+                                                                        ((($$'$$ || p_available_date::date || $$'$$ || rst.start_time)::timestamp at time zone
+                                                                          coalesce(t1.timezone, t.timezone))::timestamp with time zone at time zone
+                                                                         'UTC')                           as available_times,
+                                                                        60                                as default_appointment_length,
+                                                                        coalesce(t1.timezone, t.timezone) as pczu_timezone
+                                                                 from flow.round_robin pcz
+                                                                        inner join flow.company_timezone ct on ct.id = pcz.company_timezone_id
+                                                                        inner join flow.timezone t on t.id = ct.timezone_id
+                                                                        inner join flow.round_robin_user pczu
+                                                                                   on pczu.round_robin_id = pcz.id and
+                                                                                      pczu.round_robin_user_type_id =
+                                                                                      1 and pczu.archived is false
+                                                                        left join flow.company_timezone ct1 on ct1.id = pczu.company_timezone_id
+                                                                        left join flow.timezone t1 on t1.id = ct1.timezone_id
+                                                                        inner join flow.resource_schedule rs
+                                                                                   on rs.user_id = pczu.user_id and rs.archived is false
+                                                                        inner join flow.company_user_status cus on cus.user_id = pczu.user_id
+                                                                        inner join flow.user_status_type ust
+                                                                                   on cus.user_status_type_id =
+                                                                                      ust.id and
+                                                                                      ust.has_access is true and
+                                                                                      ust.company_id = 3 and
+                                                                                      ust.archived is false
+                                                                        inner join flow.resource_schedule_availability rsa
+                                                                                   on rsa.resource_schedule_id = rs.id
+                                                                                     and rsa.archived is false
+                                                                                     and rsa.day_of_week_id =
+                                                                                         extract(dow from p_available_date::date)
+                                                                        inner join flow.resource_slot_schedule rss
+                                                                                   on rss.id = rsa.resource_slot_schedule_id and rss.archived is false
+                                                                        inner join flow.resource_slot_time rst
+                                                                                   on rss.id = rst.resource_slot_schedule_id and rst.archived is false
+                                                                        inner join flow.user_company uc
+                                                                                   on uc.user_id = rs.user_id and uc.company_id = 3 and uc.archived is false
+                                                                        left join flow.excluded_resource_slot_time erst
+                                                                                  on erst.resource_slot_time_id =
+                                                                                     rst.id and
+                                                                                     erst.resource_schedule_availability_id =
+                                                                                     rsa.id
+                                                                                    and erst.archived is false
+                                                                 where pcz.remote is true
+                                                                   and pcz.archived is false
+                                                                   and erst.id is null
+                                                                   and case
+                                                                         when rs.end_date is not null then
+                                                                           p_available_date::date between rs.start_date and rs.end_date
+                                                                         else
+                                                                           p_available_date::date >= rs.start_date end) as foo) as foo1
+                                                     where not exists  (select user_id
+                                                                        from exclude_by_appointment eba
+                                                                        where foo1.user_id = eba.user_id)) as foo2
+                                               where foo2.available is true
+                                                 and foo2.scheduled_start_time at time zone 'UTC' at time zone
+                                                     pczu_timezone >
+                                                     now() at time zone pczu_timezone + interval '30 minutes'
+                                               group by foo2.scheduled_start_time
+                                               order by foo2.scheduled_start_time);
   end if;
 
-  create temp table round_robin_scores as (
-    select
-      t.user_id,
-      t.distance_from_actual_to_target,
-      t.total_lead_allocation
-    from brs.get_total_lead_allocation(v_round_robin_id, true,false) as t
-  );
+  create temp table round_robin_scores as (select t.user_id,
+                                                  t.distance_from_actual_to_target,
+                                                  t.total_lead_allocation
+                                           from brs.get_total_lead_allocation(v_round_robin_id, true, false) as t);
 
   return query
-    with my_data as (
-      select unnest(ats.users) as user_id,ats.scheduled_start_time
-      from available_time_slots ats)
-    select true,t2.users,foo.scheduled_start_time
-    from (
-           select md.user_id,md.scheduled_start_time,
-                  ROW_NUMBER() OVER (PARTITION BY md.scheduled_start_time  order by
-                    total_lead_allocation  desc nulls last)
-                     AS rnk
-           from round_robin_scores rrs
-                  inner join my_data md on md.user_id = rrs.user_id
-           order by
-             total_lead_allocation  desc nulls last,
-                    md.scheduled_start_time ) as foo
+    with my_data as (select unnest(ats.users) as user_id, ats.scheduled_start_time
+                     from available_time_slots ats)
+    select true, t2.users, foo.scheduled_start_time
+    from (select md.user_id,
+                 md.scheduled_start_time,
+                 ROW_NUMBER() OVER (PARTITION BY md.scheduled_start_time order by
+                   total_lead_allocation desc nulls last)
+                   AS rnk
+          from round_robin_scores rrs
+                 inner join my_data md on md.user_id = rrs.user_id
+          order by total_lead_allocation desc nulls last,
+                   md.scheduled_start_time) as foo
            inner join available_time_slots t2 on t2.scheduled_start_time = foo.scheduled_start_time
     where foo.rnk = 1;
   set TimeZone = 'UTC';
   drop table if exists excluded_appointments;
- drop table if exists round_robin_scores;
- drop table if exists available_time_slots;
+  drop table if exists round_robin_scores;
+  drop table if exists available_time_slots;
   drop table if exists exclude_by_appointment;
 
 
