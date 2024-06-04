@@ -29,6 +29,17 @@ BEGIN
          left join flow.timezone t on ct.timezone_id = t.id
   where p.id = p_project_id;
 
+  create temp table exclude_by_appointment as (
+    select foo.user_id,foo.lead_limit,foo.appointment_count
+    from (
+           select rru.user_id,coalesce(lead_limit,0) as lead_limit,coalesce((select appointment_count from brs.get_appointment_count(rru.user_id)),0) as appointment_count
+           from  flow.round_robin_user rru
+           where rru.round_robin_id = 5
+             and archived is false and
+             round_robin_user_type_id = 1) as foo
+    where foo.appointment_count >= foo.lead_limit
+  );
+
   if p_remote is false and v_timezone is not null then
     create temp table excluded_appointments as (with user_ids as (select up.user_id,
                                                                          up.id,
@@ -236,7 +247,9 @@ BEGIN
                                 when rs.end_date is not null then
                                   p_available_date::date between rs.start_date and rs.end_date
                                 else
-                                  p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
+                                  p_available_date::date >= rs.start_date end) as foo) as foo1
+          where not exists  (select user_id from exclude_by_appointment eba
+                                                             where foo1.user_id = eba.user_id)) as foo2
       where foo2.available is true
         and foo2.scheduled_start_time at time zone 'UTC' at time zone v_timezone > now() + interval '30 minutes'
       group by foo2.scheduled_start_time
@@ -301,7 +314,9 @@ BEGIN
                                 when rs.end_date is not null then
                                   p_available_date::date between rs.start_date and rs.end_date
                                 else
-                                  p_available_date::date >= rs.start_date end) as foo) as foo1) as foo2
+                                  p_available_date::date >= rs.start_date end) as foo) as foo1
+            where not exists  (select user_id from exclude_by_appointment eba
+                               where foo1.user_id = eba.user_id)) as foo2
       where foo2.available is true
         and foo2.scheduled_start_time at time zone 'UTC' at time zone pczu_timezone >
             now() at time zone pczu_timezone + interval '30 minutes'
@@ -338,6 +353,7 @@ BEGIN
   drop table if exists excluded_appointments;
  drop table if exists round_robin_scores;
  drop table if exists available_time_slots;
+  drop table if exists exclude_by_appointment;
 
 
 END

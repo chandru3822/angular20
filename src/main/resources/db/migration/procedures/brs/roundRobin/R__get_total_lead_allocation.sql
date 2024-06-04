@@ -20,7 +20,9 @@ CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_round_robin_id bigint
                 avail                           bigint,
                 appointment_count_with_interval bigint,
                 appointment_count               bigint,
-                manual_allocation               numeric
+                manual_allocation               numeric,
+                lead_limit                      bigint,
+                weekly_appointment_count        bigint
             )
 AS
 $BODY$
@@ -49,7 +51,9 @@ BEGIN
                -1::bigint,
                foo3.appointment_count_with_interval::bigint,
               -1::bigint,
-               foo3.manual_allocation
+               foo3.manual_allocation,
+               foo3.lead_limit::bigint,
+               (select foo4.appointment_count from brs.get_appointment_count(foo3.user_id::bigint) as foo4) as weekly_appointment_count
         from (
                  select foo2.round_robin_user_id, foo2.user_id,
                         foo2.company_timezone_id, foo2.timezone,
@@ -66,7 +70,8 @@ BEGIN
                         foo2.lead_gen_den,
                         foo2.self_gen,
                         foo2.appointment_count_with_interval,
-                        foo2.manual_allocation
+                        foo2.manual_allocation,
+                        foo2.lead_limit
                  from (
                           select foo1.round_robin_user_id, foo1.user_id,
                                  foo1.company_timezone_id, foo1.timezone,
@@ -82,6 +87,7 @@ BEGIN
                                  foo1.self_gen,
                                  foo1.appointment_count_with_interval,
                                  foo1.manual_allocation,
+                                 foo1.lead_limit,
                                  foo1.sum_manual_allocation
                           from (
                                    select foo.round_robin_user_id, foo.user_id,
@@ -100,6 +106,7 @@ BEGIN
                                           foo.self_gen,
                                           foo.appointment_count_with_interval,
                                           foo.manual_allocation,
+                                          foo.lead_limit,
                                           sum(foo.manual_allocation) over ()                        as sum_manual_allocation
                                    from (
                                             select pczu.id as round_robin_user_id,
@@ -110,7 +117,8 @@ BEGIN
                                                    coalesce(fdc_counts.lead_gen_appointment_count, 0)                     as lead_gen_den,
                                                    coalesce(fdc_counts.self_gen_fdc_count, 0)                          as self_gen,
                                                    coalesce(apcwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
-                                                   pczu.manual_allocation
+                                                   pczu.manual_allocation,
+                                                  pczu.lead_limit
                                             from flow.round_robin_user pczu
                                                    inner join flow.company_user_status cus on cus.user_id = pczu.user_id
                                                    inner join flow.user_status_type ust
@@ -128,11 +136,11 @@ BEGIN
                                             group by pczu.id, pczu.user_id, pczu.company_timezone_id,
                                                      t.timezone, fdc_counts.lead_gen_fdc_count,lead_gen_appointment_count, fdc_counts.self_gen_fdc_count,
                                                      apcwi.appointment_count_with_interval,
-                                                     pczu.manual_allocation) as foo
+                                                     pczu.manual_allocation, pczu.lead_limit) as foo
                                    group by foo.round_robin_user_id, foo.user_id, foo.company_timezone_id,
                                             foo.timezone, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
                                             foo.appointment_count_with_interval,
-                                            foo.manual_allocation) as foo1) as foo2
+                                            foo.manual_allocation, foo.lead_limit) as foo1) as foo2
                  group by foo2.round_robin_user_id, foo2.user_id, foo2.company_timezone_id,
                           foo2.timezone, foo2.actual_lead_allocation, foo2.total_lead_allocation,
                           foo2.total_lead_allocation, foo2.actual_lead_allocation, foo2.score,
@@ -141,6 +149,7 @@ BEGIN
                           foo2.self_gen,
                           foo2.appointment_count_with_interval,
                           foo2.manual_allocation,
+                          foo2.lead_limit,
                           foo2.sum_manual_allocation) as foo3;
 END
 $BODY$

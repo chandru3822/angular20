@@ -24,7 +24,7 @@ declare
   v_start_date                    timestamp;
   v_commission_booking_start_date timestamp;
   v_found_user_on_plan            bigint;
-  v_found_user_residual_id           bigint;
+  --v_found_user_residual_id           bigint;
   v_commission_strategy_id        bigint;
   v_fda_date date;
   v_fda_month integer;
@@ -107,10 +107,8 @@ BEGIN
            inner join brs.residual_plan_user r on r.residual_plan_id = rp.id  and r.user_id = v_user_id
            inner join brs.residual_plan_status rps on rps.id = rp.residual_plan_status_id
     where v_residual_date >= r.start_date
-                and case
-                      when r.end_date is not null then
-                        v_residual_date <= r.end_date
-                      else true end;
+                and (r.end_date is not null or
+                     v_residual_date <= r.end_date);
   end if;
 
   if v_start_date is not null then
@@ -236,20 +234,6 @@ BEGIN
 
 
   if v_start_date is not null and v_user_id is not null and v_residual_plan_id is not null then
-
-    select ur.residual_plan_id
-    into v_found_user_residual_id
-    from brs.user_residual ur
-    where user_id = v_user_id;
-
-    if v_found_user_residual_id is null then
-      insert into brs.user_residual(user_id, residual_plan_id, date_created, created_by_id, modified_by_id)
-      values (v_user_id, v_residual_plan_id, now(), 99999999, 99999999);
-    elsif v_found_user_residual_id != v_residual_plan_id and v_found_user_residual_id > v_residual_plan_id then
-      update brs.user_residual u
-      set residual_plan_id = v_residual_plan_id
-      where user_id = v_user_id;
-    end if;
 
     update brs.financial_details d
     set residual_plan_id     = v_residual_plan_id,

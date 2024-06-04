@@ -254,9 +254,8 @@ BEGIN
                   x.on_hold_date,
                   x.qualified_date,
                   (select rp.total
-                   from brs.user_residual as ur
-                          inner join brs.residual_plan as rp on rp.id = ur.residual_plan_id
-                   where ur.user_id = d.user_id),
+                   from brs.residual_plan as rp
+                   where rp.id = d.residual_plan_id),
                   now(),
                   p_updated_by_id,
                   now(),
