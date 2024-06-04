@@ -100,6 +100,14 @@ export default defineStore('proposalStore', () => {
     selectedId.value = id
   }
 
+  const addBlock = (block) => {
+      const found = findById(block.id)
+      if(!found){
+          template.value.push(block)
+          done.value.push(cloneDeep(template.value))
+      }
+  }
+
   const setStyle = ({ blockId, styles }) => {
     const found = findById(blockId)
     if (found) {
@@ -115,6 +123,7 @@ export default defineStore('proposalStore', () => {
   }
 
   const setValue = ({ blockId, value }) => {
+      debugger
     const found = findById(blockId)
     if (found) {
       template.value = template.value.map((block) => {
@@ -125,6 +134,7 @@ export default defineStore('proposalStore', () => {
       })
       done.value.push(cloneDeep(template.value))
     }
+
   }
 
   const setName = ({ blockId, name }) => {
@@ -141,7 +151,7 @@ export default defineStore('proposalStore', () => {
   }
 
   const writeDisplayName = (block) => {
-      return `#${ block.id } - ${block.blockName ? block.blockName : 'Unnamed'}: ${ block.blockType }`
+      return `#${ block.id } - ${block.blockName ? block.blockName : 'Unnamed'}: ${ block.blockType }(${block.blockOrder})`
   }
 
   const setVisibility = ({ blockId, visibility }) => {
@@ -301,6 +311,7 @@ export default defineStore('proposalStore', () => {
     asJson,
     reset,
     setSelected,
+      addBlock,
     setTemplate,
     setStyle,
     setValue,

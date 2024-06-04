@@ -1,13 +1,5 @@
 <template>
-  <draggable
-    class="node-container"
-    :class="{ 'is-dragging': dragging }"
-    :list="sortedChildren"
-    :move="checkMove"
-    :disabled="sortById"
-    @start="dragging = true"
-    @end="dragging = false"
-  >
+  <div>
     <div class="node-group transparent" :key="child.id" v-for="child in sortedChildren">
       <div
         class="node d-flex justify-space-between body-large align-center"
@@ -37,7 +29,7 @@
       </div>
       </v-expand-transition>
     </div>
-  </draggable>
+  </div>
 </template>
 
 <script>
@@ -66,9 +58,13 @@ const props = defineProps({
   sortById:{
     type: Boolean,
     default: true
+  },
+  expandAll:{
+    type: Boolean,
+    default: true
   }
 })
-const { children } = toRefs(props)
+const { children, sortById, expandAll } = toRefs(props)
 const expanded = ref([])
 
 const blockOrderSorter = (a, b) => {
@@ -110,6 +106,9 @@ const filterByParentId = (parent) => {
 
 }
 const hasChildren = (parent) => {
+  if(parent == 500){
+    debugger
+  }
   const children = filterByParentId(parent)
   return children.length > 0
 }
@@ -137,6 +136,22 @@ const expandCollapseNode = (node) => {
     node.expanded = true
   }
 }
+
+const collapseExpandAllNodes = (expand) => {
+  expanded.value = []
+  for (let i = 0; i < sortedChildren.value.length; i++){
+    const node = sortedChildren.value[i]
+    node.expanded = expand
+    if(expand === true) {
+      expanded.value.push(i)
+    }
+  }
+}
+
+watch(expandAll, () => {
+  collapseExpandAllNodes(expandAll.value)
+})
+
 
 //todo; this should register in the undo history
 const checkMove = debounce((evt) => {

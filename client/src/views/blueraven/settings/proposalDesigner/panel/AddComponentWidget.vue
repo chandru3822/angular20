@@ -21,35 +21,19 @@
       <div v-if="newComponent === PAGE_BLOCK" class="pb-4">
       <v-card flat class="text-left px-3" color="transparent">
         <v-card-title class="px-0 pt-0">Location</v-card-title>
-        <InsertLocationWidget attr="pageLocation" :existing-blocks="existingBlocks"/>
+        <LocationSelectorWidget attr="pageLocation" :existing-blocks="existingBlocks" @input="setLocation($event)"/>
       </v-card>
-        <v-card flat color="transparent" v-if="location === 1 || location === 2">
-          Select an existing block
-          <a-select
-              density="compact"
-              v-model="relativeBlock"
-              :items="existingBlocks"
-              :item-title="(i) => `${i.id} - ${i.blockType}`"
-              item-value="id"
-              return-object
-              single-line
-          />
-        </v-card>
       </div>
 <!--      <div v-if-->
-      <div class="d-flex justify-end">
-        <v-col cols="2">
-        <a-btn text="Cancel" variant="outlined" @click="emit('cancel')"/>
-        </v-col>
-        <v-col cols="10">
+      <div class="d-flex justify-end mx-0">
+        <a-btn text="Cancel" style="width: 25%" variant="outlined" class="mr-2" @click="emit('cancel')"/>
       <a-btn
-          class="one-hunned"
+          style="width: 70%"
         color="primary"
-        :disabled="newComponentReadyToAdd"
+        :disabled="!newComponentReadyToAdd"
         @click="add(newComponent)"
         text="Add"
       ></a-btn>
-        </v-col>
       </div>
     </div>
   </v-card>
@@ -57,8 +41,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import useProposalStore from '../store.js'
-import {typeOf} from "uri-js/dist/esnext/util.js";
-import InsertLocationWidget from "@/views/blueraven/settings/proposalDesigner/panel/InsertLocationWidget.vue";
+import LocationSelectorWidget from "@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue";
 
 const store = useProposalStore()
 const props = defineProps({
@@ -66,6 +49,8 @@ const props = defineProps({
 })
 
 const selected = computed(() => store.selectedBlock)
+
+
 
 const PAGE_BLOCK = {
   id:'PageBlock',
@@ -117,8 +102,37 @@ const AVAILABLE = {
   ContainerBlock: [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
 }
 const BLOCK_TYPES = [PAGE_BLOCK,TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
-const location = ref(null)
-const newComponent = ref(null)
+const newComponent = ref({
+  blockStyle:{
+    backgroundPosition:"center center",
+    backgroundSize:"cover",
+    color:"#ffffff",
+    display:"flex"
+  },
+  id:-1,
+  version:14
+})
+const blockOrder = ref(null)
+const parentId = ref(null)
+
+const setLocation = (locationInfo) => {
+  parentId.value = locationInfo.parentId
+  const siblings = store.filterByParentId(locationInfo.parentId)
+  switch (locationInfo.location){
+    case 'first':
+    case 'before':
+    case 'after':
+    case 'last':
+    default:
+      let lastBlockOrderValue = 0
+      for(let s of siblings){
+        if(s.blockOrder > lastBlockOrderValue){
+          lastBlockOrderValue = s.blockOrder
+        }
+      }
+      blockOrder.value = lastBlockOrderValue + 1
+  }
+}
 
 const emit = defineEmits(['cancel'])
 
@@ -126,16 +140,16 @@ const availableBlocks = computed(() => {
   return BLOCK_TYPES
 })
 const newComponentReadyToAdd = computed(() => {
-  if(!newComponent){
+  if(!newComponent || blockOrder.value === null){
     return false
   }
   if(newComponent.value === PAGE_BLOCK){
-    return location !== null
+    return true
   }
   return true
 })
 const add = ({ id, typeId, value }) => {
-  emit('input', { blockType: id, blockTypeId: typeId, blockValue: value })
+  emit('input', { blockType: id, blockTypeId: typeId, ...value, blockOrder: blockOrder.value, parentId: parentId.value })
   newComponent.value = null
 }
 </script>

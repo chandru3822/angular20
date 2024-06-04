@@ -84,7 +84,7 @@
             <a-btn
                 v-bind="attrs"
                 :activation-handler="on"
-                @click="[ addBlock = !addBlock]"
+                @click="[ addBlock = !addBlock, tabs = addBlock ? 0 : tabs]"
                 variant="text"
                 icon
                 color="primary"
@@ -116,13 +116,12 @@
       <div class="main-sidebar">
         <v-tabs v-model="tabs">
           <v-tab>Editor</v-tab>
-          <v-tab>Tree</v-tab>
-          <v-tab>Tree 2</v-tab>
+          <v-tab>Tree </v-tab>
         </v-tabs>
         <v-tabs-items v-model="tabs" class="tabs-scrollable">
           <v-tab-item>
             <div v-if="addBlock">
-              <AddComponentWidget :existing-blocks="pages" @cancel="addBlock = false"></AddComponentWidget>
+              <AddComponentWidget :existing-blocks="pages" @cancel="addBlock = false" @input="updateAddValue"></AddComponentWidget>
             </div>
             <v-card v-else-if="selected">
               <div class="sticky-header">
@@ -200,6 +199,10 @@
                 </v-card-subtitle>
               </div>
               <div class="px-4">
+                <v-card v-if="selected && selected.blockType === 'PageBlock'" flat class="text-left px-3" color="transparent">
+                  <v-card-title class="px-0 pt-0">Location</v-card-title>
+                  <LocationSelectorWidget attr="pageLocation" :existing-blocks="pages"/>
+                </v-card>
                 <image-panel
                   v-if="selected && selected.blockType === 'ImageBlock'"
                   @input="updateValue"
@@ -224,21 +227,18 @@
             </v-card>
           </v-tab-item>
           <v-tab-item>
-            <v-card class="mx-auto pa-4" flat>
-              <nested-tree :children="pages" @select="focusNode" />
-            </v-card>
-          </v-tab-item>
-          <v-tab-item>
             <div class="d-flex justify-space-between align-center px-4" >
             <v-chip label outlined color="primary--text" class="mt-4 mb-0 sort-chip align-self-center albatross-body-2 flex-shrink-0"
-                    @click="sortbyId = !sortbyId">
+                    @click="[sortbyId = !sortbyId, expandAll = true]">
               {{ sortbyId ? 'Sort by doc order' :'Sort by Id'}}
             </v-chip>
               <a-btn variant="text"
-                     color="primary">Collapse All</a-btn>
+                     color="primary"
+                     @click="expandAll = !expandAll"
+              >{{expandAll ? 'Collapse All' : 'Expand All'}}</a-btn>
             </div>
             <v-card class="mx-auto pa-4" flat>
-              <nested-tree2 :children="pages" :sort-by-id="sortbyId" @select="focusNode" id="props-designer-tree"/>
+              <nested-tree2 :children="pages" :sort-by-id="sortbyId" :expandAll="expandAll" @select="focusNode" id="props-designer-tree"/>
             </v-card>
           </v-tab-item>
         </v-tabs-items>
@@ -274,6 +274,7 @@ import useProposalStore from './store.js'
 import { storeToRefs } from 'pinia'
 import AddComponentWidget from "@/views/blueraven/settings/proposalDesigner/panel/AddComponentWidget.vue";
 import {sort} from "rrule/dist/esm/dateutil.js";
+import LocationSelectorWidget from "@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue";
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
@@ -330,6 +331,7 @@ const editedBlockName = ref(null)
 const activeEditor = ref(undefined)
 const viewportEl = ref(null)
 const sortbyId = ref(true)
+const expandAll = ref(true)
 
 const editor = {}
 Object.defineProperty(editor, 'current', {
@@ -341,17 +343,28 @@ provide('editor', editor)
 
 const selected = computed(() => store.selectedBlock)
 const parent = computed(() => store.findById(store.selectedBlock?.parentId))
-const pages = computed(() =>
-  template.value?.filter((x) => x.parentId === undefined)
-)
+const pages = computed(() => template.value?.filter((x) => x.parentId === undefined), {cache: false})
 const isSaveable = computed(() => store.modifiedBlocks?.length > 0)
 const tags = computed(() => store.tags?.map((t) => t.tagName))
 
 const updateValue = (value) => {
+  debugger
   store.setValue({
     blockId: selected.value.id,
     value
   })
+}
+
+watch(template, ()=>{
+  console.log(template.value.length)
+},{deep:true})
+
+const updateAddValue = (value) => {
+  debugger
+  store.addBlock(
+      {blockId: 500, ...value}
+  )
+  addBlock.value = false
 }
 const updateName = (name) => {
   store.setName({
@@ -403,6 +416,7 @@ const downloadPreview = async () => {
     appStore.loading = false
   }
 }
+
 const save = async () => {
   appStore.loading = true
   await store.saveTemplate()
