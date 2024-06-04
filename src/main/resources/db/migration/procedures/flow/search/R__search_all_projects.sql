@@ -56,17 +56,22 @@ DECLARE
   v_clean_street_term         VARCHAR;
   v_clean_city_term           VARCHAR;
   v_clean_zip_term           VARCHAR;
+  v_clean_state_abbreviation VARCHAR;
+  v_clean_date_created_term  VARCHAR;
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = trim(translate(p_searchterm, '-().+ ', ''));
   v_clean_email_search_term = lower(trim(p_searchterm));
+  v_clean_state_abbreviation = lower(trim(p_searchterm));
   v_clean_id_search_term = trim(p_searchterm);
   v_clean_address_search_term = trim(lower(translate(p_searchterm, '.,', '')));
   v_clean_permit_term = (trim(lower(translate(p_searchterm, E'/()_.,-:\n\r\t ', ''))));
   v_clean_status_term = trim(lower(translate(p_searchterm, '*,.&', '')));
   v_clean_street_term = trim(lower(translate(p_searchterm, '*,.&', '')));
-  v_clean_city_term = trim(lower(translate(p_searchterm, '*,.&', '')));
+  v_clean_city_term = trim(lower(translate(p_searchterm, '*,.-& ', '')));
   v_clean_zip_term = trim(lower(translate(p_searchterm, '*,.&', '')));
+  v_clean_date_created_term = p_searchterm;
+
   if p_is_parent then
     select array(select f.id from flow.company_hierarchy_filter_down(p_company_id) f)
     into v_company_ids;
@@ -131,13 +136,13 @@ BEGIN
                           when p_search_column = 'projectName' then
                             p.project_name_search like '%' || v_clean_name_search_term || '%'
                           when p_search_column = 'stateAbbreviation' then
-                            lower(s.abbreviation)::text like '%' || v_clean_name_search_term || '%'
+                            trim(lower(s.abbreviation))::text like '%' || v_clean_state_abbreviation || '%'
                           when p_search_column = 'projectStatusType' then
-                            lower(cpst.project_status_type) like '%' || v_clean_status_term || '%'
+                            trim(lower(translate(cpst.project_status_type, '*,.&', ''))) like '%' || v_clean_status_term || '%'
                           when p_search_column = 'street1' then
-                            lower(translate(p.street1,'*&.', '')) like '%' || v_clean_street_term || '%'
+                            p.project_street_search like '%' || v_clean_street_term || '%'
                           when p_search_column = 'city' then
-                            lower(translate(p.city,'*&.', '')) like '%' || v_clean_city_term || '%'
+                            p.search_city like '%' || v_clean_city_term || '%'
                           when p_search_column = 'postalCode' then
                             lower(translate(p.postal_code,'*&.', '')) like '%' || v_clean_zip_term || '%'
                           when p_search_column = 'contact.phone' then
@@ -145,7 +150,7 @@ BEGIN
                           when p_search_column = 'contact.email' then
                             c.contact_email_search like '%' || v_clean_email_search_term || '%'
                           when p_search_column = 'dateCreated' then
-                            to_char(p.date_created, 'MM/DD/YYYY') like '%' || p_searchterm || '%'
+                            p.search_date_created like '%' || v_clean_date_created_term || '%'
                     end
                     and case
                           when p_company_project_status_type_id is not null then
@@ -207,8 +212,13 @@ BEGIN
                     and p.archived is not true
                     and
                               ((p.id::text like '%' || v_clean_name_search_term || '%') or
-                              (p.project_name_search like '%' || v_clean_name_search_term || '%') or
-                              (p.project_street_search like '%' || v_clean_address_search_term || '%')
+                               (p.project_name_search like '%' || v_clean_name_search_term || '%') or
+                               (p.project_street_search like '%' || v_clean_address_search_term || '%') or
+                               (p.search_city like '%' || v_clean_city_term || '%') or
+                               (trim(lower(s.abbreviation)) like '%' || v_clean_state_abbreviation || '%') or
+                               (p.search_postal_code like '%' || v_clean_zip_term || '%') or
+                               (trim(lower(translate(cpst.project_status_type, '*.,%', ''))) like '%' || v_clean_status_term || '%') or
+                               (p.search_date_created like '%' || v_clean_date_created_term || '%')
                               )
                     and case
                           when p_company_project_status_type_id is not null then
