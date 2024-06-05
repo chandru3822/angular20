@@ -1,6 +1,6 @@
 <template>
   <div id="calendar-container">
-
+    <MessagingDialog v-if="currentUserId" :value="showMessagingDialog" :user-id="currentUserId" :user-id-in="userToMessage" @close="[showMessagingDialog = false, userToMessage = null]"/>
     <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
@@ -276,6 +276,14 @@
               </v-tooltip>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
+                  <a-btn v-if="isResourceUser(resource)" icon size="small" @click="[showMessagingDialog = true, userToMessage = Number(resource.id.substring(1))]" :activation-handler="on" class="mx-1">
+                    <v-icon color="grey darken-1">mdi-forum</v-icon>
+                  </a-btn>
+                </template>
+                <span>Message Resource</span>
+              </v-tooltip>
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+                <template v-slot:activator="{on}">
               <a-btn v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
               </a-btn>
@@ -316,6 +324,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
+import MessagingDialog from "@/views/flow/schedule/components/MessagingDialog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -327,8 +336,15 @@ const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
 const filters = vueInstance.$filters
 
+const showMessagingDialog = ref(false)
+const userToMessage = ref(null)
+
 const eventCalendar = ref(null)
 const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
+const userCanSms = computed(() => userStore.userHasFeature('SMS_INBOX'))
+const currentUserId = computed(() => {
+  return userStore.details.id
+})
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -534,6 +550,11 @@ const sortedUsers = computed(() => {
   const usUsers = users.value.filter(user => !selectedUsers.value.includes(user));
   return sUsers.concat(usUsers)
 })
+
+const isResourceUser = (resource) => {
+  const found = users.value.find(u => u.id === resource.id)
+  return !!found
+}
 
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown

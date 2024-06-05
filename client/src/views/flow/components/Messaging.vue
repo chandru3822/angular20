@@ -6,6 +6,7 @@
       justify="center"
       no-gutters
     >
+      <div v-if="messageList.length <= 0" class="pt-4">No messages to show</div>
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
