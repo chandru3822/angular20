@@ -1,7 +1,7 @@
 <template>
   <v-form ref="form" @submit.prevent="sendPushNotifications">
     <v-container>
-      <v-card class="pa-4 mb-4" color="secondary" width="200" v-if="is7oaksAdmin">
+      <v-card class="pa-4 mb-4" color="secondary" width="200" v-if="is7oaksAdmin || randaSaid">
         7 Oaks Only: <br>
         <a-btn class="mt-2" :loading="processingQueue"
                @click="processPushNotificationQueue()">Process Queue</a-btn>
@@ -71,6 +71,11 @@ const processingQueue = ref(false)
 
 const is7oaksAdmin = computed(() => {
   return userStore.isSystemAdmin
+})
+
+const randaSaid = computed(() => {
+  //lowry, carlin or kevin
+  return [2356764, 2384850, 2415534].includes(userStore.details.id)
 })
 
 onMounted(() => {
