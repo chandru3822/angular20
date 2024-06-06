@@ -18,6 +18,8 @@
           label="Search projects..."
           v-model="searchString"
           @input="debouncedSyncFilter"
+          :hint="filterSelection === 'dateCreated' ? 'Date search format: mm/dd/yyyy': ''"
+          v-maska :data-maska="filterSelection === 'dateCreated' ? 'Date Created: ##/##/####' : null"
         />
       </v-col>
     </v-row>
@@ -27,6 +29,7 @@
 <script setup>
 import { ref, onMounted, defineProps, getCurrentInstance } from "vue";
 import debounce from "lodash.debounce";
+import { vMaska } from 'maska/vue'
 
 const emit = defineEmits(['updateQuery'])
 const filterSelection = ref('')
@@ -66,6 +69,8 @@ const debouncedSyncFilter = debounce(() => {
   }
 }, 500)
 
+
+
 const syncFilter = () => {
   // update filter based on searchBar input
   const re = new RegExp(regexString.value)
@@ -78,7 +83,6 @@ const syncFilter = () => {
     filterSelection.value = ""
   }
 }
-
 
 const createSearchRegex = () => {
   let reString = '(?<=('

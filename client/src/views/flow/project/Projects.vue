@@ -52,7 +52,7 @@
           </template>
           <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
             <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
-              <span v-if="searchQuery?.length > 0" :inner-html.prop="project.projectName | searchHighlight(searchQuery)"></span>
+              <span v-if="searchQuery?.length > 0" :inner-html.prop="project.projectName | searchHighlight(searchQuery, columnFilterName === 'projectName')"></span>
               <span v-else>{{project.projectName}}</span>
             </router-link>
           </template>
@@ -108,7 +108,7 @@
             <span class="clickable">
               <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
                 <span v-if="searchQuery?.length > 0" :inner-html.prop="project.contact.email | searchHighlight(searchQuery)" class="wrap-email"></span>
-                <span v-else>{{project.contact.email }}</span>
+                <span v-else class="wrap-email">{{project.contact.email }}</span>
               </router-link>
             </span>
           </template>
@@ -143,9 +143,9 @@ const initialLoad = ref(true)
 const pageableTable = ref(null)
 const options = ref({itemsPerPage: 100})
 const headers = ref([
-  {text: 'ID', value: 'id', show: true, width: '100px'},
+  {text: 'ID', value: 'id', show: true, width: '75px'},
   {text: 'Name', value: 'projectName', show: true},
-  {text: 'Status', value: 'projectStatusType', show: true},
+  {text: 'Stage', value: 'projectStatusType', show: true, width: '200px'},
   {text: 'Street', value: 'street1', show: true},
   {text: 'City', value: 'city', show: true, width: '150px'},
   {text: 'State', value: 'stateAbbreviation', show: true, width: '75px'},
@@ -176,11 +176,28 @@ const reformatPhone = (phoneNumber) => {
   return phoneNumber.replace(/\D/g, '')
 }
 
+const formatDateString = (dateString) => {
+  // transform date format MM/DD/YYYY -> YYYY-DD-MM
+  if (columnFilterName.value === 'dateCreated') {
+    const matches = dateString.split('/')
+    if (matches.length === 3) {
+      console.log(matches[2].concat('-', matches[1], '-', matches[0]))
+      return matches[2].concat('-', matches[0], '-', matches[1])
+    } else if (matches.length === 2) {
+      console.log(matches[0].concat('-', matches[1]))
+      return matches[0].concat('-', matches[1])
+    } else {
+      return dateString
+    }
+  }
+  return dateString
+
+}
+
 const setSearchQuery = (newValue, columnName="") => {
   searchQuery.value = newValue?.trim()
   if (columnName !== "") {
     columnFilterName.value = headers.value.find(f => f.text === columnName.replace(":", '')).value
-    console.log(columnFilterName.value)
   } else {
     columnFilterName.value = ''
   }
@@ -214,7 +231,7 @@ watch(
 )
 
 const isMobile = computed(() => {
-  return vuetify.breakpoint.smAndDown
+  return vuetify.breakpoint.mdAndDown
 })
 const getRoute = (project) => {
   const defaultProjectPage = getProjectPath().pathSuffix
@@ -235,7 +252,7 @@ const getProjects = async() => {
       source: source.value,
       cancelToken: source.value.token,
       params: {
-        query: searchQuery.value,
+        query: formatDateString(searchQuery.value),
         page: page - 1,
         size: itemsPerPage,
         searchColumn: columnFilterName.value
@@ -278,5 +295,10 @@ const closeKeyboard = () => {
 
 tr:nth-of-type(even) {
   @extend .shaded-row;
+}
+
+.wrap-email {
+  word-break: break-word;
+  min-width: 100px;
 }
 </style>

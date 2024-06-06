@@ -2,6 +2,9 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -33,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -74,6 +78,7 @@ public class ProjectProcessStepEventService {
   private final StripeService stripeService;
   private final CommunicationService communicationService;
   private final MessagingService messagingService;
+  private final PubSubService pubSubService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -418,6 +423,35 @@ public class ProjectProcessStepEventService {
       params,
       new ProcessStepEventService.ProcessStepEventActionMapper<>(
         ProcessStepEventAction.class, om));
+  }
+
+  @Transactional
+  public ProjectProcessStepEvent performStepEventActionTransactional(
+      Long ppsId,
+      Long eventId,
+      Long actionId,
+      ProjectProcessStepEventController.SaveEventRequest saveEvent
+  ) throws Exception {
+      // save the custom field values and default values
+      savePpsEventDetails(ppsId, eventId, saveEvent);
+
+      // do the action
+      PpseActionResult ppseActionResult = performStepEventAction(ppsId, eventId, actionId);
+
+      if (ppseActionResult.getShouldRunProjectTagUpdate()) {
+          //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
+          ProjectTagMessage ptm = new ProjectTagMessage();
+          ptm.setProjectId(ppseActionResult.getProjectId());
+          pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+      }
+
+      //why in the world do we return the entire object here?
+      Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
+
+      //add in the child function returned strings
+      ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
+
+      return ppsEvent.orElse(null);
   }
 
   @Transactional

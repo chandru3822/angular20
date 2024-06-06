@@ -711,6 +711,16 @@ select u.user_id, outbound_message from users u
     """;
 
   //language=PostgreSQL
+  public final static String markAllUserNotificationAsReadForUser = """
+    update flow.notification
+    set message_read_tsz   = now(),
+        date_modified  = now(),
+        modified_by_id = :modifiedById
+    where (metadata->>'userId')::bigint = :userId
+      and message_read_tsz is null
+    """;
+
+  //language=PostgreSQL
   public final static String markUserSmsAsReadForUser = """
     update flow.notification
     set message_read_tsz   = now(),

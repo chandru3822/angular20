@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION brs.get_residual_account_details()
             hire_date                  date,
             residual_start_date        date,
             residual_plan_name         text,
+            residual_plan_id           bigint,
             lifetime_fdc               bigint,
             lifetime_system_size       numeric,
             qualified_this_period_fdc  bigint,
@@ -51,6 +52,7 @@ begin
            foo1.hire_date,
            foo1.residual_start_date,
            foo1.residual_plan_name,
+           foo1.residual_plan_id1,
            foo1.lifetime_fdc,
            foo1.lifetime_system_size,
            foo1.qualified_this_period_fdc,
@@ -133,7 +135,7 @@ begin
                        ucfv2.date_value                                                      as hire_date,
                        rpu.start_date                                                        as residual_start_date,
                        rp.name                                                               as residual_plan_name,
-                       rp.id                                                                 as residual_plan_id,
+                       rp.id                                                                 as residual_plan_id1,
                        (select count(1)
                         from brs.get_residual_qualified_lifetime_fds(u.id)
                         where is_system_size is false)                  as lifetime_fdc,
@@ -167,10 +169,13 @@ begin
                                   on ust.id = cus.user_status_type_id and ust.company_id = 3 and ust.id in (9, 14)
                        left join flow.user_custom_field_value ucfv2
                                  on u.id = ucfv2.user_id and ucfv2.custom_field_group_assignment_id = 331
-                       inner join brs.user_residual ur on ur.user_id = u.id
-                       inner join brs.residual_plan rp on rp.id = ur.residual_plan_id and rp.residual_plan_status_id = 2
-                       inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
                        inner join brs.residual r on r.current is true
+                       inner join brs.residual_plan_user rpu1 on rpu1.user_id = u.id and
+                                                                r.period_end >= rpu1.start_date and
+                                                                (rpu1.end_date is null or r.period_end <= rpu1.end_date)
+                       inner join brs.residual_plan rp on rp.id = rpu1.residual_plan_id and rp.residual_plan_status_id = 2
+                       inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
+
                 where
                       -- u.id in (2402401,2353957,2401231) and
                       exists(select id
@@ -178,10 +183,10 @@ begin
                              where up2.user_id = u.id
                                and up2.position_id in (1, 2, 3, 517)
                                and up2.primary_flag is true)) as foo
-                 inner join brs.residual_plan rp2 on rp2.id = foo.residual_plan_id
+                 inner join brs.residual_plan rp2 on rp2.id = foo.residual_plan_id1
                  inner join brs.residual_plan_allocation rpa on rpa.residual_plan_id = rp2.id and
                                                                 foo.lifetime_fdc between rpa.min and coalesce(rpa.max, 1000000)
-                 inner join brs.residual_plan_allocation a on a.residual_plan_id = foo.residual_plan_id and
+                 inner join brs.residual_plan_allocation a on a.residual_plan_id = foo.residual_plan_id1 and
                                                               foo.lifetime_fdc between a.min and coalesce(a.max, 1000000)
                  left join lateral (select partial_allocation
                                     from brs.residual_plan_partial_allocation rppa
