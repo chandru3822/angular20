@@ -231,7 +231,7 @@ watch(
 )
 
 const isMobile = computed(() => {
-  return vuetify.breakpoint.smAndDown
+  return vuetify.breakpoint.mdAndDown
 })
 const getRoute = (project) => {
   const defaultProjectPage = getProjectPath().pathSuffix
@@ -299,5 +299,6 @@ tr:nth-of-type(even) {
 
 .wrap-email {
   word-break: break-word;
+  min-width: 100px;
 }
 </style>

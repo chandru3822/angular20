@@ -54,12 +54,9 @@ Vue.filter('formatDateZoneless', function (value) {
 
 Vue.filter('searchHighlight', function (value, query, ignoreWhiteSpace = false) {
   if (value) {
-    if (ignoreWhiteSpace === true) { // used by project search when searching the name specifically
-      console.log("Ignoring white space")
+    if (ignoreWhiteSpace === true) {
       query = query.replace(/\s/g, '')
-      return value.replace(
-        new RegExp("[(".concat(query, ") ]{", query.length, "}"), 'ig'), (v) => `<span class="grey lighten-2">${v}</span>`
-      )
+      query = "[(".concat(query, ") ]{", query.length, "}")
     }
     return value.replace(
       new RegExp(query, 'ig'),
