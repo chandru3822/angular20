@@ -52,7 +52,7 @@ public class PandaDocQuery {
       (plh.loan_amount::numeric - plh.itc::numeric - plh.state_tax_credit::numeric) as system_cost,
       plh.storage_brand,
       case when pr.process_name = 'z Battery Only' then true else false end as is_battery_only,
-      pd.inverter_brand_name,
+      plh.inverter_custom_getting,
       plh.panel_model,
       plh.storage_name,
       plh.dealer_fee,

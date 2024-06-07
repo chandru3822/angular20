@@ -18,7 +18,7 @@ public class PandaDocProjectDetails {
     private String mailingState, city, phone, postalCode, mailingStreet1, mailingStreet2, country,
         projectName, optionalDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
         loanTerm, interestRate, financialOption, loanType, loanAmount, totalCost, solarRebate, itc, stateTaxCredit, systemCost,
-        leadSource, storageBrand, inverterBrandName, panelModel, storageName;
+        leadSource, storageBrand, inverterCustomGetting, panelModel, storageName;
 
     private Boolean isBatteryOnly;
 

@@ -724,7 +724,7 @@ public class PandaDocService {
       tokens.put("Proposal.Solar Below the Line Rebates", result.get("custom_fields.Solar Below the Line Rebates"));
 
       tokens.put("Proposal.Panel Model", deets.getPanelModel());
-      tokens.put("Project.Inverter Model", deets.getInverterBrandName());
+      tokens.put("Project.Inverter Model", deets.getInverterCustomGetting());
       tokens.put("Proposal.Battery Model", deets.getStorageName());
       tokens.put("Proposal.Loan APR", result.get("custom_fields.Interest Rate"));
       tokens.put("Proposal.Dealer Fee", dealerFee);
