@@ -24,7 +24,6 @@ declare
   v_start_date                    timestamp;
   v_commission_booking_start_date timestamp;
   v_found_user_on_plan            bigint;
-  --v_found_user_residual_id           bigint;
   v_commission_strategy_id        bigint;
   v_fda_date date;
   v_fda_month integer;
@@ -107,7 +106,7 @@ BEGIN
            inner join brs.residual_plan_user r on r.residual_plan_id = rp.id  and r.user_id = v_user_id
            inner join brs.residual_plan_status rps on rps.id = rp.residual_plan_status_id
     where v_residual_date >= r.start_date
-                and (r.end_date is not null or
+                and (r.end_date is null or
                      v_residual_date <= r.end_date);
   end if;
 
