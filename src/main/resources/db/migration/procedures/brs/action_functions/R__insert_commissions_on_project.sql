@@ -254,7 +254,7 @@ BEGIN
                 99999999,
                 now(),
                 99999999)
-      returning id into v_residual_plan_id;
+      returning residual_plan_id into v_residual_plan_id;
     end if;
     select rp3.name, s.status_type
     into v_residual_plan,v_residual_status
