@@ -201,10 +201,11 @@ const getContentClass = () => {
 }
 
 #schedule-resource-message-dialog > div.height-one-hunned > #project-tabs > div > div > div.sc-message-list {
+  min-height: 300px;
   max-height: 400px;
 }
 #schedule-resource-message-dialog.joined > div.height-one-hunned > #project-tabs > div > div > div.sc-message-list {
-  min-height: 300px;
+  min-height: 350px;
   max-height:350px;
 }
 
