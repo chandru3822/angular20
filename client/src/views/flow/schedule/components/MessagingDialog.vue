@@ -21,9 +21,10 @@ import TeamAssignmentChips from "@/views/flow/settings/inbox/TeamAssignmentChips
 
 const props = defineProps({
   currentUserId: Number,
-  userIdToMessage: Number
+  userIdToMessage: Number,
+  centerLeft:Boolean
 })
-const {currentUserId, userIdToMessage} = toRefs(props)
+const {currentUserId, userIdToMessage, centerLeft} = toRefs(props)
 const emit = defineEmits(['close'])
 
 const userAssigned = ref(false)
@@ -130,10 +131,17 @@ const joinConversation = async (selectedTeam) => {
     appStore.loading = false
   }
 }
+
+const getContentClass = () => {
+  if(centerLeft.value) {
+    return 'messaging-dialog map-open'
+  }
+  return 'messaging-dialog'
+}
 </script>
 
 <template>
-  <v-dialog :value="userIdToMessage"  @click:outside="emit('close')" custom-classes="px-0" width="500">
+  <v-dialog :value="userIdToMessage"  @click:outside="emit('close')" custom-classes="px-0" width="500" hide-overlay :content-class="getContentClass()">
     <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned}"><!--the v-if is to make sure the messages reset when you close the dialog-->
       <div class="d-flex justify-space-between align-center one-hunned px-0 sticky-header srmd-header" style="height: 64px; border-bottom: #E0E0E0 solid 1px">
 
@@ -143,13 +151,14 @@ const joinConversation = async (selectedTeam) => {
           :reloading="conversationIsLoading"
           :show-assign-to-me-button="!userAssigned && userHasTeam"
           :user-id="userIdToMessage"
+          mini-dialog
           :conversation="messageProperties"
           class="px-6 pb-1 mt-n1"
           @updateOwner="loadConversation"
           @joinConversation="startJoinConversation"
       />
         <div class="pr-6 pb-1 mt-n1">
-        <a-btn variant="text">Open Conversation</a-btn>
+        <a-btn variant="text" :to="`/user/${userIdToMessage}/details`">Open Conversation</a-btn>
         </div>
       </div>
     <Messaging :user-id-in="userIdToMessage" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned"/>
@@ -175,6 +184,16 @@ const joinConversation = async (selectedTeam) => {
   height: 64px;
   border-bottom: var(--v-grey-lighten2) solid 1px;
 }
+
+::v-deep .messaging-dialog {
+  position: absolute;
+  bottom: 5%;
+
+  &.map-open {
+    left: 12%;
+  }
+}
+
 </style>
 <style lang="scss">
 #app > div.v-dialog__content.v-dialog__content--active > div{
@@ -188,4 +207,5 @@ const joinConversation = async (selectedTeam) => {
   min-height: 300px;
   max-height:350px;
 }
+
 </style>

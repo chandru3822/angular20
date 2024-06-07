@@ -1,6 +1,6 @@
 <template>
   <div id="calendar-container">
-    <MessagingDialog v-if="currentUserId" :current-user-id="currentUserId" :user-id-to-message="userToMessage" @close="[showMessagingDialog = false, userToMessage = null]"/>
+    <MessagingDialog v-if="currentUserId" :current-user-id="currentUserId" :user-id-to-message="userToMessage" :center-left="mapOpen" @close="[showMessagingDialog = false, userToMessage = null]"/>
     <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
