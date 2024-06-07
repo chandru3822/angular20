@@ -231,9 +231,9 @@ BEGIN
             99999999);
   end if;
 
-  if v_residual_plan_id is null and v_user_id is not null then
+  if v_residual_plan_id is null and v_user_id is not null and v_start_date is not null then
 
-    select date_trunc('month', up.start_date)::date
+    select greatest(date_trunc('month', up.start_date)::date,date_trunc('month', v_start_date)::date)
     into v_position_start_date
     from flow.user_position up
     where up.user_id = v_user_id
