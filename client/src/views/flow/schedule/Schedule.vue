@@ -8,9 +8,10 @@
              :useRightPanelMobile="true"
              :right-open="showMap"
              :showRightCollapseBtn="false"
+             :class="{'height-one-hunned': isSidebarView}"
   >
     <template v-slot:main-column>
-      <a-btn id="map-btn" v-if="!showMap && vuetify.breakpoint.mdAndUp" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
+      <a-btn id="map-btn" v-if="!showMap && vuetify.breakpoint.mdAndUp && !isSidebarView" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
       <a-btn id="close-filters-mobile" v-if="showHideFilters && vuetify.breakpoint.smAndDown" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="[showHideFilters = false, showMobileBtns = false]"><v-icon>mdi-filter-remove</v-icon></a-btn>
       <v-speed-dial
           v-if="vuetify.breakpoint.smAndDown && !showHideFilters"
@@ -156,6 +157,8 @@ const activeComp = computed(() => {
   return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
 })
 const showMap = computed(() => scheduleStore.showMap)
+
+const isSidebarView = computed(() => route.path.includes('inboxConversation'))
 
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')

@@ -1,7 +1,7 @@
 <template>
   <div id="calendar-container">
     <MessagingDialog v-if="currentUserId" :current-user-id="currentUserId" :user-id-to-message="userToMessage" :center-left="mapOpen" @close="[showMessagingDialog = false, userToMessage = null]"/>
-    <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1">
+    <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1" :class="{'background-clear': isSidebarView}">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
   <v-row class="py-0 d-flex align-baseline">
@@ -276,7 +276,7 @@
               </v-tooltip>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-                  <a-btn v-if="isResourceUser(resource)" icon size="small" @click="[showMessagingDialog = true, userToMessage = Number(resource.id.substring(1))]" :activation-handler="on" class="mx-1">
+                  <a-btn v-if="isResourceUser(resource) && !isSidebarView" icon size="small" @click="[showMessagingDialog = true, userToMessage = Number(resource.id.substring(1))]" :activation-handler="on" class="mx-1">
                     <v-icon color="grey darken-1">mdi-forum</v-icon>
                   </a-btn>
                 </template>
@@ -357,6 +357,8 @@ const props = defineProps({
   showFilters:Boolean,
   preselectedEvent: {type:Object, required: false}
 })
+
+const isSidebarView = computed(() => route.path.includes('inboxConversation'))
 
 const timezone = ref(scheduleStore.getTimezone)
 const scheduleTimezone = computed(() => scheduleStore.getTimezone)
@@ -1335,6 +1337,9 @@ a.resource-title:hover{
   @media(max-width: 600px) {
     max-height:50%;
     overflow-y: scroll;
+  }
+  &.background-clear {
+    background-color: transparent;
   }
 }
 .calendar-resize-container {

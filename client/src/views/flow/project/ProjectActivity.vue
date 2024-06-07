@@ -1,10 +1,6 @@
 <template>
   <CollapsableRightPanel
-    :view-options="[
-      { icon: 'mdi-forum-outline', visible: showSmsTab },
-      { icon: 'mdi-text-long', visible: true },
-      { icon: 'mdi-folder-outline', visible: true }
-    ]"
+    :view-options="viewOptions"
     :selected-option="viewId"
     :showHeaderSecondLine="viewId === 0"
     @selectView="selectView($event)"
@@ -15,7 +11,7 @@
       <v-tooltip
         bottom
         small
-        v-if="showSmsTab && route.path.includes('inboxConversation')"
+        v-if="showSmsTab && route.path.includes('inboxConversation') && viewId !== 2"
       >
         <template v-slot:activator="{ on, attrs }">
           <a
@@ -88,7 +84,7 @@
         >
       </div>
       <div
-        v-else-if="viewId === 2 && !isSidebarCollapsed"
+        v-else-if="viewId === viewOptions.findIndex(vo => vo.id === 'docs') && !isSidebarCollapsed"
         style="width: 168px"
         class="mr-2"
       >
@@ -199,7 +195,7 @@
       @scrollToTop="scrollToTop"
     />
     <AttachmentsFolderList
-      v-if="viewId === 2"
+      v-if="viewId === viewOptions.findIndex(vo => vo.id === 'docs')"
       :contact-id="contactId"
       :user-id="userId"
       :object-type-id="objectTypeId"
@@ -221,6 +217,8 @@
         @historyDialogClosed="showHistoryDialog = false"
       ></OwnershipHistoryDrilldown>
     </v-dialog>
+
+    <schedule v-if="viewId === viewOptions.findIndex(vo => vo.id === 'schedule')"/>
   </CollapsableRightPanel>
 </template>
 
@@ -254,6 +252,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import { storeToRefs } from 'pinia'
+import Schedule from "@/views/flow/schedule/Schedule.vue";
 
 const appStore = useAppStore()
 const notificationStore = useNotificationStore()
@@ -270,6 +269,14 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  showDocsTab: {
+    type: Boolean,
+    default: true
+  },
+  showScheduleTab: {
+    type: Boolean,
+    default: false
+  },
   contactId: Number,
   userIdIn: Number,
   orgId: Number,
@@ -283,6 +290,8 @@ const props = defineProps({
 })
 const {
   showSmsTab,
+  showDocsTab,
+  showScheduleTab,
   contactId,
   userIdIn,
   orgId,
@@ -295,6 +304,19 @@ const emit = defineEmits(['closeRight'])
 
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
+})
+const viewOptions = computed(() => {
+  let vo = [
+    { icon: 'mdi-forum-outline', visible: showSmsTab },
+    { icon: 'mdi-text-long', visible: true }
+  ]
+  if(showDocsTab.value){
+    vo.push({ id:'docs', icon: 'mdi-folder-outline', visible: true })
+  }
+  if(showScheduleTab.value){
+    vo.push({id:'schedule', icon: 'mdi-calendar', visible: true})
+  }
+  return vo
 })
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const userHasTeam = ref(false)
@@ -369,10 +391,12 @@ const sidebarTitle = computed(() => {
       return orgId.value || userId.value || contactId.value || projectId.value
         ? 'Notes & Activities'
         : null
-    case 2:
+    case viewOptions.value.findIndex(vo => vo.id === 'docs'):
       return orgId.value || userId.value || contactId.value || projectId.value
         ? 'Documents'
         : null
+    case viewOptions.value.findIndex(vo => vo.id === 'schedule'):
+      return ''
   }
 })
 const isSidebarCollapsed = computed(() => {
