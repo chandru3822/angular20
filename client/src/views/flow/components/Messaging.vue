@@ -197,7 +197,9 @@ const userId = computed(() => {
 })
 
 watch([projectId, userId], async () => {
-  await fetchProjectData()
+  if (projectId.value) {
+    await fetchProjectData()
+  }
 })
 
 watch(teamsAssociatedToUser, async (value, oldValue, onCleanup) => {

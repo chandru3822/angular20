@@ -1,6 +1,6 @@
 <template>
   <div id="calendar-container">
-    <MessagingDialog v-if="currentUserId" :value="showMessagingDialog" :user-id="currentUserId" :user-id-in="userToMessage" @close="[showMessagingDialog = false, userToMessage = null]"/>
+    <MessagingDialog v-if="currentUserId" :current-user-id="currentUserId" :user-id-to-message="userToMessage" @close="[showMessagingDialog = false, userToMessage = null]"/>
     <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
@@ -262,7 +262,7 @@
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
             <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
-            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
+            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }} {{resource.id.substring(1)}}</span>
             <div>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">

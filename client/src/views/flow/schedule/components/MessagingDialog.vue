@@ -14,16 +14,16 @@
 
 import Messaging from "@/views/flow/components/Messaging.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {getRequest, handleHidingGlobalLoader} from "@/helpers/helpers.js";
-import {onMounted, ref, toRefs} from "vue";
+import {getRequest, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import {onMounted, ref, toRefs, watch} from "vue";
 import {useAppStore} from "@/stores/AppStore.js";
+import TeamAssignmentChips from "@/views/flow/settings/inbox/TeamAssignmentChips.vue";
 
 const props = defineProps({
-  value:Boolean,
-  userId: Number,
-  userIdIn: Number
+  currentUserId: Number,
+  userIdToMessage: Number
 })
-const {userId, userIdIn} = toRefs(props)
+const {currentUserId, userIdToMessage} = toRefs(props)
 const emit = defineEmits(['close'])
 
 const userAssigned = ref(false)
@@ -31,8 +31,28 @@ const messageProperties = ref({})
 const teamsAssociatedToUser = ref([])
 const teamNamesAssociatedToUser = ref([])
 const conversationIsLoading = ref(false)
+const userHasTeam = ref(false)
+
 
 const appStore = useAppStore()
+
+watch(userIdToMessage, () => {
+  if(userIdToMessage.value) {
+    fetchTeamsForUser()
+  }
+  else {
+    resetAllRefs()
+  }
+})
+
+const resetAllRefs = () => {
+  userAssigned.value = false
+  messageProperties.value = {}
+  teamsAssociatedToUser.value = []
+  teamNamesAssociatedToUser.value = []
+  conversationIsLoading.value = false
+  userHasTeam.value = false
+}
 
 const fetchTeamsForUser = async () => {
     try {
@@ -45,7 +65,7 @@ const fetchTeamsForUser = async () => {
       teamsAssociatedToUser.value = data ?? []
 
       if (data != null && data.length > 0) {
-        // userHasTeam.value = true
+        userHasTeam.value = true
         teamNamesAssociatedToUser.value = teamsAssociatedToUser.value.map(
             (team) => team.teamName
         )
@@ -64,7 +84,7 @@ const loadConversation = async () => {
   userAssigned.value = false
     try {
       const { data, status } = await getRequest(
-          '/messaging/user/' + userId.value
+          '/messaging/user/' + userIdToMessage.value
       )
       messageProperties.value = data
       messageProperties.value.smsTeamOwners?.forEach((team) => {
@@ -86,18 +106,86 @@ const loadConversation = async () => {
     }
 }
 
-onMounted(() => {
-  fetchTeamsForUser()
-})
+const startJoinConversation = () => {
+  if (teamsAssociatedToUser.value?.length === 1) {
+    const selectedSmsTeam = teamsAssociatedToUser.value[0]
+    joinConversation(selectedSmsTeam)
+  } else {
+    // If the User has multiple teams available, have them select a team to join with first
+    showJoinConversationDialog.value = true
+  }
+}
+
+const joinConversation = async (selectedTeam) => {
+  try {
+    if (currentUserId.value) {
+      await postRequest(`/messaging/addTeam/user/${userIdToMessage.value}`, selectedTeam)
+    }
+    appStore.showSnack('SUCCESS', 'Successfully joined conversation')
+    await loadConversation()
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error joining conversation')
+    appStore.loading = false
+  }
+}
 </script>
 
 <template>
-  <ConfirmationDialog :open-dialog="value" hide-title hide-confirm @close-dialog="emit('close')">
-    <Messaging :user-id-in="userIdIn" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned"/>
-    <template v-slot:no>Close</template>
-  </ConfirmationDialog>
+  <v-dialog :value="userIdToMessage"  @click:outside="emit('close')" custom-classes="px-0" width="500">
+    <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned}"><!--the v-if is to make sure the messages reset when you close the dialog-->
+      <div class="d-flex justify-space-between align-center one-hunned px-0 sticky-header srmd-header" style="height: 64px; border-bottom: #E0E0E0 solid 1px">
+
+      <TeamAssignmentChips
+          :sms-team-owners="messageProperties.smsTeamOwners"
+          :team-names-associated-to-user="teamNamesAssociatedToUser"
+          :reloading="conversationIsLoading"
+          :show-assign-to-me-button="!userAssigned && userHasTeam"
+          :user-id="userIdToMessage"
+          :conversation="messageProperties"
+          class="px-6 pb-1 mt-n1"
+          @updateOwner="loadConversation"
+          @joinConversation="startJoinConversation"
+      />
+        <div class="pr-6 pb-1 mt-n1">
+        <a-btn variant="text">Open Conversation</a-btn>
+        </div>
+      </div>
+    <Messaging :user-id-in="userIdToMessage" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned"/>
+    </div>
+  </v-dialog>
 </template>
 
 <style scoped lang="scss">
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
 
+#schedule-resource-message-dialog {
+  background-color: white;
+  max-height: 500px !important;
+  overflow-y:hidden
+}
+
+#schedule-resource-message-dialog > div.srmd-header {
+  height: 64px;
+  border-bottom: var(--v-grey-lighten2) solid 1px;
+}
+</style>
+<style lang="scss">
+#app > div.v-dialog__content.v-dialog__content--active > div{
+  max-height:500px;
+}
+
+#schedule-resource-message-dialog > div.height-one-hunned > #project-tabs > div > div > div.sc-message-list {
+  max-height: 400px;
+}
+#schedule-resource-message-dialog.joined > div.height-one-hunned > #project-tabs > div > div > div.sc-message-list {
+  min-height: 300px;
+  max-height:350px;
+}
 </style>

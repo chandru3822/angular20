@@ -174,7 +174,6 @@
         :team-names-associated-to-user="teamNamesAssociatedToUser"
         :reloading="conversationIsLoading"
         :show-assign-to-me-button="!userAssigned && userHasTeam"
-        :project-id="projectId"
         :user-id="userId"
         class="px-6 pb-1 mt-n1"
         @updateOwner="loadConversation"
