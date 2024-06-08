@@ -197,7 +197,7 @@ const formatDateString = (dateString) => {
 const setSearchQuery = (newValue, columnName="") => {
   searchQuery.value = newValue?.trim()
   if (columnName !== "") {
-    columnFilterName.value = headers.value.find(f => f.text === columnName.replace(":", '')).value
+    columnFilterName.value = headers.value.find(f => f.text.toLowerCase() === columnName.replace(":", '')).value
   } else {
     columnFilterName.value = ''
   }

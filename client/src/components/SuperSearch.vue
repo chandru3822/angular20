@@ -75,10 +75,10 @@ const debouncedSyncFilter = debounce(() => {
   syncFilter()
   let found
   if (searchString.value) {
-    found = searchString.value.match(regexString.value)
+    found = searchString.value.toLowerCase().match(new RegExp(regexString.value, 'i'))
   }
   if (found)
-    emit('updateQuery', searchString.value.match(regexString.value)[0].trim(), searchString.value.match(regexString.value)[1].trim())
+    emit('updateQuery', found[0].trim(), found[1].trim())
   else {
     emit('updateQuery', searchString.value, '')
   }
@@ -88,9 +88,8 @@ const debouncedSyncFilter = debounce(() => {
 
 const syncFilter = () => {
   // update filter based on searchBar input
-  const re = new RegExp(regexString.value)
+  const re = new RegExp(regexString.value, 'ig')
   const data = re.exec(searchString.value)
-
   if (data) {
     const searchForFilter = data[1].replace(':', '').trim().toLowerCase()
     filterSelection.value = props.filterOptions.find((p) => p.text.toLowerCase() === searchForFilter).value
@@ -102,7 +101,7 @@ const syncFilter = () => {
 const createSearchRegex = () => {
   let reString = '(?<=('
   props.filterOptions.forEach((f, index) => {
-    reString = reString.concat('^(', f.text, ':)')
+    reString = reString.concat('^(', f.text.toLowerCase(), ':)')
     if (index < props.filterOptions.length - 1) {
       reString = reString.concat('|')
     }
