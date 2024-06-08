@@ -1,7 +1,7 @@
 <template>
   <v-container class="pa-0">
     <v-row class="pa-0">
-      <v-col xl="1" lg="2" md="2" sm="3" xs="3">
+      <v-col xl="1" lg="2" md="2" sm="3" xs="3" class="pr-4">
         <v-autocomplete
           label="Filter"
           :items="props.filterOptions"
@@ -10,8 +10,8 @@
           @input="debounceSyncSearchBar()"
         />
       </v-col>
-      <v-col xl="11" lg="10" md="10" sm="9" xs="9">
-        <v-text-field
+      <v-col xl="11" lg="10" md="10" sm="9" xs="9" class="pl-4">
+        <a-text-field
           ref="focusSearchBar"
           prepend-inner-icon="search"
           clearable
@@ -19,7 +19,7 @@
           v-model="searchString"
           @input="debouncedSyncFilter"
           :hint="filterSelection === 'dateCreated' ? 'Date search format: mm/dd/yyyy': ''"
-          v-maska :data-maska="filterSelection === 'dateCreated' ? 'Date Created: ##/##/####' : null"
+          :maskaOptions="options"
         />
       </v-col>
     </v-row>
@@ -27,9 +27,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, defineProps, getCurrentInstance } from "vue";
+import {ref, onMounted, defineProps, getCurrentInstance, computed, reactive} from "vue";
 import debounce from "lodash.debounce";
-import { vMaska } from 'maska/vue'
 
 const emit = defineEmits(['updateQuery'])
 const filterSelection = ref('')
@@ -41,6 +40,19 @@ const props = defineProps(
   }
 )
 
+const useMaska = computed(() => {
+  // check filterSelection.value and search string length. otherwise the mask won't clear
+  if (filterSelection.value === 'dateCreated' && searchString.value.length > 0) {
+    return 'Date Created: ##/##/####'
+  }
+  return null
+})
+
+const options = reactive({
+  mask: useMaska,
+  eager: true
+})
+
 const vueInstance = getCurrentInstance().proxy
 
 const debounceSyncSearchBar = debounce(() => {
@@ -51,6 +63,9 @@ const syncSearchBar = () => {
   // update search bar based on filter input
   if (filterSelection.value) {
     searchString.value = props.filterOptions.find(f => filterSelection.value === f.value).text.concat(': ')
+  } else {
+    searchString.value = ''
+    filterSelection.value = ''
   }
   vueInstance.$nextTick(() => vueInstance.$refs.focusSearchBar.focus())
 }
