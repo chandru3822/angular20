@@ -59,10 +59,10 @@ Vue.filter('searchHighlight', function (value, query, ignoreWhiteSpace = false) 
       query = query.replace(/\s/g, '')
       let newQuery = ''
       for (const char of query) {
-        console.log(char)
-        newQuery = newQuery.concat(char, ' ?')
+        newQuery = newQuery.concat(char, '\\s*')
       }
-      query = "[(".concat(newQuery, ")]{", queryLength,",}")
+
+      query = "(".concat(newQuery, ")")
     }
     return value.replace(
       new RegExp(query, 'ig'),
