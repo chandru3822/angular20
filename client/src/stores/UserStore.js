@@ -5,6 +5,9 @@ import { postRequest } from '@/helpers/helpers.js'
 const defaultState = {
   authorized: false,
   jwt: null,
+  //hideHeader and hideMobileBanner are only sent in by the mobile app.
+  hideHeader: false,
+  hideMobileBanner: false,
   loginError: '',
   details: null,
   userImage: {},
