@@ -23,7 +23,7 @@ declare
   v_commission_plan_found         bigint;
   v_start_date                    timestamp;
   v_commission_booking_start_date timestamp;
-  v_found_user_on_plan            bigint;
+  v_found_residual_plan           bigint;
   v_commission_strategy_id        bigint;
   v_fda_date                      date;
   v_fda_month                     integer;
@@ -31,7 +31,7 @@ declare
   v_fdc_day                       integer;
   v_residual_date                 date;
   v_cp_commission_strategy_id     bigint;
-  v_position_start_date           date;
+  v_residual_plan_user_start_date           date;
 BEGIN
 
   select min(ppscfv.date_value) milestone_one_complete_date
@@ -233,21 +233,24 @@ BEGIN
 
   if v_residual_plan_id is null and v_user_id is not null and v_start_date is not null then
 
-    select greatest(date_trunc('month', up.start_date)::date,date_trunc('month', v_residual_date)::date)
-    into v_position_start_date
-    from flow.user_position up
-    where up.user_id = v_user_id
-      and up.position_id = any (select unnest(string_to_array(value, ',')::bigint[]) as id
-                                from flow.company_configuration_value
-                                where code = 'CLOSER_POSITION_IDS')
-      and up.primary_flag is true;
+    select count(1)
+    into v_found_residual_plan
+    from brs.residual_plan_user rpu2
+    where rpu2.user_id = v_user_id
+      and rpu2.end_date is null;
 
-    if v_position_start_date is not null then
+    if v_found_residual_plan < 1 then
+
+      select date_trunc('month', max(rpu.end_date) + interval '1 month')::date
+      into v_residual_plan_user_start_date
+      from brs.residual_plan_user rpu
+      where rpu.user_id = v_user_id and rpu.end_date is not null;
+
       insert into brs.residual_plan_user(residual_plan_id, user_id, start_date, end_date, note,
                                          date_created, created_by_id, date_modified, modified_by_id)
         (select (select id from brs.residual_plan as rp2 where rp2.default_plan is true limit 1),
                 v_user_id,
-                v_position_start_date,
+                coalesce(v_residual_plan_user_start_date, date_trunc('year', now()))::date,
                 null,
                 'auto generated from insert_commission_on_project function',
                 now(),
@@ -255,12 +258,13 @@ BEGIN
                 now(),
                 99999999)
       returning residual_plan_id into v_residual_plan_id;
+
+      select rp3.name, s.status_type
+      into v_residual_plan,v_residual_status
+      from brs.residual_plan rp3
+             inner join brs.residual_plan_status s on rp3.residual_plan_status_id = s.id
+      where rp3.id = v_residual_plan_id;
     end if;
-    select rp3.name, s.status_type
-    into v_residual_plan,v_residual_status
-    from brs.residual_plan rp3
-           inner join brs.residual_plan_status s on rp3.residual_plan_status_id = s.id
-    where rp3.id = v_residual_plan_id;
   end if;
 
   if v_start_date is not null and v_user_id is not null and v_residual_plan_id is not null then
