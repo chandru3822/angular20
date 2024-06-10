@@ -236,7 +236,7 @@ public class ProjectProcessStepService {
 
   public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, Long cancelledCompanyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
-    ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
+    ProjectProcessStep pps = getPpsForAutotrigger(projectProcessStepId);
 
     if (pps == null) {
       throw new RuntimeException("The given process step does not exist");
@@ -310,35 +310,35 @@ public class ProjectProcessStepService {
     } else {
       return ResponseEntity.badRequest().body("Project Process Step is already assigned to another user. Please refresh page.");
     }
+  }
 
+  public ProjectProcessStep getPpsForAutotrigger(Long ppsId) {
+      var user = securityService.getCurrentUser();
+      try {
+          String json = sqlCache.queryForObjectBySql(
+              ProjectProcessStepQuery.getPPSForAutotrigger,
+              Map.of("ppsId", ppsId, "companyId", user.getCompanyId()),
+              String.class
+          );
+          if (json == null) {
+              throw new RuntimeException();
+          }
+          return om.readValue(json, new TypeReference<>() {});
+      } catch (Exception e) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new RuntimeException());
+      }
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
     User user = securityService.getCurrentUser();
-    Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
     HashMap<String, Object> params = new HashMap<>();
     params.put("stepId", stepId);
     params.put("companyId", user.getCompanyId());
-    params.put("systemAdmin", systemAdmin);
-    params.put("userPositions", userPositionIds);
 
     try {
       String json = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getProjectProcessStep, params, String.class);
       if (null != json) {
-        ProjectProcessStep step = om.readValue(json, new TypeReference<>() {
-        });
-
-        for (ProjectProcessStepEvent event : step.getProjectProcessStepEvents()) {
-          if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
-            HashMap<String, Object> moreParams = new HashMap<>();
-            moreParams.put("objectTypeId", 6); //6 is the event object type
-            moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
-            moreParams.put("primaryId", event.getId());
-            List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
-            event.setCustomFieldDisplayValue(cfvs.get(0));
-          }
-        }
+        ProjectProcessStep step = om.readValue(json, new TypeReference<>() {});
 
         if(!step.getReadonlyAllow() && (step.getWhiteListedPositions() == null || step.getWhiteListedPositions().size() == 0)){
           step.setReadonly(false);
@@ -416,7 +416,7 @@ public class ProjectProcessStepService {
 
   @Transactional
   public void deleteProjectProcessStep(Long projectProcessStepId) {
-    ProjectProcessStep deletingStep = this.getProjectProcessStep(projectProcessStepId);
+    ProjectProcessStep deletingStep = getPpsForAutotrigger(projectProcessStepId);
 
     if (deletingStep != null) {
       if (deletingStep.getMain()) {
@@ -434,8 +434,11 @@ public class ProjectProcessStepService {
       actParams.put("newStatusId", null);
       sqlCache.queryBySql(ActivityQuery.addSystemActivityWithoutProjectId, actParams, String.class);
 
-      sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId,
-        "currentUserId", securityService.getCurrentUser().trueUserId()), String.class);
+      sqlCache.queryBySql(
+          ProjectProcessStepQuery.delete,
+          Map.of("projectProcessStepId", projectProcessStepId, "currentUserId", securityService.getCurrentUser().trueUserId()),
+          String.class
+      );
     }
   }
 
@@ -463,10 +466,6 @@ public class ProjectProcessStepService {
       };
       bw.registerCustomEditor(List.class, "actions", new JsonCollectionDeserializer(actionsRef, objectMapper));
 
-      TypeReference<List<ProjectProcessStepRequirement>> requirementsRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "autoTriggeredActionRequirements", new JsonCollectionDeserializer(requirementsRef, objectMapper));
-
       TypeReference<List<ProjectProcessStepEvent>> ppsEventsRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "projectProcessStepEvents", new JsonCollectionDeserializer(ppsEventsRef, objectMapper));
@@ -486,56 +485,19 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
-    ProjectProcessStep pps = getProjectProcessStep(ppsId);
-    ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
-    return getActionResult(actionId, action, pps);
-  }
-
-  public ProjectProcessStepAction getActionResult(Long actionId, ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
-
-    List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
-      .filter(step -> step.getProcessStepRequirementId() != null)
-      .map(ProcessStepLogic::getProcessStepRequirementId)
-      .collect(Collectors.toList());
-    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-    ProjectProcessStepAction actionResult = canPerformAction(action, pps, requirements);
-
-    ProjectProcessStepAction minimalResult = new ProjectProcessStepAction();
-
-    minimalResult.setId(actionId);
-    minimalResult.setActionName(actionResult.getActionName());
-    minimalResult.setCanPerform(pps.getProcessStepStatusTypeId() == 1 && actionResult.getCanPerform());
-    minimalResult.setMultipleUses(actionResult.getMultipleUses());
-    minimalResult.setAlreadyTriggered(actionResult.getAlreadyTriggered());
-    minimalResult.setTriggerAutomatically(actionResult.getTriggerAutomatically());
-
-    return actionResult;
+    ProjectProcessStep pps = getPpsForAutotrigger(ppsId);
+    ProjectProcessStepAction action = pps.getActions().stream()
+                                         .filter(a -> a.getId().equals(actionId))
+                                         .findFirst()
+                                         .orElse(null);
+    if (action == null) {
+        throw new RuntimeException("Unable to find given ppsId");
+    }
+    return canPerformAction(action, pps);
   }
 
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
-//  public List<Long> performInitialAutoTriggers() {
-//
-//    User cronUser = new User();
-//    cronUser.setId(SystemSettings.CRON_USER.getId());
-//
-//    final List<Map<String, Object>> results = sqlCache.queryBySql(ProjectProcessStepQuery.getInitialAutoTriggerPps, null, new ColumnMapRowMapper());
-//
-//    List<Long> createdPpsIds = new ArrayList<>();
-//
-//    for(Map<String, Object> result: results) {
-//      cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
-//      List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()), null);
-//      if (!newPpsIds.isEmpty()) {
-//        createdPpsIds.addAll(newPpsIds);
-//      }
-//    }
-//
-//    log.info("TRIGGERS: PPSs created by initial auto triggers: " + createdPpsIds.size());
-//    log.info("TRIGGERS: PPS ids created by initial auto triggers: " + createdPpsIds);
-//
-//    return createdPpsIds;
-//  }
   public void performTimeBasedAutoTriggers() {
 
     User cronUser = new User();
@@ -595,7 +557,7 @@ public class ProjectProcessStepService {
     // Set the security context so we have user details in the async downline
     securityService.setCurrentUserDetails(userDetails);
 
-    ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
+    ProjectProcessStep pps = getPpsForAutotrigger(ppsId);
 
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
@@ -614,15 +576,7 @@ public class ProjectProcessStepService {
             // which might potentially enable this one to get lighter also
             ProjectProcessStep updatedPps = this.getProjectProcessStep(ppsId);
 
-            List<Long> reqIds = action.getProcessStepLogicList().stream()
-              .filter(step -> step.getProcessStepRequirementId() != null)
-              .map(ProcessStepLogic::getProcessStepRequirementId)
-              .collect(Collectors.toList());
-
-            List<ProjectProcessStepRequirement> reqs = updatedPps.getAutoTriggeredActionRequirements().stream()
-              .filter(r -> reqIds.contains(r.getId()))
-              .collect(Collectors.toList());
-            ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps, reqs);
+            ProjectProcessStepAction actionResult = this.canPerformAction(action, updatedPps);
             if (actionResult.getCanPerform()) {
               performedActions.add(action.getId());
               PpsActionResult ppsActionResult = this.performAction(action, updatedPps, performedActions);
@@ -688,8 +642,7 @@ public class ProjectProcessStepService {
      */
 
     var runStatusTriggers = false;
-    var childFunctionsRan = false;
-    PpsActionResult actionResult = new PpsActionResult();
+    PpsActionResult actionResult;
     List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
 
     User user = securityService.getCurrentUser();
@@ -699,6 +652,7 @@ public class ProjectProcessStepService {
       runStatusTriggers = true;
     }
 
+    //@TODO: Adds extra DB hit every action. Potential for adding to queue
     //remove process step owner if needed (BR request, dont hate)
     if (action.getRemoveProcessStepOwner()) {
       this.removeOwner(pps.getProjectProcessStepId());
@@ -711,6 +665,7 @@ public class ProjectProcessStepService {
 
     actionResult = performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
 
+    //@TODO: Sending SMS should not happen real time when performing actions. Add it to a queue for async operation
     //sends sms to contact if any are present in the configs
     performSmsTemplates(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getContactId());
 
@@ -769,7 +724,7 @@ public class ProjectProcessStepService {
     return actionResult;
   }
 
-  public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
+  public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
     // Allow actions to be triggered only once per PPS
     if (action.getAlreadyTriggered() && !action.getMultipleUses()) {
       action.setCanPerform(false);
@@ -782,15 +737,33 @@ public class ProjectProcessStepService {
       return action;
     }
 
+    if (action.getActionTypeId() == 2) {
+        // Check assigned PS statuses/categories for actionTypeId 2 (buttons)
+        boolean isInAssignedCategory = action.getProcessStepStatusTypeIds().contains(pps.getProcessStepStatusTypeId());
+        boolean isInAssignedStatus = action.getCompanyProcessStepStatusTypeIds().contains(pps.getCompanyProcessStepStatusTypeId());
+        boolean assignedStatusSet = !action.getProcessStepStatusTypeIds().isEmpty() || !action.getCompanyProcessStepStatusTypeIds().isEmpty();
+        if (assignedStatusSet && !isInAssignedCategory && !isInAssignedStatus) {
+            action.setCanPerform(false);
+            return action;
+        }
+    }
+
     if (action.getAlwaysEnabled()) {
       action.setCanPerform(true);
       return action;
     }
 
     if (action.getProcessStepLogicList().isEmpty()) {
-      action.setCanPerform(false);
-      return action;
+        action.setCanPerform(false);
+        return action;
     }
+
+
+      List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
+                                       .map(ProcessStepLogic::getProcessStepRequirementId)
+                                       .filter(Objects::nonNull)
+                                       .toList();
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
 
     // If there are not any requirements, then it can be completed
     if (requirements.isEmpty()) {

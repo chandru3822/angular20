@@ -60,7 +60,7 @@
           </v-tab>
         </v-tabs>
 
-        <router-view :non-admin-add="processStep.nonAdminAdd"/>
+        <router-view :process-step="processStep" :non-admin-add="processStep.nonAdminAdd"/>
       </v-col>
 
     </v-row>
