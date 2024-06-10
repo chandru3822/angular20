@@ -174,7 +174,6 @@ watch(selectedUsers, () => {
   calendarOptions.value.resources = selectedUsers.value
   handleResourceColors()
   reloadCalendar()
-  console.log(calendarOptions.value.resources[0])
 })
 
 const getRoundRobinUsers = async() => {
