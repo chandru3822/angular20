@@ -1,13 +1,13 @@
 <template>
   <v-container id="closer-dash-container">
-    <v-row id="closer-dash-toolbar-container">
-      <v-col cols="12" id="closer-dash-toolbar" class="pt-0 pb-2">
+    <v-row id="closer-dash-toolbar-container" v-if="!hideHeader">
+      <v-col cols="12" id="closer-dash-toolbar">
         <v-toolbar id="closer-dash-title-container" class="elevation-1">
           <v-toolbar-title>Closer Dashboard</v-toolbar-title>
         </v-toolbar>
         <v-tabs class="tabs-bar" v-model="activeTab">
           <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
-                 class="text-capitalize body-medium tab-bar"
+                 class="text-capitalize body-medium tab-bar text-center"
                  :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
             {{ tab.label }}
           </v-tab>
@@ -20,47 +20,44 @@
 
 <script setup>
 import {useRouter, useRoute} from "vue-router/composables";
-import { computed } from 'vue'
+import {computed, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
 
+const userStore = useUserStore()
 const router = useRouter()
 const route = useRoute()
+const hideHeader = ref(userStore.hideHeader || false)
 
 const tabs = [
   {
     id: 1,
-    label: 'Funnel',
+    label: 'FUNNEL',
     path: `/closer/funnel`,
   },
   {
     id: 2,
-    label: 'Ranking',
+    label: 'RANKING',
     path: `/closer/dashboard`,
   },
   {
     id: 3,
-    label: 'Incentive',
+    label: 'INCENTIVE',
     path: `/closer/incentive`,
   },
   {
     id: 4,
-    label: 'Leaderboard',
+    label: 'LEADERBOARD',
     path: `/closer/leaderboard`,
   },
   {
     id: 5,
-    label: 'Residuals',
+    label: 'RESIDUAL',
     path: `/closer/residuals`,
   }
 ]
 
 const activeTab = (() => {
   return route?.path?.includes('/event') ? `/settings/processStep/${route.params.id}/events` : null
-  // get: function() {
-  //   return this.route?.path?.includes('/event') ? `/settings/processStep/${this.route.params.id}/events` : null
-  // },
-  // set: function(val) {
-  //   return val
-  // }
 })
 
 const goToRoute = (name) => {
@@ -71,16 +68,22 @@ const goToRoute = (name) => {
 <style lang="scss" scoped>
   .tab-bar{
     margin-left: 0px !important;
-    padding-left: 0px !important;
+    padding-left: 16px !important;
+    text-align: center;
+    min-width: 7%;
+    text-transform: capitalize!important;
   }
 
   #closer-dash-container {
     letter-spacing: 0.02em !important;
     overflow: auto;
+    padding-left: 16px!important;
   }
 
   #closer-dash-toolbar-container {
     #closer-dash-toolbar {
+      padding-top: 24px!important;
+      padding-bottom: 24px!important;
       header {
         background-color: #fff !important;
       }
