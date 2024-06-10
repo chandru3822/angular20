@@ -55,8 +55,14 @@ Vue.filter('formatDateZoneless', function (value) {
 Vue.filter('searchHighlight', function (value, query, ignoreWhiteSpace = false) {
   if (value) {
     if (ignoreWhiteSpace === true) {
+      const queryLength = query.length
       query = query.replace(/\s/g, '')
-      query = "[(".concat(query, ") ]{", query.length, "}")
+      let newQuery = ''
+      for (const char of query) {
+        console.log(char)
+        newQuery = newQuery.concat(char, ' ?')
+      }
+      query = "[(".concat(newQuery, ")]{", queryLength,",}")
     }
     return value.replace(
       new RegExp(query, 'ig'),
