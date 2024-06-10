@@ -43,7 +43,7 @@
         class="elevation-1"
         :items="filteredDashValues"
         :headers="headers"
-        ref="pageable-table"
+        ref="pageableTable"
         disable-sort
         :item-class="itemRowBackground"
         :footer-props="footerProps"

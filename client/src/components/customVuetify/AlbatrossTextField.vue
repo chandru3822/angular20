@@ -95,7 +95,7 @@ const props = defineProps({
   maxlength: Number,
   maskaOptions: {
     type: Object,
-    default: {mask: null},
+    default: () => ({mask: null})
   },
 })
 

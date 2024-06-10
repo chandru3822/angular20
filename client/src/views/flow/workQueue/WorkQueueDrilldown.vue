@@ -46,7 +46,7 @@
             :headers="filteredHeaders"
             :items="results"
             :fixed-header="true"
-            ref="pageable-table"
+            ref="pageableTable"
             :page.sync="page"
             :loading="dataLoading"
             :options.sync="options"
@@ -310,6 +310,7 @@ const footerProps = ref({
 })
 const options = ref({itemsPerPage: 100})
 const headers = ref([])
+const pageableTable = ref(null)
 
 watch(page, async() => {
   let table = pageableTable.value

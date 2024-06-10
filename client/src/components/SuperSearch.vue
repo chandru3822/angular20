@@ -42,7 +42,7 @@ const props = defineProps(
 
 const useMaska = computed(() => {
   // check filterSelection.value and search string length. otherwise the mask won't clear
-  if (filterSelection.value === 'dateCreated' && searchString.value.length > 0) {
+  if (filterSelection.value === 'dateCreated' && searchString.value?.length > 0) {
     return 'Date Created: ##/##/####'
   }
   return null
@@ -100,9 +100,9 @@ const syncFilter = () => {
 
 const createSearchRegex = () => {
   let reString = '(?<=('
-  props.filterOptions.forEach((f, index) => {
+  props.filterOptions?.forEach((f, index) => {
     reString = reString.concat('^(', f.text.toLowerCase(), ':)')
-    if (index < props.filterOptions.length - 1) {
+    if (index < props.filterOptions?.length - 1) {
       reString = reString.concat('|')
     }
   })

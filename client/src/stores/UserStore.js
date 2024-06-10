@@ -17,20 +17,20 @@ export const useUserStore = defineStore('user', {
   state: () => ({...defaultState}),
   getters: {
     isSystemAdmin() {
-      return this.details.highestCompanyId === 1
+      return this.details?.highestCompanyId === 1
     },
     //Keeping this for compatability with the move from vuex. But, pretty sure this functionality is superfluous
     isCompanyRoot() {
-      return this.details.companyId === 1
+      return this.details?.companyId === 1
     },
     isParent() {
       // is albatross or parentId is null (no longer checking for parentId is null due to single context)
-      return this.details.parentCompanyId === 1
+      return this.details?.parentCompanyId === 1
     },
     userHasAnyFeature() {
       // this function returns true if the user has any access level for any feature -
       // or if the user is a system admin
-      return this.isSystemAdmin || this.details.featureAccess?.length > 0
+      return this.isSystemAdmin || this.details?.featureAccess?.length > 0
     },
     timezone() {
       if (!this.details?.timezone) {
@@ -43,7 +43,8 @@ export const useUserStore = defineStore('user', {
   actions: {
     guessTimeZone() {
       //pls fix the undefined timezone issue!
-      if(!this.details?.timezone) {
+      //also trying to fix a "Cannot set properties of null (setting 'timezone')" error
+      if(this.details && !this.details?.timezone) {
         this.details.timezone = {
           friendlyValue: moment.tz.guess(),
           value: moment.tz.guess()
@@ -86,7 +87,7 @@ export const useUserStore = defineStore('user', {
     userHasFeature(featureCode) {
       // this function returns true if the user has any access level (edit, view, etc)
       // or if the user is a system admin (send 'SYSTEM' as the feature code if you only care it is a system admin)
-      return this.isSystemAdmin || this.details.featureAccess?.some(fa => fa.featureCode === featureCode)
+      return this.isSystemAdmin || this.details?.featureAccess?.some(fa => fa.featureCode === featureCode)
     },
     userHasFeatureAccessLevel(featureCode, accessCode) {
       // this function only returns true if the user a specific access level to a specific feature (or is a system admin)
@@ -95,7 +96,7 @@ export const useUserStore = defineStore('user', {
       }
 
       let hasFeatureAccessLevel = false
-      if(this.details.featureAccess?.length > 0 ) {
+      if(this.details?.featureAccess?.length > 0 ) {
         let featureMatch = this.details.featureAccess.find(fa => fa.featureCode === featureCode && fa.accessCode === accessCode)
         hasFeatureAccessLevel = featureMatch !== null && featureMatch !== undefined
       }
@@ -103,7 +104,7 @@ export const useUserStore = defineStore('user', {
     },
     userHasAnyPosition(positionIds) {
       // this function returns true if the any of the user's positions match any of the ids sent in
-      return this.isSystemAdmin || this.details.userPositions?.some(p => {
+      return this.isSystemAdmin || this.details?.userPositions?.some(p => {
         return positionIds.includes(p.positionId)
       })
     }

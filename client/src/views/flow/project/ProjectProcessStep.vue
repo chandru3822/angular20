@@ -476,7 +476,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 const expansionOpenStatus = computed(() => {
 	// determine which groups to collapse. Default is expand
 	let indexes = []
-	customFieldGroups.value.forEach((group, index) => {
+	customFieldGroups.value?.forEach((group, index) => {
 		const defaultStatusNotSet = group.companyProcessStepStatusTypeIds.length === 0 &&
 			group.processStepStatusTypeIds.length === 0 &&
 			!group.psCollapseByDefault
