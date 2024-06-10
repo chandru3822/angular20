@@ -737,16 +737,6 @@ public class ProjectProcessStepService {
       return action;
     }
 
-    if (action.getAlwaysEnabled()) {
-      action.setCanPerform(true);
-      return action;
-    }
-
-    if (action.getProcessStepLogicList().isEmpty()) {
-      action.setCanPerform(false);
-      return action;
-    }
-
     if (action.getActionTypeId() == 2) {
         // Check assigned PS statuses/categories for actionTypeId 2 (buttons)
         boolean isInAssignedCategory = action.getProcessStepStatusTypeIds().contains(pps.getProcessStepStatusTypeId());
@@ -758,7 +748,18 @@ public class ProjectProcessStepService {
         }
     }
 
-    List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
+    if (action.getAlwaysEnabled()) {
+      action.setCanPerform(true);
+      return action;
+    }
+
+    if (action.getProcessStepLogicList().isEmpty()) {
+        action.setCanPerform(false);
+        return action;
+    }
+
+
+      List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
                                        .map(ProcessStepLogic::getProcessStepRequirementId)
                                        .filter(Objects::nonNull)
                                        .toList();
