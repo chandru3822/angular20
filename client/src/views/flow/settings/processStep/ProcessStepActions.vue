@@ -200,10 +200,12 @@
                           label="Action can perform only in statuses of"
                           class="mt-4 mb-6"
                           density="compact"
+                          clearable
                           item-value="uid"
                           return-object
                           hide-details
                           multiple
+                          @click:clear="clearStatusSelection(item)"
                       >
                           <template #selection="{item: status, index}">
                               <template v-if="getSelectAllIcon(item) === 'mdi-checkbox-marked'">
@@ -1305,6 +1307,12 @@ const getSelectAllIcon = ((item) => {
         return 'mdi-checkbox-blank-outline'
     }
 })
+
+const clearStatusSelection = (action) => {
+    action.processStepStatusTypeIds = []
+    action.companyProcessStepStatusTypeIds = []
+    action.stupidSelectedStatuses = []
+}
 
 const saveChildFunctionOrder = async (actionId, childFns) => {
   appStore.loading = true
