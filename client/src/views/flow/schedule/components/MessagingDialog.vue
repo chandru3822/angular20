@@ -22,9 +22,14 @@ import TeamAssignmentChips from "@/views/flow/settings/inbox/TeamAssignmentChips
 const props = defineProps({
   currentUserId: Number,
   userIdToMessage: Number,
-  centerLeft:Boolean
+  title: String,
+  centerLeft:Boolean,
+  adjustVertical: {
+    type:Boolean,
+    default: true
+  }
 })
-const {currentUserId, userIdToMessage, centerLeft} = toRefs(props)
+const {currentUserId, userIdToMessage, centerLeft, adjustVertical} = toRefs(props)
 const emit = defineEmits(['close'])
 
 const userAssigned = ref(false)
@@ -133,10 +138,13 @@ const joinConversation = async (selectedTeam) => {
 }
 
 const getContentClass = () => {
-  if(centerLeft.value) {
+  if(centerLeft.value && adjustVertical.value) {
     return 'messaging-dialog map-open'
   }
-  return 'messaging-dialog'
+  else if(adjustVertical.value) {
+    return 'messaging-dialog'
+  }
+  return ''
 }
 </script>
 
@@ -144,7 +152,7 @@ const getContentClass = () => {
   <v-dialog :value="userIdToMessage"  @click:outside="emit('close')" custom-classes="px-0" width="500" hide-overlay :content-class="getContentClass()">
     <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned}"><!--the v-if is to make sure the messages reset when you close the dialog-->
       <div class="d-flex justify-space-between align-center one-hunned px-0 sticky-header srmd-header" style="height: 64px; border-bottom: #E0E0E0 solid 1px">
-
+        <div class="title-medium px-4 pt-2">{{title}}</div>
       <TeamAssignmentChips
           :sms-team-owners="messageProperties.smsTeamOwners"
           :team-names-associated-to-user="teamNamesAssociatedToUser"
@@ -158,7 +166,7 @@ const getContentClass = () => {
           @joinConversation="startJoinConversation"
       />
         <div class="pr-6 pb-1 mt-n1">
-        <a-btn variant="text" :to="`/user/${userIdToMessage}/details`">Open Conversation</a-btn>
+        <a-btn variant="text" size="xs" :to="`/user/${userIdToMessage}/details`" prepend-icon="mdi-open-in-new"></a-btn>
         </div>
       </div>
     <Messaging :user-id-in="userIdToMessage" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned"/>

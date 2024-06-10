@@ -1,6 +1,6 @@
 <template>
   <div id="calendar-container">
-    <MessagingDialog v-if="currentUserId" :current-user-id="currentUserId" :user-id-to-message="userToMessage" :center-left="mapOpen" @close="[showMessagingDialog = false, userToMessage = null]"/>
+    <MessagingDialog v-if="currentUserId" :current-user-id="currentUserId" :user-id-to-message="userToMessage?.userId" :title="userToMessage?.title" :center-left="mapOpen" @close="[showMessagingDialog = false, userToMessage = null]"/>
     <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1" :class="{'background-clear': isSidebarView}">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
@@ -262,7 +262,7 @@
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
             <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
-            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }} {{resource.id.substring(1)}}</span>
+            <a v-else :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
             <div>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
@@ -276,7 +276,7 @@
               </v-tooltip>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-                  <a-btn v-if="isResourceUser(resource) && !isSidebarView" icon size="small" @click="[showMessagingDialog = true, userToMessage = Number(resource.id.substring(1))]" :activation-handler="on" class="mx-1">
+                  <a-btn v-if="resource.id.charAt(0)==='2' && !isSidebarView && userCanSms" icon size="small" @click="[showMessagingDialog = true, userToMessage = {userId: Number(resource.id.substring(1)), title:resource.title}]" :activation-handler="on" class="mx-1">
                     <v-icon color="grey darken-1">mdi-forum</v-icon>
                   </a-btn>
                 </template>
