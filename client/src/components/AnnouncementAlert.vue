@@ -64,7 +64,7 @@ const selectedAnnouncement = ref({})
 const loadComplete = ref(false)
 
 const unseenAnnouncements = computed(() => {
-  if (Array.isArray(appStore.announcements)) {
+  if (Array.isArray(appStore.announcements) && appStore?.announcements?.length > 0) {
     return appStore?.announcements?.filter(
       (a) =>
         !a.seen &&

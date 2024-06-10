@@ -283,7 +283,7 @@ const loadBoth = async(isFilteredReload) => {
   const [wqResults, metricResults] = await Promise.all(requests)
   //assign each metric to the appropriate card
   metricResults?.forEach(d => {
-    let match = workQueues.value.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
+    let match = workQueues.value?.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
     //if a wqt is hidden from a user then no match will be found
     if(match) {
       match.metrics = d

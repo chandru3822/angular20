@@ -141,6 +141,8 @@
             let msg = e?.data?.status === 406 ? 'You must select a different password' : e?.data?.message || 'Error Retrieving Account Details'
             appStore.showSnack('ERROR', msg)
             appStore.loading = false
+          } finally {
+            savingPassword.value = false
           }
         } else {
           savingPassword.value = false

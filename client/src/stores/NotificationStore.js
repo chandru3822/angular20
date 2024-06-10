@@ -29,7 +29,11 @@ export const useNotificationStore = defineStore('notification', {
       return this.messages?.filter(n => n.topic === topic) ?? []
     },
     getNotificationsByTopic(topic) {
-      return this.notifications?.filter(n => n.topic === topic) ?? []
+      if(this.notifications && this.notifications.length > 0) {
+        return this.notifications?.filter(n => n.topic === topic)
+      } else {
+        return []
+      }
     },
     async processProjectMsg(projectId) {
       try {

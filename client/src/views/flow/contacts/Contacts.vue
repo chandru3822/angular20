@@ -62,7 +62,7 @@
             :headers="headers"
             :items="contacts"
             :fixed-header="true"
-            ref="pageable-table"
+            ref="pageableTable"
             :page.sync="page"
             :options.sync="options"
             disable-sort

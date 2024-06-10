@@ -1120,7 +1120,6 @@ const pipelineLoad = async (start, end, useRepDataInstead) => {
 const choosePipelineDateRange = (dateRange) => {
   if (showPipelineCustomDates.value) {
     showPipelineCustomDates.value = false
-    fixFunnelTopMargin()
   }
 
   pipelineDateRange.value = dateRange
