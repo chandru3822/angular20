@@ -128,7 +128,8 @@ select *
                                                             :limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
-                                                            :includeCommissionDetails::boolean)
+                                                            :includeCommissionDetails::boolean,
+                                                            :searchColumn::character varying)
     """;
 
   //language=PostgreSQL
@@ -141,7 +142,8 @@ select *
                                   :offset::bigint,
                                   :companyProjectStatusTypeId::bigint,
                                   :sortColumn::character varying,
-                                  :sortDirection::character varying)
+                                  :sortDirection::character varying,
+                                  :searchColumn::character varying)
     """;
 
 
@@ -152,7 +154,8 @@ select *
                                  :userId::bigint,  :isParent::boolean,:limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
-                                                            :includeCommissionDetails::boolean)
+                                                            :includeCommissionDetails::boolean,
+                                                            :searchColumn::character varying)
     """;
 
   //language=PostgreSQL

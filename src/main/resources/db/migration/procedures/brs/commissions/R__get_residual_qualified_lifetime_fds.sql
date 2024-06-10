@@ -97,7 +97,8 @@ begin
                                                       p_total_lifetime_fdc,
                                                       p_total_system_size,
                                                       p_current_qualified_fdc,
-                                                                 p_total_system_size_by_source))
+                                                                 p_total_system_size_by_source,
+                                                                 pd.final_design_complete_date))
             else 0 end as expected_residual,
            rp.is_system_size
     from brs.project_details pd
@@ -112,8 +113,10 @@ begin
        and  case when rpqd.id is not null then
                  rpqd.qualified_date >= now() - interval ' 1 month' * (select r.residual_duration_months
                                                                        from brs.residual_plan r
-                                                                       inner join brs.user_residual ur on ur.residual_plan_id = r.id and
-                                                                                                          ur.user_id = p_closer_user_id
+                                                                        inner join brs.residual_plan_user rpu on rpu.residual_plan_id = r.id and
+                                                                                                                 rpu.user_id = p_closer_user_id and
+                                                                                                                 rpu.start_date <= p_end_of_period_date and
+                                                                                                                 (rpu.end_date is null or p_end_of_period_date <= rpu.end_date)
                                                                        )
              else 1=1 end
         and pd.final_design_signed_date >= v_min_start_date and

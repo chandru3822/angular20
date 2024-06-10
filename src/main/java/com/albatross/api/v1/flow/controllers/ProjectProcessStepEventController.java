@@ -31,7 +31,6 @@ import java.util.Optional;
 public class ProjectProcessStepEventController {
 
   private final ProjectProcessStepEventService projectProcessStepEventService;
-  private final PubSubService pubSubService;
   private final SecurityService securityService;
 
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -126,34 +125,17 @@ public class ProjectProcessStepEventController {
     @PathVariable Long actionId,
     @RequestBody SaveEventRequest saveEvent) {
     try {
-      if (actionId == 1) {
-        if (saveEvent.getForceSave() != null && !saveEvent.getForceSave()) {
-          List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
-          if (conflictList != null && !conflictList.isEmpty()) {
-            return new ResponseEntity<>(conflictList, HttpStatus.CONFLICT);
-          }
+        if (actionId == 1) {
+            if (saveEvent.getForceSave() != null && !saveEvent.getForceSave()) {
+                List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
+                if (conflictList != null && !conflictList.isEmpty()) {
+                    return new ResponseEntity<>(conflictList, HttpStatus.CONFLICT);
+                }
+            }
         }
-      }
-      // save the custom field values and default values
-      projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent);
 
-      // do the action
-      ProjectProcessStepEventService.PpseActionResult ppseActionResult = projectProcessStepEventService.performStepEventAction(ppsId, eventId, actionId);
-
-      if (ppseActionResult.getShouldRunProjectTagUpdate()) {
-        //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
-        ProjectTagMessage ptm = new ProjectTagMessage();
-        ptm.setProjectId(ppseActionResult.getProjectId());
-        pubSubService.publish(EventChannel.NOTIFICATION, ptm);
-      }
-
-      //why in the world do we return the entire object here?
-      Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
-
-      //add in the child function returned strings
-      ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
-
-      return ResponseEntity.ok(ppsEvent);
+        var ppsEvent = projectProcessStepEventService.performStepEventActionTransactional(ppsId, eventId, actionId, saveEvent);
+        return ResponseEntity.ok(ppsEvent);
     } catch (Exception e) {
       User currentUser = securityService.getCurrentUser();
       final String errMessage =

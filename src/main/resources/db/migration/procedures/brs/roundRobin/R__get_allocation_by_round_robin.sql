@@ -11,7 +11,9 @@ CREATE OR REPLACE FUNCTION brs.get_allocation_by_round_robin(p_round_robin_id bi
                 prescribed_allocation    numeric,
                 target_lead_allocation   numeric,
                 manual_allocation        numeric,
-                manual_allocation_whole  numeric
+                manual_allocation_whole  numeric,
+                lead_limit               bigint,
+                appointment_count        bigint
             )
 AS
 $BODY$
@@ -26,7 +28,8 @@ BEGIN
         with prescribed as (
             select prescribed_lead_allocation.round_robin_user_id,
                    prescribed_lead_allocation.user_id,
-                   prescribed_lead_allocation.total_lead_allocation as prescribed_allocation
+                   prescribed_lead_allocation.total_lead_allocation as prescribed_allocation,
+                   prescribed_lead_allocation.weekly_appointment_count as appointment_count
             from brs.get_total_lead_allocation(p_round_robin_id,
                                                false,
                                                v_remote) prescribed_lead_allocation),
@@ -36,7 +39,9 @@ BEGIN
                         adjusted_allocation.company_timezone_id,
                         adjusted_allocation.timezone,
                         adjusted_allocation.total_lead_allocation,
-                        adjusted_allocation.manual_allocation
+                        adjusted_allocation.manual_allocation,
+                        adjusted_allocation.lead_limit,
+                        adjusted_allocation.weekly_appointment_count as appointment_count
                  from brs.get_total_lead_allocation(p_round_robin_id,
                                                     true,
                                                     v_remote) adjusted_allocation)
@@ -49,7 +54,9 @@ BEGIN
                p.prescribed_allocation,
                t.total_lead_allocation                                   as target_lead_allocation,
                t.manual_allocation,
-               t.manual_allocation * 100                                 as manual_allocation_whole
+               t.manual_allocation * 100                                 as manual_allocation_whole,
+               t.lead_limit,
+               coalesce(t.appointment_count,p.appointment_count) as appointment_count
         from target t
                  inner join prescribed p on p.user_id = t.user_id
                  inner join flow."user" u on u.id = t.user_id

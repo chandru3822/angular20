@@ -463,7 +463,7 @@ declare
   v_additional_fee_for_exceeding_non_solar_threshold    numeric;
   v_non_solar_threshold_for_additional_fee              numeric;
   v_maximum_dollar_per_watt_for_solar                   numeric;
-  v_no_ancillary_amount_to_finance                       numeric;
+  v_no_ancillary_amount_to_finance                      numeric;
   v_dealer                                              bigint;
   v_dealer_markup                                       numeric;
   v_dealer_redline_price                                numeric;
@@ -471,9 +471,9 @@ declare
   v_deposit_amount_number                               numeric;
   v_has_critter_guard                                   boolean;
   v_storage_name                                        text;
-  v_storage_id    bigint;
+  v_storage_id                                          bigint;
   v_storage_brand                                       text;
-  v_storage_brand_id bigint;
+  v_storage_brand_id                                    bigint;
   v_qualifies_for_incentive                             bigint[];
   v_qualifies_for_incentive_boolean                     boolean;
   v_below_line_rebate                                   numeric;
@@ -506,13 +506,16 @@ declare
   v_solar_only_cap_down_payment                         numeric;
   v_ancillary_percent_cap_down_payment                  numeric;
   v_battery_cap_down_payment                            numeric;
-  v_all_ancillary_costs                 jsonb;
-  v_denver_care_rebate_amount numeric;
-v_denver_care_rebate_amount_number numeric;
-v_site_survey_resource_type_id bigint;
-v_loan_term_id bigint;
-  v_other_oregon_discount numeric;
-v_site_survey_item_ids bigint[];
+  v_all_ancillary_costs                                 jsonb;
+  v_denver_care_rebate_amount                           numeric;
+  v_denver_care_rebate_amount_number                    numeric;
+  v_site_survey_resource_type_id                        bigint;
+  v_loan_term_id                                        bigint;
+  v_other_oregon_discount                               numeric;
+  v_site_survey_item_ids                                bigint[];
+  v_panel_model                                         text;
+  v_financed_pv_price_per_watt_to_customer              numeric;
+  v_first_year_avoided_bill                             numeric;
 
 BEGIN
   select proposal_id,
@@ -579,7 +582,8 @@ BEGIN
          adder_amount,
          company_process_id,
          virtual_sales_price_adjustment,
-         system_size_ac
+         system_size_ac,
+         panel_model
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -644,7 +648,8 @@ BEGIN
     v_adder_amount,
     v_company_process_id,
     v_virtual_sales_price_adjustment,
-    v_system_size_ac
+    v_system_size_ac,
+    v_panel_model
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -655,6 +660,7 @@ BEGIN
          inner join brs.list_of_value lov on lov.id = any (pcfv.int_array_value)
   where prop.id = p_proposal_id;
 
+  --raise notice 'v_panel_model = %',v_panel_model;
   --raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
   --raise notice 'v_system_size = %',v_system_size;
   --raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
@@ -864,6 +870,8 @@ BEGIN
   end if;
 
   v_number_of_batteries = coalesce(v_number_of_batteries, 0);
+  --raise notice 'v_battery_workmanship_warranty = %',v_battery_workmanship_warranty;
+  --raise notice 'v_battery_manufacturers_warranty = %',v_battery_manufacturers_warranty;
   --raise notice 'v_number_of_batteries = %',v_number_of_batteries;
   --raise notice 'v_cash_price_storage = %',v_cash_price_storage;
   --raise notice 'v_storage_type_id = %',v_storage_type_id;
@@ -1839,9 +1847,12 @@ BEGIN
 
   if v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate * v_system_size * 1000;
-  elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 then
+  elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 and v_state_id = 47 then
     v_federal_tax_incentive_amount =
-        (v_total_loan_amount + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0) + case when v_version_id > 110 then coalesce(v_above_line_rebate,0) else 0::numeric end) * v_federal_tax_incentive_rate;
+      ((v_total_loan_amount + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0) + case when v_version_id > 110 then coalesce(v_above_line_rebate,0) else 0::numeric end)-((coalesce(v_reroof_cost,0))/(1-v_dealer_fee))) * v_federal_tax_incentive_rate;
+  elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 and v_state_id != 47 then
+    v_federal_tax_incentive_amount =
+      (v_total_loan_amount + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0)+ case when v_version_id > 110 then coalesce(v_above_line_rebate,0) else 0::numeric end) * v_federal_tax_incentive_rate;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 459 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate;
   end if;
@@ -1971,8 +1982,14 @@ BEGIN
                           (v_adjusted_annual_consumption))::numeric;
   end if;
 
+  v_first_year_avoided_bill = (v_estimated_annual_energy_consumption_kwh * v_current_estimated_cost_per_kwh * v_estimated_offset);
+  --raise notice 'v_first_year_avoided_bill = %',v_first_year_avoided_bill;
+
   --raise notice 'v_estimated_offset = %',v_estimated_offset;
 
+  v_financed_pv_price_per_watt_to_customer = (v_total_loan_amount - ((v_total_ancillary_costs + coalesce(v_cash_price_storage,0)) / (1 - v_dealer_fee)))
+    / (v_system_size * 1000);
+  --raise notice 'v_financed_pv_price_per_watt_to_customer = %',v_financed_pv_price_per_watt_to_customer;
   v_monthly_cost_today_avg_remaining_electrical_bill = greatest(0.00::numeric, (v_current_estimated_cost_per_kwh *
                                                                                 (v_adjusted_annual_consumption -
                                                                                  v_adjusted_annual_production)) /
@@ -2203,7 +2220,12 @@ BEGIN
                                          all_ancillary_costs,
                                          financier_id,
                                          financier,
-                                         panel_id)
+                                         panel_id,
+                                         panel_model,
+                                         financed_pv_price_per_watt_to_customer,
+                                         first_year_avoided_bill,
+                                         battery_workmanship_warranty,
+                                         battery_manufacturers_warranty)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2320,7 +2342,12 @@ BEGIN
             v_all_ancillary_costs,
             v_financier_id,
             v_financier,
-            v_panel_brand_id);
+            v_panel_brand_id,
+            v_panel_model,
+            v_financed_pv_price_per_watt_to_customer,
+            v_first_year_avoided_bill,
+            v_battery_workmanship_warranty,
+            v_battery_manufacturers_warranty);
   end if;
 
   return query

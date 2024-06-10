@@ -26,19 +26,21 @@
             <a-text-field
               label="Distribution Time Frame (Days)"
               tabindex=1
-              v-model="newRoundRobin.distributionTimeFrameDays"
+              type="number"
+              v-model.number="newRoundRobin.distributionTimeFrameDays"
             ></a-text-field>
-            <va-autocomplete v-model="newRoundRobin.companyTimezoneId"
+            <a-autocomplete v-model="newRoundRobin.companyTimezoneId"
                             :items="companyTimezones"
                             label="Time Zone"
                             style="width: 200px;"
                             item-title="timezone"
                             item-value="id"
                             attach
-            ></va-autocomplete>
+            ></a-autocomplete>
             <a-btn
               color="primary"
-              :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"
+              :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays
+                  || !newRoundRobin.companyTimezoneId"
               @click="addRoundRobin"
               class="mb-3"
               text="Save"
@@ -109,6 +111,7 @@
                   color="primary"
                   prevent-default
                   prepend-icon="edit"
+                  @click.native.stop="goToRoundRobin(item)"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
                 ></a-btn>
 

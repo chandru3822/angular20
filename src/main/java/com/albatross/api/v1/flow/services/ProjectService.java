@@ -152,7 +152,8 @@ public class ProjectService {
       String sortColumn,
       String sortDirection,
       Boolean includeCommissionDetails,
-      Pageable pageable) {
+      Pageable pageable,
+      String searchColumn) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll =
@@ -187,6 +188,7 @@ public class ProjectService {
     params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
+    params.put("searchColumn", searchColumn);
 
     String searchSql = ProjectQuery.searchByOwner;
     if (viewCustom) {

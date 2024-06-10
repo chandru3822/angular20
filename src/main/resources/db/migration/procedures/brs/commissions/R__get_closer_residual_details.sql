@@ -257,8 +257,10 @@ begin
              order by case when rp.is_system_size is true then rppa.partial_allocation end desc,
                       case when rp.is_system_size is false then rppa.fdc_count end desc limit 1)as partial_allocation
             from flow.user u
-              inner join brs.user_residual ur on ur.user_id = u.id
-              inner join brs.residual_plan rp on rp.id = ur.residual_plan_id
+              inner join brs.residual_plan_user rpu on rpu.user_id = u.id and
+                                                       p_date >= rpu.start_date and
+                                                       (rpu.end_date is null or p_date <= rpu.end_date)
+              inner join brs.residual_plan rp on rp.id = rpu.residual_plan_id
               inner join brs.residual_plan_allocation rpa on rpa.residual_plan_id = rp.id and
               v_lifetime_fds between rpa.min and
               coalesce (rpa.max, 10000000)

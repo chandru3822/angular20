@@ -475,8 +475,8 @@ const fetchAttachments = async (extraParams) => {
       ...extraParams,
       linked: loadLinked.value
     }
-  })
-  data.forEach(d => {
+  }, null, [])
+  data?.forEach(d => {
     let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
     d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
     //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
