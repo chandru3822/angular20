@@ -210,7 +210,7 @@ const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: cons
 
 
 const filteredAhjs = computed( () => {
-  return ahjs.value && ahjs.value.filter(ahj => {
+  return ahjs.value && ahjs.value?.filter(ahj => {
     return Object.keys(ahjFilters.value).every(filterName => {
       const filter = ahjFilters.value[filterName]
 
@@ -249,7 +249,7 @@ onMounted(() => {
   appStore.loading = true
   initFilters()
   fetchAhjs().then(() => {
-    if (ahjs.value.length > 0) {
+    if (ahjs.value?.length > 0) {
       fetchStates()
     }
     appStore.loading = false
