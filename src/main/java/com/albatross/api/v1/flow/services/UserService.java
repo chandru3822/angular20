@@ -187,7 +187,7 @@ public class UserService {
           if (passwordIsCompanyDefault) {
             // NOT_ACCEPTABLE = 406
             throw new ResponseStatusException(
-              HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+              HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
           } else {
             securityService.updateUserPassword(id, user.getNewPassword());
           }

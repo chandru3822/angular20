@@ -227,7 +227,7 @@ public class UserController {
         if (passwordIsCompanyDefault) {
           // NOT_ACCEPTABLE = 406
           throw new ResponseStatusException(
-            HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+            HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
         } else {
           result = userService.updatePassword(passwordResetRequest);
           userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
