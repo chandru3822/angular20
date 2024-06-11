@@ -35,7 +35,8 @@ begin
                    from flow.import_sp_project ip
                           inner join brs.project_details pd
                                      on pd.project_id = ip.project_id
-                          left join sunpower_roof_mapping srm on srm.lov_id = pd.roof_type),
+                          left join sunpower_roof_mapping srm on srm.lov_id = pd.roof_type
+                   where pd.archived is false),
       attachments as (select p.project_id,
                              (select array_to_json(array [a.s3_key])
                               from flow.project_process_step_attachment ppsa
