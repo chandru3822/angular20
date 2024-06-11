@@ -12,6 +12,7 @@ DECLARE
   v_interest_rate             numeric;
   v_desired_commission_amount numeric;
   v_commission_strategy_id    bigint;
+  v_commission_strategy_type_id bigint;
 BEGIN
 
   select interest_rate,
@@ -31,7 +32,13 @@ BEGIN
     v_desired_commission_amount,
     v_commission_strategy_id;
 
-  if v_commission_strategy_id = 24102 then
+  select commission_strategy_type_id
+    into v_commission_strategy_type_id
+  from brs.financial_details fd
+  inner join brs.commission_plan c on c.id = fd.commission_plan_id
+  where fd.project_id = p_project_id;
+
+  if v_commission_strategy_id = 24102 and v_commission_strategy_type_id = 1 then
 
     v_total = v_desired_commission_amount * v_system_size * 1000;
   else

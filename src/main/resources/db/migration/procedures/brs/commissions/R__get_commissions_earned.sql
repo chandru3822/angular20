@@ -19,6 +19,7 @@ DECLARE
   v_milestone_1               bigint;
   v_commission_strategy_id    bigint;
   v_fee_type_id               bigint;
+  v_commission_strategy_type_id bigint;
 BEGIN
 
   select c.allocation, fee_type_id, a.allocation
@@ -29,6 +30,12 @@ BEGIN
                     on c.commission_plan_id = p.id and c.milestone_id = 1
          left join brs.commission_plan_allocation a on a.commission_plan_id = p.id and
                                                        a.milestone_id = 2
+  where fd.project_id = p_project_id;
+
+  select commission_strategy_type_id
+  into v_commission_strategy_type_id
+  from brs.financial_details fd
+         inner join brs.commission_plan c on c.id = fd.commission_plan_id
   where fd.project_id = p_project_id;
 
 
@@ -70,9 +77,9 @@ BEGIN
     and pps.process_step_id = 175
     and ppscfv.date_value is not null;
 
-  raise notice 'v_commission_strategy_id %',v_commission_strategy_id;
+  --raise notice 'v_commission_strategy_id %',v_commission_strategy_id;
 
-  if v_commission_strategy_id = 24102 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
+  if v_commission_strategy_id = 24102 and v_commission_strategy_type_id = 1 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
@@ -85,7 +92,7 @@ BEGIN
     elsif v_fee_type_id = 3 then
       v_total = v_total_commission_amount * v_allocation_m1;
     end if;
-  elsif v_commission_strategy_id = 24102 and p_code = 'M2' and v_milestone_2 is not null then
+  elsif v_commission_strategy_id = 24102 and v_commission_strategy_type_id = 1 and p_code = 'M2' and v_milestone_2 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;

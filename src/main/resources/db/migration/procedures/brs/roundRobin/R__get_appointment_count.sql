@@ -21,8 +21,8 @@ BEGIN
   into v_current_day,
     v_week_start;
 
-  raise notice 'v_current_day %',v_current_day;
-  raise notice 'v_week_start %',v_week_start;
+  --raise notice 'v_current_day %',v_current_day;
+  --raise notice 'v_week_start %',v_week_start;
   return query
     select pd2.closer_user_id::bigint, count(pd2.id)
     from brs.project_details pd2
