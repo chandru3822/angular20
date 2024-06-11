@@ -57,7 +57,7 @@ public class ProjectProcessStepEventQuery {
                             wlp2.white_list_type_id = 17 and
                             wlp2.company_id = :companyId and
                             wlp2.archived is not true and
-                            wlp2.position_id = any(array[ :userPositions ]) limit 1
+                            wlp2.position_id = any(array[ :userPositions ]::bigint[] ) limit 1
                     )
                 when e.hidden and not e.hidden_allow and :isSystemAdmin is false then
                     case when (
