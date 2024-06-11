@@ -140,6 +140,7 @@ BEGIN
         v_closer_commission_amount = ((v_markup + .50) * .68) ;
       end if;
 
+      v_closer_commission_amount = round(v_closer_commission_amount, 3);
 
       if v_df_pps_id is not null then
         select ppscfv.id
