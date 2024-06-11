@@ -276,9 +276,10 @@ public class UserController {
   }
 
   @PostMapping(value = "/token")
-  public ResponseEntity<Void> addTokenToUser(@RequestBody UserNotificationTokenDTO token,
+  public ResponseEntity<Void> addTokenToUser(@RequestParam(required = false) Boolean mobile,
+                                             @RequestBody UserNotificationTokenDTO token,
                                              @AuthenticationPrincipal UserAccountDetails details) {
-    userService.addNotificationToken(details.getTrueUserId(), token.getToken());
+    userService.addNotificationToken(details.getTrueUserId(), token.getToken(), mobile);
     return ResponseEntity.accepted().build();
   }
 

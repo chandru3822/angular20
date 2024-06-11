@@ -556,11 +556,11 @@ public class UserService {
     return sqlCache.queryBySql(UserQuery.mentionableUsers, params, MentionableUser.class);
   }
 
-  public void addNotificationToken(Long userId, String token) {
+  public void addNotificationToken(Long userId, String token, Boolean mobile) {
     try {
       sqlCache.updateBySql(
         UserQuery.addNotificationToken,
-        Map.of("userId", userId, "token", token, "createdById", userId));
+        Map.of("userId", userId, "token", token, "createdById", userId, "mobile", null != mobile ? mobile : false));
     } catch (Exception e) {
       log.warn("Unable to add token={} for userId={}", token, userId);
     }
