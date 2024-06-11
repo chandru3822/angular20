@@ -77,7 +77,7 @@ public class ProjectProcessStepEventQuery {
                             wlp2.event_id = pse.event_id and
                             wlp2.white_list_type_id = 17 and
                             wlp2.company_id = :companyId and
-                            not wlp2.position_id = any(array[ :userPositions ]) and
+                            not wlp2.position_id = any( array[ :userPositions ]::bigint[] ) and
                             wlp2.archived is not true
                         limit 1
                     )
