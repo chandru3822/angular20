@@ -49,7 +49,7 @@ public class PandaDocQuery {
       (plh.down_payment_above_line_incentive::numeric - plh.optional_down_payment::numeric) as solar_rebate,
       plh.itc,
       plh.state_tax_credit,
-      (plh.loan_amount::numeric - plh.itc::numeric - plh.state_tax_credit::numeric) as system_cost,
+      (plh.net_system_cost::numeric) as system_cost,
       plh.storage_brand,
       case when pr.process_name = 'z Battery Only' then true else false end as is_battery_only,
       plh.inverter_custom_getting,
