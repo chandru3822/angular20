@@ -218,7 +218,7 @@
       ></OwnershipHistoryDrilldown>
     </v-dialog>
 
-    <schedule v-if="viewId === viewOptions.findIndex(vo => vo.id === 'schedule')"/>
+    <schedule-single-user-view v-if="viewId === viewOptions.findIndex(vo => vo.id === 'schedule')" :user-id="userId"/>
   </CollapsableRightPanel>
 </template>
 
@@ -253,6 +253,7 @@ import { useRoute } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import { storeToRefs } from 'pinia'
 import Schedule from "@/views/flow/schedule/Schedule.vue";
+import ScheduleSingleUserView from "@/views/flow/components/ScheduleSingleUserView.vue";
 
 const appStore = useAppStore()
 const notificationStore = useNotificationStore()
