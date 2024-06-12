@@ -30,7 +30,7 @@
                 :persistent-hint="persistentHint"
                 :class="[customClasses]"
                 :label="label"
-                v-maska="maskaOptions">
+                :v-maska="maskaOptions">
 
     <template v-for="(index, name) in $scopedSlots" v-slot:[name]="data">
       <slot :name="name" v-bind="data"></slot>
