@@ -38,10 +38,11 @@ const userTimezone = computed(() => userStore.timezone)
 
 const calendarOptions = ref({
   plugins: [timeGridPlugin],
-  initialView: 'timeGridDay',
+  initialView: 'timeGridWeek',
   headerToolbar:{
-    left: 'title',
-    right:vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next'
+    left: vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next',
+    center: 'title',
+    right: vuetify.breakpoint.mdAndUp ? 'timeGridDay,timeGridWeek': ''
   },
   allDaySlot: false,
   slotMinTime:"04:00:00",
@@ -51,6 +52,7 @@ const calendarOptions = ref({
     day: 'numeric',
     weekday: vuetify.breakpoint.smAndDown ? 'short' : 'long'
   },
+  nowIndicator:true,
   customButtons: {
     customToday: {
       text: 'Today',
@@ -204,62 +206,10 @@ const getFormattedDate = (date) => {
       ></v-progress-circular>
     </div>
     <FullCalendar ref="userScheduleCalendar" id="user-schedule-calendar" :options="calendarOptions">
-<!--      <template v-slot:resourceAreaHeaderContent>-->
-<!--        <div class="d-flex justify-space-between align-baseline">-->
-<!--          <span>Resources</span>-->
-<!--          <div>-->
-<!--            <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">-->
-<!--              <template v-slot:activator="{on}">-->
-<!--                <a-btn icon size="small" @click="toggleMapPinsForAllResources(!allResourcesOnMap)" :activation-handler="on" class="mx-1">-->
-<!--                  <v-icon color="grey darken-3"  v-if="allResourcesOnMap">mdi-map-marker</v-icon>-->
-<!--                  <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>-->
-<!--                </a-btn>-->
-<!--              </template>-->
-<!--              <span v-if="allResourcesOnMap">Remove all from map</span>-->
-<!--              <span v-else>Pin all on map</span>-->
-<!--            </v-tooltip>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </template>-->
-<!--      <template v-slot:resourceLabelContent="{resource, index}">-->
-<!--        <div class="d-flex justify-space-between align-baseline">-->
-<!--          <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>-->
-<!--          <a v-else :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>-->
-<!--          <div>-->
-<!--            <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">-->
-<!--              <template v-slot:activator="{on}">-->
-<!--                <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">-->
-<!--                  <v-icon :color="resource.extendedProps.color"  v-if="isResourceOnMap(resource) || allResourcesOnMap">mdi-map-marker</v-icon>-->
-<!--                  <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>-->
-<!--                </a-btn>-->
-<!--              </template>-->
-<!--              <span v-if="isResourceOnMap(resource)">Remove pin from map</span>-->
-<!--              <span v-else>Pin on map</span>-->
-<!--            </v-tooltip>-->
-<!--            <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">-->
-<!--              <template v-slot:activator="{on}">-->
-<!--                <a-btn v-if="resource.id.charAt(0)==='2' && !isSidebarView && userCanSms" icon size="small" @click="[showMessagingDialog = true, userToMessage = {userId: Number(resource.id.substring(1)), title:resource.title}]" :activation-handler="on" class="mx-1">-->
-<!--                  <v-icon color="grey darken-1">mdi-forum</v-icon>-->
-<!--                </a-btn>-->
-<!--              </template>-->
-<!--              <span>Message Resource</span>-->
-<!--            </v-tooltip>-->
-<!--            <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">-->
-<!--              <template v-slot:activator="{on}">-->
-<!--                <a-btn v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">-->
-<!--                  <v-icon>mdi-calendar-plus</v-icon>-->
-<!--                </a-btn>-->
-<!--              </template>-->
-<!--              {{isAssignedResource(resource) ? 'Remove Resource' : 'Assign to Event' }}-->
-<!--            </v-tooltip>-->
-<!--            <a-btn icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </template>-->
       <template v-slot:eventContent="{event}">
         <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
           <template v-slot:activator="{ on, attrs }">
-            <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" :class="{'text-no-wrap':event.display !== 'background'}" class="event-title body-medium">{{event.title}}</span>
+            <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" class="event-title body-medium">{{event.title}}</span>
           </template>
           <span>{{event.title}}</span>
         </v-tooltip>
@@ -273,6 +223,23 @@ const getFormattedDate = (date) => {
 <style scoped lang="scss">
 #user-schedule-calendar {
   height: 100%;
+}
+.v-tooltip__content {
+  background-color: white;
+  color: var(--v-grey-darken4);
+  outline-color: black;
+}
+.background-white {
+  background-color: white;
+}
+</style>
+<style lang="scss">
+#user-schedule-calendar > div.fc-view-harness.fc-view-harness-active > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div > div.fc-timegrid-event-harness {
+  overflow:clip;
+}
 
+#user-schedule-calendar > div.calendar-resize-container > div > div.fc-view-container > div > table > tbody > tr > td.fc-time-area.fc-widget-content > div > div > div > div.fc-content > div > table > tbody > tr > td > div > div.fc-bgevent-container > div {
+  color: white !important;
+  font-size: 0.875rem !important;
 }
 </style>

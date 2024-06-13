@@ -141,7 +141,7 @@ $default-text: rgba(0,0,0,0.87);
 :root{
   --fc-now-indicator-color:var(--v-error-lighten1);//change the color of the now indicator line for the fullcalendar plugin
   --fc-border-color:var(--v-grey-lighten1);//change the color of the fullcalendar borders
-  --fc-today-bg-color: transparent !important;
+  --fc-today-bg-color: var(--v-primary-lighten9);
   --fc-event-bg-color: var(--v-primary-lighten3);
 }
 .fc-button-primary.fc-prev-button, .fc-button-primary.fc-customToday-button, .fc-button-primary.fc-next-button, .fc-button-primary.fc-button-active {
