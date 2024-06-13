@@ -100,7 +100,7 @@ export default defineStore('proposalStore', () => {
     selectedId.value = id
   }
 
-  const addBlock = (block) => {
+  const addBlock = (block, order) => {
       const found = findById(block.id)
       if(!found){
           template.value.push(block)
