@@ -126,7 +126,8 @@ begin
                                                                            p_total_lifetime_fdc,
                                                                            p_total_system_size,
                                                                            p_current_qualified_fdc,
-                                                                           p_total_system_size_by_source))
+                                                                           p_total_system_size_by_source,
+                                                                           p_end_date))
                       else 0 end as expected_residual,
                 rp.name,
                 pd.source_name

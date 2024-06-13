@@ -25,4 +25,9 @@ public class PushNotificationApiController {
   public void pushNotifications(@RequestBody PushNotificationPayload payload){
     pushNotificationService.pushNotification(new Message(payload.title, payload.message), payload.userIds);
   }
+
+  @PostMapping(value = "/processQueue")
+  public void processPushNotificationQueue() {
+    pushNotificationService.sendUnprocessedPushNotifications();
+  }
 }

@@ -2289,11 +2289,11 @@ public class ReportEngine {
 
       if (whereClause.length() > 0) {
         whereClause.append(String.format("flow.process_step.company_id = any(%s)", companySubquery));
-        whereClause.append(" and flow.project_process_step.project_id = any(array[\"projects\".id])");
+        whereClause.append(" and flow.project_process_step.project_id = any(array[\"projects\".id]) and flow.project_process_step.archived is not true");
 
         withClause.append(String.format(" where %s", whereClause));
       } else {
-        withClause.append(" where flow.project_process_step.project_id = any(array[\"projects\".id])");
+        withClause.append(" where flow.project_process_step.project_id = any(array[\"projects\".id]) and flow.project_process_step.archived is not true");
         withClause.append(String.format(" and flow.process_step.company_id = any(%s)", companySubquery));
       }
 

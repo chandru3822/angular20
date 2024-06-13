@@ -755,8 +755,8 @@ public class UserQuery {
 
   //language=PostgreSQL
   public final static String addNotificationToken = """
-    insert into flow.user_notification_token (user_id, token, created_by_id, date_created, modified_by_id, date_modified)
-    values (:userId, :token, :createdById, now(), :createdById, now())
+    insert into flow.user_notification_token (user_id, token, created_by_id, date_created, modified_by_id, date_modified, mobile)
+    values (:userId, :token, :createdById, now(), :createdById, now(), :mobile)
     on conflict (user_id, token)
         do update set modified_by_id = excluded.modified_by_id,
                       date_modified  = now()

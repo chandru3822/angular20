@@ -160,7 +160,7 @@ const showPsEventField = ref(false)
 const showDeleteDialog = ref(false)
 
 const calculatedAvailableFields = computed(() => {
-  return props.availableFields.filter(f => {
+  return props.availableFields?.filter(f => {
     let keep = false
     if (f?.smartlistFieldId) {
       keep = props.fields.findIndex(field => {
@@ -213,7 +213,7 @@ const calculatedAvailablePsEvents = computed(() => {
   }
 
   let items = []
-  props.availableFields.filter(f => {
+  props.availableFields?.filter(f => {
     if (f.objectTypeId === newValue.value.objectTypeId && !f.smartlistFieldId) {
       let notIncluded
 

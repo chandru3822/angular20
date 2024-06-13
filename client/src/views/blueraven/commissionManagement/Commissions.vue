@@ -69,6 +69,7 @@
 
   import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
   import {useUserStore} from '@/stores/UserStore.js'
+  import { getCommissionPlans} from "@/services/commissionService.js"
   import {useRoute, useRouter} from "vue-router/composables";
   import { useBrsStore } from '@/stores/BrsStore.js'
   import { useAppStore } from '@/stores/AppStore.js'
@@ -80,7 +81,7 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-     const { commissionPositionId } = storeToRefs(brsStore)
+  const { commissionPositionId } = storeToRefs(brsStore)
 
   onMounted(() => {
     getCommissions()
@@ -103,7 +104,7 @@
       const getCommissions = async () => {
         appStore.loading = true
         try {
-          const {data, status} = await getRequest(`/commissionManagement/plans/${commissionPositionId.value}`, 'blueraven')
+          const {data, status} = await getCommissionPlans(commissionPositionId.value)
           commissions.value = data
           dataLoading.value = false
           handleHidingGlobalLoader(status)

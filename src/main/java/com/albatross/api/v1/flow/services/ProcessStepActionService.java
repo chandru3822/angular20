@@ -128,6 +128,14 @@ public class ProcessStepActionService {
       "timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
     params.put("hideFromMobile", action.getHideFromMobile() != null && action.getHideFromMobile());
     params.put("hideFromWeb", action.getHideFromWeb() != null && action.getHideFromWeb());
+    params.put("companyProcessStepStatusTypeIds", (action.getCompanyProcessStepStatusTypeIds() == null || action.getCompanyProcessStepStatusTypeIds().isEmpty()) ?
+        List.of() :
+        action.getCompanyProcessStepStatusTypeIds()
+    );
+    params.put("processStepStatusTypeIds", (action.getProcessStepStatusTypeIds() == null || action.getProcessStepStatusTypeIds().isEmpty()) ?
+        List.of() :
+        action.getProcessStepStatusTypeIds()
+    );
 
     Long id =
       sqlCache.updateBySqlReturningId(ProcessStepActionQuery.updateAction, params, "id").longValue();
@@ -523,6 +531,20 @@ public class ProcessStepActionService {
         List.class,
         "processStepActionLinks",
         new JsonCollectionDeserializer(processStepActionLinksRef, objectMapper));
+
+        TypeReference<List<Long>> companyProcessStepStatusTypeIdsRef = new TypeReference<>() {};
+        bw.registerCustomEditor(
+            List.class,
+            "companyProcessStepStatusTypeIds",
+            new JsonCollectionDeserializer(companyProcessStepStatusTypeIdsRef, objectMapper)
+        );
+
+        TypeReference<List<Long>> processStepStatusTypeIdsRef = new TypeReference<>() {};
+        bw.registerCustomEditor(
+            List.class,
+            "processStepStatusTypeIds",
+            new JsonCollectionDeserializer(processStepStatusTypeIdsRef, objectMapper)
+        );
     }
   }
 

@@ -99,11 +99,11 @@ public class InstallAgreementService {
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
     // first create disclosure doc through SREC
-//    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
-//
-//    if (!srecSuccessful) {
-//      throw new RuntimeException("Unable to create disclosure document");
-//    }
+    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
+
+    if (!srecSuccessful) {
+      throw new RuntimeException("Unable to create disclosure document");
+    }
 
     final String result = createRequest(request);
     if (result == null || result.trim().isEmpty()) {

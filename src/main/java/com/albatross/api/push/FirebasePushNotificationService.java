@@ -2,6 +2,8 @@ package com.albatross.api.push;
 
 import com.albatross.api.config.AppProperties;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.queries.NotificationQuery;
+import com.albatross.api.v1.flow.services.PushNotification;
 import com.google.firebase.messaging.*;
 import jakarta.validation.constraints.Size;
 import lombok.NonNull;
@@ -13,9 +15,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -45,6 +45,25 @@ public class FirebasePushNotificationService implements PushNotificationService 
   @Async
   public void pushNotification(@NonNull Message message, @NonNull Long userId) {
     pushNotification(message, Set.of(userId));
+  }
+
+  /**
+   * Called from the CRON. Will try to send all "unprocessed" push notifcations that are inserted directly into
+   * the db by functions and other ways not handled by the backend
+   */
+  public void sendUnprocessedPushNotifications() {
+    // get all unprocessed push notifications
+    List<PushNotification> unprocessedPushNotifications =
+      sqlCache.queryBySql(NotificationQuery.getAllUnprocessedPushNotifications, Collections.emptyMap(), PushNotification.class);
+
+    for(PushNotification pn : unprocessedPushNotifications) {
+      Map<String, Object> params = new HashMap<>();
+      params.put("id", pn.getId());
+
+      pushNotification(new Message(pn.getTitle(), pn.getMessage()), pn.getSendToUserId());
+
+      sqlCache.updateBySql(NotificationQuery.markPushNotificationProcessed, params);
+    }
   }
 
   @Async

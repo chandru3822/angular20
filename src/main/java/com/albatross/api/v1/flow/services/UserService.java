@@ -13,10 +13,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.UserController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
-import com.albatross.api.v1.flow.queries.AttachmentQuery;
-import com.albatross.api.v1.flow.queries.CompanyQuery;
-import com.albatross.api.v1.flow.queries.SmsTeamQuery;
-import com.albatross.api.v1.flow.queries.UserQuery;
+import com.albatross.api.v1.flow.queries.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -190,7 +187,7 @@ public class UserService {
           if (passwordIsCompanyDefault) {
             // NOT_ACCEPTABLE = 406
             throw new ResponseStatusException(
-              HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+              HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
           } else {
             securityService.updateUserPassword(id, user.getNewPassword());
           }
@@ -415,6 +412,11 @@ public class UserService {
         }
         // Remove all teams from this User's conversation
         messagingService.removeTeamsFromUserConversation(userId, user.trueUserId());
+        final int updatedRecords =
+          sqlCache.updateBySql(
+            MessagingQuery.markAllUserNotificationAsReadForUser,
+            Map.of("userId", userId, "modifiedById", userId));
+        log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
       }
       //this tells the jwt to reload the user details (ensuring that an inactive user cannot hit the api)
       jwtAuthProvider.forceReload(userId);
@@ -554,11 +556,11 @@ public class UserService {
     return sqlCache.queryBySql(UserQuery.mentionableUsers, params, MentionableUser.class);
   }
 
-  public void addNotificationToken(Long userId, String token) {
+  public void addNotificationToken(Long userId, String token, Boolean mobile) {
     try {
       sqlCache.updateBySql(
         UserQuery.addNotificationToken,
-        Map.of("userId", userId, "token", token, "createdById", userId));
+        Map.of("userId", userId, "token", token, "createdById", userId, "mobile", null != mobile ? mobile : false));
     } catch (Exception e) {
       log.warn("Unable to add token={} for userId={}", token, userId);
     }

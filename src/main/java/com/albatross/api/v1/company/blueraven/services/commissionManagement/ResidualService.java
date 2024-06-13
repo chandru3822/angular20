@@ -169,7 +169,8 @@ public class ResidualService {
     } else {
       sqlCache.updateBySql(ResidualQuery.insertPlanEndDate, params);
       sqlCache.updateBySql(ResidualQuery.insertPlanUser, params);
-      sqlCache.updateBySql(ResidualQuery.updateUserResidualPlans, params);
+      //keller had me take this out
+//      sqlCache.updateBySql(ResidualQuery.updateUserResidualPlans, params);
     }
   }
 

@@ -23,16 +23,15 @@ declare
   v_commission_plan_found         bigint;
   v_start_date                    timestamp;
   v_commission_booking_start_date timestamp;
-  v_found_user_on_plan            bigint;
-  v_found_user_residual_id           bigint;
+  v_found_residual_plan           bigint;
   v_commission_strategy_id        bigint;
-  v_fda_date date;
-  v_fda_month integer;
-  v_fdc_month integer;
-  v_fdc_day integer;
-  v_residual_date date;
-  v_cp_commission_strategy_id bigint;
-
+  v_fda_date                      date;
+  v_fda_month                     integer;
+  v_fdc_month                     integer;
+  v_fdc_day                       integer;
+  v_residual_date                 date;
+  v_cp_commission_strategy_id     bigint;
+  v_residual_plan_user_start_date           date;
 BEGIN
 
   select min(ppscfv.date_value) milestone_one_complete_date
@@ -48,14 +47,14 @@ BEGIN
     into v_fda_date
     from flow.project_process_step pps
            inner join flow.project_process_step_custom_field_value ppscfv
-                      on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id in (19504,25448)
-    where pps.process_step_id in ( 3355,3620)
+                      on ppscfv.project_process_step_id = pps.id and
+                         ppscfv.custom_field_group_assignment_id in (19504, 25448)
+    where pps.process_step_id in (3355, 3620)
       and pps.project_id = p_project_id;
 
-    SELECT
-      EXTRACT(MONTH FROM v_fda_date) ,
-      EXTRACT(MONTH FROM v_start_date),
-      EXTRACT(DAY FROM v_start_date)
+    SELECT EXTRACT(MONTH FROM v_fda_date),
+           EXTRACT(MONTH FROM v_start_date),
+           EXTRACT(DAY FROM v_start_date)
     into v_fda_month,v_fdc_month,v_fdc_day;
 
     if (v_fda_month = v_fdc_month) or (v_fdc_month > v_fda_month and v_fdc_day > 15) then
@@ -104,13 +103,11 @@ BEGIN
     select rp.id, rp.name, rps.status_type
     into v_residual_plan_id,v_residual_plan,v_residual_status
     from brs.residual_plan rp
-           inner join brs.residual_plan_user r on r.residual_plan_id = rp.id  and r.user_id = v_user_id
+           inner join brs.residual_plan_user r on r.residual_plan_id = rp.id and r.user_id = v_user_id
            inner join brs.residual_plan_status rps on rps.id = rp.residual_plan_status_id
     where v_residual_date >= r.start_date
-                and case
-                      when r.end_date is not null then
-                        v_residual_date <= r.end_date
-                      else true end;
+      and (r.end_date is null or
+           v_residual_date <= r.end_date);
   end if;
 
   if v_start_date is not null then
@@ -159,7 +156,7 @@ BEGIN
       and p.main is true;
   end if;
 
-  select cp.id, cp.name, cps.status_type,cp.commission_strategy_type_id
+  select cp.id, cp.name, cps.status_type, cp.commission_strategy_type_id
   into v_commission_plan_id,v_commission_plan,v_commission_status,v_cp_commission_strategy_id
   from brs.commission_plan cp
          inner join brs.commission_plan_user cpu on cpu.commission_plan_id = cp.id and cpu.user_id = v_user_id
@@ -234,41 +231,50 @@ BEGIN
             99999999);
   end if;
 
+  if v_residual_plan_id is null and v_user_id is not null and v_start_date is not null then
+
+    select count(1)
+    into v_found_residual_plan
+    from brs.residual_plan_user rpu2
+    where rpu2.user_id = v_user_id
+      and rpu2.end_date is null;
+
+    if v_found_residual_plan < 1 then
+
+      select date_trunc('month', max(rpu.end_date) + interval '1 month')::date
+      into v_residual_plan_user_start_date
+      from brs.residual_plan_user rpu
+      where rpu.user_id = v_user_id and rpu.end_date is not null;
+
+      insert into brs.residual_plan_user(residual_plan_id, user_id, start_date, end_date, note,
+                                         date_created, created_by_id, date_modified, modified_by_id)
+        (select (select id from brs.residual_plan as rp2 where rp2.default_plan is true limit 1),
+                v_user_id,
+                coalesce(v_residual_plan_user_start_date, date_trunc('year', now()))::date,
+                null,
+                'auto generated from insert_commission_on_project function',
+                now(),
+                99999999,
+                now(),
+                99999999)
+      returning residual_plan_id into v_residual_plan_id;
+
+      select rp3.name, s.status_type
+      into v_residual_plan,v_residual_status
+      from brs.residual_plan rp3
+             inner join brs.residual_plan_status s on rp3.residual_plan_status_id = s.id
+      where rp3.id = v_residual_plan_id;
+    end if;
+  end if;
 
   if v_start_date is not null and v_user_id is not null and v_residual_plan_id is not null then
-
-    select ur.residual_plan_id
-    into v_found_user_residual_id
-    from brs.user_residual ur
-    where user_id = v_user_id;
-
-    if v_found_user_residual_id is null then
-      insert into brs.user_residual(user_id, residual_plan_id, date_created, created_by_id, modified_by_id)
-      values (v_user_id, v_residual_plan_id, now(), 99999999, 99999999);
-    elsif v_found_user_residual_id != v_residual_plan_id and v_found_user_residual_id > v_residual_plan_id then
-      update brs.user_residual u
-      set residual_plan_id = v_residual_plan_id
-      where user_id = v_user_id;
-    end if;
 
     update brs.financial_details d
     set residual_plan_id     = v_residual_plan_id,
         residual_plan        = v_residual_plan,
         residual_plan_status = v_residual_status
-    where project_id = p_project_id and
-      residual_plan_id is null;
+    where project_id = p_project_id;
 
-    select count(1)
-    into v_found_user_on_plan
-    from brs.residual_plan_user rpu
-    where user_id = v_user_id;
-
-    if v_found_user_on_plan < 1 then
-      insert into brs.residual_plan_user(residual_plan_id, user_id, start_date, end_date, note,
-                                         date_created, created_by_id, date_modified, modified_by_id)
-      values (v_residual_plan_id, v_user_id, now(), null, 'auto generated from insert_commission_on_project function',
-              now(), 99999999, now(), 99999999);
-    end if;
   elsif v_start_date is not null and p_project_id is not null and v_user_id is not null then
 
     select cf.id

@@ -11,13 +11,22 @@ drop function if exists brs.get_residual_project_plan_total(p_residual_plan_id b
                                                             p_total_system_size numeric,
                                                             p_current_qualified_fdc bigint,
                                                             p_total_system_size_by_source numeric);
+drop function if exists brs.get_residual_project_plan_total(p_residual_plan_id bigint,
+                                                            p_closer_user_id bigint,
+                                                            p_system_size numeric,
+                                                            p_total_lifetime_fdc bigint,
+                                                            p_total_system_size numeric,
+                                                            p_current_qualified_fdc bigint,
+                                                            p_total_system_size_by_source numeric,
+                                                            p_end_date date);
 CREATE or replace function brs.get_residual_project_plan_total(p_residual_plan_id bigint,
                                                                p_closer_user_id bigint,
                                                                p_system_size numeric,
                                                                p_total_lifetime_fdc bigint,
                                                                p_total_system_size numeric,
                                                                p_current_qualified_fdc bigint,
-                                                               p_total_system_size_by_source numeric)
+                                                               p_total_system_size_by_source numeric,
+                                                               p_end_date date)
   RETURNS numeric
 AS
 $BODY$
@@ -29,8 +38,10 @@ begin
   into v_total
    from brs.residual_plan rp1
           inner join brs.residual_plan_allocation rpa on rpa.residual_plan_id = rp1.id
-          inner join brs.user_residual ur on ur.user_id = p_closer_user_id
-          inner join brs.residual_plan rp2 on rp2.id = ur.residual_plan_id
+          inner join brs.residual_plan_user rpu on rpu.user_id = p_closer_user_id and
+                                                   rpu.start_date <= p_end_date and
+                                                   (rpu.end_date is null or p_end_date <= rpu.end_date)
+          inner join brs.residual_plan rp2 on rp2.id = rpu.residual_plan_id
           inner join brs.residual_plan_allocation a on a.residual_plan_id = rp2.id and
                                                        p_total_lifetime_fdc between a.min and coalesce(a.max,10000)
           left join lateral (select partial_allocation

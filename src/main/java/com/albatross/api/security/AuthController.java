@@ -112,7 +112,7 @@ public class AuthController {
               creds.getUsername());
           // NOT_ACCEPTABLE = 406
           return ResponseEntity.status(NOT_ACCEPTABLE)
-              .body("You must reset your password. Cannot use company default.");
+              .body("You must reset your password.");
         }
       }
     }

@@ -27,5 +27,7 @@ public class ProcessStepAction {
 // newer app versions reference "hideFromMobile" though so eventually we can phase out the uninformative "hidden" flag
 //humes said that this makes perfect sense so bug him about it when it doesn't
   private Boolean hidden, hideFromMobile;
+
+  private List<Long> companyProcessStepStatusTypeIds, processStepStatusTypeIds;
 }
 

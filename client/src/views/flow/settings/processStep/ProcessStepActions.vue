@@ -193,6 +193,91 @@
                               item-title="projectStatusType"
                               item-value="id"
                     ></a-select>
+
+                      <a-autocomplete
+                          v-model="item.stupidSelectedStatuses"
+                          :items="statuses"
+                          label="Action can perform only in statuses of"
+                          class="mt-4 mb-6"
+                          density="compact"
+                          clearable
+                          item-value="uid"
+                          return-object
+                          hide-details
+                          multiple
+                          @click:clear="clearStatusSelection(item)"
+                      >
+                          <template #selection="{item: status, index}">
+                              <template v-if="getSelectAllIcon(item) === 'mdi-checkbox-marked'">
+                                  <span v-if="index === 0">All status types</span>
+                              </template>
+                              <template v-else-if="item.processStepStatusTypeIds?.length === categories?.length">
+                                  <span v-if="index === 0">All root status types</span>
+                              </template>
+                              <template v-else>
+                                  <template v-if="status?.isRoot">
+                                      <v-chip
+                                          v-if="index < 3"
+                                          class="mb-1 font-weight-bold"
+                                          small
+                                      >
+                                          {{ status.text }}
+                                      </v-chip>
+                                  </template>
+                                  <template v-else>
+                                      <v-chip
+                                          v-if="index < 3"
+                                          class="mb-1 font-weight-bold"
+                                          small
+                                      >
+                                          {{ status.text }}
+                                      </v-chip>
+                                  </template>
+                                  <template v-if="index === 3">
+                                      <span>and {{ (item.processStepStatusTypeIds?.length + item.companyProcessStepStatusTypeIds?.length) - 3 }} more</span>
+                                  </template>
+                              </template>
+                          </template>
+
+                          <template #item="{item: status}">
+                              <v-list-item
+                                  v-if="status.isHeader"
+                                  class="pt-1 status-border"
+                              >
+                                  <v-list-item-title class="status-header" v-text="status.text"/>
+                              </v-list-item>
+                              <v-list-item
+                                  v-else-if="status.isSelectAll"
+                                  :disabled="item.processStepStatusTypeIds?.length > 0"
+                                  @click="toggleSelectAllStatuses(item)"
+                              >
+                                  <v-list-item-action>
+                                      <v-icon>{{ getSelectAllIcon(item) }}</v-icon>
+                                  </v-list-item-action>
+                                  <v-list-item-title v-text="status.text"/>
+                              </v-list-item>
+                              <v-list-item
+                                  v-else-if="status.isRoot"
+                                  @click="toggleCategory(status, item)"
+                              >
+                                  <v-list-item-action>
+                                      <v-icon>{{ getCategoryIcon(status, item) }}</v-icon>
+                                  </v-list-item-action>
+                                  <v-list-item-title v-text="status.text"/>
+                              </v-list-item>
+                              <v-list-item
+                                  v-else
+                                  :disabled="item.processStepStatusTypeIds.includes(status.categoryId)"
+                                  @click="toggleStatus(status, item)"
+                              >
+                                  <v-list-item-action>
+                                      <v-icon>{{ getStatusIcon(status, item) }}</v-icon>
+                                  </v-list-item-action>
+                                  <v-list-item-title v-text="status.text"/>
+                              </v-list-item>
+                          </template>
+                      </a-autocomplete>
+
                     <v-checkbox
                         dense
                         hide-details
@@ -949,22 +1034,24 @@ import {
   getCancelledCompanyStatusTypesAssignedToProcessStep
 } from '@/services/processStepStatusTypeService'
 import {
-  handleHidingGlobalLoader,
-  getRequest,
-  deleteRequest,
-  putRequest,
-  postRequest,
-  defineSortableTable
+    handleHidingGlobalLoader,
+    getRequest,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    defineSortableTable, UUID
 } from '@/helpers/helpers'
 import orderBy from 'lodash.orderby'
 import ProcessStepRequirements from './ProcessStepRequirements'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
 
-import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables";
 import {useAppStore} from '@/stores/AppStore.js'
+
+const props = defineProps({processStep: Object})
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -1108,6 +1195,40 @@ const processStepId = computed(() => {
   return parseInt(route.params.id)
 })
 
+const categories = computed(() => {
+    let cats = []
+    props.processStep?.companyProcessStepStatusTypes.forEach(s => {
+        if (!cats.some(category => category.id === s.processStepStatusTypeId)) {
+            cats.push({
+                id: s.processStepStatusTypeId,
+                text: s.rootProcessStepStatusType,
+                isRoot: true,
+                uid: UUID()
+            })
+        }
+    })
+    return cats.sort((a, b) => a.text.localeCompare(b.text))
+})
+
+const statuses = computed(() => {
+    // this will be combine categories and statuses
+    // put categories (root statuses) first
+    let stats = []
+
+    stats.push({uid: UUID(), text: 'Select by root status', isHeader: true})
+    stats = stats.concat(categories.value)
+    stats.push({uid: UUID(), text: 'Process step status', isHeader: true})
+    stats.push({uid: UUID(), text: 'SELECT ALL', isSelectAll: true, isRoot: false})
+
+    return stats.concat(props.processStep?.companyProcessStepStatusTypes.map(s => ({
+        id: s.companyProcessStepStatusTypeId,
+        text: `${s.processStepStatusType} (${s.rootProcessStepStatusType})`,
+        categoryId: categories.value.find(c => c.text === s.rootProcessStepStatusType)?.id,
+        isRoot: false,
+        uid: UUID()
+    })))
+})
+
 onMounted(() => {
   defineSortableTable('.action-table tbody', actions, 'displayOrder', saveRowChanges)
 
@@ -1116,6 +1237,82 @@ onMounted(() => {
   getTheseCompanyProjectStatusTypes()
   getOperationTypes()
 })
+
+const toggleSelectAllStatuses = ((item) => {
+    const allStatuses = statuses.value.filter(s => !s.isRoot && !s.isHeader && !s.isSelectAll)
+    const allSelected = item.companyProcessStepStatusTypeIds?.length === allStatuses.length
+
+    if (allSelected) {
+        item.companyProcessStepStatusTypeIds = []
+        item.stupidSelectedStatuses = item.stupidSelectedStatuses.filter(s => !allStatuses.map(inner => inner.uid).includes(s.uid))
+    } else {
+        //select all
+        item.companyProcessStepStatusTypeIds = allStatuses.map(s => s.id)
+        item.stupidSelectedStatuses.push(...allStatuses)
+        item.stupidSelectedStatuses.sort((a, b) => a.text.localeCompare(b.text))
+    }
+})
+
+const toggleStatus = ((status, item) => {
+    if (!item.companyProcessStepStatusTypeIds?.includes(status.id)) {
+        item.companyProcessStepStatusTypeIds.push(status.id)
+        item.stupidSelectedStatuses.push(status)
+        item.stupidSelectedStatuses.sort((a, b) => a.text.localeCompare(b.text))
+    } else {
+        item.companyProcessStepStatusTypeIds = item.companyProcessStepStatusTypeIds.filter(s => s !== status.id)
+        item.stupidSelectedStatuses = item.stupidSelectedStatuses.filter(s => s.uid !== status.uid)
+    }
+})
+
+const toggleCategory = ((category, item) => {
+    //add/remove category to/from list
+    if (!item.processStepStatusTypeIds?.includes(category.id)) {
+        item.processStepStatusTypeIds.push(category.id)
+        item.stupidSelectedStatuses.push(category)
+
+        //since category overrides status, remove all statuses belonging to this category
+        const stats = statuses.value.filter(s => s.categoryId === category.id)
+        item.companyProcessStepStatusTypeIds = item.companyProcessStepStatusTypeIds.filter(s => !stats.map(inner => inner.id).includes(s))
+        item.stupidSelectedStatuses = item.stupidSelectedStatuses.filter(s => !stats.map(inner => inner.uid).includes(s.uid))
+        item.stupidSelectedStatuses.sort((a, b) => a.text.localeCompare(b.text))
+    } else {
+        item.processStepStatusTypeIds = item.processStepStatusTypeIds.filter(c => c !== category.id)
+        item.stupidSelectedStatuses = item.stupidSelectedStatuses.filter(c => c.uid !== category.uid)
+    }
+})
+
+const getStatusIcon = ((status, item) => {
+    if (item.companyProcessStepStatusTypeIds?.includes(status.id)) {
+        return 'mdi-checkbox-marked'
+    } else {
+        return 'mdi-checkbox-blank-outline'
+    }
+})
+
+const getCategoryIcon = ((category, item) => {
+    if (item.processStepStatusTypeIds?.includes(category.id)) {
+        return 'mdi-checkbox-marked'
+    } else {
+        return 'mdi-checkbox-blank-outline'
+    }
+})
+
+const getSelectAllIcon = ((item) => {
+    const allStatusIds = statuses.value.filter(s => !s.isRoot && !s.isHeader && !s.isSelectAll).map(s => s.id)
+    const allSelected = item.companyProcessStepStatusTypeIds?.length === allStatusIds.length
+
+    if (allSelected) {
+        return 'mdi-checkbox-marked'
+    } else {
+        return 'mdi-checkbox-blank-outline'
+    }
+})
+
+const clearStatusSelection = (action) => {
+    action.processStepStatusTypeIds = []
+    action.companyProcessStepStatusTypeIds = []
+    action.stupidSelectedStatuses = []
+}
 
 const saveChildFunctionOrder = async (actionId, childFns) => {
   appStore.loading = true
@@ -1296,7 +1493,15 @@ const getActions = async () => {
   appStore.loading = true
   try {
     const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
-    actions.value = data
+    actions.value = data.map(a => {
+        const selectedCategories = categories.value.filter(c => a.processStepStatusTypeIds.includes(c.id))
+        const selectedStatuses = statuses.value.filter(s => a.companyProcessStepStatusTypeIds.includes(s.id) && !s.isRoot)
+        return {
+            ...a,
+            // used for the vuetify v-autocomplete model and is stupid having to do it this way
+            stupidSelectedStatuses: selectedCategories.concat(selectedStatuses)
+        }
+    })
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)

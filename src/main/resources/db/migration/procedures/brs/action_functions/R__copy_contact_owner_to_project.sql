@@ -1,5 +1,5 @@
-drop function if exists brs.copy_contact_owner_to_project(p_project_id bigint, p_override_existing boolean, p_user_id bigint);
-CREATE OR REPLACE FUNCTION brs.copy_contact_owner_to_project(p_project_id bigint, p_override_existing boolean, p_user_id bigint)
+drop function if exists brs.copy_contact_owner_to_project(p_project_id bigint, p_user_id bigint, p_override_existing boolean);
+CREATE OR REPLACE FUNCTION brs.copy_contact_owner_to_project(p_project_id bigint, p_user_id bigint, p_override_existing boolean)
     RETURNS void
     LANGUAGE plpgsql
 AS
