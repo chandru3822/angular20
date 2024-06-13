@@ -348,7 +348,6 @@ const isSaveable = computed(() => store.modifiedBlocks?.length > 0)
 const tags = computed(() => store.tags?.map((t) => t.tagName))
 
 const updateValue = (value) => {
-  debugger
   store.setValue({
     blockId: selected.value.id,
     value
@@ -360,9 +359,8 @@ watch(template, ()=>{
 },{deep:true})
 
 const updateAddValue = (value) => {
-  debugger
   store.addBlock(
-      {blockId: 500, ...value}
+      {id: 500, ...value}
   )
   addBlock.value = false
 }
