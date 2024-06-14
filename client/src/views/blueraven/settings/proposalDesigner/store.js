@@ -112,7 +112,6 @@ export default defineStore('proposalStore', () => {
 
   const addBlock = (block, blockLocation) => {
       block.id = findNewestComponentId()
-      debugger
       const order = blockLocation.blockLocation
       const relativeBlock = blockLocation.relativeBlock
           const siblings = !block.parentId ? template.value.filter(b => b.parentId === undefined) : filterByParentId(block.parentId)
@@ -144,9 +143,10 @@ export default defineStore('proposalStore', () => {
                   })
 
           }
-      block.displayName = writeDisplayName(block)
-          template.value.push(block)
-          done.value.push(cloneDeep(template.value))
+      block.displayName = writeDisplayName(block) //so the name of the block displays properly
+      template.value.push(block) //add the block to the template
+      done.value.push(cloneDeep(template.value)) //push the new version of the template to the 'done' list for undo/redo
+      setSelected(block.id) //select the newly added block
   }
 
   const setStyle = ({ blockId, styles }) => {
@@ -164,7 +164,6 @@ export default defineStore('proposalStore', () => {
   }
 
   const setValue = ({ blockId, value }) => {
-      debugger
     const found = findById(blockId)
     if (found) {
       template.value = template.value.map((block) => {

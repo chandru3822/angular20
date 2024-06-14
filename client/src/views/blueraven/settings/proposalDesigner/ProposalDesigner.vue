@@ -121,7 +121,7 @@
         <v-tabs-items v-model="tabs" class="tabs-scrollable">
           <v-tab-item>
             <div v-if="addBlock">
-              <AddComponentWidget :existing-blocks="pages" @cancel="addBlock = false" @input="updateAddValue"></AddComponentWidget>
+              <AddComponentWidget :existing-blocks="template" @cancel="addBlock = false" @input="updateAddValue"></AddComponentWidget>
             </div>
             <v-card v-else-if="selected">
               <div class="sticky-header">
@@ -364,6 +364,7 @@ const updateAddValue = ({newBlock, blockLocation}) => {
       blockLocation
   )
   addBlock.value = false
+
 }
 const updateName = (name) => {
   store.setName({

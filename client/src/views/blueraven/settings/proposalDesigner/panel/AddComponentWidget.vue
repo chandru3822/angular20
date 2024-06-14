@@ -1,7 +1,15 @@
 <template>
-  <v-card flat>
-    <v-card-title>Add Component Block</v-card-title>
+  <v-card flat class="height-one-hunned">
+    <v-card-title class="pb-0">Add Component Block</v-card-title>
     <div class="d-flex flex-column px-4">
+      <v-card flat class="px-3 mb-4">
+      <a-text-field type="string"
+                    color="primary"
+                    v-model="blockName"
+                    dense
+                    label="Block Name"
+                    class="pb-2"
+      ></a-text-field>
       <a-select
           density="compact"
           variant="outlined"
@@ -12,6 +20,7 @@
           return-object
           label="Block Type"
       />
+      </v-card>
       <div v-if="newComponent && newComponent !== PAGE_BLOCK">
         <v-card flat class="text-left px-3" color="transparent">
           <v-card-title class="px-0 py-0">Parent</v-card-title>
@@ -25,7 +34,7 @@
       <v-card flat class="text-left px-3" color="transparent">
         <v-card-title class="px-0 pt-0">Location</v-card-title>
         <v-card-text>
-        <LocationSelectorWidget attr="pageLocation" :existing-blocks="existingBlocks" @input="setLocation($event)"/>
+        <LocationSelectorWidget attr="pageLocation" :existing-blocks="siblings" @input="setLocation($event)"/>
         </v-card-text>
       </v-card>
       </div>
@@ -48,11 +57,13 @@ import {computed, ref, watch} from 'vue'
 import useProposalStore from '../store.js'
 import LocationSelectorWidget from "@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue";
 import {storeToRefs} from "pinia";
+import {BLOCK_TYPES, PAGE_BLOCK, TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK} from "@/views/blueraven/settings/proposalDesigner/blocks/PropsDesignerConstants.js";
 
 const store = useProposalStore()
 const props = defineProps({
   existingBlocks:Array,
 })
+const emit = defineEmits(['cancel', 'input'])
 
 const selected = computed(() => store.selectedBlock)
 const { selectedId } = storeToRefs(store)
@@ -70,57 +81,16 @@ watch(selectedId, async () => {
   }
 })
 
-
-const PAGE_BLOCK = {
-  id:'PageBlock',
-  typeId:1,
-  label: 'New Page',
-  value: {}
-}
-
-const TEXT_BLOCK = {
-  id: 'TextBlock',
-  typeId: 3,
-  label: 'Text Block',
-  value: {
-    type: 'doc',
-    content: [
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            text: 'Add text here'
-          }
-        ]
-      }
-    ]
+const siblings = computed(() => props.existingBlocks.filter(b => {
+  if(!newComponent.value?.typeId){
+    return false
+  } else if(newComponent.value.typeId === PAGE_BLOCK.typeId){
+    return b.parentId === undefined
   }
-}
-const IMAGE_BLOCK = {
-  id: 'ImageBlock',
-  label: 'Image Block',
-  typeId: 4,
-  value: { url: 'https://picsum.photos/200' }
-}
-const CONTAINER_BLOCK = {
-  id: 'ContainerBlock',
-  label: 'Container Block',
-  typeId: 2,
-  value: {}
-}
-const PLACEHOLDER_BLOCK = {
-  id: 'PlaceholderBlock',
-  label: 'Placeholder Block',
-  typeId: 5,
-  value: {}
-}
+  return b.parentId === parentBlock?.value?.id
+}))
 
-const AVAILABLE = {
-  PageBlock: [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK],
-  ContainerBlock: [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
-}
-const BLOCK_TYPES = [PAGE_BLOCK,TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
+
 const newComponent = ref({
   blockStyle:{
     backgroundPosition:"center center",
@@ -134,34 +104,19 @@ const newComponent = ref({
 const blockOrder = ref(null)
 const parentId = ref(null)
 const blockLocation = ref(null)
+const blockName = ref(null)
 
 const setLocation = (locationInfo) => {
   parentId.value = locationInfo.parentId
   blockLocation.value = locationInfo
-  const siblings = store.filterByParentId(locationInfo.parentId)
-  switch (locationInfo.location){
-    case 'first':
-    case 'before':
-    case 'after':
-    case 'last':
-    default:
-      let lastBlockOrderValue = 0
-      for(let s of siblings){
-        if(s.blockOrder > lastBlockOrderValue){
-          lastBlockOrderValue = s.blockOrder
-        }
-      }
-      blockOrder.value = lastBlockOrderValue + 1
-  }
 }
 
-const emit = defineEmits(['cancel', 'input'])
 
 const availableBlocks = computed(() => {
   return BLOCK_TYPES
 })
 const newComponentReadyToAdd = computed(() => {
-  if(!newComponent || blockOrder.value === null){
+  if(!newComponent || blockLocation.value === null){
     return false
   }
   if(newComponent.value === PAGE_BLOCK){
@@ -170,10 +125,15 @@ const newComponentReadyToAdd = computed(() => {
   return true
 })
 const add = ({ id, typeId, value }) => {
-  debugger
   emit('input', {
     newBlock: {
-      blockType: id, blockTypeId: typeId, blockValue: value, blockOrder: blockOrder.value, parentId: parentBlock.value.id
+      blockType: id,
+      blockTypeId: typeId,
+      blockValue: value,
+      blockName: blockName.value,
+      blockOrder: blockOrder.value,
+      parentId: parentBlock.value.id,
+      modified: true
     },
     blockLocation: {
       blockLocation: blockLocation.value.location,
