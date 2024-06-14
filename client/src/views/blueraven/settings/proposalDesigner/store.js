@@ -67,7 +67,7 @@ export default defineStore('proposalStore', () => {
   const canUndo = computed(() => done.value.length > 0)
 
   const findById = (id) => {
-    if (!id) return null
+    if (id === null || id === undefined) return null
     return template.value.find((b) => b.id === id)
   }
 
@@ -100,12 +100,53 @@ export default defineStore('proposalStore', () => {
     selectedId.value = id
   }
 
-  const addBlock = (block, order) => {
-      const found = findById(block.id)
-      if(!found){
+  const findNewestComponentId = () =>{
+      let id = -1
+      let found = findById(id)
+      while(found){
+          id-=1
+          found = findById(id)
+      }
+      return id
+  }
+
+  const addBlock = (block, blockLocation) => {
+      block.id = findNewestComponentId()
+      debugger
+      const order = blockLocation.blockLocation
+      const relativeBlock = blockLocation.relativeBlock
+          const siblings = !block.parentId ? template.value.filter(b => b.parentId === undefined) : filterByParentId(block.parentId)
+          if(order === 'first'){
+              block.blockOrder = 1
+              siblings.map(s => {
+                  s.blockOrder +=1
+                  s.displayName = writeDisplayName(s)//only need to do this while the display name includes the block order
+              })
+          }
+          else if(order === 'last'){
+              block.blockOrder = siblings[siblings.length - 1].blockOrder + 1
+
+          } else if (order === 'before'){
+              block.blockOrder = relativeBlock.blockOrder
+              siblings.map(s => {
+                      if(s.blockOrder >= block.blockOrder) {
+                          s.blockOrder +=1
+                          s.displayName = writeDisplayName(s)//only need to do this while the display name includes the block order
+                      }
+                  })
+          } else if (order === 'after'){
+              block.blockOrder = relativeBlock.blockOrder + 1
+              siblings.map(s => {
+                      if(s.blockOrder >= block.blockOrder) {
+                          s.blockOrder +=1
+                          s.displayName = writeDisplayName(s)//only need to do this while the display name includes the block order
+                      }
+                  })
+
+          }
+      block.displayName = writeDisplayName(block)
           template.value.push(block)
           done.value.push(cloneDeep(template.value))
-      }
   }
 
   const setStyle = ({ blockId, styles }) => {

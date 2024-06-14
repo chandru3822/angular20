@@ -14,9 +14,9 @@
       />
       <div v-if="newComponent && newComponent !== PAGE_BLOCK">
         <v-card flat class="text-left px-3" color="transparent">
-          <v-card-title class="px-0 pt-0">Parent</v-card-title>
+          <v-card-title class="px-0 py-0">Parent</v-card-title>
           <v-card-text>
-           <a-text-field :value="parentBlock.displayName" hint="Please select parent block from pdf or tree tab." :rules="parentRules()">
+           <a-text-field :value="parentBlock?.displayName" hint="Please select parent block from pdf or tree tab." :rules="parentRules()">
            </a-text-field>
           </v-card-text>
         </v-card>
@@ -24,7 +24,9 @@
       <div v-if="newComponent === PAGE_BLOCK || (!!parentBlock.id && parentBlock.blockTypeId !== TEXT_BLOCK.typeId)" class="pb-4">
       <v-card flat class="text-left px-3" color="transparent">
         <v-card-title class="px-0 pt-0">Location</v-card-title>
+        <v-card-text>
         <LocationSelectorWidget attr="pageLocation" :existing-blocks="existingBlocks" @input="setLocation($event)"/>
+        </v-card-text>
       </v-card>
       </div>
 <!--      <div v-if-->
@@ -63,7 +65,9 @@ const parentRules = () => [
 
 
 watch(selectedId, async () => {
-  parentBlock.value = selected.value
+  if(newComponent.value.typeId !== PAGE_BLOCK.typeId) {
+    parentBlock.value = selected.value
+  }
 })
 
 
@@ -129,9 +133,11 @@ const newComponent = ref({
 })
 const blockOrder = ref(null)
 const parentId = ref(null)
+const blockLocation = ref(null)
 
 const setLocation = (locationInfo) => {
   parentId.value = locationInfo.parentId
+  blockLocation.value = locationInfo
   const siblings = store.filterByParentId(locationInfo.parentId)
   switch (locationInfo.location){
     case 'first':
@@ -165,7 +171,15 @@ const newComponentReadyToAdd = computed(() => {
 })
 const add = ({ id, typeId, value }) => {
   debugger
-  emit('input', { blockType: id, blockTypeId: typeId, ...value, blockOrder: blockOrder.value, parentId: parentId.value })
+  emit('input', {
+    newBlock: {
+      blockType: id, blockTypeId: typeId, blockValue: value, blockOrder: blockOrder.value, parentId: parentBlock.value.id
+    },
+    blockLocation: {
+      blockLocation: blockLocation.value.location,
+      relativeBlock: blockLocation.value.relativeBlock
+    }
+  })
   newComponent.value = null
 }
 </script>

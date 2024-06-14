@@ -107,7 +107,6 @@ const filterByParentId = (parent) => {
 }
 const hasChildren = (parent) => {
   if(parent == 500){
-    debugger
   }
   const children = filterByParentId(parent)
   return children.length > 0

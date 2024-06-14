@@ -358,9 +358,10 @@ watch(template, ()=>{
   console.log(template.value.length)
 },{deep:true})
 
-const updateAddValue = (value) => {
+const updateAddValue = ({newBlock, blockLocation}) => {
   store.addBlock(
-      {id: 500, ...value}
+      { ...newBlock},
+      blockLocation
   )
   addBlock.value = false
 }
