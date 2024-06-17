@@ -322,13 +322,22 @@ public class ProposalTemplateService {
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalTemplateBlock> updateTemplateBlocks(
     Long templateId, List<ProposalTemplateBlock> blocks, Long currentUserId) {
+      final Map<Boolean, List<ProposalTemplateBlock>> collect =
+              blocks.stream()
+                      .collect(
+                              Collectors.partitioningBy(block -> block.getId() >= 0)
+                      );
 
-    final List<Map<String, Object>> params =
+      final Map<Boolean, List<Map<String, Object>>> params =
       blocks.stream()
         .map(
           block -> {
             final Map<String, Object> map = new HashMap<>();
-            map.put("id", block.getId());
+            if(block.getId() >= 0) {
+                map.put("id", block.getId());
+            } else {
+                map.put("id", null);
+            }
             map.put("templateId", templateId);
             map.put("version", block.getVersion());
             map.put("themeValueId", block.getThemeKeyId());
@@ -343,12 +352,19 @@ public class ProposalTemplateService {
             map.put("modifiedById", currentUserId);
             return map;
           })
-        .toList();
-
-    sqlCache.updateBatchBySql(ProposalTemplateQuery.updateBlocks, params);
-
+              .collect(
+              Collectors.partitioningBy(block -> block.get("id") != null)
+      );
+      final List<Map<String, Object>> updateParams = params.get(true);
+      final List<Map<String, Object>> insertParams = params.get(false);
+      Set<Number> insertedIds = new HashSet<Number>();
+      for(Map<String, Object> paramMap : insertParams){
+          insertedIds.add(sqlCache.updateBySqlReturningId(ProposalTemplateQuery.insertBlock, paramMap, "id"));
+      }
+    sqlCache.updateBatchBySql(ProposalTemplateQuery.updateBlocks, updateParams);
     final Set<Integer> updated =
       blocks.stream().map(ProposalTemplateBlock::getId).collect(Collectors.toSet());
+
 
     return getTemplateBlocks(updated);
   }

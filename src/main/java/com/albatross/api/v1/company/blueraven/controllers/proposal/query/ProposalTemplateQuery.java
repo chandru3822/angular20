@@ -77,6 +77,11 @@ public class ProposalTemplateQuery {
       and ptb.date_archived is null
     """;
 
+  public final static String insertBlock = """
+          insert into brs.proposal_template_block(proposal_theme_value_id, proposal_template_block_type_id, proposal_template_block_kind_id, block_style, block_name, block_value, block_order, parent_id, visibility, version, date_modified, modified_by_id)
+            values (:themeValueId, :blockTypeId, :blockKindId, :blockStyle, :blockName, :blockValue, :blockOrder, :parentId, :visibility, version + 1, now(), :modifiedById)
+          """;
+
   //language=PostgreSQL
   public final static String updateBlocks = """
 update brs.proposal_template_block
