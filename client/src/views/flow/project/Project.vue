@@ -837,7 +837,6 @@ const updateContactInfo = async () => {
     updateContactAddress()
   }
   if(updateContactNameSelected.value && projectNameChanged.value) {
-    debugger
     projectContact.value.firstName = tempFirstName
     projectContact.value.lastName = tempLastName
   }
