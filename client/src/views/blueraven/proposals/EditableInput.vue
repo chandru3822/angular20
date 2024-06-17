@@ -8,17 +8,18 @@
         icon
         color="primary"
         @click="handleEdit"
-        class="pl-2"
+        class="pa-1 ml-4"
         v-if="editable"
         :prepend-icon="!isEditMode ? 'mdi-pencil' : 'mdi-close'"
       ></a-btn>
       <a-btn
         size="small"
+        class="pa-1 ml-2"
         icon
         color="primary"
         @click="handleSave"
         v-if="editable && isEditMode"
-        prepend-icon="mdi-cloud"
+        prepend-icon="save"
       ></a-btn>
     </div>
   </div>
