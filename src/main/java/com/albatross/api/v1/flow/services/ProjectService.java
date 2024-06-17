@@ -411,13 +411,13 @@ public class ProjectService {
                 .getProjects()
                 .get(0)
                 .getProjectName()
-                .equals(contact.getFirstName() + " " + contact.getLastName())) {
+                .equals(contact.getFirstName().trim() + " " + contact.getLastName().trim())) {
             sqlCache.updateBySql(ProjectQuery.updateNameByContactId,
                     Map.of(
                             "contactId",
                             contact.getId(),
                             "name",
-                            contact.getFirstName() + " " + contact.getLastName(),
+                            contact.getFirstName().trim() + " " + contact.getLastName().trim(),
                             "userId",
                             currentUser.trueUserId()));
         }
