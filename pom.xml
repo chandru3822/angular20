@@ -163,6 +163,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.mapbox.mapboxsdk</groupId>
       <artifactId>mapbox-sdk-services</artifactId>
       <version>5.0.0</version>
