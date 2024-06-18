@@ -96,9 +96,9 @@ public class ContactController {
       return contactService.getOwnersForContact(contactId);
     }
 
+    // the public API uses this endpoint so be aware of regressions
     @PutMapping(value = "/{contactId}/convert")
-    public Project convertToContact(@PathVariable Long contactId,
-                                  @RequestBody CompanyProcess process) {
+    public Project convertToContact(@PathVariable Long contactId, @RequestBody CompanyProcessDTO process) {
         // need to return the project so the frontend can navigate to /project/{id}
         try {
           return contactService.convertToContact(contactId, process);

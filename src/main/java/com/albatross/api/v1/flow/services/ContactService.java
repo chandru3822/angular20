@@ -415,7 +415,7 @@ public class ContactService {
   }
 
   @Transactional
-  public Project convertToContact(Long contactId, CompanyProcess process) throws Exception {
+  public Project convertToContact(Long contactId, CompanyProcessDTO process) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
     // save contact_type_id
@@ -432,14 +432,6 @@ public class ContactService {
     Optional<Project> project =
         projectService.insertProject(contact.getId(), process.getId(), contact, contact.isActiveState());
 
-    // get initial process steps including the initial status
-    List<ProcessStepProcess> initialProcessSteps =
-        processService.getInitialProcessStepProcesses(process.getId());
-
-    // for now we will insert the owner of the contact as the owner of all initial process steps
-    Long ownerUserPositionId =
-        (contact.getOwner() != null) ? contact.getOwner().getUserPositionId() : null;
-
     if (project.isPresent()) {
       //this will only add the activity if the company has it enabled
       HashMap<String, Object> actParams = new HashMap<>();
@@ -452,6 +444,19 @@ public class ContactService {
       actParams.put("oldStatusId", null);
       actParams.put("newStatusId", null);
       sqlCache.queryBySql(ActivityQuery.addSystemActivity, actParams, String.class);
+
+      List<ProcessStepProcess> initialProcessSteps = process.getProcessStepProcesses();
+
+      // if no initial PS is specified by the public API, fetch stored PSs from the process
+      if (initialProcessSteps == null || initialProcessSteps.isEmpty()) {
+          initialProcessSteps  = processService.getInitialProcessStepProcesses(process.getId());
+      }
+
+      // if no owner is specified default to the contact owner, else null
+      Long ownerUserPositionId = process.getOwnerUserPositionId();
+      if (ownerUserPositionId == null) {
+          ownerUserPositionId = (contact.getOwner() != null) ? contact.getOwner().getUserPositionId() : null;
+      }
 
       // create all initial project_process_steps - these wont have a userPositionId
       for (ProcessStepProcess step : initialProcessSteps) {
