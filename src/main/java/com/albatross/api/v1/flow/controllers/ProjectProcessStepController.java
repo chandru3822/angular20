@@ -5,7 +5,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.services.AutoTriggerHandlerService;
@@ -17,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -353,5 +352,14 @@ public class ProjectProcessStepController {
     } catch (RuntimeException e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
+  }
+
+  @PreAuthorize("hasRootLevelAccess()")
+  @PostMapping(value = "/manual")
+    public ResponseEntity<Void> runManualAutotriggers(@RequestBody List<Long> ppsIds) {
+      // errors will be logged and swallowed (to match time-based functionality). This endpoint will always return 200.
+      // check logs to verify success/fail
+      projectProcessStepService.performManualAutotriggers(ppsIds);
+      return new ResponseEntity<>(HttpStatus.OK);
   }
 }

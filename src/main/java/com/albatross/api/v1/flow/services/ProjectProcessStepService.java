@@ -527,6 +527,37 @@ public class ProjectProcessStepService {
     log.info("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
+    // This method is for manually performing autotriggers on specific PPSs. It mimics the timebased autotrigger function
+    public void performManualAutotriggers(List<Long> ppsIds) {
+
+        User cronUser = new User();
+        cronUser.setId(SystemSettings.CRON_USER.getId());
+        cronUser.setHasAccess(true);
+        // hardcoded to BRS company
+        cronUser.setCompanyId(3L);
+
+        List<Long> createdPpsIds = new ArrayList<>();
+
+        int counter = 0;
+
+        log.info("TRIGGERS: Starting manual autotriggers");
+
+        for (Long id : ppsIds) {
+            try {
+                log.info("TRIGGERS: Starting #%s for ppsId: %s".formatted(counter++, id));
+                PpsActionResult ppsActionResult = performAutoTriggerActions(id, new UserAccountDetails(cronUser, Collections.emptyList()));
+                if (!ppsActionResult.getPpsIds().isEmpty()) {
+                    createdPpsIds.addAll(ppsActionResult.getPpsIds());
+                }
+            } catch (Exception e) {
+                // Errors will already be printed to log. Silently swallow exception so we can keep trying other PPSs
+            }
+        }
+
+        log.info("TRIGGERS: PPS created by manual run: " + createdPpsIds.size());
+        log.info("TRIGGERS: PPS ids created by manual run: " + createdPpsIds);
+    }
+
   public void updateProjectTagsViaRedis(Boolean doUpdate, Long projectId, List<Long> ppsIds) {
     if (doUpdate) {
       List<Long> projectIds;
