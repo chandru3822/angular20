@@ -13,7 +13,7 @@
       <a-select
           density="compact"
           variant="outlined"
-          v-model="newComponent"
+          v-model="newComponentType"
           :items="availableBlocks"
           item-title="label"
           item-value="id"
@@ -21,7 +21,7 @@
           label="Block Type"
       />
       </v-card>
-      <div v-if="newComponent && newComponent !== PAGE_BLOCK">
+      <div v-if="newComponentType && newComponentType !== PAGE_BLOCK">
         <v-card flat class="text-left px-3" color="transparent">
           <v-card-title class="px-0 py-0">Parent</v-card-title>
           <v-card-text>
@@ -30,7 +30,7 @@
           </v-card-text>
         </v-card>
       </div>
-      <div v-if="newComponent === PAGE_BLOCK || (!!parentBlock.id && parentBlock.blockTypeId !== TEXT_BLOCK.typeId)" class="pb-4">
+      <div v-if="newComponentType === PAGE_BLOCK || (!!parentBlock.id && parentBlock.blockTypeId !== TEXT_BLOCK.typeId)" class="pb-4">
       <v-card flat class="text-left px-3" color="transparent">
         <v-card-title class="px-0 pt-0">Location</v-card-title>
         <v-card-text>
@@ -45,7 +45,7 @@
           style="width: 70%"
         color="primary"
         :disabled="!newComponentReadyToAdd"
-        @click="add(newComponent)"
+        @click="add(newComponentType)"
         text="Add"
       ></a-btn>
       </div>
@@ -76,31 +76,58 @@ const parentRules = () => [
 
 
 watch(selectedId, async () => {
-  if(newComponent.value.typeId !== PAGE_BLOCK.typeId) {
+  if(newComponentType.value.typeId !== PAGE_BLOCK.typeId) {
     parentBlock.value = selected.value
   }
 })
 
 const siblings = computed(() => props.existingBlocks.filter(b => {
-  if(!newComponent.value?.typeId){
+  if(!newComponentType.value?.typeId){
     return false
-  } else if(newComponent.value.typeId === PAGE_BLOCK.typeId){
+  } else if(newComponentType.value.typeId === PAGE_BLOCK.typeId){
     return b.parentId === undefined
   }
   return b.parentId === parentBlock?.value?.id
 }))
 
-
+const newComponentType = ref(null)
 const newComponent = ref({
+  templateId: 1,//hardcoded for now, if we start doing more templates, will need to change
   blockStyle:{
     backgroundPosition:"center center",
     backgroundSize:"cover",
-    color:"#ffffff",
+    color:"#000000",
     display:"flex"
   },
   id:-1,
-  version:14
 })
+const getValueByTypeId = (typeId) => {
+  switch (typeId){
+    case TEXT_BLOCK.typeId:
+      return {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Add text here'
+              }
+            ]
+          }
+        ]
+      }
+
+    case IMAGE_BLOCK.typeId:
+      return { url: 'https://picsum.photos/200' }
+    case PAGE_BLOCK.id:
+    case CONTAINER_BLOCK.typeId:
+    case PLACEHOLDER_BLOCK.typeId:
+    default:
+      return {}
+  }
+}
 const blockOrder = ref(null)
 const parentId = ref(null)
 const blockLocation = ref(null)
@@ -124,15 +151,18 @@ const newComponentReadyToAdd = computed(() => {
   }
   return true
 })
-const add = ({ id, typeId, value }) => {
+const add = ({ id, typeId }) => {
+  const value = getValueByTypeId(typeId) //doing it this way because when I tried to get it direct from the constants I was getting observables, which was causing weirdness
   emit('input', {
     newBlock: {
+      ...newComponent.value,
       blockType: id,
       blockTypeId: typeId,
       blockValue: value,
       blockName: blockName.value,
       blockOrder: blockOrder.value,
       parentId: parentBlock.value.id,
+      version: 0,
       modified: true
     },
     blockLocation: {

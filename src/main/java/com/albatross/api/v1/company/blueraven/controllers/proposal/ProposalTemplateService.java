@@ -357,14 +357,19 @@ public class ProposalTemplateService {
       );
       final List<Map<String, Object>> updateParams = params.get(true);
       final List<Map<String, Object>> insertParams = params.get(false);
-      Set<Number> insertedIds = new HashSet<Number>();
       for(Map<String, Object> paramMap : insertParams){
-          insertedIds.add(sqlCache.updateBySqlReturningId(ProposalTemplateQuery.insertBlock, paramMap, "id"));
+         Number insertedId = sqlCache.updateBySqlReturningId(ProposalTemplateQuery.insertBlock, paramMap, "id");
+         paramMap.put("id", insertedId);
       }
+      updateParams.addAll(insertParams);
     sqlCache.updateBatchBySql(ProposalTemplateQuery.updateBlocks, updateParams);
     final Set<Integer> updated =
-      blocks.stream().map(ProposalTemplateBlock::getId).collect(Collectors.toSet());
-
+            updateParams.stream().map(m -> {
+                    if(m.get("id") instanceof Long){
+                        return ((Long)m.get("id")).intValue();
+                    }
+                    return (Integer) m.get("id");
+            }).collect(Collectors.toSet());
 
     return getTemplateBlocks(updated);
   }

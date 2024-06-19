@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-btn-toggle v-model="toggle" mandatory class="pb-4">
+    <v-btn-toggle v-model="toggle" class="pb-4">
       <a-btn
         variant="text"
         size="small"

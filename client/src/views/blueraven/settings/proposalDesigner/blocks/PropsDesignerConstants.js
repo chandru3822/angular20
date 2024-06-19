@@ -2,9 +2,7 @@ export const PAGE_BLOCK = {
     id:'PageBlock',
     typeId:1,
     label: 'New Page',
-    value: {}
 }
-
 export const TEXT_BLOCK = {
     id: 'TextBlock',
     typeId: 3,
