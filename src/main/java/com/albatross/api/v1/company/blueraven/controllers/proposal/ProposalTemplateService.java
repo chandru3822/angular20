@@ -374,6 +374,16 @@ public class ProposalTemplateService {
     return getTemplateBlocks(updated);
   }
 
+    @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE, key = "#templateId")
+    @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+    public void archiveBlockFromTemplate(Long templateId, Long blockId, Long currentUserId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("templateId", templateId);
+        params.put("id", blockId);
+        params.put("modifiedById", currentUserId);
+        sqlCache.updateBySql(ProposalTemplateQuery.archiveBlock, params);
+    }
+
   @Cacheable(value = CachingConfig.PROPOSAL_TEMPLATE)
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalTag> getAvailableTags() {

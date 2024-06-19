@@ -82,7 +82,13 @@ public class ProposalTemplateQuery {
             values (:templateId, :blockTypeId, :blockOrder, now(), :modifiedById);
             """;
 
-
+  public final static String archiveBlock = """
+          update brs.proposal_template_block
+          set date_archived                   = now(),
+              modified_by_id                  = :modifiedById
+          where proposal_template_id = :templateId
+                and id = :id
+          """;
 
   //language=PostgreSQL
   public final static String updateBlocks = """
