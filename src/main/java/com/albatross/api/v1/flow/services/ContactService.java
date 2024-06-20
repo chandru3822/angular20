@@ -428,9 +428,11 @@ public class ContactService {
     // get contact to get their full name for the project and also so a parent can find this contact
     Contact contact = getContact(contactId);
 
+    Long ownerUserPositionId = process.getOwnerUserPositionId();
+
     // create project (use contact_full_name as project_name)
     Optional<Project> project =
-        projectService.insertProject(contact.getId(), process.getId(), contact, contact.isActiveState());
+        projectService.insertProject(contact.getId(), process.getId(), contact, contact.isActiveState(), ownerUserPositionId);
 
     if (project.isPresent()) {
       //this will only add the activity if the company has it enabled
@@ -453,7 +455,6 @@ public class ContactService {
       }
 
       // if no owner is specified default to the contact owner, else null
-      Long ownerUserPositionId = process.getOwnerUserPositionId();
       if (ownerUserPositionId == null) {
           ownerUserPositionId = (contact.getOwner() != null) ? contact.getOwner().getUserPositionId() : null;
       }
