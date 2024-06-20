@@ -46,14 +46,14 @@ public class ProposalTemplateController {
         templateId, update.blocks, details.getTrueUserId());
   }
 
-  @PutMapping(value = "/{templateId}/archiveBlock/{blockId}")
+  @PostMapping(value = "/{templateId}/archiveBlock/{blockId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
-  public void archiveBlockFromTemplate(
+  public List<Integer> archiveBlockFromTemplate(
           @PathVariable Long templateId,
-          @PathVariable Long blockId,
+          @PathVariable Integer blockId,
           @AuthenticationPrincipal UserAccountDetails details
   ){
-      proposalTemplateService.archiveBlockFromTemplate(templateId, blockId, details.getTrueUserId());
+      return proposalTemplateService.archiveBlockFromTemplate(templateId, blockId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/tags")

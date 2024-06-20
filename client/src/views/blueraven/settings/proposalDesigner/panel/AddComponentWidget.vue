@@ -97,7 +97,8 @@ const newComponent = ref({
     backgroundPosition:"center center",
     backgroundSize:"cover",
     color:"#000000",
-    display:"flex"
+    display:"block",
+    width: "100%"
   },
   id:-1,
 })

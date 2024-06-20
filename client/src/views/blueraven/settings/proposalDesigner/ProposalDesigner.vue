@@ -141,7 +141,7 @@
                     </template>
                     <span>Focus</span>
                   </v-tooltip>
-                  <span v-if="!editBlockName">{{selected.displayName}}</span>
+                  <span v-if="!editBlockName">{{selected?.displayName}}</span>
                   <a-text-field v-else
                                 type="string"
                                 color="primary"
@@ -181,6 +181,19 @@
                       icon
                       variant="text"
                       prepend-icon="close"/>
+                  <v-tooltip top  v-if="!editBlockName">
+                    <template #activator="{ on, attrs }">
+                      <a-btn
+                          v-bind="attrs"
+                          :activation-handler="on"
+                          @click="showDeleteDialog = true"
+                          :disabled="!selected"
+                          icon
+                          variant="text"
+                          prepend-icon="delete"/>
+                    </template>
+                    Delete Block
+                  </v-tooltip>
                 </v-card-title>
                 <v-card-subtitle v-if="parent" class="px-6 pb-0 d-flex align-baseline">
                   <span class="grey--text text--darken-1 label-small pr-1">Parent: </span>
@@ -191,7 +204,7 @@
                   @click="selectNode(parent.id)"
                   v-bind="attrs"
                   v-on="on"
-                  >{{ parent.displayName }}
+                  >{{ parent?.displayName }}
                 </span>
                     </template>
                     <span>Go to Parent</span>
@@ -244,6 +257,10 @@
         </v-tabs-items>
       </div>
     </div>
+    <ConfirmationDialog :open-dialog="showDeleteDialog" @cancel="showDeleteDialog = false" @confirm="deleteBlock" @close-dialog="showDeleteDialog = false">
+      <span class="bold error-text">WARNING: This cannot be undone.</span>
+      <div>Are you sure you want to delete this block: <b>{{selected?.displayName}}</b>? All children will also be deleted.</div>
+    </ConfirmationDialog>
   </div>
 </template>
 <script setup>
@@ -275,6 +292,7 @@ import { storeToRefs } from 'pinia'
 import AddComponentWidget from "@/views/blueraven/settings/proposalDesigner/panel/AddComponentWidget.vue";
 import {sort} from "rrule/dist/esm/dateutil.js";
 import LocationSelectorWidget from "@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
@@ -328,6 +346,7 @@ const editable = ref(true)
 const addBlock = ref(false)
 const editBlockName = ref(false)
 const editedBlockName = ref(null)
+const showDeleteDialog = ref(false)
 const activeEditor = ref(undefined)
 const viewportEl = ref(null)
 const sortbyId = ref(true)
@@ -420,6 +439,11 @@ const downloadPreview = async () => {
 const save = async () => {
   appStore.loading = true
   await store.saveTemplate()
+  appStore.loading = false
+}
+const deleteBlock = async () => {
+  appStore.loading = true
+  await store.deleteSelectedBlock()
   appStore.loading = false
 }
 

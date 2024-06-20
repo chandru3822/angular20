@@ -77,6 +77,10 @@ public class ProposalTemplateQuery {
       and ptb.date_archived is null
     """;
 
+  public final static String findBlocksByParentId= """
+  select id from brs.proposal_template_block where parent_id = :parentId and proposal_template_id = :templateId
+""";
+
   public final static String insertBlock = """
           insert into brs.proposal_template_block(proposal_template_id, proposal_template_block_type_id, block_order, date_modified, modified_by_id)
             values (:templateId, :blockTypeId, :blockOrder, now(), :modifiedById);

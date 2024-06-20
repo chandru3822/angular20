@@ -120,6 +120,7 @@ export default defineStore('proposalStore', () => {
               siblings.map(s => {
                   s.blockOrder +=1
                   s.displayName = writeDisplayName(s)//only need to do this while the display name includes the block order
+                  s.modified = true
               })
           }
           else if(order === 'last'){
@@ -131,6 +132,7 @@ export default defineStore('proposalStore', () => {
                       if(s.blockOrder >= block.blockOrder) {
                           s.blockOrder +=1
                           s.displayName = writeDisplayName(s)//only need to do this while the display name includes the block order
+                          s.modified = true
                       }
                   })
           } else if (order === 'after'){
@@ -139,11 +141,13 @@ export default defineStore('proposalStore', () => {
                       if(s.blockOrder >= block.blockOrder) {
                           s.blockOrder +=1
                           s.displayName = writeDisplayName(s)//only need to do this while the display name includes the block order
+                          s.modified = true
                       }
                   })
 
           }
       block.displayName = writeDisplayName(block) //so the name of the block displays properly
+      block.modified = true
       template.value.push(block) //add the block to the template
       done.value.push(cloneDeep(template.value)) //push the new version of the template to the 'done' list for undo/redo
       setSelected(block.id) //select the newly added block
@@ -295,9 +299,15 @@ export default defineStore('proposalStore', () => {
             return acc
           }, {})
 
-          const t = template.value.map((b) => {
+          const t = template.value.filter(b => b.id > 0).map((b) => {
             return updated[b.id] ? updated[b.id] : b
           })
+            for(let u in updated){
+                const i = t.findIndex(x => x.id === u)
+                if(i < 0){
+                    t.push(updated[u])
+                }
+            }
           //set template as original
           _template.value = cloneDeep(t)
           //reset so this becomes the new baseline
@@ -307,6 +317,25 @@ export default defineStore('proposalStore', () => {
     } catch (e) {
       console.error(e)
     }
+  }
+
+  const deleteSelectedBlock = async() => {
+      try{
+          const { data } = await postRequest(
+              `/proposal/template/1/archiveBlock/${selectedId.value}`,
+              {},
+              'blueraven'
+          )
+          if (data) {
+              const t = template.value.filter(b => data.indexOf(b.id) < 0) //filter out the deleted blocks
+              //set template as original
+              _template.value = cloneDeep(t)
+              //reset so this becomes the new baseline
+              reset()
+          }
+      } catch (e){
+          console.error(e)
+      }
   }
 
   const fetchTags = async () => {
@@ -361,6 +390,7 @@ export default defineStore('proposalStore', () => {
     fetchTemplate,
     fetchTemplateContext,
     saveTemplate,
+      deleteSelectedBlock,
     fetchTags,
     undo,
     redo,

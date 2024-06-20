@@ -30,6 +30,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -376,12 +377,25 @@ public class ProposalTemplateService {
 
     @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE, key = "#templateId")
     @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
-    public void archiveBlockFromTemplate(Long templateId, Long blockId, Long currentUserId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("templateId", templateId);
-        params.put("id", blockId);
-        params.put("modifiedById", currentUserId);
-        sqlCache.updateBySql(ProposalTemplateQuery.archiveBlock, params);
+    public List<Integer> archiveBlockFromTemplate(Long templateId, Integer blockId, Long currentUserId) {
+      HashMap<String, Object> getParams = new HashMap<>();
+      getParams.put("parentId", blockId);
+      getParams.put("templateId", templateId);
+      //delete the block and any of its children
+        List<Integer> idsToDelete = sqlCache.queryBySql(ProposalTemplateQuery.findBlocksByParentId, getParams, new SingleColumnRowMapper<>(Integer.class));
+        idsToDelete.add(blockId);
+        final List<Map<String, Object>> params =
+                idsToDelete.stream().map(
+                        id -> {
+                            final Map<String, Object> map = new HashMap<>();
+                            map.put("templateId", templateId);
+                            map.put("id", id);
+                            map.put("modifiedById", currentUserId);
+                            return map;
+                        }).toList();
+        sqlCache.updateBatchBySql(ProposalTemplateQuery.archiveBlock, params);
+        return idsToDelete;
+
     }
 
   @Cacheable(value = CachingConfig.PROPOSAL_TEMPLATE)
