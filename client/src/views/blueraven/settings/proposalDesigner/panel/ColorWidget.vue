@@ -56,9 +56,9 @@ watch(value, (newValue, oldValue) => {
 
 const onDone = () => {
   editing.value = false
-  const color =
+  const localColor =
     typeof color.value === 'object' ? color.value?.hexa : color.value
-  emit('input', { [attr.value]: color })
+  emit('input', { [attr.value]: localColor })
 }
 </script>
 
