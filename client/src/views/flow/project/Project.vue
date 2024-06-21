@@ -20,8 +20,9 @@
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Project Name"
-              @change="[projectNameChanged = true, tempFirstName = tempProject.projectName.slice(0,tempProject.projectName.trim().lastIndexOf(' ')), tempLastName = tempProject.projectName.slice(tempProject.projectName.trim().lastIndexOf(' '))]"
+              @change="[projectNameChanged = true, tempFirstName = tempProject.projectName.slice(0,tempProject.projectName.trim().lastIndexOf(' ')).trim(), tempLastName = tempProject.projectName.slice(tempProject.projectName.trim().lastIndexOf(' ')).trim()]"
           />
+<!--          in tempFirstName and tempLastName ^^ first trim for making sure the last space isn't at the end of the string, and the second one is to get rid of any spaces after splicing -->
           <a-text-field
               v-model="tempProject.street1"
               label="Street"

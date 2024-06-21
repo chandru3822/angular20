@@ -1,16 +1,16 @@
 <template>
-  <v-container id="proposals-container" v-if="proposalExists">
+  <v-container
+    id="proposals-container"
+    :style="cssVars"
+    class="pa-4"
+    v-if="proposalExists"
+  >
     <v-row>
       <v-col cols="12" class="py-0">
-        <router-link
-          v-if="proposal && proposal.projectId"
-          :to="`/proposalDesigns/${proposal.projectId}`"
-          >Back
-        </router-link>
-
         <v-row align="center" justify="center" no-gutters>
-          <v-col md="auto">
+          <v-col cols="12" sm="8" md="6" lg="4" xl="3">
             <v-alert
+              class="centered"
               color="warning"
               dense
               tile
@@ -22,15 +22,25 @@
           </v-col>
         </v-row>
 
-        <v-toolbar dense flat color="transparent">
-          <v-toolbar-title class="new-proposal-header">
+        <v-card flat class="mt-3 d-flex" width="100%">
+          <div class="new-proposal-header">
+            <router-link
+              id="back-btn"
+              v-if="proposal && proposal.projectId"
+              :to="`/proposalDesigns/${proposal.projectId}`"
+              class="pt-1"
+            >
+              <v-icon>mdi-chevron-left</v-icon>
+              Back
+            </router-link>
             <editable-input
+              class="pl-4 ma-0 prop-title"
               :editable="!proposal.locked"
               :display-text="proposal.displayName"
               :value="defaultProposalName"
               @input="handleNameChange"
             />
-          </v-toolbar-title>
+          </div>
           <v-chip
             v-if="proposal.locked"
             small
@@ -42,7 +52,7 @@
             Locked
           </v-chip>
           <v-spacer />
-          <v-toolbar-items>
+          <div class="d-flex align-center pr-4 py-4">
             <v-menu
               v-model="versionMenu"
               v-if="proposal && proposal.projectId"
@@ -54,14 +64,19 @@
             >
               <template #activator="{ on, attrs }">
                 <a-btn
+                  class="pr-3 pl-0"
                   variant="text"
                   :activation-handler="on"
                   v-bind="attrs"
                   :disabled="!userIsAdmin && !userCanManage"
                   @click="loadProposalVersions()"
-                  color="unset"
-                  :text="`v.${proposal.version}`"
-                ></a-btn>
+                  :color="userIsAdmin && userCanManage ? 'unset' : 'grey'"
+                >
+                  v.{{ proposal.version }}
+                  <v-icon v-if="userIsAdmin && userCanManage" class="ml-1">
+                    mdi-menu-down
+                  </v-icon>
+                </a-btn>
               </template>
               <v-card flat color="white" class="pa-4" :elevation="0">
                 <a-autocomplete
@@ -92,90 +107,148 @@
               :proposal="proposal"
               @update="handleStepChange"
             />
-          </v-toolbar-items>
-        </v-toolbar>
+          </div>
+        </v-card>
       </v-col>
     </v-row>
 
     <v-form ref="proposalForm">
       <v-row>
-        <v-col cols="12" sm="4">
-          <v-card class="proposal-container">
-            <div>
-              <div class="proposal-container-header">
-                <div class="proposal-title">Configurations</div>
-              </div>
-              <div v-for="(cfg, index) in sortedCustomFieldGroups" :key="index">
-                <div class="configuration-group-title">{{ cfg.groupName }}</div>
-                <div
-                  class="cf-container"
-                  v-for="(field, idx) in filteredCustomFields(
-                    cfg.customFieldValues
-                  )"
-                  :key="idx"
-                >
-                  <CustomValueInput
-                    v-if="isFieldVisible(field)"
-                    :required="field.required"
-                    :callback="populateDirtyCfvs"
-                    :readonly="
-                      !canEdit ||
-                      proposal.locked ||
-                      !isConditionalFieldPopulated(field) ||
-                      (field.conditionalOnId && loading) ||
-                      !userHasWhiteListedPosition(field, 'readonly') ||
-                      field.ancillaryCustomFieldGroupAssignmentId !== null
-                    "
-                    :field="field"
-                    :show-field-name="false"
-                    :list-of-value-filter="filters[field.customFieldId]"
-                    :hint="getHint(field)"
-                  />
-                  <CommissionDetailsMenu
-                    v-if="
-                      field.customFieldGroupAssignmentId === 454 &&
-                      isFieldVisible(field)
-                    "
-                    :custom-field-groups="sortedCustomFieldGroups"
-                    :proposal-id="proposalId"
-                  />
-                </div>
-              </div>
-            </div>
-            <div
-              class="configuration-save-container"
-              v-if="canEdit && !proposal.locked"
-            >
-              <a-btn
-                depressed
-                variant="text"
-                color="primary"
-                :disabled="dirtyCfvs.length === 0"
-                class="text-capitalize"
-                @click="resetToDefault"
-                text="Reset to Default"
-              ></a-btn>
+        <v-col cols="12" sm="6" md="4" class="mt-1 configurations-column">
+          <v-row cols="12" class="px-3 config-row">
+            <v-card width="100%" class="rounded-0 configurations-card">
+              <label class="config-label">Configurations</label>
               <v-spacer />
-              <a-btn
-                color="primary"
-                depressed
-                :dark="dirtyCfvs.length !== 0"
-                :disabled="dirtyCfvs.length === 0"
-                @click="validateForm()"
-                class="text-capitalize font-weight-bold"
-                text="Save"
-              ></a-btn>
+              <div
+                class="config-buttons-group"
+                v-if="canEdit && !proposal.locked"
+              >
+                <a-btn
+                  depressed
+                  variant="text"
+                  color="primary"
+                  :disabled="dirtyCfvs.length === 0"
+                  class="text-capitalize config-buttons"
+                  @click="resetToDefault"
+                  text="Reset to Default"
+                ></a-btn>
+                <a-btn
+                  v-if="canEdit && !proposal.locked"
+                  color="primary"
+                  depressed
+                  :dark="dirtyCfvs.length !== 0"
+                  :disabled="dirtyCfvs.length === 0"
+                  @click="validateForm()"
+                  class="text-capitalize font-weight-bold config-buttons"
+                  text="Save"
+                ></a-btn>
+              </div>
+            </v-card>
+          </v-row>
+          <v-card class="proposal-container prop-custom-field-groups">
+            <div class="ml-4 mr-2 mt-2">
+              <v-expansion-panels multiple v-model="expansionPanelsStatus">
+                <v-expansion-panel
+                  v-for="(cfg, index) in sortedCustomFieldGroups"
+                  :key="index"
+                  class="my-2 pr-4"
+                >
+                  <v-expansion-panel-header>
+                    <v-toolbar flat dense>
+                      <v-toolbar-title class="configuration-group-title ml-0">
+                        {{ cfg.groupName }}
+                      </v-toolbar-title>
+                    </v-toolbar>
+                  </v-expansion-panel-header>
+                  <v-expansion-panel-content
+                    v-for="(field, idx) in filteredCustomFields(
+                      cfg.customFieldValues
+                    )"
+                    :key="idx"
+                  >
+                    <CustomValueInput
+                      v-if="isFieldVisible(field)"
+                      :required="field.required"
+                      :callback="populateDirtyCfvs"
+                      :readonly="
+                        !canEdit ||
+                        proposal.locked ||
+                        !isConditionalFieldPopulated(field) ||
+                        (field.conditionalOnId && loading) ||
+                        !userHasWhiteListedPosition(field, 'readonly') ||
+                        field.ancillaryCustomFieldGroupAssignmentId !== null
+                      "
+                      :field="field"
+                      :show-field-name="false"
+                      :list-of-value-filter="filters[field.customFieldId]"
+                      :hint="getHint(field)"
+                    />
+                    <CommissionDetailsMenu
+                      v-if="
+                        field.customFieldGroupAssignmentId === 454 &&
+                        isFieldVisible(field)
+                      "
+                      :custom-field-groups="sortedCustomFieldGroups"
+                      :proposal-id="proposalId"
+                    />
+                  </v-expansion-panel-content>
+                </v-expansion-panel>
+              </v-expansion-panels>
             </div>
           </v-card>
         </v-col>
-        <v-col cols="12" sm="8">
-          <v-card class="proposal-container" v-if="!hideProposalSection">
-            <div
-              class="proposal-container-header sticky-header"
-              :class="isIntersecting ? 'is-pinned' : ''"
+        <v-col cols="12" sm="6" md="8" class="px-6 pt-4">
+          <v-row class="prop-view-row">
+            <v-card
+              width="100vw"
+              class="rounded-0 prop-view-card"
+              elevation="4"
+            >
+              <label class="config-label">
+                Proposal <span>#{{ proposal.proposalNbr }}</span>
+              </label>
+              <v-spacer />
+              <div class="prop-button-group" v-if="canEdit && !proposal.locked">
+                <a-btn
+                  v-if="canEdit && !proposal.locked"
+                  variant="text"
+                  class="text-capitalize primary--text"
+                  @click="deleteProposal"
+                >
+                  <span class="delete-btn">
+                    <v-icon color="">delete</v-icon>
+                    <span class="d-none d-md-block">Delete</span>
+                  </span>
+                </a-btn>
+                <a-btn
+                  v-if="canEdit && pages && pages.length"
+                  variant="text"
+                  class="text-capitalize primary--text"
+                  :disabled="dirtyCfvs.length > 0"
+                  @click="duplicate"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                  <span class="d-none d-md-block">Duplicate</span>
+                </a-btn>
+                <a-btn
+                  v-if="pages && pages.length"
+                  variant="text"
+                  :disabled="dirtyCfvs.length > 0"
+                  class="text-capitalize primary--text"
+                  @click="downloadPdf"
+                >
+                  <v-icon>download</v-icon>
+                  <span class="d-none d-md-block">Download</span>
+                </a-btn>
+              </div>
+            </v-card>
+            <v-card
+              width="100vw"
+              class="proposal-container pt-4 proposal-viewer"
+              v-if="!hideProposalSection"
             >
               <v-alert
-                class="text-center"
+                class="text-center overlay-alert"
                 v-if="isIntersecting"
                 color="warning"
                 dense
@@ -185,52 +258,26 @@
               >
                 Changes haven't been reflected on proposal
               </v-alert>
-
-              <div class="d-flex align-center">
-                <div class="proposal-title">
-                  Proposal <span>#{{ proposal.proposalNbr }}</span>
-                </div>
-                <v-spacer />
-                <a-btn
-                  v-if="canEdit && !proposal.locked"
-                  color="grey lighten-4"
-                  class="proposal-container-buttons text-capitalize primary--text"
-                  @click="deleteProposal"
-                  text="Delete"
-                ></a-btn>
-                <a-btn
-                  v-if="canEdit && pages && pages.length"
-                  color="grey lighten-4"
-                  class="proposal-container-buttons text-capitalize primary--text"
-                  :disabled="dirtyCfvs.length > 0"
-                  @click="duplicate"
-                  text="Duplicate"
-                ></a-btn>
-                <a-btn
-                  v-if="pages && pages.length"
-                  color="grey lighten-4"
-                  :disabled="dirtyCfvs.length > 0"
-                  class="proposal-container-buttons text-capitalize primary--text"
-                  @click="downloadPdf"
-                  text="Download"
-                ></a-btn>
+              <div v-if="pages && pages.length > 0" class="proposal-zoom-lock">
+                <proposal-template
+                  :children="pages"
+                  :debug="false"
+                  :editable="false"
+                />
               </div>
-            </div>
-            <div class="proposal-zoom-lock" v-if="pages && pages.length > 0">
-              <proposal-template
-                :children="pages"
-                :debug="false"
-                :editable="false"
-              />
-            </div>
-            <div v-else>
-              <v-alert v-if="!templateLoading" prominent type="error">
-                <v-row>
-                  <v-col class="grow"> Error generating proposal </v-col>
-                </v-row>
-              </v-alert>
-            </div>
-          </v-card>
+              <div v-else>
+                <v-alert
+                  v-if="!templateLoading && loadingErrorMessage"
+                  prominent
+                  type="error"
+                >
+                  <v-row>
+                    <v-col class="grow"> {{ loadingErrorMessage }}</v-col>
+                  </v-row>
+                </v-alert>
+              </div>
+            </v-card>
+          </v-row>
         </v-col>
       </v-row>
     </v-form>
@@ -297,10 +344,13 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const store = useProposalStore()
-const { template, loading: templateLoading } = storeToRefs(store)
+const {
+  template,
+  loadingErrorMessage,
+  loading: templateLoading
+} = storeToRefs(store)
 
 const autoSelectFieldIds = [407, 102, 81]
-
 const proposalExists = ref(true)
 const isIntersecting = ref(false)
 const loading = ref(false)
@@ -315,6 +365,7 @@ const filters = ref({})
 const confirmDialogRef = ref(null)
 const proposalForm = ref(null)
 const deleteConfirmDialogRef = ref(null)
+const expansionPanelsStatus = ref([0, 1, 2, 3, 4])
 
 provide('editor', undefined)
 
@@ -410,12 +461,18 @@ const getHint = (field) => {
     }
   }
 }
+const cssVars = computed(() => {
+  return {
+    '--dirty-cfv-height': dirtyCfvs.value.length > 0 ? '56px' : '0px',
+    '--padding-and-margins': '240px' // this number is toolbars, margins, and paddings above the column headings
+  }
+})
 const userHasWhiteListedPosition = (cf, arg = 'readonly') => {
   const wlAttr =
     arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
   const prAttr =
     arg === 'readonly'
-      ? 'customFieldGroupAssignmentReadOnly'
+      ? 'customFieldGroupAssignmentReadOnly '
       : 'customFieldGroupAssignmentHidden'
 
   //field doesn't require a white listed position
@@ -839,75 +896,208 @@ const beforeWindowUnload = (e) => {
 </script>
 
 <style scoped lang="scss">
-.new-proposal-header {
-  font-size: 18px;
-  font-weight: 700;
+#back-btn {
   display: flex;
-  align-items: center;
-}
-
-.proposal-container {
-  padding: 24px;
-  border-radius: 0;
-}
-
-//this is to make the button on the desired commission field align properly without screwing everything else up
-.cf-container {
-  display: flex;
-  align-items: center;
-}
-
-.cf-container div {
-  width: 100%;
-}
-
-.proposal-title {
+  flex-wrap: nowrap;
+  word-break: normal;
+  text-decoration: none;
   font-size: 14px;
-  font-weight: 700;
-  color: var(--v-blackText-base);
+  font-weight: 500;
 }
 
-.configuration-group-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #808588;
-  margin-bottom: 16px;
+.proposal-viewer {
+  padding-left: 16px;
 }
 
-.configuration-save-container {
-  display: flex;
-}
-
-.proposal-container-header {
-  padding: 10px 0;
-  margin-bottom: 24px;
-
-  &.sticky-header {
-    position: sticky;
-    top: -1px;
-    background-color: white;
-    padding: 10px;
-    z-index: 200;
-
-    &.is-pinned {
-      border-bottom: 1px solid #ccc;
-      box-shadow: 0 3px 2px 0 rgb(0 0 0 / 10%);
-    }
+/* WRAPS THE BUTTONS UNDERNEATH HEADER TITLES BASED ON SCREEN SIZE */
+@media (min-width: 1232px) {
+  .configurations-card {
+    flex-wrap: nowrap;
+    flex-direction: row;
+  }
+  .config-row {
+    height: 64px;
+  }
+  .proposal-container.prop-custom-field-groups,
+  .proposal-container.proposal-viewer {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
   }
 }
 
-.proposal-container-buttons {
-  margin-left: 36px;
+@media (max-width: 1232px) and (min-width: 960px) {
+  .configurations-card {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    height: 96px;
+  }
+  .config-row,
+  .prop-view-row {
+    height: 96px;
+  }
+  .proposal-container.prop-custom-field-groups {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
+    );
+  }
+  .proposal-container.proposal-viewer {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
+  }
+}
+@media (max-width: 960px) and (min-width: 827px) {
+  .configurations-card {
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+  .config-row,
+  .prop-view-row {
+    height: 56px;
+  }
+  .proposal-container.prop-custom-field-groups {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) + 8px
+    );
+  }
+  .proposal-container.proposal-viewer {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
+  }
+}
+@media (max-width: 827px) and (min-width: 600px) {
+  .configurations-card,
+  .prop-view-card {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    height: 96px;
+  }
+  .config-row,
+  .prop-view-row {
+    height: 96px;
+  }
+
+  .proposal-container.prop-custom-field-groups {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
+    );
+  }
+
+  .proposal-container.proposal-viewer {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
+    );
+  }
+}
+@media (max-width: 600px) and (min-width: 440px) {
+  .configurations-card {
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    height: 56px;
+  }
+  .config-row,
+  .prop-view-row {
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+}
+@media (max-width: 440px) and (min-width: 1px) {
+  .configurations-card,
+  .prop-view-card {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    height: 96px;
+  }
+  .config-row,
+  .prop-view-row {
+    height: 96px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
 }
 
-//TODO: need to fix this
+.configurations-card,
+.prop-view-card {
+  display: flex;
+  padding: 14px 18px;
+  font-size: 20px;
+  align-content: center;
+}
+
+.config-label {
+  font-size: 20px;
+}
+
+.config-buttons-group,
+.prop-button-group {
+  display: flex;
+  justify-content: flex-end;
+}
+.config-buttons {
+  white-space: nowrap;
+}
+.configurations-column {
+  margin-top: 4px;
+  padding-left: 12px;
+  padding-right: 4px;
+  @media (max-width: 600px) {
+    padding-right: 12px;
+  }
+}
+
+.delete-btn {
+  color: rgba(180, 34, 31, 1);
+}
+.new-proposal-header {
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  word-break: break-word;
+}
+
+.proposal-container.prop-custom-field-groups {
+  border-radius: 0;
+  overflow-y: scroll;
+  background-color: var(--v-grey-lighten4);
+}
+.proposal-container.proposal-viewer {
+  border-radius: 0;
+  overflow-y: scroll;
+  background-color: var(--v-grey-lighten4);
+}
+
+/* EXPANSION PANEL STYLING */
+.v-expansion-panel-header {
+  padding: 0;
+}
+
+::v-deep .v-expansion-panel-content__wrap {
+  padding: 0 0 0 16px;
+  margin-right: 0;
+}
+
+.configuration-group-title {
+  &.v-toolbar__title {
+    font-size: 14px;
+  }
+}
+
+/* PROPOSAL VIEWER ZOOM STYLING */
 .proposal-zoom-lock {
   --scale: 0.75;
   transform: scale(var(--scale));
   transform-origin: top left;
 
-  @media (min-width: 1500px) {
+  @media (min-width: 1548px) {
     transform-origin: top center;
+  }
+
+  @media (max-width: 600px) {
+    --scale: 0.45;
+    transform: scale(var(--scale));
+    transform-origin: top left;
   }
 }
 </style>

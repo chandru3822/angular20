@@ -207,6 +207,7 @@
 									class="px-0 pl-2 d-flex align-baseline scheduler-link"
 									target="_blank"
 									:href="`/schedule?projectProcessStepEventId=${ppsEventId}&projectProcessStepId=${projectProcessStepId}`"
+                  @click.stop=""
 								>
 									Open Scheduler
 								</a>

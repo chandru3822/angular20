@@ -411,13 +411,13 @@ public class ProjectService {
                 .getProjects()
                 .get(0)
                 .getProjectName()
-                .equals(contact.getFirstName() + " " + contact.getLastName())) {
+                .equals(contact.getFirstName().trim() + " " + contact.getLastName().trim())) {
             sqlCache.updateBySql(ProjectQuery.updateNameByContactId,
                     Map.of(
                             "contactId",
                             contact.getId(),
                             "name",
-                            contact.getFirstName() + " " + contact.getLastName(),
+                            contact.getFirstName().trim() + " " + contact.getLastName().trim(),
                             "userId",
                             currentUser.trueUserId()));
         }
@@ -458,7 +458,7 @@ public class ProjectService {
     sqlCache.updateBySql(ProjectQuery.updateOwner, params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress) throws Exception {
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress, Long ownerUserPositionId) throws Exception {
     User user = securityService.getCurrentUser();
 
     if (null != contactId && null != processId) {
@@ -479,6 +479,7 @@ public class ProjectService {
       params.put("companyCountryId", saveAddress ? contact.getCompanyCountryId() : null);
       params.put("postalCode", saveAddress ? contact.getPostalCode() : null);
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
+      params.put("userPositionId", ownerUserPositionId);
 
       // with my most recent changes the contact should already have a valid lat/long if the address was valid
       // we only insert the lat/long/timezone stuff if the contact is in an active State, otherwise they will have to update the project with a valid address

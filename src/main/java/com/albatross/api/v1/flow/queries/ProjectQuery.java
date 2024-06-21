@@ -336,8 +336,8 @@ select
 
   //language=PostgreSQL
   public final static String insert = """
-insert into flow.project (contact_id, company_process_id, project_name, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone, created_by_id, date_created, modified_by_id, date_modified)
-      values (:contactId, :processId, trim(:projectName), :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone, :createdById, now(), :createdById, now())
+insert into flow.project (contact_id, company_process_id, project_name, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone, created_by_id, date_created, modified_by_id, date_modified, user_position_id)
+      values (:contactId, :processId, trim(:projectName), :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone, :createdById, now(), :createdById, now(), :userPositionId)
     """;
 
   //language=PostgreSQL
