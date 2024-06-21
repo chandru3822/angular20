@@ -109,7 +109,13 @@ BEGIN
              limited_projects.company_project_status_type_id::bigint,
              limited_projects.project_status_type,
              limited_projects.contact,
-             null::numeric as commissions_outstanding,
+             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids)
+                  and p_query_commissions is true
+                  and p_company_id = 3 then
+                       (select t.commissions_outstanding
+                        from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
+                   else null::numeric
+              end as commissions_oustanding,
              limited_projects.root_project_status_type,
              limited_projects.closer_name
       FROM (select *
@@ -132,7 +138,6 @@ BEGIN
                                        c.phone,
                                        c.mobile,
                                        c.email) contact1)::jsonb as contact,
-                         null::numeric as commissions_outstanding,
                          pst.project_status_type  as root_project_status_type,
                          case when c.company_id = 3 then
                                 (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
