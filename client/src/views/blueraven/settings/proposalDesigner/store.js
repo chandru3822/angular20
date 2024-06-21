@@ -47,6 +47,7 @@ export default defineStore('proposalStore', () => {
   const selectedId = ref(undefined)
   const tags = ref([])
   const loading = ref(false)
+  const loadingErrorMessage = ref(undefined)
   const modifiedBlocks = computed(() =>
     template.value
       .filter((b) => b.modified === true)
@@ -197,6 +198,9 @@ export default defineStore('proposalStore', () => {
         theme: data?.theme?.themeStyle
       })
     } catch (e) {
+      loadingErrorMessage.value =
+        e?.data?.message ?? 'Error generating proposal'
+
       //clear baseline
       setBaseline({
         template: [],
@@ -293,6 +297,7 @@ export default defineStore('proposalStore', () => {
     undo,
     redo,
     canRedo,
-    canUndo
+    canUndo,
+    loadingErrorMessage
   }
 })

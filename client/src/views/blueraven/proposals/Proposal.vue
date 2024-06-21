@@ -1,5 +1,10 @@
 <template>
-  <v-container id="proposals-container" :style="cssVars" class="pa-4" v-if="proposalExists">
+  <v-container
+    id="proposals-container"
+    :style="cssVars"
+    class="pa-4"
+    v-if="proposalExists"
+  >
     <v-row>
       <v-col cols="12" class="py-0">
         <v-row align="center" justify="center" no-gutters>
@@ -19,10 +24,11 @@
 
         <v-card flat class="mt-3 d-flex" width="100%">
           <div class="new-proposal-header">
-            <router-link id="back-btn"
-                         v-if="proposal && proposal.projectId"
-                         :to="`/proposalDesigns/${proposal.projectId}`"
-                         class="pt-1"
+            <router-link
+              id="back-btn"
+              v-if="proposal && proposal.projectId"
+              :to="`/proposalDesigns/${proposal.projectId}`"
+              class="pt-1"
             >
               <v-icon>mdi-chevron-left</v-icon>
               Back
@@ -66,8 +72,10 @@
                   @click="loadProposalVersions()"
                   :color="userIsAdmin && userCanManage ? 'unset' : 'grey'"
                 >
-                  v.{{proposal.version}}
-                  <v-icon v-if="userIsAdmin && userCanManage" class="ml-1">mdi-menu-down</v-icon>
+                  v.{{ proposal.version }}
+                  <v-icon v-if="userIsAdmin && userCanManage" class="ml-1">
+                    mdi-menu-down
+                  </v-icon>
                 </a-btn>
               </template>
               <v-card flat color="white" class="pa-4" :elevation="0">
@@ -110,8 +118,11 @@
           <v-row cols="12" class="px-3 config-row">
             <v-card width="100%" class="rounded-0 configurations-card">
               <label class="config-label">Configurations</label>
-              <v-spacer/>
-              <div class="config-buttons-group" v-if="canEdit && !proposal.locked">
+              <v-spacer />
+              <div
+                class="config-buttons-group"
+                v-if="canEdit && !proposal.locked"
+              >
                 <a-btn
                   depressed
                   variant="text"
@@ -137,7 +148,11 @@
           <v-card class="proposal-container prop-custom-field-groups">
             <div class="ml-4 mr-2 mt-2">
               <v-expansion-panels multiple v-model="expansionPanelsStatus">
-                <v-expansion-panel v-for="(cfg, index) in sortedCustomFieldGroups" :key="index" class="my-2 pr-4">
+                <v-expansion-panel
+                  v-for="(cfg, index) in sortedCustomFieldGroups"
+                  :key="index"
+                  class="my-2 pr-4"
+                >
                   <v-expansion-panel-header>
                     <v-toolbar flat dense>
                       <v-toolbar-title class="configuration-group-title ml-0">
@@ -151,7 +166,6 @@
                     )"
                     :key="idx"
                   >
-
                     <CustomValueInput
                       v-if="isFieldVisible(field)"
                       :required="field.required"
@@ -185,9 +199,15 @@
         </v-col>
         <v-col cols="12" sm="6" md="8" class="px-6 pt-4">
           <v-row class="prop-view-row">
-            <v-card width="100vw" class="rounded-0 prop-view-card" elevation="4">
-              <label class="config-label">Proposal <span>#{{ proposal.proposalNbr }}</span></label>
-              <v-spacer/>
+            <v-card
+              width="100vw"
+              class="rounded-0 prop-view-card"
+              elevation="4"
+            >
+              <label class="config-label">
+                Proposal <span>#{{ proposal.proposalNbr }}</span>
+              </label>
+              <v-spacer />
               <div class="prop-button-group" v-if="canEdit && !proposal.locked">
                 <a-btn
                   v-if="canEdit && !proposal.locked"
@@ -195,10 +215,10 @@
                   class="text-capitalize primary--text"
                   @click="deleteProposal"
                 >
-                    <span class="delete-btn">
-                      <v-icon color="">delete</v-icon>
-                      <span v-if="!isMobile">Delete</span>
-                    </span>
+                  <span class="delete-btn">
+                    <v-icon color="">delete</v-icon>
+                    <span class="d-none d-md-block">Delete</span>
+                  </span>
                 </a-btn>
                 <a-btn
                   v-if="canEdit && pages && pages.length"
@@ -208,7 +228,7 @@
                   @click="duplicate"
                 >
                   <v-icon>mdi-content-copy</v-icon>
-                  <span v-if="!isMobile">Duplicate</span>
+                  <span class="d-none d-md-block">Duplicate</span>
                 </a-btn>
                 <a-btn
                   v-if="pages && pages.length"
@@ -218,20 +238,27 @@
                   @click="downloadPdf"
                 >
                   <v-icon>download</v-icon>
-                  <span v-if="!isMobile">Download</span>
+                  <span class="d-none d-md-block">Download</span>
                 </a-btn>
               </div>
             </v-card>
-            <v-card width="100vw" class="proposal-container pt-4 proposal-viewer" v-if="!hideProposalSection">
+            <v-card
+              width="100vw"
+              class="proposal-container pt-4 proposal-viewer"
+              v-if="!hideProposalSection"
+            >
               <v-alert
-                class="text-center overlay-alert" v-if="isIntersecting"
-                color="warning" dense tile
+                class="text-center overlay-alert"
+                v-if="isIntersecting"
+                color="warning"
+                dense
+                tile
                 :value="dirtyCfvs.length > 0"
-                transition="scale-transition">
+                transition="scale-transition"
+              >
                 Changes haven't been reflected on proposal
               </v-alert>
-              <div v-if="pages && pages.length > 0"
-                   class="proposal-zoom-lock">
+              <div v-if="pages && pages.length > 0" class="proposal-zoom-lock">
                 <proposal-template
                   :children="pages"
                   :debug="false"
@@ -239,9 +266,13 @@
                 />
               </div>
               <div v-else>
-                <v-alert v-if="!templateLoading" prominent type="error">
+                <v-alert
+                  v-if="!templateLoading && loadingErrorMessage"
+                  prominent
+                  type="error"
+                >
                   <v-row>
-                    <v-col class="grow"> Error generating proposal </v-col>
+                    <v-col class="grow"> {{ loadingErrorMessage }}</v-col>
                   </v-row>
                 </v-alert>
               </div>
@@ -250,7 +281,7 @@
         </v-col>
       </v-row>
     </v-form>
-    <confirm-dialog ref="confirmDialogRef"/>
+    <confirm-dialog ref="confirmDialogRef" />
     <confirm-dialog ref="deleteConfirmDialogRef">
       <p>Are you sure you want to delete this proposal?</p>
     </confirm-dialog>
@@ -297,7 +328,7 @@ import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
 
-import {computed, ref, onMounted, onBeforeUnmount, provide, getCurrentInstance} from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, provide } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
@@ -313,7 +344,11 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const store = useProposalStore()
-const { template, loading: templateLoading } = storeToRefs(store)
+const {
+  template,
+  loadingErrorMessage,
+  loading: templateLoading
+} = storeToRefs(store)
 
 const autoSelectFieldIds = [407, 102, 81]
 const proposalExists = ref(true)
@@ -330,16 +365,7 @@ const filters = ref({})
 const confirmDialogRef = ref(null)
 const proposalForm = ref(null)
 const deleteConfirmDialogRef = ref(null)
-
-const vueInstance = getCurrentInstance().proxy
-const vuetify = vueInstance.$vuetify
-
-const isMobile = computed(() => {
-
-  return vuetify.breakpoint.smAndDown
-})
-
-const expansionPanelsStatus = ref([0,1,2,3,4])
+const expansionPanelsStatus = ref([0, 1, 2, 3, 4])
 
 provide('editor', undefined)
 
@@ -364,7 +390,6 @@ onMounted(() => {
   })
   window.addEventListener('beforeunload', beforeWindowUnload.value)
 })
-
 
 onBeforeRouteLeave(async (to, from, next) => {
   if (dirtyCfvs.value?.length > 0) {
@@ -439,7 +464,7 @@ const getHint = (field) => {
 const cssVars = computed(() => {
   return {
     '--dirty-cfv-height': dirtyCfvs.value.length > 0 ? '56px' : '0px',
-    '--padding-and-margins': '240px', // this number is toolbars, margins, and paddings above the column headings
+    '--padding-and-margins': '240px' // this number is toolbars, margins, and paddings above the column headings
   }
 })
 const userHasWhiteListedPosition = (cf, arg = 'readonly') => {
@@ -881,7 +906,7 @@ const beforeWindowUnload = (e) => {
 }
 
 .proposal-viewer {
-  padding-left: 16px
+  padding-left: 16px;
 }
 
 /* WRAPS THE BUTTONS UNDERNEATH HEADER TITLES BASED ON SCREEN SIZE */
@@ -890,10 +915,11 @@ const beforeWindowUnload = (e) => {
     flex-wrap: nowrap;
     flex-direction: row;
   }
-  .config-row{
+  .config-row {
     height: 64px;
   }
-  .proposal-container.prop-custom-field-groups, .proposal-container.proposal-viewer {
+  .proposal-container.prop-custom-field-groups,
+  .proposal-container.proposal-viewer {
     height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
   }
 }
@@ -904,11 +930,14 @@ const beforeWindowUnload = (e) => {
     flex-direction: column;
     height: 96px;
   }
-  .config-row ,.prop-view-row {
+  .config-row,
+  .prop-view-row {
     height: 96px;
   }
-  .proposal-container.prop-custom-field-groups{
-    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px);
+  .proposal-container.prop-custom-field-groups {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
+    );
   }
   .proposal-container.proposal-viewer {
     height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
@@ -919,43 +948,52 @@ const beforeWindowUnload = (e) => {
     flex-wrap: wrap;
     flex-direction: row;
   }
-  .config-row, .prop-view-row {
+  .config-row,
+  .prop-view-row {
     height: 56px;
   }
   .proposal-container.prop-custom-field-groups {
-    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) + 8px);
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) + 8px
+    );
   }
   .proposal-container.proposal-viewer {
     height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
   }
-
 }
 @media (max-width: 827px) and (min-width: 600px) {
-  .configurations-card, .prop-view-card {
+  .configurations-card,
+  .prop-view-card {
     flex-wrap: nowrap;
     flex-direction: column;
     height: 96px;
   }
-  .config-row, .prop-view-row {
+  .config-row,
+  .prop-view-row {
     height: 96px;
   }
 
   .proposal-container.prop-custom-field-groups {
-    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px);
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
+    );
   }
 
   .proposal-container.proposal-viewer {
-    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px);
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
+    );
   }
 }
 @media (max-width: 600px) and (min-width: 440px) {
-  .configurations-card{
+  .configurations-card {
     flex-wrap: wrap;
     flex-direction: row;
     justify-content: flex-start;
     height: 56px;
   }
-  .config-row, .prop-view-row {
+  .config-row,
+  .prop-view-row {
     height: 56px;
     position: sticky;
     top: 0;
@@ -963,12 +1001,14 @@ const beforeWindowUnload = (e) => {
   }
 }
 @media (max-width: 440px) and (min-width: 1px) {
-  .configurations-card, .prop-view-card {
+  .configurations-card,
+  .prop-view-card {
     flex-wrap: nowrap;
     flex-direction: column;
     height: 96px;
-    }
-  .config-row, .prop-view-row {
+  }
+  .config-row,
+  .prop-view-row {
     height: 96px;
     position: sticky;
     top: 0;
@@ -976,24 +1016,24 @@ const beforeWindowUnload = (e) => {
   }
 }
 
-.configurations-card, .prop-view-card {
+.configurations-card,
+.prop-view-card {
   display: flex;
   padding: 14px 18px;
   font-size: 20px;
   align-content: center;
 }
 
-
 .config-label {
   font-size: 20px;
 }
 
-.config-buttons-group, .prop-button-group {
+.config-buttons-group,
+.prop-button-group {
   display: flex;
   justify-content: flex-end;
-
 }
-.config-buttons,{
+.config-buttons {
   white-space: nowrap;
 }
 .configurations-column {
@@ -1019,16 +1059,14 @@ const beforeWindowUnload = (e) => {
 
 .proposal-container.prop-custom-field-groups {
   border-radius: 0;
-  overflow: scroll;
+  overflow-y: scroll;
   background-color: var(--v-grey-lighten4);
 }
 .proposal-container.proposal-viewer {
   border-radius: 0;
-  overflow: scroll;
+  overflow-y: scroll;
   background-color: var(--v-grey-lighten4);
 }
-
-
 
 /* EXPANSION PANEL STYLING */
 .v-expansion-panel-header {
@@ -1047,7 +1085,6 @@ const beforeWindowUnload = (e) => {
 }
 
 /* PROPOSAL VIEWER ZOOM STYLING */
-//TODO: need to fix this
 .proposal-zoom-lock {
   --scale: 0.75;
   transform: scale(var(--scale));
@@ -1057,13 +1094,10 @@ const beforeWindowUnload = (e) => {
     transform-origin: top center;
   }
 
-  @media(max-width: 600px) {
+  @media (max-width: 600px) {
     --scale: 0.45;
     transform: scale(var(--scale));
     transform-origin: top left;
-
   }
 }
-
-
 </style>
