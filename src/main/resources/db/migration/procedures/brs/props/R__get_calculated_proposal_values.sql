@@ -660,6 +660,8 @@ BEGIN
          inner join brs.list_of_value lov on lov.id = any (pcfv.int_array_value)
   where prop.id = p_proposal_id;
 
+
+  --raise notice 'v_system_size_ac = %',v_system_size_ac;
   --raise notice 'v_panel_model = %',v_panel_model;
   --raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
   --raise notice 'v_system_size = %',v_system_size;
@@ -1287,11 +1289,11 @@ BEGIN
     v_ill_srec_rebate_amount =
         ((brs.get_system_production_year(v_first_year_production_estimate, v_panel_degradation_factor, 15) *
           v_inverter_efficiency) / 1000) * case
-                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac end <= 10::numeric then
+                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac/1000 end <= 10::numeric then
                                                v_il_srec_less_10
-                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac end > 10::numeric and case when v_version_id <= 141 then v_system_size else v_system_size_ac end < 25::numeric then
+                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac/1000 end > 10::numeric and case when v_version_id <= 141 then v_system_size else v_system_size_ac/1000 end < 25::numeric then
                                                v_il_srec_between_10_25
-                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac end >= 25 then
+                                             when case when v_version_id <= 141 then v_system_size else v_system_size_ac/1000 end >= 25 then
                                                v_il_srec_greater_25 end * v_srec_realization;
 
     if v_srec_rebate_cap_amount is not null then
