@@ -144,7 +144,7 @@ BEGIN
                           when p_search_column = 'city' then
                             p.search_city like '%' || v_clean_city_term || '%'
                           when p_search_column = 'postalCode' then
-                            lower(translate(p.postal_code,'*&.', '')) like '%' || v_clean_zip_term || '%'
+                            p.search_postal_code like '%' || v_clean_zip_term || '%'
                           when p_search_column = 'contact.phone' then
                             c.contact_phone_search like '%' || v_clean_phone_search_term || '%'
                           when p_search_column = 'contact.email' then
@@ -215,11 +215,84 @@ BEGIN
                                (p.project_name_search like '%' || v_clean_name_search_term || '%') or
                                (p.project_street_search like '%' || v_clean_address_search_term || '%') or
                                (p.search_city like '%' || v_clean_city_term || '%') or
-                               (trim(lower(s.abbreviation)) like '%' || v_clean_state_abbreviation || '%') or
                                (p.search_postal_code like '%' || v_clean_zip_term || '%') or
-                               (trim(lower(translate(cpst.project_status_type, '*.,%', ''))) like '%' || v_clean_status_term || '%') or
                                (p.search_date_created like '%' || v_clean_date_created_term || '%')
                               )
+                    and case
+                          when p_company_project_status_type_id is not null then
+                            cpst.id = p_company_project_status_type_id
+                          else 1 = 1 end
+                  union
+                  select p.id::bigint,
+                         p.project_name,
+                         p.contact_id::bigint,
+                         p.date_created,
+                         p.street1,
+                         p.street2,
+                         p.city,
+                         s.state,
+                         s.abbreviation                           as state_abbreviation,
+                         p.postal_code                            as "postalCode",
+                         p.latitude,
+                         p.longitude,
+                         p.company_project_status_type_id::bigint,
+                         cpst.project_status_type,
+                         (select row_to_json(contact1)
+                          from (select c.id,
+                                       c.phone,
+                                       c.mobile,
+                                       c.email) contact1)::jsonb as contact,
+                         pst.project_status_type  as root_project_status_type,
+                         case when c.company_id = 3 then
+                            (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
+                  from flow.project p
+                         inner join flow.company_project_status_type cpst
+                                    on cpst.id = p.company_project_status_type_id
+                         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+                         inner join flow.contact c on c.id = p.contact_id
+                         left join flow.company_state cs on cs.id = p.company_state_id
+                         left join flow.state s on s.id = cs.state_id
+                  where c.company_id = any (v_company_ids)
+                    and p.archived is not true
+                    and trim(lower(translate(cpst.project_status_type, '*.,%', ''))) like '%' || v_clean_status_term || '%'
+                    and case
+                          when p_company_project_status_type_id is not null then
+                            cpst.id = p_company_project_status_type_id
+                          else 1 = 1 end
+                  union
+                  select p.id::bigint,
+                         p.project_name,
+                         p.contact_id::bigint,
+                         p.date_created,
+                         p.street1,
+                         p.street2,
+                         p.city,
+                         s.state,
+                         s.abbreviation                           as state_abbreviation,
+                         p.postal_code                            as "postalCode",
+                         p.latitude,
+                         p.longitude,
+                         p.company_project_status_type_id::bigint,
+                         cpst.project_status_type,
+                         (select row_to_json(contact1)
+                          from (select c.id,
+                                       c.phone,
+                                       c.mobile,
+                                       c.email) contact1)::jsonb as contact,
+                         pst.project_status_type  as root_project_status_type,
+                         case when c.company_id = 3 then
+                            (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
+                  from flow.project p
+                         inner join flow.company_project_status_type cpst
+                                    on cpst.id = p.company_project_status_type_id
+                         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+                         inner join flow.contact c on c.id = p.contact_id
+                         left join flow.company_state cs on cs.id = p.company_state_id
+                         left join flow.state s on s.id = cs.state_id
+                  where c.company_id = any (v_company_ids)
+                    and p.archived is not true
+                    and
+                        (trim(lower(s.abbreviation)) like '%' || v_clean_state_abbreviation || '%')
                     and case
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id

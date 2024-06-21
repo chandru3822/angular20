@@ -187,7 +187,7 @@ public class UserService {
           if (passwordIsCompanyDefault) {
             // NOT_ACCEPTABLE = 406
             throw new ResponseStatusException(
-              HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+              HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
           } else {
             securityService.updateUserPassword(id, user.getNewPassword());
           }
@@ -556,11 +556,11 @@ public class UserService {
     return sqlCache.queryBySql(UserQuery.mentionableUsers, params, MentionableUser.class);
   }
 
-  public void addNotificationToken(Long userId, String token) {
+  public void addNotificationToken(Long userId, String token, Boolean mobile) {
     try {
       sqlCache.updateBySql(
         UserQuery.addNotificationToken,
-        Map.of("userId", userId, "token", token, "createdById", userId));
+        Map.of("userId", userId, "token", token, "createdById", userId, "mobile", null != mobile ? mobile : false));
     } catch (Exception e) {
       log.warn("Unable to add token={} for userId={}", token, userId);
     }

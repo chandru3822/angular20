@@ -227,7 +227,7 @@ public class UserController {
         if (passwordIsCompanyDefault) {
           // NOT_ACCEPTABLE = 406
           throw new ResponseStatusException(
-            HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+            HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
         } else {
           result = userService.updatePassword(passwordResetRequest);
           userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
@@ -276,9 +276,10 @@ public class UserController {
   }
 
   @PostMapping(value = "/token")
-  public ResponseEntity<Void> addTokenToUser(@RequestBody UserNotificationTokenDTO token,
+  public ResponseEntity<Void> addTokenToUser(@RequestParam(required = false) Boolean mobile,
+                                             @RequestBody UserNotificationTokenDTO token,
                                              @AuthenticationPrincipal UserAccountDetails details) {
-    userService.addNotificationToken(details.getTrueUserId(), token.getToken());
+    userService.addNotificationToken(details.getTrueUserId(), token.getToken(), mobile);
     return ResponseEntity.accepted().build();
   }
 

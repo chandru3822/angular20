@@ -29,12 +29,20 @@ $BODY$
 declare
   v_closer_gen_source_ids bigint[];
   v_users bigint[];
+v_time_zone text;
 BEGIN
 
   select (select string_to_array(value, ',')
      from flow.company_configuration_value
      where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
   into v_closer_gen_source_ids;
+
+  select t2.timezone
+  into v_time_zone
+    from flow.round_robin rr
+  inner join flow.company_timezone c on c.id = rr.company_timezone_id
+  inner join flow.timezone t2 on t2.id = c.timezone_id
+  where rr.id = p_round_robin_id;
 
     return query
         select foo3.round_robin_user_id::bigint,
@@ -53,7 +61,7 @@ BEGIN
               -1::bigint,
                foo3.manual_allocation,
                foo3.lead_limit::bigint,
-               (select foo4.appointment_count from brs.get_appointment_count(foo3.user_id::bigint) as foo4) as weekly_appointment_count
+               (select foo4.appointment_count from brs.get_appointment_count(foo3.user_id::bigint,(select now()  at time zone coalesce(foo3.timezone,v_time_zone))::date) as foo4) as weekly_appointment_count
         from (
                  select foo2.round_robin_user_id, foo2.user_id,
                         foo2.company_timezone_id, foo2.timezone,

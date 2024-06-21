@@ -33,6 +33,11 @@ public class ProjectProcessStepEventController {
   private final ProjectProcessStepEventService projectProcessStepEventService;
   private final SecurityService securityService;
 
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ProjectProcessStepEvent>> getPpsEventsById(@PathVariable Long ppsId) {
+        return new ResponseEntity<>(projectProcessStepEventService.getByPpsId(ppsId), HttpStatus.OK);
+    }
+
   @PostMapping(value = "/{eventId}")
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
     @PathVariable Long ppsId, @PathVariable Long eventId) throws Exception {

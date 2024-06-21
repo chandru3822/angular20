@@ -124,13 +124,13 @@ public class ProjectProcessStepServiceTests {
     pps.setProjectProcessStepId(123L);
     pps.setProcessStepStatusTypeId(1L);
     action.setAlwaysEnabled(true);
-    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps);
     boolean passed = actionResult.getCanPerform();
     assertThat(passed).isTrue();
     verify(projectProcessStepService, never()).isRequirementMet(any(), anyLong());
 
     action.setAlwaysEnabled(false);
-    projectProcessStepService.canPerformAction(action, pps, projectProcessStepRequirements);
+    projectProcessStepService.canPerformAction(action, pps);
     verify(projectProcessStepService, atLeastOnce()).isRequirementMet(any(), anyLong());
   }
 
@@ -140,7 +140,7 @@ public class ProjectProcessStepServiceTests {
     pps.setProjectProcessStepId(123L);
     pps.setProcessStepStatusTypeId(1L);
     action.setProcessStepLogicList(List.of());
-    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps);
     boolean passed = actionResult.getCanPerform();
     assertThat(passed).isFalse();
     verify(projectProcessStepService, never()).isRequirementMet(any(), anyLong());
@@ -148,7 +148,7 @@ public class ProjectProcessStepServiceTests {
     List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<>() {
     });
     action.setProcessStepLogicList(processStepLogicList);
-    projectProcessStepService.canPerformAction(action, pps, projectProcessStepRequirements);
+    projectProcessStepService.canPerformAction(action, pps);
     verify(projectProcessStepService, atLeastOnce()).isRequirementMet(any(), anyLong());
   }
 
@@ -157,7 +157,7 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(List.of());
-    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps);
     boolean passed = actionResult.getCanPerform();
     assertThat(passed).isTrue();
 

@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     restart: unless-stopped
-    image: galien0xffffff/postgres-debugger:14
+    image: postgres:14.12-alpine3.19
     ports:
       - "${PGPORT:-5433}:5432"
     environment:
@@ -29,6 +29,6 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   gotenberg:
-    image: gotenberg/gotenberg:7
+    image: gotenberg/gotenberg:8
     ports:
       - "4000:3000"

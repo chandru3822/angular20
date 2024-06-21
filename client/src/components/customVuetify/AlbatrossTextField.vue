@@ -29,7 +29,8 @@
                 :autocomplete="autocomplete"
                 :persistent-hint="persistentHint"
                 :class="[customClasses]"
-                :label="label">
+                :label="label"
+                :v-maska="maskaOptions">
 
     <template v-for="(index, name) in $scopedSlots" v-slot:[name]="data">
       <slot :name="name" v-bind="data"></slot>
@@ -46,6 +47,8 @@
 <script setup>
 import {ref, computed} from 'vue'
 import constants from '@/helpers/constants'
+import { vMaska } from 'maska/vue'
+import {objType} from "html2pdf.js/src/utils.js";
 
 // reminder that v-model is sugar syntax for :value="value" @input="v => $emit('input', v)"
 const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
@@ -89,7 +92,11 @@ const props = defineProps({
   density: String,
   step: Number,
   counter: Boolean,  //this counter and maxlength is not how vuetify defines the props but it is the only combo that actually stops the user from typing when they hit the limit
-  maxlength: Number
+  maxlength: Number,
+  maskaOptions: {
+    type: Object,
+    default: () => ({mask: null})
+  },
 })
 
 const albatrossTextField = ref(null)

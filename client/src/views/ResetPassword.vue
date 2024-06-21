@@ -52,7 +52,7 @@
   const userStore = useUserStore()
 
   const validForm = ref(false);
-  const errorMsg = 'You must reset your password. Cannot use company default.';
+  const errorMsg = 'You must reset your password.';
   const form = ref({
     email: null,
     password: null,

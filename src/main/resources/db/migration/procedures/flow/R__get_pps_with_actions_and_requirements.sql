@@ -1,5 +1,5 @@
-drop function if exists flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint, p_systemAdmin boolean, p_userPositions bigint[]);
-  CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint, p_systemAdmin boolean, p_userPositions bigint[])
+drop function if exists flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint)
     RETURNS json AS
 $$
 DECLARE
@@ -61,78 +61,22 @@ BEGIN
              cpsst.process_step_status_type as "processStepStatusType",
              cpsst.id as "companyProcessStepStatusTypeId",
              ps.process_step_name as "processStepName",
+             psp.id as "processStepProcessId",
              (
                  select row_to_json(o) from (
-                    select
-                        u.id as "userId",
-                        u.first_name as "firstName",
-                        u.last_name as "lastName",
-                        up.id as "userPositionId",
-                        concat(u.first_name, ' ', u.last_name) AS "fullName",
-                        p.position
-                    from flow.user u
-                             inner join flow.user_position up on up.user_id = u.id
-                             inner join flow.position p on p.id = up.position_id
-                    where up.id = pps.user_position_id
-                ) o
+                     select
+                         u.id as "userId",
+                         u.first_name as "firstName",
+                         u.last_name as "lastName",
+                         up.id as "userPositionId",
+                         concat(u.first_name, ' ', u.last_name) AS "fullName",
+                         p.position
+                     from flow.user u
+                          inner join flow.user_position up on up.user_id = u.id
+                          inner join flow.position p on p.id = up.position_id
+                     where up.id = pps.user_position_id
+                 ) o
              ) as owner,
-             psp.id as "processStepProcessId",
-             coalesce((select array_to_json(array_agg(row_to_json(r))) from (
-                select
-                    id,
-                    project_id as "projectId",
-                    process_step_requirement_type_id as "processStepRequirementTypeId",
-                    process_step_id as "processStepId",
-                    operator_type_id as "operatorTypeId",
-                    requirement_value as "requirementValue",
-                    custom_field_group_assignment_id as "customFieldGroupAssignmentId",
-                    company_function_id as "companyFunctionId",
-                    requirement_nbr as "requirementNbr",
-                    date_created as "dateCreated",
-                    date_modified as "dateModified",
-                    immutable as "immutable",
-                    created_by_id as "createdById",
-                    modified_by_id as "modifiedById",
-                    archived as "archived",
-                    secondary_requirement_value as "secondaryRequirementValue",
-                    data_type_requirement_id as "dataTypeRequirementId",
-                    list_of_value_id as "listOfValueId",
-                    list_of_value_ids as "listOfValueIds",
-                    operator_type as "operatorType",
-                    process_step_requirement_type as "processStepRequirementType",
-                    id as "parentId",
-                    custom_value as "customValue",
-                    process_step_name as "parentName",
-                    field_name as "fieldName",
-                    custom_field_sql as "customFieldSql",
-                    custom_field_sql_smartlist as "customFieldSqlSmartlist",
-                    company_system_list_id as "companySystemListId",
-                    system_list_option_id as "systemListOptionId",
-                    custom_sql_option_id as "customSqlOptionId",
-                    time_zone as "timeZone",
-                    project_process_step_id as "projectProcessStepId",
-                    text_value as "textValue",
-                    date_value as "dateValue",
-                    timestamp_value as "timestampValue",
-                    boolean_value as "booleanValue",
-                    numeric_value as "numericValue",
-                    reference_process_step_id as "referenceProcessStepId",
-                    fail_if_no_reference_step_found as "failIfNoReferenceStepFound",
-                    int_value as "intValue",
-                    int_array_value as "intArrayValue",
-                    system_list_option_ids as "systemListOptionIds",
-                    data_type_requirement as "dataTypeRequirement",
-                    list_of_value as "listOfValue",
-                    list_of_values as list_of_values,
-                    data_type_id as "dataTypeId",
-                    has_list_values as "hasListValues",
-                    company_function_name as "companyFunctionName",
-                    function_name as "functionName",
-                    requirement_param_dynamic_values as "requirementParamDynamicValues",
-                    company_function_params as "companyFunctionParams",
-                    available_list_of_values as "availableListOfValues"
-                from flow.get_project_process_step_requirements_with_values(p_project_process_step_id::bigint, reqs.ids::bigint[])
-            ) r), '[]') as "autoTriggeredActionRequirements",
              coalesce((select array_to_json(array_agg(row_to_json(a))) from (
                 select
                     psa.id,
@@ -149,6 +93,8 @@ BEGIN
                     psa.company_project_status_type_id as "companyProjectStatusTypeId",
                     psa.display_order as "displayOrder",
                     psa.always_enabled as "alwaysEnabled",
+                    coalesce(psa.company_process_step_status_type_ids, array[]::bigint[]) as "companyProcessStepStatusTypeIds",
+                    coalesce(psa.process_step_status_type_ids, array[]::bigint[]) as "processStepStatusTypeIds",
                     cpsst.process_step_status_type_id as "processStepStatusTypeId",
                     cpsst.process_step_status_type as "processStepStatusType",
                     at.action_type as "actionType",
@@ -205,44 +151,6 @@ BEGIN
                                             and psacp.archived is not true
                                           order by psacp.display_order, ps.process_step_name
                                       ) children), '[]') AS "processStepActionChildProcesses",
-                    coalesce((
-                                 SELECT array_to_json(array_agg(row_to_json(childFn)))
-                                 FROM (
-                                          SELECT psacf.id,
-                                                 psacf.archived,
-                                                 psacf.process_step_action_id as "processStepActionId",
-                                                 psacf.company_function_id as "companyFunctionId",
-                                                 psacf.display_order as "displayOrder",
-                                                 psacf.created_by_id as "createdById",
-                                                 psacf.modified_by_id as "modifiedById",
-                                                 cf.company_function_name as "companyFunctionName",
-                                                 coalesce((
-                                                              SELECT array_to_json(array_agg(row_to_json(params)))
-                                                              FROM (
-                                                                       select apdv.id,
-                                                                              apdv.archived,
-                                                                              dfp.db_function_id as "dbFunctionId",
-                                                                              dfp.parameter_name as "parameterName",
-                                                                              dfp.data_type_id as "dataTypeId",
-                                                                              dfp.description,
-                                                                              dfp.nullable,
-                                                                              apdv.db_function_param_id as "dbFunctionParamId",
-                                                                              apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
-                                                                              apdv.dynamic_value as "dynamicValue"
-                                                                       from flow.db_function_param dfp
-                                                                                left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_action_company_function_id = psacf.id
-                                                                       where dfp.db_function_id = cf.db_function_id
-                                                                         and dfp.parameter_type_id = 2
-                                                                         and apdv.archived is not true
-                                                                         and dfp.archived is not true
-                                                                       order by dfp.display_order
-                                                                   ) params), '[]') AS "actionParamDynamicValues"
-                                          FROM flow.process_step_action_company_function psacf
-                                                   inner join flow.company_function cf on cf.id = psacf.company_function_id
-                                          WHERE psacf.process_step_action_id = psa.id
-                                            and psacf.archived is not true
-                                          order by psacf.display_order, cf.company_function_name
-                                      ) childFn), '[]') AS "processStepActionChildFunctions",
                     coalesce((
                                  SELECT array_to_json(array_agg(row_to_json(links)))
                                  FROM (
@@ -309,81 +217,14 @@ BEGIN
                                           and psl.archived is not true
                                         ORDER BY psl.sql_order ) logic), '[]') AS "processStepLogicList",
                       psa.always_enabled as "alwaysEnabled",
-                      psa.display_order as "displayOrder"
+                      psa.display_order as "displayOrder",
+                      psa.action_type_id as "actionTypeId"
                     from flow.process_step_action psa
                     where psa.process_step_id = ps.id and
                       psa.archived is not true and
                         psa.action_type_id = 3 -- 3 = banners
                     order by psa.display_order
-                  ) a), '[]') as "banners",
-             coalesce((
-                        SELECT array_to_json(array_agg(row_to_json(events)))
-                        FROM (
-                               SELECT ppse.id,
-                                      ppse.archived,
-                                      ppse.process_step_event_id as "processStepEventId",
-                                      ppse.company_event_status_type_id as "companyEventStatusTypeId",
-                                      cest.event_status_type as "eventStatusType",
-                                      cest.event_status_type_id as "eventStatusTypeId",
-                                      ppse.created_by_id as "createdById",
-                                      ppse.start_time as "startTime",
-                                      ppse.end_time as "endTime",
-                                      ppse.resource_id as "resourceId",
-                                      e.start_time_read_only as "startTimeReadOnly",
-                                      e.end_time_read_only as "endTimeReadOnly",
-                                      e.resource_read_only as "resourceReadOnly",
-                                      pps.project_id as "projectId",
-                                      pps.id as "projectProcessStepId",
-                                      case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
-                                      ppse.modified_by_id as "modifiedById",
-                                      pse.event_id as "eventId",
-                                      e.event_name as "eventName",
-                                      (select cfga.id
-                                       from flow.project_process_step_event_custom_field_value ppsecfv
-	                                            inner join flow.custom_field_group_assignment cfga
-	                                                       on ppsecfv.custom_field_group_assignment_id = cfga.id
-		                                                       and cfga.archived is false and cfga.display_on_snippet is true
-	                                            inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                       where ppsecfv.project_process_step_event_id = ppse.id) as "customFieldDisplayValueGroupAssignmentId"
-                               FROM flow.project_process_step_event ppse
-                                    inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
-                                    inner join flow.event e on pse.event_id = e.id
-                                    inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-                                    inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
-                                    inner join flow.system_list sl on sl.id = csl.system_list_id
-                                    left join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
-                                    left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
-                                    left join flow.user u on u.id = up.user_id
-                                    left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
-                               WHERE ppse.project_process_step_id = pps.id
-                                 and ppse.archived is not true
-								and case when e.hidden and e.hidden_allow and p_systemAdmin is false
-								then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
-									where wlp2.event_id = pse.event_id
-									and wlp2.white_list_type_id = 17
-                    and wlp2.company_id = p_company_id
-									and wlp2.archived is not true
-									and wlp2.position_id = any(p_userPositions) limit 1
-								)
-                 when e.hidden and not e.hidden_allow and p_systemAdmin is false
-                   then case when ( select wlp2.event_id from flow.white_listed_position wlp2
-                                    where wlp2.event_id = pse.event_id
-                                      and wlp2.white_list_type_id = 17
-                                      and wlp2.company_id = p_company_id
-                                      and wlp2.archived is not true
-                                    limit 1
-                 ) is null then true
-                             else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
-                                                   where wlp2.event_id = pse.event_id
-                                                     and wlp2.white_list_type_id = 17
-                                                     and wlp2.company_id = p_company_id
-                                                     and not wlp2.position_id = any(p_userPositions)
-                                                     and wlp2.archived is not true
-                                                   limit 1
-                             ) end
-								else 1=1 end
-                              order by ppse.start_time, ppse.end_time, resource, e.event_name
-                             ) events), '[]') AS "projectProcessStepEvents"
+                  ) a), '[]') as "banners"
          from reqs, flow.project_process_step pps
                         inner join flow.process_step ps on ps.id = pps.process_step_id
                         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id

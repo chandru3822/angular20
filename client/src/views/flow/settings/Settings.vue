@@ -21,7 +21,7 @@
               <v-spacer></v-spacer>
               <a-btn
                 variant="text"
-                prepend-icon="expand-more"
+                :prepend-icon=" menuOpen ? 'mdi-chevron-up' : 'mdi-menu'"
               />
             </v-toolbar>
           </template>

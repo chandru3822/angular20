@@ -163,14 +163,50 @@
               :text="showUnperformableActions ? 'Hide Disabled' : 'Show All'"
           ></a-btn>
         </div>
-        <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
+
+        <div
+            v-for="action in enabledActions"
+            :key="action.id"
+            class="d-inline-block ma-1"
+        >
           <ActionButton
               :action-result="action"
               :can-perform-action="!action.triggerAutomatically && (action.canPerform && !processStepReadOnly) && userCanEdit"
               :complete-action="completeAction"
               :follow-multiple-links="followMultipleLinks"
           />
+
         </div>
+
+          <div v-if="showUnperformableActions">
+              <div class="my-3">Disabled actions:</div>
+
+              <ActionButton
+                  v-for="action in disabledActions"
+                  class="d-inline-block ma-1"
+                  :key="action.id"
+                  :action-result="action"
+                  :can-perform-action="!action.triggerAutomatically && (action.canPerform && !processStepReadOnly) && userCanEdit"
+                  :complete-action="completeAction"
+                  :follow-multiple-links="followMultipleLinks"
+              />
+
+          </div>
+
+          <div v-if="showUnperformableActions">
+              <div class="my-3">Other actions:</div>
+              
+              <ActionButton
+                  v-for="action in otherActions"
+                  :key="action.id"
+                  class="d-inline-block ma-1"
+                  :action-result="action"
+                  :can-perform-action="!action.triggerAutomatically && (action.canPerform && !processStepReadOnly) && userCanEdit"
+                  :complete-action="completeAction"
+                  :follow-multiple-links="followMultipleLinks"
+              />
+
+          </div>
 
         <v-row v-if="!processStepLoading">
           <Links :projectProcessStepId="parseInt(projectProcessStepId)"
@@ -328,7 +364,6 @@ import {
   followLink,
   getRequest,
   logError,
-
   getRequestWithParams,
   postRequest
 } from '@/helpers/helpers'
@@ -371,25 +406,18 @@ const unsavedFieldsModal = ref(false)
 const fieldsSaving = ref(false)
 const projectMismatch = ref(false)
 const processStepReadOnly = ref(false)
-const schedulerCanEdit = ref(false)
-const showRemoteSearch = ref(false)
-const mostRecentSearchWasRemote = ref(false)
-const schedulerLoading = ref(true)
 const collapsedAttachments = ref(false)
 const processStepId = ref(null)
 const processStep = ref({})
 const existingEvents = ref([])
 const customFieldGroups = ref([])
-const isProcessStepLoading = ref(true)
 const dirtyCfvs = ref([])
 const toPath = ref(null)
 const query = ref({})
 const navigationOverride = ref(false)
-const notes = ref([])
 const displayChangeOwner = ref(false)
 const availableOwners = ref([])
 const availableProcessStepStatuses = ref([])
-const searchLoading = ref(false)
 const showMainDialog = ref(false)
 const showUnperformableActions = ref(false)
 const processStepLoading = ref(true)
@@ -420,21 +448,41 @@ const userCanManage = computed(() => {
 const userHasEventsFeature = computed(() => {
   return userStore.userHasFeature('EVENTS')
 })
-const timezone = computed(() => {
-  return userStore.timezone.value
+
+const enabledActions = computed(() => {
+    return processStep.value?.actions?.filter(a => a.canPerform === true) ?? []
 })
-const filteredActions = computed(() => {
-  if (!processStep.value?.actions) {
-    return []
-  }
-  if (showUnperformableActions.value) {
-    return processStep.value.actions
-  } else if (processStepReadOnly.value) {
-    return []
-  } else {
-    return processStep.value.actions.filter(a => a.canPerform === true)
-  }
+
+// non-enabled actions having assigned status/category differing from the current PS status/category
+const disabledActions = computed(() => {
+    return processStep.value?.actions?.filter(a => {
+        if (a.canPerform === true) {
+            return false
+        }
+
+        if (a.companyProcessStepStatusTypeIds.length === 0 && a.processStepStatusTypeIds.length === 0) {
+            return false
+        }
+
+        return a.companyProcessStepStatusTypeIds.includes(processStep.value.companyProcessStepStatusTypeId) ||
+               a.processStepStatusTypeIds.includes(processStep.value.processStepStatusTypeId)
+
+    }) ?? []
 })
+
+// non-enabled actions which have no assigned status/category
+const otherActions = computed(() => {
+    return processStep.value?.actions?.filter(a => {
+        if (enabledActions.value.map(i => i.id).includes(a.id)) {
+            return false
+        }
+
+        return !disabledActions.value.map(i => i.id).includes(a.id);
+
+
+    }) ?? []
+})
+
 const isMobile = computed(()=> {
   return vuetify.breakpoint.smAndDown
 })
@@ -476,7 +524,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 const expansionOpenStatus = computed(() => {
 	// determine which groups to collapse. Default is expand
 	let indexes = []
-	customFieldGroups.value.forEach((group, index) => {
+	customFieldGroups.value?.forEach((group, index) => {
 		const defaultStatusNotSet = group.companyProcessStepStatusTypeIds.length === 0 &&
 			group.processStepStatusTypeIds.length === 0 &&
 			!group.psCollapseByDefault
@@ -508,7 +556,7 @@ const loadAllPageDetails = async() => {
   processStepLoading.value = true
   //if you add a new item to requests make sure it returns the request status
   const psStatus = await getProcessStep(true)
-  const requests = [getCustomFieldGroups()]
+  const requests = [getCustomFieldGroups(), getPPsEvents()]
   await Promise.all(requests).then(async (statusVals) => {
     let success = psStatus === 200
     statusVals.forEach(status => {
@@ -568,7 +616,6 @@ const getProcessStep = async (reloadAll) => {
       processStepReadOnly.value = processStep.value.readonly && !userStore.userHasAnyPosition(processStep.value.whiteListedPositions?.map(wlp => wlp.positionId))
       processStepId.value = processStep.value.processStepId
       // contactId.value = processStep.value.contactId
-      existingEvents.value = processStep.value.projectProcessStepEvents
       projectStore.pps = processStep.value
       projectStore.linkLabel = `${processStep.value.processStepName} (${processStep.value.projectProcessStepId})`
       projectStore.linkId = processStep.value.projectProcessStepId
@@ -589,6 +636,20 @@ const getProcessStep = async (reloadAll) => {
     logError(e)
   }
 }
+
+const getPPsEvents = async () => {
+    try {
+        const {data, status} = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event`)
+        existingEvents.value = data
+        processStep.value.projectProcessStepEvents = data
+        return status
+    } catch (e) {
+        logError(e)
+        appStore.showSnack('ERROR', 'Error retrieving project events')
+    }
+
+}
+
 const getCustomFieldGroups = async() => {
   try {
     const {

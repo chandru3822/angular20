@@ -515,7 +515,7 @@ const deleteRequirement = async (requirement) => {
 const runReport = async () => {
   try {
     appStore.loading = true
-    const params = {timezone: timezone}
+    const params = {timezone: timezone.value}
     const {data, status} = await getRequestWithParams(`/smartlistv1/${smartlist.value.id}/csv`, {params})
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'

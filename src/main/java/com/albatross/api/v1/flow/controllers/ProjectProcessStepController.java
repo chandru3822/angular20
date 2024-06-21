@@ -5,7 +5,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.services.AutoTriggerHandlerService;
@@ -17,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -56,21 +55,25 @@ public class ProjectProcessStepController {
 
       int index = 0;
       for (ProjectProcessStepAction a : pps.getActions()) {
-        pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), a, pps));
-        index++;
+          var action = projectProcessStepService.canPerformAction(a, pps);
+          // Remove data the frontend doesn't need to lighten the payload
+          action.setProcessStepLogicList(new ArrayList<>());
+          pps.getActions().set(index, action);
+          index++;
       }
       //do the same thing for banners which are technically just actions of actionTypeId = 3
       int bannerIndex = 0;
       for (ProjectProcessStepAction a : pps.getBanners()) {
-        pps.getBanners().set(bannerIndex, projectProcessStepService.getActionResult(a.getId(), a, pps));
-        bannerIndex++;
+          var banner = projectProcessStepService.canPerformAction(a, pps);
+          // Remove data the frontend doesn't need to lighten the payload
+          banner.setProcessStepLogicList(new ArrayList<>());
+          pps.getBanners().set(bannerIndex, banner);
+          bannerIndex++;
       }
 
       return new ResponseEntity<>(pps, HttpStatus.OK);
     } catch (Exception e) {
-      final String errMessage =
-
-          "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
+      final String errMessage = "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
@@ -116,8 +119,7 @@ public class ProjectProcessStepController {
     @PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
       List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
-      ProjectProcessStep pps =
-        projectProcessStepService.getProjectProcessStep(projectProcessStepId);
+      ProjectProcessStep pps = projectProcessStepService.getPpsForAutotrigger(projectProcessStepId);
       ProjectProcessStepAction action =
         pps.getActions().stream()
           .filter(a -> a.getId().equals(actionId))
@@ -128,16 +130,7 @@ public class ProjectProcessStepController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
 
-      List<Long> requirementIds =
-        action.getProcessStepLogicList().stream()
-          .filter(step -> step.getProcessStepRequirementId() != null)
-          .map(ProcessStepLogic::getProcessStepRequirementId)
-          .collect(Collectors.toList());
-      List<ProjectProcessStepRequirement> requirements =
-        projectProcessStepRequirementService.getByProjectProcessStepId(
-          pps.getProjectProcessStepId(), requirementIds);
-      ProjectProcessStepAction actionResult =
-        projectProcessStepService.canPerformAction(action, pps, requirements);
+      ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps);
       boolean canPerform = actionResult.getCanPerform();
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -148,8 +141,7 @@ public class ProjectProcessStepController {
       actionResultToReturn.setChildFunctionReturnedStrings(ppsActionResult.getChildFunctionReturnedStrings());
 
       // Since something on the PPS might have changed, run autotriggers for it
-      actionResults.add(projectProcessStepService.performAutoTriggerActions(
-        projectProcessStepId, securityService.getCurrentUserDetails()));
+      actionResults.add(projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails()));
 
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
       // Consolidate to projectProcessStepService
@@ -157,14 +149,11 @@ public class ProjectProcessStepController {
       List<Long> cfgaIds = cfgaService.getIdsByPPSId(projectProcessStepId);
 
       if (!cfgaIds.isEmpty()) {
-        List<Long> ppsIds =
-          projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
-            pps.getProjectId(), null, cfgaIds);
+        List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
         for (Long ppsId : ppsIds) {
           // Don't re-check the ppsId we just previously did
           if (!ppsId.equals(projectProcessStepId)) {
-            actionResults.add(projectProcessStepService.performAutoTriggerActions(
-              ppsId, securityService.getCurrentUserDetails()));
+            actionResults.add(projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails()));
           }
         }
       }
@@ -172,19 +161,18 @@ public class ProjectProcessStepController {
       // check for any actions using this PS - Status as a requirement - NOT including SELF (because
       // that creates a potential infinite loop) if active
       // run auto triggers for those actions
-      List<ProjectProcessStep> steps =
-        sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
+      List<ProjectProcessStep> steps = sqlCache.queryBySql(
+          ProjectProcessStepQuery.getUsingStatusByPpsIds,
           Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
-          ProjectProcessStep.class);
+          ProjectProcessStep.class
+      );
       for (ProjectProcessStep step : steps) {
         // only run if the referring PPS is active
         if (step.getProcessStepStatusTypeId() == 1) {
-          actionResults.add(projectProcessStepService.performAutoTriggerActions(
-            step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
+          actionResults.add(projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
         }
       }
-      ProjectProcessStepStatus status =
-        projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
+      ProjectProcessStepStatus status = projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
 
       boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
       projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, pps.getProjectId(), null);
@@ -195,11 +183,8 @@ public class ProjectProcessStepController {
       actionResultToReturn.setProcessStepStatusType(status.getProcessStepStatusType());
       actionResultToReturn.setCompanyProcessStepStatusType(status.getCompanyProcessStepStatusType());
 
-
       //map in the returned strings from the child functions.
       //todo: make this work for more than route urls the frontend should follow, but for now that is all this does - keep mobile in mind if changes made
-
-
       return new ResponseEntity<>(actionResultToReturn, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
@@ -367,5 +352,14 @@ public class ProjectProcessStepController {
     } catch (RuntimeException e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
+  }
+
+  @PreAuthorize("hasRootLevelAccess()")
+  @PostMapping(value = "/manual")
+    public ResponseEntity<Void> runManualAutotriggers(@RequestBody List<Long> ppsIds) {
+      // errors will be logged and swallowed (to match time-based functionality). This endpoint will always return 200.
+      // check logs to verify success/fail
+      projectProcessStepService.performManualAutotriggers(ppsIds);
+      return new ResponseEntity<>(HttpStatus.OK);
   }
 }

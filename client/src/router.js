@@ -116,7 +116,7 @@ const router = new Router({
             }
           } else {
             //had to do the matching or it just does a continuous loop if the user has a homepagepath
-            if (userStore.details.homePagePath && to.path !== userStore.details.homePagePath) {
+            if (userStore?.details?.homePagePath && to.path !== userStore?.details?.homePagePath) {
               router.push({path: userStore.details.homePagePath})
             } else {
               next()

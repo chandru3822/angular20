@@ -57,7 +57,7 @@ const noNavRoutes = ref([
 ])
 
 const userId = computed(() => {
-  return userStore.details.id
+  return userStore?.details?.id
 })
 
 const revokeAccessEvents = computed(() => {

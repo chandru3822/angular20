@@ -52,11 +52,21 @@ Vue.filter('formatDateZoneless', function (value) {
   }
 })
 
-Vue.filter('searchHighlight', function (value, query) {
+Vue.filter('searchHighlight', function (value, query, ignoreWhiteSpace = false) {
   if (value) {
+    if (ignoreWhiteSpace === true) {
+      const queryLength = query.length
+      query = query.replace(/\s/g, '')
+      let newQuery = ''
+      for (const char of query) {
+        newQuery = newQuery.concat(char, '\\s*')
+      }
+
+      query = "(".concat(newQuery, ")")
+    }
     return value.replace(
       new RegExp(query, 'ig'),
-      (v) => `<span class="grey lighten-2">${v}</span>`
+      (v) => `<span class="highlight">${v}</span>`
     )
   }
 })

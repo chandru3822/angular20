@@ -684,12 +684,55 @@ public class PandaDocService {
             ? "0"
             : result.get("custom_fields.Storage Size").toString());
 
+      Double dealerFee =
+        Double.parseDouble(
+          deets.getDealerFee() == null
+            ? "0"
+            : deets.getDealerFee().toString());
+
+      Double pricePerWatt = deets.getFinancedPvPricePerWattToCustomer() == null
+        ? 0.0
+        : Math.round(Double.parseDouble(deets.getFinancedPvPricePerWattToCustomer().toString()) * 100) / 100.0;
+
+      Double estimatedFirstYearSavings = deets.getFirstYearAvoidedBill() == null
+        ? 0.0
+        : Math.round(Double.parseDouble(deets.getFirstYearAvoidedBill().toString()));
+
+      Double initialMonthlyPayment =
+        Double.parseDouble(
+          deets.getMonthlySolarCosts() == null
+            ? "0"
+            : deets.getMonthlySolarCosts().toString());
+
+      Double reamortizedMonthlyPayment =
+        Double.parseDouble(
+          deets.getEighteenPlusPaymentItcOnly() == null
+            ? "0"
+            : deets.getEighteenPlusPaymentItcOnly().toString());
+
+      Double batteryWarranty =
+        Double.parseDouble(
+          deets.getBatteryManufacturersWarranty() == null
+            ? "0"
+            : deets.getBatteryManufacturersWarranty().toString());
+
       tokens.put("Proposal.Number Of Batteries", numberOfBatteries);
       tokens.put("Proposal.Storage Size", storageSize);
       tokens.put("Proposal.Battery Brand", deets.getStorageBrand());
       tokens.put("Proposal.Estimated Backup Days", result.get("custom_fields.Estimated Backup Days"));
       tokens.put("Proposal.Solar Rebate For HIC", result.get("custom_fields.Solar Rebate for HIC"));
       tokens.put("Proposal.Solar Below the Line Rebates", result.get("custom_fields.Solar Below the Line Rebates"));
+
+      tokens.put("Proposal.Panel Model", deets.getPanelModel());
+      tokens.put("Project.Inverter Model", deets.getInverterCustomGetting());
+      tokens.put("Proposal.Battery Model", deets.getStorageName());
+      tokens.put("Proposal.Loan APR", result.get("custom_fields.Interest Rate"));
+      tokens.put("Proposal.Dealer Fee", dealerFee);
+      tokens.put("Proposal.Price Per Watt", pricePerWatt);
+      tokens.put("Proposal.Estimated First Year Savings", estimatedFirstYearSavings);
+      tokens.put("Proposal.Initial Monthly Payment", initialMonthlyPayment);
+      tokens.put("Proposal.Reamortized Monthly Payment", reamortizedMonthlyPayment);
+      tokens.put("Proposal.Battery Warranty", batteryWarranty);
 
       Double totalCost =
           Double.parseDouble(

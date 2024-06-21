@@ -33,10 +33,10 @@ BEGIN
                                                from (select rru.user_id,
                                                             lead_limit  as lead_limit,
                                                             coalesce((select appointment_count
-                                                                      from brs.get_appointment_count(rru.user_id)),
+                                                                      from brs.get_appointment_count(rru.user_id,p_available_date)),
                                                                      0) as appointment_count
                                                      from flow.round_robin_user rru
-                                                     where rru.round_robin_id = 5
+                                                     where rru.round_robin_id = v_round_robin_id
                                                        and archived is false
                                                        and round_robin_user_type_id = 1) as foo
                                                where lead_limit is not null

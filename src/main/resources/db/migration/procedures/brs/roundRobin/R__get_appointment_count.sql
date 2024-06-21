@@ -1,5 +1,6 @@
 drop function if exists brs.get_appointment_count(p_closer_user_id bigint);
-CREATE OR REPLACE FUNCTION brs.get_appointment_count(p_closer_user_id bigint)
+drop function if exists brs.get_appointment_count(p_closer_user_id bigint,p_date date);
+CREATE OR REPLACE FUNCTION brs.get_appointment_count(p_closer_user_id bigint,p_date date)
   RETURNS table
           (
 
@@ -12,10 +13,16 @@ declare
   v_current_day date;
   v_week_start  date;
 BEGIN
-  SELECT CURRENT_DATE + 3                       AS current_day,
-         date_trunc('week', CURRENT_DATE)::date AS week_start
+
+  raise notice 'p_date %',p_date;
+
+  SELECT date_trunc('week', p_date::date)::date + 6                          AS current_day,
+         date_trunc('week', p_date)::date AS week_start
   into v_current_day,
     v_week_start;
+
+  --raise notice 'v_current_day %',v_current_day;
+  --raise notice 'v_week_start %',v_week_start;
   return query
     select pd2.closer_user_id::bigint, count(pd2.id)
     from brs.project_details pd2

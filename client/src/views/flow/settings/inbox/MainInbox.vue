@@ -173,7 +173,7 @@
         :items="conversationsFiltered"
         :options.sync="options"
         disable-sort
-        ref="pageable-table"
+        ref="pageableTable"
         :page.sync="page"
         :mobile-breakpoint="0"
         :footer-props="footerProps"
