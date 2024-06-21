@@ -46,7 +46,8 @@ const theme = {
 			darken2:'#616161',
 			darken3:'#424242',
 			darken4:'#212121',
-		}
+		},
+    highlight: '#FFF384'
 		// },
 	}
 }

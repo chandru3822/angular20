@@ -66,7 +66,7 @@ Vue.filter('searchHighlight', function (value, query, ignoreWhiteSpace = false) 
     }
     return value.replace(
       new RegExp(query, 'ig'),
-      (v) => `<span class="grey lighten-2">${v}</span>`
+      (v) => `<span class="highlight">${v}</span>`
     )
   }
 })
