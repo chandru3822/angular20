@@ -116,7 +116,7 @@
     </fragment>
 
     <div>
-      <v-card-title class="px-0">Props</v-card-title>
+      <v-card-title class="px-0">Display</v-card-title>
       <v-card-text>
       <a-select
         variant="outlined"
@@ -169,6 +169,45 @@
     </div>
 
     <div>
+      <v-card-title class="px-0 pt-0">Size</v-card-title>
+      <v-card-text class="pb-0">
+        <v-btn-toggle v-model="sizeToggle" mandatory class="pb-4">
+          <a-btn
+              variant="text"
+              size="small"
+              value="auto"
+              color="unset"
+              text="Auto"
+              @click = clearSize
+          ></a-btn>
+          <a-btn
+              variant="text"
+              size="small"
+              value="manual"
+              color="unset"
+              text="Manual"
+          ></a-btn>
+        </v-btn-toggle>
+        <div v-if="sizeToggle ==='manual'">
+          <size-widget
+              label="Height"
+              attr="height"
+              show-unit-options
+              :value="cssStyle.height"
+              @input="doUpdateStyles($event)"
+          />
+          <size-widget
+              label="Width"
+              attr="width"
+              show-unit-options
+              :value="cssStyle.width"
+              @input="doUpdateStyles($event)"
+          />
+        </div>
+      </v-card-text>
+    </div>
+
+    <div>
       <v-card-title class="px-0 pt-0">Padding</v-card-title>
       <v-card-text class="pb-0">
       <space-widget
@@ -208,6 +247,7 @@ const props = defineProps({
 const style = ref({})
 const imageSelector = ref(null)
 const paddingToggle = ref(null)
+const sizeToggle = ref(null)
 const displayItems = ref(['block', 'flex'])
 const flexDirectionItems = ref([
   'row',
@@ -225,6 +265,9 @@ const flexJustifyItems = ref([
 const flexAlignItems = ref(['flex-start', 'center', 'flex-end'])
 const backgroundSizeItems = ref(['auto', 'contain', 'cover'])
 
+const heightValue = ref(undefined)
+const widthValue = ref(undefined)
+
 const isFlex = computed(() => {
   return props.cssStyle?.display === 'flex'
 })
@@ -232,6 +275,13 @@ const isFlex = computed(() => {
 onMounted(() => {
   style.value = { ...props.cssStyle }
 })
+
+
+
+const clearSize = () => {
+  props.cssStyle.height = undefined
+  props.cssStyle.width = undefined
+}
 
 const doUpdateStyles = (styles) => {
   emit('input', { ...props.cssStyle, ...styles })
