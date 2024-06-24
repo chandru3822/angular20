@@ -152,9 +152,11 @@ const getContentClass = () => {
   <v-dialog :value="userIdToMessage"  @click:outside="emit('close')" custom-classes="px-0" width="500" hide-overlay :content-class="getContentClass()">
     <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned}"><!--the v-if is to make sure the messages reset when you close the dialog-->
       <div class="d-flex flex-column one-hunned px-0 sticky-header srmd-header" :class="{'srmd-header-dense': messageProperties.smsTeamOwners?.length <= 0}">
-        <div class="d-flex px-4 py-2 align-start ">
+        <div class="d-flex px-4 py-2 align-start">
         <div class="title-medium">{{title}}</div>
           <a-btn variant="text" size="small" :to="`/user/${userIdToMessage}/details`" prepend-icon="mdi-open-in-new"></a-btn>
+          <v-spacer/>
+          <a-btn prepend-icon="mdi-close" variant="text" icon @click="emit('close')"/>
         </div>
         <div v-if="messageProperties.smsTeamOwners?.length > 0" class="one-hunned">
       <TeamAssignmentChips
