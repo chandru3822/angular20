@@ -125,7 +125,7 @@
                     :max-height="`calc(100vh - 20px)`"
                     :close-on-content-click="true">
               <template v-slot:activator="{ on }">
-                <v-btn class="dropdown-header body-small"
+                <v-btn class="fdc-dropdown-header body-small"
                        v-on="on"
                 >
                   <div v-if="selectedCloserOffice" class="selected-option body-small"> {{ selectedCloserOffice.orgName }} </div>
@@ -1005,6 +1005,18 @@ const applyCustomDates = async()=> {
   box-shadow: none;
   height: 40px !important;
   width: 200px;
+  justify-content: left;
+  margin-left: 24px;
+  padding-left: 8px!important;
+}
+
+.fdc-dropdown-header{
+  border: 1px solid var(--v-grey-lighten1);
+  text-transform: unset !important;
+  background-color: transparent !important;
+  box-shadow: none;
+  height: 40px !important;
+  min-width: 200px;
   justify-content: left;
   margin-left: 24px;
   padding-left: 8px!important;
