@@ -3,7 +3,7 @@
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
 
-    <div id="appts-created-pipeline-container" class="mb-8" v-if="userCanViewAllProjects">
+    <div id="appts-created-pipeline-container" v-if="userCanViewAllProjects">
       <v-row align="center">
         <div class="title-large closer-dashboard-header">
           Appointments Created Pipeline
@@ -25,15 +25,12 @@
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
-          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-        </div>
         <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
              :style="{'margin-top': showApptsCreatedPipelineCustomDates && windowInnerWidth < 1135 ? '77px' :
                                  showApptsCreatedPipelineCustomDates && windowInnerWidth >= 1135 ? '83px' : '59px'}"></div>
         <v-data-table
             v-if="apptsCreatedExpanded"
-            id="company-dash-table"
+            id="closer-funnel-table"
             class="elevation-1"
             :items="filteredApptsCreatedPipelineData"
             :headers="headers"
@@ -41,7 +38,7 @@
             disable-sort
             :item-class="itemRowBackground"
             :footer-props="footerProps"
-            :loading="isLoading"
+            :loading="apptsCreatedPipelineDataLoading"
             :hide-default-footer="true"
             :mobile-breakpoint="0"
         >
@@ -234,13 +231,13 @@
 
 
           <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td"><span
-              :class="{'label-medium': index < 2}">
+              :class="{'label-medium': index < 2}" class="milestone-name-col-td">
             <span v-if="index === 1">
               <v-icon v-if="milestonesExpanded" @click="hideMilestones()">expand_less</v-icon>
               <v-icon v-else @click="expandMilestones()">expand_more</v-icon>
             </span>
             {{ item.name }}</span></template>
-          <template #item.source="{item, index}" class="milestone-name-col-td">
+          <template #item.source="{item, index}">
             <a-select v-if="index===0 && !isCloser"
                       class="appts-created-pipeline-dropdown"
                       v-model="leadsCreatedSourceModel"
@@ -255,7 +252,7 @@
                       return-object
                       @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="selected-option text-caption">
+                  <span v-if="index === 0" class="selected-option">
                     {{ leadsCreatedSourceModel.length }} Checked
                   </span>
               </template>
@@ -287,7 +284,7 @@
                 return-object
                 @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="selected-option text-caption">
+                  <span v-if="index === 0" class="selected-option">
                     {{ brsProvidedSourceModel.length }} Checked
                   </span>
               </template>
@@ -317,7 +314,7 @@
                       return-object
                       @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="selected-option text-caption">
+                  <span v-if="index === 0" class="selected-option">
                     {{ selfGenSourceModel.length }} Checked
                   </span>
               </template>
@@ -341,7 +338,7 @@
               <span @click="funnelDrilldown(item, getDropdownById(firstDateRange), 'apptsCreatedPipeline', true)">
               {{ item.leads_created_count ? item.leads_created_count : 0 }}
               <span v-on="viewTrends?on:null">
-                <span v-if="viewTrends && item.trend>0"
+                <span v-if="viewTrends && item.trend>0 "
                       class="positive-percentage">+{{ item.trend / 100 | percent }}<v-icon
                     class="positive-trendline">trending_up</v-icon></span>
                 <span v-if="viewTrends && item.trend<0"
@@ -420,6 +417,7 @@
       </div>
     </div>
     <!-- APPOINTMENTS CREATED PIPELINE END -->
+    <div class="table-gap"></div>
 
     <!-- APPOINTMENTS TO FDC PIPELINE START -->
     <div id="appts-to-fdc-pipeline-container" class="mb-8">
@@ -443,7 +441,7 @@
       </v-row>
       <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
         <div id="pipeline-header-right-side">
-          <div>Reps: </div>
+          <div class="reps-container">Reps: </div>
           <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
                           ref="areaSelect"
                           v-model="areaModel"
@@ -458,6 +456,9 @@
                           hide-details
                           @input="areaValuesChanged = true"
                           return-object>
+            <template v-slot:label="{ item, index }">
+              <span class="text-caption-lg">Area</span>
+            </template>
             <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ areaModel.length }} Checked
@@ -501,6 +502,9 @@
                           hide-details
                           return-object
                           ref="regionSelect">
+            <template v-slot:label="{ item, index }">
+              <span class="text-caption-md">Region</span>
+            </template>
             <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ regionModel.length }} Checked
@@ -544,6 +548,9 @@
                           hide-details
                           @input="districtValuesChanged = true"
                           return-object>
+            <template v-slot:label="{ item, index }">
+              <span class="text-caption-md">District</span>
+            </template>
             <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ districtModel.length }} Checked
@@ -587,6 +594,9 @@
                           hide-details
                           return-object
                           ref="officeSelect">
+            <template v-slot:label="{ item, index }">
+              <span class="text-caption-md">Office</span>
+            </template>
             <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ officeModel.length }} Checked
@@ -633,9 +643,12 @@
                   <span v-if="index === 0 && repModel[0].user_id != -1" class="selected-option text-caption">
                     {{ repModel.length }} Checked
                   </span>
-              <span v-if="index === 0 && repModel[0].user_id === -1" class="selected-option text-caption">
+              <span v-if="index === 0 && repModel[0].user_id === -1" class="selected-option text-caption-sm">
                         {{ repDataMaster.length }} Checked
                   </span>
+            </template>
+            <template v-slot:label="{ item, index }">
+              <span class="text-caption-lg">Rep</span>
             </template>
             <template v-if="repData.length > 0" v-slot:prepend-item>
               <v-list-item
@@ -661,7 +674,7 @@
               </v-list-item-content>
             </template>
           </a-autocomplete>
-          <v-label>Hide Inactive Reps</v-label> <v-switch v-model="hideInactiveReps" @click="apptsToFdcPipelineLoad(1)"></v-switch>
+          <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch v-model="hideInactiveReps" @click="apptsToFdcPipelineLoad(1)" class="hide-inactive-switch"></v-switch>
           <a-btn
               v-if="!isCloser && !isCloserMgr"
               class="label-medium reset-button"
@@ -683,7 +696,9 @@
       </div>
       <v-row v-if="fdcPipelineExpanded" class="pipeline-header-container other-filters">
         <div id="pipeline-header-right-side">
-          Other Filters:
+          <span class="other-filters-text">
+            Other Filters:
+          </span>
           <a-select
               v-if="!isCloser"
               class="appts-to-fdc-pipeline-dropdown"
@@ -719,6 +734,7 @@
           <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
                           v-model="appointmentTypesModel"
                           :items="appointmentTypes"
+                          :menu-props="{ bottom: true, offsetY: true }"
                           item-title="name"
                           item-value="user_position_id"
                           label="Appointment Type"
@@ -759,8 +775,11 @@
               </v-list-item-content>
             </template>
           </a-autocomplete>
-          <div class="checkbox-container">
+          <div class="checkbox-container fdc-checkbox-container">
             <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewFdcTrends"></v-checkbox>
+          </div>
+          <div class="checkbox-container fdc-checkbox-container">
+            <v-checkbox label="Only View Major Milestones" v-model="viewOnlyMajorMilestones"></v-checkbox>
           </div>
         </div>
       </v-row>
@@ -768,17 +787,14 @@
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
-          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-        </div>
         <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
              :style="{'margin-top': showApptsCreatedPipelineCustomDates && windowInnerWidth < 1135 ? '77px' :
                                  showApptsCreatedPipelineCustomDates && windowInnerWidth >= 1135 ? '83px' : '59px'}"></div>
         <v-data-table
             v-if="fdcPipelineExpanded"
-            id="company-dash-table"
+            id="fdc-dash-table"
             class="elevation-1"
-            :items="apptsToFdcPipelineData"
+            :items="filteredFdcPipelineData"
             :headers="fdcHeaders"
             ref="pageable-table"
             disable-sort
@@ -794,7 +810,7 @@
           </template>
 
 
-          <template #header.milestone="{}" id="milestones-header">Milestones</template>
+          <template #header.milestone="{}" id="milestones-header"><span class="milestones-header">Milestones</span></template>
           <template #header.actualTotal="{}">
             <v-menu data-app left
                     offset-y
@@ -978,11 +994,7 @@
 
 
           <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td"><span
-              :class="{'label-medium': fdcExpandableMilestones.includes(index), 'blue-sub-row': fdcExpandableMilestones.includes(index)}">
-            <span v-if="fdcExpandableMilestones.includes(index) && !milestonesSwitching">
-              <v-icon v-if="fdcMilestonesExpanded[fdcExpandableMilestones.indexOf(index)]" @click="fdcHideMilestone(index)">expand_less</v-icon>
-              <v-icon v-else @click="fdcExpandMilestone(index)">expand_more</v-icon>
-            </span>
+              :class="{'label-medium': fdcExpandableMilestones.includes(item.display_order-4), 'blue-sub-row': fdcExpandableMilestones.includes(index)}">
             {{ item.name }}</span></template>
           <template #item.source="{item, index}" class="milestone-name-col-td">
             <a-select v-if="index===0"
@@ -1086,17 +1098,17 @@
                 {{ item.custom_date_range_count ? item.custom_date_range_count : 0 }}
               <span v-if="item.checked_in_custom_date_range_count != null" class="checked_in_container body-small">
                 <v-icon>
-                    check_circle
+                    mdi-check-circle-outline
                 </v-icon>
                 {{item.checked_in_custom_date_range_count}}
               </span>
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && item.trend_count>0"
-                      class="positive-percentage">+{{ item.trend_count / 100 | percent }}<v-icon
-                    class="positive-trendline">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && item.trend_count<0"
-                      class="negative-percentage">{{ item.trend_count / 100 | percent }}<v-icon
-                    class="negative-trendline">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': item.reverse_trend, 'negative-percentage': !item.reverse_trend}]">{{ item.trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
                 <span v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"
                       class="neutral-percentage">{{ item.trend_count / 100 | percent }}<v-icon
                     class="neutral-trendline">trending_flat</v-icon></span>
@@ -1118,11 +1130,11 @@
               {{ fdcColumn2Values[index].custom_date_range_count  ? fdcColumn2Values[index].custom_date_range_count  : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
-                      class="positive-percentage">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                    class="positive-trendline">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"
-                      class="negative-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                    class="negative-trendline">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                     v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count === null || fdcColumn2Values[index].trend_count==0)"
                     class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
@@ -1146,11 +1158,11 @@
               {{ fdcColumn3Values[index].custom_date_range_count ? fdcColumn3Values[index].custom_date_range_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
-                      class="positive-percentage">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                    class="positive-trendline">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"
-                      class="negative-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                    class="negative-trendline">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                     v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count === null || fdcColumn3Values[index].trend_count === 0)"
                     class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
@@ -1170,9 +1182,6 @@
       </div>
     </div>
     <div class="funnel-relative">
-      <div v-if="dropdownValuesLoading || apptsToFdcPipelineDataLoading" class="funnel-spinner">
-        <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-      </div>
 
       <!--  APPOINTMENTS TO FDC PIPELINE END-->
 
@@ -1231,20 +1240,20 @@
                     {{ index + 1 }}
                   </td>
                   <td>{{ item.owner_name || '' }}</td>
-                  <td>{{ item.office || '' }}</td>
+                  <td>{{ item.office || '' }}</td>rt
                   <td>{{ item.state || '' }}</td>
                   <td>{{ item.metro_area || '' }}</td>
                   <td>{{ item.status_type || '' }}</td>
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
-                    <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')"
+                    <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
                                  :to="`/project/${item.project_id}/status`">
                       {{ item.project_id }}
                     </router-link>
                     <div v-else>{{ item.project_id || '' }}</div>
                   </td>
                   <td v-if="selectedFunnel.funnel_type_id === 1">
-                    <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && $store.getters.userHasFeature('EVENTS')"
+                    <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && userStore.userHasFeature('EVENTS')"
                                  :to="`/project/${item.project_id}/processStep/${item.project_process_step_id}/event/${item.project_process_step_event_id}`">
                       {{ item.project_process_step_event_id }}
                     </router-link>
@@ -1415,14 +1424,14 @@
               <td v-if="funnelDrilldownHeaders[5].show">{{ item.status_type || '' }}</td>
               <td v-if="funnelDrilldownHeaders[6].show" class="customer-name">{{ item.customer_name || '' }}</td>
               <td v-if="funnelDrilldownHeaders[7].show">
-                <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')"
+                <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
                              :to="`/project/${item.project_id}/status`">
                   {{ item.project_id }}
                 </router-link>
                 <div v-else>{{ item.project_id || '' }}</div>
               </td>
               <td v-if="selectedFunnel.funnel_type_id === 1 && funnelDrilldownHeaders[8].show">
-                <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && $store.getters.userHasFeature('EVENTS')"
+                <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && userStore.userHasFeature('EVENTS')"
                              :to="`/project/${item.project_id}/processStep/${item.project_process_step_id}/event/${item.project_process_step_event_id}`">
                   {{ item.project_process_step_event_id }}
                 </router-link>
@@ -1598,6 +1607,7 @@ const filters = vueInstance.$filters
 
 const viewFdcTrends = ref(false)
 const viewTrends = ref(false)
+const viewOnlyMajorMilestones = ref(false)
 const disableTrends = ref(false)
 const firstDateRange = ref(2)
 const secondDateRange = ref(null)
@@ -1634,12 +1644,16 @@ const isCloserRegional = ref(false)
 const userCanViewAll = ref(userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'))
 const userCanViewAllProjects = ref(userStore.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL'))
 const headers = ref([
-  {text: '', value: '', show: true, sortable: false},
-  {text: 'Name', value: 'customer_name', show: true},
-  {text: 'Project ID', value: 'id', show: true},
-  {text: 'Source', value: 'source_name', show: true},
-  {text: 'System Size', value: 'system_size', show: true},
-  {text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true}
+])
+const reverseTrends = ref([
+  'Cancelled in advance',
+  'Ineligible for solar',
+  'Rescheduled',
+  'Homeowner no show',
+  'Closer missed appointment',
+  'Turned away at the door',
+  'No utility bill',
+  'Non-dispositioned appointments'
 ])
 const fdcHeaders = ref([])
 const drilldownData = ref([])
@@ -1778,9 +1792,15 @@ const filteredApptsCreatedPipelineData = computed(() => {
   return apptsCreatedPipelineData.value
 })
 const filteredFdcPipelineData = computed(() => {
-  return apptsToFdcPipelineData.value?.filter((data, index) => {
-    return fdcExpandableMilestones.value?.includes(index)
-  })
+  // return apptsToFdcPipelineData.value?.filter((data, index) => {
+  //   return fdcExpandableMilestones.value?.includes(index)
+  // })
+  if(viewOnlyMajorMilestones.value){
+    return apptsToFdcPipelineData.value?.filter((data, index) => {
+      return fdcExpandableMilestones.value?.includes(index)
+    })
+  }
+  else return apptsToFdcPipelineData.value
 })
 const funnelDrilldownHeaders = computed(() => {
   return [
@@ -2119,7 +2139,7 @@ onMounted(async() => {
     }
 
     if (isCloser.value || isCloserMgr.value || isCloserDistrictMgr.value || isCloserRegional.value) {
-      currentUserOrgId.value = userStore.userPositions.filter(position => {
+      currentUserOrgId.value = userStore.details.userPositions.filter(position => {
         return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
       })[0]?.orgId
     }
@@ -2133,7 +2153,7 @@ onMounted(async() => {
   funnelsWereLoaded.value = true
   headers.value = [
     {text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true},
-    {text: 'Source', value: 'source', sortable: false, class: 'milestone-col-th', show: true},
+    {text: 'Source', value: 'source', align: 'left', sortable: false, class: 'total-col-th data-col-th', show: true},
     {
       text: 'Today',
       value: 'actualTotal',
@@ -3097,6 +3117,11 @@ const apptsToFdcPipelineLoad = async(column) => {
       let customDateRangeLowerDenominator = 0
 
       dataTarget.forEach(row => {
+        // console.log(row)
+        // if(reverseTrends.value.includes(row.name)){
+        //   console.log(row.name)
+        // }
+        row.reverse_trend = reverseTrends.value.includes(row.name)
         if (row.id === 17) {
           todayUpperDenominator = row.today_count
           wtdUpperDenominator = row.week_to_date_count
@@ -3615,6 +3640,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
                                                                                                                 data,
                                                                                                                 status
                                                                                                               }) => {
+      console.log(data)
       funnelDrilldownData.value = data?.length > 0 ? data : []
 
       if (funnelDrilldownData.value?.length > 0) {
@@ -3799,11 +3825,16 @@ const toggleSelectAllReps = () => {
       if (repDataSelectAll.value && repData.value?.length > maxRepLimit.value) {
         //this is different than clicking the All Reps button and needs to be filtered.
         // -2 was updated to mean - select all reps in the selected orgs
+        console.log(repModel)
         repLengthOverride.value = true
         repModel.value = [
           {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
         ]
         doRepWatcher()
+        repModel.value = cloneDeep(repData.value)
+        for(let rep of repModel.value){
+          console.log(rep)
+        }
       } else {
         repModel.value = cloneDeep(repData.value)
       }
@@ -3833,6 +3864,32 @@ const closeFunnelDrilldownDialog = () => {
 #all-reps-btn{
   text-transform: none;
 }
+
+#closer-funnel-table{
+  overflow-x: auto!important;
+}
+
+.other-filters-text{
+  margin-right: 12px;
+}
+.hide-inactive-label{
+  margin-right: 8px;
+  margin-bottom: 10px;
+}
+.reps-container{
+  padding-right: 6px;
+}
+.hide-inactive-switch{
+  margin-right: 8px;
+  margin-bottom: 6px;
+}
+.milestones-header{
+  margin-left: 16px;
+  margin-right: 16px;
+}
+.table-gap{
+  min-height: 16px;
+}
 .other-filters{
   padding-left: 22px!important;
 }
@@ -3845,6 +3902,19 @@ const closeFunnelDrilldownDialog = () => {
 .selected-option{
   color: var(--v-primary-base) !important;
 }
+.text-caption {
+  padding-left: 16px;
+}
+.text-caption-sm {
+  padding-left: 4px;
+}
+.text-caption-lg {
+  padding-left: 32px;
+}
+.text-caption-md {
+  padding-left: 24px;
+}
+
 .reset-button{
   color: var(--v-grey-darken2);
   border-radius: 4px;
@@ -3867,7 +3937,8 @@ const closeFunnelDrilldownDialog = () => {
   overflow: hidden;
 }
 .table-collapse-button{
-  margin-right: 20px;
+  margin: 16px;
+  padding-right: 16px;
 }
 .positive-percentage{
   color: green;
@@ -3901,6 +3972,7 @@ const closeFunnelDrilldownDialog = () => {
   height: 40px !important;
   width: 210px;
   justify-content: left;
+  margin: 12px 0px 12px 0px;
 }
 .dashboard-menu-option{
   display: flex;
@@ -3918,7 +3990,11 @@ const closeFunnelDrilldownDialog = () => {
 }
 .checkbox-container{
   margin-top: 0px !important;
-  margin-left: 12px !important;
+  margin-right: 12px !important;
+}
+.fdc-checkbox-container{
+  text-align: center;
+  margin-bottom: 8px;
 }
 .filter-row{
   margin-left: 16px;
@@ -3960,6 +4036,7 @@ const closeFunnelDrilldownDialog = () => {
 #closer-dash-container {
   letter-spacing: 0.02em !important;
   overflow: auto;
+  padding: 0px!important;
 }
 
 .pipeline-data-loading-container {
@@ -4171,6 +4248,9 @@ const closeFunnelDrilldownDialog = () => {
   box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   width: 100%;
+  padding-left: 0px!important;
+  margin: 0px !important;
+  height: 430px;
 
   .pipeline-header-container {
     display: flex;
@@ -4191,7 +4271,7 @@ const closeFunnelDrilldownDialog = () => {
 
   .appts-created-pipeline-dropdown {
     transform: scale(0.875);
-    margin: 0 auto 12px auto;
+    margin: 12px 0 12px 0!important;
     width: 110px;
 
     ::v-deep {
@@ -4325,6 +4405,7 @@ const closeFunnelDrilldownDialog = () => {
   box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   width: 100%;
+  margin: 0px!important;
 
   .pipeline-header-container {
     display: flex;
@@ -4348,6 +4429,7 @@ const closeFunnelDrilldownDialog = () => {
       display: flex;
       flex-flow: row wrap;
       align-items: center;
+      padding-left: 6px;
     }
 
     #pipeline-header-right-side {
@@ -4359,6 +4441,7 @@ const closeFunnelDrilldownDialog = () => {
         transform-origin: left;
         margin: 2px;
         max-width: 135px;
+        text-align: center;
 
         ::v-deep {
           .v-input__slot {
@@ -4841,7 +4924,6 @@ const closeFunnelDrilldownDialog = () => {
 
   #appts-created-pipeline-container {
     margin: 0 auto;
-    max-width: calc(100% - 50px);
 
     .pipeline-header-container {
       border-bottom: 2px solid var(--v-primary-base);
@@ -4992,10 +5074,10 @@ const closeFunnelDrilldownDialog = () => {
   #appts-to-fdc-pipeline-container {
     margin-left: auto;
     margin-right: auto;
-    max-width: calc(100% - 50px);
 
     .pipeline-header-container {
       padding: 10px 10px 5px 10px;
+
 
       .pipeline-icon {
         font-size: 32px;
@@ -5316,7 +5398,6 @@ const closeFunnelDrilldownDialog = () => {
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: flex-start;
-    max-width: calc(100% - 50px);
     margin: 0 auto;
   }
 
@@ -5364,6 +5445,7 @@ const closeFunnelDrilldownDialog = () => {
 
   #appts-created-pipeline-container {
     .pipeline-header-container {
+
       .pipeline-icon {
         font-size: 35px;
       }
@@ -5500,6 +5582,7 @@ const closeFunnelDrilldownDialog = () => {
 
   #appts-to-fdc-pipeline-container {
     .pipeline-header-container {
+
       flex-flow: row nowrap;
 
       .pipeline-icon {
@@ -5517,7 +5600,7 @@ const closeFunnelDrilldownDialog = () => {
         .appts-to-fdc-pipeline-dropdown,
         #all-reps-btn {
           text-transform: none!important;
-          margin: 0 0 10px 10px;
+          margin: 0 10px 10px 0;
         }
       }
     }
@@ -5746,6 +5829,7 @@ const closeFunnelDrilldownDialog = () => {
 
   #appts-to-fdc-pipeline-container {
     .pipeline-header-container {
+
       #pipeline-header-right-side {
         margin: 5px 5px 0 0;
       }
@@ -5975,6 +6059,54 @@ const closeFunnelDrilldownDialog = () => {
       }
     }
   }
+}
+</style>
+<style lang="scss">
+#closer-funnel-table  > div > table > thead > tr > th {
+  z-index: 1 !important;
+}
+#closer-funnel-table > div > table > thead > tr > th.text-start.milestone-col-th,
+#closer-funnel-table > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 220px;
+}
+
+#closer-funnel-table > div > table > tbody > tr.shaded-row > td.text-start{
+  background-color: var(--v-primary-lighten9) !important;
+}
+
+#closer-funnel-table > div > table > thead > tr:hover,
+#closer-funnel-table > div > table > tbody > tr:hover{
+  background-color: transparent;
+}
+
+#closer-funnel-table > div > table > thead > tr > th.text-left.data-col-th{
+  min-width: 220px!important;
+}
+
+#fdc-dash-table > div > table > thead > tr > th.text-start.milestone-col-th,
+#fdc-dash-table > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 220px;
+}
+
+#fdc-dash-table > div > table > tbody > tr.shaded-row > td.text-start{
+  background-color: var(--v-primary-lighten9) !important;
+}
+
+#fdc-dash-table > div > table > thead > tr:hover,
+#fdc-dash-table > div > table > tbody > tr:hover{
+  background-color: transparent;
+}
+
+#fdc-dash-table > div > table > thead > tr > th.text-left.data-col-th{
+  min-width: 220px!important;
 }
 </style>
 }

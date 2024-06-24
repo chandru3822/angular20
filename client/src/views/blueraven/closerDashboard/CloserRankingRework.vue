@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="top-row">
+      <v-card class="ranking-tables-card ranking-table-left">
       <div class="ranking-tables-section">
         <!-- ROUND ROBIN LEAD ALLOCATION RANK START -->
         <div class="ranking-table">
@@ -90,17 +91,28 @@
                 </v-list>
               </div>
             </v-menu>
-                  <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon>Export</a>
+                  <a v-if="leadAllocationRankingData?.length > 0" class="export-button" @click="exportCsv">
+                    <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+                    Export
+                  </a>
+                  <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+                    <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
+                    Export
+                  </div>
           </v-row>
           <CloserRankingTable
             title="Round Robin Lead Allocation Rank"
             :tableData=leadAllocationRankingData
             :tableHeaders=leadAllocationRankingHeaders
             :noDataText="'Please select a Round Robin'"
+            id="round-robin-table"
           />
         </div>
         <!-- ROUND ROBIN LEAD ALLOCATION RANK END -->
       </div>
+      </v-card>
+      <br class="hide-large">
+      <v-card class="ranking-tables-card">
       <div class="ranking-tables-section">
         <!-- Office FDC RANK START -->
         <div class="ranking-table">
@@ -190,19 +202,27 @@
                 </v-list>
               </div>
             </v-menu>
-            <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon>Export</a>
-          </v-row>
+            <a v-if="officeFdcRankingData?.length > 0" class="export-button" @click="exportCsv">
+              <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+              Export
+            </a>
+            <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+              <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
+              Export
+            </div>          </v-row>
           <CloserRankingTable
             title="Round Robin Lead Allocation Rank"
+            id="office-fdc-table"
             :tableData=officeFdcRankingData
             :tableHeaders=officeFdcRankingHeaders
             :noDataText="'Please select a Closer Office'"
           />
         </div>
       </div>
+      </v-card>
     </div>
-    <br>
     <div class="top-row">
+      <v-card class="ranking-tables-card ranking-table-left">
       <div class="ranking-tables-section">
         <!-- Office FDC RANK START -->
         <div class="ranking-table">
@@ -270,15 +290,25 @@
                 </v-list>
               </div>
             </v-menu>
-            <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon>Export</a>
-          </v-row>
+            <a v-if="officeRankingData?.length > 0" class="export-button" @click="exportCsv">
+              <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+              Export
+            </a>
+            <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+              <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
+              Export
+            </div>          </v-row>
           <CloserRankingTable
             :tableData=officeRankingData
             :tableHeaders=officeRankingHeaders
             :noDataText="'Please select a date'"
+            id="office-rank-table"
           />
         </div>
       </div>
+      </v-card>
+      <br class="hide-large">
+      <v-card class="ranking-tables-card">
       <div class="ranking-tables-section">
         <div class="ranking-table">
           <v-row class="filter-row">
@@ -345,16 +375,24 @@
                 </v-list>
               </div>
             </v-menu>
-            <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon>Export</a>
-          </v-row>
+            <a v-if="repsData?.length > 0" class="export-button" @click="exportCsv">
+              <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+              Export
+            </a>
+            <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+              <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
+              Export
+            </div>          </v-row>
           <CloserRankingTable
             title="Round Robin Lead Allocation Rank"
+            id="lead-allocation-table"
             :tableData=repsData
             :tableHeaders=repRankingHeaders
             :noDataText="'Please select a Closer Office'"
           />
         </div>
       </div>
+      </v-card>
     </div>
     <ConfirmationDialog v-if="selectingCustomDates" :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @cancel="cancelCustomDialogue()" @close-dialog="selectingCustomDates = false">
       <template v-slot:title>Custom Date Range</template>
@@ -466,40 +504,40 @@ onMounted(async() => {
   await loadRankingTables(0)
 
   leadAllocationRankingHeaders.value = [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '25%' },
-    { text: 'Rep', value: 'closerName', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Average Availability', value: 'averageAvailability', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Lead Allocation %', value: 'score', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
+    { text: 'Rep', value: 'closerName', class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value},
+    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Average Availability', value: 'averageAvailability', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Lead Allocation %', value: 'score', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
   ]
 
   officeFdcRankingHeaders.value = [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '25%' },
-    { text: 'Rep', value: 'closerName', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Total FDC', value: 'totalFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true },
+    { text: 'Rep', value: 'closerName', class: 'milestone-col-th data-width', show: !isBrCorporateUser.value},
+    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Total FDC', value: 'totalFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
   ]
 
   officeRankingHeaders.value = [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '25%' },
-    { text: 'Office', value: 'officeName', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Metro Area', value: 'metroArea', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Region', value: 'region', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Total FDC', value: 'totalFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
+    { text: 'Office', value: 'officeName', class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value},
+    { text: 'Metro Area', value: 'metroArea', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Region', value: 'region', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Total FDC', value: 'totalFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
   ]
 
   repRankingHeaders.value = [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '25%' },
-    { text: 'Rep', value: 'closerName', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Current Office', value: 'officeName', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Metro Area', value: 'metroArea', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
-    { text: 'Total FDC', value: 'totalFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
+    { text: 'Rep', value: 'closerName', class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
+    { text: 'Current Office', value: 'officeName', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+    { text: 'Metro Area', value: 'metroArea', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+    { text: 'Lead-Gen FDC %', value: 'leadGenFdcPercentage', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+    { text: 'Self-Gen FDC', value: 'selfGenFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value},
+    { text: 'Total FDC', value: 'totalFdc', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
   ]
 })
 
@@ -901,6 +939,17 @@ const applyCustomDates = async()=> {
 </script>
 
 <style lang="scss" scoped>
+.ranking-tables-card{
+  margin-bottom: 24px;
+  width: 100%;
+  min-width: 40%;
+}
+.ranking-table-left{
+  margin-right: 16px;
+}
+.disabled-export{
+  color: var(--v-grey-lighten1) !important;
+}
 .export-button{
   display: flex;
   margin: auto 30px auto auto;
@@ -927,16 +976,21 @@ const applyCustomDates = async()=> {
   padding-top: 20px;
 }
 
-.top-row{
-  display: flex;
+@media (min-width: 600px) {
+  .top-row {
+    display: flex;
+  }
+
+  .hide-large{
+    display: none;
+  }
 }
 .ranking-table{
-  width: 90%;
   background-color: white;
 }
 
 .ranking-tables-section{
-  width: 50%;
+  width: 100%;
 }
 
 .selected-option{
@@ -955,4 +1009,81 @@ const applyCustomDates = async()=> {
   margin-left: 24px;
   padding-left: 8px!important;
 }
+</style>
+
+<style lang="scss">
+#round-robin-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
+#round-robin-table > div > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 69px;
+}
+
+#round-robin-table > div > div > table > tbody > tr > td:nth-child(2).text-start,
+#round-robin-table > div > div > table > thead > tr > th.text-start.data-width{
+  left: 69px!important;
+}
+
+#round-robin-table > div > div > table > thead > tr > th.text-start.data-width,
+#round-robin-table > div > div > table > tbody > tr > td.text-left.data-col-th{
+  min-width: 140px;
+}
+#lead-allocation-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
+#lead-allocation-table > div > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 69px;
+}
+
+#lead-allocation-table > div > div > table > tbody > tr > td:nth-child(2).text-start,
+#lead-allocation-table > div > div > table > thead > tr > th.text-start.data-width{
+  left: 69px!important;
+}
+
+#lead-allocation-table > div > div > table > thead > tr > th.text-start.data-width,
+#lead-allocation-table > div > div > table > tbody > tr > td.text-left.data-col-th{
+  min-width: 140px;
+}
+#office-fdc-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
+#office-fdc-table > div > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 69px;
+}
+
+#office-fdc-table > div > div > table > tbody > tr > td:nth-child(2).text-start,
+#office-fdc-table > div > div > table > thead > tr > th.text-start.data-width{
+  left: 69px!important;
+}
+
+#office-fdc-table > div > div > table > thead > tr > th.text-start.data-width,
+#office-fdc-table > div > div > table > tbody > tr > td.text-left.data-col-th{
+  min-width: 140px;
+}
+
+#office-rank-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
+#office-rank-table > div > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 69px;
+}
+
+#office-rank-table > div > div > table > tbody > tr > td:nth-child(2).text-start,
+#office-rank-table > div > div > table > thead > tr > th.text-start.data-width{
+  left: 69px!important;
+}
+
+#office-rank-table > div > div > table > thead > tr > th.text-start.data-width,
+#office-rank-table > div > div > table > tbody > tr > td.text-left.data-col-th{
+  min-width: 140px;
+}
+
 </style>

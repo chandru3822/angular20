@@ -395,7 +395,7 @@ const router = new Router({
               alias: '/setterDashboard',
               name: 'setterFunnel',
               meta: {title: 'Albatross - Setter Dashboard'},
-              component: () => import ( './views/blueraven/setterDashboard/SetterFunnel.vue')
+              component: () => import ( './views/blueraven/setterDashboard/SetterFunnelRework.vue')
             }, {
               path: 'incentive',
               name: 'setterIncentive',

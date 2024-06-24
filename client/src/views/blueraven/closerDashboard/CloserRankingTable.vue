@@ -1,4 +1,4 @@
-<template>
+ <template>
   <v-container id="closer-dash-container" ref="closerDashContainer">
     <v-data-table
       :items="tableData"
@@ -21,7 +21,7 @@
         </div>
       </template>
 
-      <template #item.rank="{item, index}">
+      <template #item.rank="{item, index}" class="rank-column">
         <div class="body-medium">
           <v-icon v-if="item.rank === 1 || item.rank === 'T1'" class="first-trophy">
             mdi-trophy
@@ -34,6 +34,10 @@
           </v-icon>
           {{item.rank}}
         </div>
+      </template>
+
+      <template #item.closerName="{item, index}" class="data-width">
+
       </template>
     </v-data-table>
 
