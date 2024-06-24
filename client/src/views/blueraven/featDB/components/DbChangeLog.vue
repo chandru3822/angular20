@@ -1,10 +1,13 @@
 <template>
-  <v-card width="426">
+  <v-card width="446">
+    <v-card-title>Change Log</v-card-title>
     <a-text-field
-      class="mx-4 mb-4 mt-0 pt-8"
+      class="mx-4 mt-0 pt-0 mb-n5"
       placeholder="Search"
       prepend-inner-icon="search"
-      v-model="searchValue">
+      v-model="searchValue"
+      clearable
+      @click:clear="searchValue=''">
     </a-text-field>
     <DbChangeLogItem
       v-for="item in cardSlices"
@@ -13,14 +16,14 @@
       :previous-value=item.previousValue
       :modified-by="item.modifiedBy"
       :date-modified="item.dateModified"
-      :expand-all="searchValue.length > 0"
+      :expand-all="searchValue !== null && searchValue.length > 0"
       :query="searchValue.toLowerCase()"
       :data-type="item.dataType"/>
     <a-btn
       :disabled="btnIsDisabled"
-      class="mb-2 ml-2"
+      class="mb-4 ml-4"
       variant="text"
-      :text="btnIsDisabled ? 'No Additional Results' : 'Load More'"
+      :text="btnIsDisabled ? 'No Available Entries' : 'Load More'"
       @click="visibleCards+=10"
     ></a-btn>
   </v-card>
@@ -54,14 +57,34 @@ watch(historyList, () => {
   if (historyList.value?.length > items.value?.length) {
     items.value = []
     historyList.value.forEach((p) => {
-      items.value.push({
-        'title': p.fieldName,
-        'updatedValue': p.updatedValue,
-        'previousValue': p.previousValue,
-        'modifiedBy': p.modifiedBy,
-        'dateModified': p.dateModified,
-        'dataType': p.dataType
-      })
+      if (p.dataType === 1) {
+        items.value.push({
+          'title': p.fieldName,
+          'updatedValue': p.updatedValue !== null ? vueInstance.$options.filters.formatDate(p.updatedValue, 'date', 'MMM DD, y') : p.updatedValue,
+          'previousValue': p.previousValue!== null ? vueInstance.$options.filters.formatDate(p.previousValue, 'date', 'MMM DD, y') : p.previousValue,
+          'modifiedBy': p.modifiedBy,
+          'dateModified': p.dateModified !== null ? vueInstance.$options.filters.formatDate(p.dateModified, 'timestamp', 'MM/DD/YYYY, hh:mm A') : p.dateModified,
+          'dataType': p.dataType
+        })
+      } else if (p.dataType === 2) {
+        items.value.push({
+          'title': p.fieldName,
+          'updatedValue': p.updatedValue !== null ? vueInstance.$options.filters.formatDate(p.updatedValue, 'timestamp', 'MMMM DD, YYYY, hh:mm A') : p.updatedValue,
+          'previousValue': p.previousValue!== null ? vueInstance.$options.filters.formatDate(p.previousValue, 'timestamp', 'MMMM DD, YYYY, hh:mm A') : p.previousValue,
+          'modifiedBy': p.modifiedBy,
+          'dateModified': p.dateModified !== null ? vueInstance.$options.filters.formatDate(p.dateModified, 'timestamp', 'MM/DD/YYYY, hh:mm A') : p.dateModified,
+          'dataType': p.dataType
+        })
+      } else {
+        items.value.push({
+          'title': p.fieldName,
+          'updatedValue': p.updatedValue,
+          'previousValue': p.previousValue,
+          'modifiedBy': p.modifiedBy,
+          'dateModified': p.dateModified !== null ? vueInstance.$options.filters.formatDate(p.dateModified, 'timestamp', 'MM/DD/YYYY, hh:mm A') : p.dateModified,
+          'dataType': p.dataType
+        })
+      }
     })
   }
 })
@@ -85,14 +108,34 @@ const historyBackup = ref([])
 const vueInstance = getCurrentInstance().proxy
 onMounted(() => {
   historyList.value.forEach((p) => {
-    items.value.push({
-      'title': p.fieldName,
-      'updatedValue': p.updatedValue,
-      'previousValue': p.previousValue,
-      'modifiedBy': p.modifiedBy,
-      'dateModified': p.dateModified,
-      'dataType': p.dataType
-    })
+    if (p.dataType === 1) {
+      items.value.push({
+        'title': p.fieldName,
+        'updatedValue': p.updatedValue !== null ? vueInstance.$options.filters.formatDate(p.updatedValue, 'date', 'MMM DD, y') : p.updatedValue,
+        'previousValue': p.previousValue!== null ? vueInstance.$options.filters.formatDate(p.previousValue, 'date', 'MMM DD, y') : p.previousValue,
+        'modifiedBy': p.modifiedBy,
+        'dateModified': p.dateModified !== null ? vueInstance.$options.filters.formatDate(p.dateModified, 'timestamp', 'MM/DD/YYYY, hh:mm A') : p.dateModified,
+        'dataType': p.dataType
+      })
+    } else if (p.dataType === 2) {
+      items.value.push({
+        'title': p.fieldName,
+        'updatedValue': p.updatedValue !== null ? vueInstance.$options.filters.formatDate(p.updatedValue, 'timestamp', 'MMMM DD, YYYY, hh:mm A') : p.updatedValue,
+        'previousValue': p.previousValue!== null ? vueInstance.$options.filters.formatDate(p.previousValue, 'timestamp', 'MMMM DD, YYYY, hh:mm A') : p.previousValue,
+        'modifiedBy': p.modifiedBy,
+        'dateModified': p.dateModified !== null ? vueInstance.$options.filters.formatDate(p.dateModified, 'timestamp', 'MM/DD/YYYY, hh:mm A') : p.dateModified,
+        'dataType': p.dataType
+      })
+    } else {
+      items.value.push({
+        'title': p.fieldName,
+        'updatedValue': p.updatedValue,
+        'previousValue': p.previousValue,
+        'modifiedBy': p.modifiedBy,
+        'dateModified':  p.dateModified !== null ? vueInstance.$options.filters.formatDate(p.dateModified, 'timestamp', 'MM/DD/YYYY, hh:mm A') : p.dateModified,
+        'dataType': p.dataType
+      })
+    }
   })
   historyBackup.value = cloneDeep(historyList.value)
 })
