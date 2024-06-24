@@ -35,6 +35,7 @@ $BODY$
 declare
   v_min_start_date timestamp;
   v_closer_gen_source_ids bigint[];
+  v_start_of_period_date date;
 begin
   select min(start_date)
     into v_min_start_date
@@ -46,6 +47,11 @@ begin
           from flow.company_configuration_value
           where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
   into v_closer_gen_source_ids;
+
+  SELECT date_trunc('month', p_end_of_period_date)::date
+  into v_start_of_period_date;
+
+
 
   return query
     select pd.project_id,
@@ -98,7 +104,7 @@ begin
                                                       p_total_system_size,
                                                       p_current_qualified_fdc,
                                                                  p_total_system_size_by_source,
-                                                                 pd.final_design_complete_date))
+                                                                 v_start_of_period_date))
             else 0 end as expected_residual,
            rp.is_system_size
     from brs.project_details pd

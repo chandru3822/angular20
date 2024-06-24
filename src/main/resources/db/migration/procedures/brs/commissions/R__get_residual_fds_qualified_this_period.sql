@@ -63,6 +63,7 @@ $BODY$
 declare
   v_min_start_date        timestamp;
   v_closer_gen_source_ids bigint[];
+v_start_of_period_date date;
 begin
 
   select (select string_to_array(value, ',')
@@ -75,6 +76,9 @@ begin
   from flow.user_position up
   where user_id = p_closer_user_id
     and position_id in (1, 2, 3, 517);
+
+  SELECT date_trunc('month', p_end_of_previous_month)::date
+  into v_start_of_period_date;
 
 
   --   raise notice 'p_current_month %',p_current_month;
@@ -161,7 +165,7 @@ begin
                                                                p_total_system_size,
                                                                p_current_qualified_fdc,
                                                                p_total_system_size_by_source,
-                                                               p_end_of_previous_month))
+                                                               v_start_of_period_date))
                    else 0 end                        as expected_residual,
                  rp.name,
                  fd.source_name
