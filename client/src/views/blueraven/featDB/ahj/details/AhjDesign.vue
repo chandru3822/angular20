@@ -2,7 +2,7 @@
   <v-card class="design-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="form-btns py-1" cols="12">
-        <v-menu v-model="showChangeLog" content-class="db-change-log-menu" v-if="hasManageAccess" max-height="450" :close-on-content-click="false" offset-y>
+        <v-menu v-model="showChangeLog" content-class="db-change-log-menu" v-if="hasManageAccess" max-height="60vh" :close-on-content-click="false" left offset-y>
           <template v-slot:activator="{on: menu, attrs }">
             <v-tooltip top>
               <template v-slot:activator="{ on: tooltip }">

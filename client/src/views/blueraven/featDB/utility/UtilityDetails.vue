@@ -18,7 +18,7 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
-                <v-menu content-class="db-change-log-menu" v-if="hasManageAccess" max-height="450" :close-on-content-click="false" offset-y>
+                <v-menu content-class="db-change-log-menu" v-if="hasManageAccess" max-height="65vh" left :close-on-content-click="false" offset-y>
                   <template v-slot:activator="{on: menu, attrs }">
                     <v-tooltip top>
                       <template v-slot:activator="{ on: tooltip }">
