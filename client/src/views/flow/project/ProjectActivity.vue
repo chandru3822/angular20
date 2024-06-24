@@ -270,14 +270,6 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
-  showDocsTab: {
-    type: Boolean,
-    default: true
-  },
-  showScheduleTab: {
-    type: Boolean,
-    default: false
-  },
   contactId: Number,
   userIdIn: Number,
   orgId: Number,
@@ -291,8 +283,6 @@ const props = defineProps({
 })
 const {
   showSmsTab,
-  showDocsTab,
-  showScheduleTab,
   contactId,
   userIdIn,
   orgId,
@@ -311,11 +301,13 @@ const viewOptions = computed(() => {
     { icon: 'mdi-forum-outline', visible: showSmsTab },
     { icon: 'mdi-text-long', visible: true }
   ]
-  if(showDocsTab.value){
-    vo.push({ id:'docs', icon: 'mdi-folder-outline', visible: true })
-  }
+
+  //show the schedule tab if displaying data for a user; otherwise, show the docs tab
   if(showScheduleTab.value){
     vo.push({id:'schedule', icon: 'mdi-calendar', visible: true})
+  }
+  else {
+    vo.push({ id:'docs', icon: 'mdi-folder-outline', visible: true })
   }
   return vo
 })
@@ -363,6 +355,10 @@ const objectTypeId = computed(() => {
   //not needed for other types
   return userId.value ? 3 : contactId.value ? 2 : orgId.value ? 5 : null
 })
+
+const showScheduleTab = computed(() => {
+  return !!userId.value;
+}) //yes, we could just use this check for the userId value inline, but I'm putting this here in case other logic becomes necessary in the future
 const sidebarTitle = computed(() => {
   switch (viewId.value) {
     case 0:

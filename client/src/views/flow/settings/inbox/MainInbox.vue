@@ -247,7 +247,7 @@
       />
     </template>
     <template v-slot:right-column>
-      <ProjectActivity v-if="!thingsLoading" collapseBtnIcon="close" :allowSidebarCollapse="false" @collapseCallback="closeConversation" :show-docs-tab="false" show-schedule-tab></ProjectActivity>
+      <ProjectActivity v-if="!thingsLoading" collapseBtnIcon="close" :allowSidebarCollapse="false" @collapseCallback="closeConversation"></ProjectActivity>
     </template>
   </component>
 </template>
