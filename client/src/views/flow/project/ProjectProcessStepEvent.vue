@@ -124,8 +124,8 @@
           </v-col>
         </v-row>
       </div>
-      <div class="fixed-toolbar">
-        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar event-details-header px-6">
+      <div class="event-details-header">
+        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar px-6">
           <v-toolbar-title class="headline-small">
             Event Details
           </v-toolbar-title>
@@ -1201,6 +1201,9 @@ const checkFieldsForUnique = () => {
 }
 
 .event-details-header {
+  position: sticky;
+  position: -webkit-sticky; /* for Safari */
+  top: 0;
   z-index: 8;
 }
 
