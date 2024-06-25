@@ -217,7 +217,7 @@
                 >
                   <span class="delete-btn">
                     <v-icon color="">delete</v-icon>
-                    <span class="d-none d-md-block">Delete</span>
+                    <span class="d-none d-md-inline">Delete</span>
                   </span>
                 </a-btn>
                 <a-btn
@@ -228,7 +228,7 @@
                   @click="duplicate"
                 >
                   <v-icon>mdi-content-copy</v-icon>
-                  <span class="d-none d-md-block">Duplicate</span>
+                  <span class="d-none d-md-inline">Duplicate</span>
                 </a-btn>
                 <a-btn
                   v-if="pages && pages.length"
@@ -238,7 +238,7 @@
                   @click="downloadPdf"
                 >
                   <v-icon>download</v-icon>
-                  <span class="d-none d-md-block">Download</span>
+                  <span class="d-none d-md-inline">Download</span>
                 </a-btn>
               </div>
             </v-card>
