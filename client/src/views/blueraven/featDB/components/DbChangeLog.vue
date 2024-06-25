@@ -21,9 +21,9 @@
       :data-type="item.dataType"/>
     <a-btn
       :disabled="btnIsDisabled"
-      class="mb-4 ml-4"
+      class="mb-4 ml-4 load-more-btn"
       variant="text"
-      :text="btnIsDisabled ? 'No Available Entries' : 'Load More'"
+      :text="cardSlices.length === 0 ? 'No Available Entries' : (btnIsDisabled ? 'No Additional Entries' :  'Load More')"
       @click="visibleCards+=10"
     ></a-btn>
   </v-card>
@@ -145,6 +145,9 @@ onMounted(() => {
 
 <style scoped lang="scss">
 
+::v-deep .load-more-btn.v-btn--disabled span.v-btn__content {
+  color: var(--v-grey-darken4);
+}
 
 
 </style>
