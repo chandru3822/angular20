@@ -1201,7 +1201,7 @@ const checkFieldsForUnique = () => {
 }
 
 .event-details-header {
-  z-index: 10;
+  z-index: 8;
 }
 
 .cfg-name-toolbar .v-toolbar__content {
