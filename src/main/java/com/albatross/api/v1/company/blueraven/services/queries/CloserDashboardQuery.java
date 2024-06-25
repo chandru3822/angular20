@@ -151,7 +151,7 @@ public class CloserDashboardQuery {
 
   //language=PostgreSQL
   public final static String getRoundRobinLeadAllocationRank = """
-    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:roundRobinId::bigint, :timeInterval::bigint, :currentUserId::bigint)
+    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:roundRobinId::bigint, :startDate::date, :endDate::date)
     """;
 
   //language=PostgreSQL
@@ -200,12 +200,12 @@ public class CloserDashboardQuery {
 
   //language=PostgreSQL
   public final static String getCloserRankings = """
-    select * from brs.get_closer_rep_rankings(:timeInterval::bigint, :selectedOrgId::bigint)
+    select * from brs.get_closer_rep_rankings(:startDate::date, :endDate::date, :selectedOrgId::bigint)
     """;
 
   //language=PostgreSQL
   public final static String getCloserOrgRankings = """
-    select * from brs.get_closer_org_rankings(:timeInterval)
+    select * from brs.get_closer_org_rankings(:startDate::date, :endDate::date)
     """;
 
   //language=PostgreSQL
@@ -257,5 +257,15 @@ public class CloserDashboardQuery {
    group by pd.closer_user_id, pd.closer_name, o.org_name, lov.name
    having count(1) > 1
    order by booking_count desc, closer_name;
-   """;
+    """;
+
+  //language=PostgreSQL
+  public final static String getFunnelColumns = """
+    select dmc.id, dmc.title, dmc.display_value as field_name, dmc.display_order, dmc.data_type_id, dt.data_type
+    from brs.dashboard_milestone_column dmc
+    inner join brs.dashboard_milestone dm on dmc.dashboard_milestone_id = dm.id
+    inner join brs.funnel f on dm.id = f.dashboard_milestone_id
+    inner join flow.data_type dt on dmc.data_type_id = dt.id
+    where f.id = :funnelId;
+    """;
 }
