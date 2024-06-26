@@ -70,12 +70,17 @@
 </script>
 
 <style lang="scss" scoped>
+.rep-container{
+  display: flex;
+  align-items: center;
+}
 .ranking-table-img,
 .placeholder-img {
   border-radius: 50%;
   padding: 1px;
   width: 28px;
   height: 28px;
+  margin-right: 8px;
 }
 
 .first-trophy{
