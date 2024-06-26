@@ -887,9 +887,9 @@
                 <a-btn class="dropdown-header body-small"
                        :activation-handler="on"
                 >
-              <span v-if="getDropdownById(fdcSecondDateRange)?.name === 'CUSTOM' && secondCustom.name != null"
+              <span v-if="getDropdownById(fdcSecondDateRange)?.name === 'CUSTOM' && fdcSecondCustom.name != null"
                     class="selected-option body-small">
-                      {{ secondCustom.name }}</span>
+                      {{ fdcSecondCustom.name }}</span>
                   <span v-else-if="getDropdownById(fdcSecondDateRange)?.name === 'PERIOD'"
                         class="selected-option body-small">
               {{ getDropdownById(fdcSecondDateRange).periodList[secondPeriod].shortLabel }}
@@ -948,9 +948,9 @@
                 <a-btn class="dropdown-header body-small"
                        :activation-handler="on"
                 >
-              <span v-if="getDropdownById(fdcThirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null"
+              <span v-if="getDropdownById(fdcThirdDateRange)?.name === 'CUSTOM' && fdcThirdCustom.name != null"
                     class="selected-option body-small">
-                      {{ thirdCustom.name }}</span>
+                      {{ fdcThirdCustom.name }}</span>
                   <span v-else-if="getDropdownById(fdcThirdDateRange)?.name === 'PERIOD'"
                         class="selected-option body-small">
               {{ getDropdownById(fdcThirdDateRange).periodList[thirdPeriod].shortLabel }}
@@ -1151,6 +1151,13 @@
                     class="neutral-trendline">trending_flat</v-icon></span>
               </span>
             </span>
+                <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null" class="checked_in_container body-small"
+                      :class="{'checked_in_trend_visible': viewFdcTrends, 'checked_in_trend_hidden': !viewFdcTrends}">
+                <v-icon>
+                    mdi-check-circle-outline
+                </v-icon>
+                {{fdcColumn2Values[index].checked_in_custom_date_range_count}}
+              </span>
               </template>
               <span
                   v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
@@ -1179,6 +1186,13 @@
                     class="neutral-trendline">trending_flat</v-icon></span>
               </span>
             </span>
+                <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null" class="checked_in_container body-small"
+                      :class="{'checked_in_trend_visible': viewFdcTrends, 'checked_in_trend_hidden': !viewFdcTrends}">
+                <v-icon>
+                    mdi-check-circle-outline
+                </v-icon>
+                {{fdcColumn3Values[index].checked_in_custom_date_range_count}}
+              </span>
               </template>
               <span
                   v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
