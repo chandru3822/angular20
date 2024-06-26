@@ -719,6 +719,7 @@
               variant="outlined"
               density="compact"
               return-object
+              label="Lead Source"
               @input="changeSources()">
             <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
