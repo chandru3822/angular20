@@ -441,7 +441,7 @@
       </v-row>
       <v-row>
       <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
-        <v-col cols="8">
+        <v-col cols="10">
         <div id="pipeline-header-left-side">
           <div class="reps-container">Reps: </div>
           <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
