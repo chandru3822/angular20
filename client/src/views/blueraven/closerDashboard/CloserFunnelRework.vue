@@ -1125,7 +1125,7 @@
                   v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
               <span v-if="item.checked_in_custom_date_range_count != null && item.display_order>8" class="checked_in_container body-small">
-                <v-icon>
+                <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
                 {{item.checked_in_custom_date_range_count}}
@@ -1159,7 +1159,7 @@
                 v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
               <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null && fdcColumn2Values[index].display_order>8" class="checked_in_container body-small">
-                <v-icon>
+                <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
                 {{fdcColumn2Values[index].checked_in_custom_date_range_count}}
@@ -1192,7 +1192,7 @@
                 v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
               <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null && fdcColumn3Values[index].display_order>8" class="checked_in_container body-small">
-                <v-icon>
+                <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
                 {{fdcColumn3Values[index].checked_in_custom_date_range_count}}
@@ -3935,6 +3935,9 @@ const closeFunnelDrilldownDialog = () => {
   overflow-x: auto!important;
 }
 
+.checked_in_icon{
+  padding-right: 4px;
+}
 .trends-container{
   width: 88px;
 }
