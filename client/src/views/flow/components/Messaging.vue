@@ -51,6 +51,7 @@
         <v-tooltip bottom small>
           <template #activator="{ on: tooltip, attrs }">
             <a-btn
+                v-if="!hideTemplateBtn"
               icon
               color="primary"
               v-bind="attrs"
@@ -121,7 +122,11 @@ const filters = vueInstance.$filters
 const props = defineProps({
   userAssigned: Boolean,
   userIdIn: Number,
-  teamsAssociatedToUser: Array
+  teamsAssociatedToUser: Array,
+  hideTemplateBtn: {
+    type: Boolean,
+    default: false
+  }
 })
 const { userAssigned, userIdIn, teamsAssociatedToUser } = toRefs(props)
 

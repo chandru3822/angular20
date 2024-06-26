@@ -174,7 +174,7 @@ const getContentClass = () => {
         </div>
 
       </div>
-    <Messaging :user-id-in="userIdToMessage" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned"/>
+    <Messaging :user-id-in="userIdToMessage" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned" hide-template-btn/>
     </div>
   </v-dialog>
 </template>
