@@ -78,8 +78,6 @@ BEGIN
 --     raise notice 'v_system_size %',v_system_size;
     if v_cancelled_date is not null then
       v_total = 0.00;
-    elsif v_total_commission_amount <= v_allocation_m1 * v_system_size then
-      v_total = v_total_commission_amount * v_red_line_m1_allocation;
     else
       v_total = v_total_commission_amount * v_red_line_m1_allocation;
      -- raise notice 'total %',v_allocation_m1 * v_system_size * v_red_line_m1_allocation;
@@ -88,8 +86,6 @@ BEGIN
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
-    elsif v_total_commission_amount <= v_allocation_m1 * v_system_size then
-      v_total = 0.00::numeric;
     else
       v_total = v_total_commission_amount * v_red_line_m2_allocation;
     end if;
