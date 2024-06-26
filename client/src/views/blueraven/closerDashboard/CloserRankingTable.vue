@@ -12,7 +12,7 @@
       </template>
 
       <template #item.closerName="{item, index}">
-        <div class="body-medium">
+        <div class="body-medium rep-container">
           <img v-if="item.userImageUrl" class="ranking-table-img"
                  :src="item.userImageUrl" :alt="item.userImageAltText">
           <img v-else class="placeholder-img"
