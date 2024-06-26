@@ -259,7 +259,7 @@
               <template v-if="leadsCreatedSourceData.length > 0" v-slot:prepend-item>
                 <v-list-item @click="toggleSelectAllLeadsCreatedSources">
                   <v-list-item-action>
-                    <v-icon>{{ selfGenSourcesSelectIcon }}</v-icon>
+                    <v-icon>{{ leadsCreatedSourcesSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
                     <v-list-item-title>Select All</v-list-item-title>
@@ -441,7 +441,7 @@
       </v-row>
       <v-row>
       <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
-        <v-col cols="10">
+        <v-col cols="10" class="d-flex">
         <div id="pipeline-header-left-side">
           <div class="reps-container">Reps: </div>
           <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
@@ -676,8 +676,10 @@
               </v-list-item-content>
             </template>
           </a-autocomplete>
-          <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch v-model="hideInactiveReps" @click="apptsToFdcPipelineLoad(1)" class="hide-inactive-switch"></v-switch>
-          <a-btn
+          <div class="d-flex hide-inactive-switch-container align-items-center">
+          <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch hide-details v-model="hideInactiveReps" @click="apptsToFdcPipelineLoad(1)" class="hide-inactive-switch"></v-switch>
+          </div>
+            <a-btn
               v-if="!isCloser && !isCloserMgr"
               class="label-medium reset-button"
               variant="outlined"
@@ -687,8 +689,8 @@
           ></a-btn>
         </div>
         </v-col>
-        <v-col cols="2" class="text-right">
-          <div class="flex-display align-right">
+        <v-col cols="2" class="d-flex justify-end">
+          <div class="flex-display">
             <a-btn
                 id="all-reps-btn"
                 variant="outlined"
@@ -1099,12 +1101,13 @@
 
           </template>
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
-            <span class="center-vertically">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
-              <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true)">
+            <span class="d-flex align-items-center">
+                            <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true)" class="fdc-data">
                 {{ item.custom_date_range_count ? item.custom_date_range_count : 0 }}
-              <span v-on="viewFdcTrends?on:null">
+              </span>
+            <v-tooltip bottom v-if="viewFdcTrends">
+              <template v-slot:activator="{ on }">
+              <span v-on="viewFdcTrends?on:null" class="trends-container">
                 <span v-if="viewFdcTrends && item.trend_count>0"
                       :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
                   :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
@@ -1113,15 +1116,7 @@
                   :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
                 <span v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"
                       class="neutral-percentage">{{ item.trend_count / 100 | percent }}<v-icon
-                    class="neutral-trendline">trending_flat</v-icon></span>
-                </span>
-              </span>
-              <span v-if="item.checked_in_custom_date_range_count != null" class="checked_in_container body-small"
-              :class="{'checked_in_trend_visible': viewFdcTrends, 'checked_in_trend_hidden': !viewFdcTrends}">
-                <v-icon>
-                    mdi-check-circle-outline
-                </v-icon>
-                {{item.checked_in_custom_date_range_count}}
+                  class="neutral-trendline">trending_flat</v-icon></span>
               </span>
               </template>
               <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
@@ -1129,78 +1124,80 @@
               <span
                   v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
+              <span v-if="item.checked_in_custom_date_range_count != null && item.display_order>8" class="checked_in_container body-small">
+                <v-icon>
+                    mdi-check-circle-outline
+                </v-icon>
+                {{item.checked_in_custom_date_range_count}}
+              </span>
             </span>
           </template>
 
           <template #item.actualTotal2="{item, index}" class="milestone-col-td"
                     v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0">
-            <v-tooltip bottom>
+            <span class="d-flex align-items-center">
+                            <span @click="funnelDrilldown(fdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true)" class="fdc-data">
+                {{ fdcColumn2Values[index].custom_date_range_count ? fdcColumn2Values[index].custom_date_range_count : 0 }}
+              </span>
+            <v-tooltip bottom v-if="viewFdcTrends">
               <template v-slot:activator="{ on }">
-            <span @click="openDrilldown(item, 2)">
-              {{ fdcColumn2Values[index].custom_date_range_count  ? fdcColumn2Values[index].custom_date_range_count  : 0 }}
-              <span v-on="viewFdcTrends?on:null">
+              <span v-on="viewFdcTrends?on:null" class="trends-container">
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
                       :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
                   :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"
                       :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
                   :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
-                <span
-                    v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count === null || fdcColumn2Values[index].trend_count==0)"
-                    class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                    class="neutral-trendline">trending_flat</v-icon></span>
+                <span v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"
+                      class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
               </span>
-            </span>
-                <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null" class="checked_in_container body-small"
-                      :class="{'checked_in_trend_visible': viewFdcTrends, 'checked_in_trend_hidden': !viewFdcTrends}">
+              </template>
+              <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span
+                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+            </v-tooltip>
+              <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null && fdcColumn2Values[index].display_order>8" class="checked_in_container body-small">
                 <v-icon>
                     mdi-check-circle-outline
                 </v-icon>
                 {{fdcColumn2Values[index].checked_in_custom_date_range_count}}
               </span>
-              </template>
-              <span
-                  v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
-              <span
-                  v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
-              <span
-                  v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
-            </v-tooltip>
+            </span>
           </template>
           <template #item.actualTotal3="{item, index}" class="milestone-col-td"
                     v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0">
-            <v-tooltip bottom>
+            <span class="d-flex align-items-center">
+                            <span @click="funnelDrilldown(fdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true)" class="fdc-data">
+                {{ fdcColumn3Values[index].custom_date_range_count ? fdcColumn3Values[index].custom_date_range_count : 0 }}
+              </span>
+            <v-tooltip bottom v-if="viewFdcTrends">
               <template v-slot:activator="{ on }">
-            <span @click="openDrilldown(item, 3)">
-              {{ fdcColumn3Values[index].custom_date_range_count ? fdcColumn3Values[index].custom_date_range_count : 0 }}
-              <span v-on="viewFdcTrends?on:null">
+              <span v-on="viewFdcTrends?on:null" class="trends-container">
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
                       :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
                   :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"
                       :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
                   :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
-                <span
-                    v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count === null || fdcColumn3Values[index].trend_count === 0)"
-                    class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                    class="neutral-trendline">trending_flat</v-icon></span>
+                <span v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"
+                      class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
               </span>
-            </span>
-                <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null" class="checked_in_container body-small"
-                      :class="{'checked_in_trend_visible': viewFdcTrends, 'checked_in_trend_hidden': !viewFdcTrends}">
+              </template>
+              <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span
+                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+            </v-tooltip>
+              <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null && fdcColumn3Values[index].display_order>8" class="checked_in_container body-small">
                 <v-icon>
                     mdi-check-circle-outline
                 </v-icon>
                 {{fdcColumn3Values[index].checked_in_custom_date_range_count}}
               </span>
-              </template>
-              <span
-                  v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
-              <span
-                  v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
-              <span
-                  v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
-            </v-tooltip>
+            </span>
           </template>
         </v-data-table>
       </div>
@@ -1998,6 +1995,18 @@ const brsProvidedSourcesSelectIcon = computed(() => {
   }
   return 'check_box_outline_blank'
 })
+const selectSomeLeadsCreatedSources = computed(() => {
+  return leadsCreatedSourceModel.value.length > 0 && !selectAllLeadsCreatedSources.value
+})
+const leadsCreatedSourcesSelectIcon = computed(() => {
+  if (leadsCreatedSourceModel.value.length === leadsCreatedSourceData.value.length) {
+    return 'check_box'
+  }
+  if (selectSomeLeadsCreatedSources.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
 const selectAllSelfGenSources = computed(() => {
   return selfGenSourceModel.value.length === selfGenSourceData.value.length
 })
@@ -2705,9 +2714,22 @@ const toggleSelectAllBrsProvidedSources = () => {
         week_to_date_count: 0,
         custom_date_range_count: 0
       }
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     } else {
       brsProvidedSourceModel.value = cloneDeep(brsProvidedSourceData.value)
       apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     }
   })
 }
@@ -3738,9 +3760,22 @@ const toggleSelectAllSelfGenSources = () => {
         week_to_date_count: 0,
         custom_date_range_count: 0
       }
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     } else {
       selfGenSourceModel.value = cloneDeep(selfGenSourceData.value)
       apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     }
   })
 }
@@ -3756,9 +3791,22 @@ const toggleSelectAllLeadsCreatedSources = () => {
         week_to_date_count: 0,
         custom_date_range_count: 0
       }
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     } else {
       leadsCreatedSourceModel.value = cloneDeep(leadsCreatedSourceData.value)
       apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     }
   })
 }
@@ -3886,11 +3934,12 @@ const closeFunnelDrilldownDialog = () => {
 #closer-funnel-table{
   overflow-x: auto!important;
 }
-.checked_in_trend_hidden{
-  padding-left: 200px;
+
+.trends-container{
+  width: 88px;
 }
-.checked_in_trend_visible{
-  padding-left: 200px;
+.fdc-data{
+  min-width: 72px;
 }
 .other-filters-text{
   margin-right: 12px;
@@ -3899,12 +3948,16 @@ const closeFunnelDrilldownDialog = () => {
   margin-right: 8px;
   margin-bottom: 10px;
 }
+.hide-inactive-switch-container{
+  width: 200px;
+}
 .reps-container{
   padding-right: 6px;
 }
 .hide-inactive-switch{
   margin-right: 8px;
   margin-bottom: 6px;
+  margin-top: -4px;
 }
 
 .table-gap{
@@ -3938,14 +3991,15 @@ const closeFunnelDrilldownDialog = () => {
       'opsz' 24
 }
 .checked_in_container{
-  display: inline;
+  display: flex;
   background-color: var(--v-grey-lighten2);
   align-items: center;
   text-align: center;
   overflow: hidden;
-  padding: 6px 8px 8px 8px;
+  padding: 8px;
   border-radius: 4px;
-  margin-top: 8px;
+
+  height: 28px;
 }
 .table-collapse-button{
   margin: 16px;
