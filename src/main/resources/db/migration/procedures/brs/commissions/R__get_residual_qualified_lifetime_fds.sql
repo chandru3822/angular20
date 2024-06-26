@@ -36,6 +36,7 @@ declare
   v_min_start_date timestamp;
   v_closer_gen_source_ids bigint[];
   v_start_of_period_date date;
+v_qualified_date date;
 begin
   select min(start_date)
     into v_min_start_date
@@ -51,6 +52,10 @@ begin
   SELECT date_trunc('month', p_end_of_period_date)::date
   into v_start_of_period_date;
 
+  select (period_end + interval '1 day')::date
+  into v_qualified_date
+  from brs.residual r2
+  where r2.current is true;
 
 
   return query
@@ -117,7 +122,7 @@ begin
            left join brs.residual_project_override_qualified_date rpoqd on rpoqd.project_id = pd.project_id
     where pd.closer_user_id = p_closer_user_id
        and  case when rpqd.id is not null then
-                 rpqd.qualified_date >= now() - interval ' 1 month' * (select r.residual_duration_months
+                 rpqd.qualified_date >= v_qualified_date - interval ' 1 month' * (select r.residual_duration_months
                                                                        from brs.residual_plan r
                                                                         inner join brs.residual_plan_user rpu on rpu.residual_plan_id = r.id and
                                                                                                                  rpu.user_id = p_closer_user_id and
