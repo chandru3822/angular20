@@ -510,8 +510,9 @@
     }
 
     .ranking-table td {
-      font-size: 12px;
+      font-size: 14px;
       height: 55px;
+      min-width: 100px;
     }
 
     .ranking-tables-no-data {

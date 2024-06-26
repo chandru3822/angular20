@@ -17,7 +17,7 @@
           <v-icon v-else @click="apptsCreatedExpanded = !apptsCreatedExpanded">expand_more</v-icon>
         </div>
       </v-row>
-      <v-row v-if="apptsCreatedExpanded" class="filter-row" align="center"> Filters:
+      <v-row v-if="apptsCreatedExpanded" class="filter-row" align="center"> <span class="other-filters-text">Filters:</span>
         <div class="checkbox-container">
           <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewTrends"></v-checkbox>
         </div>
@@ -439,8 +439,10 @@
           <v-icon v-else @click="fdcPipelineExpanded = !fdcPipelineExpanded">expand_more</v-icon>
         </div>
       </v-row>
+      <v-row>
       <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
-        <div id="pipeline-header-right-side">
+        <v-col cols="8">
+        <div id="pipeline-header-left-side">
           <div class="reps-container">Reps: </div>
           <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
                           ref="areaSelect"
@@ -684,18 +686,22 @@
               text="Reset Filters"
           ></a-btn>
         </div>
-        <div class="flex-display flex-align-items-center">
-          <a-btn
-              id="all-reps-btn"
-              variant="outlined"
-              color="primary"
-              @click="funnelAllReps"
-              text="View All Reps"
-          ></a-btn>
-        </div>
+        </v-col>
+        <v-col cols="2" class="text-right">
+          <div class="flex-display align-right">
+            <a-btn
+                id="all-reps-btn"
+                variant="outlined"
+                color="primary"
+                @click="funnelAllReps"
+                text="View All Reps"
+            ></a-btn>
+          </div>
+        </v-col>
       </div>
+      </v-row>
       <v-row v-if="fdcPipelineExpanded" class="pipeline-header-container other-filters">
-        <div id="pipeline-header-right-side">
+        <div id="pipeline-header-left-side">
           <span class="other-filters-text">
             Other Filters:
           </span>
@@ -1092,16 +1098,11 @@
 
           </template>
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
+            <span class="center-vertically">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
               <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true)">
                 {{ item.custom_date_range_count ? item.custom_date_range_count : 0 }}
-              <span v-if="item.checked_in_custom_date_range_count != null" class="checked_in_container body-small">
-                <v-icon>
-                    mdi-check-circle-outline
-                </v-icon>
-                {{item.checked_in_custom_date_range_count}}
-              </span>
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && item.trend_count>0"
                       :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
@@ -1114,12 +1115,20 @@
                     class="neutral-trendline">trending_flat</v-icon></span>
                 </span>
               </span>
+              <span v-if="item.checked_in_custom_date_range_count != null" class="checked_in_container body-small"
+              :class="{'checked_in_trend_visible': viewFdcTrends, 'checked_in_trend_hidden': !viewFdcTrends}">
+                <v-icon>
+                    mdi-check-circle-outline
+                </v-icon>
+                {{item.checked_in_custom_date_range_count}}
+              </span>
               </template>
               <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
               <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
               <span
                   v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
+            </span>
           </template>
 
           <template #item.actualTotal2="{item, index}" class="milestone-col-td"
@@ -2149,7 +2158,9 @@ onMounted(async() => {
     }
   }
 
+  appStore.loading = true;
   await loadFunnels()
+  appStore.loading = false;
   funnelsWereLoaded.value = true
   headers.value = [
     {text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true},
@@ -2303,8 +2314,6 @@ const hideMilestones = () => {
 }
 const getDropdownValues = async() => {
   try {
-    appStore.loading = true
-
     const params = {
       today: moment().format('YYYY-MM-DD')
     }
@@ -2316,13 +2325,10 @@ const getDropdownValues = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving data')
-    isLoading.value = false
-    appStore.loading = false
   }
 }
 const getAppointmentTypes = async() => {
   try {
-    appStore.loading = true
 
     const params = {
       today: moment().format('YYYY-MM-DD')
@@ -2337,7 +2343,6 @@ const getAppointmentTypes = async() => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving data')
     isLoading.value = false
-    appStore.loading = false
   }
 }
 const openDrilldown = async(item, column) => {
@@ -3634,7 +3639,6 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     requestBody.appointmentTypeIds = appointmentTypeIds
   }
 
-  appStore.loading = true
   try {
     await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven', []).then(({
                                                                                                                 data,
@@ -3658,7 +3662,6 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving drilldown data')
 
-    appStore.loading = false
   }
 }
 
@@ -3868,7 +3871,12 @@ const closeFunnelDrilldownDialog = () => {
 #closer-funnel-table{
   overflow-x: auto!important;
 }
-
+.checked_in_trend_hidden{
+  padding-left: 200px;
+}
+.checked_in_trend_visible{
+  padding-left: 200px;
+}
 .other-filters-text{
   margin-right: 12px;
 }
@@ -3883,10 +3891,7 @@ const closeFunnelDrilldownDialog = () => {
   margin-right: 8px;
   margin-bottom: 6px;
 }
-.milestones-header{
-  margin-left: 16px;
-  margin-right: 16px;
-}
+
 .table-gap{
   min-height: 16px;
 }
@@ -3902,18 +3907,7 @@ const closeFunnelDrilldownDialog = () => {
 .selected-option{
   color: var(--v-primary-base) !important;
 }
-.text-caption {
-  padding-left: 16px;
-}
-.text-caption-sm {
-  padding-left: 4px;
-}
-.text-caption-lg {
-  padding-left: 32px;
-}
-.text-caption-md {
-  padding-left: 24px;
-}
+
 
 .reset-button{
   color: var(--v-grey-darken2);
@@ -3929,12 +3923,14 @@ const closeFunnelDrilldownDialog = () => {
       'opsz' 24
 }
 .checked_in_container{
-  display: inline-block;
+  display: inline;
   background-color: var(--v-grey-lighten2);
-  height: 28px;
-  width: 54px;
   align-items: center;
+  text-align: center;
   overflow: hidden;
+  padding: 6px 8px 8px 8px;
+  border-radius: 4px;
+  margin-top: 8px;
 }
 .table-collapse-button{
   margin: 16px;
@@ -4037,6 +4033,7 @@ const closeFunnelDrilldownDialog = () => {
   letter-spacing: 0.02em !important;
   overflow: auto;
   padding: 0px!important;
+  overflow-x: hidden;
 }
 
 .pipeline-data-loading-container {
@@ -4250,12 +4247,10 @@ const closeFunnelDrilldownDialog = () => {
   width: 100%;
   padding-left: 0px!important;
   margin: 0px !important;
-  height: 430px;
 
   .pipeline-header-container {
     display: flex;
     flex-flow: row nowrap;
-    align-items: center;
     padding: 5px;
     width: 100%;
 
@@ -4411,7 +4406,6 @@ const closeFunnelDrilldownDialog = () => {
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
-    align-items: center;
     padding: 5px 5px 0 5px;
     width: 100%;
 
@@ -4432,7 +4426,7 @@ const closeFunnelDrilldownDialog = () => {
       padding-left: 6px;
     }
 
-    #pipeline-header-right-side {
+    #pipeline-header-left-side {
       margin-bottom: 5px;
       width: 100%;
 
@@ -5091,7 +5085,7 @@ const closeFunnelDrilldownDialog = () => {
         margin-bottom: 10px;
       }
 
-      #pipeline-header-right-side {
+      #pipeline-header-left-side {
         margin: 0;
 
         .appts-to-fdc-pipeline-dropdown {

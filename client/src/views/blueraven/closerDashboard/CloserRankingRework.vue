@@ -384,8 +384,8 @@
               Export
             </div>          </v-row>
           <CloserRankingTable
-            title="Round Robin Lead Allocation Rank"
-            id="lead-allocation-table"
+            title="Top Reps Table"
+            id="top-reps-table"
             :tableData=repsData
             :tableHeaders=repRankingHeaders
             :noDataText="'Please select a Closer Office'"
@@ -812,6 +812,7 @@ const loadRankingTables = async(selectedTable) => {
     }
     const {data} = await getRequestWithParams('/closerDashboard/getRepRankings', {params}, 'blueraven', [])
 
+    console.log(data)
     if (data?.companyRankingValues?.filter(row => row.userId === currentUserId.value)[0] !== undefined) {
       userOffice.value = data?.companyRankingValues?.filter(row => row.userId === currentUserId.value)[0].officeName
     }
@@ -1042,8 +1043,13 @@ const applyCustomDates = async()=> {
 #round-robin-table > div > div > table > tbody > tr > td.text-left.data-col-th{
   min-width: 140px;
 }
-#lead-allocation-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
-#lead-allocation-table > div > div > table > tbody > tr > td.text-start{
+
+#round-robin-table > div > div > table > tbody > tr > td:nth-child(1){
+  padding: 0px;
+}
+
+#top-reps-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
+#top-reps-table > div > div > table > tbody > tr > td.text-start{
   position: sticky!important;
   left: 0;
   z-index: 2 !important;
@@ -1051,15 +1057,20 @@ const applyCustomDates = async()=> {
   min-width: 69px;
 }
 
-#lead-allocation-table > div > div > table > tbody > tr > td:nth-child(2).text-start,
-#lead-allocation-table > div > div > table > thead > tr > th.text-start.data-width{
+#top-reps-table > div > div > table > tbody > tr > td:nth-child(2).text-start,
+#top-reps-table > div > div > table > thead > tr > th.text-start.data-width{
   left: 69px!important;
 }
 
-#lead-allocation-table > div > div > table > thead > tr > th.text-start.data-width,
-#lead-allocation-table > div > div > table > tbody > tr > td.text-left.data-col-th{
+#top-reps-table > div > div > table > thead > tr > th.text-start.data-width,
+#top-reps-table > div > div > table > tbody > tr > td.text-left.data-col-th{
   min-width: 140px;
 }
+
+#top-reps-table > div > div > table > tbody > tr > td:nth-child(1){
+  padding: 0px;
+}
+
 #office-fdc-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
 #office-fdc-table > div > div > table > tbody > tr > td.text-start{
   position: sticky!important;
@@ -1079,6 +1090,10 @@ const applyCustomDates = async()=> {
   min-width: 140px;
 }
 
+#office-fdc-table > div > div > table > tbody > tr > td:nth-child(1){
+  padding: 0px;
+}
+
 #office-rank-table > div > div > table > thead > tr > th.text-start.milestone-col-th,
 #office-rank-table > div > div > table > tbody > tr > td.text-start{
   position: sticky!important;
@@ -1096,6 +1111,10 @@ const applyCustomDates = async()=> {
 #office-rank-table > div > div > table > thead > tr > th.text-start.data-width,
 #office-rank-table > div > div > table > tbody > tr > td.text-left.data-col-th{
   min-width: 140px;
+}
+
+#office-rank-table > div > div > table > tbody > tr > td:nth-child(1){
+  padding: 0px;
 }
 
 </style>

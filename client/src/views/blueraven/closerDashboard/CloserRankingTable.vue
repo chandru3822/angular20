@@ -35,10 +35,6 @@
           {{item.rank}}
         </div>
       </template>
-
-      <template #item.closerName="{item, index}" class="data-width">
-
-      </template>
     </v-data-table>
 
   </v-container>
