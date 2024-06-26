@@ -153,8 +153,14 @@ const getContentClass = () => {
     <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned}"><!--the v-if is to make sure the messages reset when you close the dialog-->
       <div class="d-flex flex-column one-hunned px-0 sticky-header srmd-header" :class="{'srmd-header-dense': messageProperties.smsTeamOwners?.length <= 0}">
         <div class="d-flex px-4 py-2 align-start">
-        <div class="title-medium">{{title}}</div>
-          <a-btn variant="text" size="small" :to="`/user/${userIdToMessage}/details`" prepend-icon="mdi-open-in-new"></a-btn>
+          <v-tooltip right>
+            <template v-slot:activator="{on, attrs}">
+        <a class="title-medium text-decoration-none" v-bind="attrs" v-on="on" target="_blank" :href="`/user/${userIdToMessage}/details`">{{title}}
+          <v-icon small color="primary"> mdi-open-in-new</v-icon>
+        </a>
+            </template>
+            Open user in new tab
+          </v-tooltip>
           <v-spacer/>
           <a-btn prepend-icon="mdi-close" variant="text" icon @click="emit('close')"/>
         </div>
