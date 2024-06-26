@@ -208,12 +208,15 @@ const getContentClass = () => {
   }
 }
 
-::v-deep .messaging-dialog {
-  position: absolute;
-  bottom: 5%;
+@media (min-width: 960px) {
 
-  &.map-open {
-    left: 12%;
+  ::v-deep .messaging-dialog {
+    position: absolute;
+    bottom: 5%;
+
+    &.map-open {
+      left: 8%;
+    }
   }
 }
 
