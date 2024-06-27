@@ -440,11 +440,12 @@ const confirmDeleteIncentive = async() => {
 }
 
 const newIncentiveDuplicateCheck = ()  => {
-  duplicateIncentiveMatch.value = incentives.value.find(incentive => {
-
+  duplicateIncentiveMatch.value = !editedItem.value.id ?
+  incentives.value.find(incentive => {
     return doNamesMatch(editedItem.value.name, incentive.name) &&
         editedItem.value.companyStateId === incentive.companyStateId
-  })
+  }) : undefined
+
   if(duplicateIncentiveMatch.value){
     incentiveDialog.value = false
     //add state name for display purposes
