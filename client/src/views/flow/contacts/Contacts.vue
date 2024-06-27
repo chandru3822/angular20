@@ -167,8 +167,8 @@ const companies = computed(() => {
 const canAdd = computed(() => {
   return userStore.userHasFeatureAccessLevel('CONTACTS', 'ADD')
 })
-const useSavedFilter = computed(() => {
-  return route.params.useSavedFilter
+const useSavedFilters = computed(() => {
+  return route.params.useSavedFilters
 })
 
 watch(
@@ -188,7 +188,7 @@ watch(page, async() => {
 })
 
 onMounted(() => {
-  if(useSavedFilter.value === 'true') {
+  if(useSavedFilters.value === 'true') {
     search.value = localStorage.getItem('contactSearch') || ''
   } else {
     localStorage.removeItem('contactSearch')

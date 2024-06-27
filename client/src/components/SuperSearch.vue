@@ -29,6 +29,7 @@
 <script setup>
 import {ref, onMounted, defineProps, getCurrentInstance, computed, reactive} from "vue";
 import debounce from "lodash.debounce";
+import {useRoute} from "vue-router/composables";
 
 const emit = defineEmits(['updateQuery'])
 const filterSelection = ref('')
@@ -109,9 +110,17 @@ const createSearchRegex = () => {
   reString = reString.concat(")).*")
   regexString.value = reString
 }
+const route = useRoute()
+const useSavedFilters = computed(() => {
+  return route.params.useSavedFilters
+})
 
 onMounted(() => {
-  createSearchRegex()
+  if(useSavedFilters.value === 'true') {
+    searchString.value = localStorage.getItem('projectSearch') || ''
+    //the purpose of this is solely to get the text field to reflect the search value when we use saved filters on the projects page
+  }
+    createSearchRegex()
 })
 
 </script>
