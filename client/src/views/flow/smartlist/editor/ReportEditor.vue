@@ -61,7 +61,7 @@
               :smartlist-id="report.id"
               :disabled="!canDelete"
               :show-text="true"
-              @deleted="report.archived = true; router.go(-1)"
+              @deleted="deleteReport"
             />
 
             <SmartlistShare
@@ -685,6 +685,11 @@ onMounted(async () => {
 })
 
 onUnmounted(() => window.removeEventListener('beforeunload', windowLeave))
+
+const deleteReport = () => {
+  report.archived = true;
+  router.go(-1)
+}
 
 onBeforeRouteLeave(async (to, from, next) => {
   if (hasUnsavedChanges.value && !report.value.archived) {
