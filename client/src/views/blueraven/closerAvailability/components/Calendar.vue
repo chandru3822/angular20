@@ -128,7 +128,7 @@ const handleEventClick = (info) => {
   }
 }
 
-watch(() => timezoneFriendly, (value) => {
+watch(timezoneFriendly, (value) => {
   //when the schedule timezone value changes, update the calendar plugin's timezone
   calendarApi.value.setOption('timeZone', timezoneFriendly.value)
 })
