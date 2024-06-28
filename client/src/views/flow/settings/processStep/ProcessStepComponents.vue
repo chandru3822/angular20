@@ -238,7 +238,7 @@
                       id="qa-non-admin-add"
                       label="Allowed Positions"
                       alternateLabel = "Denied Positions"
-                      :allow="true"
+                      :allow="processStep.nonAdminAddAllow"
                       :contentLoading="positionsLoading"
                       save-button
                       full-size
