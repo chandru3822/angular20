@@ -202,13 +202,22 @@ const validateSaveEvent =  () => {
     saveInvalid.value = false
   }
 }
+const chooseMapPinForZoom = (pins) => {
+  const viablePins = pins.filter(p => p.coordinates[0] && p.coordinates[1])
+  if(viablePins.length > 0){
+    return viablePins[viablePins.length-1]
+  }
+  return null
+}
 const resourceMapCallback =  (newValue, addPin) => {
   mapResources.value = newValue
   if(newValue.length > 0 && addPin){
     //only show the map if we're adding a pin, not when removing a pin
     showHideMap(true)
-    let zoomObj = newValue[newValue.length-1] //choose the most recently added one?
-    zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
+    let zoomObj = chooseMapPinForZoom(newValue)
+    if(zoomObj) {
+      zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
+    }
   }
 }
 const projectMapMarkersCallback = (newValue)=> {
