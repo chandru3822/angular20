@@ -16,10 +16,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -180,7 +177,7 @@ public class CustomFieldGroupService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
-    params.put("cfgaReadOnlyAllow", customField.getCustomFieldGroupAssignmentReadOnlyAllow());
+    params.put("cfgaReadOnlyAllow", null != customField.getCustomFieldGroupAssignmentReadOnlyAllow() ? customField.getCustomFieldGroupAssignmentReadOnlyAllow() : true);
     params.put("cfgaHidden", customField.getCustomFieldGroupAssignmentHidden());
     //this is pissing me off. setting to true if a value is not passed in since that should be the default
     params.put("cfgaHiddenAllow", null != customField.getCustomFieldGroupAssignmentHiddenAllow() ? customField.getCustomFieldGroupAssignmentHiddenAllow() : true);
@@ -202,8 +199,8 @@ public class CustomFieldGroupService {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<WhiteListedPosition> positionsToUse =
         savingReadOnly
-          ? customField.getWhiteListedPositions()
-          : customField.getHiddenWhiteListedPositions();
+          ? (customField.getWhiteListedPositions() == null ? new ArrayList<>() : customField.getWhiteListedPositions())
+          : (customField.getHiddenWhiteListedPositions() == null ? new ArrayList<>() : customField.getHiddenWhiteListedPositions());
       List<Long> positionIdsUsed =
         positionsToUse.stream()
           .map(WhiteListedPosition::getPositionId)

@@ -108,7 +108,10 @@ const props = defineProps({
   title: String,
   label: String,
   selectedContent: {},
-  allow: Boolean,
+  allow: {
+    type: Boolean,
+    default: true
+  },
   contentLoading: Boolean,
   backgroundColor: String,
   fullSize: {
