@@ -525,7 +525,7 @@
                               color="primary"
                               size="small"
                               @click="[$set(cf, 'edit', !cf.edit), getPositions()]"
-                              v-if="userCanEdit && !cf.dataViewFieldConfigId && !cf.dataViewChildFieldConfigId"
+                              v-if="userCanEdit"
                               :prepend-icon="!cf.edit ? 'edit' : 'close'"
                           ></a-btn>
                           <a-btn
