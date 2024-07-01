@@ -84,7 +84,7 @@
             <a-btn
                 v-bind="attrs"
                 :activation-handler="on"
-                @click="[ addBlock = !addBlock, tabs = addBlock ? 0 : tabs]"
+                @click="[ addBlock = !addBlock, tabs = addBlock ? 0 : tabs, selectNode(undefined)]"
                 variant="text"
                 icon
                 color="primary"
