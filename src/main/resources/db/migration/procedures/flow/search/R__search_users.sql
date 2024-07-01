@@ -141,6 +141,7 @@ BEGIN
         and concat(u.first_name, ' ', u.last_name) Ilike '%' || v_clean_name_search_term || '%'
         and u.first_name ilike '%' || p_first_name || '%'
         and u.last_name ilike '%' || p_last_name || '%'
+        and u.archived is false
         and coalesce(u.email, '') ilike '%' || v_clean_email_search_term || '%'
         and coalesce(u.phone_number, '') ilike '%' || v_clean_phone_search_term || '%'
         and case when array_length(p_position_ids , 1) > 0 then false else 1 = 1 end
