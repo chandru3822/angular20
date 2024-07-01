@@ -618,8 +618,6 @@ where p.id = :proposalId
       and processed_tsz is null
       and error_msg is null
     """;
-  public static String updateProposalDiscountAmount = """
-    update brs.project_details set commission_forfeited_by_closer = :amount where project_id = :projectId""";
 
   public static String getProjectProcessStepCustomFieldValuesAsJSON = """
     select json_agg(json_build_object(

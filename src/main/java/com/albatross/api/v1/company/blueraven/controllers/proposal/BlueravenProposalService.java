@@ -705,14 +705,6 @@ public class BlueravenProposalService {
       .findFirst();
   }
 
-  private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
-    //we divide the value in half because the user is only responsible for half, BRS will cover the other part
-    int count = sqlCache.updateBySql(ProposalQuery.updateProposalDiscountAmount, Map.of("projectId", projectId, "amount", amount.divide(new BigDecimal(2), RoundingMode.HALF_UP)));
-    if (count == 0) {
-      log.warn("[Proposal] Unable to update commission_forfeited_by_closer amount for projectId={}", projectId);
-    }
-  }
-
   public Optional<Proposal> addProposal(Proposal proposal, @NonNull UserAccountDetails currentUser) {
 
     Long proposalVersionId = getProposalVersion(proposal.getProjectProcessStepId(), currentUser.getTrueUserId());
@@ -805,15 +797,6 @@ public class BlueravenProposalService {
     Proposal unlockedProposal = getUnlockedProposal(proposalId, currentUser.getId());
 
     var calculatedProposalValues = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
-
-    //check to see if the proposal has a discount amount added
-    getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID)
-      .filter(cfv -> cfv.getNumericValue() != null)
-      .ifPresent(cfv -> {
-        validateProposalDiscount(cfv.getNumericValue(), unlockedProposal);
-        saveProjectDiscountAmount(unlockedProposal.getProjectId(), cfv.getNumericValue());
-      });
-
     sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
 
     //insert values immediately in to proposal log history
