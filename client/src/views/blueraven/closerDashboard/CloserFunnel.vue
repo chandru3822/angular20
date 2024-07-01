@@ -3187,10 +3187,6 @@ const apptsToFdcPipelineLoad = async(column) => {
       let customDateRangeLowerDenominator = 0
 
       dataTarget.forEach(row => {
-        // console.log(row)
-        // if(reverseTrends.value.includes(row.name)){
-        //   console.log(row.name)
-        // }
         row.reverse_trend = reverseTrends.value.includes(row.name)
         if (row.id === 17) {
           todayUpperDenominator = row.today_count
@@ -3545,7 +3541,6 @@ const previousNumberOfDays = (pipelineName, days) => {
 }
 const doRepWatcher = () => {
   if (repValuesChanged.value) {
-    console.log('Value changed')
     // repModel.value = cloneDeep(repData.value)
     if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
       apptsToFdcPipelineLoad(1)
@@ -3571,7 +3566,6 @@ const yearToDate = (pipelineName) => {
 
 const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn) => {
   // selectedFunnel.value = funnel
-  console.log(dateRange)
   let sourceIds = []
   let userIds = []
   let orgIds = []
@@ -3711,7 +3705,6 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
                                                                                                                 data,
                                                                                                                 status
                                                                                                               }) => {
-      console.log(data)
       funnelDrilldownData.value = data?.length > 0 ? data : []
 
       if (funnelDrilldownData.value?.length > 0) {
@@ -3938,13 +3931,10 @@ const toggleSelectAllOffices = () => {
 
 const toggleSomeReps = () => {
   if(repData.value[0]?.name == 'All Reps'){
-    console.log("YEah")
     repData.value = repDataMaster.value
     repModel.value = []
-    console.log(repModel.value)
   }
   vueInstance.$nextTick(() => {
-    console.log("Hi")
     apptsToFdcPipelineLoad(1)
     if (secondDateRange.value) {
       apptsToFdcPipelineLoad(2)
@@ -3965,16 +3955,12 @@ const toggleSelectAllReps = () => {
       if (repDataSelectAll.value && repData.value?.length > maxRepLimit.value) {
         //this is different than clicking the All Reps button and needs to be filtered.
         // -2 was updated to mean - select all reps in the selected orgs
-        console.log(repModel)
         repLengthOverride.value = true
         repModel.value = [
           {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
         ]
         doRepWatcher()
         repModel.value = cloneDeep(repData.value)
-        for(let rep of repModel.value){
-          console.log(rep)
-        }
       } else {
         repModel.value = cloneDeep(repData.value)
       }
