@@ -2,621 +2,1221 @@
   <v-container id="closer-dash-container" ref="closerDashContainer">
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
-    <!--    1: {{showFunnels.value}}-->
-    <!--    2: {{apptsCreatedPipelineLoaded.value}}-->
-    <!--    3: {{apptsToFdcPipelineLoaded.value}}-->
-    <!--    4: {{showDashboard.value}}-->
-    <!--    5: {{rankingTablesLoaded.value}}-->
-    <!--    6: {{showIncentive.value}}-->
-    <!--    7: {{incentiveDataLoaded.value}}-->
 
-    <div id="appts-created-pipeline-container" class="mb-8" v-if="userCanViewAllProjects">
-      <div class="pipeline-header-container">
-        <div class="pipeline-title albatross-header-2">Appointments Created Pipeline</div>
-      </div>
+    <div id="appts-created-pipeline-container" v-if="userCanViewAllProjects">
+      <v-row align="center">
+        <div class="title-large closer-dashboard-header">
+          Appointments Created Pipeline
+        </div>
+        <a class="export-button" @click="exportCsv">
+          <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+          Export</a>
+        <v-spacer></v-spacer>
+        <div class="flex-display flex-align-items-end table-collapse-button">
+          <v-icon v-if="apptsCreatedExpanded" @click="apptsCreatedExpanded = !apptsCreatedExpanded">expand_less</v-icon>
+          <v-icon v-else @click="apptsCreatedExpanded = !apptsCreatedExpanded">expand_more</v-icon>
+        </div>
+      </v-row>
+      <v-row v-if="apptsCreatedExpanded" class="filter-row" align="center"> <span class="other-filters-text">Filters:</span>
+        <div class="checkbox-container">
+          <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewTrends"></v-checkbox>
+        </div>
+      </v-row>
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
-          <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-        </div>
-        <div v-if="!apptsCreatedPipelineDataLoading && apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
+        <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
              :style="{'margin-top': showApptsCreatedPipelineCustomDates && windowInnerWidth < 1135 ? '77px' :
                                  showApptsCreatedPipelineCustomDates && windowInnerWidth >= 1135 ? '83px' : '59px'}"></div>
-        <table class="funnel-table" v-if="!apptsCreatedPipelineDataLoading && apptsCreatedPipelineData.length > 0">
-          <tr class="funnel-tr">
-            <th class="funnel-th"></th>
-            <th class="funnel-th">SOURCE</th>
-            <th class="funnel-th">TODAY</th>
-            <th class="funnel-th">WEEK TO DATE</th>
-            <th class="funnel-th">
-              <div v-show="showApptsCreatedPipelineCustomDates" class="custom-dates-container">
-                <v-menu v-model="appts_created_pipeline_menu1" transition="scale-transition" offset-y
-                        min-width="290px" :close-on-content-click="false">
-                  <template v-slot:activator="{ on }">
-                    <a-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
-                                  readonly variant="outlined" density="compact" hide-details v-on="on"></a-text-field>
-                  </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt1" :max="appts_created_pipeline_dt2"
-                                 @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
-                </v-menu>
-                <span class="custom-date-span">-</span>
-                <v-menu v-model="appts_created_pipeline_menu2" transition="scale-transition" offset-y
-                        min-width="290px" :close-on-content-click="false">
-                  <template v-slot:activator="{ on }">
-                    <a-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
-                                  readonly  variant="outlined" density="compact" hide-details v-on="on"></a-text-field>
-                  </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt2" :min="appts_created_pipeline_dt1"
-                                 @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
-                </v-menu>
-              </div>
+        <v-data-table
+          v-if="apptsCreatedExpanded"
+          id="closer-funnel-table"
+          class="elevation-1"
+          :items="filteredApptsCreatedPipelineData"
+          :headers="headers"
+          ref="pageable-table"
+          disable-sort
+          :item-class="itemRowBackground"
+          :footer-props="footerProps"
+          :loading="apptsCreatedPipelineDataLoading"
+          :hide-default-footer="true"
+          :mobile-breakpoint="0"
+        >
 
-              <v-menu v-model="apptsCreatedPipelineCustomSelectorIsOpen"
-                      :close-on-content-click="true"
-                      transition="scale-transition"
-                      offset-y>
-                <template v-slot:activator="{ on }">
-                  <a-btn
-                      :activation-handler="on"
-                      color="unset"
-                      :text="apptsCreatedPipelineDateRange.label"
-                      append-icon="mdi-menu-down"
-                  ></a-btn>
-                </template>
-                <v-list>
-                  <v-list-item v-for="(dateRange, index) in apptsCreatedPipelineDateRanges"
-                               :key="index"
-                               @click="chooseApptsCreatedPipelineDateRange(dateRange)">
-                    <v-list-item-title>{{ dateRange.label }}</v-list-item-title>
+          <template #no-data>
+            <span class="default-text-color">No available data</span>
+          </template>
+
+
+          <template #header.milestone="{}" id="milestones-header">Milestones</template>
+          <template #header.source="{}">Source</template>
+          <template #header.actualTotal="{}">
+            <v-menu data-app left
+                    offset-y
+                    :max-height="`calc(100vh - 20px)`"
+                    class="dropdown-header body-small"
+                    v-model="openFirstMenu"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <a-btn class="dropdown-header body-small"
+                       :activation-handler="on">
+                  <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" class="selected-option body-small">
+                          {{firstCustom.name}}</span>
+                  <span v-else-if="getDropdownById(firstDateRange)?.name === 'PERIOD'" class="selected-option body-small">
+                  {{ getDropdownById(firstDateRange).periodList[firstPeriod].shortLabel}}
+                  </span>
+                  <span v-else class="selected-option body-small">
+                  {{ getDropdownById(firstDateRange)?.friendlyName}}
+                  </span>
+                  <v-spacer></v-spacer>
+                  <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
+                </a-btn>
+              </template>
+              <div>
+                <v-list style="height: 400px; overflow-y:auto">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                    <v-list-item-title v-if="item.name === 'PERIOD'">
+                      <v-menu open-on-hover offset-x>
+                        <template v-slot:activator="{ on }">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                        {{ item.friendlyName }}
+                        <v-icon style="display: flex">mdi-chevron-right</v-icon>
+                      </span>
+                        </template>
+                        <div>
+                          <v-list style="height: 300px; overflow-y:auto">
+                            <v-list-item v-for="(period, index) in item.periodList"
+                                         @click="firstDateRange = item.id; firstPeriod = index; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM'); openFirstMenu = false">
+                              <v-list-item-title>
+                                {{ period.label }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </div>
+                      </v-menu>
+
+                    </v-list-item-title>
+                    <v-list-item-title v-else
+                                       @click="firstDateRange = item.id; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM');"
+                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                    </v-list-item-title>
                   </v-list-item>
                 </v-list>
-              </v-menu>
-            </th>
-          </tr>
+              </div>
+            </v-menu>
 
-          <tr class="funnel-tr" v-for="line in apptsCreatedPipelineData" :key="line.id"
-              :class="{'main-row': line.id === 10, 'blue-sub-row': line.id === 13}"
-              :style="{'border-top': line.id === 12 ? '2px solid #000' : ''}">
-            <td class="funnel-td funnel-line-name">{{ line.name }}</td>
-            <td class="funnel-td" :class="{'funnel-source': line.id === 12 || line.id === 13}">
-              <a-select v-if="line.id === 12"
-                        custom-classes="appts-created-pipeline-dropdown"
-                        v-model="brsProvidedSourceModel"
-                        :items="brsProvidedSourceData"
-                        item-title="sourceName"
-                        item-value="sourceId"
-                        placeholder="Select"
-                        multiple
-                        variant="outlined"
-                        bg-color="white"
-                        density="compact"
-                        return-object
-                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
-                <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+          </template>
+          <template #header.actualTotal2="{}">
+            <v-menu data-app left
+                    offset-y
+                    :max-height="`calc(100vh - 20px)`"
+                    class="dropdown-header body-small"
+                    v-model="openSecondMenu"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <a-btn class="dropdown-header body-small"
+                       :activation-handler="on">
+                  <span v-if="getDropdownById(secondDateRange)?.name === 'CUSTOM' && secondCustom.name != null"
+                        class="selected-option body-small">
+                          {{ secondCustom.name }}</span>
+                  <span v-else-if="getDropdownById(secondDateRange)?.name === 'PERIOD'"
+                        class="selected-option body-small">
+                  {{ getDropdownById(secondDateRange).periodList[secondPeriod].shortLabel }}
+                  </span>
+                  <span v-else-if="secondDateRange != null" class="selected-option body-small">
+                  {{ getDropdownById(secondDateRange)?.friendlyName }}
+                  </span>
+                  <span v-else class="placeholder-option body-small">
+                    Select Date Range
+                  </span>
+                  <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
+                </a-btn>
+              </template>
+              <div>
+                <v-list style="height: 400px; overflow-y:auto">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                    <v-list-item-title v-if="item.name === 'PERIOD'">
+                      <v-menu open-on-hover location="end" :offset-x="true">
+                        <template v-slot:activator="{ on }">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                        {{ item.friendlyName }}
+                        <v-icon>mdi-chevron-right</v-icon>
+                      </span>
+                        </template>
+                        <div>
+                          <v-list style="height: 300px; overflow-y:auto">
+                            <v-list-item v-for="(period, index) in item.periodList"
+                                         @click="secondDateRange = item.id; secondPeriod = index; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM'); openSecondMenu = false">
+                              <v-list-item-title>
+                                {{ period.label }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </div>
+                      </v-menu>
+
+                    </v-list-item-title>
+                    <v-list-item-title v-else
+                                       @click="secondDateRange = item.id; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM');"
+                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-menu>
+          </template>
+          <template #header.actualTotal3="{}">
+            <v-menu data-app left
+                    offset-y
+                    :max-height="`calc(100vh - 20px)`"
+                    class="dropdown-header body-small"
+                    v-model="openThirdMenu"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <a-btn class="dropdown-header body-small"
+                       :activation-handler="on"
+                >
+              <span v-if="getDropdownById(thirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null"
+                    class="selected-option body-small">
+                      {{ thirdCustom.name }}</span>
+                  <span v-else-if="getDropdownById(thirdDateRange)?.name === 'PERIOD'"
+                        class="selected-option body-small">
+              {{ getDropdownById(thirdDateRange).periodList[thirdPeriod].shortLabel }}
+              </span>
+                  <span v-else-if="thirdDateRange != null" class="selected-option body-small">
+              {{ getDropdownById(thirdDateRange)?.friendlyName }}
+              </span>
+                  <span v-else class="placeholder-option body-small">
+                Select Date Range
+              </span>
+                  <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
+                </a-btn>
+              </template>
+              <div>
+                <v-list style="height: 400px; overflow-y:auto">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                    <v-list-item-title v-if="item.name === 'PERIOD'">
+                      <v-menu open-on-hover location="end">
+                        <template v-slot:activator="{ on }">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                        {{ item.friendlyName }}
+                        <v-icon>mdi-chevron-right</v-icon>
+                      </span>
+                        </template>
+                        <div>
+                          <v-list style="height: 300px; overflow-y:auto">
+                            <v-list-item v-for="(period, index) in item.periodList"
+                                         @click="thirdDateRange = item.id; thirdPeriod = index; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); openThirdMenu = false">
+                              <v-list-item-title>
+                                {{ period.label }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </div>
+                      </v-menu>
+
+                    </v-list-item-title>
+                    <v-list-item-title v-else
+                                       @click="thirdDateRange = item.id; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM');"
+                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-menu>
+          </template>
+
+
+          <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td"><span
+            :class="{'label-medium': index < 2}" class="milestone-name-col-td">
+            <span v-if="index === 1">
+              <v-icon v-if="milestonesExpanded" @click="hideMilestones()">expand_less</v-icon>
+              <v-icon v-else @click="expandMilestones()">expand_more</v-icon>
+            </span>
+            {{ item.name }}</span></template>
+          <template #item.source="{item, index}">
+            <a-select v-if="index===0 && !isCloser"
+                      class="appts-created-pipeline-dropdown"
+                      v-model="leadsCreatedSourceModel"
+                      :items="leadsCreatedSourceData"
+                      item-title="sourceName"
+                      item-value="sourceId"
+                      placeholder="Select"
+                      multiple
+                      background-color="white"
+                      variant="outlined"
+                      density="compact"
+                      return-object
+                      @blur="changeSources()">
+              <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option">
+                    {{ leadsCreatedSourceModel.length }} Checked
+                  </span>
+              </template>
+              <template v-if="leadsCreatedSourceData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllLeadsCreatedSources">
+                  <v-list-item-action>
+                    <v-icon>{{ leadsCreatedSourcesSelectIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+            </a-select>
+
+            <a-select
+              v-if="index === 2 && !isCloser"
+              class="appts-created-pipeline-dropdown"
+              v-model="brsProvidedSourceModel"
+              :items="brsProvidedSourceData"
+              item-title="sourceName"
+              item-value="sourceId"
+              placeholder="Select"
+              multiple
+              background-color="white"
+              variant="outlined"
+              density="compact"
+              return-object
+              @blur="changeSources()">
+              <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option">
                     {{ brsProvidedSourceModel.length }} Checked
                   </span>
-                </template>
-                <template v-if="brsProvidedSourceData.length > 0" v-slot:prepend-item>
-                  <v-list-item @click="toggleSelectAllBrsProvidedSources">
-                    <v-list-item-action>
-                      <v-icon>{{ brsProvidedSourcesSelectIcon }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-divider class="mt-2"></v-divider>
-                </template>
-              </a-select>
-
-              <a-select v-if="line.id === 13"
-                        custom-classes="appts-created-pipeline-dropdown"
-                        v-model="selfGenSourceModel"
-                        :items="selfGenSourceData"
-                        item-title="sourceName"
-                        item-value="sourceId"
-                        placeholder="Select"
-                        multiple
-                        variant="outlined"
-                        bg-color="white"
-                        density="compact"
-                        return-object
-                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
-                <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+              </template>
+              <template v-if="brsProvidedSourceData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllBrsProvidedSources">
+                  <v-list-item-action>
+                    <v-icon>{{ brsProvidedSourcesSelectIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+            </a-select>
+            <a-select v-if="index===3"
+                      class="appts-created-pipeline-dropdown"
+                      v-model="selfGenSourceModel"
+                      :items="selfGenSourceData"
+                      item-title="sourceName"
+                      item-value="sourceId"
+                      placeholder="Select"
+                      multiple
+                      background-color="white"
+                      variant="outlined"
+                      density="compact"
+                      return-object
+                      @blur="changeSources()">
+              <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option">
                     {{ selfGenSourceModel.length }} Checked
                   </span>
-                </template>
-                <template v-if="selfGenSourceData.length > 0" v-slot:prepend-item>
-                  <v-list-item @click="toggleSelectAllSelfGenSources">
-                    <v-list-item-action>
-                      <v-icon>{{ selfGenSourcesSelectIcon }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-divider class="mt-2"></v-divider>
-                </template>
-              </a-select>
-            </td>
-            <td class="funnel-td" @click="funnelDrilldown(line, 'today', 'apptsCreatedPipeline', false)">
-              {{ line.today_count }}
-            </td>
-            <td class="funnel-td" @click="funnelDrilldown(line, 'wtd', 'apptsCreatedPipeline', false)">
-              {{ line.week_to_date_count }}
-            </td>
-            <td class="funnel-td" @click="funnelDrilldown(line, 'custom', 'apptsCreatedPipeline', false)">
-              {{ line.custom_date_range_count }}
-            </td>
-          </tr>
-        </table>
+              </template>
+              <template v-if="selfGenSourceData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllSelfGenSources">
+                  <v-list-item-action>
+                    <v-icon>{{ selfGenSourcesSelectIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+            </a-select>
+
+          </template>
+          <template #item.actualTotal="{item, index}" class="milestone-col-td">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on }">
+              <span @click="funnelDrilldown(item, getDropdownById(firstDateRange), 'apptsCreatedPipeline', true)">
+              {{ item.leads_created_count ? item.leads_created_count : 0 }}
+              <span v-on="viewTrends?on:null">
+                <span v-if="viewTrends && item.trend>0 "
+                      class="positive-percentage">+{{ item.trend / 100 | percent }}<v-icon
+                  class="positive-trendline">trending_up</v-icon></span>
+                <span v-if="viewTrends && item.trend<0"
+                      class="negative-percentage">{{ item.trend / 100 | percent }}<v-icon
+                  class="negative-trendline">trending_down</v-icon></span>
+                <span v-if="viewTrends && (item.trend ===null || item.trend===0)"
+                      class="neutral-percentage">{{ item.trend / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
+                </span>
+              </span>
+              </template>
+              <span v-if="viewTrends && item.trend>0"> {{ Math.abs(item.trend) / 100 | percent }} more than {{ getDropdownById(firstDateRange).trendText }}</span>
+              <span v-if="viewTrends && item.trend<0"> {{ Math.abs(item.trend) / 100 | percent }} less than {{ getDropdownById(firstDateRange).trendText }}</span>
+              <span
+                v-if="viewTrends && (item.trend ===null || item.trend===0)"> Same as {{ getDropdownById(firstDateRange).trendText }}</span>
+            </v-tooltip>
+          </template>
+
+          <template #item.actualTotal2="{item, index}" class="milestone-col-td"
+                    v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on }">
+            <span @click="funnelDrilldown(item, getDropdownById(secondDateRange), 'apptsCreatedPipeline', true)">
+              {{ column2Values[index].leads_created_count  ? column2Values[index].leads_created_count  : 0 }}
+              <span v-on="viewTrends?on:null">
+                <span v-if="viewTrends && column2Values[index].trend>0"
+                      class="positive-percentage">+{{ column2Values[index].trend / 100 | percent }}<v-icon
+                  class="positive-trendline">trending_up</v-icon></span>
+                <span v-if="viewTrends && column2Values[index].trend<0"
+                      class="negative-percentage">{{ column2Values[index].trend / 100 | percent }}<v-icon
+                  class="negative-trendline">trending_down</v-icon></span>
+                <span
+                  v-if="viewTrends && (column2Values[index].trend === null || column2Values[index].trend==0)"
+                  class="neutral-percentage">{{ column2Values[index].trend / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
+              </span>
+            </span>
+              </template>
+              <span
+                v-if="viewTrends && column2Values[index].trend>0"> {{ Math.abs(column2Values[index].trend) / 100 | percent }} more than {{ getDropdownById(secondDateRange).trendText }}</span>
+              <span
+                v-if="viewTrends && column2Values[index].trend<0"> {{ Math.abs(column2Values[index].trend) / 100 | percent }} less than {{ getDropdownById(secondDateRange).trendText }}</span>
+              <span
+                v-if="viewTrends && (column2Values[index].trend ===null || column2Values[index].trend===0)"> Same as {{ getDropdownById(secondDateRange).trendText }}</span>
+            </v-tooltip>
+          </template>
+          <template #item.actualTotal3="{item, index}" class="milestone-col-td"
+                    v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on }">
+            <span @click="funnelDrilldown(item, getDropdownById(thirdDateRange), 'apptsCreatedPipeline', true)">
+              {{ column3Values[index].leads_created_count ? column3Values[index].leads_created_count : 0 }}
+              <span v-on="viewTrends?on:null">
+                <span v-if="viewTrends && column3Values[index].trend>0"
+                      class="positive-percentage">+{{ column3Values[index].trend / 100 | percent }}<v-icon
+                  class="positive-trendline">trending_up</v-icon></span>
+                <span v-if="viewTrends && column3Values[index].trend<0"
+                      class="negative-percentage">{{ column3Values[index].trend / 100 | percent }}<v-icon
+                  class="negative-trendline">trending_down</v-icon></span>
+                <span
+                  v-if="viewTrends && (column3Values[index].trend === null || column3Values[index].trend === 0)"
+                  class="neutral-percentage">{{ column3Values[index].trend / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
+              </span>
+            </span>
+              </template>
+              <span
+                v-if="viewTrends && column3Values[index].trend>0"> {{ Math.abs(column3Values[index].trend) / 100 | percent }} more than {{ getDropdownById(thirdDateRange).trendText }}</span>
+              <span
+                v-if="viewTrends && column3Values[index].trend<0"> {{ Math.abs(column3Values[index].trend) / 100 | percent }} less than {{ getDropdownById(thirdDateRange).trendText }}</span>
+              <span
+                v-if="viewTrends && (column3Values[index].trend ===null || column3Values[index].trend===0)"> Same as {{ getDropdownById(thirdDateRange).trendText }}</span>
+            </v-tooltip>
+          </template>
+        </v-data-table>
       </div>
     </div>
     <!-- APPOINTMENTS CREATED PIPELINE END -->
+    <div class="table-gap"></div>
 
     <!-- APPOINTMENTS TO FDC PIPELINE START -->
-    <div class="funnel-relative">
-      <div v-if="dropdownValuesLoading || apptsToFdcPipelineDataLoading" class="funnel-spinner">
-        <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-      </div>
-      <div id="appts-to-fdc-pipeline-container" :class="{'mb-8': apptsToFdcPipelineData.length > 0}">
-        <div class="pipeline-header-container">
-          <div id="pipeline-header-left-side">
-            <div class="pipeline-title albatross-header-2">Appointments to FDC Pipeline</div>
-          </div>
-
-          <!-- DROPDOWNS -->
-          <div id="pipeline-header-right-side">
-            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
-                            ref="areaSelect"
-                            v-model="areaModel"
-                            :items="areaData"
-                            item-title="org_name"
-                            item-value="org_id"
-                            label="Area"
-                            no-data-text="No areas available"
-                            variant="outlined"
-                            density="compact"
-                            multiple
-                            hide-details
-                            @blur="regionLoad(false)"
-                            return-object>
-              <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text text-caption">
-                {{ areaModel.length }} Checked
-              </span>
-              </template>
-              <template v-if="areaData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="[areaValuesChanged = true, toggleSelectAllAreas()]">
+    <div id="appts-to-fdc-pipeline-container" class="mb-8">
+      <v-row align="center">
+        <div class="title-large closer-dashboard-header">
+          Appointments to FDC Pipeline
+        </div>
+        <a v-if="repModel?.length > 0" class="export-button" @click="exportCsv">
+          <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+          Export
+        </a>
+        <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+          <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
+          Export
+        </div>
+        <v-spacer></v-spacer>
+        <div class="flex-display flex-align-items-end table-collapse-button">
+          <v-icon v-if="fdcPipelineExpanded" @click="fdcPipelineExpanded = !fdcPipelineExpanded">expand_less</v-icon>
+          <v-icon v-else @click="fdcPipelineExpanded = !fdcPipelineExpanded">expand_more</v-icon>
+        </div>
+      </v-row>
+      <v-row>
+        <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
+          <v-col cols="10" class="d-flex">
+            <div id="pipeline-header-left-side">
+              <div class="reps-container">Reps: </div>
+              <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                              ref="areaSelect"
+                              v-model="areaModel"
+                              :items="areaData"
+                              item-title="org_name"
+                              item-value="org_id"
+                              label="Area"
+                              no-data-text="No areas available"
+                              variant="outlined"
+                              density="compact"
+                              multiple
+                              hide-details
+                              @blur="areaValuesChanged = true; regionLoad(); toggleSomeReps()"
+                              return-object>
+                <template v-slot:label="{ item, index }">
+                  <span class="text-caption-lg">Area</span>
+                </template>
+                <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ areaModel.length }} Checked
+                  </span>
+                </template>
+                <template v-if="areaData.length > 0" v-slot:prepend-item>
+                  <v-list-item @click="[areaValuesChanged = true, toggleSelectAllAreas()]">
+                    <v-list-item-action class="mr-2">
+                      <v-icon>{{ areaSelectIcon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template v-slot:item="data">
                   <v-list-item-action class="mr-2">
-                    <v-icon>{{ areaSelectIcon }}</v-icon>
+                    <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                    <v-icon v-else>check_box_outline_blank</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                      {{ data.item.org_name }}
+                    </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action class="mr-2">
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.org_name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </a-autocomplete>
+                </template>
+              </a-autocomplete>
 
-            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
-                            v-model="regionModel"
-                            :items="regionData"
-                            item-title="org_name"
-                            item-value="org_id"
-                            label="Region"
-                            no-data-text="No regions available"
-                            multiple
-                            variant="outlined"
-                            density="compact"
-                            @blur="districtLoad(false)"
-                            hide-details
-                            return-object
-                            ref="regionSelect">
-              <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text text-caption">
-                {{ regionModel.length }} Checked
-              </span>
-              </template>
-              <template v-if="regionData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="[regionValuesChanged = true, toggleSelectAllRegions()]">
+              <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                              v-model="regionModel"
+                              :items="regionData"
+                              item-title="org_name"
+                              item-value="org_id"
+                              label="Region"
+                              no-data-text="No regions available"
+                              variant="outlined"
+                              density="compact"
+                              multiple
+                              @blur="regionValuesChanged = true; districtLoad(); toggleSomeReps()"
+                              hide-details
+                              return-object
+                              ref="regionSelect">
+                <template v-slot:label="{ item, index }">
+                  <span class="text-caption-md">Region</span>
+                </template>
+                <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ regionModel.length }} Checked
+                  </span>
+                </template>
+                <template v-if="regionData.length > 0" v-slot:prepend-item>
+                  <v-list-item @click="[regionValuesChanged = true, toggleSelectAllRegions()]">
+                    <v-list-item-action class="mr-2">
+                      <v-icon>{{ regionSelectIcon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template v-slot:item="data">
                   <v-list-item-action class="mr-2">
-                    <v-icon>{{ regionSelectIcon }}</v-icon>
+                    <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                    <v-icon v-else>check_box_outline_blank</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                      {{ data.item.org_name }}
+                    </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action class="mr-2">
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.org_name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </a-autocomplete>
+                </template>
+              </a-autocomplete>
 
-            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
-                            ref="districtSelect"
-                            v-model="districtModel"
-                            :items="districtData"
-                            item-title="org_name"
-                            item-value="org_id"
-                            label="District"
-                            no-data-text="No districts available"
-                            multiple
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            @blur="officeLoad(false)"
-                            return-object>
-              <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text text-caption">
-                {{ districtModel.length }} Checked
-              </span>
-              </template>
-              <template v-if="districtData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="[districtValuesChanged = true, toggleSelectAllDistricts()]">
+              <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                              ref="districtSelect"
+                              v-model="districtModel"
+                              :items="districtData"
+                              item-title="org_name"
+                              item-value="org_id"
+                              label="District"
+                              no-data-text="No districts available"
+                              multiple
+                              variant="outlined"
+                              density="compact"
+                              hide-details
+                              @blur="districtValuesChanged = true; officeLoad(); toggleSomeReps()"
+                              return-object>
+                <template v-slot:label="{ item, index }">
+                  <span class="text-caption-md">District</span>
+                </template>
+                <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ districtModel.length }} Checked
+                  </span>
+                </template>
+                <template v-if="districtData.length > 0" v-slot:prepend-item>
+                  <v-list-item @click="[districtValuesChanged = true, toggleSelectAllDistricts()]">
+                    <v-list-item-action class="mr-2">
+                      <v-icon>{{ districtSelectIcon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template v-slot:item="data">
                   <v-list-item-action class="mr-2">
-                    <v-icon>{{ districtSelectIcon }}</v-icon>
+                    <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                    <v-icon v-else>check_box_outline_blank</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                      {{ data.item.org_name }}
+                    </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action class="mr-2">
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.org_name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </a-autocomplete>
+                </template>
+              </a-autocomplete>
 
-            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
-                            v-model="officeModel"
-                            :items="officeData"
-                            item-title="org_name"
-                            item-value="org_id"
-                            label="Office"
-                            no-data-text="No offices available"
-                            variant="outlined"
-                            density="compact"
-                            multiple
-                            @blur="repLoad(false)"
-                            hide-details
-                            return-object
-                            ref="officeSelect">
-              <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text text-caption">
-                {{ officeModel.length }} Checked
-              </span>
-              </template>
-              <template v-if="officeData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="[officeValuesChanged = true, toggleSelectAllOffices()]">
+              <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                              v-model="officeModel"
+                              :items="officeData"
+                              item-title="org_name"
+                              item-value="org_id"
+                              label="Office"
+                              no-data-text="No offices available"
+                              multiple
+                              variant="outlined"
+                              density="compact"
+                              @blur="officeValuesChanged = true; repLoad(); toggleSomeReps()"
+                              hide-details
+                              return-object
+                              ref="officeSelect">
+                <template v-slot:label="{ item, index }">
+                  <span class="text-caption-md">Office</span>
+                </template>
+                <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ officeModel.length }} Checked
+                  </span>
+                </template>
+                <template v-if="officeData.length > 0" v-slot:prepend-item>
+                  <v-list-item @click="[officeValuesChanged = true, toggleSelectAllOffices()]">
+                    <v-list-item-action class="mr-2">
+                      <v-icon>{{ officeSelectIcon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template v-slot:item="data">
                   <v-list-item-action class="mr-2">
-                    <v-icon>{{ officeSelectIcon }}</v-icon>
+                    <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                    <v-icon v-else>check_box_outline_blank</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                      {{ data.item.org_name }}
+                    </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action class="mr-2">
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.org_name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </a-autocomplete>
-            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
-                            v-model="repModel"
-                            :items="repData"
-                            item-title="name"
-                            item-value="user_position_id"
-                            label="Rep"
-                            no-data-text="No reps available"
-                            variant="outlined"
-                            density="compact"
-                            multiple
-                            @blur="[repValuesChanged = true, doRepWatcher()]"
-                            hide-details
-                            return-object
-                            ref="repSelect">
-              <template v-slot:selection="{ item, index }">
-              <span v-if="index === 0" class="grey--text text-caption">
-                {{ repModel.length }} Checked
-              </span>
-              </template>
-              <template v-if="repData.length > 0" v-slot:prepend-item>
-                <v-list-item
+                </template>
+              </a-autocomplete>
+              <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                              v-model="repModel"
+                              :items="repData"
+                              item-title="name"
+                              item-value="user_position_id"
+                              label="Rep"
+                              no-data-text="No reps available"
+                              multiple
+                              variant="outlined"
+                              density="compact"
+                              @blur="toggleSomeReps()"
+                              hide-details
+                              return-object
+                              ref="repSelect">
+                <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0 && repModel[0].user_id != -1" class="selected-option text-caption">
+                    {{ repModel.length }} Checked
+                  </span>
+                  <span v-if="index === 0 && repModel[0].user_id === -1" class="selected-option text-caption-sm">
+                        {{ repDataMaster.length }} Checked
+                  </span>
+                </template>
+                <template v-slot:label="{ item, index }">
+                  <span class="text-caption-lg">Rep</span>
+                </template>
+                <template v-if="repData?.length > 1 && repData?.length < 1000" v-slot:prepend-item>
+                  <v-list-item
                     @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">
+                    <v-list-item-action class="mr-2">
+                      <v-icon>{{ repSelectIcon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template v-slot:item="data">
                   <v-list-item-action class="mr-2">
-                    <v-icon>{{ repSelectIcon }}</v-icon>
+                    <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                    <v-icon v-else>check_box_outline_blank</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                      {{ data.item.name }}
+                    </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-action class="mr-2">
-                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
-                  <v-icon v-else>check_box_outline_blank</v-icon>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.name }}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </a-autocomplete>
-
-            <a-btn
+                </template>
+              </a-autocomplete>
+              <div class="d-flex hide-inactive-switch-container align-items-center">
+                <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch hide-details v-model="hideInactiveReps" @click="apptsToFdcPipelineLoad(1)" class="hide-inactive-switch"></v-switch>
+              </div>
+              <a-btn
                 v-if="!isCloser && !isCloserMgr"
+                class="label-medium reset-button"
+                variant="outlined"
+                @click="resetFilters; loadFunnels()"
+                color="unset"
+                text="Reset Filters"
+              ></a-btn>
+            </div>
+          </v-col>
+          <v-col cols="2" class="d-flex justify-end">
+            <div class="flex-display">
+              <a-btn
                 id="all-reps-btn"
                 variant="outlined"
                 color="primary"
                 @click="funnelAllReps"
-                text="All Reps"
-            ></a-btn>
-
+                text="View All Reps"
+              ></a-btn>
+            </div>
+          </v-col>
+        </div>
+      </v-row>
+      <v-row v-if="fdcPipelineExpanded" class="pipeline-header-container other-filters">
+        <div id="pipeline-header-left-side">
+          <span class="other-filters-text">
+            Other Filters:
+          </span>
+          <a-select
+            v-if="!isCloser"
+            class="appts-to-fdc-pipeline-dropdown"
+            v-model="fdcSourceModel"
+            :items="fdcSourceData"
+            item-title="sourceName"
+            item-value="sourceId"
+            placeholder="Select"
+            multiple
+            hide-details
+            background-color="white"
+            variant="outlined"
+            density="compact"
+            return-object
+            label="Lead Source"
+            @blur="toggleSomeReps()">
+            <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ fdcSourceModel.length }} Checked
+                  </span>
+            </template>
+            <template v-if="fdcSourceData.length > 0" v-slot:prepend-item>
+              <v-list-item @click="toggleSelectAllFdcLeadsCreatedSources">
+                <v-list-item-action>
+                  <v-icon>{{ fdcSourcesSelectIcon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+          </a-select>
+          <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          v-model="appointmentTypesModel"
+                          :items="appointmentTypes"
+                          :menu-props="{ bottom: true, offsetY: true }"
+                          item-title="name"
+                          item-value="user_position_id"
+                          label="Appointment Type"
+                          no-data-text="No reps available"
+                          multiple
+                          variant="outlined"
+                          density="compact"
+                          @blur="repValuesChanged = true; toggleSomeReps()"
+                          hide-details
+                          return-object
+                          ref="repSelect">
+            <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ appointmentTypesModel.length }} Checked
+                  </span>
+            </template>
+            <template v-if="appointmentTypes.length > 0" v-slot:prepend-item>
+              <v-list-item
+                @click="[repValuesChanged = true, appointmentTypesSelectAll = !appointmentTypesSelectAll, toggleSelectAppointmentTypes()]">
+                <v-list-item-action class="mr-2">
+                  <v-icon>{{ appointmentTypesIcon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+            <template v-slot:item="data">
+              <v-list-item-action class="mr-2">
+                <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                <v-icon v-else>check_box_outline_blank</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title>
+                  {{ data.item.name }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </template>
+          </a-autocomplete>
+          <div class="checkbox-container fdc-checkbox-container">
+            <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewFdcTrends"></v-checkbox>
+          </div>
+          <div class="checkbox-container fdc-checkbox-container">
+            <v-checkbox label="Only View Major Milestones" v-model="viewOnlyMajorMilestones"></v-checkbox>
           </div>
         </div>
-
-        <!-- FUNNEL -->
-        <div class="funnel-container">
-          <!-- FUNNEL BACKGROUND -->
-          <div v-show="apptsToFdcPipelineData.length > 0" id="appts-to-fdc-pipeline-funnel-background"
-               :style="{'margin-top': showApptsToFdcPipelineCustomDates && windowInnerWidth >= 1135 ? '87px' :
-                                 showApptsToFdcPipelineCustomDates ? '82px' : windowInnerWidth <= 1070 ? '60px' : '' }"></div>
-
-          <!-- TODAY PERCENTAGE LINES -->
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="today-upper-percentage-line" class="upper-percentage-line"></div>
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="today-lower-percentage-line" class="lower-percentage-line"></div>
-          <!-- TODAY PERCENTAGES -->
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="today-upper-percentage" class="upper-percentage">{{ todayUpperPercentage }}%
-          </div>
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="today-lower-percentage" class="lower-percentage">{{ todayLowerPercentage }}%
-          </div>
-
-          <!-- WTD PERCENTAGE LINES -->
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="wtd-upper-percentage-line" class="upper-percentage-line"></div>
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="wtd-lower-percentage-line" class="lower-percentage-line"></div>
-          <!-- WTD PERCENTAGES -->
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="wtd-upper-percentage" class="upper-percentage">{{ wtdUpperPercentage }}%
-          </div>
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="wtd-lower-percentage" class="lower-percentage">{{ wtdLowerPercentage }}%
-          </div>
-
-          <!-- CUSTOM DATE RANGE PERCENTAGE LINES -->
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="cdr-upper-percentage-line" class="upper-percentage-line"></div>
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="cdr-lower-percentage-line" class="lower-percentage-line"></div>
-          <!-- CUSTOM DATE RANGE PERCENTAGES -->
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="cdr-upper-percentage" class="upper-percentage">{{ cdrUpperPercentage }}%
-          </div>
-          <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
-               id="cdr-lower-percentage" class="lower-percentage">{{ cdrLowerPercentage }}%
-          </div>
-
-          <table class="funnel-table">
-            <!-- FUNNEL COLUMN HEADERS -->
-            <tr class="funnel-tr">
-              <th class="funnel-th view-btns">
-                <div class="view-btns-container">
-                  <a-btn
-                      class="funnel-btn black--text"
-                      @click="viewSelected('standard')"
-                      :class="{'white--text': viewSelect === 'standard', 'primary--text': viewSelect !== 'standard', 'elevation-2': viewSelect !== 'standard'}"
-                      :color="viewSelect === 'standard' ? 'primary' : 'secondary'"
-                      text="Standard View"
-                  ></a-btn>
-                  <a-btn
-                      class="funnel-btn black--text"
-                      @click="viewSelected('apptDateCohort')"
-                      :class="{'white--text': viewSelect === 'apptDateCohort', 'primary--text': viewSelect !== 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
-                      :color="viewSelect === 'apptDateCohort' ? 'primary' : 'secondary'"
-                      text="Appt Date Cohort"
-                  ></a-btn>
-                </div>
-              </th>
-              <th class="funnel-th">TODAY</th>
-              <th class="funnel-th">WEEK TO DATE</th>
-              <th class="funnel-th">
-                <div v-show="showApptsToFdcPipelineCustomDates" class="custom-dates-container">
-                  <v-menu v-model="appts_to_fdc_pipeline_menu1" transition="scale-transition" offset-y
-                          min-width="290px" :close-on-content-click="false">
-                    <template v-slot:activator="{ on }">
-                      <a-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
-                                    density="compact" variant="outlined" hide-details v-on="on"></a-text-field>
-                    </template>
-                    <v-date-picker v-model="appts_to_fdc_pipeline_dt1" :max="appts_to_fdc_pipeline_dt2"
-                                   @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
-                  </v-menu>
-                  <span class="custom-date-span">-</span>
-                  <v-menu v-model="appts_to_fdc_pipeline_menu2" transition="scale-transition" offset-y
-                          min-width="290px" :close-on-content-click="false">
-                    <template v-slot:activator="{ on }">
-                      <a-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
-                                    density="compact" variant="outlined" hide-details v-on="on"></a-text-field>
-                    </template>
-                    <v-date-picker v-model="appts_to_fdc_pipeline_dt2" :min="appts_to_fdc_pipeline_dt1"
-                                   @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
-                  </v-menu>
-                </div>
-
-                <v-menu v-model="apptsToFdcPipelineCustomSelectorIsOpen"
-                        :close-on-content-click="true"
-                        transition="scale-transition"
-                        offset-y>
-                  <template v-slot:activator="{ on }">
-                    <a-btn
-                        :activation-handler="on"
-                        color="unset"
-                        :text="apptsToFdcPipelineDateRange.label"
-                        append-icon="mdi-menu-down"
-                    ></a-btn>
-                  </template>
-                  <v-list>
-                    <v-list-item v-for="(dateRange, index) in apptsToFdcPipelineDateRanges"
-                                 :key="index"
-                                 @click="chooseApptsToFdcPipelineDateRange(dateRange)">
-                      <v-list-item-title>{{ dateRange.label }}</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </th>
-            </tr>
-            <!-- FUNNEL ROWS -->
-            <tr class="funnel-tr" v-for="line in apptsToFdcPipelineData" :key="line.id"
-                :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,18,20,24,3,6].indexOf(line.id) !== -1}">
-              <!-- FUNNEL NAME -->
-              <td class="funnel-td funnel-line-name">{{ line.name }}</td>
-
-              <!-- TODAY COUNT -->
-              <td class="funnel-td">
-                <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
-                  <!-- CHECKED-IN COUNT -->
-                  <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
-                       class="checked-in-column-center clickable"
-                       :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                       @click="funnelDrilldown(line, 'today', viewSelect, true)">
-                    {{ line.checked_in_today_count }}
-                  </div>
-                  <div v-else class="no-checked-in-column-placeholder"></div>
-                  <!--                  <div v-if="line.id === 21"-->
-                  <!--                       class="checked-in-column-bottom checked-in-column-line-overlap"-->
-                  <!--                       @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">-->
-                  <!--                    {{ line.checked_in_today_count }}-->
-                  <!--                  </div>-->
-
-                  <!-- COUNT -->
-                  <div @click="funnelDrilldown(line, 'today', viewSelect, false)" class="clickable">
-                    {{ line.today_count }}
-                  </div>
-                </div>
-                <div v-else class="funnel-data-container clickable">
-                  <div class="no-checked-in-column-placeholder"></div>
-                  <div class="clickable" @click="funnelDrilldown(line, 'today', viewSelect, false)">
-                    {{ line.today_count }}
-                  </div>
-                </div>
-              </td>
-
-              <!-- WTD COUNT -->
-              <td class="funnel-td">
-                <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
-                  <!-- CHECKED-IN COUNT -->
-                  <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
-                       class="checked-in-column-center clickable"
-                       :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                       @click="funnelDrilldown(line, 'wtd', viewSelect, true)">
-                    {{ line.checked_in_today_count }}
-                  </div>
-                  <div v-else class="no-checked-in-column-placeholder"></div>
-
-                  <!-- COUNT -->
-                  <div @click="funnelDrilldown(line, 'wtd', viewSelect, false)" class="clickable">
-                    {{ line.week_to_date_count }}
-                  </div>
-                </div>
-                <div v-else class="funnel-data-container clickable">
-                  <div class="no-checked-in-column-placeholder"></div>
-                  <div class="clickable" @click="funnelDrilldown(line, 'wtd', viewSelect, false)">
-                    {{ line.week_to_date_count }}
-                  </div>
-                </div>
-              </td>
+      </v-row>
 
 
-              <!-- CUSTOM DATE RANGE COUNT -->
-              <td class="funnel-td">
-                <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
-                  <!-- CHECKED-IN COUNT -->
-                  <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
-                  <div v-else-if="line.checked_in_today_count || line.checked_in_today_count === 0"
-                       class="checked-in-column-center clickable"
-                       :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
-                       @click="funnelDrilldown(line, 'custom', viewSelect, true)">
-                    {{ line.id === 21 ? '' : line.checked_in_custom_date_range_count }}
-                  </div>
-                  <div v-else class="no-checked-in-column-placeholder"></div>
+      <!-- FUNNEL -->
+      <div class="funnel-container">
+        <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"
+             :style="{'margin-top': showApptsCreatedPipelineCustomDates && windowInnerWidth < 1135 ? '77px' :
+                                 showApptsCreatedPipelineCustomDates && windowInnerWidth >= 1135 ? '83px' : '59px'}"></div>
+        <v-data-table
+          v-if="fdcPipelineExpanded"
+          id="fdc-dash-table"
+          class="elevation-1"
+          :items="filteredFdcPipelineData"
+          :headers="fdcHeaders"
+          ref="pageable-table"
+          disable-sort
+          :item-class="fdcRowBackground"
+          :footer-props="footerProps"
+          :loading="isLoading"
+          :hide-default-footer="true"
+          :mobile-breakpoint="0"
+        >
 
-                  <!-- COUNT -->
-                  <div @click="funnelDrilldown(line, 'custom', viewSelect, false)" class="clickable">
-                    {{ line.custom_date_range_count }}
-                  </div>
-                </div>
-                <div v-else class="funnel-data-container clickable">
-                  <div class="no-checked-in-column-placeholder"></div>
-                  <div class="clickable" @click="funnelDrilldown(line, 'custom', viewSelect, false)">
-                    {{ line.custom_date_range_count }}
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </table>
-        </div>
+          <template #no-data>
+            <span class="default-text-color">No available data</span>
+          </template>
+
+
+          <template #header.milestone="{}" id="milestones-header"><span class="milestones-header">Milestones</span></template>
+          <template #header.actualTotal="{}">
+            <v-menu data-app left
+                    offset-y
+                    :max-height="`calc(100vh - 20px)`"
+                    class="dropdown-header body-small"
+                    v-model="fdcOpenFirstMenu"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <a-btn class="dropdown-header body-small"
+                       :activation-handler="on"
+                >
+              <span v-if="getDropdownById(fdcFirstDateRange)?.name === 'CUSTOM' && fdcFirstCustom.name != null" class="selected-option body-small">
+                      {{fdcFirstCustom.name}}</span>
+                  <span v-else-if="getDropdownById(fdcFirstDateRange)?.name === 'PERIOD'" class="selected-option body-small">
+              {{ getDropdownById(fdcFirstDateRange).periodList[firstPeriod].shortLabel}}
+              </span>
+                  <span v-else class="selected-option body-small">
+              {{ getDropdownById(fdcFirstDateRange)?.friendlyName}}
+              </span>
+                  <v-spacer></v-spacer>
+                  <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
+                </a-btn>
+              </template>
+              <div>
+                <v-list style="height: 400px; overflow-y:auto">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                    <v-list-item-title v-if="item.name === 'PERIOD'">
+                      <v-menu open-on-hover offset-x>
+                        <template v-slot:activator="{ on }">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                        {{ item.friendlyName }}
+                        <v-icon style="display: flex">mdi-chevron-right</v-icon>
+                      </span>
+                        </template>
+                        <div>
+                          <v-list style="height: 300px; overflow-y:auto">
+                            <v-list-item v-for="(period, index) in item.periodList"
+                                         @click="fdcFirstDateRange = item.id; firstPeriod = index; changeFdcDropdownSelection(1); fdcFirstCustom.isActive = (item.name === 'CUSTOM'); fdcOpenFirstMenu = false">
+                              <v-list-item-title>
+                                {{ period.label }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </div>
+                      </v-menu>
+
+                    </v-list-item-title>
+                    <v-list-item-title v-else
+                                       @click="fdcFirstDateRange = item.id; changeFdcDropdownSelection(1); fdcFirstCustom.isActive = (item.name === 'CUSTOM');"
+                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-menu>
+
+          </template>
+          <template #header.actualTotal2="{}">
+            <v-menu data-app left
+                    offset-y
+                    :max-height="`calc(100vh - 20px)`"
+                    class="dropdown-header body-small"
+                    v-model="fdcOpenSecondMenu"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <a-btn class="dropdown-header body-small"
+                       :activation-handler="on"
+                >
+              <span v-if="getDropdownById(fdcSecondDateRange)?.name === 'CUSTOM' && fdcSecondCustom.name != null"
+                    class="selected-option body-small">
+                      {{ fdcSecondCustom.name }}</span>
+                  <span v-else-if="getDropdownById(fdcSecondDateRange)?.name === 'PERIOD'"
+                        class="selected-option body-small">
+              {{ getDropdownById(fdcSecondDateRange).periodList[secondPeriod].shortLabel }}
+              </span>
+                  <span v-else-if="fdcSecondDateRange != null" class="selected-option body-small">
+              {{ getDropdownById(fdcSecondDateRange)?.friendlyName }}
+              </span>
+                  <span v-else class="placeholder-option body-small">
+                Select Date Range
+              </span>
+                  <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
+                </a-btn>
+              </template>
+              <div>
+                <v-list style="height: 400px; overflow-y:auto">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                    <v-list-item-title v-if="item.name === 'PERIOD'">
+                      <v-menu open-on-hover location="end" :offset-x="true">
+                        <template v-slot:activator="{ on }">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                        {{ item.friendlyName }}
+                        <v-icon>mdi-chevron-right</v-icon>
+                      </span>
+                        </template>
+                        <div>
+                          <v-list style="height: 300px; overflow-y:auto">
+                            <v-list-item v-for="(period, index) in item.periodList"
+                                         @click="fdcSecondDateRange = item.id; secondPeriod = index; changeFdcDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM'); fdcOpenSecondMenu = false">
+                              <v-list-item-title>
+                                {{ period.label }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </div>
+                      </v-menu>
+
+                    </v-list-item-title>
+                    <v-list-item-title v-else
+                                       @click="fdcSecondDateRange = item.id; changeFdcDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM');"
+                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-menu>
+          </template>
+          <template #header.actualTotal3="{}">
+            <v-menu data-app left
+                    offset-y
+                    :max-height="`calc(100vh - 20px)`"
+                    class="dropdown-header body-small"
+                    v-model="fdcOpenThirdMenu"
+                    :close-on-content-click="true">
+              <template v-slot:activator="{ on }">
+                <a-btn class="dropdown-header body-small"
+                       :activation-handler="on"
+                >
+              <span v-if="getDropdownById(fdcThirdDateRange)?.name === 'CUSTOM' && fdcThirdCustom.name != null"
+                    class="selected-option body-small">
+                      {{ fdcThirdCustom.name }}</span>
+                  <span v-else-if="getDropdownById(fdcThirdDateRange)?.name === 'PERIOD'"
+                        class="selected-option body-small">
+              {{ getDropdownById(fdcThirdDateRange).periodList[thirdPeriod].shortLabel }}
+              </span>
+                  <span v-else-if="fdcThirdDateRange != null" class="selected-option body-small">
+              {{ getDropdownById(fdcThirdDateRange)?.friendlyName }}
+              </span>
+                  <span v-else class="placeholder-option body-small">
+                Select Date Range
+              </span>
+                  <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
+                </a-btn>
+              </template>
+              <div>
+                <v-list style="height: 400px; overflow-y:auto">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                    <v-list-item-title v-if="item.name === 'PERIOD'">
+                      <v-menu open-on-hover location="end">
+                        <template v-slot:activator="{ on }">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                        {{ item.friendlyName }}
+                        <v-icon>mdi-chevron-right</v-icon>
+                      </span>
+                        </template>
+                        <div>
+                          <v-list style="height: 300px; overflow-y:auto">
+                            <v-list-item v-for="(period, index) in item.periodList"
+                                         @click="fdcThirdDateRange = item.id; thirdPeriod = index; changeFdcDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); fdcOpenThirdMenu = false">
+                              <v-list-item-title>
+                                {{ period.label }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </div>
+                      </v-menu>
+
+                    </v-list-item-title>
+                    <v-list-item-title v-else
+                                       @click="fdcThirdDateRange = item.id; changeFdcDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM');"
+                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-menu>
+          </template>
+
+
+          <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td"><span
+            :class="{'label-medium': fdcExpandableMilestones.includes(item.display_order-4), 'blue-sub-row': fdcExpandableMilestones.includes(index)}">
+            {{ item.name }}</span></template>
+          <template #item.source="{item, index}" class="milestone-name-col-td">
+            <a-select v-if="index===0"
+                      class="appts-created-pipeline-dropdown"
+                      v-model="leadsCreatedSourceModel"
+                      :items="leadsCreatedSourceData"
+                      item-text="sourceName"
+                      item-value="sourceId"
+                      placeholder="Select"
+                      multiple
+                      background-color="white"
+                      variant="outlined"
+                      density="compact"
+                      return-object
+                      @blur="toggleSomeReps()">
+              <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ leadsCreatedSourceModel.length }} Checked
+                  </span>
+              </template>
+              <template v-if="leadsCreatedSourceData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllLeadsCreatedSources">
+                  <v-list-item-action>
+                    <v-icon>{{ selfGenSourcesSelectIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+            </a-select>
+
+            <a-select
+              v-if="index === 2"
+              class="appts-created-pipeline-dropdown"
+              v-model="brsProvidedSourceModel"
+              :items="brsProvidedSourceData"
+              item-text="sourceName"
+              item-value="sourceId"
+              placeholder="Select"
+              multiple
+              background-color="white"
+              variant="outlined"
+              density="compact"
+              return-object
+              @blur="toggleSomeReps()">
+              <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ brsProvidedSourceModel.length }} Checked
+                  </span>
+              </template>
+              <template v-if="brsProvidedSourceData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllBrsProvidedSources">
+                  <v-list-item-action>
+                    <v-icon>{{ brsProvidedSourcesSelectIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+            </a-select>
+            <a-select v-if="index===3"
+                      class="appts-created-pipeline-dropdown"
+                      v-model="selfGenSourceModel"
+                      :items="selfGenSourceData"
+                      item-text="sourceName"
+                      item-value="sourceId"
+                      placeholder="Select"
+                      multiple
+                      background-color="white"
+                      variant="outlined"
+                      density="compact"
+                      return-object
+                      @blur="toggleSomeReps()">
+              <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="selected-option text-caption">
+                    {{ selfGenSourceModel.length }} Checked
+                  </span>
+              </template>
+              <template v-if="selfGenSourceData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllSelfGenSources">
+                  <v-list-item-action>
+                    <v-icon>{{ selfGenSourcesSelectIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+            </a-select>
+
+          </template>
+          <template #item.actualTotal="{item, index}" class="milestone-col-td">
+            <span class="d-flex align-items-center">
+                            <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true)" class="fdc-data">
+                {{ item.custom_date_range_count ? item.custom_date_range_count : 0 }}
+              </span>
+            <v-tooltip bottom v-if="viewFdcTrends">
+              <template v-slot:activator="{ on }">
+              <span v-on="viewFdcTrends?on:null" class="trends-container">
+                <span v-if="viewFdcTrends && item.trend_count>0"
+                      :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
+                <span v-if="viewFdcTrends && item.trend_count<0"
+                      :class="[{'positive-percentage': item.reverse_trend, 'negative-percentage': !item.reverse_trend}]">{{ item.trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
+                <span v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"
+                      class="neutral-percentage">{{ item.trend_count / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
+              </span>
+              </template>
+              <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span
+                v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+            </v-tooltip>
+              <span v-if="item.checked_in_custom_date_range_count != null && item.display_order>8" class="checked_in_container body-small">
+                <v-icon size="20" class="checked_in_icon">
+                    mdi-check-circle-outline
+                </v-icon>
+                {{item.checked_in_custom_date_range_count}}
+              </span>
+            </span>
+          </template>
+
+          <template #item.actualTotal2="{item, index}" class="milestone-col-td"
+                    v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0">
+            <span class="d-flex align-items-center">
+                            <span @click="funnelDrilldown(fdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true)" class="fdc-data">
+                {{ fdcColumn2Values[index].custom_date_range_count ? fdcColumn2Values[index].custom_date_range_count : 0 }}
+              </span>
+            <v-tooltip bottom v-if="viewFdcTrends">
+              <template v-slot:activator="{ on }">
+              <span v-on="viewFdcTrends?on:null" class="trends-container">
+                <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
+                      :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
+                <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"
+                      :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
+                <span v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"
+                      class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
+              </span>
+              </template>
+              <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span
+                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+            </v-tooltip>
+              <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null && fdcColumn2Values[index].display_order>8" class="checked_in_container body-small">
+                <v-icon size="20" class="checked_in_icon">
+                    mdi-check-circle-outline
+                </v-icon>
+                {{fdcColumn2Values[index].checked_in_custom_date_range_count}}
+              </span>
+            </span>
+          </template>
+          <template #item.actualTotal3="{item, index}" class="milestone-col-td"
+                    v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0">
+            <span class="d-flex align-items-center">
+                            <span @click="funnelDrilldown(fdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true)" class="fdc-data">
+                {{ fdcColumn3Values[index].custom_date_range_count ? fdcColumn3Values[index].custom_date_range_count : 0 }}
+              </span>
+            <v-tooltip bottom v-if="viewFdcTrends">
+              <template v-slot:activator="{ on }">
+              <span v-on="viewFdcTrends?on:null" class="trends-container">
+                <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
+                      :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
+                <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"
+                      :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
+                <span v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"
+                      class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  class="neutral-trendline">trending_flat</v-icon></span>
+              </span>
+              </template>
+              <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span
+                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+            </v-tooltip>
+              <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null && fdcColumn3Values[index].display_order>8" class="checked_in_container body-small">
+                <v-icon size="20" class="checked_in_icon">
+                    mdi-check-circle-outline
+                </v-icon>
+                {{fdcColumn3Values[index].checked_in_custom_date_range_count}}
+              </span>
+            </span>
+          </template>
+        </v-data-table>
       </div>
-      <!-- APPOINTMENTS TO FDC PIPELINE END -->
+    </div>
+    <div class="funnel-relative">
 
-      <!-- FUNNEL DRILLDOWN START -->
+      <!--  APPOINTMENTS TO FDC PIPELINE END-->
+
+      <!--       FUNNEL DRILLDOWN START -->
       <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
         <v-card id="funnel-drilldown">
           <v-card-title class="mb-1">
             <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
             <v-spacer></v-spacer>
             <a-btn
-                color="primary"
-                class="mr-4 mb-2"
-                @click="exportDrilldownCsv()"
-                text="Export"
+              color="primary"
+              class="mr-4 mb-2"
+              @click="exportDrilldownCsv()"
+              text="Export"
             ></a-btn>
             <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
           </v-card-title>
@@ -630,29 +1230,29 @@
                           density="compact"
             ></a-text-field>
             <span id="funnel-drilldown-row-count">
-            Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
-          </span>
+                      Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
+                    </span>
           </v-card-title>
 
           <v-card-text>
             <v-data-table
-                id="funnel-drilldown-table"
-                class="elevation-1"
-                :class="{'mt-6': funnelDrilldownData.length === 0}"
-                :mobile-breakpoint="0"
-                :headers="visibleFunnelDrilldownHeaders()"
-                fixed-header
-                :items="funnelDrilldownData"
-                @current-items="filteredFunnelDrilldownItems"
-                :search="funnelDrilldownSearch"
-                :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 395px)') : '105px'"
-                dense
-                multi-sort
-                :sort-by="[]"
-                :sort-desc="[]"
-                :loading="funnelDrilldownLoading"
-                :items-per-page="500"
-                :footer-props="footerProps"
+              id="funnel-drilldown-table"
+              class="elevation-1"
+              :class="{'mt-6': funnelDrilldownData.length === 0}"
+              :mobile-breakpoint="0"
+              :headers="visibleFunnelDrilldownHeaders()"
+              fixed-header
+              :items="funnelDrilldownData"
+              @current-items="filteredFunnelDrilldownItems"
+              :search="funnelDrilldownSearch"
+              :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 395px)') : '105px'"
+              dense
+              multi-sort
+              :sort-by="[]"
+              :sort-desc="[]"
+              :loading="funnelDrilldownLoading"
+              :items-per-page="500"
+              :footer-props="footerProps"
             >
               <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
                 <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
@@ -661,14 +1261,14 @@
                     {{ index + 1 }}
                   </td>
                   <td>{{ item.owner_name || '' }}</td>
-                  <td>{{ item.office || '' }}</td>
+                  <td>{{ item.office || '' }}</td>rt
                   <td>{{ item.state || '' }}</td>
                   <td>{{ item.metro_area || '' }}</td>
                   <td>{{ item.status_type || '' }}</td>
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
                     <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
-                                 :to="`/project/${item.project_id}/${defaultProjectPage}`">
+                                 :to="`/project/${item.project_id}/status`">
                       {{ item.project_id }}
                     </router-link>
                     <div v-else>{{ item.project_id || '' }}</div>
@@ -777,17 +1377,220 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <a-btn
-                class="text-capitalize mr-4 mb-2"
-                color="primary"
-                @click="closeFunnelDrilldownDialog"
-                text="Close"
+              class="text-capitalize mr-4 mb-2"
+              color="primary"
+              @click="closeFunnelDrilldownDialog"
+              text="Close"
             ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
-    </div>
+    </div>      <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
+    <v-card id="funnel-drilldown">
+      <v-card-title class="mb-1">
+        <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+        <v-spacer></v-spacer>
+        <a-btn
+          color="primary"
+          class="mr-4 mb-2"
+          @click="exportDrilldownCsv()"
+          text="Export"
+        ></a-btn>
+        <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
+      </v-card-title>
+      <v-divider></v-divider>
+      <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
+        <a-text-field v-model="funnelDrilldownSearch"
+                      placeholder="Type to filter..."
+                      single-line
+                      hide-details
+                      variant="outlined"
+                      density="compact"
+        ></a-text-field>
+        <span id="funnel-drilldown-row-count">
+                Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
+              </span>
+      </v-card-title>
+
+      <v-card-text>
+        <v-data-table
+          id="funnel-drilldown-table"
+          class="elevation-1"
+          :class="{'mt-6': funnelDrilldownData.length === 0}"
+          :mobile-breakpoint="0"
+          :headers="visibleFunnelDrilldownHeaders()"
+          fixed-header
+          :items="funnelDrilldownData"
+          @current-items="filteredFunnelDrilldownItems"
+          :search="funnelDrilldownSearch"
+          :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 395px)') : '105px'"
+          dense
+          multi-sort
+          :sort-by="[]"
+          :sort-desc="[]"
+          :loading="funnelDrilldownLoading"
+          :items-per-page="500"
+          :footer-props="footerProps"
+        >
+          <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
+            <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
+                :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
+              <td style="text-align: center">
+                {{ index + 1 }}
+              </td>
+              <td v-if="funnelDrilldownHeaders[1].show">{{ item.owner_name || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[2].show"> {{ item.office || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[3].show">{{ item.state || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[4].show">{{ item.metro_area || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[5].show">{{ item.status_type || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[6].show" class="customer-name">{{ item.customer_name || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[7].show">
+                <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
+                             :to="`/project/${item.project_id}/status`">
+                  {{ item.project_id }}
+                </router-link>
+                <div v-else>{{ item.project_id || '' }}</div>
+              </td>
+              <td v-if="selectedFunnel.funnel_type_id === 1 && funnelDrilldownHeaders[8].show">
+                <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && userStore.userHasFeature('EVENTS')"
+                             :to="`/project/${item.project_id}/processStep/${item.project_process_step_id}/event/${item.project_process_step_event_id}`">
+                  {{ item.project_process_step_event_id }}
+                </router-link>
+                <div v-else>{{ item.project_process_step_event_id || '' }}</div>
+              </td>
+              <!--                <td :class="item.stage">{{ item.stage || '' }}</td>-->
+              <td v-if="funnelDrilldownHeaders[9].show" :class="item.source_name_class">{{ item.source_name || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[10].show" :class="item.system_size_class">{{ item.system_size || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[11].show" :class="item.financier_class">{{ item.financier || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[12].show">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+              <td v-if="funnelDrilldownHeaders[13].show">{{ item.cancelled_date | formatDate('date', 'MM/DD/YYYY') }}</td>
+              <td v-if="funnelDrilldownHeaders[14].show">
+                {{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[15].show">
+                {{ item.appointment_outcome || '' }}
+              </td>
+              <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[16].show">
+                {{ item.credit_decision_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[17].show">
+                {{ item.credit_check || '' }}
+              </td>
+              <td :class="item.installation_agreement_signed_date_class"
+                  v-if="funnelDrilldownHeaders[18].show">
+                {{ item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.site_survey_verified_date_class"
+                  v-if="funnelDrilldownHeaders[19].show">
+                {{ item.site_survey_verified_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.site_survey_completed_date_class"
+                  v-if="funnelDrilldownHeaders[20].show">
+                {{ item.site_survey_completed_date | formatDate('timestamp', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.final_design_sent_to_homeowner_date_class"
+                  v-if="funnelDrilldownHeaders[21].show">
+                {{ item.final_design_sent_to_homeowner_date | formatDate('timestamp', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.final_design_signed_date_class"
+                  v-if="funnelDrilldownHeaders[22].show">
+                {{ item.final_design_signed_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
+                  v-if="funnelDrilldownHeaders[23].show">
+                {{ item.proof_of_homeowners_insurance_obtained_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.utility_bill_verified_date_class"
+                  v-if="funnelDrilldownHeaders[24].show">
+                {{ item.utility_bill_verified_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.financial_agreement_signed_date_class"
+                  v-if="funnelDrilldownHeaders[25].show">
+                {{ item.financial_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.cash_down_payment_class"
+                  v-if="funnelDrilldownHeaders[26].show">
+                {{ item.cash_down_payment | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.final_design_complete_date_class"
+                  v-if="funnelDrilldownHeaders[27].show">
+                {{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.substantial_completion_date_class"
+                  v-if="funnelDrilldownHeaders[28].show">
+                {{ item.substantial_completion_date | formatDate('date', 'MM/DD/YYYY') }}
+              </td>
+              <td :class="item.checked_in_time_date_class"
+                  v-if="funnelDrilldownHeaders[29].show">
+                {{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}
+              </td>
+            </tr>
+          </template>
+          <template v-if="showTotalSystemSize" v-slot:body.append>
+            <tr id="total-system-size-row">
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td id="total-system-size-label">Total Size:</td>
+              <td>{{ totalSystemSize ? totalSystemSize : 0 }}</td>
+            </tr>
+          </template>
+
+          <template #no-data>
+            <div class="my-3 funnel-drilldown-no-data-msg">
+              No data is available for the selected date range.
+            </div>
+          </template>
+
+          <template #no-results>
+            <div class="my-3 funnel-drilldown-no-data-msg">
+              No matching records found.
+            </div>
+          </template>
+        </v-data-table>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <a-btn
+          class="text-capitalize mr-4 mb-2"
+          color="primary"
+          @click="closeFunnelDrilldownDialog"
+          text="Close"
+        ></a-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
     <!-- FUNNEL DRILLDOWN END -->
     <!------------------------------------- FUNNEL TAB END ------------------------------------>
+
+    <ConfirmationDialog v-if="selectingCustomDates" :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @cancel="cancelCustomDialogue()" @close-dialog="selectingCustomDates = false">
+      <template v-slot:title>Custom Date Range</template>
+      <div>
+        <DatetimePickerInput
+          v-model="customDate.startDate"
+          :timezone="timezone"
+          :type="'date'"
+          :format="'MMMM DD, YYYY'"
+          input-format="HH:mm:ss"
+          label="Start Date"
+        />
+        <DatetimePickerInput
+          v-model="customDate.endDate"
+          :timezone="timezone"
+          :type="'date'"
+          :format="'MMMM DD, YYYY'"
+          input-format="HH:mm:ss"
+          label="End Date"
+        />
+      </div>
+      <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Confirm</template>
+
+    </ConfirmationDialog>
+
   </v-container>
 </template>
 
@@ -795,10 +1598,12 @@
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import moment from 'moment'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, getRequest, postRequest, getProjectPath} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest,  getRequestWithParams} from '@/helpers/helpers'
+
 import SpinnerInline from '@/components/SpinnerInline'
-import { saveAs } from 'file-saver'
+import {saveAs} from 'file-saver'
 import {
   getCloserAreas,
   getCloserRegions,
@@ -808,7 +1613,7 @@ import {
 } from '@/services/dashboardService'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
+import { useUserStore } from "@/stores/UserStore.js";
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 
@@ -818,28 +1623,65 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const filters = vueInstance.$filters
 
-
-const defaultProjectPage = ref(getProjectPath().pathSuffix)
+const viewFdcTrends = ref(false)
+const viewTrends = ref(false)
+const viewOnlyMajorMilestones = ref(false)
+const disableTrends = ref(false)
+const firstDateRange = ref(2)
+const secondDateRange = ref(null)
+const thirdDateRange = ref(null)
+const fdcFirstDateRange = ref(2)
+const fdcSecondDateRange = ref(null)
+const fdcThirdDateRange = ref(null)
+const firstCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
+const secondCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
+const thirdCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
+const fdcFirstCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
+const fdcSecondCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
+const fdcThirdCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
+const firstPeriod = ref(null)
+const secondPeriod = ref(null)
+const thirdPeriod = ref(null)
+const isLoading = ref(true)
+const isBrCorporateUser = ref(userStore.details.companyId === 2)
+const openFirstMenu = ref(false)
+const openSecondMenu = ref(false)
+const openThirdMenu = ref(false)
+const fdcOpenFirstMenu = ref(false)
+const fdcOpenSecondMenu = ref(false)
+const fdcOpenThirdMenu = ref(false)
 const funnelDrilldownDialog = ref(false)
 const currentUserOrgId = ref(null)
 const dropdownValuesLoading = ref(true)
+const dropdownValues = ref([])
 const isCloser = ref(false)
 const isCloserMgr = ref(false)
 const isCloserDistrictMgr = ref(false)
 const selectedFunnel = ref({})
 const isCloserRegional = ref(false)
+const userCanViewAll = ref(userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'))
+const userCanViewAllProjects = ref(userStore.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL'))
 const headers = ref([
-  {text: '', value: '', show: true, sortable: false},
-  {text: 'Name', value: 'customer_name', show: true},
-  {text: 'Project ID', value: 'id', show: true},
-  {text: 'Source', value: 'source_name', show: true},
-  {text: 'System Size', value: 'system_size', show: true},
-  {text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true}
 ])
+const reverseTrends = ref([
+  'Cancelled in advance',
+  'Ineligible for solar',
+  'Rescheduled',
+  'Homeowner no show',
+  'Closer missed appointment',
+  'Turned away at the door',
+  'No utility bill',
+  'Non-dispositioned appointments'
+])
+const fdcHeaders = ref([])
 const drilldownData = ref([])
 const apptsCreatedPipelineLoaded = ref(false)
 const apptsToFdcPipelineLoaded = ref(false)
+const appointmentTypes = ref([])
+const appointmentTypesModel = ref([])
 const funnelsWereLoaded = ref(false)
 const currentQuarter = ref(moment().quarter())
 const closerOffices = ref([])
@@ -848,6 +1690,11 @@ const leadAllocationRankingData = ref([])
 const officeFdcRankingData = ref([])
 const officeRankingData = ref([])
 const topRepsData = ref([])
+const customColumn = ref(1)
+const customTable = ref('apptsCreated')
+const milestonesExpanded = ref(true)
+const apptsCreatedExpanded = ref(true)
+const fdcPipelineExpanded = ref(true)
 const userOffice = ref('')
 const userRow = ref([])
 const userRowIndex = ref(-1)
@@ -864,7 +1711,15 @@ const wtdUpperPercentage = ref(99)
 const wtdLowerPercentage = ref(99)
 const cdrUpperPercentage = ref(99)
 const cdrLowerPercentage = ref(99)
+const fdcExpandableMilestones = ref([0, 3, 11, 14])
+const milestonesSwitching = ref(false)
+const hideInactiveReps = ref(false)
+const fdcMilestonesExpanded = ref([true, true, true, true])
 const brsProvidedSourceModel = ref([])
+const leadsCreatedSourceModel = ref([])
+const leadsCreatedSourceData = ref([])
+const fdcSourceModel = ref([])
+const fdcSourceData = ref([])
 const brsProvidedSourceData = ref([])
 const selfGenSourceModel = ref([])
 const selfGenSourceData = ref([])
@@ -880,6 +1735,7 @@ const repModel = ref([])
 const repData = ref([])
 const repDataMaster = ref([])
 const repDataSelectAll = ref(false)
+const appointmentTypesSelectAll = ref(false)
 const apptsCreatedPipelineDateRanges = ref([
   {label: 'Yesterday', value: 'yesterday'},
   {label: 'Last Week', value: 'lastWeek'},
@@ -913,12 +1769,16 @@ const apptsToFdcPipelineDateRange = ref({label: 'Month to Date', value: 'MTD'
 const showApptsToFdcPipelineCustomDates = ref(false)
 const viewSelect = ref('standard')
 const appts_created_pipeline_dt1 = ref(moment().startOf('month').format('YYYY-MM-DD'))
+const appts_created_pipeline_dt1_formatted = ref(moment().startOf('month').format('M/D/YY'))
 const appts_created_pipeline_menu1 = ref(false)
 const appts_created_pipeline_dt2 = ref(moment().format('YYYY-MM-DD'))
+const appts_created_pipeline_dt2_formatted = ref(moment().format('M/D/YY'))
 const appts_created_pipeline_menu2 = ref(false)
 const appts_to_fdc_pipeline_dt1 = ref(moment().startOf('month').format('YYYY-MM-DD'))
+const appts_to_fdc_pipeline_dt1_formatted = ref(moment().startOf('month').format('M/D/YY'))
 const appts_to_fdc_pipeline_menu1 = ref(false)
 const appts_to_fdc_pipeline_dt2 = ref(moment().format('YYYY-MM-DD'))
+const appts_to_fdc_pipeline_dt2_formatted = ref(moment().format('M/D/YY'))
 const appts_to_fdc_pipeline_menu2 = ref(false)
 const funnelDrilldownTitle = ref('')
 const funnelDrilldownData = ref([])
@@ -928,29 +1788,40 @@ const filteredFunnelDrilldownData = ref([])
 const funnelDrilldownRowCount = ref(0)
 const totalSystemSize = ref(0)
 const repLengthOverride = ref(false)
-const closerDashContainer = ref(null)
-const myDynamicAreaWatcher = ref(null)
-const myDynamicRegionWatcher = ref(null)
-const myDynamicDistrictWatcher = ref(null)
-const myDynamicOfficeWatcher = ref(null)
-const myDynamicRepWatcher = ref(null)
-const areaSelect = ref(null)
-const regionSelect = ref(null)
-const districtSelect = ref(null)
-const officeSelect = ref(null)
-const repSelect = ref(null)
 const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
   'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]})
+const column2Values = ref([])
+const column3Values = ref([])
+const fdcColumn2Values = ref([])
+const fdcColumn3Values = ref([])
+const selectingCustomDates = ref(false)
+const customDate = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
+const closerDashContainer = ref(null)
 
+const timezone = computed(() => {
+  return userStore.timezone.value || 'US/Mountain'
+})
 const currentUserId = computed(() => {
   return userStore.details.id
 })
-const userCanViewAll = computed(() => {
-  return userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL')
+
+const filteredApptsCreatedPipelineData = computed(() => {
+  if(!milestonesExpanded.value){
+    return apptsCreatedPipelineData.value.filter(dv => dv.display_order < 3)
+  }
+  return apptsCreatedPipelineData.value
 })
-const userCanViewAllProjects = computed(() => {
-  return userStore.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL')
+const filteredFdcPipelineData = computed(() => {
+  // return apptsToFdcPipelineData.value?.filter((data, index) => {
+  //   return fdcExpandableMilestones.value?.includes(index)
+  // })
+  if(viewOnlyMajorMilestones.value){
+    return apptsToFdcPipelineData.value?.filter((data, index) => {
+      return fdcExpandableMilestones.value?.includes(index)
+    })
+  }
+  else return apptsToFdcPipelineData.value
 })
 const funnelDrilldownHeaders = computed(() => {
   return [
@@ -962,15 +1833,53 @@ const funnelDrilldownHeaders = computed(() => {
     {text: 'Status', value: 'status_type', show: true, width: 75, optional: false}, // 5
     {text: 'Name', value: 'customer_name', show: true, width: 90, optional: false}, // 6
     {text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false}, // 7
-    {text: 'Event ID', value: 'project_process_step_event_id', show: selectedFunnel.value.funnel_type_id === 1, width: 85, optional: false}, // 8
+    {
+      text: 'Event ID',
+      value: 'project_process_step_event_id',
+      show: selectedFunnel.value.funnel_type_id === 1,
+      width: 85,
+      optional: false
+    }, // 8
     {text: 'Source', value: 'source_name', show: true, width: 85, optional: false}, // 9
     {text: 'System Size', value: 'system_size', show: true, width: 110, optional: false}, // 10
     {text: 'Financier', value: 'financier', show: true, width: 95, optional: false}, // 11
-    {text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 12
-    {text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 13
-    {text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 14
+    {
+      text: 'Appointment Date',
+      value: 'appointment_date',
+      show: true,
+      width: 145,
+      optional: false,
+      dateType: 'timestamp',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 12
+    {
+      text: 'Cancelled Date',
+      value: 'cancelled_date',
+      show: true,
+      width: 130,
+      optional: false,
+      dateType: 'date',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 13
+    {
+      text: 'Date Created',
+      value: 'date_created',
+      show: false,
+      width: 115,
+      optional: true,
+      dateType: 'timestamp',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 14
     {text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true}, // 15
-    {text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 16
+    {
+      text: 'Credit Decision Date',
+      value: 'credit_decision_date',
+      show: false,
+      width: 160,
+      optional: true,
+      dateType: 'date',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 16
     {text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true}, // 17
     {
       text: 'Installation Agreement Signed Date',
@@ -986,7 +1895,15 @@ const funnelDrilldownHeaders = computed(() => {
       width: 160,
       optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
     }, // 19
-    {text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 20
+    {
+      text: 'Site Survey Date',
+      value: 'site_survey_completed_date',
+      show: false,
+      width: 155,
+      optional: true,
+      dateType: 'timestamp',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 20
     {
       text: 'FD Sent to Homeowner Date',
       value: 'final_design_sent_to_homeowner_date',
@@ -994,7 +1911,15 @@ const funnelDrilldownHeaders = computed(() => {
       width: 200,
       optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'
     }, // 21
-    {text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 22
+    {
+      text: 'Final Design Approved',
+      value: 'final_design_signed_date',
+      show: false,
+      width: 165,
+      optional: true,
+      dateType: 'date',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 22
     {
       text: 'Proof of HOI Obtained Date',
       value: 'proof_of_homeowners_insurance_obtained_date',
@@ -1016,8 +1941,24 @@ const funnelDrilldownHeaders = computed(() => {
       width: 195,
       optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
     }, // 25
-    {text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 26
-    {text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 27
+    {
+      text: 'Cash Down Payment',
+      value: 'cash_down_payment',
+      show: false,
+      width: 160,
+      optional: true,
+      dateType: 'date',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 26
+    {
+      text: 'Final Design Completed',
+      value: 'final_design_complete_date',
+      show: false,
+      width: 160,
+      optional: true,
+      dateType: 'date',
+      dateFormat: 'MM/DD/YYYY'
+    }, // 27
     {
       text: 'Substantial Completion Date',
       value: 'substantial_completion_date',
@@ -1025,8 +1966,17 @@ const funnelDrilldownHeaders = computed(() => {
       width: 175,
       optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
     }, // 28
-    {text: 'Checked In Time', value: 'checked_in_time', show: false, width: 160, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY h:mm a'}, // 29
-  ]})
+    {
+      text: 'Checked In Time',
+      value: 'checked_in_time',
+      show: false,
+      width: 160,
+      optional: true,
+      dateType: 'timestamp',
+      dateFormat: 'MM/DD/YYYY h:mm a'
+    }, // 29
+  ]
+})
 const windowInnerWidth = computed(() => {
   return window.innerWidth
 })
@@ -1045,14 +1995,42 @@ const brsProvidedSourcesSelectIcon = computed(() => {
   }
   return 'check_box_outline_blank'
 })
+const selectSomeLeadsCreatedSources = computed(() => {
+  return leadsCreatedSourceModel.value.length > 0 && !selectAllLeadsCreatedSources.value
+})
+const leadsCreatedSourcesSelectIcon = computed(() => {
+  if (leadsCreatedSourceModel.value.length === leadsCreatedSourceData.value.length) {
+    return 'check_box'
+  }
+  if (selectSomeLeadsCreatedSources.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
 const selectAllSelfGenSources = computed(() => {
   return selfGenSourceModel.value.length === selfGenSourceData.value.length
+})
+const selectAllLeadsCreatedSources = computed(() => {
+  return leadsCreatedSourceModel.value.length === leadsCreatedSourceData.value.length
+})
+const selectAllFdcLeadsCreatedSources = computed(() => {
+  return fdcSourceModel.value.length === fdcSourceData.value.length
 })
 const selectSomeSelfGenSources = computed(() => {
   return selfGenSourceModel.value.length > 0 && !selectAllSelfGenSources.value
 })
 const selfGenSourcesSelectIcon = computed(() => {
   if (selfGenSourceModel.value.length === selfGenSourceData.value.length) {
+    return 'check_box'
+  }
+  if (selectSomeSelfGenSources.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+
+const fdcSourcesSelectIcon = computed(() => {
+  if (fdcSourceModel.value.length === fdcSourceData.value.length) {
     return 'check_box'
   }
   if (selectSomeSelfGenSources.value) {
@@ -1135,22 +2113,32 @@ const repSelectIcon = computed(() => {
   }
   return 'check_box_outline_blank'
 })
+
+const appointmentTypesIcon = computed(() => {
+  if (appointmentTypesModel.value.length === appointmentTypes.value.length) {
+    return 'check_box'
+  }
+  return 'check_box_outline_blank'
+})
+// visibleFunnelDrilldownHeaders() {
+//   return funnelDrilldownHeaders.value.filter(header => header.show === true)
+// },
 const showTotalSystemSize = computed(() => {
   return funnelDrilldownRowCount.value > 0
 })
-const appts_created_pipeline_dt1_formatted = computed(() => {
-  return formatFunnelDate(appts_created_pipeline_dt1.value)
-})
-const appts_created_pipeline_dt2_formatted = computed(() => {
-  return formatFunnelDate(appts_created_pipeline_dt2.value)
-})
-const appts_to_fdc_pipeline_dt1_formatted = computed(() => {
-  return formatFunnelDate(appts_to_fdc_pipeline_dt1.value)
-})
-const appts_to_fdc_pipeline_dt2_formatted = computed(() => {
-  return formatFunnelDate(appts_to_fdc_pipeline_dt2.value)
-})
 
+watch(appts_created_pipeline_dt1, () => {
+  appts_created_pipeline_dt1_formatted.value = formatFunnelDate(appts_created_pipeline_dt1.value)
+})
+watch(appts_created_pipeline_dt2, () => {
+  appts_created_pipeline_dt2_formatted.value = formatFunnelDate(appts_created_pipeline_dt2.value)
+})
+watch(appts_to_fdc_pipeline_dt1, () => {
+  appts_to_fdc_pipeline_dt1_formatted.value = formatFunnelDate(appts_to_fdc_pipeline_dt1.value)
+})
+watch(appts_to_fdc_pipeline_dt2, () => {
+  appts_to_fdc_pipeline_dt2_formatted.value = formatFunnelDate(appts_to_fdc_pipeline_dt2.value)
+})
 watch(funnelDrilldownDialog, (val) => {
   if (!val) {
     funnelDrilldownSearch.value = ''
@@ -1165,11 +2153,525 @@ watch(filteredFunnelDrilldownData, () => {
   calcTotalSystemSize()
 })
 
+onMounted(async() => {
+  await getDropdownValues();
+  await getAppointmentTypes();
+  if (userStore.details.userPositions?.length > 0) {
+    let positionId = null
+
+    isCloser.value = userStore.details.userPositions.filter(position => {
+      return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
+    }).length > 0
+
+    isCloserMgr.value = userStore.details.userPositions.filter(position => {
+      return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
+    }).length > 0
+
+    isCloserDistrictMgr.value = userStore.details.userPositions.filter(position => {
+      return (position.positionId === 517 && !position.endDate && !position.archived && position.primaryFlag)
+    }).length > 0
+
+    let fakeCloserMgr = userStore.details.userPositions.filter(position => {
+      return (position.positionId === 326 && !position.endDate && !position.archived && position.primaryFlag)
+    }).length > 0
+
+    isCloserRegional.value = userStore.details.userPositions.filter(position => {
+      return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
+    }).length > 0
+
+    if (isCloser.value) {
+      positionId = 1
+    } else if (isCloserMgr.value) {
+      positionId = 2
+    } else if (isCloserDistrictMgr.value) {
+      positionId = 517
+    } else if (isCloserRegional.value) {
+      positionId = 3
+    } else if (fakeCloserMgr) {
+      positionId = 326
+    }
+
+    if (isCloser.value || isCloserMgr.value || isCloserDistrictMgr.value || isCloserRegional.value) {
+      currentUserOrgId.value = userStore.details.userPositions.filter(position => {
+        return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
+      })[0]?.orgId
+    }
+
+    if (fakeCloserMgr || isCloserDistrictMgr.value) {
+      isCloserMgr.value = true
+    }
+  }
+
+  appStore.loading = true;
+  await loadFunnels()
+  appStore.loading = false;
+  funnelsWereLoaded.value = true
+  headers.value = [
+    {text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true},
+    {text: 'Source', value: 'source', align: 'left', sortable: false, class: 'total-col-th data-col-th', show: true},
+    {
+      text: 'Today',
+      value: 'actualTotal',
+      align: 'left',
+      class: 'total-col-th data-col-th',
+      show: !isBrCorporateUser.value
+    },
+    {
+      text: 'Today2',
+      value: 'actualTotal2',
+      align: 'left',
+      class: 'total-col-th data-col-th',
+      show: !isBrCorporateUser.value
+    },
+    {
+      text: 'Today3',
+      value: 'actualTotal3',
+      align: 'left',
+      class: 'total-col-th data-col-th',
+      show: !isBrCorporateUser.value
+    },
+  ]
+  fdcHeaders.value = [
+    {text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true}, {
+      text: 'Today',
+      value: 'actualTotal',
+      align: 'left',
+      class: 'total-col-th data-col-th',
+      show: !isBrCorporateUser.value
+    },
+    {
+      text: 'Today2',
+      value: 'actualTotal2',
+      align: 'left',
+      class: 'total-col-th data-col-th',
+      show: !isBrCorporateUser.value
+    },
+    {
+      text: 'Today3',
+      value: 'actualTotal3',
+      align: 'left',
+      class: 'total-col-th data-col-th',
+      show: !isBrCorporateUser.value
+    },
+  ]
+})
+
+const resetFilters = async()=> {
+  areaModel.value = []
+  regionModel.value = []
+  districtModel.value = []
+  officeModel.value = []
+  repModel.value = []
+  repData.value = cloneDeep(repDataMaster.value)
+}
+const exportCsv = async () => {
+  appStore.loading = true
+  try {
+    let filename = 'CompanyDashboard.csv'
+    let csvData = ' , '
+    if(dropdownValues.value.find(x => x.id === firstDateRange.value).name==='PERIOD'){
+      csvData += dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].shortLabel;
+    }
+    else
+    {
+      csvData += ((dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'CUSTOM') ? firstCustom.value.name : dropdownValues.value.find(x => x.id === firstDateRange.value).friendlyName);
+    }
+    if(viewTrends.value){
+      csvData += ', ' +  'Trend 1'
+    }
+    if(secondDateRange.value){
+      if(dropdownValues.value.find(x => x.id === secondDateRange.value).name==='PERIOD'){
+        csvData += ' , ' + dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].shortLabel;
+      }
+      else
+      {
+        csvData += ', ' + ((dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'CUSTOM') ? secondCustom.value.name : dropdownValues.value.find(x => x.id === secondDateRange.value).friendlyName);
+      }
+      if(viewTrends.value){
+        csvData += ', ' +  'Trend 2'
+      }
+    }
+    if(thirdDateRange.value){
+      if(dropdownValues.value.find(x => x.id === thirdDateRange.value).name==='PERIOD'){
+        csvData += ' , ' + dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].shortLabel;
+      }
+      else
+      {
+        csvData += ', ' + ((dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'CUSTOM') ? thirdCustom.value.name : dropdownValues.value.find(x => x.id === thirdDateRange.value).friendlyName);
+      }
+      if(viewTrends.value){
+        csvData += ', ' +  'Trend 3'
+      }
+    }
+    csvData += '\n';
+
+    apptsCreatedPipelineData.value.forEach((p, i) => {
+      csvData += p.name + ',' + (p.leads_created_count ? p.leads_created_count : 0);
+      if (viewTrends.value) {
+        csvData += ', ' + (p.trend ? p.trend : 0) + '%';
+      }
+      if (secondDateRange.value) {
+        csvData += ', ' + (column2Values.value[i].leads_created_count ? column2Values.value[i].leads_created_count : 0)
+        if (viewTrends.value) {
+          csvData += ', ' + (column2Values.value[i].trend ? column2Values.value[i].trend : 0) + '%';
+        }
+      }
+      if (thirdDateRange.value) {
+        csvData += ', ' + (column3Values.value[i].leads_created_count ? column3Values.value[i].leads_created_count : 0)
+        if (viewTrends.value) {
+          csvData += ', ' + (column3Values.value[i].trend ? column3Values.value[i].trend : 0) + '%';
+        }
+      }
+      csvData += '\n';
+    })
+
+
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
+
+    saveAs(blob, filename);
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Exporting Residual Review')
+
+    appStore.loading = false
+  }
+}
+const changeSources = () => {
+  if(firstDateRange.value != null) {
+    apptsCreatedPipelineLoad(1);
+  }
+  if(secondDateRange.value != null) {
+    apptsCreatedPipelineLoad(2);
+  }
+  if(thirdDateRange.value != null) {
+    apptsCreatedPipelineLoad(3)
+  }
+}
+const expandMilestones = () => {
+  milestonesExpanded.value = true;
+}
+const hideMilestones = () => {
+  milestonesExpanded.value = false;
+}
+const getDropdownValues = async() => {
+  try {
+    const params = {
+      today: moment().format('YYYY-MM-DD')
+    }
+
+    const {data, status} = await getRequestWithParams('/closerDashboard/dropdownValues', {params}, 'blueraven', [])
+    dropdownValues.value = data;
+    isLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving data')
+  }
+}
+const getAppointmentTypes = async() => {
+  try {
+
+    const params = {
+      today: moment().format('YYYY-MM-DD')
+    }
+
+    const {data, status} = await getRequest('/closerDashboard/appointmentTypes', 'blueraven', [])
+    appointmentTypes.value = data;
+    appointmentTypesModel.value = cloneDeep(appointmentTypes.value)
+    isLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving data')
+    isLoading.value = false
+  }
+}
+const openDrilldown = async(item, column) => {
+  if(column === 1){
+    if(dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'PERIOD'){
+      startDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
+      endDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
+    }
+    else {
+      startDate.value = dropdownValues.value.find(x => x.id === firstDateRange.value).startDate ? dropdownValues.value.find(x => x.id === firstDateRange.value).startDate : moment(firstCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = dropdownValues.value.find(x => x.id === firstDateRange.value).endDate ? dropdownValues.value.find(x => x.id === firstDateRange.value).endDate : moment(firstCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
+    }
+  }
+  else if(column === 2){
+    if(dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'PERIOD'){
+      startDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
+      endDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
+    }
+    else {
+      startDate.value = dropdownValues.value.find(x => x.id === secondDateRange.value).startDate ? dropdownValues.value.find(x => x.id === secondDateRange.value).startDate : moment(secondCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = dropdownValues.value.find(x => x.id === secondDateRange.value).endDate ? dropdownValues.value.find(x => x.id === secondDateRange.value).endDate : moment(secondCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
+    }
+  }
+  else if(column === 3){
+    if(dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'PERIOD'){
+      startDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
+      endDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
+    }
+    else {
+      startDate.value = dropdownValues.value.find(x => x.id === thirdDateRange.value).startDate ? dropdownValues.value.find(x => x.id === thirdDateRange.value).startDate : moment(thirdCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = dropdownValues.value.find(x => x.id === thirdDateRange.value).endDate ? dropdownValues.value.find(x => x.id === thirdDateRange.value).endDate : moment(thirdCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
+    }
+  }
+  if((moment(endDate.value).diff(moment(startDate.value), 'days')+1) > 100){
+    return;
+  }
+  selectedMilestone.value = item
+  await getDrilldownHeaders()
+  await getDrilldownData(column)
+  showDrilldown.value = true
+}
+
+const changeFdcDropdownSelection = async(dropdown) => {
+  customTable.value = 'FDC'
+  if (dropdown === 1) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcFirstDateRange.value))
+    if (result === null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!fdcFirstCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 1;
+          if (fdcFirstCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = fdcFirstCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (fdcFirstCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = fdcFirstCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[firstPeriod.value].startDate;
+          result.endDate = result.periodList[firstPeriod.value].endDate;
+          if (firstPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[firstPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[firstPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(fdcFirstCustom.value);
+        resetCustomDate();
+        fdcFirstCustom.value.isActive = false;
+      }
+    } else if (result.name === 'ALL_TIME') {
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    await apptsToFdcPipelineLoad(1);
+  } else if (dropdown === 2) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcSecondDateRange.value))
+    if (result === null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!fdcSecondCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 2;
+          if (fdcSecondCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = fdcSecondCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (fdcSecondCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = fdcSecondCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[secondPeriod.value].startDate;
+          result.endDate = result.periodList[secondPeriod.value].endDate;
+          if (secondPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[secondPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[secondPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(fdcSecondCustom.value);
+        resetCustomDate();
+        fdcSecondCustom.value.isActive = false;
+      }
+    } else if (result.name === 'ALL_TIME') {
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    await apptsToFdcPipelineLoad(2);
+  } else if (dropdown === 3) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcThirdDateRange.value))
+    if (result == null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!fdcThirdCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 3;
+          if (fdcThirdCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = fdcThirdCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (fdcThirdCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = fdcThirdCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[thirdPeriod.value].startDate;
+          result.endDate = result.periodList[thirdPeriod.value].endDate;
+          if (thirdPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[thirdPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[thirdPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(fdcThirdCustom.value);
+        resetCustomDate();
+      }
+    } else if (result.name === 'ALL_TIME') {
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    await apptsToFdcPipelineLoad(3);
+  }
+}
+
+const changeDropdownSelection = async(dropdown) => {
+  customTable.value = 'apptsCreated'
+  if (dropdown === 1) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === firstDateRange.value))
+    if (result === null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!firstCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 1;
+          if (firstCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = firstCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (firstCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = firstCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[firstPeriod.value].startDate;
+          result.endDate = result.periodList[firstPeriod.value].endDate;
+          if (firstPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[firstPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[firstPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(firstCustom.value);
+        resetCustomDate();
+        firstCustom.value.isActive = false;
+      }
+    } else if (result.name === 'ALL_TIME') {
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    await apptsCreatedPipelineLoad(1);
+  } else if (dropdown === 2) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === secondDateRange.value))
+    if (result === null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!secondCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 2;
+          if (secondCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = secondCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (secondCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = secondCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[secondPeriod.value].startDate;
+          result.endDate = result.periodList[secondPeriod.value].endDate;
+          if (secondPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[secondPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[secondPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(secondCustom.value);
+        resetCustomDate();
+        secondCustom.value.isActive = false;
+      }
+    } else if (result.name === 'ALL_TIME') {
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    await apptsCreatedPipelineLoad(2);
+  } else if (dropdown === 3) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === thirdDateRange.value))
+    if (result == null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!thirdCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 3;
+          if (thirdCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = thirdCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (thirdCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = thirdCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[thirdPeriod.value].startDate;
+          result.endDate = result.periodList[thirdPeriod.value].endDate;
+          if (thirdPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[thirdPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[thirdPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(thirdCustom.value);
+        resetCustomDate();
+      }
+    } else if (result.name === 'ALL_TIME') {
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    await apptsCreatedPipelineLoad(3);
+  }
+}
+const getDropdownById = (id) => {
+  return dropdownValues.value.find(x => x.id === id)
+}
 const exportDrilldownCsv = () => {
   let csv = ''
 
   visibleFunnelDrilldownHeaders().forEach(h => {
-    if(h.text !== '') {
+    if (h.text !== '') {
       return csv += `${h.text},`
     }
   })
@@ -1178,12 +2680,12 @@ const exportDrilldownCsv = () => {
   funnelDrilldownData.value.forEach(o => {
 
     visibleFunnelDrilldownHeaders().forEach(h => {
-      if(h.text !== '') {
-        if(h.dateType !== null && h.dateType !== undefined) {
+      if (h.text !== '') {
+        if (h.dateType !== null && h.dateType !== undefined) {
           //if it is a date it needs to be formatted here
-          csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : vueInstance.$filters.formatDate(o[h.value], h.dateType, h.dateFormat)}`+'",'
+          csv += '"' + `${o[h.value] === null || o[h.value] === undefined ? '' : filters.formatDate(o[h.value], h.dateType, h.dateFormat)}` + '",'
         } else {
-          csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : o[h.value]}`+'",'
+          csv += '"' + `${o[h.value] === null || o[h.value] === undefined ? '' : o[h.value]}` + '",'
         }
       }
     })
@@ -1193,15 +2695,64 @@ const exportDrilldownCsv = () => {
   const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
   saveAs(blob, `${funnelDrilldownTitle.value}.csv`)
 }
+const itemRowBackground = (item) => {
+  return item.display_order < 3 ? 'shaded-row' : ''
+}
+const fdcRowBackground = (item) => {
+  return fdcExpandableMilestones.value.includes(item.display_order-4) ? 'shaded-row' : ''
+}
+const fdcExpandMilestone = (index)=> {
+  milestonesSwitching.value = true
+  fdcMilestonesExpanded.value[fdcExpandableMilestones.value.indexOf(index)] = true
+  milestonesSwitching.value = false
+
+}
+const fdcHideMilestone = (index)=> {
+  milestonesSwitching.value = true
+  fdcMilestonesExpanded.value[fdcExpandableMilestones.value.indexOf(index)] = false
+  milestonesSwitching.value = false
+}
+
 const visibleFunnelDrilldownHeaders = () => {
   return funnelDrilldownHeaders.value.filter(header => header.show === true)
 }
+
 const resetScrollBarPosition = () => {
   // reset scroll bar position to top
   closerDashContainer.value.scrollTop = 0
 }
 
 /* FUNNEL-RELATED CODE START */
+const toggleSelectAllBrsProvidedSources = () => {
+  vueInstance.$nextTick(() => {
+    if (selectAllBrsProvidedSources.value) {
+      brsProvidedSourceModel.value = []
+      apptsCreatedPipelineData.value[0] = {
+        id: 12,
+        name: 'BRS provided appointments created',
+        today_count: 0,
+        week_to_date_count: 0,
+        custom_date_range_count: 0
+      }
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
+    } else {
+      brsProvidedSourceModel.value = cloneDeep(brsProvidedSourceData.value)
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
+    }
+  })
+}
 const chooseApptsCreatedPipelineDateRange = (dateRange) => {
   if (showApptsCreatedPipelineCustomDates.value) {
     showApptsCreatedPipelineCustomDates.value = false
@@ -1277,7 +2828,7 @@ const chooseApptsToFdcPipelineDateRange = (dateRange) => {
 const viewSelected = (view) => {
   if (viewSelect.value !== view) {
     viewSelect.value = view
-    apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
+    apptsToFdcPipelineLoad(1)
   }
 }
 
@@ -1294,29 +2845,36 @@ const parseFunnelDate = (date) => {
 }
 
 const loadFunnels = async() => {
-  //we only show the appts created pipeline if they can see all projects. so don't load the data for it unless that is true too
-  if (userCanViewAllProjects.value && apptsCreatedPipelineData.value?.length === 0) {
+  if (apptsCreatedPipelineData.value?.length === 0) {
     loadSources()
   }
 
-  if (apptsToFdcPipelineData.value?.length === 0) {
-    if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
-      await areaLoad(true)
-      await regionLoad(true, true)
-      await districtLoad(true, true)
-      await officeLoad(true, true)
-      repLoad(true)
-    } else {
-      await areaLoad(false)
-      await regionLoad(false, true)
-      await districtLoad(false, true)
-      await officeLoad(false, true)
-      repLoad(false)
+  if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
+    await areaLoad(true)
+    await regionLoad(true, true)
+    await districtLoad(true, true)
+    await officeLoad(true, true)
+    repLoad(true)
+  } else {
+    await areaLoad(false)
+    await regionLoad(false, true)
+    await districtLoad(false, true)
+    await officeLoad(false, true)
+    repLoad(false)
+  }
+
+  if (apptsToFdcPipelineData.value?.length > 0) {
+    apptsToFdcPipelineLoad(1)
+    if (secondDateRange.value) {
+      apptsToFdcPipelineLoad(2)
+    }
+    if (thirdDateRange.value) {
+      apptsToFdcPipelineLoad(3)
     }
   }
 }
 
-const funnelAllReps = () => {
+const funnelAllReps = async() => {
   areaModel.value = []
   districtModel.value = []
   regionModel.value = []
@@ -1330,32 +2888,43 @@ const funnelAllReps = () => {
     {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
   ]
 
-  apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
+  // apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
+  await apptsToFdcPipelineLoad(1)
 }
 
-const loadSources = () => {
+const loadSources = async() => {
   try {
+    //todo: should be changed to await
     getRequest('/closerDashboard/getBrsProvidedSources', 'blueraven', []).then(res => {
+      let filteredData = res.data.filter((data) => data.sourceName != 'EPC')
+      if(isCloser.value || isCloserMgr.value){
+        res.data = filteredData
+      }
       brsProvidedSourceData.value = res.data
-      brsProvidedSourceModel.value = cloneDeep(brsProvidedSourceData.value)
-
+      leadsCreatedSourceData.value = res.data
+      fdcSourceData.value = res.data
+      brsProvidedSourceModel.value = cloneDeep(filteredData)
+      leadsCreatedSourceModel.value = cloneDeep(filteredData);
+      fdcSourceModel.value = cloneDeep(filteredData);
       getRequest('/closerDashboard/getSelfGenSources', 'blueraven', []).then(res => {
         selfGenSourceData.value = res.data
         selfGenSourceModel.value = cloneDeep(selfGenSourceData.value)
-        apptsCreatedPipelineLoad(appts_created_pipeline_dt1.value, appts_created_pipeline_dt2.value)
+        apptsCreatedPipelineLoad(1)
       })
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving lists of sources')
+    snackbar('ERROR', 'Error retrieving lists of sources')
 
   }
 }
 
-const apptsCreatedPipelineLoad = async(start, end) => {
+const apptsCreatedPipelineLoad = async(column) => {
   apptsCreatedPipelineLoaded.value = false
   let brsProvidedSources = []
   let selfGenSources = []
+  let leadsCreatedSources = []
+  let dateSelected = null
 
   brsProvidedSourceModel.value?.forEach(brsProvidedSource => {
     if (brsProvidedSource.sourceId) {
@@ -1369,17 +2938,73 @@ const apptsCreatedPipelineLoad = async(start, end) => {
     }
   })
 
+  leadsCreatedSourceModel.value.forEach(leadsCreatedSource => {
+    if (leadsCreatedSource.sourceId) {
+      leadsCreatedSources.push(leadsCreatedSource.sourceId)
+    }
+  })
+
+  if(column === 1){
+    dateSelected = getDropdownById(firstDateRange.value)
+    if(dateSelected.periodList != null){
+      dateSelected.startDate = dateSelected.periodList[firstPeriod.value].startDate;
+      dateSelected.endDate = dateSelected.periodList[firstPeriod.value].endDate;
+      dateSelected.trendStart = dateSelected.periodList[firstPeriod.value].trendStart;
+      dateSelected.trendEnd = dateSelected.periodList[firstPeriod.value].trendEnd;
+    }
+    else if(dateSelected.name === 'CUSTOM'){
+      dateSelected = firstCustom.value;
+    }
+  }
+
+  else if(column === 2){
+    dateSelected = getDropdownById(secondDateRange.value)
+    if(dateSelected.periodList != null){
+      dateSelected.startDate = dateSelected.periodList[secondPeriod.value].startDate;
+      dateSelected.endDate = dateSelected.periodList[secondPeriod.value].endDate;
+      dateSelected.trendStart = dateSelected.periodList[secondPeriod.value].trendStart;
+      dateSelected.trendEnd = dateSelected.periodList[secondPeriod.value].trendEnd;
+    }
+    else if(dateSelected.name === 'CUSTOM'){
+      dateSelected = secondCustom.value;
+    }
+  }
+
+  else if(column === 3){
+    dateSelected = getDropdownById(thirdDateRange.value)
+    if(dateSelected.periodList != null){
+      dateSelected.startDate = dateSelected.periodList[thirdPeriod.value].startDate;
+      dateSelected.endDate = dateSelected.periodList[thirdPeriod.value].endDate;
+      dateSelected.trendStart = dateSelected.periodList[thirdPeriod.value].trendStart;
+      dateSelected.trendEnd = dateSelected.periodList[thirdPeriod.value].trendEnd;
+    }
+    else if(dateSelected.name === 'CUSTOM'){
+      dateSelected = thirdCustom.value;
+    }
+  }
+
   const requestBody = {
     brsProvidedSources: brsProvidedSources,
     selfGenSources: selfGenSources,
-    start: moment(start).format('YYYY-MM-DD'),
-    end: moment(end).format('YYYY-MM-DD')
+    leadsCreatedSources: leadsCreatedSources,
+    start: dateSelected.startDate,
+    end: dateSelected.endDate,
+    trendStart: dateSelected.trendStart,
+    trendEnd: dateSelected.trendEnd
   }
 
   apptsCreatedPipelineDataLoading.value = true
   try {
     await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven', []).then(res => {
-      apptsCreatedPipelineData.value = orderBy(res.data, row => row.display_order)
+      if(column == 1) {
+        apptsCreatedPipelineData.value = orderBy(res.data, row => row.display_order)
+      }
+      else if(column == 2) {
+        column2Values.value = orderBy(res.data, row => row.display_order)
+      }
+      else if(column == 3) {
+        column3Values.value = orderBy(res.data, row => row.display_order)
+      }
     })
 
     if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
@@ -1393,67 +3018,161 @@ const apptsCreatedPipelineLoad = async(start, end) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving Appointments Created Pipeline data')
+    snackbar('ERROR', 'Error retrieving Appointments Created Pipeline data')
 
     apptsCreatedPipelineLoaded.value = true
     apptsCreatedPipelineDataLoading.value = false
   }
 }
+const applyCustomDates = async()=> {
+  if(customTable.value === 'apptsCreated') {
+    if (customColumn.value === 1) {
+      firstCustom.value.startDate = moment(customDate.value.startDate);
+      firstCustom.value.endDate = moment(customDate.value.endDate);
+      let dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days');
+      firstCustom.value.trendEnd = firstCustom.value.startDate.clone().subtract(1, 'days');
+      firstCustom.value.trendStart = firstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+      getDropdownById(firstDateRange.value).trendText = moment(firstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(firstCustom.value.trendEnd).format('MM/DD/YYYY');
+      firstCustom.value.name = moment(firstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(firstCustom.value.endDate).format('MM/DD/YY');
+    } else if (customColumn.value === 2) {
+      secondCustom.value.startDate = moment(customDate.value.startDate);
+      secondCustom.value.endDate = moment(customDate.value.endDate);
+      let dateDiff = secondCustom.value.endDate.diff(secondCustom.value.startDate, 'days');
+      secondCustom.value.trendEnd = secondCustom.value.startDate.clone().subtract(1, 'days');
+      secondCustom.value.trendStart = secondCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+      getDropdownById(secondDateRange.value).trendText = moment(secondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(secondCustom.value.trendEnd).format('MM/DD/YYYY');
+      secondCustom.value.name = moment(secondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(secondCustom.value.endDate).format('MM/DD/YY');
+    } else if (customColumn.value === 3) {
+      thirdCustom.value.startDate = moment(customDate.value.startDate);
+      thirdCustom.value.endDate = moment(customDate.value.endDate);
+      let dateDiff = thirdCustom.value.endDate.diff(thirdCustom.value.startDate, 'days');
+      thirdCustom.value.trendEnd = thirdCustom.value.startDate.clone().subtract(1, 'days');
+      thirdCustom.value.trendStart = thirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+      getDropdownById(thirdDateRange.value).trendText = moment(thirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(thirdCustom.value.trendEnd).format('MM/DD/YYYY');
+      thirdCustom.value.name = moment(thirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(thirdCustom.value.endDate).format('MM/DD/YY');
+    }
 
-const apptsToFdcPipelineLoad = async(start, end, useRepDataInstead) => {
+    await apptsCreatedPipelineLoad(customColumn.value);
+  }
+  else{
+    if (customColumn.value === 1) {
+      fdcFirstCustom.value.startDate = moment(customDate.value.startDate);
+      fdcFirstCustom.value.endDate = moment(customDate.value.endDate);
+      let dateDiff = fdcFirstCustom.value.endDate.diff(fdcFirstCustom.value.startDate, 'days');
+      fdcFirstCustom.value.trendEnd = fdcFirstCustom.value.startDate.clone().subtract(1, 'days');
+      fdcFirstCustom.value.trendStart = fdcFirstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+      getDropdownById(fdcFirstDateRange.value).trendText = moment(fdcFirstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFirstCustom.value.trendEnd).format('MM/DD/YYYY');
+      fdcFirstCustom.value.name = moment(fdcFirstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFirstCustom.value.endDate).format('MM/DD/YY');
+    } else if (customColumn.value === 2) {
+      fdcSecondCustom.value.startDate = moment(customDate.value.startDate);
+      fdcSecondCustom.value.endDate = moment(customDate.value.endDate);
+      let dateDiff = fdcSecondCustom.value.endDate.diff(fdcSecondCustom.value.startDate, 'days');
+      fdcSecondCustom.value.trendEnd = fdcSecondCustom.value.startDate.clone().subtract(1, 'days');
+      fdcSecondCustom.value.trendStart = fdcSecondCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+      getDropdownById(fdcSecondDateRange.value).trendText = moment(fdcSecondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcSecondCustom.value.trendEnd).format('MM/DD/YYYY');
+      fdcSecondCustom.value.name = moment(fdcSecondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcSecondCustom.value.endDate).format('MM/DD/YY');
+    } else if (customColumn.value === 3) {
+      fdcThirdCustom.value.startDate = moment(customDate.value.startDate);
+      fdcThirdCustom.value.endDate = moment(customDate.value.endDate);
+      let dateDiff = fdcThirdCustom.value.endDate.diff(fdcThirdCustom.value.startDate, 'days');
+      fdcThirdCustom.value.trendEnd = fdcThirdCustom.value.startDate.clone().subtract(1, 'days');
+      fdcThirdCustom.value.trendStart = fdcThirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+      getDropdownById(fdcThirdDateRange.value).trendText = moment(fdcThirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcThirdCustom.value.trendEnd).format('MM/DD/YYYY');
+      fdcThirdCustom.value.name = moment(fdcThirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcThirdCustom.value.endDate).format('MM/DD/YY');
+    }
+
+    await apptsToFdcPipelineLoad(customColumn.value);
+  }
+}
+const apptsToFdcPipelineLoad = async(column) => {
+  apptsToFdcPipelineLoaded.value = false
+  apptsToFdcPipelineDataLoading.value = true
   let reps = []
   let orgs = []
+  let leadsCreatedSources = []
+  let dateSelected = null
+  let appointmentTypes = []
 
-  if ((repModel.value.length === 0 && !useRepDataInstead) || (useRepDataInstead && repData.value.length === 0)) {
+  if (repModel.value.length === 0) {
     apptsToFdcPipelineData.value = []
     return
   }
 
-  apptsToFdcPipelineLoaded.value = false
-  apptsToFdcPipelineDataLoading.value = true
-
   officeModel.value.forEach(org => orgs.push(org.org_id))
 
   let modelOverride = false
-  if (useRepDataInstead) {
-    repData.value.forEach((rep, index) => {
-      reps.push(rep.user_position_id)
-      if (index === repData.value.length - 1) {
-        //   districtModel.value = []
-        //   regionModel.value = []
-        //   officeModel.value = []
-        if (repDataSelectAll.value && repDataMaster.value?.length > maxRepLimit.value) {
-          modelOverride = true
-          repModel.value = [
-            {user_id: -2, name: 'All Filtered Reps', active: true}
-          ]
-          repData.value = [
-            {user_id: -2, name: 'All Filtered Reps', active: true}
-          ]
-        }
-      }
-    })
-  } else {
-    repModel.value.forEach(rep => reps.push(rep.user_position_id))
+  repModel.value.forEach(rep => reps.push(rep.user_position_id))
+
+  fdcSourceModel.value.forEach(leadsCreatedSource => {
+    if (leadsCreatedSource.sourceId) {
+      leadsCreatedSources.push(leadsCreatedSource.sourceId)
+    }
+  })
+
+  if(column === 1){
+    dateSelected = getDropdownById(fdcFirstDateRange.value)
+    if(dateSelected.periodList != null){
+      dateSelected.startDate = dateSelected.periodList[firstPeriod.value].startDate;
+      dateSelected.endDate = dateSelected.periodList[firstPeriod.value].endDate;
+      dateSelected.trendStart = dateSelected.periodList[firstPeriod.value].trendStart;
+      dateSelected.trendEnd = dateSelected.periodList[firstPeriod.value].trendEnd;
+    }
+    else if(dateSelected.name === 'CUSTOM'){
+      dateSelected = fdcFirstCustom.value;
+    }
   }
 
-  if (modelOverride) {
-    reps = []
-    //this gets used when there are more than 1000 users selected
-    repDataMaster.value.forEach(rep => reps.push(rep.user_position_id))
+  if(column === 2){
+    dateSelected = getDropdownById(fdcSecondDateRange.value)
+    if(dateSelected.periodList != null){
+      dateSelected.startDate = dateSelected.periodList[secondPeriod.value].startDate;
+      dateSelected.endDate = dateSelected.periodList[secondPeriod.value].endDate;
+      dateSelected.trendStart = dateSelected.periodList[secondPeriod.value].trendStart;
+      dateSelected.trendEnd = dateSelected.periodList[secondPeriod.value].trendEnd;
+    }
+    else if(dateSelected.name === 'CUSTOM'){
+      dateSelected = fdcSecondCustom.value;
+    }
+  }
+
+  if(column === 3){
+    dateSelected = getDropdownById(fdcThirdDateRange.value)
+    if(dateSelected.periodList != null){
+      dateSelected.startDate = dateSelected.periodList[thirdPeriod.value].startDate;
+      dateSelected.endDate = dateSelected.periodList[thirdPeriod.value].endDate;
+      dateSelected.trendStart = dateSelected.periodList[thirdPeriod.value].trendStart;
+      dateSelected.trendEnd = dateSelected.periodList[thirdPeriod.value].trendEnd;
+    }
+    else if(dateSelected.name === 'CUSTOM'){
+      dateSelected = fdcThirdCustom.value;
+    }
+  }
+
+  if(appointmentTypesModel.value.length > 0){
+    for(let appointmentType of appointmentTypesModel.value){
+      appointmentTypes.push(appointmentType.id)
+    }
+  }
+  else{
+    appointmentTypes = null
   }
 
   const requestBody = {
-    users: reps,
-    orgs: orgs,
-    start: moment(start).format('YYYY-MM-DD'),
-    end: moment(end).format('YYYY-MM-DD')
+    users: [-1],
+    start: dateSelected.startDate,
+    end: dateSelected.endDate,
+    trendStart: dateSelected.trendStart,
+    trendEnd: dateSelected.trendEnd,
+    appointmentTypeIds: appointmentTypes,
+    leadSourceIds: leadsCreatedSources,
+    hideInactive: hideInactiveReps.value
   }
 
   try {
     await postRequest('/closerDashboard/funnel/' + viewSelect.value, requestBody, 'blueraven', []).then(res => {
-      apptsToFdcPipelineData.value = orderBy(res.data, row => row.display_order)
-
+      let dataTarget = orderBy(res.data, row => row.display_order);
+      // apptsToFdcPipelineData.value = orderBy(res.data, row => row.display_order)
+      dataTarget = orderBy(res.data, row => row.display_order)
       let todayUpperNumerator = 0
       let todayUpperDenominator = 0
       let wtdUpperNumerator = 0
@@ -1467,7 +3186,12 @@ const apptsToFdcPipelineLoad = async(start, end, useRepDataInstead) => {
       let customDateRangeLowerNumerator = 0
       let customDateRangeLowerDenominator = 0
 
-      apptsToFdcPipelineData.value.forEach(row => {
+      dataTarget.forEach(row => {
+        // console.log(row)
+        // if(reverseTrends.value.includes(row.name)){
+        //   console.log(row.name)
+        // }
+        row.reverse_trend = reverseTrends.value.includes(row.name)
         if (row.id === 17) {
           todayUpperDenominator = row.today_count
           wtdUpperDenominator = row.week_to_date_count
@@ -1490,6 +3214,16 @@ const apptsToFdcPipelineLoad = async(start, end, useRepDataInstead) => {
         }
       })
 
+      if(column === 1){
+        apptsToFdcPipelineData.value = dataTarget
+      }
+      else if(column === 2){
+        fdcColumn2Values.value = dataTarget
+      }
+      else if(column === 3){
+        fdcColumn3Values.value = dataTarget
+      }
+
       todayUpperPercentage.value = getPercentage(todayUpperNumerator, todayUpperDenominator)
       wtdUpperPercentage.value = getPercentage(wtdUpperNumerator, wtdUpperDenominator)
       cdrUpperPercentage.value = getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
@@ -1502,25 +3236,18 @@ const apptsToFdcPipelineLoad = async(start, end, useRepDataInstead) => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
+    snackbar('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
 
     apptsToFdcPipelineLoaded.value = true
   }
 }
+
 const getPercentage = (numerator, denominator) => {
   if (denominator !== 0) {
     return Math.round((numerator / denominator) * 100)
   } else {
     return 0
   }
-}
-
-const stringifySelectedModel = (selectedModel, keyName) => {
-  return JSON.stringify(selectedModel.map((sm) => {
-    let obj = {}
-    obj[keyName] = sm.org_id
-    return obj
-  }))
 }
 
 const areaLoad = async(preSelectLists) => {
@@ -1554,11 +3281,27 @@ const areaLoad = async(preSelectLists) => {
   apptsToFdcPipelineData.value = []
   apptsToFdcPipelineLoaded.value = true
 }
+
 const regionLoad = async(preSelectLists) => {
   if (!currentUserId.value) return
 
-  //reset the selected regions every time the regions re-load
-  regionModel.value = []
+  let areas = areaModel.value.map(function (area) {
+    return {
+      area_id: area.org_id
+    }
+  })
+
+  // if (!selectAllDistricts.value) {
+  //   regionModel.value = []
+  //   regionData.value = []
+  //   officeModel.value = []
+  //   officeData.value = []
+  //   repModel.value = []
+  //   repData.value = []
+  //   apptsToFdcPipelineData.value = []
+  //
+  //   // if (districts?.length === 0) return
+  // }
 
   // reset these values when the regions change
   districtModel.value = []
@@ -1566,81 +3309,122 @@ const regionLoad = async(preSelectLists) => {
   repModel.value = []
 
 
-  regionData.value = await getCloserRegions(currentUserId.value, stringifySelectedModel(areaModel.value, 'area_id'), false)
+  await getCloserRegions(currentUserId.value, JSON.stringify(areas), false).then(res => {
+    regionData.value = res
 
-  if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-    regionModel.value = regionData.value.filter(od => od.active)
-  } else if (preSelectLists) {
-    regionModel.value = cloneDeep(regionData.value)
-  }
 
-  if (!initialPageLoad.value) {
-    districtLoad(preSelectLists, true)
-  }
+    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+      regionModel.value = regionData.value.filter(od => od.active)
+    } else if (preSelectLists) {
+      regionModel.value = cloneDeep(regionData.value)
+    }
+
+    if (!initialPageLoad.value) {
+      districtLoad(preSelectLists, true)
+      // repLoad(preSelectLists, true)
+    }
+  })
 
   apptsToFdcPipelineData.value = []
 }
+
 const districtLoad = async(preSelectLists) => {
   if (!currentUserId.value) return
 
-  //reset the selected districts every time the districts re-load
-  districtModel.value = []
+  let areas = areaModel.value.map(function (area) {
+    return {
+      area_id: area.org_id
+    }
+  })
 
-  districtData.value = await getCloserDistricts(currentUserId.value,
-      stringifySelectedModel(areaModel.value, 'area_id'),
-      stringifySelectedModel(regionModel.value, 'region_id'),
-      false)
+  let regions = regionModel.value.map(function (region) {
+    return {
+      region_id: region.org_id
+    }
+  })
 
-  if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-    districtModel.value = districtData.value.filter(od => od.active)
-  } else if (preSelectLists) {
-    districtModel.value = cloneDeep(districtData.value)
-  }
+  await getCloserDistricts(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), false).then(res => {
+    if (res?.length > 0) {
+      districtData.value = res
+    }
 
-  // reset these values when the districts change
-  // regionModel.value = []
-  officeModel.value = []
-  repModel.value = []
+    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+      districtModel.value = districtData.value.filter(od => od.active)
+    } else if (preSelectLists) {
+      districtModel.value = cloneDeep(districtData.value)
+    }
 
-  if (!initialPageLoad.value) {
-    officeLoad(preSelectLists, true)
-    // officeLoad(preSelectLists, true)
-    // repLoad(preSelectLists, true)
-  }
+    // reset these values when the districts change
+    // regionModel.value = []
+    officeModel.value = []
+    repModel.value = []
+
+    if (!initialPageLoad.value) {
+      officeLoad(preSelectLists, true)
+      // officeLoad(preSelectLists, true)
+      // repLoad(preSelectLists, true)
+    }
+  })
 
 
   apptsToFdcPipelineData.value = []
   apptsToFdcPipelineLoaded.value = true
 }
+
 const officeLoad = async(preSelectLists) => {
   if (!currentUserId.value) return
 
-  //reset the selected offices every time the offices re-load
-  officeModel.value = []
+
+  let areas = areaModel.value.map(function (area) {
+    return {
+      area_id: area.org_id
+    }
+  })
+
+  let regions = regionModel.value.map(function (region) {
+    return {
+      region_id: region.org_id
+    }
+  })
+
+  let districts = districtModel.value.map(function (district) {
+    return {
+      district_id: district.org_id
+    }
+  })
+
+  // if (!selectAllRegions.value) {
+  //   officeModel.value = []
+  //   officeData.value = []
+  //   repModel.value = []
+  //   repData.value = []
+  //   apptsToFdcPipelineData.value = []
+  //
+  //   // if (regions?.length === 0) return
+  // }
 
   // reset these values when the offices change
   repModel.value = []
 
-  officeData.value = await getCloserOffices(currentUserId.value,
-      stringifySelectedModel(areaModel.value, 'area_id'),
-      stringifySelectedModel(regionModel.value, 'region_id'),
-      stringifySelectedModel(districtModel.value, 'district_id'),
-      false)
+  await getCloserOffices(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), false).then(res => {
+    officeData.value = res
 
-  if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-    officeModel.value = officeData.value.filter(od => od.active)
-  } else if (preSelectLists) {
-    officeModel.value = cloneDeep(officeData.value)
-  }
+    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+      officeModel.value = officeData.value.filter(od => od.active)
+    } else if (preSelectLists) {
+      officeModel.value = cloneDeep(officeData.value)
+    }
 
-  if (!initialPageLoad.value) {
-    repLoad(preSelectLists, true)
-  }
+    if (!initialPageLoad.value) {
+      repLoad(preSelectLists, true)
+    }
+  })
 
   apptsToFdcPipelineData.value = []
   // repData.value = []
   repModel.value = []
 }
+
 const repLoad = async(preSelectLists) => {
   //reset these any time we are reloading reps or things get weird
   repModel.value = []
@@ -1649,38 +3433,69 @@ const repLoad = async(preSelectLists) => {
 
   if (!currentUserId.value) return
 
-  repData.value = await getCloserReps(currentUserId.value,
-      stringifySelectedModel(areaModel.value, 'area_id'),
-      stringifySelectedModel(regionModel.value, 'region_id'),
-      stringifySelectedModel(districtModel.value, 'district_id'),
-      stringifySelectedModel(officeModel.value, 'office_id'))
+  let areas = areaModel.value.map(function (area) {
+    return {
+      area_id: area.org_id
+    }
+  })
 
-  repDataMaster.value = cloneDeep(repData.value)
+  let regions = regionModel.value.map(function (region) {
+    return {
+      region_id: region.org_id
+    }
+  })
 
-  if (preSelectLists) {
-    repModel.value = cloneDeep(repData.value)
-  }
+  let districts = districtModel.value.map(function (district) {
+    return {
+      district_id: district.org_id
+    }
+  })
 
-  apptsToFdcPipelineData.value = []
+  let offices = officeModel.value.map(function (office) {
+    return {
+      office_id: office.org_id
+    }
+  })
 
-  if (repModel.value.length > 0) {
-    apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
-  }
+  // if (!selectAllOffices.value) {
+  //   repModel.value = []
+  //   repData.value = []
+  //   apptsToFdcPipelineData.value = []
+  //
+  //   // if (offices?.length === 0) return
+  // }
 
+  await getCloserReps(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), JSON.stringify(offices)).then(res => {
+    repData.value = res
+
+    repDataMaster.value = cloneDeep(res)
+
+    if (preSelectLists) {
+      repModel.value = cloneDeep(repData.value)
+    }
+
+    apptsToFdcPipelineData.value = []
+
+    if (repModel.value.length > 0) {
+      apptsToFdcPipelineLoad(1)
+    }
+  })
   initialPageLoad.value = false
   dropdownValuesLoading.value = false
 }
-const updateApptsCreatedPipelineCalendar = async () => {
+
+const updateApptsCreatedPipelineCalendar = () => {
   appts_created_pipeline_menu1.value = false
   appts_created_pipeline_menu2.value = false
-  await apptsCreatedPipelineLoad(appts_created_pipeline_dt1.value, appts_created_pipeline_dt2.value)
-  apptsCreatedPipelineCustomSelectorIsOpen.value = false
+  apptsCreatedPipelineLoad(1)
 }
+
 const updateApptsToFdcPipelineCalendar = () => {
   appts_to_fdc_pipeline_menu1.value = false
   appts_to_fdc_pipeline_menu2.value = false
-  apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
+  apptsToFdcPipelineLoad(1)
 }
+
 const yesterday = (pipelineName) => {
   if (pipelineName === 'apptsCreatedPipeline') {
     appts_created_pipeline_dt1.value = moment().subtract(1, 'd').format('YYYY-MM-DD')
@@ -1692,6 +3507,7 @@ const yesterday = (pipelineName) => {
     updateApptsToFdcPipelineCalendar(true)
   }
 }
+
 const lastWeek = (pipelineName) => {
   if (pipelineName === 'apptsCreatedPipeline') {
     appts_created_pipeline_dt1.value = moment().startOf('W').subtract(1, 'w').format('YYYY-MM-DD')
@@ -1703,6 +3519,7 @@ const lastWeek = (pipelineName) => {
     updateApptsToFdcPipelineCalendar(true)
   }
 }
+
 const monthToDate = (pipelineName) => {
   if (pipelineName === 'apptsCreatedPipeline') {
     appts_created_pipeline_dt1.value = moment().startOf('month').format('YYYY-MM-DD')
@@ -1714,6 +3531,7 @@ const monthToDate = (pipelineName) => {
     updateApptsToFdcPipelineCalendar(true)
   }
 }
+
 const previousNumberOfDays = (pipelineName, days) => {
   if (pipelineName === 'apptsCreatedPipeline') {
     appts_created_pipeline_dt1.value = moment().subtract(days, 'days').format('YYYY-MM-DD')
@@ -1727,13 +3545,14 @@ const previousNumberOfDays = (pipelineName, days) => {
 }
 const doRepWatcher = () => {
   if (repValuesChanged.value) {
+    console.log('Value changed')
     // repModel.value = cloneDeep(repData.value)
     if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
-      apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
+      apptsToFdcPipelineLoad(1)
     } else if (selectAllReps.value) {
-      apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, true)
+      apptsToFdcPipelineLoad(1)
     } else {
-      apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
+      apptsToFdcPipelineLoad(1)
     }
     repValuesChanged.value = false
   }
@@ -1749,69 +3568,57 @@ const yearToDate = (pipelineName) => {
     updateApptsToFdcPipelineCalendar()
   }
 }
+
 const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn) => {
-  selectedFunnel.value = funnel
+  // selectedFunnel.value = funnel
+  console.log(dateRange)
   let sourceIds = []
   let userIds = []
   let orgIds = []
+  let appointmentTypeIds = null
   let start, end
   let datesMatch = false
 
   if (pipelineName === 'apptsCreatedPipeline') {
     let brsSourceIds = brsProvidedSourceModel.value.map(brsProvidedSource => brsProvidedSource.sourceId)
     let selfGenSourceIds = selfGenSourceModel.value.map(selfGenSource => selfGenSource.sourceId)
+    let leadSourceIds = leadsCreatedSourceModel.value.map(leadSource => leadSource.sourceId)
     if (funnel.id === 12) { // BRS-provided sources
       sourceIds = brsSourceIds
     } else if (funnel.id === 13) { // Self-gen sources
       sourceIds = selfGenSourceIds
-    } else {
-      sourceIds = brsSourceIds.concat(selfGenSourceIds)
+    } else if (funnel.id === 34){
+      sourceIds = leadSourceIds
     }
-
-    switch (dateRange) {
-      case 'today':
-        start = moment().startOf('day').format('YYYY-MM-DD')
-        end = moment().format('YYYY-MM-DD')
-        break
-      case 'wtd':
-        start = moment().startOf('W').format('YYYY-MM-DD')
-        end = moment().format('YYYY-MM-DD')
-        break
-      default:
-        start = appts_created_pipeline_dt1.value
-        end = appts_created_pipeline_dt2.value
-        break
+    else {
+      sourceIds = brsSourceIds.concat(selfGenSourceIds)
     }
   } else {
     userIds = repModel.value.map(rep => rep.user_position_id)
     orgIds = officeModel.value.map(org => org.org_id)
-
-    switch (dateRange) {
-      case 'today':
-        start = moment().startOf('day').format('YYYY-MM-DD')
-        end = moment().format('YYYY-MM-DD')
-        break
-      case 'wtd':
-        start = moment().startOf('W').format('YYYY-MM-DD')
-        end = moment().format('YYYY-MM-DD')
-        break
-      default:
-        start = appts_to_fdc_pipeline_dt1.value
-        end = appts_to_fdc_pipeline_dt2.value
-        break
+    if(appointmentTypesModel.value.length > 0){
+      appointmentTypeIds = appointmentTypesModel.value.map(appointmentType => appointmentType.id)
     }
   }
 
-  datesMatch = moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')
+  datesMatch = moment(dateRange.startDate).format('YYYY-MM-DD') === moment(dateRange.endDate).format('YYYY-MM-DD')
 
   if (datesMatch) {
-    funnelDrilldownTitle.value = funnel.name + ' on ' + moment(start).format('M/D/YYYY')
+    funnelDrilldownTitle.value = funnel.name + ' on ' + moment(dateRange.startDate).format('M/D/YYYY')
   } else {
-    funnelDrilldownTitle.value = funnel.name + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
+    funnelDrilldownTitle.value = funnel.name + ' ' + moment(dateRange.startDate).format('M/D/YYYY') + ' - ' + moment(dateRange.endDate).format('M/D/YYYY')
   }
 
+  funnelDrilldownHeaders.value[1].show = true
+  funnelDrilldownHeaders.value[2].show = true
+  funnelDrilldownHeaders.value[4].show = true
+  funnelDrilldownHeaders.value[5].show = true
+  funnelDrilldownHeaders.value[7].show = true
+  funnelDrilldownHeaders.value[9].show = false
+  funnelDrilldownHeaders.value[10].show = true
+  funnelDrilldownHeaders.value[11].show = true
   switch (funnel.id) {
-      // Appointments Created Pipeline
+    // Appointments Created Pipeline
     case 12: // BRS-provided appointments created
     case 13: // Self-gen appointments created
     case 10: // Total Appointments Created
@@ -1819,7 +3626,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
       funnelDrilldownHeaders.value[14].show = true // date_created
       break
 
-      // Appointments to FDC Pipeline
+    // Appointments to FDC Pipeline
     case 14: // Total Planned Appointments
       break
     case 15: // Cancelled in advance
@@ -1870,25 +3677,41 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     case 8: // Installations Completed
       funnelDrilldownHeaders.value[28].show = true // substantial_completion_date
       break
+    case 34:
+      funnelDrilldownHeaders.value[1].show = true
+      funnelDrilldownHeaders.value[2].show = false
+      funnelDrilldownHeaders.value[4].show = false
+      funnelDrilldownHeaders.value[5].show = false
+      funnelDrilldownHeaders.value[7].show = false
+      funnelDrilldownHeaders.value[9].show = true
+      funnelDrilldownHeaders.value[10].show = false
+      funnelDrilldownHeaders.value[11].show = false
+
+      break
   }
 
   const requestBody = {
-    start: start,
-    end: end,
-    funnelId: funnel.id
+    start: dateRange.startDate,
+    end: dateRange.endDate,
+    funnelId: funnel.id,
+    hideInactive: hideInactiveReps.value,
+    leadSourceIds: fdcSourceModel.value.map(leadSource => leadSource.sourceId),
   }
 
   if (pipelineName === 'apptsCreatedPipeline') {
     requestBody.sources = sourceIds
   } else {
     requestBody.users = userIds
-    requestBody.orgs = orgIds
     requestBody.isCheckedInColumn = isCheckedInColumn
+    requestBody.appointmentTypeIds = appointmentTypeIds
   }
 
-  appStore.loading = true
   try {
-    await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven', []).then(({data, status}) => {
+    await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven', []).then(({
+                                                                                                                data,
+                                                                                                                status
+                                                                                                              }) => {
+      console.log(data)
       funnelDrilldownData.value = data?.length > 0 ? data : []
 
       if (funnelDrilldownData.value?.length > 0) {
@@ -1904,11 +3727,11 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving drilldown data')
+    snackbar('ERROR', 'Error retrieving drilldown data')
 
-    appStore.loading = false
   }
 }
+
 const markMissingDrilldownData = () => {
   funnelDrilldownData.value = funnelDrilldownData.value.map(function (line) {
     let newLine = {}
@@ -1934,6 +3757,7 @@ const markMissingDrilldownData = () => {
     return newLine
   })
 }
+
 const calcTotalSystemSize = () => {
   if (funnelDrilldownData.value.length > 0 && filteredFunnelDrilldownData.value.length > 0) {
     let total = 0
@@ -1949,29 +3773,16 @@ const calcTotalSystemSize = () => {
     totalSystemSize.value = 0
   }
 }
+
 const filteredFunnelDrilldownItems = (filteredItems) => {
   filteredFunnelDrilldownData.value = filteredItems
   funnelDrilldownRowCount.value = filteredItems.length
 }
-const toggleSelectAllBrsProvidedSources = () => {
-    if (selectAllBrsProvidedSources.value) {
-      brsProvidedSourceModel.value = []
-      //this makes the zeroed out row when nothing is selected
-      apptsCreatedPipelineData.value[0] = {
-        id: 12,
-        name: 'BRS provided appointments created',
-        today_count: 0,
-        week_to_date_count: 0,
-        custom_date_range_count: 0
-      }
-    } else {
-      brsProvidedSourceModel.value = cloneDeep(brsProvidedSourceData.value)
-    }
-}
+
 const toggleSelectAllSelfGenSources = () => {
+  vueInstance.$nextTick(() => {
     if (selectAllSelfGenSources.value) {
       selfGenSourceModel.value = []
-      //this makes the zeroed out row when nothing is selected
       apptsCreatedPipelineData.value[1] = {
         id: 13,
         name: 'Self-gen appointments created',
@@ -1979,11 +3790,84 @@ const toggleSelectAllSelfGenSources = () => {
         week_to_date_count: 0,
         custom_date_range_count: 0
       }
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     } else {
       selfGenSourceModel.value = cloneDeep(selfGenSourceData.value)
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
     }
+  })
 }
+
+const toggleSelectAllLeadsCreatedSources = () => {
+  vueInstance.$nextTick(() => {
+    if (selectAllLeadsCreatedSources.value) {
+      leadsCreatedSourceModel.value = []
+      apptsCreatedPipelineData.value[1] = {
+        id: 13,
+        name: 'Leads created',
+        today_count: 0,
+        week_to_date_count: 0,
+        custom_date_range_count: 0
+      }
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
+    } else {
+      leadsCreatedSourceModel.value = cloneDeep(leadsCreatedSourceData.value)
+      apptsCreatedPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsCreatedPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsCreatedPipelineLoad(3)
+      }
+    }
+  })
+}
+
+const toggleSelectAllFdcLeadsCreatedSources = () => {
+  vueInstance.$nextTick(() => {
+    if (selectAllFdcLeadsCreatedSources.value) {
+      fdcSourceModel.value = []
+      apptsToFdcPipelineLoad(1)
+      if (secondDateRange.value) {
+        apptsToFdcPipelineLoad(2)
+      }
+      if (thirdDateRange.value) {
+        apptsToFdcPipelineLoad(3)
+      }
+
+    } else {
+      fdcSourceModel.value = cloneDeep(fdcSourceData.value)
+      apptsToFdcPipelineLoad(1)
+      if(secondDateRange.value){
+        apptsToFdcPipelineLoad(2)
+      }
+      if(thirdDateRange.value){
+        apptsToFdcPipelineLoad(3)
+      }
+    }
+  })
+}
+
 const toggleSelectAllAreas = () => {
+  vueInstance.$nextTick(() => {
     if (selectAllAreas.value) {
       areaModel.value = []
       regionData.value = []
@@ -1997,11 +3881,14 @@ const toggleSelectAllAreas = () => {
       apptsToFdcPipelineData.value = []
     } else {
       areaModel.value = cloneDeep(areaData.value)
-      // in case the user previously clicked the 'All Reps' button
-      repModel.value = []
+      repModel.value = [] // in case the user previously clicked the 'All Reps' button
+      // regionLoad(false)
     }
+  })
 }
+
 const toggleSelectAllRegions = () => {
+  vueInstance.$nextTick(() => {
     if (selectAllRegions.value) {
       regionModel.value = []
       officeData.value = []
@@ -2011,9 +3898,13 @@ const toggleSelectAllRegions = () => {
       apptsToFdcPipelineData.value = []
     } else {
       regionModel.value = cloneDeep(regionData.value)
+      // officeLoad(false)
     }
+  })
 }
+
 const toggleSelectAllDistricts = () => {
+  vueInstance.$nextTick(() => {
     if (selectAllDistricts.value) {
       districtModel.value = []
       regionData.value = []
@@ -2028,8 +3919,11 @@ const toggleSelectAllDistricts = () => {
       // repModel.value = [] // in case the user previously clicked the 'All Reps' button
       // regionLoad(false)
     }
+  })
 }
+
 const toggleSelectAllOffices = () => {
+  vueInstance.$nextTick(() => {
     if (selectAllOffices.value) {
       officeModel.value = []
       repData.value = []
@@ -2037,58 +3931,229 @@ const toggleSelectAllOffices = () => {
       apptsToFdcPipelineData.value = []
     } else {
       officeModel.value = cloneDeep(officeData.value)
+      // repLoad(false)
     }
+  })
 }
-const toggleSelectAllReps = () => {
-  if (selectAllReps.value) {
+
+const toggleSomeReps = () => {
+  if(repData.value[0]?.name == 'All Reps'){
+    console.log("YEah")
+    repData.value = repDataMaster.value
     repModel.value = []
-    repLengthOverride.value = false
-    apptsToFdcPipelineData.value = []
-  } else {
-    if (repDataSelectAll.value && repData.value?.length > maxRepLimit.value) {
-      //this is different than clicking the All Reps button and needs to be filtered.
-      // -2 was updated to mean - select all reps in the selected orgs
-      repLengthOverride.value = true
-      repModel.value = [
-        {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
-      ]
-      repData.value = [
-        {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
-      ]
-      // doRepWatcher()
-    } else {
-      repModel.value = cloneDeep(repData.value)
-    }
+    console.log(repModel.value)
   }
+  vueInstance.$nextTick(() => {
+    console.log("Hi")
+    apptsToFdcPipelineLoad(1)
+    if (secondDateRange.value) {
+      apptsToFdcPipelineLoad(2)
+    }
+    if (thirdDateRange.value) {
+      apptsToFdcPipelineLoad(3)
+    }
+  })
 }
+
+const toggleSelectAllReps = () => {
+  vueInstance.$nextTick(() => {
+    if (selectAllReps.value) {
+      repModel.value = []
+      repLengthOverride.value = false
+      apptsToFdcPipelineData.value = []
+    } else {
+      if (repDataSelectAll.value && repData.value?.length > maxRepLimit.value) {
+        //this is different than clicking the All Reps button and needs to be filtered.
+        // -2 was updated to mean - select all reps in the selected orgs
+        console.log(repModel)
+        repLengthOverride.value = true
+        repModel.value = [
+          {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
+        ]
+        doRepWatcher()
+        repModel.value = cloneDeep(repData.value)
+        for(let rep of repModel.value){
+          console.log(rep)
+        }
+      } else {
+        repModel.value = cloneDeep(repData.value)
+      }
+    }
+
+    apptsCreatedPipelineLoad(1)
+    if(secondDateRange.value){
+      apptsCreatedPipelineLoad(2)
+    }
+    if(thirdDateRange.value){
+      apptsCreatedPipelineLoad(3)
+    }
+  })
+}
+
+const toggleSelectAppointmentTypes = () => {
+  vueInstance.$nextTick(() => {
+    if (appointmentTypesSelectAll.value) {
+      appointmentTypesModel.value = cloneDeep(appointmentTypes.value)
+    }
+    else{
+      appointmentTypesModel.value = []
+    }
+  })
+}
+
 const closeFunnelDrilldownDialog = () => {
   funnelDrilldownDialog.value = false
   resetScrollBarPosition()
 }
-
-onMounted(async () => {
-  if (userStore.details.userPositions?.length > 0) {
-    let primaryPosition = userStore.details.userPositions.find(p => !p.endDate && !p.archived && p.primaryFlag)
-    let positionId = primaryPosition.positionId
-    currentUserOrgId.value = primaryPosition.orgId
-
-    isCloser.value = positionId === 1
-    isCloserDistrictMgr.value = positionId === 517
-    isCloserMgr.value = positionId === 2 || positionId === 326 || isCloserDistrictMgr.value
-    isCloserRegional.value = positionId === 3
-  }
-
-  await loadFunnels()
-  funnelsWereLoaded.value = true
-
-  //vuetify selects/autocompletes have a bug with the select all feature being used at the same time as the @blur event
-  //the @blur event should only be called when the menu is closed, but in a select all it is called when the select all button is clicked. wreaks havoc.
-  //this sucks but fixes that issue re: https://github.com/vuetifyjs/vuetify/issues/11488
-})
+/* FUNNEL-RELATED CODE END */
 </script>
 
 <style lang="scss" scoped>
+#all-reps-btn{
+  text-transform: none;
+}
 
+#closer-funnel-table{
+  overflow-x: auto!important;
+}
+
+.checked_in_icon{
+  padding-right: 4px;
+}
+.trends-container{
+  width: 88px;
+}
+.fdc-data{
+  min-width: 72px;
+}
+.other-filters-text{
+  margin-right: 12px;
+}
+.hide-inactive-label{
+  margin-right: 8px;
+  margin-bottom: 10px;
+}
+.hide-inactive-switch-container{
+  width: 200px;
+}
+.reps-container{
+  padding-right: 6px;
+}
+.hide-inactive-switch{
+  margin-right: 8px;
+  margin-bottom: 6px;
+  margin-top: -4px;
+}
+
+.table-gap{
+  min-height: 16px;
+}
+.other-filters{
+  padding-left: 22px!important;
+}
+.disabled-export{
+  color: var(--v-grey-lighten1) !important;
+}
+.placeholder-option{
+  color: var(--v-grey-darken2) !important;
+}
+.selected-option{
+  color: var(--v-primary-base) !important;
+}
+
+
+.reset-button{
+  color: var(--v-grey-darken2);
+  border-radius: 4px;
+  border: 1px solid #9E9E9E;
+  text-transform: none;
+}
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24
+}
+.checked_in_container{
+  display: flex;
+  background-color: var(--v-grey-lighten2);
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 8px;
+  border-radius: 4px;
+
+  height: 28px;
+}
+.table-collapse-button{
+  margin: 16px;
+  padding-right: 16px;
+}
+.positive-percentage{
+  color: green;
+}
+.negative-percentage{
+  padding-left: 4px;
+  color: red;
+}
+.negative-trendline{
+  color: red;
+}
+.positive-percentage{
+  padding-left: 4px;
+  color: green;
+}
+.positive-trendline{
+  color: green;
+}
+.neutral-percentage{
+  padding-left: 4px;
+  color: grey;
+}
+.neutral-trendline{
+  color: grey;
+}
+.dropdown-header{
+  border: 1px solid var(--v-grey-lighten1);
+  text-transform: unset !important;
+  background-color: transparent !important;
+  box-shadow: none;
+  height: 40px !important;
+  width: 210px;
+  justify-content: left;
+  margin: 12px 0px 12px 0px;
+}
+.dashboard-menu-option{
+  display: flex;
+  min-height: 48px;
+  align-items: center!important;
+  padding-right: 16px;
+  padding-left: 16px;
+}
+.export-icon{
+  color: #1F3C73;
+}
+.export-button{
+  margin-top: 25px;
+  color: #1F3C73;
+}
+.checkbox-container{
+  margin-top: 0px !important;
+  margin-right: 12px !important;
+}
+.fdc-checkbox-container{
+  text-align: center;
+  margin-bottom: 8px;
+}
+.filter-row{
+  margin-left: 16px;
+}
+.closer-dashboard-header{
+  margin-left: 28px;
+  margin-right: 16px;
+  margin-top: 25px;
+}
 .funnel-relative {
   position: relative;
 }
@@ -2121,6 +4186,8 @@ onMounted(async () => {
 #closer-dash-container {
   letter-spacing: 0.02em !important;
   overflow: auto;
+  padding: 0px!important;
+  overflow-x: hidden;
 }
 
 .pipeline-data-loading-container {
@@ -2161,7 +4228,7 @@ onMounted(async () => {
 
       ::v-deep .v-toolbar__content {
         display: flex;
-        justify-content: flex-end;
+
         padding: 5px 12px;
         width: 100%;
         height: 45px !important;
@@ -2169,7 +4236,7 @@ onMounted(async () => {
         .v-toolbar__items {
           display: flex;
           flex-flow: row nowrap;
-          justify-content: flex-end;
+
           align-items: center;
           padding-right: 0;
         }
@@ -2205,7 +4272,7 @@ onMounted(async () => {
   .col-12 {
     display: flex;
     flex-flow: row nowrap;
-    justify-content: flex-end;
+
 
     span {
       letter-spacing: 0.02em;
@@ -2332,12 +4399,12 @@ onMounted(async () => {
   box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   width: 100%;
+  padding-left: 0px!important;
+  margin: 0px !important;
 
   .pipeline-header-container {
     display: flex;
     flex-flow: row nowrap;
-    align-items: center;
-    border-bottom: 1px solid var(--v-primary-base);
     padding: 5px;
     width: 100%;
 
@@ -2353,7 +4420,7 @@ onMounted(async () => {
 
   .appts-created-pipeline-dropdown {
     transform: scale(0.875);
-    margin: 0 auto 12px auto;
+    margin: 12px 0 12px 0!important;
     width: 110px;
 
     ::v-deep {
@@ -2420,7 +4487,7 @@ onMounted(async () => {
               min-height: 12px;
             }
 
-            .a-text-field__slot input {
+            .v-text-field__slot input {
               text-align: center;
             }
           }
@@ -2487,13 +4554,12 @@ onMounted(async () => {
   box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   width: 100%;
+  margin: 0px!important;
 
   .pipeline-header-container {
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--v-primary-base);
     padding: 5px 5px 0 5px;
     width: 100%;
 
@@ -2511,9 +4577,10 @@ onMounted(async () => {
       display: flex;
       flex-flow: row wrap;
       align-items: center;
+      padding-left: 6px;
     }
 
-    #pipeline-header-right-side {
+    #pipeline-header-left-side {
       margin-bottom: 5px;
       width: 100%;
 
@@ -2522,6 +4589,7 @@ onMounted(async () => {
         transform-origin: left;
         margin: 2px;
         max-width: 135px;
+        text-align: center;
 
         ::v-deep {
           .v-input__slot {
@@ -2545,7 +4613,7 @@ onMounted(async () => {
       }
 
       #all-reps-btn {
-        text-transform: capitalize;
+        text-transform: none!important;
         font-size: 10px;
         margin: 2px;
         width: 87px;
@@ -2622,7 +4690,7 @@ onMounted(async () => {
               min-height: 12px;
             }
 
-            .a-text-field__slot input {
+            .v-text-field__slot input {
               text-align: center;
             }
           }
@@ -2693,7 +4761,6 @@ onMounted(async () => {
       .checked-in-column-top,
       .checked-in-column-center,
       .checked-in-column-bottom {
-        background-color: var(--v-grey-lighten1);
         border: 1px solid #fff;
         font-weight: normal;
         text-align: center;
@@ -2701,7 +4768,7 @@ onMounted(async () => {
         width: 38px;
       }
 
-      .no-checked-in-column-placeholder{
+      .no-checked-in-column-placeholder {
         text-align: center;
         margin-right: 5px;
         width: 38px;
@@ -3003,24 +5070,8 @@ onMounted(async () => {
     }
   }
 
-  #appts-created-pipeline-funnel-background {
-    display: block;
-    position: absolute;
-    z-index: 200;
-    border-top-style: solid;
-    border-top-color: rgba(0, 110, 200, 0.05);
-    border-top-width: 137px;
-    border-right: 40px solid transparent;
-    border-left: 40px solid transparent;
-    margin-top: 58px;
-    margin-left: 5px;
-    width: 260px;
-    height: 0;
-  }
-
   #appts-created-pipeline-container {
     margin: 0 auto;
-    max-width: calc(100% - 50px);
 
     .pipeline-header-container {
       border-bottom: 2px solid var(--v-primary-base);
@@ -3171,11 +5222,10 @@ onMounted(async () => {
   #appts-to-fdc-pipeline-container {
     margin-left: auto;
     margin-right: auto;
-    max-width: calc(100% - 50px);
 
     .pipeline-header-container {
-      border-bottom: 2px solid var(--v-primary-base);
       padding: 10px 10px 5px 10px;
+
 
       .pipeline-icon {
         font-size: 32px;
@@ -3189,7 +5239,7 @@ onMounted(async () => {
         margin-bottom: 10px;
       }
 
-      #pipeline-header-right-side {
+      #pipeline-header-left-side {
         margin: 0;
 
         .appts-to-fdc-pipeline-dropdown {
@@ -3213,6 +5263,7 @@ onMounted(async () => {
         }
 
         #all-reps-btn {
+          text-transform: none!important;
           font-size: 14px;
           margin: 0 0 10px 0;
           height: 40px;
@@ -3495,7 +5546,6 @@ onMounted(async () => {
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: flex-start;
-    max-width: calc(100% - 50px);
     margin: 0 auto;
   }
 
@@ -3543,6 +5593,7 @@ onMounted(async () => {
 
   #appts-created-pipeline-container {
     .pipeline-header-container {
+
       .pipeline-icon {
         font-size: 35px;
       }
@@ -3679,6 +5730,7 @@ onMounted(async () => {
 
   #appts-to-fdc-pipeline-container {
     .pipeline-header-container {
+
       flex-flow: row nowrap;
 
       .pipeline-icon {
@@ -3690,12 +5742,13 @@ onMounted(async () => {
       }
 
       #pipeline-header-right-side {
-        justify-content: flex-end;
+
         width: 58%;
 
         .appts-to-fdc-pipeline-dropdown,
         #all-reps-btn {
-          margin: 0 0 10px 10px;
+          text-transform: none!important;
+          margin: 0 10px 10px 0;
         }
       }
     }
@@ -3924,6 +5977,7 @@ onMounted(async () => {
 
   #appts-to-fdc-pipeline-container {
     .pipeline-header-container {
+
       #pipeline-header-right-side {
         margin: 5px 5px 0 0;
       }
@@ -4155,3 +6209,52 @@ onMounted(async () => {
   }
 }
 </style>
+<style lang="scss">
+#closer-funnel-table  > div > table > thead > tr > th {
+  z-index: 1 !important;
+}
+#closer-funnel-table > div > table > thead > tr > th.text-start.milestone-col-th,
+#closer-funnel-table > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 220px;
+}
+
+#closer-funnel-table > div > table > tbody > tr.shaded-row > td.text-start{
+  background-color: var(--v-primary-lighten9) !important;
+}
+
+#closer-funnel-table > div > table > thead > tr:hover,
+#closer-funnel-table > div > table > tbody > tr:hover{
+  background-color: transparent;
+}
+
+#closer-funnel-table > div > table > thead > tr > th.text-left.data-col-th{
+  min-width: 220px!important;
+}
+
+#fdc-dash-table > div > table > thead > tr > th.text-start.milestone-col-th,
+#fdc-dash-table > div > table > tbody > tr > td.text-start{
+  position: sticky!important;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+  min-width: 220px;
+}
+
+#fdc-dash-table > div > table > tbody > tr.shaded-row > td.text-start{
+  background-color: var(--v-primary-lighten9) !important;
+}
+
+#fdc-dash-table > div > table > thead > tr:hover,
+#fdc-dash-table > div > table > tbody > tr:hover{
+  background-color: transparent;
+}
+
+#fdc-dash-table > div > table > thead > tr > th.text-left.data-col-th{
+  min-width: 220px!important;
+}
+</style>
+}
