@@ -451,7 +451,7 @@ const userHasEventsFeature = computed(() => {
 })
 
 const enabledActions = computed(() => {
-    return processStep.value?.actions?.filter(a => a.canPerform === true) ?? []
+    return processStep.value?.actions?.filter(a => a.canPerform === true && a.hideFromWeb === false) ?? []
 })
 
 // non-enabled actions having assigned status/category differing from the current PS status/category
