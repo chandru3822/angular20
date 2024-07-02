@@ -457,7 +457,7 @@
                               multiple
                               hide-details
                               @input="repValuesChanged = true"
-                              @blur="areaValuesChanged = true; regionLoad(); toggleSomeReps()"
+                              @blur="areaValuesChanged = true; regionLoad()"
                               return-object>
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-lg">Area</span>
@@ -688,7 +688,7 @@
                 v-if="!isCloser && !isCloserMgr"
                 class="label-medium reset-button"
                 variant="outlined"
-                @click="resetFilters; loadFunnels()"
+                @click="resetFilters(); repValuesChanged = true;  loadFunnels()"
                 color="unset"
                 text="Reset Filters"
               ></a-btn>
@@ -2273,6 +2273,7 @@ const resetFilters = async()=> {
   officeModel.value = []
   repModel.value = []
   repData.value = cloneDeep(repDataMaster.value)
+  console.log(areaModel.value)
 }
 const exportCsv = async () => {
   appStore.loading = true
@@ -3292,6 +3293,7 @@ const areaLoad = async(preSelectLists) => {
 
 const regionLoad = async(preSelectLists) => {
   if(repValuesChanged.value || initialPageLoad.value) {
+    console.log("Loading regions")
     if (!currentUserId.value) return
 
     let areas = areaModel.value.map(function (area) {
@@ -3339,7 +3341,9 @@ const regionLoad = async(preSelectLists) => {
 }
 
 const districtLoad = async(preSelectLists) => {
+  console.log("district opened")
   if(repValuesChanged.value || initialPageLoad.value) {
+    console.log("loading districts")
     if (!currentUserId.value) return
 
     let areas = areaModel.value.map(function (area) {
@@ -3385,6 +3389,7 @@ const districtLoad = async(preSelectLists) => {
 
 const officeLoad = async(preSelectLists) => {
   if (repValuesChanged.value || initialPageLoad.value) {
+    console.log("loading office")
     if (!currentUserId.value) return
 
 
@@ -3443,6 +3448,7 @@ const officeLoad = async(preSelectLists) => {
 const repLoad = async(preSelectLists) => {
   //reset these any time we are reloading reps or things get weird
   if (repValuesChanged.value || initialPageLoad.value) {
+    console.log("loading reps")
     repModel.value = []
     repData.value = []
     repLengthOverride.value = false
@@ -3492,8 +3498,12 @@ const repLoad = async(preSelectLists) => {
 
       apptsToFdcPipelineData.value = []
 
-      if (repModel.value.length > 0) {
-        apptsToFdcPipelineLoad(1)
+      apptsToFdcPipelineLoad(1)
+      if (secondDateRange.value) {
+        apptsToFdcPipelineLoad(2)
+      }
+      if (thirdDateRange.value) {
+        apptsToFdcPipelineLoad(3)
       }
     })
     initialPageLoad.value = false
