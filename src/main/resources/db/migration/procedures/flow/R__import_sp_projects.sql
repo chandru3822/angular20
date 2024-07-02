@@ -160,6 +160,12 @@ DECLARE
   v_pps_id                                           bigint;
   v_existing_project_id                              bigint;
   v_city                                             text;
+  v_financial_option_id                              bigint;
+  v_financial_option                                 text;
+  v_Energy_Consultant_Name                           text;
+  v_Energy_Consultant_Email                          text;
+  v_Energy_Consultant_Phone                          text;
+
 
 BEGIN
   select p_record ->> 'Project_ID',
@@ -272,7 +278,11 @@ BEGIN
          p_record -> 'Chatter_File' ->> 'contentType',
          p_record -> 'Chatter_File' ->> 's3Key',
          p_record -> 'Chatter_File' ->> 'size',
-         p_record ->> 'city'
+         p_record ->> 'city',
+         p_record ->> 'financial_option',
+         p_record ->> 'Energy_Consultant_Name',
+         p_record ->> 'Energy_Consultant_Email',
+         p_record ->> 'Energy_Consultant_Phone'
   into
     v_sp_project_id,
     v_current_milestone,
@@ -384,7 +394,11 @@ BEGIN
     v_chatter_file_content_type,
     v_chatter_file_s3_key,
     v_chatter_file_size,
-    v_city;
+    v_city,
+    v_financial_option,
+    v_Energy_Consultant_Name,
+    v_Energy_Consultant_Email,
+    v_Energy_Consultant_Phone;
 
   select count(1)
   into v_existing_project_id
@@ -511,6 +525,35 @@ BEGIN
         if v_panel_brand_id is not null then
           perform flow.set_pps_cfv(v_project_id, 2384850, 27077, v_panel_brand_id::text); --v_panel_brand
         end if;
+      end if;
+
+
+      if v_financial_option is not null and v_financial_option != '' then
+
+        if v_financial_option = 'Cash' then
+          v_financial_option_id = 24689;
+        elsif v_financial_option = 'Loan' then
+          v_financial_option_id = 24690;
+        elsif v_financial_option = 'Lease' then
+          v_financial_option_id = 24691;
+        elsif v_financial_option = 'PPA' then
+          v_financial_option_id = 24692;
+        end if;
+        if v_financial_option_id is not null then
+          perform flow.set_pps_cfv(v_project_id, 2384850, 27278, v_financial_option_id::text); --v_financial_option
+        end if;
+      end if;
+
+      if v_Energy_Consultant_Name is not null and v_Energy_Consultant_Name != '' then
+        perform flow.set_pps_cfv(v_project_id, 2384850, 27379, v_Energy_Consultant_Name::text); --v_panel_part_number
+      end if;
+
+      if v_Energy_Consultant_Email is not null and v_Energy_Consultant_Email != '' then
+        perform flow.set_pps_cfv(v_project_id, 2384850, 27380, v_Energy_Consultant_Email::text); --v_panel_part_number
+      end if;
+
+      if v_Energy_Consultant_Phone is not null and v_Energy_Consultant_Phone != '' then
+        perform flow.set_pps_cfv(v_project_id, 2384850, 27381, v_Energy_Consultant_Phone::text); --v_panel_part_number
       end if;
 
       if v_panel_part_number is not null and v_panel_part_number != '' then
