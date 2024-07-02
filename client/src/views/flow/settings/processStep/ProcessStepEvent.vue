@@ -366,7 +366,7 @@
                     </v-list>
                   </v-col>
                 </v-row>
-
+              </div>
                 <div v-if="action.actionTypeId === 2">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
@@ -464,13 +464,7 @@
                     </div>
                   </v-card>
                   <v-divider/>
-                  <EventActionChildSms :selected-action-index="selectedActionIndex"
-                                       :action="action"
-                                       :process-step-id="processStepId"
-                                       :add-sms-callback="addSms"
-                                       :delete-sms-callback="deleteSms"
-                  ></EventActionChildSms>
-                </div>
+
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="action.childFunctions && action.childFunctions.length > 0">
                   <v-col cols="12" class="pt-0">
@@ -628,8 +622,14 @@
                     </draggable>
                   </v-col>
                 </v-row>
-              </div>
-              <div v-if="action.actionTypeId === 3">
+                  <EventActionChildSms :selected-action-index="selectedActionIndex"
+                                       :action="action"
+                                       :process-step-id="processStepId"
+                                       :add-sms-callback="addSms"
+                                       :delete-sms-callback="deleteSms"
+                  ></EventActionChildSms>
+                </div>
+                <div v-if="action.actionTypeId === 3">
                 <a-textarea required label="Banner Content" auto-grow variant="filled"
                             style="margin: 15px 0 -15px 0"
                             v-model="action.content">

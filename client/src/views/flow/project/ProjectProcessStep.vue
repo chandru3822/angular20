@@ -124,7 +124,7 @@
       </v-col>
       <v-col cols="12" class="text-left pt-2 pb-4" v-if="userHasEventsFeature && (
         (processStepEvents && processStepEvents.length > 0) ||
-        (processStep && processStep.projectProcessStepEvents && processStep.projectProcessStepEvents.length > 0)
+        (processStep && projectProcessStepEvents && projectProcessStepEvents.length > 0)
       )">
         <div class="pps-subheader albatross-header-3">
           All Events
@@ -143,7 +143,7 @@
               @input="addEvent()"
           ></a-autocomplete>
         </div>
-        <div v-for="e in processStep.projectProcessStepEvents" :key="e.id" class="d-inline-block mr-4 mt-2">
+        <div v-for="e in projectProcessStepEvents" :key="e.id" class="d-inline-block mr-4 mt-2">
           <EventButton
               :event="e"
               :project-id="projectId"
@@ -423,6 +423,7 @@ const showUnperformableActions = ref(false)
 const processStepLoading = ref(true)
 const eventToAdd = ref({})
 const processStepEvents = ref([])
+const projectProcessStepEvents = ref([])
 const ppsFieldsContainer = ref(null)
 
 const emit = defineEmits(['refresh-upcoming-pps', 'refresh-project-status', 'refresh-upcoming-events'])
@@ -641,7 +642,7 @@ const getPPsEvents = async () => {
     try {
         const {data, status} = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event`)
         existingEvents.value = data
-        processStep.value.projectProcessStepEvents = data
+        projectProcessStepEvents.value = data
         return status
     } catch (e) {
         logError(e)
