@@ -34,6 +34,7 @@ begin
                               cfv.int_value::text
                             when p_cfga_data_type_id = 7 then
                               (select array_agg(l.name)::text from brs.list_of_value l where l.id = any(cfv.int_array_value))
+                            when p_cfga_data_type_id = 9 then cfv.int_value::text
                         end,
                         cfv.rich_text_value
                 from brs.feat_db_ahj_design ad
@@ -54,6 +55,7 @@ begin
                        cfv.int_value::text
                      when p_cfga_data_type_id = 7 then
                        (select array_agg(l.name)::text from brs.list_of_value l where l.id = any(cfv.int_array_value))
+                     when p_cfga_data_type_id = 9 then cfv.int_value::text
                   end,
                 cfv.rich_text_value
               from brs.feat_db_ahj_permit ad
@@ -73,6 +75,7 @@ begin
                        cfv.int_value::text
                      when p_cfga_data_type_id = 7 then
                        (select array_agg(l.name)::text from brs.list_of_value l where l.id = any(cfv.int_array_value))
+                     when p_cfga_data_type_id = 9 then cfv.int_value::text
                   end,
                 cfv.rich_text_value
               from brs.feat_db_ahj_inspection ad
@@ -92,6 +95,7 @@ begin
                            cfv.int_value::text
                          when p_cfga_data_type_id = 7 then
                            (select array_agg(l.name)::text from brs.list_of_value l where l.id = any(cfv.int_array_value))
+                         when p_cfga_data_type_id = 9 then cfv.int_value::text
                       end,
                     cfv.rich_text_value
                   from brs.feat_db_utility ad
