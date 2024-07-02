@@ -456,6 +456,7 @@
                               density="compact"
                               multiple
                               hide-details
+                              @input="repValuesChanged = true"
                               @blur="areaValuesChanged = true; regionLoad(); toggleSomeReps()"
                               return-object>
                 <template v-slot:label="{ item, index }">
@@ -500,6 +501,7 @@
                               variant="outlined"
                               density="compact"
                               multiple
+                              @input="repValuesChanged = true"
                               @blur="regionValuesChanged = true; districtLoad(); toggleSomeReps()"
                               hide-details
                               return-object
@@ -548,7 +550,8 @@
                               variant="outlined"
                               density="compact"
                               hide-details
-                              @blur="districtValuesChanged = true; officeLoad(); toggleSomeReps()"
+                              @input="repValuesChanged = true; districtValuesChanged = true;"
+                              @blur="officeLoad(); toggleSomeReps()"
                               return-object>
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-md">District</span>
@@ -592,6 +595,7 @@
                               multiple
                               variant="outlined"
                               density="compact"
+                              @input="repValuesChanged = true"
                               @blur="officeValuesChanged = true; repLoad(); toggleSomeReps()"
                               hide-details
                               return-object
@@ -637,6 +641,7 @@
                               multiple
                               variant="outlined"
                               density="compact"
+                              @input="repValuesChanged = true"
                               @blur="toggleSomeReps()"
                               hide-details
                               return-object
@@ -722,6 +727,7 @@
             density="compact"
             return-object
             label="Lead Source"
+            @input="repValuesChanged = true"
             @blur="toggleSomeReps()">
             <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
@@ -751,7 +757,8 @@
                           multiple
                           variant="outlined"
                           density="compact"
-                          @blur="repValuesChanged = true; toggleSomeReps()"
+                          @input="repValuesChanged = true"
+                          @blur="toggleSomeReps()"
                           hide-details
                           return-object
                           ref="repSelect">
@@ -1018,6 +1025,7 @@
                       variant="outlined"
                       density="compact"
                       return-object
+                      @input="repValuesChanged = true"
                       @blur="toggleSomeReps()">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
@@ -1050,6 +1058,7 @@
               variant="outlined"
               density="compact"
               return-object
+              @input="repValuesChanged = true"
               @blur="toggleSomeReps()">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
@@ -1080,6 +1089,7 @@
                       variant="outlined"
                       density="compact"
                       return-object
+                      @input="repValuesChanged = true"
                       @blur="toggleSomeReps()">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
@@ -3158,7 +3168,7 @@ const apptsToFdcPipelineLoad = async(column) => {
   }
 
   const requestBody = {
-    users: [-1],
+    users: reps,
     start: dateSelected.startDate,
     end: dateSelected.endDate,
     trendStart: dateSelected.trendStart,
@@ -3247,237 +3257,248 @@ const getPercentage = (numerator, denominator) => {
 }
 
 const areaLoad = async(preSelectLists) => {
-  if (!currentUserId.value) return
+  if(repValuesChanged.value || initialPageLoad.value) {
+    if (!currentUserId.value) return
 
-  await getCloserAreas(currentUserId.value, false).then(res => {
-    if (res?.length > 0) {
-      areaData.value = res
-    }
+    await getCloserAreas(currentUserId.value, false).then(res => {
+      if (res?.length > 0) {
+        areaData.value = res
+      }
 
-    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-      areaModel.value = areaData.value.filter(od => od.active)
-    } else if (preSelectLists) {
-      areaModel.value = cloneDeep(areaData.value)
-    }
+      if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+        areaModel.value = areaData.value.filter(od => od.active)
+      } else if (preSelectLists) {
+        areaModel.value = cloneDeep(areaData.value)
+      }
 
-    // reset these values when the areas change
-    regionModel.value = []
+      // reset these values when the areas change
+      regionModel.value = []
+      districtModel.value = []
+      officeModel.value = []
+      repModel.value = []
+
+      if (!initialPageLoad.value) {
+        regionLoad(preSelectLists, true)
+        // officeLoad(preSelectLists, true)
+        // repLoad(preSelectLists, true)
+      }
+    })
+
+
+    apptsToFdcPipelineData.value = []
+    apptsToFdcPipelineLoaded.value = true
+  }
+}
+
+const regionLoad = async(preSelectLists) => {
+  if(repValuesChanged.value || initialPageLoad.value) {
+    if (!currentUserId.value) return
+
+    let areas = areaModel.value.map(function (area) {
+      return {
+        area_id: area.org_id
+      }
+    })
+
+    // if (!selectAllDistricts.value) {
+    //   regionModel.value = []
+    //   regionData.value = []
+    //   officeModel.value = []
+    //   officeData.value = []
+    //   repModel.value = []
+    //   repData.value = []
+    //   apptsToFdcPipelineData.value = []
+    //
+    //   // if (districts?.length === 0) return
+    // }
+
+    // reset these values when the regions change
     districtModel.value = []
     officeModel.value = []
     repModel.value = []
 
-    if (!initialPageLoad.value) {
-      regionLoad(preSelectLists, true)
-      // officeLoad(preSelectLists, true)
-      // repLoad(preSelectLists, true)
-    }
-  })
+
+    await getCloserRegions(currentUserId.value, JSON.stringify(areas), false).then(res => {
+      regionData.value = res
 
 
-  apptsToFdcPipelineData.value = []
-  apptsToFdcPipelineLoaded.value = true
-}
+      if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+        regionModel.value = regionData.value.filter(od => od.active)
+      } else if (preSelectLists) {
+        regionModel.value = cloneDeep(regionData.value)
+      }
 
-const regionLoad = async(preSelectLists) => {
-  if (!currentUserId.value) return
+      if (!initialPageLoad.value) {
+        districtLoad(preSelectLists, true)
+        // repLoad(preSelectLists, true)
+      }
+    })
 
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
-
-  // if (!selectAllDistricts.value) {
-  //   regionModel.value = []
-  //   regionData.value = []
-  //   officeModel.value = []
-  //   officeData.value = []
-  //   repModel.value = []
-  //   repData.value = []
-  //   apptsToFdcPipelineData.value = []
-  //
-  //   // if (districts?.length === 0) return
-  // }
-
-  // reset these values when the regions change
-  districtModel.value = []
-  officeModel.value = []
-  repModel.value = []
-
-
-  await getCloserRegions(currentUserId.value, JSON.stringify(areas), false).then(res => {
-    regionData.value = res
-
-
-    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-      regionModel.value = regionData.value.filter(od => od.active)
-    } else if (preSelectLists) {
-      regionModel.value = cloneDeep(regionData.value)
-    }
-
-    if (!initialPageLoad.value) {
-      districtLoad(preSelectLists, true)
-      // repLoad(preSelectLists, true)
-    }
-  })
-
-  apptsToFdcPipelineData.value = []
+    apptsToFdcPipelineData.value = []
+  }
 }
 
 const districtLoad = async(preSelectLists) => {
-  if (!currentUserId.value) return
+  if(repValuesChanged.value || initialPageLoad.value) {
+    if (!currentUserId.value) return
 
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
+    let areas = areaModel.value.map(function (area) {
+      return {
+        area_id: area.org_id
+      }
+    })
 
-  let regions = regionModel.value.map(function (region) {
-    return {
-      region_id: region.org_id
-    }
-  })
+    let regions = regionModel.value.map(function (region) {
+      return {
+        region_id: region.org_id
+      }
+    })
 
-  await getCloserDistricts(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), false).then(res => {
-    if (res?.length > 0) {
-      districtData.value = res
-    }
+    await getCloserDistricts(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), false).then(res => {
+      if (res?.length > 0) {
+        districtData.value = res
+      }
 
-    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-      districtModel.value = districtData.value.filter(od => od.active)
-    } else if (preSelectLists) {
-      districtModel.value = cloneDeep(districtData.value)
-    }
+      if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+        districtModel.value = districtData.value.filter(od => od.active)
+      } else if (preSelectLists) {
+        districtModel.value = cloneDeep(districtData.value)
+      }
 
-    // reset these values when the districts change
-    // regionModel.value = []
-    officeModel.value = []
-    repModel.value = []
+      // reset these values when the districts change
+      // regionModel.value = []
+      officeModel.value = []
+      repModel.value = []
 
-    if (!initialPageLoad.value) {
-      officeLoad(preSelectLists, true)
-      // officeLoad(preSelectLists, true)
-      // repLoad(preSelectLists, true)
-    }
-  })
+      if (!initialPageLoad.value) {
+        officeLoad(preSelectLists, true)
+        // officeLoad(preSelectLists, true)
+        // repLoad(preSelectLists, true)
+      }
+    })
 
 
-  apptsToFdcPipelineData.value = []
-  apptsToFdcPipelineLoaded.value = true
+    apptsToFdcPipelineData.value = []
+    apptsToFdcPipelineLoaded.value = true
+  }
 }
 
 const officeLoad = async(preSelectLists) => {
-  if (!currentUserId.value) return
+  if (repValuesChanged.value || initialPageLoad.value) {
+    if (!currentUserId.value) return
 
 
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
+    let areas = areaModel.value.map(function (area) {
+      return {
+        area_id: area.org_id
+      }
+    })
 
-  let regions = regionModel.value.map(function (region) {
-    return {
-      region_id: region.org_id
-    }
-  })
+    let regions = regionModel.value.map(function (region) {
+      return {
+        region_id: region.org_id
+      }
+    })
 
-  let districts = districtModel.value.map(function (district) {
-    return {
-      district_id: district.org_id
-    }
-  })
+    let districts = districtModel.value.map(function (district) {
+      return {
+        district_id: district.org_id
+      }
+    })
 
-  // if (!selectAllRegions.value) {
-  //   officeModel.value = []
-  //   officeData.value = []
-  //   repModel.value = []
-  //   repData.value = []
-  //   apptsToFdcPipelineData.value = []
-  //
-  //   // if (regions?.length === 0) return
-  // }
+    // if (!selectAllRegions.value) {
+    //   officeModel.value = []
+    //   officeData.value = []
+    //   repModel.value = []
+    //   repData.value = []
+    //   apptsToFdcPipelineData.value = []
+    //
+    //   // if (regions?.length === 0) return
+    // }
 
-  // reset these values when the offices change
-  repModel.value = []
+    // reset these values when the offices change
+    repModel.value = []
 
-  await getCloserOffices(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), false).then(res => {
-    officeData.value = res
+    await getCloserOffices(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), false).then(res => {
+      officeData.value = res
 
-    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-      officeModel.value = officeData.value.filter(od => od.active)
-    } else if (preSelectLists) {
-      officeModel.value = cloneDeep(officeData.value)
-    }
+      if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+        officeModel.value = officeData.value.filter(od => od.active)
+      } else if (preSelectLists) {
+        officeModel.value = cloneDeep(officeData.value)
+      }
 
-    if (!initialPageLoad.value) {
-      repLoad(preSelectLists, true)
-    }
-  })
+      if (!initialPageLoad.value) {
+        repLoad(preSelectLists, true)
+      }
+    })
 
-  apptsToFdcPipelineData.value = []
-  // repData.value = []
-  repModel.value = []
+    apptsToFdcPipelineData.value = []
+    // repData.value = []
+    repModel.value = []
+  }
+  repValuesChanged.value = false;
 }
 
 const repLoad = async(preSelectLists) => {
   //reset these any time we are reloading reps or things get weird
-  repModel.value = []
-  repData.value = []
-  repLengthOverride.value = false
+  if (repValuesChanged.value || initialPageLoad.value) {
+    repModel.value = []
+    repData.value = []
+    repLengthOverride.value = false
 
-  if (!currentUserId.value) return
+    if (!currentUserId.value) return
 
-  let areas = areaModel.value.map(function (area) {
-    return {
-      area_id: area.org_id
-    }
-  })
+    let areas = areaModel.value.map(function (area) {
+      return {
+        area_id: area.org_id
+      }
+    })
 
-  let regions = regionModel.value.map(function (region) {
-    return {
-      region_id: region.org_id
-    }
-  })
+    let regions = regionModel.value.map(function (region) {
+      return {
+        region_id: region.org_id
+      }
+    })
 
-  let districts = districtModel.value.map(function (district) {
-    return {
-      district_id: district.org_id
-    }
-  })
+    let districts = districtModel.value.map(function (district) {
+      return {
+        district_id: district.org_id
+      }
+    })
 
-  let offices = officeModel.value.map(function (office) {
-    return {
-      office_id: office.org_id
-    }
-  })
+    let offices = officeModel.value.map(function (office) {
+      return {
+        office_id: office.org_id
+      }
+    })
 
-  // if (!selectAllOffices.value) {
-  //   repModel.value = []
-  //   repData.value = []
-  //   apptsToFdcPipelineData.value = []
-  //
-  //   // if (offices?.length === 0) return
-  // }
+    // if (!selectAllOffices.value) {
+    //   repModel.value = []
+    //   repData.value = []
+    //   apptsToFdcPipelineData.value = []
+    //
+    //   // if (offices?.length === 0) return
+    // }
 
-  await getCloserReps(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), JSON.stringify(offices)).then(res => {
-    repData.value = res
+    await getCloserReps(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), JSON.stringify(offices)).then(res => {
+      repData.value = res
 
-    repDataMaster.value = cloneDeep(res)
+      repDataMaster.value = cloneDeep(res)
 
-    if (preSelectLists) {
-      repModel.value = cloneDeep(repData.value)
-    }
+      if (preSelectLists) {
+        repModel.value = cloneDeep(repData.value)
+      }
 
-    apptsToFdcPipelineData.value = []
+      apptsToFdcPipelineData.value = []
 
-    if (repModel.value.length > 0) {
-      apptsToFdcPipelineLoad(1)
-    }
-  })
-  initialPageLoad.value = false
-  dropdownValuesLoading.value = false
+      if (repModel.value.length > 0) {
+        apptsToFdcPipelineLoad(1)
+      }
+    })
+    initialPageLoad.value = false
+    dropdownValuesLoading.value = false
+  }
 }
 
 const updateApptsCreatedPipelineCalendar = () => {
@@ -3930,19 +3951,22 @@ const toggleSelectAllOffices = () => {
 }
 
 const toggleSomeReps = () => {
-  if(repData.value[0]?.name == 'All Reps'){
-    repData.value = repDataMaster.value
-    repModel.value = []
+  if(repValuesChanged.value) {
+    if (repData.value[0]?.name == 'All Reps') {
+      repData.value = repDataMaster.value
+      repModel.value = []
+    }
+    vueInstance.$nextTick(() => {
+      apptsToFdcPipelineLoad(1)
+      if (secondDateRange.value) {
+        apptsToFdcPipelineLoad(2)
+      }
+      if (thirdDateRange.value) {
+        apptsToFdcPipelineLoad(3)
+      }
+    })
   }
-  vueInstance.$nextTick(() => {
-    apptsToFdcPipelineLoad(1)
-    if (secondDateRange.value) {
-      apptsToFdcPipelineLoad(2)
-    }
-    if (thirdDateRange.value) {
-      apptsToFdcPipelineLoad(3)
-    }
-  })
+  repValuesChanged.value = false
 }
 
 const toggleSelectAllReps = () => {
