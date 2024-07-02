@@ -335,7 +335,7 @@
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-              <span @click="funnelDrilldown(item, getDropdownById(firstDateRange), 'apptsCreatedPipeline', true)">
+              <span @click="funnelDrilldown(item, getDropdownById(firstDateRange), 'apptsCreatedPipeline', true)" class="appts-data">
               {{ item.leads_created_count ? item.leads_created_count : 0 }}
               <span v-on="viewTrends?on:null">
                 <span v-if="viewTrends && item.trend>0 "
@@ -361,7 +361,7 @@
                     v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-            <span @click="funnelDrilldown(item, getDropdownById(secondDateRange), 'apptsCreatedPipeline', true)">
+            <span @click="funnelDrilldown(item, getDropdownById(secondDateRange), 'apptsCreatedPipeline', true)" class="appts-data">
               {{ column2Values[index].leads_created_count  ? column2Values[index].leads_created_count  : 0 }}
               <span v-on="viewTrends?on:null">
                 <span v-if="viewTrends && column2Values[index].trend>0"
@@ -389,7 +389,7 @@
                     v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-            <span @click="funnelDrilldown(item, getDropdownById(thirdDateRange), 'apptsCreatedPipeline', true)">
+            <span @click="funnelDrilldown(item, getDropdownById(thirdDateRange), 'apptsCreatedPipeline', true)" class="appts-data">
               {{ column3Values[index].leads_created_count ? column3Values[index].leads_created_count : 0 }}
               <span v-on="viewTrends?on:null">
                 <span v-if="viewTrends && column3Values[index].trend>0"
@@ -2273,7 +2273,6 @@ const resetFilters = async()=> {
   officeModel.value = []
   repModel.value = []
   repData.value = cloneDeep(repDataMaster.value)
-  console.log(areaModel.value)
 }
 const exportCsv = async () => {
   appStore.loading = true
@@ -2876,10 +2875,10 @@ const loadFunnels = async() => {
 
   if (apptsToFdcPipelineData.value?.length > 0) {
     apptsToFdcPipelineLoad(1)
-    if (secondDateRange.value) {
+    if (fdcSecondDateRange.value) {
       apptsToFdcPipelineLoad(2)
     }
-    if (thirdDateRange.value) {
+    if (fdcThirdDateRange.value) {
       apptsToFdcPipelineLoad(3)
     }
   }
@@ -2900,7 +2899,13 @@ const funnelAllReps = async() => {
   ]
 
   // apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
-  await apptsToFdcPipelineLoad(1)
+  apptsToFdcPipelineLoad(1)
+  if (fdcSecondDateRange.value) {
+    apptsToFdcPipelineLoad(2)
+  }
+  if (fdcThirdDateRange.value) {
+    apptsToFdcPipelineLoad(3)
+  }
 }
 
 const loadSources = async() => {
@@ -3293,7 +3298,6 @@ const areaLoad = async(preSelectLists) => {
 
 const regionLoad = async(preSelectLists) => {
   if(repValuesChanged.value || initialPageLoad.value) {
-    console.log("Loading regions")
     if (!currentUserId.value) return
 
     let areas = areaModel.value.map(function (area) {
@@ -3341,9 +3345,7 @@ const regionLoad = async(preSelectLists) => {
 }
 
 const districtLoad = async(preSelectLists) => {
-  console.log("district opened")
   if(repValuesChanged.value || initialPageLoad.value) {
-    console.log("loading districts")
     if (!currentUserId.value) return
 
     let areas = areaModel.value.map(function (area) {
@@ -3389,7 +3391,6 @@ const districtLoad = async(preSelectLists) => {
 
 const officeLoad = async(preSelectLists) => {
   if (repValuesChanged.value || initialPageLoad.value) {
-    console.log("loading office")
     if (!currentUserId.value) return
 
 
@@ -3448,7 +3449,6 @@ const officeLoad = async(preSelectLists) => {
 const repLoad = async(preSelectLists) => {
   //reset these any time we are reloading reps or things get weird
   if (repValuesChanged.value || initialPageLoad.value) {
-    console.log("loading reps")
     repModel.value = []
     repData.value = []
     repLengthOverride.value = false
@@ -3499,10 +3499,10 @@ const repLoad = async(preSelectLists) => {
       apptsToFdcPipelineData.value = []
 
       apptsToFdcPipelineLoad(1)
-      if (secondDateRange.value) {
+      if (fdcSecondDateRange.value) {
         apptsToFdcPipelineLoad(2)
       }
-      if (thirdDateRange.value) {
+      if (fdcThirdDateRange.value) {
         apptsToFdcPipelineLoad(3)
       }
     })
@@ -3596,6 +3596,7 @@ const yearToDate = (pipelineName) => {
 }
 
 const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn) => {
+  appStore.loading = true;
   // selectedFunnel.value = funnel
   let sourceIds = []
   let userIds = []
@@ -3748,11 +3749,12 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
 
       funnelDrilldownDialog.value = true
       handleHidingGlobalLoader( status)
+      appStore.loading = false
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving drilldown data')
-
+    appStore.loading = false
   }
 }
 
@@ -3870,20 +3872,20 @@ const toggleSelectAllFdcLeadsCreatedSources = () => {
     if (selectAllFdcLeadsCreatedSources.value) {
       fdcSourceModel.value = []
       apptsToFdcPipelineLoad(1)
-      if (secondDateRange.value) {
+      if (fdcSecondDateRange.value) {
         apptsToFdcPipelineLoad(2)
       }
-      if (thirdDateRange.value) {
+      if (fdcThirdDateRange.value) {
         apptsToFdcPipelineLoad(3)
       }
 
     } else {
       fdcSourceModel.value = cloneDeep(fdcSourceData.value)
       apptsToFdcPipelineLoad(1)
-      if(secondDateRange.value){
+      if(fdcSecondDateRange.value){
         apptsToFdcPipelineLoad(2)
       }
-      if(thirdDateRange.value){
+      if(fdcThirdDateRange.value){
         apptsToFdcPipelineLoad(3)
       }
     }
@@ -4045,6 +4047,10 @@ const closeFunnelDrilldownDialog = () => {
 }
 .fdc-data{
   min-width: 72px;
+  cursor: pointer;
+}
+.appts-data{
+  cursor: pointer;
 }
 .other-filters-text{
   margin-right: 12px;
