@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PdfService {
 
-  private final AppProperties properties;
+  private final WebClient pdfWebClient;
 
   public Resource convert(String fileContent) {
 
@@ -61,11 +61,7 @@ public class PdfService {
       builder.part("files", resource);
     }
 
-    WebClient build = WebClient.builder()
-      .baseUrl(properties.getHtmlToPdfApi().toString())
-      .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(1024 * 1024 * 10)).build();
-
-    return build
+   return pdfWebClient
       .post()
       .uri("/forms/chromium/convert/html")
       .contentType(MediaType.APPLICATION_FORM_URLENCODED)
