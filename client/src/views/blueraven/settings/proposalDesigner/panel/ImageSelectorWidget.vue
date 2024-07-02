@@ -93,13 +93,12 @@ import {
   logError
 } from '@/helpers/helpers'
 import ImgProxy from '@/components/ImgProxy'
-import { getCurrentInstance, ref } from 'vue'
+import { ref } from 'vue'
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const fileStore = useFileStore()
 const appStore = useAppStore()
-const vueInstance = getCurrentInstance().proxy
 
 const PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID = 939
 const IMAGE_REGEX = /^(jpe?g|png|gif|webp)$/i

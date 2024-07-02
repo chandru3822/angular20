@@ -31,7 +31,7 @@
   </v-dialog>
 </template>
 <script setup>
-import { toRefs, ref, defineExpose } from 'vue'
+import { toRefs, ref } from 'vue'
 
 const props = defineProps({
   cancelButtonText: {
