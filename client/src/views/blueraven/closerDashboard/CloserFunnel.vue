@@ -633,7 +633,7 @@
               </a-autocomplete>
               <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
                               v-model="repModel"
-                              :items="repData"
+                              :items="filteredRepData"
                               item-title="name"
                               item-value="user_position_id"
                               label="Rep"
@@ -648,10 +648,10 @@
                               ref="repSelect">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0 && repModel[0].user_id != -1" class="selected-option text-caption">
-                    {{ repModel.length }} Checked
+                    {{ filteredRepData.length }} Checked
                   </span>
                   <span v-if="index === 0 && repModel[0].user_id === -1" class="selected-option text-caption-sm">
-                        {{ repDataMaster.length }} Checked
+                        {{ filteredRepDataMaster.length }} Checked
                   </span>
                 </template>
                 <template v-slot:label="{ item, index }">
@@ -670,7 +670,7 @@
                   <v-divider class="mt-2"></v-divider>
                 </template>
                 <template v-slot:item="data">
-                  <v-list-item-action class="mr-2">
+                  <v-list-item-action class="mr-2" >
                     <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                     <v-icon v-else>check_box_outline_blank</v-icon>
                   </v-list-item-action>
@@ -3804,6 +3804,30 @@ const filteredFunnelDrilldownItems = (filteredItems) => {
   filteredFunnelDrilldownData.value = filteredItems
   funnelDrilldownRowCount.value = filteredItems.length
 }
+
+const filteredRepData = computed(() => {
+  // if(!milestonesExpanded.value){
+  //   return apptsCreatedPipelineData.value.filter(dv => dv.display_order < 3)
+  // }
+  if(!hideInactiveReps.value) {
+    return repData.value
+  }
+  else{
+    return repData.value.filter(dv => dv.active)
+  }
+})
+
+const filteredRepDataMaster = computed(() => {
+  // if(!milestonesExpanded.value){
+  //   return apptsCreatedPipelineData.value.filter(dv => dv.display_order < 3)
+  // }
+  if(!hideInactiveReps.value) {
+    return repDataMaster.value
+  }
+  else{
+    return repDataMaster.value.filter(dv => dv.active)
+  }
+})
 
 const toggleSelectAllSelfGenSources = () => {
   vueInstance.$nextTick(() => {
