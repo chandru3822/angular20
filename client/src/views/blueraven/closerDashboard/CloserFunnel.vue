@@ -2864,17 +2864,17 @@ const loadFunnels = async() => {
     await regionLoad(true, true)
     await districtLoad(true, true)
     await officeLoad(true, true)
-    repLoad(true)
+    await repLoad(true)
   } else {
     await areaLoad(false)
     await regionLoad(false, true)
     await districtLoad(false, true)
     await officeLoad(false, true)
-    repLoad(false)
+    await repLoad(false)
   }
 
   if (apptsToFdcPipelineData.value?.length > 0) {
-    apptsToFdcPipelineLoad(1)
+     apptsToFdcPipelineLoad(1)
     if (fdcSecondDateRange.value) {
       apptsToFdcPipelineLoad(2)
     }
@@ -3892,8 +3892,7 @@ const toggleSelectAllFdcLeadsCreatedSources = () => {
   })
 }
 
-const toggleSelectAllAreas = () => {
-  vueInstance.$nextTick(() => {
+const toggleSelectAllAreas = async() => {
     if (selectAllAreas.value) {
       areaModel.value = []
       regionData.value = []
@@ -3908,17 +3907,20 @@ const toggleSelectAllAreas = () => {
     } else {
       areaModel.value = cloneDeep(areaData.value)
       repModel.value = [] // in case the user previously clicked the 'All Reps' button
-      // regionLoad(false)
+      //
     }
-  })
+    repValuesChanged.value = true
+    await regionLoad(false)
+    repValuesChanged.value = false
 }
 
-const toggleSelectAllRegions = () => {
-  vueInstance.$nextTick(() => {
+const toggleSelectAllRegions = async() => {
     if (selectAllRegions.value) {
       regionModel.value = []
       officeData.value = []
       officeModel.value = []
+      districtData.value = []
+      districtModel.value = []
       repData.value = []
       repModel.value = []
       apptsToFdcPipelineData.value = []
@@ -3926,15 +3928,14 @@ const toggleSelectAllRegions = () => {
       regionModel.value = cloneDeep(regionData.value)
       // officeLoad(false)
     }
-  })
+  repValuesChanged.value = true
+  await districtLoad(false)
+  repValuesChanged.value = false
 }
 
-const toggleSelectAllDistricts = () => {
-  vueInstance.$nextTick(() => {
+const toggleSelectAllDistricts = async() => {
     if (selectAllDistricts.value) {
       districtModel.value = []
-      regionData.value = []
-      regionModel.value = []
       officeData.value = []
       officeModel.value = []
       repData.value = []
@@ -3945,11 +3946,12 @@ const toggleSelectAllDistricts = () => {
       // repModel.value = [] // in case the user previously clicked the 'All Reps' button
       // regionLoad(false)
     }
-  })
+    repValuesChanged.value = true
+    await officeLoad(false)
+    repValuesChanged.value = false
 }
 
-const toggleSelectAllOffices = () => {
-  vueInstance.$nextTick(() => {
+const toggleSelectAllOffices = async() => {
     if (selectAllOffices.value) {
       officeModel.value = []
       repData.value = []
@@ -3959,7 +3961,9 @@ const toggleSelectAllOffices = () => {
       officeModel.value = cloneDeep(officeData.value)
       // repLoad(false)
     }
-  })
+  repValuesChanged.value = true
+  await repLoad(false)
+  repValuesChanged.value = false
 }
 
 const toggleSomeReps = () => {
