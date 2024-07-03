@@ -36,7 +36,8 @@ begin
                           inner join brs.project_details pd
                                      on pd.project_id = ip.project_id
                           left join sunpower_roof_mapping srm on srm.lov_id = pd.roof_type
-                   where pd.archived is false),
+                   where pd.archived is false
+                        and ip._snapshot_error_message is null),
       attachments as (select p.project_id,
                              (select array_to_json(array [a.s3_key])
                               from flow.project_process_step_attachment ppsa
@@ -185,8 +186,8 @@ begin
                                                            s.snapshot) d on true
                   where d <> '{}')
       update flow.import_sp_project p
-        set _snapshot = c.new_snapshot,
-          _snapshot_date_updated = now()
+        set _snapshot             = c.new_snapshot,
+          _snapshot_date_updated  = now()
         from compare c
         where p.project_id = c.project_id
         returning p.project_id, p.sp_project_id, c.diff;
