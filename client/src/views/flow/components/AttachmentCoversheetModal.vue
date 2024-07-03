@@ -473,7 +473,7 @@ const uploadDocument = async() => {
   try {
     appStore.loading = true
     //reset error message when trying to upload new file
-    error.value = {}
+    errorMsg.value = {}
     if (file.value && file.value.size > 0) {
       const {sourceId, secondaryId} = getAttachmentSourceId(projectId.value, projectProcessStepId.value, projectProcessStepEventId.value,
           userId.value, contactId.value, orgId.value)
@@ -486,7 +486,7 @@ const uploadDocument = async() => {
           objectTypeId: objectTypeId.value,
           sourceId,
           secondaryId,
-          callback: uploadCallback.value
+          callback: uploadCallback
         })
       }
     }
@@ -500,7 +500,7 @@ const uploadDocument = async() => {
 }
 const uploadCallback = async(newAttachment, error) => {
   if (error) {
-    error.value = error
+    errorMsg.value = error
     appStore.showSnack('ERROR', error.message)
 
   } else {

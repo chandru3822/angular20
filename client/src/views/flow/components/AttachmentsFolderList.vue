@@ -132,6 +132,7 @@
                       @change='doUpload($event.target.files, type)'
                       style="display: none"
                       :ref="`fileInput${type.attachmentTypeId}`"
+                      @click.stop=""
                   >
                   <div class="expansion-panel-header-open" v-if="open"
                        key="0">
