@@ -425,7 +425,7 @@
         <div class="title-large closer-dashboard-header">
           Appointments to FDC Pipeline
         </div>
-        <a v-if="repModel?.length > 0" class="export-button" @click="exportCsv('fdc')">
+        <a v-if="filteredFdcPipelineData?.length > 0" class="export-button" @click="exportCsv('fdc')">
           <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
           Export
         </a>
@@ -441,9 +441,9 @@
       </v-row>
       <v-row>
         <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
-          <v-col cols="10" class="d-flex">
+          <v-col class="d-flex">
             <div id="pipeline-header-left-side">
-              <div class="reps-container">Reps: </div>
+              <div class="reps-container"><span class="other-filters-text label-small">Reps Filters</span> </div>
               <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
                               ref="areaSelect"
                               v-model="areaModel"
@@ -502,7 +502,7 @@
                               density="compact"
                               multiple
                               @input="repValuesChanged = true"
-                              @blur="regionValuesChanged = true; districtLoad(); toggleSomeReps()"
+                              @blur="regionValuesChanged = true; districtLoad()"
                               hide-details
                               return-object
                               ref="regionSelect">
@@ -551,7 +551,7 @@
                               density="compact"
                               hide-details
                               @input="repValuesChanged = true; districtValuesChanged = true;"
-                              @blur="officeLoad(); toggleSomeReps()"
+                              @blur="officeLoad()"
                               return-object>
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-md">District</span>
@@ -596,7 +596,7 @@
                               variant="outlined"
                               density="compact"
                               @input="repValuesChanged = true"
-                              @blur="officeValuesChanged = true; repLoad(); toggleSomeReps()"
+                              @blur="officeValuesChanged = true; repLoad()"
                               hide-details
                               return-object
                               ref="officeSelect">
@@ -641,32 +641,32 @@
                               multiple
                               variant="outlined"
                               density="compact"
-                              @input="repValuesChanged = true"
-                              @blur="toggleSomeReps()"
+                              @input="repValuesChanged = true; apptsToFdcPipelineData.value = []"
                               hide-details
                               return-object
                               ref="repSelect">
                 <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0 && repModel[0].user_id != -1" class="selected-option text-caption">
+                  <span v-if="(index === 0 && repModel[0].user_id != -1)" class="selected-option text-caption">
                     {{ repModel.length }} Checked
                   </span>
-                  <span v-if="index === 0 && repModel[0].user_id === -1" class="selected-option text-caption-sm">
+                  <span v-if="(index === 0 && repModel[0].user_id === -1)" class="selected-option text-caption-sm">
                         {{ filteredRepDataMaster.length }} Checked
                   </span>
+
                 </template>
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-lg">Rep</span>
                 </template>
                 <template v-if="repData?.length > 1" v-slot:prepend-item>
-                  <v-list-item
-                    @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">
-                    <v-list-item-action class="mr-2">
-                      <v-icon>{{ repSelectIcon }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
+<!--                  <v-list-item-->
+<!--                    @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">-->
+<!--                    <v-list-item-action class="mr-2">-->
+<!--                      <v-icon>{{ repSelectIcon }}</v-icon>-->
+<!--                    </v-list-item-action>-->
+<!--                    <v-list-item-content>-->
+<!--                      <v-list-item-title>Select All</v-list-item-title>-->
+<!--                    </v-list-item-content>-->
+<!--                  </v-list-item>-->
                   <v-divider class="mt-2"></v-divider>
                 </template>
                 <template v-slot:item="data">
@@ -684,24 +684,22 @@
               <div class="d-flex hide-inactive-switch-container align-items-center">
                 <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch hide-details v-model="hideInactiveReps" @click="switchInactiveReps()" class="hide-inactive-switch"></v-switch>
               </div>
+                <a-btn
+                  id="all-reps-btn"
+                  variant="outlined"
+                  color="primary"
+                  class="body-small"
+                  @click="funnelAllReps"
+                  :text="viewAllRepsText"
+                ></a-btn>
               <a-btn
                 v-if="!isCloser && !isCloserMgr"
-                class="label-medium reset-button"
+                class="body-small"
+                :class="{'reset-button-inactive': !filtersSelected && repModel?.length === 0 && !hideInactiveReps, 'reset-button-active': filtersSelected || repModel?.length > 0 || hideInactiveReps}"
                 variant="outlined"
                 @click="resetFilters(); repValuesChanged = true;  loadFunnels()"
                 color="unset"
-                text="Reset Filters"
-              ></a-btn>
-            </div>
-          </v-col>
-          <v-col cols="2" class="d-flex justify-end">
-            <div class="flex-display">
-              <a-btn
-                id="all-reps-btn"
-                variant="outlined"
-                color="primary"
-                @click="funnelAllReps"
-                text="View All Reps"
+                text="Reset Rep Filters"
               ></a-btn>
             </div>
           </v-col>
@@ -709,8 +707,8 @@
       </v-row>
       <v-row v-if="fdcPipelineExpanded" class="pipeline-header-container other-filters">
         <div id="pipeline-header-left-side">
-          <span class="other-filters-text">
-            Other Filters:
+          <span class="other-filters-text label-small">
+            Other Filters
           </span>
           <a-select
             v-if="!isCloser"
@@ -727,8 +725,7 @@
             density="compact"
             return-object
             label="Lead Source"
-            @input="repValuesChanged = true"
-            @blur="toggleSomeReps()">
+            @input="repValuesChanged = true">
             <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ fdcSourceModel.length }} Checked
@@ -758,7 +755,6 @@
                           variant="outlined"
                           density="compact"
                           @input="repValuesChanged = true"
-                          @blur="toggleSomeReps()"
                           hide-details
                           return-object
                           ref="repSelect">
@@ -822,7 +818,7 @@
         >
 
           <template #no-data>
-            <span class="default-text-color">No available data</span>
+            <span class="default-text-color">Select Reps to View the Pipeline</span>
           </template>
 
 
@@ -1025,8 +1021,7 @@
                       variant="outlined"
                       density="compact"
                       return-object
-                      @input="repValuesChanged = true"
-                      @blur="toggleSomeReps()">
+                      @input="repValuesChanged = true">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ leadsCreatedSourceModel.length }} Checked
@@ -1058,8 +1053,7 @@
               variant="outlined"
               density="compact"
               return-object
-              @input="repValuesChanged = true"
-              @blur="toggleSomeReps()">
+              @input="repValuesChanged = true">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ brsProvidedSourceModel.length }} Checked
@@ -1089,8 +1083,7 @@
                       variant="outlined"
                       density="compact"
                       return-object
-                      @input="repValuesChanged = true"
-                      @blur="toggleSomeReps()">
+                      @input="repValuesChanged = true">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="selected-option text-caption">
                     {{ selfGenSourceModel.length }} Checked
@@ -1119,11 +1112,11 @@
               <template v-slot:activator="{ on }">
               <span v-on="viewFdcTrends?on:null" class="trends-container">
                 <span v-if="viewFdcTrends && item.trend_count>0"
-                      :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !item.inverse_trend, 'negative-percentage': item.inverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !item.inverse_trend, 'negative-trendline': item.inverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && item.trend_count<0"
-                      :class="[{'positive-percentage': item.reverse_trend, 'negative-percentage': !item.reverse_trend}]">{{ item.trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': item.inverse_trend, 'negative-percentage': !item.inverse_trend}]">{{ item.trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': item.inverse_trend, 'negative-trendline': !item.inverse_trend}]">trending_down</v-icon></span>
                 <span v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"
                       class="neutral-percentage">{{ item.trend_count / 100 | percent }}<v-icon
                   class="neutral-trendline">trending_flat</v-icon></span>
@@ -1134,7 +1127,7 @@
               <span
                 v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="item.checked_in_custom_date_range_count != null && item.display_order>8" class="checked_in_container body-small">
+              <span v-if="item.checked_in_custom_date_range_count != null && item.show_checked_in_column" class="checked_in_container body-small">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
@@ -1153,11 +1146,11 @@
               <template v-slot:activator="{ on }">
               <span v-on="viewFdcTrends?on:null" class="trends-container">
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn2Values[index].inverse_trend, 'negative-percentage': fdcColumn2Values[index].inverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !fdcColumn2Values[index].inverse_trend, 'negative-trendline': fdcColumn2Values[index].inverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn2Values[index].inverse_trend, 'negative-percentage': !fdcColumn2Values[index].inverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': fdcColumn2Values[index].inverse_trend, 'negative-trendline': !fdcColumn2Values[index].inverse_trend}]">trending_down</v-icon></span>
                 <span v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"
                       class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
                   class="neutral-trendline">trending_flat</v-icon></span>
@@ -1168,7 +1161,7 @@
               <span
                 v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null && fdcColumn2Values[index].display_order>8" class="checked_in_container body-small">
+              <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null && fdcColumn2Values[index].show_checked_in_column" class="checked_in_container body-small">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
@@ -1186,11 +1179,11 @@
               <template v-slot:activator="{ on }">
               <span v-on="viewFdcTrends?on:null" class="trends-container">
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn3Values[index].inverse_trend, 'negative-percentage': fdcColumn3Values[index].inverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !fdcColumn3Values[index].inverse_trend, 'negative-trendline': fdcColumn3Values[index].inverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn3Values[index].inverse_trend, 'negative-percentage': !fdcColumn3Values[index].inverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': fdcColumn3Values[index].inverse_trend, 'negative-trendline': !fdcColumn3Values[index].inverse_trend}]">trending_down</v-icon></span>
                 <span v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"
                       class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
                   class="neutral-trendline">trending_flat</v-icon></span>
@@ -1201,7 +1194,7 @@
               <span
                 v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null && fdcColumn3Values[index].display_order>8" class="checked_in_container body-small">
+              <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null && fdcColumn3Values[index].show_checked_in_column" class="checked_in_container body-small">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
@@ -1676,55 +1669,23 @@ const userCanViewAll = ref(userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD
 const userCanViewAllProjects = ref(userStore.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL'))
 const headers = ref([
 ])
-const reverseTrends = ref([
-  'Cancelled in advance',
-  'Ineligible for solar',
-  'Rescheduled',
-  'Homeowner no show',
-  'Closer missed appointment',
-  'Turned away at the door',
-  'No utility bill',
-  'Non-dispositioned appointments'
-])
 const fdcHeaders = ref([])
-const drilldownData = ref([])
 const apptsCreatedPipelineLoaded = ref(false)
 const apptsToFdcPipelineLoaded = ref(false)
 const appointmentTypes = ref([])
 const appointmentTypesModel = ref([])
 const funnelsWereLoaded = ref(false)
-const currentQuarter = ref(moment().quarter())
-const closerOffices = ref([])
-const selectedCloserOffice = ref(null)
-const leadAllocationRankingData = ref([])
-const officeFdcRankingData = ref([])
-const officeRankingData = ref([])
-const topRepsData = ref([])
 const customColumn = ref(1)
 const customTable = ref('apptsCreated')
 const milestonesExpanded = ref(true)
 const apptsCreatedExpanded = ref(true)
 const fdcPipelineExpanded = ref(true)
-const userOffice = ref('')
-const userRow = ref([])
-const userRowIndex = ref(-1)
-const numOffices = ref(0)
 const apptsCreatedPipelineDataLoading = ref(true)
 const apptsToFdcPipelineDataLoading = ref(false)
 const apptsCreatedPipelineData = ref([])
 const apptsToFdcPipelineData = ref([])
-const apptsCreatedPipelineCustomSelectorIsOpen = ref(false)
-const apptsToFdcPipelineCustomSelectorIsOpen = ref(false)
-const todayUpperPercentage = ref(99)
-const todayLowerPercentage = ref(99)
-const wtdUpperPercentage = ref(99)
-const wtdLowerPercentage = ref(99)
-const cdrUpperPercentage = ref(99)
-const cdrLowerPercentage = ref(99)
 const fdcExpandableMilestones = ref([0, 3, 11, 14])
-const milestonesSwitching = ref(false)
 const hideInactiveReps = ref(false)
-const fdcMilestonesExpanded = ref([true, true, true, true])
 const brsProvidedSourceModel = ref([])
 const leadsCreatedSourceModel = ref([])
 const leadsCreatedSourceData = ref([])
@@ -1744,31 +1705,12 @@ const officeData = ref([])
 const repModel = ref([])
 const repData = ref([])
 const repDataMaster = ref([])
-const repDataSelectAll = ref(false)
 const appointmentTypesSelectAll = ref(false)
-const apptsCreatedPipelineDateRanges = ref([
-  {label: 'Yesterday', value: 'yesterday'},
-  {label: 'Last Week', value: 'lastWeek'},
-  {label: 'Month to Date', value: 'MTD'},
-  {label: 'Last 60 days', value: 60},
-  {label: 'Last 90 days', value: 90},
-  {label: 'Year to Date', value: 'YTD'},
-  {label: 'Custom', value: 'Custom'}
-])
+const viewAllFilteredReps = ref(false)
 const apptsCreatedPipelineDateRange = ref({label: 'Month to Date', value: 'MTD'
 })
 const showApptsCreatedPipelineCustomDates = ref(false)
-const apptsToFdcPipelineDateRanges = ref([
-  {label: 'Yesterday', value: 'yesterday'},
-  {label: 'Last Week', value: 'lastWeek'},
-  {label: 'Month to Date', value: 'MTD'},
-  {label: 'Last 60 days', value: 60},
-  {label: 'Last 90 days', value: 90},
-  {label: 'Year to Date', value: 'YTD'},
-  {label: 'Custom', value: 'Custom'}
-])
 const initialPageLoad = ref(true)
-const maxRepLimit = ref(1000)
 const areaValuesChanged = ref(false)
 const regionValuesChanged = ref(false)
 const districtValuesChanged = ref(false)
@@ -1778,18 +1720,6 @@ const apptsToFdcPipelineDateRange = ref({label: 'Month to Date', value: 'MTD'
 })
 const showApptsToFdcPipelineCustomDates = ref(false)
 const viewSelect = ref('standard')
-const appts_created_pipeline_dt1 = ref(moment().startOf('month').format('YYYY-MM-DD'))
-const appts_created_pipeline_dt1_formatted = ref(moment().startOf('month').format('M/D/YY'))
-const appts_created_pipeline_menu1 = ref(false)
-const appts_created_pipeline_dt2 = ref(moment().format('YYYY-MM-DD'))
-const appts_created_pipeline_dt2_formatted = ref(moment().format('M/D/YY'))
-const appts_created_pipeline_menu2 = ref(false)
-const appts_to_fdc_pipeline_dt1 = ref(moment().startOf('month').format('YYYY-MM-DD'))
-const appts_to_fdc_pipeline_dt1_formatted = ref(moment().startOf('month').format('M/D/YY'))
-const appts_to_fdc_pipeline_menu1 = ref(false)
-const appts_to_fdc_pipeline_dt2 = ref(moment().format('YYYY-MM-DD'))
-const appts_to_fdc_pipeline_dt2_formatted = ref(moment().format('M/D/YY'))
-const appts_to_fdc_pipeline_menu2 = ref(false)
 const funnelDrilldownTitle = ref('')
 const funnelDrilldownData = ref([])
 const funnelDrilldownLoading = ref(false)
@@ -1816,6 +1746,19 @@ const currentUserId = computed(() => {
   return userStore.details.id
 })
 
+const viewAllRepsText = computed(() => {
+  if(filtersSelected.value || hideInactiveReps.value){
+    return 'View All Filtered Reps'
+  }
+  else {
+    return 'View All Reps'
+  }
+})
+
+const filtersSelected = computed(() => {
+  return (areaModel.value.length > 0 || regionModel.value.length > 0 || districtModel.value.length > 0 || officeModel.value.length > 0)
+})
+
 const filteredApptsCreatedPipelineData = computed(() => {
   if(!milestonesExpanded.value){
     return apptsCreatedPipelineData.value.filter(dv => dv.display_order < 3)
@@ -1823,13 +1766,8 @@ const filteredApptsCreatedPipelineData = computed(() => {
   return apptsCreatedPipelineData.value
 })
 const filteredFdcPipelineData = computed(() => {
-  // return apptsToFdcPipelineData.value?.filter((data, index) => {
-  //   return fdcExpandableMilestones.value?.includes(index)
-  // })
   if(viewOnlyMajorMilestones.value){
-    return apptsToFdcPipelineData.value?.filter((data, index) => {
-      return fdcExpandableMilestones.value?.includes(index)
-    })
+    return apptsToFdcPipelineData.value?.filter(dv => dv.major_milestone)
   }
   else return apptsToFdcPipelineData.value
 })
@@ -2137,79 +2075,18 @@ const showTotalSystemSize = computed(() => {
   return funnelDrilldownRowCount.value > 0
 })
 
-watch(appts_created_pipeline_dt1, () => {
-  appts_created_pipeline_dt1_formatted.value = formatFunnelDate(appts_created_pipeline_dt1.value)
-})
-watch(appts_created_pipeline_dt2, () => {
-  appts_created_pipeline_dt2_formatted.value = formatFunnelDate(appts_created_pipeline_dt2.value)
-})
-watch(appts_to_fdc_pipeline_dt1, () => {
-  appts_to_fdc_pipeline_dt1_formatted.value = formatFunnelDate(appts_to_fdc_pipeline_dt1.value)
-})
-watch(appts_to_fdc_pipeline_dt2, () => {
-  appts_to_fdc_pipeline_dt2_formatted.value = formatFunnelDate(appts_to_fdc_pipeline_dt2.value)
-})
-watch(funnelDrilldownDialog, (val) => {
-  if (!val) {
-    funnelDrilldownSearch.value = ''
-
-    // resets the visibility of the optional headers
-    funnelDrilldownHeaders.value.forEach(header => {
-      if (header.optional) header.show = false
-    })
-  }
-})
-watch(filteredFunnelDrilldownData, () => {
-  calcTotalSystemSize()
-})
-
 onMounted(async() => {
   await getDropdownValues();
   await getAppointmentTypes();
   if (userStore.details.userPositions?.length > 0) {
-    let positionId = null
+    let primaryPosition = userStore.details.userPositions.find(p => !p.endDate && !p.archived && p.primaryFlag)
+    let positionId = primaryPosition.positionId
+    currentUserOrgId.value = primaryPosition.orgId
 
-    isCloser.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    isCloserMgr.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    isCloserDistrictMgr.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 517 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    let fakeCloserMgr = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 326 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    isCloserRegional.value = userStore.details.userPositions.filter(position => {
-      return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
-    }).length > 0
-
-    if (isCloser.value) {
-      positionId = 1
-    } else if (isCloserMgr.value) {
-      positionId = 2
-    } else if (isCloserDistrictMgr.value) {
-      positionId = 517
-    } else if (isCloserRegional.value) {
-      positionId = 3
-    } else if (fakeCloserMgr) {
-      positionId = 326
-    }
-
-    if (isCloser.value || isCloserMgr.value || isCloserDistrictMgr.value || isCloserRegional.value) {
-      currentUserOrgId.value = userStore.details.userPositions.filter(position => {
-        return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
-      })[0]?.orgId
-    }
-
-    if (fakeCloserMgr || isCloserDistrictMgr.value) {
-      isCloserMgr.value = true
-    }
+    isCloser.value = positionId === 1
+    isCloserDistrictMgr.value = positionId === 517
+    isCloserMgr.value = positionId === 2 || positionId === 326 || isCloserDistrictMgr.value
+    isCloserRegional.value = positionId === 3
   }
 
   appStore.loading = true;
@@ -2272,6 +2149,7 @@ const resetFilters = async()=> {
   districtModel.value = []
   officeModel.value = []
   repModel.value = []
+  hideInactiveReps.value = false
   repData.value = cloneDeep(repDataMaster.value)
 }
 const exportCsv = async (tableName) => {
@@ -2343,7 +2221,7 @@ const exportCsv = async (tableName) => {
       } else {
         csvData += ((dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).name === 'CUSTOM') ? firstCustom.value.name : dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).friendlyName);
       }
-      if (viewTrends.value) {
+      if (viewFdcTrends.value) {
         csvData += ', ' + 'Trend 1'
       }
       if (fdcSecondDateRange.value) {
@@ -2352,7 +2230,7 @@ const exportCsv = async (tableName) => {
         } else {
           csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).name === 'CUSTOM') ? secondCustom.value.name : dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).friendlyName);
         }
-        if (viewTrends.value) {
+        if (viewFdcTrends.value) {
           csvData += ', ' + 'Trend 2'
         }
       }
@@ -2362,27 +2240,27 @@ const exportCsv = async (tableName) => {
         } else {
           csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).name === 'CUSTOM') ? thirdCustom.value.name : dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).friendlyName);
         }
-        if (viewTrends.value) {
+        if (viewFdcTrends.value) {
           csvData += ', ' + 'Trend 3'
         }
       }
       csvData += '\n';
 
-      apptsToFdcPipelineData.value.forEach((p, i) => {
-        csvData += p.name + ',' + (p.leads_created_count ? p.leads_created_count : 0);
-        if (viewTrends.value) {
-          csvData += ', ' + (p.trend ? p.trend : 0) + '%';
+      filteredFdcPipelineData.value.forEach((p, i) => {
+        csvData += p.name + ',' + (p.custom_date_range_count ? p.custom_date_range_count : 0);
+        if (viewFdcTrends.value) {
+          csvData += ', ' + (p.trend_count ? p.trend_count : 0) + '%';
         }
         if (fdcSecondDateRange.value) {
-          csvData += ', ' + (fdcColumn2Values.value[i].leads_created_count ? fdcColumn2Values.value[i].leads_created_count : 0)
-          if (viewTrends.value) {
-            csvData += ', ' + (fdcColumn2Values.value[i].trend ? fdcColumn2Values.value[i].trend : 0) + '%';
+          csvData += ', ' + (fdcColumn2Values.value[i].custom_date_range_count ? fdcColumn2Values.value[i].custom_date_range_count : 0)
+          if (viewFdcTrends.value) {
+            csvData += ', ' + (fdcColumn2Values.value[i].trend_count ? fdcColumn2Values.value[i].trend_count : 0) + '%';
           }
         }
         if (fdcThirdDateRange.value) {
-          csvData += ', ' + (fdcColumn3Values.value[i].leads_created_count ? fdcColumn3Values.value[i].leads_created_count : 0)
-          if (viewTrends.value) {
-            csvData += ', ' + (fdcColumn3Values.value[i].trend ? fdcColumn3Values.value[i].trend : 0) + '%';
+          csvData += ', ' + (fdcColumn3Values.value[i].custom_date_range_count ? fdcColumn3Values.value[i].custom_date_range_count : 0)
+          if (viewFdcTrends.value) {
+            csvData += ', ' + (fdcColumn3Values.value[i].trend_count ? fdcColumn3Values.value[i].trend_count : 0) + '%';
           }
         }
         csvData += '\n';
@@ -2766,17 +2644,6 @@ const itemRowBackground = (item) => {
 const fdcRowBackground = (item) => {
   return fdcExpandableMilestones.value.includes(item.display_order-4) ? 'shaded-row' : ''
 }
-const fdcExpandMilestone = (index)=> {
-  milestonesSwitching.value = true
-  fdcMilestonesExpanded.value[fdcExpandableMilestones.value.indexOf(index)] = true
-  milestonesSwitching.value = false
-
-}
-const fdcHideMilestone = (index)=> {
-  milestonesSwitching.value = true
-  fdcMilestonesExpanded.value[fdcExpandableMilestones.value.indexOf(index)] = false
-  milestonesSwitching.value = false
-}
 
 const visibleFunnelDrilldownHeaders = () => {
   return funnelDrilldownHeaders.value.filter(header => header.show === true)
@@ -2940,18 +2807,23 @@ const loadFunnels = async() => {
 }
 
 const funnelAllReps = async() => {
-  areaModel.value = []
-  districtModel.value = []
-  regionModel.value = []
-  officeModel.value = []
-
-  repModel.value = [
-    {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
-  ]
-
-  repData.value = [
-    {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
-  ]
+  // if(!filtersSelected.value) {
+  //   areaModel.value = []
+  //   districtModel.value = []
+  //   regionModel.value = []
+  //   officeModel.value = []
+  //
+  //   // repModel.value = [
+  //   //   {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
+  //   // ]
+  //   //
+  //   // repData.value = [
+  //   //   {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
+  //   // ]
+  // }
+  // else{
+    viewAllFilteredReps.value = true
+  // }
 
   // apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1.value, appts_to_fdc_pipeline_dt2.value, false)
   apptsToFdcPipelineLoad(1)
@@ -3164,15 +3036,19 @@ const apptsToFdcPipelineLoad = async(column) => {
   let dateSelected = null
   let appointmentTypes = []
 
-  if (repModel.value.length === 0) {
+  if (repModel.value.length === 0 && !viewAllFilteredReps.value) {
     apptsToFdcPipelineData.value = []
     return
   }
 
   officeModel.value.forEach(org => orgs.push(org.org_id))
 
-  let modelOverride = false
-  repModel.value.forEach(rep => reps.push(rep.user_position_id))
+  if(viewAllFilteredReps.value && repModel.value.length === 0){
+    filteredRepData.value.forEach(rep => reps.push(rep.user_position_id))
+  }
+  else {
+    repModel.value.forEach(rep => reps.push(rep.user_position_id))
+  }
 
   fdcSourceModel.value.forEach(leadsCreatedSource => {
     if (leadsCreatedSource.sourceId) {
@@ -3244,42 +3120,6 @@ const apptsToFdcPipelineLoad = async(column) => {
       let dataTarget = orderBy(res.data, row => row.display_order);
       // apptsToFdcPipelineData.value = orderBy(res.data, row => row.display_order)
       dataTarget = orderBy(res.data, row => row.display_order)
-      let todayUpperNumerator = 0
-      let todayUpperDenominator = 0
-      let wtdUpperNumerator = 0
-      let wtdUpperDenominator = 0
-      let customDateRangeUpperNumerator = 0
-      let customDateRangeUpperDenominator = 0
-      let todayLowerNumerator = 0
-      let todayLowerDenominator = 0
-      let wtdLowerNumerator = 0
-      let wtdLowerDenominator = 0
-      let customDateRangeLowerNumerator = 0
-      let customDateRangeLowerDenominator = 0
-
-      dataTarget.forEach(row => {
-        row.reverse_trend = reverseTrends.value.includes(row.name)
-        if (row.id === 17) {
-          todayUpperDenominator = row.today_count
-          wtdUpperDenominator = row.week_to_date_count
-          customDateRangeUpperDenominator = row.custom_date_range_count
-        }
-
-        if (row.id === 11) {
-          todayUpperNumerator = row.today_count
-          wtdUpperNumerator = row.week_to_date_count
-          customDateRangeUpperNumerator = row.custom_date_range_count
-          todayLowerDenominator = row.today_count
-          wtdLowerDenominator = row.week_to_date_count
-          customDateRangeLowerDenominator = row.custom_date_range_count
-        }
-
-        if (row.id === 21) {
-          todayLowerNumerator = row.today_count
-          wtdLowerNumerator = row.week_to_date_count
-          customDateRangeLowerNumerator = row.custom_date_range_count
-        }
-      })
 
       if(column === 1){
         apptsToFdcPipelineData.value = dataTarget
@@ -3290,14 +3130,6 @@ const apptsToFdcPipelineLoad = async(column) => {
       else if(column === 3){
         fdcColumn3Values.value = dataTarget
       }
-
-      todayUpperPercentage.value = getPercentage(todayUpperNumerator, todayUpperDenominator)
-      wtdUpperPercentage.value = getPercentage(wtdUpperNumerator, wtdUpperDenominator)
-      cdrUpperPercentage.value = getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
-      todayLowerPercentage.value = getPercentage(todayLowerNumerator, todayLowerDenominator)
-      wtdLowerPercentage.value = getPercentage(wtdLowerNumerator, wtdLowerDenominator)
-      cdrLowerPercentage.value = getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
-
       apptsToFdcPipelineLoaded.value = true
       apptsToFdcPipelineDataLoading.value = false
     })
@@ -3428,6 +3260,7 @@ const districtLoad = async(preSelectLists) => {
 
       // reset these values when the districts change
       // regionModel.value = []
+      apptsToFdcPipelineData.value = []
       officeModel.value = []
       repModel.value = []
 
@@ -3472,14 +3305,13 @@ const officeLoad = async(preSelectLists) => {
     //   officeData.value = []
     //   repModel.value = []
     //   repData.value = []
-    //   apptsToFdcPipelineData.value = []
     //
     //   // if (regions?.length === 0) return
     // }
 
     // reset these values when the offices change
     repModel.value = []
-
+    apptsToFdcPipelineData.value = []
     await getCloserOffices(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), false).then(res => {
       officeData.value = res
 
@@ -3494,7 +3326,7 @@ const officeLoad = async(preSelectLists) => {
       }
     })
 
-    apptsToFdcPipelineData.value = []
+    // apptsToFdcPipelineData.value = []
     // repData.value = []
     repModel.value = []
   }
@@ -3534,42 +3366,38 @@ const repLoad = async(preSelectLists) => {
       }
     })
 
-    // if (!selectAllOffices.value) {
-    //   repModel.value = []
-    //   repData.value = []
-    //   apptsToFdcPipelineData.value = []
-    //
-    //   // if (offices?.length === 0) return
-    // }
-
+        apptsToFdcPipelineData.value = []
     await getCloserReps(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), JSON.stringify(offices)).then(res => {
       repData.value = res
 
       repDataMaster.value = cloneDeep(res)
 
       if (preSelectLists) {
-        if(repDataMaster.value.length > 1000){
-          repModel.value = [
-            {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
-          ]
-
-          repData.value = [
-            {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
-          ]
-        }
-        else {
-          repModel.value = cloneDeep(repData.value)
-        }
+        // if(repDataMaster.value.length > 1000){
+        //   repModel.value = [
+        //     {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
+        //   ]
+        //
+        //   repData.value = [
+        //     {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
+        //   ]
+        // }
+        // else {
+        //   repModel.value = cloneDeep(repData.value)
+        // }
+        viewAllFilteredReps.value = true
       }
 
-      apptsToFdcPipelineData.value = []
+      if(initialPageLoad.value) {
+        apptsToFdcPipelineData.value = []
 
-      apptsToFdcPipelineLoad(1)
-      if (fdcSecondDateRange.value) {
-        apptsToFdcPipelineLoad(2)
-      }
-      if (fdcThirdDateRange.value) {
-        apptsToFdcPipelineLoad(3)
+        apptsToFdcPipelineLoad(1)
+        if (fdcSecondDateRange.value) {
+          apptsToFdcPipelineLoad(2)
+        }
+        if (fdcThirdDateRange.value) {
+          apptsToFdcPipelineLoad(3)
+        }
       }
     })
     initialPageLoad.value = false
@@ -3577,89 +3405,6 @@ const repLoad = async(preSelectLists) => {
   }
 }
 
-const updateApptsCreatedPipelineCalendar = () => {
-  appts_created_pipeline_menu1.value = false
-  appts_created_pipeline_menu2.value = false
-  apptsCreatedPipelineLoad(1)
-}
-
-const updateApptsToFdcPipelineCalendar = () => {
-  appts_to_fdc_pipeline_menu1.value = false
-  appts_to_fdc_pipeline_menu2.value = false
-  apptsToFdcPipelineLoad(1)
-}
-
-const yesterday = (pipelineName) => {
-  if (pipelineName === 'apptsCreatedPipeline') {
-    appts_created_pipeline_dt1.value = moment().subtract(1, 'd').format('YYYY-MM-DD')
-    appts_created_pipeline_dt2.value = moment().subtract(1, 'd').format('YYYY-MM-DD')
-    updateApptsCreatedPipelineCalendar(true)
-  } else {
-    appts_to_fdc_pipeline_dt1.value = moment().subtract(1, 'd').format('YYYY-MM-DD')
-    appts_to_fdc_pipeline_dt2.value = moment().subtract(1, 'd').format('YYYY-MM-DD')
-    updateApptsToFdcPipelineCalendar(true)
-  }
-}
-
-const lastWeek = (pipelineName) => {
-  if (pipelineName === 'apptsCreatedPipeline') {
-    appts_created_pipeline_dt1.value = moment().startOf('W').subtract(1, 'w').format('YYYY-MM-DD')
-    appts_created_pipeline_dt2.value = moment().endOf('W').subtract(1, 'w').format('YYYY-MM-DD')
-    updateApptsCreatedPipelineCalendar(true)
-  } else {
-    appts_to_fdc_pipeline_dt1.value = moment().startOf('W').subtract(1, 'w').format('YYYY-MM-DD')
-    appts_to_fdc_pipeline_dt2.value = moment().endOf('W').subtract(1, 'w').format('YYYY-MM-DD')
-    updateApptsToFdcPipelineCalendar(true)
-  }
-}
-
-const monthToDate = (pipelineName) => {
-  if (pipelineName === 'apptsCreatedPipeline') {
-    appts_created_pipeline_dt1.value = moment().startOf('month').format('YYYY-MM-DD')
-    appts_created_pipeline_dt2.value = moment().format('YYYY-MM-DD')
-    updateApptsCreatedPipelineCalendar(true)
-  } else {
-    appts_to_fdc_pipeline_dt1.value = moment().startOf('month').format('YYYY-MM-DD')
-    appts_to_fdc_pipeline_dt2.value = moment().format('YYYY-MM-DD')
-    updateApptsToFdcPipelineCalendar(true)
-  }
-}
-
-const previousNumberOfDays = (pipelineName, days) => {
-  if (pipelineName === 'apptsCreatedPipeline') {
-    appts_created_pipeline_dt1.value = moment().subtract(days, 'days').format('YYYY-MM-DD')
-    appts_created_pipeline_dt2.value = moment().format('YYYY-MM-DD')
-    updateApptsCreatedPipelineCalendar()
-  } else {
-    appts_to_fdc_pipeline_dt1.value = moment().subtract(days, 'days').format('YYYY-MM-DD')
-    appts_to_fdc_pipeline_dt2.value = moment().format('YYYY-MM-DD')
-    updateApptsToFdcPipelineCalendar()
-  }
-}
-const doRepWatcher = () => {
-  if (repValuesChanged.value) {
-    // repModel.value = cloneDeep(repData.value)
-    if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
-      apptsToFdcPipelineLoad(1)
-    } else if (selectAllReps.value) {
-      apptsToFdcPipelineLoad(1)
-    } else {
-      apptsToFdcPipelineLoad(1)
-    }
-    repValuesChanged.value = false
-  }
-}
-const yearToDate = (pipelineName) => {
-  if (pipelineName === 'apptsCreatedPipeline') {
-    appts_created_pipeline_dt1.value = moment().startOf('year').format('YYYY-MM-DD')
-    appts_created_pipeline_dt2.value = moment().format('YYYY-MM-DD')
-    updateApptsCreatedPipelineCalendar()
-  } else {
-    appts_to_fdc_pipeline_dt1.value = moment().startOf('year').format('YYYY-MM-DD')
-    appts_to_fdc_pipeline_dt2.value = moment().format('YYYY-MM-DD')
-    updateApptsToFdcPipelineCalendar()
-  }
-}
 
 const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn) => {
   appStore.loading = true;
@@ -3884,17 +3629,7 @@ const filteredRepData = computed(() => {
 })
 
 const switchInactiveReps = () => {
-  let filteredReps = repModel.value.filter(dv => dv.active)
-  if(filteredReps.length != repModel.length) {
-    repModel.value = filteredReps
-    apptsToFdcPipelineLoad(1)
-    if (fdcSecondDateRange.value) {
-      apptsToFdcPipelineLoad(2)
-    }
-    if (fdcThirdDateRange.value) {
-      apptsToFdcPipelineLoad(3)
-    }
-  }
+  apptsToFdcPipelineData.value = []
 }
 
 const filteredRepDataMaster = computed(() => {
@@ -4072,6 +3807,7 @@ const toggleSelectAllOffices = async() => {
 
 const toggleSomeReps = () => {
   if(repValuesChanged.value) {
+    viewAllFilteredReps.value = false
     if (repData.value[0]?.name == 'All Reps') {
       repData.value = repDataMaster.value
       repModel.value = []
@@ -4087,37 +3823,6 @@ const toggleSomeReps = () => {
     })
   }
   repValuesChanged.value = false
-}
-
-const toggleSelectAllReps = () => {
-  vueInstance.$nextTick(() => {
-    if (selectAllReps.value) {
-      repModel.value = []
-      repLengthOverride.value = false
-      apptsToFdcPipelineData.value = []
-    } else {
-      if (repDataSelectAll.value && repData.value?.length > maxRepLimit.value) {
-        //this is different than clicking the All Reps button and needs to be filtered.
-        // -2 was updated to mean - select all reps in the selected orgs
-        repLengthOverride.value = true
-        repModel.value = [
-          {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
-        ]
-        doRepWatcher()
-        repModel.value = cloneDeep(repData.value)
-      } else {
-        repModel.value = cloneDeep(repData.value)
-      }
-    }
-
-    apptsCreatedPipelineLoad(1)
-    if(secondDateRange.value){
-      apptsCreatedPipelineLoad(2)
-    }
-    if(thirdDateRange.value){
-      apptsCreatedPipelineLoad(3)
-    }
-  })
 }
 
 const toggleSelectAppointmentTypes = () => {
@@ -4141,6 +3846,9 @@ const closeFunnelDrilldownDialog = () => {
 <style lang="scss" scoped>
 #all-reps-btn{
   text-transform: none;
+  font-size: 0.75rem!important;
+  margin-right: 8px!important;
+  letter-spacing: normal;
 }
 
 #closer-funnel-table{
@@ -4162,10 +3870,12 @@ const closeFunnelDrilldownDialog = () => {
 }
 .other-filters-text{
   margin-right: 12px;
+  color: var(--v-grey-darken1);
 }
 .hide-inactive-label{
   margin-right: 8px;
   margin-bottom: 10px;
+  letter-spacing: normal;
 }
 .hide-inactive-switch-container{
   width: 200px;
@@ -4196,11 +3906,25 @@ const closeFunnelDrilldownDialog = () => {
 }
 
 
-.reset-button{
+.reset-button-inactive{
   color: var(--v-grey-darken2);
   border-radius: 4px;
   border: 1px solid #9E9E9E;
   text-transform: none;
+  font-size: 0.75rem!important;
+  margin: 0px 10px 10px 0;
+  height: 40px!important;
+  letter-spacing: normal;
+}
+.reset-button-active{
+  color: var(--v-primary-base)!important;
+  border-radius: 4px;
+  border: 1px solid var(--v-primary-base);
+  text-transform: none;
+  font-size: 0.75rem!important;
+  margin: 0px 10px 10px 0;
+  height: 40px!important;
+  letter-spacing: normal;
 }
 .material-symbols-outlined {
   font-variation-settings:
@@ -4257,6 +3981,7 @@ const closeFunnelDrilldownDialog = () => {
   width: 210px;
   justify-content: left;
   margin: 12px 0px 12px 0px;
+  letter-spacing: normal;
 }
 .dashboard-menu-option{
   display: flex;
@@ -4748,9 +4473,7 @@ const closeFunnelDrilldownDialog = () => {
 
       #all-reps-btn {
         text-transform: none!important;
-        font-size: 10px;
         margin: 2px;
-        width: 87px;
         height: 35px;
       }
     }
@@ -5398,7 +5121,6 @@ const closeFunnelDrilldownDialog = () => {
 
         #all-reps-btn {
           text-transform: none!important;
-          font-size: 14px;
           margin: 0 0 10px 0;
           height: 40px;
         }
