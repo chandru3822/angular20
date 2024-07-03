@@ -91,11 +91,11 @@
                   </v-list>
                 </div>
               </v-menu>
-              <a v-if="leadAllocationRankingData?.length > 0" class="export-button" @click="exportCsv">
+              <a v-if="leadAllocationRankingData?.length > 0" class="export-button" @click="exportCsv('roundRobin')">
                 <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
                 Export
               </a>
-              <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+              <div v-else class="export-button" :class="{'disabled-export': true}">
                 <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
                 Export
               </div>
@@ -202,11 +202,11 @@
                   </v-list>
                 </div>
               </v-menu>
-              <a v-if="officeFdcRankingData?.length > 0" class="export-button" @click="exportCsv">
+              <a v-if="officeFdcRankingData?.length > 0" class="export-button" @click="exportCsv('officeFdc')">
                 <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
                 Export
               </a>
-              <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+              <div v-else class="export-button" :class="{'disabled-export': true}">
                 <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
                 Export
               </div>          </v-row>
@@ -290,11 +290,11 @@
                   </v-list>
                 </div>
               </v-menu>
-              <a v-if="officeRankingData?.length > 0" class="export-button" @click="exportCsv">
+              <a v-if="officeRankingData?.length > 0" class="export-button" @click="exportCsv('officeRank')">
                 <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
                 Export
               </a>
-              <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+              <div v-else class="export-button" :class="{'disabled-export': true}">
                 <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
                 Export
               </div>          </v-row>
@@ -375,7 +375,7 @@
                   </v-list>
                 </div>
               </v-menu>
-              <a v-if="repsData?.length > 0" class="export-button" @click="exportCsv">
+              <a v-if="repsData?.length > 0" class="export-button" @click="exportCsv('topReps')">
                 <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
                 Export
               </a>
@@ -432,6 +432,7 @@ import groupBy from "lodash.groupby";
 import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
 import {useAppStore} from "../../../stores/AppStore.js";
+import {saveAs} from 'file-saver'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -781,7 +782,6 @@ const assignCloserRanks  = (rankingData, fieldName) => {
 //1 for closer rank, 2 for reps, 0 for both
 const loadRankingTables = async(selectedTable) => {
   rankingTablesLoaded.value = false
-  officeRankingData.value = []
   repsLoading.value = true
   let startDate = moment(getDropdownById(closerOfficeDateRange.value).startDate).format('YYYY-MM-DD')
   let endDate = moment(getDropdownById(closerOfficeDateRange.value).endDate).format('YYYY-MM-DD')
@@ -812,7 +812,6 @@ const loadRankingTables = async(selectedTable) => {
     }
     const {data} = await getRequestWithParams('/closerDashboard/getRepRankings', {params}, 'blueraven', [])
 
-    console.log(data)
     if (data?.companyRankingValues?.filter(row => row.userId === currentUserId.value)[0] !== undefined) {
       userOffice.value = data?.companyRankingValues?.filter(row => row.userId === currentUserId.value)[0].officeName
     }
@@ -834,59 +833,102 @@ const loadRankingTables = async(selectedTable) => {
   }
 }
 
-const exportCsv = async () => {
+const exportCsv = async (tableName) => {
   appStore.loading = true
   try {
-    let filename = 'CompanyDashboard.csv'
-    let csvData = ' , '
-    if(dropdownValues.value.find(x => x.id === roundRobinDateRange.value).name==='PERIOD'){
-      csvData += dropdownValues.value.find(x => x.id === roundRobinDateRange.value).periodList[roundRobinPeriod.value].shortLabel;
-    }
-    else
-    {
-      csvData += ((dropdownValues.value.find(x => x.id === roundRobinDateRange.value).name === 'CUSTOM') ? roundRobinCustom.value.name : dropdownValues.value.find(x => x.id === roundRobinDateRange.value).friendlyName);
-    }
-    // if(secondDateRange.value){
-    //   if(dropdownValues.value.find(x => x.id === secondDateRange.value).name==='PERIOD'){
-    //     csvData += ' , ' + dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].shortLabel;
-    //   }
-    //   else
-    //   {
-    //     csvData += ', ' + ((dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'CUSTOM') ? secondCustom.value.name : dropdownValues.value.find(x => x.id === secondDateRange.value).friendlyName);
-    //   }
-    // }
-    // if(thirdDateRange.value){
-    //   if(dropdownValues.value.find(x => x.id === thirdDateRange.value).name==='PERIOD'){
-    //     csvData += ' , ' + dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].shortLabel;
-    //   }
-    //   else
-    //   {
-    //     csvData += ', ' + ((dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'CUSTOM') ? thirdCustom.value.name : dropdownValues.value.find(x => x.id === thirdDateRange.value).friendlyName);
-    //   }
-    // }
-    csvData += '\n';
-
-    leadAllocationRankingData.value.forEach((p, i) => {
-      csvData += p.name + ',' + (p.company_count ? p.company_count : 0);
-      // if (secondDateRange.value) {
-      //   csvData += ', ' + (column2Values.value[i].company_count ? column2Values.value[i].company_count : 0)
-      // }
-      // if (thirdDateRange.value) {
-      //   csvData += ', ' + (column3Values.value[i].company_count ? column3Values.value[i].company_count : 0)
-      // }
+    if(tableName === 'roundRobin') {
+      let filename = 'Closer Dashboard - Round Robin Lead Allocation.csv'
+      let csvData = ' , '
+      if (dropdownValues.value.find(x => x.id === roundRobinDateRange.value).name === 'PERIOD') {
+        csvData += dropdownValues.value.find(x => x.id === roundRobinDateRange.value).periodList[roundRobinPeriod.value].shortLabel;
+      } else {
+        csvData += ((dropdownValues.value.find(x => x.id === roundRobinDateRange.value).name === 'CUSTOM') ? roundRobinCustom.value.name : dropdownValues.value.find(x => x.id === roundRobinDateRange.value).friendlyName);
+      }
       csvData += '\n';
-    })
 
+      csvData += 'Rank, Rep, Lead-Gen FDC %, Self-Gen FDC, Average Availability, Lead-Allocation %';
+      csvData += '\n';
+      leadAllocationRankingData.value.forEach((p, i) => {
+        csvData += p.rank + ',' + p.closerName + ',' + p.leadGenFdcPercentage + ',' + p.selfGenFdc + ',' + p.averageAvailability + ',' + p.score;
+        csvData += '\n';
+      })
+      let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
 
-    let blob = new Blob([csvData], {
-      type: 'text/csv;charset=utf-8'
-    });
+      saveAs(blob, filename);
+    }
+    else if(tableName === 'officeFdc') {
+      let filename = 'Closer Dashboard - Office FDC Rank.csv'
+      let csvData = ' , '
+      if (dropdownValues.value.find(x => x.id === closerOfficeFdcDateRange.value).name === 'PERIOD') {
+        csvData += dropdownValues.value.find(x => x.id === closerOfficeFdcDateRange.value).periodList[officeFdcPeriod.value].shortLabel;
+      } else {
+        csvData += ((dropdownValues.value.find(x => x.id === closerOfficeFdcDateRange.value).name === 'CUSTOM') ? officeFdcCustom.value.name : dropdownValues.value.find(x => x.id === closerOfficeFdcDateRange.value).friendlyName);
+      }
+      csvData += '\n';
 
-    saveAs(blob, filename);
+      csvData += 'Rank, Rep, Lead-Gen FDC %, Self-Gen FDC, Total FDC';
+      csvData += '\n';
+      officeFdcRankingData.value.forEach((p, i) => {
+        csvData += p.rank + ',' + p.closerName + ',' + p.leadGenFdcPercentage + ',' + p.selfGenFdc + ',' + p.totalFdc;
+        csvData += '\n';
+      })
+      let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      saveAs(blob, filename);
+    }
+    else if(tableName === 'officeRank') {
+      let filename = 'Closer Dashboard - Office Rank.csv'
+      let csvData = ' , '
+      if (dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).name === 'PERIOD') {
+        csvData += dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).periodList[closerOfficePeriod.value].shortLabel;
+      } else {
+        csvData += ((dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).name === 'CUSTOM') ? officeCustom.value.name : dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).friendlyName);
+      }
+      csvData += '\n';
+
+      csvData += 'Rank, Office, Metro Area, Region, Lead-Gen FDC %, Self-Gen FDC, Total FDC';
+      csvData += '\n';
+      officeRankingData.value.forEach((p, i) => {
+        csvData += p.rank + ',' + p.officeName + ',' + p.metroArea + ',' + p.region + ',' + p.leadGenFdcPercentage + ',' + p.selfGenFdc + ',' + p.totalFdc;
+        csvData += '\n';
+      })
+      let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      saveAs(blob, filename);
+    }
+    else if(tableName === 'topReps') {
+      let filename = 'Closer Dashboard - Top Reps.csv'
+      let csvData = ' , '
+      if (dropdownValues.value.find(x => x.id === repDateRange.value).name === 'PERIOD') {
+        csvData += dropdownValues.value.find(x => x.id === repDateRange.value).periodList[repPeriod.value].shortLabel;
+      } else {
+        csvData += ((dropdownValues.value.find(x => x.id === repDateRange.value).name === 'CUSTOM') ? repCustom.value.name : dropdownValues.value.find(x => x.id === repDateRange.value).friendlyName);
+      }
+      csvData += '\n';
+
+      csvData += 'Rank, Rep, Current Office, Metro Area, Lead-Gen FDC %, Self-Gen FDC, Total FDC';
+      csvData += '\n';
+      repsData.value.forEach((p, i) => {
+        csvData += p.rank + ',' + p.closerName + ',' + p.officeName + ',' + p.metroArea + ',' + p.leadGenFdcPercentage + ',' + p.selfGenFdc + ',' + p.totalFdc;
+        csvData += '\n';
+      })
+      let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      saveAs(blob, filename);
+    }
+
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Exporting Residual Review')
+    snackbar('ERROR', 'Error Exporting Residual Review')
 
     appStore.loading = false
   }

@@ -8,7 +8,7 @@
         <div class="title-large closer-dashboard-header">
           Appointments Created Pipeline
         </div>
-        <a class="export-button" @click="exportCsv">
+        <a class="export-button" @click="exportCsv('created')">
           <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
           Export</a>
         <v-spacer></v-spacer>
@@ -425,11 +425,11 @@
         <div class="title-large closer-dashboard-header">
           Appointments to FDC Pipeline
         </div>
-        <a v-if="repModel?.length > 0" class="export-button" @click="exportCsv">
+        <a v-if="repModel?.length > 0" class="export-button" @click="exportCsv('fdc')">
           <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
           Export
         </a>
-        <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+        <div v-else class="export-button" :class="{'disabled-export': true}">
           <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
           Export
         </div>
@@ -648,7 +648,7 @@
                               ref="repSelect">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0 && repModel[0].user_id != -1" class="selected-option text-caption">
-                    {{ filteredRepData.length }} Checked
+                    {{ repModel.length }} Checked
                   </span>
                   <span v-if="index === 0 && repModel[0].user_id === -1" class="selected-option text-caption-sm">
                         {{ filteredRepDataMaster.length }} Checked
@@ -657,7 +657,7 @@
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-lg">Rep</span>
                 </template>
-                <template v-if="repData?.length > 1 && repData?.length < 1000" v-slot:prepend-item>
+                <template v-if="repData?.length > 1" v-slot:prepend-item>
                   <v-list-item
                     @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">
                     <v-list-item-action class="mr-2">
@@ -682,7 +682,7 @@
                 </template>
               </a-autocomplete>
               <div class="d-flex hide-inactive-switch-container align-items-center">
-                <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch hide-details v-model="hideInactiveReps" @click="apptsToFdcPipelineLoad(1)" class="hide-inactive-switch"></v-switch>
+                <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch hide-details v-model="hideInactiveReps" @click="switchInactiveReps()" class="hide-inactive-switch"></v-switch>
               </div>
               <a-btn
                 v-if="!isCloser && !isCloserMgr"
@@ -2274,73 +2274,128 @@ const resetFilters = async()=> {
   repModel.value = []
   repData.value = cloneDeep(repDataMaster.value)
 }
-const exportCsv = async () => {
+const exportCsv = async (tableName) => {
   appStore.loading = true
   try {
-    let filename = 'CompanyDashboard.csv'
-    let csvData = ' , '
-    if(dropdownValues.value.find(x => x.id === firstDateRange.value).name==='PERIOD'){
-      csvData += dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].shortLabel;
-    }
-    else
-    {
-      csvData += ((dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'CUSTOM') ? firstCustom.value.name : dropdownValues.value.find(x => x.id === firstDateRange.value).friendlyName);
-    }
-    if(viewTrends.value){
-      csvData += ', ' +  'Trend 1'
-    }
-    if(secondDateRange.value){
-      if(dropdownValues.value.find(x => x.id === secondDateRange.value).name==='PERIOD'){
-        csvData += ' , ' + dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].shortLabel;
+    if(tableName === 'created') {
+      let filename = 'Closer Dashboard - Appointments Created Pipeline.csv'
+      let csvData = ' , '
+      if (dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'PERIOD') {
+        csvData += dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].shortLabel;
+      } else {
+        csvData += ((dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'CUSTOM') ? firstCustom.value.name : dropdownValues.value.find(x => x.id === firstDateRange.value).friendlyName);
       }
-      else
-      {
-        csvData += ', ' + ((dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'CUSTOM') ? secondCustom.value.name : dropdownValues.value.find(x => x.id === secondDateRange.value).friendlyName);
-      }
-      if(viewTrends.value){
-        csvData += ', ' +  'Trend 2'
-      }
-    }
-    if(thirdDateRange.value){
-      if(dropdownValues.value.find(x => x.id === thirdDateRange.value).name==='PERIOD'){
-        csvData += ' , ' + dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].shortLabel;
-      }
-      else
-      {
-        csvData += ', ' + ((dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'CUSTOM') ? thirdCustom.value.name : dropdownValues.value.find(x => x.id === thirdDateRange.value).friendlyName);
-      }
-      if(viewTrends.value){
-        csvData += ', ' +  'Trend 3'
-      }
-    }
-    csvData += '\n';
-
-    apptsCreatedPipelineData.value.forEach((p, i) => {
-      csvData += p.name + ',' + (p.leads_created_count ? p.leads_created_count : 0);
       if (viewTrends.value) {
-        csvData += ', ' + (p.trend ? p.trend : 0) + '%';
+        csvData += ', ' + 'Trend 1'
       }
       if (secondDateRange.value) {
-        csvData += ', ' + (column2Values.value[i].leads_created_count ? column2Values.value[i].leads_created_count : 0)
+        if (dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'PERIOD') {
+          csvData += ' , ' + dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].shortLabel;
+        } else {
+          csvData += ', ' + ((dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'CUSTOM') ? secondCustom.value.name : dropdownValues.value.find(x => x.id === secondDateRange.value).friendlyName);
+        }
         if (viewTrends.value) {
-          csvData += ', ' + (column2Values.value[i].trend ? column2Values.value[i].trend : 0) + '%';
+          csvData += ', ' + 'Trend 2'
         }
       }
       if (thirdDateRange.value) {
-        csvData += ', ' + (column3Values.value[i].leads_created_count ? column3Values.value[i].leads_created_count : 0)
+        if (dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'PERIOD') {
+          csvData += ' , ' + dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].shortLabel;
+        } else {
+          csvData += ', ' + ((dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'CUSTOM') ? thirdCustom.value.name : dropdownValues.value.find(x => x.id === thirdDateRange.value).friendlyName);
+        }
         if (viewTrends.value) {
-          csvData += ', ' + (column3Values.value[i].trend ? column3Values.value[i].trend : 0) + '%';
+          csvData += ', ' + 'Trend 3'
         }
       }
       csvData += '\n';
-    })
+
+      apptsCreatedPipelineData.value.forEach((p, i) => {
+        csvData += p.name + ',' + (p.leads_created_count ? p.leads_created_count : 0);
+        if (viewTrends.value) {
+          csvData += ', ' + (p.trend ? p.trend : 0) + '%';
+        }
+        if (secondDateRange.value) {
+          csvData += ', ' + (column2Values.value[i].leads_created_count ? column2Values.value[i].leads_created_count : 0)
+          if (viewTrends.value) {
+            csvData += ', ' + (column2Values.value[i].trend ? column2Values.value[i].trend : 0) + '%';
+          }
+        }
+        if (thirdDateRange.value) {
+          csvData += ', ' + (column3Values.value[i].leads_created_count ? column3Values.value[i].leads_created_count : 0)
+          if (viewTrends.value) {
+            csvData += ', ' + (column3Values.value[i].trend ? column3Values.value[i].trend : 0) + '%';
+          }
+        }
+        csvData += '\n';
+      })
+           let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      saveAs(blob, filename);
+    }
+    else if(tableName === 'fdc'){
+      let filename = 'Closer Dashboard - Appointments to FDC Pipeline.csv'
+      let csvData = ' , '
+      if (dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).name === 'PERIOD') {
+        csvData += dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).periodList[firstPeriod.value].shortLabel;
+      } else {
+        csvData += ((dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).name === 'CUSTOM') ? firstCustom.value.name : dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).friendlyName);
+      }
+      if (viewTrends.value) {
+        csvData += ', ' + 'Trend 1'
+      }
+      if (fdcSecondDateRange.value) {
+        if (dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).name === 'PERIOD') {
+          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).periodList[secondPeriod.value].shortLabel;
+        } else {
+          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).name === 'CUSTOM') ? secondCustom.value.name : dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).friendlyName);
+        }
+        if (viewTrends.value) {
+          csvData += ', ' + 'Trend 2'
+        }
+      }
+      if (fdcThirdDateRange.value) {
+        if (dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).name === 'PERIOD') {
+          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).periodList[thirdPeriod.value].shortLabel;
+        } else {
+          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).name === 'CUSTOM') ? thirdCustom.value.name : dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).friendlyName);
+        }
+        if (viewTrends.value) {
+          csvData += ', ' + 'Trend 3'
+        }
+      }
+      csvData += '\n';
+
+      apptsToFdcPipelineData.value.forEach((p, i) => {
+        csvData += p.name + ',' + (p.leads_created_count ? p.leads_created_count : 0);
+        if (viewTrends.value) {
+          csvData += ', ' + (p.trend ? p.trend : 0) + '%';
+        }
+        if (fdcSecondDateRange.value) {
+          csvData += ', ' + (fdcColumn2Values.value[i].leads_created_count ? fdcColumn2Values.value[i].leads_created_count : 0)
+          if (viewTrends.value) {
+            csvData += ', ' + (fdcColumn2Values.value[i].trend ? fdcColumn2Values.value[i].trend : 0) + '%';
+          }
+        }
+        if (fdcThirdDateRange.value) {
+          csvData += ', ' + (fdcColumn3Values.value[i].leads_created_count ? fdcColumn3Values.value[i].leads_created_count : 0)
+          if (viewTrends.value) {
+            csvData += ', ' + (fdcColumn3Values.value[i].trend ? fdcColumn3Values.value[i].trend : 0) + '%';
+          }
+        }
+        csvData += '\n';
+      })
+
+      let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      saveAs(blob, filename);
+    }
 
 
-    let blob = new Blob([csvData], {
-      type: 'text/csv;charset=utf-8'
-    });
-
-    saveAs(blob, filename);
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -3493,7 +3548,18 @@ const repLoad = async(preSelectLists) => {
       repDataMaster.value = cloneDeep(res)
 
       if (preSelectLists) {
-        repModel.value = cloneDeep(repData.value)
+        if(repDataMaster.value.length > 1000){
+          repModel.value = [
+            {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
+          ]
+
+          repData.value = [
+            {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
+          ]
+        }
+        else {
+          repModel.value = cloneDeep(repData.value)
+        }
       }
 
       apptsToFdcPipelineData.value = []
@@ -3817,6 +3883,20 @@ const filteredRepData = computed(() => {
   }
 })
 
+const switchInactiveReps = () => {
+  let filteredReps = repModel.value.filter(dv => dv.active)
+  if(filteredReps.length != repModel.length) {
+    repModel.value = filteredReps
+    apptsToFdcPipelineLoad(1)
+    if (fdcSecondDateRange.value) {
+      apptsToFdcPipelineLoad(2)
+    }
+    if (fdcThirdDateRange.value) {
+      apptsToFdcPipelineLoad(3)
+    }
+  }
+}
+
 const filteredRepDataMaster = computed(() => {
   // if(!milestonesExpanded.value){
   //   return apptsCreatedPipelineData.value.filter(dv => dv.display_order < 3)
@@ -3998,10 +4078,10 @@ const toggleSomeReps = () => {
     }
     vueInstance.$nextTick(() => {
       apptsToFdcPipelineLoad(1)
-      if (secondDateRange.value) {
+      if (fdcSecondDateRange.value) {
         apptsToFdcPipelineLoad(2)
       }
-      if (thirdDateRange.value) {
+      if (fdcThirdDateRange.value) {
         apptsToFdcPipelineLoad(3)
       }
     })
