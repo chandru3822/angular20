@@ -2,7 +2,7 @@
   <fragment>
     <component
       class="block-ui"
-      :is="blocks[blockType]"
+      :is="blocks[child.blockType]"
       :key="child.id"
       :class="{
         debug: debug,
@@ -10,14 +10,14 @@
         selected: selectedId === child.id
       }"
       :style="{ zIndex: 100 + depth }"
-      :data-type="blockType"
+      :data-type="child.blockType"
       :data-id="child.id"
-      :data-parent="parentId"
+      :data-parent="child.parentId"
       :data-depth="depth"
-      :data-order="blockOrder"
+      :data-order="child.blockOrder"
       :editable="editable"
       v-bind="{ ...child }"
-      v-for="{ blockType, blockOrder, parentId, ...child } in sortedChildren"
+      v-for="child in sortedChildren"
     >
       <proposal-template
         :children="filterByParentId(child.id)"

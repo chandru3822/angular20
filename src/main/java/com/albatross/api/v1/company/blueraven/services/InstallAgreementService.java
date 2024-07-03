@@ -45,6 +45,8 @@ public class InstallAgreementService {
 
   private final EnFinService enFinService;
 
+  private final MosaicService mosaicService;
+
   private final SunlightService sunlightService;
 
   private final SunpowerService sunpowerService;
@@ -285,6 +287,9 @@ public class InstallAgreementService {
     }
     else if (iEnFinProject(financier) && request.getIsSpanish()) {
       throw new RuntimeException("EnFin does not currently allow Spanish HICs. Please send an English HIC or switch financiers.");
+    } else if (sendLoanDocs && isMosaicProject(financier)) {
+      Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, request.getProposalNbr());
+      mosaicService.sendLoanDocs(projectId, request.getProposalNbr(), propLogDetail.get());
     }
 
     Boolean createPandaDoc = true;
@@ -326,6 +331,10 @@ public class InstallAgreementService {
 
   public Boolean iEnFinProject(String financier) {
     return financier != null && financier.equalsIgnoreCase("enfin");
+  }
+
+  public Boolean isMosaicProject(String financier) {
+    return financier != null && financier.equalsIgnoreCase("mosaic");
   }
 
   public Boolean isSunlightProject(String financier) {
@@ -422,6 +431,9 @@ public class InstallAgreementService {
       if (loanType.toLowerCase().contains("enfin")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
         return enFinService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+      } else if (loanType.toLowerCase().contains("mosaic")) {
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
+        return mosaicService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
       } else if (loanType.toLowerCase().contains("sunlight")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
 
@@ -514,6 +526,10 @@ public class InstallAgreementService {
           JSONObject sunlightApp =
             sunpowerService.getApplicationDetails(projectId, proposalNbr);
           return sunlightApp.toString();
+        } else if (loan.toLowerCase().contains("mosaic")) {
+          JSONObject mosaicApp =
+            mosaicService.getApplicationDetails(projectId, proposalNbr);
+          return mosaicApp.toString();
         }
       } catch (Exception e) {
         log.debug("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
