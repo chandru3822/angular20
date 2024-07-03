@@ -795,15 +795,13 @@ public class BlueravenProposalService {
 
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    Proposal unlockedProposal = getUnlockedProposal(proposalId, currentUser.getId());
-
-    var calculatedProposalValues = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
-    sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+    Proposal unlockedProposal = getSimpleProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
 
     //insert values immediately in to proposal log history
-    getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, true);
+    getCalculatedProposalValues(unlockedProposal.getId(), ProposalGeneratedType.PRINT, true);
 
-    return getProposal(proposalId, currentUser.getId());
+    sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", unlockedProposal.getId(), "modifiedById", currentUser.getTrueUserId()));
+    return getProposal(unlockedProposal.getId(), currentUser.getId());
   }
 
   private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {
