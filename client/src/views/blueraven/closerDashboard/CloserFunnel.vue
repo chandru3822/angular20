@@ -441,9 +441,9 @@
       </v-row>
       <v-row>
         <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
-          <v-col class="d-flex">
+          <v-col cols="9" class="d-flex">
             <div id="pipeline-header-left-side">
-              <div class="reps-container"><span class="other-filters-text label-small">Reps Filters</span> </div>
+              <div class="reps-container"><span class="rep-filters-text label-small">Rep Filters</span> </div>
               <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
                               ref="areaSelect"
                               v-model="areaModel"
@@ -684,14 +684,6 @@
               <div class="d-flex hide-inactive-switch-container align-items-center">
                 <v-label class="hide-inactive-label">Hide Inactive Reps</v-label> <v-switch hide-details v-model="hideInactiveReps" @click="switchInactiveReps()" class="hide-inactive-switch"></v-switch>
               </div>
-                <a-btn
-                  id="all-reps-btn"
-                  variant="outlined"
-                  color="primary"
-                  class="body-small"
-                  @click="funnelAllReps"
-                  :text="viewAllRepsText"
-                ></a-btn>
               <a-btn
                 v-if="!isCloser && !isCloserMgr"
                 class="body-small"
@@ -702,6 +694,16 @@
                 text="Reset Rep Filters"
               ></a-btn>
             </div>
+          </v-col>
+          <v-col cols="3" class="d-flex justify-end">
+            <a-btn
+              id="all-reps-btn"
+              variant="outlined"
+              color="primary"
+              class="body-small"
+              @click="funnelAllReps"
+              :text="viewAllRepsText"
+            ></a-btn>
           </v-col>
         </div>
       </v-row>
@@ -1747,6 +1749,9 @@ const currentUserId = computed(() => {
 })
 
 const viewAllRepsText = computed(() => {
+  if(repModel.value.length > 0){
+    return 'View Selected Reps'
+  }
   if(filtersSelected.value || hideInactiveReps.value){
     return 'View All Filtered Reps'
   }
@@ -2089,9 +2094,9 @@ onMounted(async() => {
     isCloserRegional.value = positionId === 3
   }
 
-  appStore.loading = true;
+  appStore.loading = true
   await loadFunnels()
-  appStore.loading = false;
+  appStore.loading = false
   funnelsWereLoaded.value = true
   headers.value = [
     {text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true},
@@ -3028,6 +3033,9 @@ const applyCustomDates = async()=> {
   }
 }
 const apptsToFdcPipelineLoad = async(column) => {
+  if(!initialPageLoad.value){
+    appStore.loading = true
+  }
   apptsToFdcPipelineLoaded.value = false
   apptsToFdcPipelineDataLoading.value = true
   let reps = []
@@ -3132,11 +3140,16 @@ const apptsToFdcPipelineLoad = async(column) => {
       }
       apptsToFdcPipelineLoaded.value = true
       apptsToFdcPipelineDataLoading.value = false
+      if(!initialPageLoad.value){
+        appStore.loading = false
+      }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
-
+    if(!initialPageLoad.value){
+      appStore.loading = false
+    }
     apptsToFdcPipelineLoaded.value = true
   }
 }
@@ -3336,6 +3349,9 @@ const officeLoad = async(preSelectLists) => {
 const repLoad = async(preSelectLists) => {
   //reset these any time we are reloading reps or things get weird
   if (repValuesChanged.value || initialPageLoad.value) {
+    if(!initialPageLoad.value){
+      appStore.loading = true
+    }
     repModel.value = []
     repData.value = []
     repLengthOverride.value = false
@@ -3402,6 +3418,10 @@ const repLoad = async(preSelectLists) => {
     })
     initialPageLoad.value = false
     dropdownValuesLoading.value = false
+    repValuesChanged.value = false
+    if(!initialPageLoad.value){
+      appStore.loading = false
+    }
   }
 }
 
@@ -3870,6 +3890,10 @@ const closeFunnelDrilldownDialog = () => {
 }
 .other-filters-text{
   margin-right: 12px;
+  color: var(--v-grey-darken1);
+}
+.rep-filters-text{
+  margin-right: 18px;
   color: var(--v-grey-darken1);
 }
 .hide-inactive-label{
