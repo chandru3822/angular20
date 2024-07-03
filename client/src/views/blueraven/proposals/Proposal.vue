@@ -198,7 +198,7 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="6" md="8" class="px-6 pt-4">
-          <v-row class="prop-view-row" ref="proposalViewerEl">
+          <v-row class="prop-view-row" ref="proposalFullscreenViewerEl">
             <v-card
               width="100vw"
               class="rounded-0 prop-view-card"
@@ -243,9 +243,10 @@
               </div>
             </v-card>
             <v-card
+              v-if="!hideProposalSection"
               class="pt-4 proposal-container proposal-viewer"
               :class="{ paged: isPageable }"
-              v-if="!hideProposalSection"
+              ref="proposalViewerEl"
             >
               <v-alert
                 class="text-center overlay-alert"
@@ -257,7 +258,11 @@
               >
                 Changes haven't been reflected on proposal
               </v-alert>
-              <div v-if="pages && pages.length > 0" class="proposal-zoom-lock">
+              <div
+                v-if="pages && pages.length > 0"
+                class="proposal-zoom-lock"
+                ref="viewportEl"
+              >
                 <proposal-template
                   :children="pages"
                   :debug="false"
@@ -277,45 +282,34 @@
               </div>
             </v-card>
             <v-card class="rounded-0 proposal-actions">
-              <a-btn
-                variant="text"
-                class="text-capitalize primary--text"
-                v-if="!isPageable"
-                @click="isPageable = true"
-              >
-                <v-icon>mdi-projector-screen-variant-outline</v-icon>
-                <span class="d-none d-md-inline">Single</span>
-              </a-btn>
-              <a-btn
-                variant="text"
-                class="text-capitalize primary--text"
-                v-if="isPageable"
-                @click="isPageable = false"
-              >
-                <v-icon>mdi-projector-screen-variant-off-outline</v-icon>
-                <span class="d-none d-md-inline">Continuous</span>
-              </a-btn>
-              <div class="text-center" v-if="isPageable">
-                <v-pagination
+              <div class="text-center max-width" v-if="isPageable">
+                <a-select
+                  attach
+                  v-if="pages && pages.length"
                   v-model="currentPage"
-                  :length="totalPages"
-                ></v-pagination>
+                  prepend-icon="mdi-page-next"
+                  :items="pageIndexes"
+                  :item-title="(item) => `Page #${item.idx}`"
+                  item-value="id"
+                  @change="moveToPage"
+                >
+                </a-select>
               </div>
-              <a-btn
-                variant="text"
-                class="text-capitalize primary--text"
-                @click="toggleFullscreen"
-              >
-                <v-icon v-if="isFullscreen">mdi-fullscreen-exit</v-icon>
-                <span v-if="isFullscreen" class="d-none d-md-inline"
-                  >Minimize</span
-                >
+              <!--              <a-btn-->
+              <!--                variant="text"-->
+              <!--                class="text-capitalize primary&#45;&#45;text"-->
+              <!--                @click="toggleFullscreen"-->
+              <!--              >-->
+              <!--                <v-icon v-if="isFullscreen">mdi-fullscreen-exit</v-icon>-->
+              <!--                <span v-if="isFullscreen" class="d-none d-md-inline"-->
+              <!--                  >Minimize</span-->
+              <!--                >-->
 
-                <v-icon v-if="!isFullscreen">mdi-fullscreen</v-icon>
-                <span v-if="!isFullscreen" class="d-none d-md-inline"
-                  >Fullscreen</span
-                >
-              </a-btn>
+              <!--                <v-icon v-if="!isFullscreen">mdi-fullscreen</v-icon>-->
+              <!--                <span v-if="!isFullscreen" class="d-none d-md-inline"-->
+              <!--                  >Fullscreen</span-->
+              <!--                >-->
+              <!--              </a-btn>-->
             </v-card>
           </v-row>
         </v-col>
@@ -368,13 +362,14 @@ import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
 
-import { computed, ref, onMounted, onBeforeUnmount, provide, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router/composables'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from '@/views/blueraven/settings/proposalDesigner/store.js'
 import { storeToRefs } from 'pinia'
 import { buildContext, exec } from '@/views/blueraven/proposals/exec.js'
+import { vIntersectionObserver } from '@vueuse/components'
 
 const { VITE_HIDE_PROPOSAL } = import.meta.env
 
@@ -391,7 +386,7 @@ const {
 } = storeToRefs(store)
 
 const isPageable = ref(true)
-const currentPage = ref(1)
+const currentPage = ref(undefined)
 const autoSelectFieldIds = [407, 102, 81]
 const proposalExists = ref(true)
 const loading = ref(false)
@@ -407,8 +402,10 @@ const confirmDialogRef = ref(null)
 const proposalForm = ref(null)
 const deleteConfirmDialogRef = ref(null)
 const expansionPanelsStatus = ref([0, 1, 2, 3, 4])
-const proposalViewerEl = ref(undefined)
+const proposalFullscreenViewerEl = ref(undefined)
 const isFullscreen = ref(false)
+const viewportEl = ref(null)
+const proposalViewerEl = ref(null)
 
 provide('editor', undefined)
 
@@ -418,7 +415,7 @@ const toggle = () => {
 
 //set up watcher to toggle icon
 watch(
-  proposalViewerEl,
+  proposalFullscreenViewerEl,
   (newEl, oldEl) => {
     if (newEl !== oldEl) {
       newEl.addEventListener('fullscreenchange', toggle)
@@ -465,6 +462,16 @@ onBeforeUnmount(async () => {
   window.removeEventListener('beforeunload', beforeWindowUnload.value)
 })
 
+const moveToPage = (id) => {
+  const nodes = viewportEl.value.querySelectorAll(`[data-id="${id}"]`)
+  const container = proposalViewerEl.value?.$el
+  if (nodes.length > 0) {
+    const rect = nodes[0].getBoundingClientRect()
+    const top = container.scrollTop + rect.top - 250
+    container.scrollTo({ top, behavior: 'instant' })
+  }
+}
+
 const filteredCustomFields = (values = []) => {
   return values.filter((f) => {
     return userHasWhiteListedPosition(f, 'hidden')
@@ -492,19 +499,20 @@ const defaultProposalName = computed(() => {
   return 'New Proposal'
 })
 
-const totalPages = computed(
-  () => template.value?.filter((x) => x.parentId === undefined)?.length
-)
-
 const pages = computed(() => {
-  const pageBlocks = template.value
+  return template.value
     ?.filter((x) => x.parentId === undefined)
     ?.sort((a, b) => a.blockOrder - b.blockOrder)
+})
 
-  if (isPageable.value && pageBlocks.length > 0) {
-    return [pageBlocks[currentPage.value - 1]]
-  }
-  return pageBlocks
+//temporary until we can display the name of the block?
+const pageIndexes = computed(() => {
+  return (
+    pages.value?.map((x, idx) => ({
+      idx: idx + 1,
+      id: x.id
+    })) ?? []
+  )
 })
 
 const sortedCustomFieldGroups = computed(() => {
@@ -525,7 +533,7 @@ const toggleFullscreen = () => {
     document.exitFullscreen()
     isFullscreen.value = false
   } else {
-    proposalViewerEl.value?.requestFullscreen()
+    proposalFullscreenViewerEl.value?.requestFullscreen()
     isFullscreen.value = true
   }
 }
@@ -994,6 +1002,10 @@ const beforeWindowUnload = (e) => {
 
 .proposal-viewer {
   padding-left: 16px;
+  height: calc(
+    100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
+      var(--proposal-action-height)
+  );
 }
 
 .proposal-actions {
@@ -1018,13 +1030,6 @@ const beforeWindowUnload = (e) => {
   .prop-custom-field-groups {
     height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
   }
-
-  .proposal-viewer {
-    height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
-        var(--proposal-action-height)
-    );
-  }
 }
 
 @media (max-width: 1232px) and (min-width: 960px) {
@@ -1042,11 +1047,6 @@ const beforeWindowUnload = (e) => {
       100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
     );
   }
-  .proposal-viewer {
-    height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height)- var(--proposal-action-height)
-    );
-  }
 }
 
 @media (max-width: 960px) and (min-width: 827px) {
@@ -1061,12 +1061,6 @@ const beforeWindowUnload = (e) => {
   .prop-custom-field-groups {
     height: calc(
       100vh - var(--padding-and-margins) - var(--dirty-cfv-height) + 8px
-    );
-  }
-  .proposal-viewer {
-    height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
-        var(--proposal-action-height)
     );
   }
 }
@@ -1182,10 +1176,9 @@ const beforeWindowUnload = (e) => {
   &:fullscreen {
     .proposal-viewer {
       --scale: 1;
-      //background-color: black;
       display: flex;
       justify-content: center;
-      height: calc(100vh - var(--proposal-action-height) - 64px);
+      height: calc(100vh - var(--proposal-action-height) - 60px);
 
       &.paged {
         align-items: center;
@@ -1221,7 +1214,7 @@ const beforeWindowUnload = (e) => {
 .proposal-zoom-lock {
   transform: scale(var(--scale));
   transform-origin: top left;
-  //margin-bottom: calc((var(--scale) - 1) * 100%);
+  margin-bottom: calc((var(--scale) - 1) * 100%);
 
   @media (min-width: 1548px) {
     transform-origin: top center;
