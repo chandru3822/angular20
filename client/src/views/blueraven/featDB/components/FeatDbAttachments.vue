@@ -17,7 +17,7 @@
                     :accept="acceptedFileTypes"
                     @change='uploadDocument($event.target.files, type.attachmentTypeId)'
                     style="display: none"
-                    @click.native.stop=""
+                    @click.stop=""
                     ref='fileInput'
                 >
                 <a-btn
