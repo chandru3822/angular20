@@ -188,6 +188,20 @@ public class InstallAgreementQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getMosaicApplicationId = """
+    select plh.mosaic_application_id from brs.proposal_log_history plh
+    WHERE plh.project_id = :projectId and plh.proposal_nbr = :proposalNbr
+    limit 1;
+    """;
+
+  //language=PostgreSQL
+  public final static String setMosaicApplicationId = """
+    UPDATE brs.proposal_log_history
+    SET mosaic_application_id = :applicationId, date_modified = now()
+    WHERE project_id = :projectId and proposal_nbr = :proposalNbr
+    """;
+
+  //language=PostgreSQL
   public final static String getCreditLastCheckedBy = """
     select pd.credit_last_checked_by from brs.project_details pd
     WHERE pd.project_id = :projectId;

@@ -790,6 +790,7 @@ const userStore = useUserStore()
 const route = useRoute()
 const vuetify = vueInstance.$vuetify
 
+const processStepId = computed(() => route.params.id)
 const WhiteListTypeEnum = Object.freeze({
   EVENT_START_TIME_READ_ONLY: 6,
   EVENT_END_TIME_READ_ONLY: 7,

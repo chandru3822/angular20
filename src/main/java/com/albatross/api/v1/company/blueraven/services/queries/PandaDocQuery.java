@@ -36,7 +36,7 @@ public class PandaDocQuery {
       case when cy.country is null then 'United States' else cy.country end,
       p.project_name,
       cp.company_id,
-      plh.optional_down_payment,
+      (plh.optional_down_payment::numeric + plh.required_down_payment::numeric) as optional_down_payment,
       round(plh.system_size::numeric/1000,2) as system_size,
       round(plh.optional_down_payment::numeric * 0.5, 2) as first_cash_payment_amount,
       pd.total_system_price,

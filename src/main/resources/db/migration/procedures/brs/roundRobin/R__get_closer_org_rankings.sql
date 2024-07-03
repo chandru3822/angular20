@@ -1,5 +1,6 @@
 drop function if exists brs.get_closer_org_rankings(p_time_interval bigint);
-CREATE OR REPLACE FUNCTION brs.get_closer_org_rankings(p_time_interval bigint)
+drop function if exists brs.get_closer_org_rankings(date,date);
+CREATE OR REPLACE FUNCTION brs.get_closer_org_rankings(p_start_date date,p_end_date date)
     RETURNS table
             (
                 office_name             character varying,
@@ -15,12 +16,15 @@ AS
 $BODY$
 declare
     v_closer_gen_source_ids bigint[];
+v_time_interval bigint;
 BEGIN
     select (select string_to_array(value, ',')
             from flow.company_configuration_value
             where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
     into v_closer_gen_source_ids;
 
+    select (p_end_date - p_start_date)::bigint
+    into v_time_interval;
     return query
         with position_ids as (select unnest(string_to_array(value, ',')::bigint[]) as id
                               from flow.company_configuration_value
@@ -45,7 +49,7 @@ BEGIN
                                  where up.archived IS FALSE
                                    -- AND up.primary_flag IS true
                                    and (up.end_date is null or
-                                        up.end_date >= (now() at time zone 'US/Mountain')::date - (p_time_interval || 'day')::interval)
+                                        up.end_date >= (now() at time zone 'US/Mountain')::date - (v_time_interval || 'day')::interval)
                                    AND ust.has_access is true)
                 ,
              foo as (SELECT
@@ -59,7 +63,7 @@ BEGIN
 --                       INNER JOIN flow.company_project_status_type cp on pd.company_project_status_type_id = cp.id --being used??
                      from current_closers cc
                               inner join brs.project_details pd on pd.closer_user_id = cc.id
-                              left join LATERAL brs.get_fdc_counts(cc.id,cc.user_position_id, v_closer_gen_source_ids, p_time_interval) fdc_counts
+                              left join LATERAL brs.get_fdc_counts(cc.id,cc.user_position_id, v_closer_gen_source_ids, v_time_interval) fdc_counts
                                         on true
                      GROUP BY cc.office_name, cc.region, cc.metro_area,
                               fdc_counts.lead_gen_fdc_count,

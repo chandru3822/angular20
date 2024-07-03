@@ -300,21 +300,13 @@
             designs.length === 0
           "
         >
-          <a-btn
-              variant="text"
-              color="primary"
-              @click="handleAIRequest(false)"
-          >
+          <a-btn variant="text" color="primary" @click="handleAIRequest(false)">
             <v-icon :size="60">add</v-icon>
           </a-btn>
           <div class="mt-5 primary--text">Request AI Design</div>
         </div>
         <div v-if="canEdit && designs.length > 0 && !activeDesign.projectId">
-          <a-btn
-              variant="text"
-              color="primary"
-              @click="handleAIRequest(true)"
-          >
+          <a-btn variant="text" color="primary" @click="handleAIRequest(true)">
             <v-icon :size="60">add</v-icon>
           </a-btn>
           <div class="mt-5 primary--text">Create my own design in Aurora</div>
@@ -327,25 +319,28 @@
               pendingAuroraAdjustmentsStatusId
           "
         >
-          <div class="mb-3">
-            Immediate Design Pending Aurora Adjustments
-          </div>
-          <a v-if="activeDesign.auroraProjectId && activeDesign.designId"
-
-             @click="openSalesMode()">
+          <div class="mb-3">Immediate Design Pending Aurora Adjustments</div>
+          <a
+            v-if="activeDesign.auroraProjectId && activeDesign.designId"
+            @click="openSalesMode()"
+          >
             Open in Sales Mode
           </a>
-          <br>
-          <a-btn variant="solo"
-                 class="mt-8"
-                 color="primary"
-                 @click="syncAuroraDesignDetails()">
+          <br />
+          <a-btn
+            variant="solo"
+            class="mt-8"
+            color="primary"
+            @click="syncAuroraDesignDetails()"
+          >
             Sync Design
           </a-btn>
-          <br>
-          <a-btn variant="outlined"
-                 class="mt-4"
-                 @click="cancelPendingAuroraDesign()">
+          <br />
+          <a-btn
+            variant="outlined"
+            class="mt-4"
+            @click="cancelPendingAuroraDesign()"
+          >
             Cancel Aurora Design Request
           </a-btn>
         </v-card-text>
@@ -428,17 +423,17 @@
         <v-card-actions>
           <v-spacer />
           <a-btn
-              variant="text"
-              color="primary"
-              @click="showAIDesignRequestForm = false"
-              text="Cancel"
+            variant="text"
+            color="primary"
+            @click="showAIDesignRequestForm = false"
+            text="Cancel"
           ></a-btn>
           <a-btn
-              color="primary"
-              :loading="savingNewAiDesign"
-              class="font-weight-bold"
-              @click="validateAIRequest()"
-              text="Save"
+            color="primary"
+            :loading="savingNewAiDesign"
+            class="font-weight-bold"
+            @click="validateAIRequest()"
+            text="Save"
           ></a-btn>
         </v-card-actions>
       </v-card>
@@ -531,8 +526,6 @@ const dateSortFn = (prop = 'dateCreated') => {
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const designs = ref([])
 const cardHeight = ref(600)
-const minDate = ref(moment().format('YYYY-MM-DDTHH:mm:ssZ'))
-const offset = ref(0)
 const numberToDisplay = ref(3)
 const newDesignRequest = ref({})
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_AND_DOCS)
@@ -549,7 +542,6 @@ const useExistingDesign = ref(false)
 const showAIDesignRequestForm = ref(false)
 const savingNewAiDesign = ref(false)
 const pendingAuroraAdjustmentsStatusId = ref(1649)
-const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const aiForm = ref(null)
 
 onMounted(async () => {
@@ -655,9 +647,11 @@ const requestAIDesign = async () => {
   } catch (e) {
     logError(e)
     appStore.loading = false
-     appStore.showSnack(
+    appStore.showSnack(
       'ERROR',
-      e?.data?.message || e?.data?.detail || 'There was an error requesting a new design'
+      e?.data?.message ||
+        e?.data?.detail ||
+        'There was an error requesting a new design'
     )
   } finally {
     showAIDesignRequestForm.value = false
@@ -673,13 +667,16 @@ const cancelPendingAuroraDesign = async () => {
       id: 1654, //this is the company status
       cancelledCompanyProcessStepStatusTypeId: 1654 //this is the cancelled status which in our case we just set to the same..it wont actually get used
     }
-    await postRequest(`/projectProcessStep/${activeDesign.value.projectProcessStepId}/status`, params)
+    await postRequest(
+      `/projectProcessStep/${activeDesign.value.projectProcessStepId}/status`,
+      params
+    )
     activeDesign.value = {}
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Canceling Process Step')
   } finally {
-    appStore.loading=false
+    appStore.loading = false
   }
 }
 
@@ -709,7 +706,7 @@ const syncAuroraDesignDetails = async () => {
       await pageLoadOrRefresh()
       handleHidingGlobalLoader(status)
     } else {
-       appStore.showSnack(
+      appStore.showSnack(
         'ERROR',
         `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`
       )
@@ -717,7 +714,7 @@ const syncAuroraDesignDetails = async () => {
     }
   } catch (e) {
     appStore.loading = false
-     appStore.showSnack(
+    appStore.showSnack(
       'ERROR',
       `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`
     )
@@ -753,7 +750,7 @@ const requestNewDesign = async () => {
   } catch (e) {
     logError(e)
     appStore.loading = false
-     appStore.showSnack(
+    appStore.showSnack(
       'ERROR',
       e?.data?.message || 'There was an error requesting a new design'
     )
@@ -775,7 +772,7 @@ const requestPostalCodeApproval = async (comments) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     appStore.loading = false
-     appStore.showSnack(
+    appStore.showSnack(
       'ERROR',
       e?.data?.message || 'There was an error requesting a new design'
     )
@@ -887,7 +884,7 @@ const addProposal = async (design) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
-     appStore.showSnack(
+    appStore.showSnack(
       'ERROR',
       `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`,
       true
@@ -964,10 +961,6 @@ const uploadUtilityBillFiles = (files) => {
 .subtitle-container {
   padding: 0;
 }
-
-//.proposal-container {
-//  height: 71px;
-//}
 
 .slice-selectors {
   position: absolute;

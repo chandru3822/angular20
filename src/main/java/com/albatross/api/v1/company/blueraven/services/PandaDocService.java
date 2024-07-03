@@ -690,6 +690,15 @@ public class PandaDocService {
             ? "0"
             : deets.getDealerFee().toString());
 
+      if (installAgreementService.isCashProject(deets.getFinancier())) {
+        dealerFee = 0.0;
+      }
+      else {
+        dealerFee = dealerFee * Double.parseDouble(deets.getLoanAmount());
+        // Round to 2 decimals
+        dealerFee = (double) Math.round(dealerFee * 100) / 100;
+      }
+
       Double pricePerWatt = deets.getFinancedPvPricePerWattToCustomer() == null
         ? 0.0
         : Math.round(Double.parseDouble(deets.getFinancedPvPricePerWattToCustomer().toString()) * 100) / 100.0;

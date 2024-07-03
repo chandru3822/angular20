@@ -13,8 +13,9 @@ declare
     v_number_of_arrays bigint;
     v_number_of_pitch bigint;
     v_financier_id bigint;
-    v_closer_commission_forfeiture_amount numeric;
+    v_pl_closer_commission_forfeiture_amount numeric;
     v_commission_forfeited_by_closer_amount numeric;
+    v_pd_commission_forfeited_by_closer_amount numeric;
 BEGIN
 
     select ppscfv.int_value
@@ -38,7 +39,7 @@ BEGIN
 
 
     select financier_id,closer_commission_forfeiture_amount
-    into v_financier_id,v_closer_commission_forfeiture_amount
+    into v_financier_id,v_pl_closer_commission_forfeiture_amount
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
@@ -46,7 +47,13 @@ BEGIN
     into v_commission_forfeited_by_closer_amount
       from flow.project_process_step p
     inner join flow.project_process_step_custom_field_value v on v.project_process_step_id = p.id and v.custom_field_group_assignment_id = 24999
-    where p.project_id = p_project_id;
+    where p.project_id = p_project_id and
+          p.main is true;
+
+    select commission_forfeited_by_closer
+    into v_pd_commission_forfeited_by_closer_amount
+    from brs.project_details pd2
+    where pd2.project_id = p_project_id;
 
 
     select cp.company_id
@@ -371,10 +378,15 @@ BEGIN
         perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
 
-    if coalesce(v_closer_commission_forfeiture_amount, 0) > 0 and
-       coalesce(v_closer_commission_forfeiture_amount, 0) > coalesce(v_commission_forfeited_by_closer_amount,0) then
+    if coalesce(v_pl_closer_commission_forfeiture_amount, 0) > 0 and
+       coalesce(v_pl_closer_commission_forfeiture_amount, 0) > coalesce(v_commission_forfeited_by_closer_amount, 0) then
       update brs.project_details d
-      set commission_forfeited_by_closer = v_closer_commission_forfeiture_amount
+      set commission_forfeited_by_closer = v_pl_closer_commission_forfeiture_amount
+      where d.project_id = p_project_id;
+    elsif coalesce(v_pd_commission_forfeited_by_closer_amount, 0) !=
+          coalesce(v_commission_forfeited_by_closer_amount, 0) then
+      update brs.project_details d
+      set commission_forfeited_by_closer = v_commission_forfeited_by_closer_amount
       where d.project_id = p_project_id;
     end if;
 

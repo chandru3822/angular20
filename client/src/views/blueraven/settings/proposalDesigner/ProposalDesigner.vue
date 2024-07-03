@@ -172,21 +172,12 @@ import { apiRequest } from '@/helpers/helpers'
 import { Editor } from '@tiptap/vue-2'
 import { getExtensions } from '@/views/blueraven/settings/proposalDesigner/blocks/text/utils'
 
-import {
-  getCurrentInstance,
-  computed,
-  ref,
-  onMounted,
-  watch,
-  onBeforeUnmount,
-  provide
-} from 'vue'
+import { computed, ref, onMounted, watch, onBeforeUnmount, provide } from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from './store.js'
 import { storeToRefs } from 'pinia'
 
 const appStore = useAppStore()
-const vueInstance = getCurrentInstance().proxy
 
 const store = useProposalStore()
 const { selectedId, template } = storeToRefs(store)
@@ -295,7 +286,10 @@ const downloadPreview = async () => {
       }, 100)
     }
   } catch (e) {
-    appStore.showSnack('ERROR', e?.data?.message || 'Error while generating preview')
+    appStore.showSnack(
+      'ERROR',
+      e?.data?.message || 'Error while generating preview'
+    )
     console.error(e)
   } finally {
     appStore.loading = false

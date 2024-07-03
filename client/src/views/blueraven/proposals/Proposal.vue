@@ -198,7 +198,7 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="6" md="8" class="px-6 pt-4">
-          <v-row class="prop-view-row">
+          <v-row class="prop-view-row" ref="proposalViewerEl">
             <v-card
               width="100vw"
               class="rounded-0 prop-view-card"
@@ -217,7 +217,7 @@
                 >
                   <span class="delete-btn">
                     <v-icon color="">delete</v-icon>
-                    <span class="d-none d-md-block">Delete</span>
+                    <span class="d-none d-md-inline">Delete</span>
                   </span>
                 </a-btn>
                 <a-btn
@@ -228,7 +228,7 @@
                   @click="duplicate"
                 >
                   <v-icon>mdi-content-copy</v-icon>
-                  <span class="d-none d-md-block">Duplicate</span>
+                  <span class="d-none d-md-inline">Duplicate</span>
                 </a-btn>
                 <a-btn
                   v-if="pages && pages.length"
@@ -238,18 +238,17 @@
                   @click="downloadPdf"
                 >
                   <v-icon>download</v-icon>
-                  <span class="d-none d-md-block">Download</span>
+                  <span class="d-none d-md-inline">Download</span>
                 </a-btn>
               </div>
             </v-card>
             <v-card
-              width="100vw"
-              class="proposal-container pt-4 proposal-viewer"
+              class="pt-4 proposal-container proposal-viewer"
+              :class="{ paged: isPageable }"
               v-if="!hideProposalSection"
             >
               <v-alert
                 class="text-center overlay-alert"
-                v-if="isIntersecting"
                 color="warning"
                 dense
                 tile
@@ -276,6 +275,47 @@
                   </v-row>
                 </v-alert>
               </div>
+            </v-card>
+            <v-card class="rounded-0 proposal-actions">
+              <a-btn
+                variant="text"
+                class="text-capitalize primary--text"
+                v-if="!isPageable"
+                @click="isPageable = true"
+              >
+                <v-icon>mdi-projector-screen-variant-outline</v-icon>
+                <span class="d-none d-md-inline">Single</span>
+              </a-btn>
+              <a-btn
+                variant="text"
+                class="text-capitalize primary--text"
+                v-if="isPageable"
+                @click="isPageable = false"
+              >
+                <v-icon>mdi-projector-screen-variant-off-outline</v-icon>
+                <span class="d-none d-md-inline">Continuous</span>
+              </a-btn>
+              <div class="text-center" v-if="isPageable">
+                <v-pagination
+                  v-model="currentPage"
+                  :length="totalPages"
+                ></v-pagination>
+              </div>
+              <a-btn
+                variant="text"
+                class="text-capitalize primary--text"
+                @click="toggleFullscreen"
+              >
+                <v-icon v-if="isFullscreen">mdi-fullscreen-exit</v-icon>
+                <span v-if="isFullscreen" class="d-none d-md-inline"
+                  >Minimize</span
+                >
+
+                <v-icon v-if="!isFullscreen">mdi-fullscreen</v-icon>
+                <span v-if="!isFullscreen" class="d-none d-md-inline"
+                  >Fullscreen</span
+                >
+              </a-btn>
             </v-card>
           </v-row>
         </v-col>
@@ -328,7 +368,7 @@ import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
 
-import { computed, ref, onMounted, onBeforeUnmount, provide } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, provide, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
@@ -350,9 +390,10 @@ const {
   loading: templateLoading
 } = storeToRefs(store)
 
+const isPageable = ref(true)
+const currentPage = ref(1)
 const autoSelectFieldIds = [407, 102, 81]
 const proposalExists = ref(true)
-const isIntersecting = ref(false)
 const loading = ref(false)
 const hideProposalSection = ref(VITE_HIDE_PROPOSAL || false)
 const proposalId = ref(parseInt(route.params.proposalId))
@@ -366,8 +407,29 @@ const confirmDialogRef = ref(null)
 const proposalForm = ref(null)
 const deleteConfirmDialogRef = ref(null)
 const expansionPanelsStatus = ref([0, 1, 2, 3, 4])
+const proposalViewerEl = ref(undefined)
+const isFullscreen = ref(false)
 
 provide('editor', undefined)
+
+const toggle = () => {
+  isFullscreen.value = !!document.fullscreenElement
+}
+
+//set up watcher to toggle icon
+watch(
+  proposalViewerEl,
+  (newEl, oldEl) => {
+    if (newEl !== oldEl) {
+      newEl.addEventListener('fullscreenchange', toggle)
+    }
+
+    if (oldEl) {
+      oldEl.removeEventListener('fullscreenchange', toggle)
+    }
+  },
+  { immediate: true }
+)
 
 const USD = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -430,9 +492,20 @@ const defaultProposalName = computed(() => {
   return 'New Proposal'
 })
 
-const pages = computed(() =>
-  template.value?.filter((x) => x.parentId === undefined)
+const totalPages = computed(
+  () => template.value?.filter((x) => x.parentId === undefined)?.length
 )
+
+const pages = computed(() => {
+  const pageBlocks = template.value
+    ?.filter((x) => x.parentId === undefined)
+    ?.sort((a, b) => a.blockOrder - b.blockOrder)
+
+  if (isPageable.value && pageBlocks.length > 0) {
+    return [pageBlocks[currentPage.value - 1]]
+  }
+  return pageBlocks
+})
 
 const sortedCustomFieldGroups = computed(() => {
   const customFieldGroups = [...(proposal.value?.customFieldGroups ?? [])]
@@ -446,6 +519,16 @@ const sortedCustomFieldGroups = computed(() => {
     return 0
   })
 })
+
+const toggleFullscreen = () => {
+  if (document.fullscreenElement) {
+    document.exitFullscreen()
+    isFullscreen.value = false
+  } else {
+    proposalViewerEl.value?.requestFullscreen()
+    isFullscreen.value = true
+  }
+}
 
 const getHint = (field) => {
   if (!field) {
@@ -463,6 +546,7 @@ const getHint = (field) => {
 }
 const cssVars = computed(() => {
   return {
+    '--proposal-action-height': '50px',
     '--dirty-cfv-height': dirtyCfvs.value.length > 0 ? '56px' : '0px',
     '--padding-and-margins': '240px' // this number is toolbars, margins, and paddings above the column headings
   }
@@ -581,10 +665,12 @@ const getProposalDetails = async () => {
     appStore.loading = false
   }
 }
+
 const resetToDefault = async () => {
   await getProposalDetails()
   proposalForm.value.resetValidation()
 }
+
 const validateForm = () => {
   //checks for required fields prior to opening the save dialog
   if (proposalForm.value.validate()) {
@@ -593,6 +679,7 @@ const validateForm = () => {
     appStore.showSnack('ERROR', 'Missing Required Fields')
   }
 }
+
 const loadProposalVersions = async () => {
   try {
     loadingVersions.value = true
@@ -909,6 +996,16 @@ const beforeWindowUnload = (e) => {
   padding-left: 16px;
 }
 
+.proposal-actions {
+  height: var(--proposal-action-height);
+  border: solid 1px var(--v-grey-lighten3);
+  background-color: var(--v-grey-lighten4);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* WRAPS THE BUTTONS UNDERNEATH HEADER TITLES BASED ON SCREEN SIZE */
 @media (min-width: 1232px) {
   .configurations-card {
@@ -918,9 +1015,15 @@ const beforeWindowUnload = (e) => {
   .config-row {
     height: 64px;
   }
-  .proposal-container.prop-custom-field-groups,
-  .proposal-container.proposal-viewer {
+  .prop-custom-field-groups {
     height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
+  }
+
+  .proposal-viewer {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
+        var(--proposal-action-height)
+    );
   }
 }
 
@@ -934,15 +1037,18 @@ const beforeWindowUnload = (e) => {
   .prop-view-row {
     height: 96px;
   }
-  .proposal-container.prop-custom-field-groups {
+  .prop-custom-field-groups {
     height: calc(
       100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
     );
   }
-  .proposal-container.proposal-viewer {
-    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
+  .proposal-viewer {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height)- var(--proposal-action-height)
+    );
   }
 }
+
 @media (max-width: 960px) and (min-width: 827px) {
   .configurations-card {
     flex-wrap: wrap;
@@ -952,15 +1058,19 @@ const beforeWindowUnload = (e) => {
   .prop-view-row {
     height: 56px;
   }
-  .proposal-container.prop-custom-field-groups {
+  .prop-custom-field-groups {
     height: calc(
       100vh - var(--padding-and-margins) - var(--dirty-cfv-height) + 8px
     );
   }
-  .proposal-container.proposal-viewer {
-    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
+  .proposal-viewer {
+    height: calc(
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
+        var(--proposal-action-height)
+    );
   }
 }
+
 @media (max-width: 827px) and (min-width: 600px) {
   .configurations-card,
   .prop-view-card {
@@ -973,18 +1083,20 @@ const beforeWindowUnload = (e) => {
     height: 96px;
   }
 
-  .proposal-container.prop-custom-field-groups {
+  .prop-custom-field-groups {
     height: calc(
       100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
     );
   }
 
-  .proposal-container.proposal-viewer {
+  .proposal-viewer {
     height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
+        var(--proposal-action-height) - 32px
     );
   }
 }
+
 @media (max-width: 600px) and (min-width: 440px) {
   .configurations-card {
     flex-wrap: wrap;
@@ -1000,6 +1112,7 @@ const beforeWindowUnload = (e) => {
     z-index: 1000;
   }
 }
+
 @media (max-width: 440px) and (min-width: 1px) {
   .configurations-card,
   .prop-view-card {
@@ -1033,9 +1146,11 @@ const beforeWindowUnload = (e) => {
   display: flex;
   justify-content: flex-end;
 }
+
 .config-buttons {
   white-space: nowrap;
 }
+
 .configurations-column {
   margin-top: 4px;
   padding-left: 12px;
@@ -1048,6 +1163,7 @@ const beforeWindowUnload = (e) => {
 .delete-btn {
   color: rgba(180, 34, 31, 1);
 }
+
 .new-proposal-header {
   font-size: 20px;
   font-weight: 700;
@@ -1057,12 +1173,29 @@ const beforeWindowUnload = (e) => {
   word-break: break-word;
 }
 
-.proposal-container.prop-custom-field-groups {
-  border-radius: 0;
-  overflow-y: scroll;
-  background-color: var(--v-grey-lighten4);
+.prop-view-row {
+  .proposal-viewer {
+    --scale: 0.75;
+    width: 100vw;
+  }
+
+  &:fullscreen {
+    .proposal-viewer {
+      --scale: 1;
+      //background-color: black;
+      display: flex;
+      justify-content: center;
+      height: calc(100vh - var(--proposal-action-height) - 64px);
+
+      &.paged {
+        align-items: center;
+      }
+    }
+  }
 }
-.proposal-container.proposal-viewer {
+
+.prop-custom-field-groups,
+.proposal-viewer {
   border-radius: 0;
   overflow-y: scroll;
   background-color: var(--v-grey-lighten4);
@@ -1086,9 +1219,9 @@ const beforeWindowUnload = (e) => {
 
 /* PROPOSAL VIEWER ZOOM STYLING */
 .proposal-zoom-lock {
-  --scale: 0.75;
   transform: scale(var(--scale));
   transform-origin: top left;
+  //margin-bottom: calc((var(--scale) - 1) * 100%);
 
   @media (min-width: 1548px) {
     transform-origin: top center;
@@ -1096,8 +1229,6 @@ const beforeWindowUnload = (e) => {
 
   @media (max-width: 600px) {
     --scale: 0.45;
-    transform: scale(var(--scale));
-    transform-origin: top left;
   }
 }
 </style>

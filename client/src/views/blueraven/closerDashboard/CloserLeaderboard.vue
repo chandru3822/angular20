@@ -2,17 +2,6 @@
   <v-container id="closer-dash-container" ref="closerDashContainer">
     <!---------------------------------- LEADERBOARD TAB START ---------------------------------->
     <!-- BOOKING TABLES FIRST HEADER START -->
-    <div class="ranking-tables-section-header">
-      Leaderboard
-      <div class="expand-section">
-        <a-btn
-            variant="text"
-            @click="showLeaderboard = !showLeaderboard"
-            color="unset"
-            :prepend-icon="!showLeaderboard ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-        ></a-btn>
-      </div>
-    </div>
     <!-- BOOKING TABLES FIRST HEADER END -->
 
     <!-- BOOKING TABLES TOP ROW START -->
@@ -23,8 +12,7 @@
           <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
         </div>
         <div class="ranking-table-header user-office-ranking-table-header">
-          <div class="user-office-ranking-table-header-left-side">
-            <v-icon class="ranking-table-icon mr-2 default-text-color">mdi-calendar-badge</v-icon>
+          <div class="user-office-ranking-table-header-left-side headline-small">
             <span>Closers with 2+ Bookings</span>
           </div>
           <div>
@@ -36,6 +24,7 @@
               :type="'date'"
               :format="'MM/DD/YYYY'"
               label="Date"
+              :customClass="'body-large'"
             />
           </div>
         </div>
@@ -44,19 +33,20 @@
           No results found for the selected date.
         </div>
         <table v-else>
-          <tr class="grey--text text--darken-2">
-            <th class="center-text">Sales Consultant</th>
+          <tr class="table-header label-small">
+            <th class="left-text first-item">Sales Consultant</th>
             <th class="left-text">Office</th>
-            <th class="center-text">Metro</th>
-            <th class="center-text">Bookings</th>
+            <th class="left-text">Metro</th>
+            <th class="left-text">Bookings</th>
           </tr>
 
           <tr v-for="(row, index) in bookingData" :key="index"
-              :class="{'highlight-user-row': row.userId === currentUserId}">
-            <td class="center-text">{{ row.closerName }}</td>
+              :class="{'highlight-user-row': row.userId === currentUserId}"
+          class="body-medium">
+            <td class="left-text first-item body-medium">{{ row.closerName }}</td>
             <td class="left-text">{{ row.officeName }}</td>
-            <td class="center-text">{{ row.metroArea }}</td>
-            <td class="center-text">{{ row.bookingCount || 0 }}</td>
+            <td class="left-text">{{ row.metroArea }}</td>
+            <td class="left-text">{{ row.bookingCount || 0 }}</td>
           </tr>
         </table>
       </div>
@@ -129,6 +119,13 @@
 </script>
 
 <style lang="scss" scoped>
+.first-item{
+  padding-left: 16px!important;
+}
+
+.table-header{
+  color: var(--v-grey-lighten1);
+}
   .fix-bottom-page-issue {
     margin-bottom: 70px !important;
   }
@@ -190,9 +187,6 @@
   .ranking-tables-section-header {
     position: relative;
     text-align: left;
-    font-family: "Roboto", sans-serif;
-    font-weight: bold;
-    font-size: 20px;
     border-bottom: 2px solid var(--v-primary-base);
     margin: 0 auto 12px auto;
     padding-bottom: 3px;
@@ -238,8 +232,6 @@
   .ranking-table-header {
     display: flex;
     flex-flow: row nowrap;
-    font-weight: bold;
-    font-size: 16px;
     text-align: left;
     padding: 10px 5px 5px 10px;
   }
@@ -321,8 +313,6 @@
 
   .ranking-table td {
     border-bottom: 1px solid #e6eeff;
-    font-weight: bold;
-    font-size: 10px;
     height: 41px;
   }
 
@@ -520,8 +510,9 @@
     }
 
     .ranking-table td {
-      font-size: 12px;
+      font-size: 14px;
       height: 55px;
+      min-width: 100px;
     }
 
     .ranking-tables-no-data {
@@ -531,12 +522,12 @@
 
   @media (min-width: 1135px) {
     .ranking-tables-section-header {
-      max-width: 1130px;
+
     }
 
     .ranking-tables-section {
-      max-width: 1130px;
-      margin: 0 auto;
+
+      margin: 0 0 0 0;
     }
 
     .ranking-table-header, .ranking-table-icon {

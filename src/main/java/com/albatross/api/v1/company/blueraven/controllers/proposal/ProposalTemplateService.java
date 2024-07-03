@@ -50,9 +50,6 @@ import static java.util.Comparator.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
-//  TODO:
-//  * update template/theme
-
 @Slf4j
 @Service
 public class ProposalTemplateService {
@@ -95,9 +92,11 @@ public class ProposalTemplateService {
 
   public ProposalTemplate getTemplateById(Long templateId, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType, boolean isDebug) {
 
-    try (Context ctx = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).build()) {
+    String LANG_JS = "js";
+    try (Context ctx = Context.newBuilder(LANG_JS).allowHostAccess(HostAccess.ALL).build()) {
+      Value bindings = ctx.getBindings(LANG_JS);
       //set the variables in the context
-      context.forEach((String key, Object val) -> ctx.getBindings("js").putMember(key, val));
+      context.forEach(bindings::putMember);
 
       final ProposalTemplate template =
         sqlCache.getBySql(ProposalTemplateQuery.findById, Map.of("id", templateId), new ProposalTemplateMapper(objectMapper))

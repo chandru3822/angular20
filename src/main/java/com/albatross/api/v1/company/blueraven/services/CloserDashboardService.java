@@ -4,6 +4,9 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.CloserDashboardQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
+import com.albatross.api.v1.flow.enums.DataType;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
@@ -16,8 +19,17 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.TemporalAdjusters.*;
+import static java.time.temporal.TemporalAdjusters.nextOrSame;
 
 @Slf4j
 @Service
@@ -93,18 +105,22 @@ public class CloserDashboardService {
   }
 
   public List<CloserTableScore> getRoundRobinLeadAllocationRank(
-      Integer roundRobinId, Integer timeInterval) {
+      Integer roundRobinId, String startDate, String endDate) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("roundRobinId", roundRobinId);
-    params.put("timeInterval", timeInterval);
-    params.put("currentUserId", securityService.getCurrentUser().getId());
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
 
+    System.out.println(params);
     List<CloserTableScore> roundRobinLeadAllocationData =
         sqlCache.queryBySql(
             CloserDashboardQuery.getRoundRobinLeadAllocationRank,
             params,
           CloserTableScore.class);
 
+    for(CloserTableScore closerTableScore : roundRobinLeadAllocationData){
+      closerTableScore.setScore(Math.round(closerTableScore.getScore() * 10000.0) / 100.0);
+    }
     getUserImages(roundRobinLeadAllocationData);
 
     return roundRobinLeadAllocationData;
@@ -144,10 +160,11 @@ public class CloserDashboardService {
     }
   }
 
-  public List<CloserTableScore> getRepRankings(Integer timeInterval, Long selectedOrgId) {
+  public List<CloserTableScore> getRepRankings(String startDate, String endDate, Long selectedOrgId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", securityService.getCurrentUser().getId());
-    params.put("timeInterval", timeInterval);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
     params.put("selectedOrgId", selectedOrgId);
 
     List<CloserTableScore> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserRankings, params, CloserTableScore.class);
@@ -158,10 +175,10 @@ public class CloserDashboardService {
     return closerTableScores;
   }
 
-  public List<CloserTableScore> getCloserOrgRankings(Integer timeInterval) {
+  public List<CloserTableScore> getCloserOrgRankings(String startDate, String endDate) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", securityService.getCurrentUser().getId());
-    params.put("timeInterval", timeInterval);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
 
     return sqlCache.queryBySql(CloserDashboardQuery.getCloserOrgRankings, params, CloserTableScore.class);
   }
@@ -194,28 +211,28 @@ public class CloserDashboardService {
 
   public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[], :currentUserId::bigint)";
+        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, :trendStart::date, :trendEnd::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[], array[ :leadsCreatedSourceIds ]::bigint[])";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
     parameters.addValue("endDate", funnelRequest.getEnd());
+    parameters.addValue("trendStart", funnelRequest.getTrendStart());
+    parameters.addValue("trendEnd", funnelRequest.getTrendEnd());
     parameters.addValue("brsProvidedSourceIds", funnelRequest.getBrsProvidedSources());
     parameters.addValue("selfGenSourceIds", funnelRequest.getSelfGenSources());
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
+    parameters.addValue("leadsCreatedSourceIds", funnelRequest.getLeadsCreatedSources());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
   public String apptsCreatedPipelineDrilldown(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :sourceIds ]::bigint[], :currentUserId::bigint)";
-
+        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :sourceIds ]::bigint[])";
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
     parameters.addValue("endDate", funnelRequest.getEnd());
     parameters.addValue("funnelId", funnelRequest.getFunnelId());
     parameters.addValue("sourceIds", funnelRequest.getSources());
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
@@ -225,7 +242,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_area_selection(:userId::bigint, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("setterOverride", req.getSetterOverride());
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
@@ -237,7 +254,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_region_selection(:userId::bigint, :areas::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("setterOverride", req.getSetterOverride());
 
@@ -250,7 +267,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_district_selection(:userId::bigint, :areas::JSON, :regions::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("setterOverride", req.getSetterOverride());
@@ -264,7 +281,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_office_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("districts", req.getDistricts());
@@ -279,7 +296,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_rep_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("districts", req.getDistricts());
@@ -289,46 +306,61 @@ public class CloserDashboardService {
     return null == results ? "[]" : results;
   }
 
+  public List<AppointmentType> getAppointmentTypes(){
+    List<AppointmentType> appointmentTypes = new ArrayList<>();
+    appointmentTypes.add(new AppointmentType("Round Robin", (long) 1));
+    appointmentTypes.add(new AppointmentType("Manual", (long) 2));
+
+    return appointmentTypes;
+  }
+
   public String funnelStandard(FunnelRequest funnelRequest) {
     String sqlQuery;
     sqlQuery =
-        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
+        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, :trendStart::date, :trendEnd::date, array[ :userIds ]::bigint[], array[ :appointmentTypeIds ]::bigint[], array[ :leadSourceIds ]::bigint[], :hideInactive::boolean)";
 
     return runFunnelQuery(
         sqlQuery,
         funnelRequest.getStart(),
         funnelRequest.getEnd(),
+        funnelRequest.getTrendStart(),
+        funnelRequest.getTrendEnd(),
         funnelRequest.getUsers(),
-        funnelRequest.getOrgs());
+        funnelRequest.getAppointmentTypeIds(),
+        funnelRequest.getLeadSourceIds(),
+        funnelRequest.getHideInactive());
   }
 
-  public String funnelApptDateCohort(FunnelRequest funnelRequest) {
-    String sqlQuery =
-        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
-
-    return runFunnelQuery(
-        sqlQuery,
-        funnelRequest.getStart(),
-        funnelRequest.getEnd(),
-        funnelRequest.getUsers(),
-        funnelRequest.getOrgs());
-  }
+//  public String funnelApptDateCohort(FunnelRequest funnelRequest) {
+//    String sqlQuery =
+//        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
+//
+//    return runFunnelQuery(
+//        sqlQuery,
+//        funnelRequest.getStart(),
+//        funnelRequest.getEnd(),
+//        funnelRequest.getUsers(),
+//        funnelRequest.getOrgs());
+//  }
 
   private String runFunnelQuery(
-      String sqlQuery, String start, String end, List<Long> userIds, List<Long> orgIds) {
+      String sqlQuery, String start, String end, String trendStart, String trendEnd, List<Long> userIds, List<Long> appointmentTypeIds, List<Long> leadSourceIds, Boolean hideInactive) {
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", start);
     parameters.addValue("endDate", end);
+    parameters.addValue("trendStart", trendStart);
+    parameters.addValue("trendEnd", trendEnd);
     parameters.addValue("userIds", userIds);
-    parameters.addValue("orgIds", orgIds);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
+    parameters.addValue("appointmentTypeIds", appointmentTypeIds);
+    parameters.addValue("leadSourceIds", leadSourceIds);
+    parameters.addValue("hideInactive", hideInactive);
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, false, :currentUserId::bigint)";
+        "select brs.rpt_closer_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], :isCheckedInColumn::boolean, array[ :appointmentTypeIds ]::bigint[], array[ :leadSourceIds ]::bigint[], :hideInactive::boolean)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,
@@ -336,23 +368,25 @@ public class CloserDashboardService {
         funnelRequest.getEnd(),
         funnelRequest.getFunnelId(),
         funnelRequest.getUsers(),
-        funnelRequest.getOrgs(),
-        funnelRequest.getIsCheckedInColumn());
+        funnelRequest.getIsCheckedInColumn(),
+        funnelRequest.getAppointmentTypeIds(),
+        funnelRequest.getLeadSourceIds(),
+        funnelRequest.getHideInactive());
   }
 
-  public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
-    String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true, :currentUserId::bigint)";
-
-    return runFunnelDrilldownQuery(
-        sqlQuery,
-        funnelRequest.getStart(),
-        funnelRequest.getEnd(),
-        funnelRequest.getFunnelId(),
-        funnelRequest.getUsers(),
-        funnelRequest.getOrgs(),
-        funnelRequest.getIsCheckedInColumn());
-  }
+//  public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
+//    String sqlQuery =
+//        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true, :currentUserId::bigint)";
+//
+//    return runFunnelDrilldownQuery(
+//        sqlQuery,
+//        funnelRequest.getStart(),
+//        funnelRequest.getEnd(),
+//        funnelRequest.getFunnelId(),
+//        funnelRequest.getUsers(),
+//        funnelRequest.getOrgs(),
+//        funnelRequest.getIsCheckedInColumn());
+//  }
 
   private String runFunnelDrilldownQuery(
       String sqlQuery,
@@ -360,16 +394,19 @@ public class CloserDashboardService {
       String end,
       int funnelId,
       List<Long> userIds,
-      List<Long> orgIds,
-      Boolean isCheckedInColumn) {
+      Boolean isCheckedInColumn,
+      List<Long> appointmentTypeIds,
+      List<Long> leadSourceIds,
+      Boolean hideInactive) {
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", start);
     parameters.addValue("endDate", end);
     parameters.addValue("funnelId", funnelId);
     parameters.addValue("userIds", userIds);
-    parameters.addValue("orgIds", orgIds);
     parameters.addValue("isCheckedInColumn", isCheckedInColumn);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
+    parameters.addValue("appointmentTypeIds", appointmentTypeIds);
+    parameters.addValue("leadSourceIds", leadSourceIds);
+    parameters.addValue("hideInactive", hideInactive);
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
@@ -381,4 +418,164 @@ public class CloserDashboardService {
 
     return sqlCache.queryBySql(CloserDashboardQuery.getLeaderboardBookings, params, LeaderboardBooking.class);
   }
+
+  public List<FunnelColumn> getFunnelColumns(Long id, boolean isCheckedInColumn) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("funnelId", id);
+
+    ArrayList<FunnelColumn> allColumns = new ArrayList<>();
+    allColumns.add(new FunnelColumn(27L, "Owner", "owner_name", 0L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(28L, "Office", "office", 1L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(29L, "State", "state",2L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(30L, "Metro", "metro_area", 3L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(31L, "Status", "status_type", 4L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(32L, "Project Name", "project_name", 5L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(33L, "Project ID", "project_id", 6L, DataType.INTEGER.getId(), DataType.INTEGER.getDataType()));
+    allColumns.add(new FunnelColumn(34L, "Source", "source_name", 8L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(35L, "System Size", "system_size", 9L, DataType.NUMERIC.getId(), DataType.NUMERIC.getDataType()));
+    allColumns.add(new FunnelColumn(36L, "Financier", "financier", 10L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(37L, "Appointment Date", "appointment_date", 11L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    allColumns.add(new FunnelColumn(38L, "Cancelled Date", "cancelled_date", 12L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    if (isCheckedInColumn) {
+      // checked in column should always be last
+      allColumns.add(new FunnelColumn(39L, "Checked In Time", "checked_in_time", 25L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    }
+
+    List<FunnelColumn> results = sqlCache.queryBySql(CloserDashboardQuery.getFunnelColumns, params, FunnelColumn.class);
+    allColumns.addAll(results);
+    return allColumns;
+  }
+
+  public ArrayList<CloserDashboardDateRange> getDropdownValues(LocalDate today) {
+    Boolean isAdmin = securityService.getCurrentUser().isSystemAdmin();
+    if(!isAdmin) {
+      for (FeatureAccessControl feature : securityService.getCurrentUser().getFeatureAccess()) {
+        if (feature.getFeatureCode().equalsIgnoreCase("COMPANY_DASHBOARD") && feature.getAccessCode().equalsIgnoreCase("ADMIN")) {
+          isAdmin = true;
+        }
+      }
+    }
+    ArrayList<CloserDashboardDateRange> ranges = new ArrayList<>();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("today", today.toString());
+    List<CompanyPeriod> companyPeriods = sqlCache.queryBySql(CompanyDashboardQuery.getCompanyDashboardPeriods, params, CompanyPeriod.class);
+    CompanyPeriod currentPeriod = null;
+    CompanyPeriod previousPeriod = null;
+    CompanyPeriod doublePreviousPeriod = null;
+    Integer currentIndex = null;
+
+    for (CompanyPeriod period : companyPeriods) {
+      if (today.isBefore(period.getEndDate()) || today.isEqual(period.getEndDate())) {
+        currentPeriod = period;
+        currentIndex = companyPeriods.indexOf(period);
+        previousPeriod = companyPeriods.get(currentIndex - 1);
+        doublePreviousPeriod = companyPeriods.get(currentIndex - 2);
+      }
+    }
+
+    YearMonth month = YearMonth.from(today);
+    LocalDate currentMonthStart = month.atDay(1);
+    LocalDate currentMonthEnd = month.atEndOfMonth();
+    LocalDate previousMonthStart = today.minusMonths(1).withDayOfMonth(1);
+    LocalDate previousMonthEnd = currentMonthStart.minusDays(1);
+    LocalDate penultimateMonthStart = today.minusMonths(2).withDayOfMonth(1);
+    LocalDate penultimateMonthEnd = previousMonthStart.minusDays(1);
+    LocalDate currentYearStart = today.with(firstDayOfYear());
+    LocalDate currentYearEnd = today.with(lastDayOfYear());
+    LocalDate previousYearEnd = currentYearStart.minusDays(1);
+    LocalDate previousYearStart = previousYearEnd.with(firstDayOfYear());
+
+
+    Triumvirate triumvirate = sqlCache.queryBySql(CompanyDashboardQuery.getGetCompanyDashboardTriumvirate, params, Triumvirate.class).get(0);
+
+    DayOfWeek weekStart = DayOfWeek.MONDAY;
+    DayOfWeek weekEnd = DayOfWeek.SUNDAY;
+    LocalDate currentWeekStart = today.with(previousOrSame(weekStart));
+    LocalDate currentWeekEnd = today.with(nextOrSame(weekEnd));
+    LocalDate lastWeekStart = currentWeekStart.minusDays(7);
+    LocalDate lastWeekEnd = currentWeekEnd.minusDays(7);
+    LocalDate yesterday = today.minusDays(1);
+    LocalDate tomorrow = today.plusDays(1);
+
+    ranges.add(new CloserDashboardDateRange(1, "Yesterday", "YESTERDAY",
+      yesterday,
+      yesterday,
+      yesterday.minusDays(1),
+      yesterday.minusDays(1), "the day before yesterday"));
+
+    ranges.add(new CloserDashboardDateRange(2, "Today", "TODAY",
+      today, today, yesterday, yesterday, "yesterday"));
+
+    ranges.add(new CloserDashboardDateRange(3, "Last Week", "LAST WEEK",
+      lastWeekStart,
+      lastWeekEnd,
+      lastWeekStart.minusDays(7),
+      lastWeekEnd.minusDays(7), "the week before last week"));
+
+    ranges.add(new CloserDashboardDateRange(4, "Last Month", "LAST_MONTH",
+      previousMonthStart,
+      previousMonthEnd,
+      penultimateMonthStart,
+      penultimateMonthEnd, "the month before the last month"));
+
+    if(isAdmin) {
+      ranges.add(new CloserDashboardDateRange(5, "Last Period", "LAST_PERIOD",
+        previousPeriod.getStartDate(),
+        previousPeriod.getEndDate(),
+        doublePreviousPeriod.getStartDate(),
+        doublePreviousPeriod.getEndDate(), "the period before the last period"));
+    }
+
+    ranges.add(new CloserDashboardDateRange(6, "Week to Date", "WEEK_TO_DATE",
+      currentWeekStart,
+      today,
+      lastWeekStart,
+      lastWeekStart.plusDays(ChronoUnit.DAYS.between(currentWeekStart, today)), "the same timeframe last week"));
+
+    ranges.add(new CloserDashboardDateRange(7, "Month to Date", "MONTH_TO_DATE",
+      currentMonthStart,
+      today,
+      previousMonthStart,
+      previousMonthStart.plusDays(ChronoUnit.DAYS.between(currentMonthStart, today)), "the same timeframe last month"));
+
+    ranges.add(new CloserDashboardDateRange(8, "Period to Date", "PERIOD_TO_DATE",
+      currentPeriod.getStartDate(),
+      today,
+      previousPeriod.getStartDate(),
+      previousPeriod.getStartDate().plusDays(ChronoUnit.DAYS.between(currentPeriod.getStartDate(), today)), "the same timeframe last period"));
+
+    ranges.add(new CloserDashboardDateRange(9, "Quarter to Date", "QUARTER_TO_DATE",
+      triumvirate.getCurrentQuarterStart(),
+      today,
+      triumvirate.getLastQuarterStart(),
+      triumvirate.getLastQuarterStart().plusDays(ChronoUnit.DAYS.between(triumvirate.getCurrentQuarterStart(), today)), "the same timeframe last period"));
+
+    ranges.add(new CloserDashboardDateRange(10, "Year to Date", "YEAR_TO_DATE",
+      currentYearStart,
+      today,
+      previousYearStart,
+      previousYearStart.plusDays(ChronoUnit.DAYS.between(currentYearStart, today)), "the same timeframe last period"));
+
+    if(isAdmin) {
+      CloserDashboardDateRange periodRange = new CloserDashboardDateRange();
+      periodRange.setId(11);
+      Collections.reverse(companyPeriods);
+      for(int x=1; x<companyPeriods.size(); x++){
+        if(x > 0){
+          companyPeriods.get(x).setTrendStart(companyPeriods.get(x-1).getStartDate());
+          companyPeriods.get(x).setTrendEnd(companyPeriods.get(x-1).getEndDate());
+        }
+      }
+      periodRange.setPeriodList(companyPeriods);
+      periodRange.setTrendText("the period before the selected period");
+      periodRange.setFriendlyName("Period");
+      periodRange.setName("PERIOD");
+      ranges.add(periodRange);
+    }
+
+    ranges.add(new CloserDashboardDateRange(12, "Custom", "CUSTOM", null, null, null, null, null));
+
+    return ranges;
+  }
+
 }

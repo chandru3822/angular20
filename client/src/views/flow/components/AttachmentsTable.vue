@@ -54,13 +54,13 @@
               v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
               :disabled="performingLink"
               variant="text"
-              color="neurtal"
-              @click="linkAttachment(item, true)"
+              color="neutral"
+              @click.native.stop="linkAttachment(item, true)"
               @mouseover="buttonHovered = true"
               @mouseleave="buttonHovered = false"
               class="px-0 button-position"
           >
-            <v-icon size="25">link</v-icon>
+            <v-icon size="25">mdi-link</v-icon>
           </a-btn>
           <a-btn
               icon
@@ -68,7 +68,7 @@
               :disabled="performingLink"
               variant="text"
               color="primary"
-              @click="linkAttachment(item, false)"
+              @click.native.stop="linkAttachment(item, false)"
               @mouseover="buttonHovered = true"
               @mouseleave="buttonHovered = false"
               class="px-0 button-position"
@@ -125,6 +125,7 @@ import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import { useProjectStore } from '@/stores/ProjectStore.js'
+import emitter from '@/services/eventBus.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
@@ -229,7 +230,7 @@ const deleteTheAttachment = async () => {
     projectStore.incrementReloadKey()
 
     //only emit a change event if something was linked, only the actively showing linked section will update
-    vueInstance.$emit('attachmentDeleted', id)
+    emitter.emit('attachment-deleted', id)
 
     appStore.showSnack('SUCCESS', 'Document Deleted')
 
@@ -273,7 +274,7 @@ const linkAttachment = async(attachment, doLink) => {
     } else {
       attachment.linkedToSelected = true
       //only emit a change event if something was linked, only the actively showing linked section will update
-      vueInstance.$emit('newAttachmentLinked', attachment)
+      emitter.emit('new-attachment-linked', attachment)
     }
 
     performingLink.value = false

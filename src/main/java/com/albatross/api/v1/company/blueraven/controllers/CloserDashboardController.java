@@ -53,8 +53,10 @@ public class CloserDashboardController {
 
   @GetMapping(value = "/getRoundRobinLeadAllocationRank")
   public List<CloserTableScore> getRoundRobinLeadAllocationRank(
-      @RequestParam Integer roundRobinId, @RequestParam Integer timeInterval) {
-    return closerDashboardService.getRoundRobinLeadAllocationRank(roundRobinId, timeInterval);
+      @RequestParam Integer roundRobinId,
+      @RequestParam String startDate,
+      @RequestParam String endDate) {
+    return closerDashboardService.getRoundRobinLeadAllocationRank(roundRobinId, startDate, endDate);
   }
 
   @GetMapping(value = "/getCloserOffices")
@@ -64,14 +66,17 @@ public class CloserDashboardController {
 
   @GetMapping(value = "/getRepRankings")
   public List<CloserTableScore> getRepRankings(
-      @RequestParam Integer timeInterval,
+      @RequestParam String startDate,
+      @RequestParam String endDate,
       @RequestParam(required = false) Long selectedOrgId) {
-    return closerDashboardService.getRepRankings(timeInterval, selectedOrgId);
+    return closerDashboardService.getRepRankings(startDate, endDate, selectedOrgId);
   }
 
   @GetMapping(value = "/getOrgRankings")
-  public List<CloserTableScore> getOrgRankings(@RequestParam Integer timeInterval) {
-    return closerDashboardService.getCloserOrgRankings(timeInterval);
+  public List<CloserTableScore> getOrgRankings(
+    @RequestParam String startDate,
+    @RequestParam String endDate) {
+    return closerDashboardService.getCloserOrgRankings(startDate, endDate);
   }
 
   @GetMapping(value="/leaderboardBookings")
@@ -124,6 +129,11 @@ public class CloserDashboardController {
     return closerDashboardService.getReps(request);
   }
 
+  @GetMapping(value = "/appointmentTypes")
+  public List<AppointmentType> getAppointmentTypes() {
+    return closerDashboardService.getAppointmentTypes();
+  }
+
   @PostMapping(value = "/funnel/standard")
   public String funnelStandard(@RequestBody FunnelRequest funnelRequest) {
     return closerDashboardService.funnelStandard(funnelRequest);
@@ -134,13 +144,23 @@ public class CloserDashboardController {
     return closerDashboardService.funnelDrilldownStandard(funnelRequest);
   }
 
-  @PostMapping(value = "/funnel/apptDateCohort")
-  public String funnelApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
-    return closerDashboardService.funnelApptDateCohort(funnelRequest);
+//  @PostMapping(value = "/funnel/apptDateCohort")
+//  public String funnelApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
+//    return closerDashboardService.funnelApptDateCohort(funnelRequest);
+//  }
+
+//  @PostMapping(value = "/funnelDrilldown/apptDateCohort")
+//  public String funnelDrilldownApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
+//    return closerDashboardService.funnelDrilldownApptDateCohort(funnelRequest);
+//  }
+
+  @GetMapping(value = "/dropdownValues")
+  public List<CloserDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
+    return closerDashboardService.getDropdownValues(today);
   }
 
-  @PostMapping(value = "/funnelDrilldown/apptDateCohort")
-  public String funnelDrilldownApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
-    return closerDashboardService.funnelDrilldownApptDateCohort(funnelRequest);
+  @GetMapping(value = "/funnel/{id}/columns")
+  public List<FunnelColumn> getFunnelColumns(@PathVariable Long id, @RequestParam(required = false) boolean isCheckedInColumn) {
+    return closerDashboardService.getFunnelColumns(id, isCheckedInColumn);
   }
 }

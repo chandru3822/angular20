@@ -86,7 +86,7 @@ BEGIN
                 values (v_project_process_step_id, p_cfga, null, null, p_value_to_save::boolean, null, null, null, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 4 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
-                values (v_project_process_step_id, p_cfga, null, null, null, null,p_value_to_save::numeric(10,3), null, null, p_user_id, now(), p_user_id, now());
+                values (v_project_process_step_id, p_cfga, null, null, null, null,p_value_to_save::numeric, null, null, p_user_id, now(), p_user_id, now());
             elsif v_data_type_id = 5 or v_data_type_id = 13 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified, rich_text_value)
                 values (v_project_process_step_id, p_cfga, null, null, null, p_value_to_save::text, null,null, null, p_user_id, now(), p_user_id, now(), case when v_data_type_id = 13 then coalesce(p_secondary_value_to_save,p_value_to_save)::text end);
@@ -122,7 +122,7 @@ BEGIN
                 where id = v_existing_id;
             elsif v_data_type_id = 4 then
                 update flow.project_process_step_custom_field_value
-                set numeric_value = p_value_to_save::numeric(10,3),
+                set numeric_value = p_value_to_save::numeric,
                     modified_by_id = p_user_id,
                     date_modified = now()
                 where id = v_existing_id;

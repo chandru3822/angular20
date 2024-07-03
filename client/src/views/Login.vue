@@ -8,16 +8,35 @@
               <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
-              <h2 class="error--text" v-if="userStore.loginError">{{ userStore.loginError }}</h2>
-              <v-form ref="login" v-model="validForm" @submit.prevent="onSubmit()">
-                <a-text-field required color="primary"
-                              :rules="requiredRules"
-                              v-model="form.email" prepend-icon="person" name="login"
-                              label="Login" type="email"></a-text-field>
-                <a-text-field required color="primary"
-                              :rules="requiredRules"
-                              v-model="form.password" prepend-icon="lock" name="password"
-                              label="Password" id="password" type="password"></a-text-field>
+              <h2 class="error--text" v-if="userStore.loginError">
+                {{ userStore.loginError }}
+              </h2>
+              <v-form
+                ref="login"
+                v-model="validForm"
+                @submit.prevent="onSubmit()"
+              >
+                <a-text-field
+                  required
+                  color="primary"
+                  :rules="requiredRules"
+                  v-model="form.email"
+                  prepend-icon="person"
+                  name="login"
+                  label="Login"
+                  type="email"
+                ></a-text-field>
+                <a-text-field
+                  required
+                  color="primary"
+                  :rules="requiredRules"
+                  v-model="form.password"
+                  prepend-icon="lock"
+                  name="password"
+                  label="Password"
+                  id="password"
+                  type="password"
+                ></a-text-field>
                 <v-card-actions>
                   <router-link :to="'/forgotPassword'" title="Forgot Password">
                     Forgot Password
@@ -37,13 +56,11 @@
 <script setup>
 import constants from '@/helpers/constants'
 import axios from 'axios'
-import {getCurrentInstance, onMounted, ref} from 'vue'
+import { onMounted, ref } from 'vue'
 
 import { useUserStore } from '@/stores/UserStore.js'
-import {useRouter, useRoute} from "vue-router/composables"
+import { useRouter, useRoute } from 'vue-router/composables'
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 const router = useRouter()
 const route = useRoute()
 
@@ -62,47 +79,49 @@ onMounted(() => {
   userStore.loginError = ''
 })
 
-  const onSubmit = async() => {
-      loginLoading.value = true
-      if (login.value.validate()) {
-        try {
-          const params = {
-            username: form.value.email,
-            password: form.value.password
-          }
-          const {data} = await axios.post(`${constants.VUE_APP_BASE_API}/auth/login`, params)
-          const {token, details} = data
-          if (token) {
-            userStore.jwt = token
-            loginSuccess(details)
-          } else {
-            loginLoading.value = false
-            userStore.loginError = 'Invalid Username or Password.'
-          }
-        } catch (e) {
-          loginLoading.value = false
-          userStore.loginError = e.data
-
-          if(e?.status === 406) {
-            //this means the user tried to login with the company default password. redirect to the reset password screen
-              router.push({path: `/resetPassword`})
-          }
-
-        }
+const onSubmit = async () => {
+  loginLoading.value = true
+  if (login.value.validate()) {
+    try {
+      const params = {
+        username: form.value.email,
+        password: form.value.password
+      }
+      const { data } = await axios.post(
+        `${constants.VUE_APP_BASE_API}/auth/login`,
+        params
+      )
+      const { token, details } = data
+      if (token) {
+        userStore.jwt = token
+        loginSuccess(details)
       } else {
         loginLoading.value = false
+        userStore.loginError = 'Invalid Username or Password.'
       }
-    }
-    const loginSuccess = async(details) => {
-      await userStore.login(details)
+    } catch (e) {
+      loginLoading.value = false
+      userStore.loginError = e.data
 
-      //this code handles redirecting them back to the page they were trying to get to after they login
-      let rt = { name: 'home'}
-      if(route.query?.redirect) {
-        rt = { path: route.query?.redirect}
+      if (e?.status === 406) {
+        //this means the user tried to login with the company default password. redirect to the reset password screen
+        router.push({ path: `/resetPassword` })
       }
-      await router.push(rt)
     }
+  } else {
+    loginLoading.value = false
+  }
+}
+const loginSuccess = async (details) => {
+  await userStore.login(details)
+
+  //this code handles redirecting them back to the page they were trying to get to after they login
+  let rt = { name: 'home' }
+  if (route.query?.redirect) {
+    rt = { path: route.query?.redirect }
+  }
+  await router.push(rt)
+}
 </script>
 
 <style scoped lang="scss">

@@ -206,11 +206,12 @@ import cloneDeep from 'lodash.clonedeep'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {getCurrentInstance, toRefs, computed, ref, onMounted, watch, onBeforeUnmount} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import {storeToRefs} from "pinia";
+import emitter from '@/services/eventBus.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -350,25 +351,31 @@ watch(forceReloadKey, () => {
 })
 
 onMounted(() => {
-  // todo: figure this out
-  //this was in mounted() not created()
   if (loadLinked.value) {
+    //this has to be here instead of a normal emits because we want a child attachment table to emit to a different parent folder list
     //if in the linked section and a new record was linked, add it here
-    vueInstance.$on('newAttachmentLinked', data => {
-      let clone = cloneDeep(data)
-      clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
-      attachments.value.push(clone)
-    })
+    emitter.on('new-attachment-linked', handleAttachmentLinked)
     //if in the linked section and a linked attachment is archived, remove it
-    vueInstance.$on('attachmentDeleted', id => {
-      attachments.value = attachments.value.filter(a => a.id !== id)
-    })
+    emitter.on('attachment-deleted', handleAttachmentDeleted)
   }
 
   loadAllPageDetails();
 })
 
+onBeforeUnmount(() => {
+  emitter.off('new-attachment-linked', handleAttachmentLinked);
+  emitter.off('attachment-deleted', handleAttachmentDeleted)
+});
 
+const handleAttachmentDeleted = (id) => {
+  attachments.value = attachments.value.filter(a => a.id !== id)
+}
+
+const handleAttachmentLinked = (data) => {
+    let clone = cloneDeep(data)
+    clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
+    attachments.value.push(clone)
+}
 
 const closeCoversheet = (attachmentTypeId) => {
   showCoversheetModal.value = false
