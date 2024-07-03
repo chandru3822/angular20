@@ -36,7 +36,8 @@ begin
                           inner join brs.project_details pd
                                      on pd.project_id = ip.project_id
                           left join sunpower_roof_mapping srm on srm.lov_id = pd.roof_type
-                   where pd.archived is false),
+                   where pd.archived is false
+                     and ip._snapshot_error_message is null),
       attachments as (select p.project_id,
                              (select array_to_json(array [a.s3_key])
                               from flow.project_process_step_attachment ppsa
@@ -89,11 +90,9 @@ begin
                                 and ppsea.archived is false
                                 and pps.archived is false
                                 and pps.main is true
-                                and pps.process_step_id = 13
-                                and ppse.process_step_event_id = 3
+                                and pps.process_step_id = 168
                                 and a.archived is false
-                                and a.attachment_type_id = 950
-                                and lower(a.display_name) like '%approved%'
+                                and a.attachment_type_id = 332
                               order by ppsea.date_created desc
                               limit 1) as final_permit_links,
                              (select array_to_json(array [a.s3_key])

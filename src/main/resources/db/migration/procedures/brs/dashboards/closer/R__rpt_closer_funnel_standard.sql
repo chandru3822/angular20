@@ -137,6 +137,9 @@ BEGIN
                         select f.id,
                                f.name,
                                f.display_order,
+                               f.show_checked_in_column,
+                               dm.major_milestone,
+                               dm.inverse_trend,
                                f.funnel_type_id,
                                (select count(1)
                                 from project_data
@@ -172,13 +175,17 @@ BEGIN
                                null::bigint        as custom_date_range_trend_count,
                                null::bigint        as checked_in_custom_date_range_count
                         from brs.funnel f
+                                 inner join brs.dashboard_milestone dm on f.dashboard_milestone_id = dm.id
                         where f.archived is false
                           and f.funnel_type_id = 3
-                        group by f.id, f.name, f.display_order
+                        group by f.id, f.name, f.display_order, dm.inverse_trend, dm.major_milestone
                         union
                         select f.id,
                                f.name,
                                f.display_order,
+                               f.show_checked_in_column,
+                               dm.major_milestone,
+                               dm.inverse_trend,
                                f.funnel_type_id,
                                (select count(1)
                                 from project_outcome_data pod
@@ -239,24 +246,29 @@ BEGIN
                                                            pod.prioritized_closer_dashboard_checkin is not null
                                     else true end) as checked_in_custom_date_range_count
                         from brs.funnel f
+                                 inner join brs.dashboard_milestone dm on f.dashboard_milestone_id = dm.id
                         where f.archived is false
                           and f.funnel_type_id = 1
                           and f.id != 14
-                        group by f.id, f.name, f.display_order
+                        group by f.id, f.name, f.display_order, dm.inverse_trend, dm.major_milestone
                         union
                         select f.id,
                                f.name,
                                f.display_order,
+                               f.show_checked_in_column,
+                               dm.major_milestone,
+                               dm.inverse_trend,
                                f.funnel_type_id,
                                (select count(1)
                                 from total_appointmnents) as custom_date_range_count,
                                null::bigint               as custom_date_range_trend_count,
                                null::bigint               as checked_in_custom_date_range_count
                         from brs.funnel f
+                                 inner join brs.dashboard_milestone dm on f.dashboard_milestone_id = dm.id
                         where f.archived is false
                           and f.funnel_type_id = 1
                           and f.id = 14
-                        group by f.id, f.name, f.display_order
+                        group by f.id, f.name, f.display_order, dm.inverse_trend, dm.major_milestone
                         order by 3) as funnel_rows;
   else
     RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
@@ -445,6 +457,9 @@ BEGIN
                         select foo.id,
                                foo.name,
                                foo.display_order,
+                               foo.show_checked_in_column,
+                               foo.major_milestone,
+                               foo.inverse_trend,
                                foo.funnel_type_id,
                                foo.custom_date_range_count,
                                foo.custom_date_range_trend_count,
@@ -459,6 +474,9 @@ BEGIN
                         from (select f.id,
                                      f.name,
                                      f.display_order,
+                                     f.show_checked_in_column,
+                                     dm.major_milestone,
+                                     dm.inverse_trend,
                                      f.funnel_type_id,
                                      (select count(1)
                                       from project_data pd2
@@ -524,13 +542,17 @@ BEGIN
                                           else true end) as custom_date_range_trend_count,
                                      null::bigint        as checked_in_custom_date_range_count
                               from brs.funnel f
+                                       inner join brs.dashboard_milestone dm on f.dashboard_milestone_id = dm.id
                               where f.archived is false
                                 and f.funnel_type_id = 3
-                              group by f.id, f.name, f.display_order) as foo
+                              group by f.id, f.name, f.display_order, dm.inverse_trend, dm.major_milestone) as foo
                         union
                         select foo1.id,
                                foo1.name,
                                foo1.display_order,
+                               foo1.show_checked_in_column,
+                               foo1.major_milestone,
+                               foo1.inverse_trend,
                                foo1.funnel_type_id,
                                foo1.custom_date_range_count,
                                foo1.custom_date_range_trend_count,
@@ -544,6 +566,9 @@ BEGIN
                         from (select f.id,
                                      f.name,
                                      f.display_order,
+                                     f.show_checked_in_column,
+                                     dm.major_milestone,
+                                     dm.inverse_trend,
                                      f.funnel_type_id,
                                      (select count(1)
                                       from project_outcome_data pod
@@ -631,14 +656,18 @@ BEGIN
                                             pod2.prioritized_closer_dashboard_checkin is not null
                                           else true end) as checked_in_custom_date_range_count
                               from brs.funnel f
+                                       inner join brs.dashboard_milestone dm on f.dashboard_milestone_id = dm.id
                               where f.archived is false
                                 and f.funnel_type_id = 1
                                 and f.id != 14
-                              group by f.id, f.name, f.display_order) as foo1
+                              group by f.id, f.name, f.display_order, dm.inverse_trend, dm.major_milestone) as foo1
                         union
                         select f.id,
                                f.name,
                                f.display_order,
+                               f.show_checked_in_column,
+                               dm.major_milestone,
+                               dm.inverse_trend,
                                f.funnel_type_id,
                                (select count(1)
                                 from total_appointmnents)       as custom_date_range_count,
@@ -647,10 +676,11 @@ BEGIN
                                null::bigint                     as checked_in_custom_date_range_count,
                                null::bigint                     as trend_count
                         from brs.funnel f
+                                 inner join brs.dashboard_milestone dm on f.dashboard_milestone_id = dm.id
                         where f.archived is false
                           and f.funnel_type_id = 1
                           and f.id = 14
-                        group by f.id, f.name, f.display_order
+                        group by f.id, f.name, f.display_order, dm.inverse_trend, dm.major_milestone
                         order by 3) as funnel_rows;
   end if;
 
