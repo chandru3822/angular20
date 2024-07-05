@@ -119,11 +119,11 @@ public class MosaicService {
     String applicationId = respJson.getString("id");
     setMosaicApplicationId(projectId, proposalNbr, applicationId);
     shareApplication.put("loanType", "Solar");
-    String[] method = {"Link"};
-    shareApplication.put("methods", method);
+    String[] methodArray = {"Email","Link"};
+    shareApplication.put("methods", methodArray);
 
     // Get the link for the application via share
-    res = POST("/v2/applications/"+applicationId+"/share", IOUtils.toInputStream(shareApplication.toString(), (Charset) null));
+    res = POST("/v2/applications/" + applicationId + "/share", IOUtils.toInputStream(shareApplication.toString(), (Charset) null));
     if (res.getResponseCode() != 200) {
       StringBuilder errorMessage = new StringBuilder();
       errorMessage.append("%s\n".formatted("Error creating Mosaic loan application: "));
@@ -142,10 +142,16 @@ public class MosaicService {
     }
     respJson = res.getJSON();
     JSONArray sharesArray = respJson.getJSONArray("shares");
-    JSONObject share = sharesArray.getJSONObject(0);
-    String applicationUrl = share.getString("link");
 
-    return applicationUrl;
+    for (int i = 0; i < sharesArray.length(); i++) {
+      JSONObject share = sharesArray.getJSONObject(i);
+      String method = share.getString("method");
+      if (!method.equals("Link")) {
+        continue;
+      }
+      return share.getString("link");
+    }
+    throw new Exception("Error creating Mosaic loan application: Unable to generate application link");
   }
 
   public void sendLoanDocs(Long projectId, Long proposalNbr, InstallAgreementService.PropLogDetail propLogDetail) throws Exception {

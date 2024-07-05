@@ -190,8 +190,8 @@ public class InstallAgreementQuery {
   //language=PostgreSQL
   public final static String getMosaicApplicationId = """
     select plh.mosaic_application_id from brs.proposal_log_history plh
-    WHERE plh.project_id = :projectId and plh.proposal_nbr = :proposalNbr
-    limit 1;
+    WHERE plh.project_id = :projectId and plh.mosaic_application_id is not null
+    order by plh.date_modified desc limit 1;
     """;
 
   //language=PostgreSQL
