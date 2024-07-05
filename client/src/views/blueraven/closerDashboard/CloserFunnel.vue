@@ -1139,68 +1139,68 @@
           </template>
 
           <template #item.actualTotal2="{item, index}" class="milestone-col-td"
-                    v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0">
+                    v-if="fdcSecondDateRange != null && filteredFdcColumn2Values != null && filteredFdcColumn2Values.length > 0">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(fdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true)" class="fdc-data">
-                {{ fdcColumn2Values[index].custom_date_range_count ? fdcColumn2Values[index].custom_date_range_count : 0 }}
+                            <span @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true)" class="fdc-data">
+                {{ filteredFdcColumn2Values[index].custom_date_range_count ? filteredFdcColumn2Values[index].custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
               <template v-slot:activator="{ on }">
               <span v-on="viewFdcTrends?on:null" class="trends-container">
-                <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn2Values[index].inverse_trend, 'negative-percentage': fdcColumn2Values[index].inverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn2Values[index].inverse_trend, 'negative-trendline': fdcColumn2Values[index].inverse_trend}]">trending_up</v-icon></span>
-                <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn2Values[index].inverse_trend, 'negative-percentage': !fdcColumn2Values[index].inverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn2Values[index].inverse_trend, 'negative-trendline': !fdcColumn2Values[index].inverse_trend}]">trending_down</v-icon></span>
-                <span v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"
-                      class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count>0"
+                      :class="[{'positive-percentage': !filteredFdcColumn2Values[index].inverse_trend, 'negative-percentage': filteredFdcColumn2Values[index].inverse_trend}]">+{{ filteredFdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !filteredFdcColumn2Values[index].inverse_trend, 'negative-trendline': filteredFdcColumn2Values[index].inverse_trend}]">trending_up</v-icon></span>
+                <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count<0"
+                      :class="[{'positive-percentage': filteredFdcColumn2Values[index].inverse_trend, 'negative-percentage': !filteredFdcColumn2Values[index].inverse_trend}]">{{ filteredFdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': filteredFdcColumn2Values[index].inverse_trend, 'negative-trendline': !filteredFdcColumn2Values[index].inverse_trend}]">trending_down</v-icon></span>
+                <span v-if="viewFdcTrends && (filteredFdcColumn2Values[index].trend_count ===null || filteredFdcColumn2Values[index].trend_count===0)"
+                      class="neutral-percentage">{{ filteredFdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
                   class="neutral-trendline">trending_flat</v-icon></span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (filteredFdcColumn2Values[index].trend_count ===null || filteredFdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="fdcColumn2Values[index].checked_in_custom_date_range_count != null && fdcColumn2Values[index].show_checked_in_column" class="checked_in_container body-small">
+              <span v-if="filteredFdcColumn2Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn2Values[index].show_checked_in_column" class="checked_in_container body-small">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
-                {{fdcColumn2Values[index].checked_in_custom_date_range_count}}
+                {{filteredFdcColumn2Values[index].checked_in_custom_date_range_count}}
               </span>
             </span>
           </template>
           <template #item.actualTotal3="{item, index}" class="milestone-col-td"
-                    v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0">
+                    v-if="fdcThirdDateRange != null && filteredFdcColumn3Values != null && filteredFdcColumn3Values.length > 0">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(fdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true)" class="fdc-data">
-                {{ fdcColumn3Values[index].custom_date_range_count ? fdcColumn3Values[index].custom_date_range_count : 0 }}
+                            <span @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true)" class="fdc-data">
+                {{ filteredFdcColumn3Values[index].custom_date_range_count ? filteredFdcColumn3Values[index].custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
               <template v-slot:activator="{ on }">
               <span v-on="viewFdcTrends?on:null" class="trends-container">
-                <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn3Values[index].inverse_trend, 'negative-percentage': fdcColumn3Values[index].inverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn3Values[index].inverse_trend, 'negative-trendline': fdcColumn3Values[index].inverse_trend}]">trending_up</v-icon></span>
-                <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn3Values[index].inverse_trend, 'negative-percentage': !fdcColumn3Values[index].inverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn3Values[index].inverse_trend, 'negative-trendline': !fdcColumn3Values[index].inverse_trend}]">trending_down</v-icon></span>
-                <span v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"
-                      class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count>0"
+                      :class="[{'positive-percentage': !filteredFdcColumn3Values[index].inverse_trend, 'negative-percentage': filteredFdcColumn3Values[index].inverse_trend}]">+{{ filteredFdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': !filteredFdcColumn3Values[index].inverse_trend, 'negative-trendline': filteredFdcColumn3Values[index].inverse_trend}]">trending_up</v-icon></span>
+                <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count<0"
+                      :class="[{'positive-percentage': filteredFdcColumn3Values[index].inverse_trend, 'negative-percentage': !filteredFdcColumn3Values[index].inverse_trend}]">{{ filteredFdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
+                  :class="[{'positive-trendline': filteredFdcColumn3Values[index].inverse_trend, 'negative-trendline': !filteredFdcColumn3Values[index].inverse_trend}]">trending_down</v-icon></span>
+                <span v-if="viewFdcTrends && (filteredFdcColumn3Values[index].trend_count ===null || filteredFdcColumn3Values[index].trend_count===0)"
+                      class="neutral-percentage">{{ filteredFdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
                   class="neutral-trendline">trending_flat</v-icon></span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (filteredFdcColumn3Values[index].trend_count ===null || filteredFdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="fdcColumn3Values[index].checked_in_custom_date_range_count != null && fdcColumn3Values[index].show_checked_in_column" class="checked_in_container body-small">
+              <span v-if="filteredFdcColumn3Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn3Values[index].show_checked_in_column" class="checked_in_container body-small">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
-                {{fdcColumn3Values[index].checked_in_custom_date_range_count}}
+                {{filteredFdcColumn3Values[index].checked_in_custom_date_range_count}}
               </span>
             </span>
           </template>
@@ -1775,6 +1775,18 @@ const filteredFdcPipelineData = computed(() => {
     return apptsToFdcPipelineData.value?.filter(dv => dv.major_milestone)
   }
   else return apptsToFdcPipelineData.value
+})
+const filteredFdcColumn2Values = computed(() => {
+  if(viewOnlyMajorMilestones.value){
+    return fdcColumn2Values.value?.filter(dv => dv.major_milestone)
+  }
+  else return fdcColumn2Values.value
+})
+const filteredFdcColumn3Values = computed(() => {
+  if(viewOnlyMajorMilestones.value){
+    return fdcColumn3Values.value?.filter(dv => dv.major_milestone)
+  }
+  else return fdcColumn3Values.value
 })
 const funnelDrilldownHeaders = computed(() => {
   return [
@@ -3033,9 +3045,6 @@ const applyCustomDates = async()=> {
   }
 }
 const apptsToFdcPipelineLoad = async(column) => {
-  if(!initialPageLoad.value){
-    appStore.loading = true
-  }
   apptsToFdcPipelineLoaded.value = false
   apptsToFdcPipelineDataLoading.value = true
   let reps = []
@@ -3124,6 +3133,9 @@ const apptsToFdcPipelineLoad = async(column) => {
   }
 
   try {
+    if(!initialPageLoad.value){
+      appStore.loading = true
+    }
     await postRequest('/closerDashboard/funnel/' + viewSelect.value, requestBody, 'blueraven', []).then(res => {
       let dataTarget = orderBy(res.data, row => row.display_order);
       // apptsToFdcPipelineData.value = orderBy(res.data, row => row.display_order)
