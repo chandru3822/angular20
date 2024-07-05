@@ -3558,7 +3558,14 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
   if (pipelineName === 'apptsCreatedPipeline') {
     requestBody.sources = sourceIds
   } else {
-    requestBody.users = userIds
+    let reps = []
+    if(viewAllFilteredReps.value && repModel.value.length === 0){
+      filteredRepData.value.forEach(rep => reps.push(rep.user_position_id))
+    }
+    else {
+      repModel.value.forEach(rep => reps.push(rep.user_position_id))
+    }
+    requestBody.users = reps
     requestBody.isCheckedInColumn = isCheckedInColumn
     requestBody.appointmentTypeIds = appointmentTypeIds
   }
