@@ -657,18 +657,6 @@
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-lg">Rep</span>
                 </template>
-                <template v-if="repData?.length > 1" v-slot:prepend-item>
-<!--                  <v-list-item-->
-<!--                    @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">-->
-<!--                    <v-list-item-action class="mr-2">-->
-<!--                      <v-icon>{{ repSelectIcon }}</v-icon>-->
-<!--                    </v-list-item-action>-->
-<!--                    <v-list-item-content>-->
-<!--                      <v-list-item-title>Select All</v-list-item-title>-->
-<!--                    </v-list-item-content>-->
-<!--                  </v-list-item>-->
-                  <v-divider class="mt-2"></v-divider>
-                </template>
                 <template v-slot:item="data">
                   <v-list-item-action class="mr-2" >
                     <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
