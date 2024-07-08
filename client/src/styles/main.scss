@@ -817,6 +817,9 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   border-left-color: #808000 !important;
 }
 
+.db-change-log-menu {
+  overscroll-behavior: contain;
+}
 .db-change-log-menu.v-menu__content::-webkit-scrollbar {
-  display: none !important;
+  display: none;
 }
