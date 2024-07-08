@@ -98,6 +98,7 @@ public class BlueravenProposalService {
   public Optional<ProposalProjectDetails> getProposalProjectById(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
+    //note: closerAppointmentStart was hacked/manually adjusted to return closerAppointmentStart - 90 mins so that both mobile and web, who were both already subtracting 30 mins, would change to 2 hours without requiring a mobile release
     return sqlCache.getBySql(ProposalQuery.getProjectById, params, ProposalProjectDetails.class);
   }
 
