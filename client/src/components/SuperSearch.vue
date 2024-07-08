@@ -29,7 +29,9 @@
 <script setup>
 import {ref, onMounted, defineProps, getCurrentInstance, computed, reactive} from "vue";
 import debounce from "lodash.debounce";
-import {useRoute} from "vue-router/composables";
+import {useStickyStore} from "@/stores/StickyStore.js";
+
+const stickyStore = useStickyStore()
 
 const emit = defineEmits(['updateQuery'])
 const filterSelection = ref('')
@@ -68,6 +70,7 @@ const syncSearchBar = () => {
     searchString.value = ''
     filterSelection.value = ''
   }
+  stickyStore.projectFilter = filterSelection.value
   vueInstance.$nextTick(() => vueInstance.$refs.focusSearchBar.focus())
 }
 
@@ -110,17 +113,13 @@ const createSearchRegex = () => {
   reString = reString.concat(")).*")
   regexString.value = reString
 }
-const route = useRoute()
-const useSavedFilters = computed(() => {
-  return route.params.useSavedFilters
-})
 
 onMounted(() => {
-  if(useSavedFilters.value === 'true') {
-    searchString.value = localStorage.getItem('projectSearch') || ''
-    //the purpose of this is solely to get the text field to reflect the search value when we use saved filters on the projects page
+  createSearchRegex()
+  filterSelection.value = stickyStore?.projectFilter
+  if (filterSelection.value !== '') {
+    searchString.value = props.filterOptions.find(f => filterSelection.value === f.value).text.concat(': ')
   }
-    createSearchRegex()
 })
 
 </script>
