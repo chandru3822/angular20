@@ -67,7 +67,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             company_process_id  bigint,
             virtual_sales_price_adjustment numeric,
 	        system_size_ac numeric,
-            panel_model text
+            panel_model text,
+            qualifies_for_swr  boolean
           )
 
 AS
@@ -145,7 +146,8 @@ BEGIN
            p.company_process_id,
            pcfv24.numeric_value,
 	       (ppscfv46.json_value->>'system_size_ac')::numeric as system_size_ac,
-         (ppscfv47.json_value ->'arrays'->0->'module'->>'name')::text as panel_model
+         (ppscfv47.json_value ->'arrays'->0->'module'->>'name')::text as panel_model,
+           pcfv26.boolean_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -198,6 +200,8 @@ BEGIN
                                                                pcfv23.custom_field_group_assignment_id = 490
            left join brs.proposal_custom_field_value pcfv25 on prop.id = pcfv25.proposal_id and
                                                                pcfv25.custom_field_group_assignment_id = 581
+           left join brs.proposal_custom_field_value pcfv26 on prop.id = pcfv26.proposal_id and
+                                                               pcfv26.custom_field_group_assignment_id = 596
            left join flow.project_process_step_custom_field_value ppscfv30
                      on pps.id = ppscfv30.project_process_step_id and
                         ppscfv30.custom_field_group_assignment_id = 22573
