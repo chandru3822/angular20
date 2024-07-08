@@ -86,6 +86,7 @@
               :smartlist="report"
               :show-text="true"
               :disabled="!report?.id"
+              timezone="UTC"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -418,6 +419,10 @@ watch(() => route.params?.reportId, async () => {
     isEditing.value = true
     refreshReport()
   }
+})
+
+watch (() => userStore.timezone.value, () => {
+  refreshReport()
 })
 
 const refreshReport = async (forceUpdate = false) => {
