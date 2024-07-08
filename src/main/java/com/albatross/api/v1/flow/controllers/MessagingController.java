@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.model.smsTeam.SmsConversation;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.services.MessageTemplateService;
 import com.albatross.api.v1.flow.services.MessagingService;
@@ -97,7 +98,7 @@ public class MessagingController {
   }
 
   @PostMapping(value = "/conversations")
-  public Page<ConversationMessageProperties> getConversations(
+  public Page<SmsConversation> getConversations(
       @RequestParam(required = false, defaultValue = "") String query,
       @RequestBody FilterData filterData,
       Pageable pageable) {
@@ -106,22 +107,22 @@ public class MessagingController {
         query,
         filterData.getOwnerUserIds(),
         filterData.getSmsTeamIds(),
-        filterData.getNotifProjectIds(),
+        filterData.getNotifConversationIds(),
         filterData.getNotifUserIds(),
-        filterData.getShowProjects(),
-        filterData.getShowUsers(),
+        filterData.getShowExternal(),
+        filterData.getShowInternal(),
         filterData.getShowInbox(),
         pageable);
   }
 
   @GetMapping(value = "/project/{projectId}")
-  public ConversationMessageProperties getProject(
+  public SmsConversation getProject(
       @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
     return messagingService.getProject(projectId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/user/{userId}")
-  public ConversationMessageProperties getUser(
+  public SmsConversation getUser(
     @PathVariable Long userId, @AuthenticationPrincipal UserAccountDetails details) {
     return messagingService.getUser(userId, details.getTrueUserId());
   }
@@ -180,10 +181,10 @@ public class MessagingController {
   public static class FilterData {
     private Set<Long> ownerUserIds;
     private Set<Long> smsTeamIds;
-    private Set<Long> notifProjectIds;
+    private Set<Long> notifConversationIds;
     private Set<Long> notifUserIds;
-    private Boolean showProjects;
-    private Boolean showUsers;
+    private Boolean showExternal;
+    private Boolean showInternal;
     private Boolean showInbox;
   }
 

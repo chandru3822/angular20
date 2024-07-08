@@ -2,8 +2,8 @@
   <CollapsableRightPanel
     :view-options="[
       { icon: 'mdi-forum-outline', visible: showSmsTab },
-      { icon: 'mdi-text-long', visible: true },
-      { icon: 'mdi-folder-outline', visible: true }
+      { icon: 'mdi-text-long', visible: showNotesTab },
+      { icon: 'mdi-folder-outline', visible: showAttachmentsTab }
     ]"
     :selected-option="viewId"
     :showHeaderSecondLine="viewId === 0"
@@ -196,7 +196,7 @@
       :object-type-id="objectTypeId"
       :project-id="projectId"
       :org-id="orgId"
-      v-show="viewId === 1"
+      v-if="viewId === 1"
       @scrollToTop="scrollToTop"
     />
     <AttachmentsFolderList
@@ -271,6 +271,14 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  showNotesTab: {
+    type: Boolean,
+    default: true
+  },
+  showAttachmentsTab: {
+    type: Boolean,
+    default: true
+  },
   contactId: Number,
   userIdIn: Number,
   orgId: Number,
@@ -284,6 +292,8 @@ const props = defineProps({
 })
 const {
   showSmsTab,
+  showNotesTab,
+  showAttachmentsTab,
   contactId,
   userIdIn,
   orgId,
@@ -503,6 +513,7 @@ const fetchTeamsForUser = async () => {
   if (showSmsTab.value) {
     try {
       conversationIsLoading.value = true
+      //todo - randa not hit anymore
       const { data, status } = await getRequest(
         `/smsTeam/getTeamsForUser`,
         null,

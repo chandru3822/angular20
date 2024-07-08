@@ -236,6 +236,7 @@ const openSendMessageDialogue = (owner) => {
 }
 const fetchTeamsForUser = async () => {
   try {
+    //todo - randa NOT hit by Inbox
     const {data, status} = await getRequest(`/smsTeam/getTeamsForUser`)
     teamsAssociatedToUser.value = data
     appStore.loading = false

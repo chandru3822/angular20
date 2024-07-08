@@ -17,10 +17,10 @@ BEGIN
           modified_by_id = coalesce(new.message_sent_by_user_id, new.user_id);
 
   elsif new.recipient_type_id = 2 then -- project
-    insert into flow.sms_cache (project_id, message_text, outbound_message)
-    values (new.project_id, new.message, true)
-    on conflict (project_id) do update
-      set message_text = new.message,
+    insert into flow.project_conversation (phone_number, last_message_text, outbound_message)
+    values (phone_number, new.message, true)
+    on conflict (phone_number) do update
+      set last_message_text = new.message,
           outbound_message = excluded.outbound_message,
           date_modified = now();
   end if;
@@ -65,14 +65,8 @@ BEGIN
 
   elsif new.to_phone = '+18014480212' then -- project
 
-    select p.id
-    into v_project_id
-    from flow.contact c
-           inner join flow.project p on p.contact_id = c.id
-    where c.search_phones = new.search_from_phone;
-
-    insert into flow.sms_cache (project_id, message_text, outbound_message)
-    values (v_project_id,
+    insert into flow.project_conversation (phone_number, last_message_text, outbound_message)
+    values (new.search_from_phone,
             case
               when length(new.body) > 0
                 then new.body
@@ -80,8 +74,8 @@ BEGIN
                 then 'Customer sent Image'
               else '' end,
             false)
-    on conflict (project_id) do update
-      set message_text     = excluded.message_text,
+    on conflict (phone_number) do update
+      set last_message_text     = excluded.last_message_text,
           outbound_message = excluded.outbound_message,
           date_modified    = now();
   end if;

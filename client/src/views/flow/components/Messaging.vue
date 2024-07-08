@@ -130,7 +130,6 @@ onMounted(() => {
   } else if (userId.value) {
     fetchUserData()
   }
-  fetchSmsData()
   toggleChatBox()
 })
 
@@ -471,7 +470,7 @@ const fetchProjectData = async () => {
       templateTeams.value.push(team.id)
     }
   }
-  await getTemplates()
+  // await getTemplates()
 }
 const fetchUserData = async () => {
   await fetchSmsData()
@@ -481,7 +480,7 @@ const fetchUserData = async () => {
       templateTeams.value.push(team.id)
     }
   }
-  await getTemplates()
+  // await getTemplates()
 }
 </script>
 

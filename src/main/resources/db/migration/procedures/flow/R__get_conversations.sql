@@ -1,0 +1,85 @@
+drop function if exists flow.get_conversations();
+  CREATE OR REPLACE FUNCTION flow.get_conversations(p_query text,
+                                                    p_sms_team_ids bigint[],
+                                                    p_owner_ids bigint[],
+                                                    p_notif_conversation_ids bigint[],
+                                                    p_unassigned boolean,
+                                                    p_show_inbox boolean,
+                                                    p_show_internal boolean, --users
+                                                    p_show_external boolean, --projects
+                                                    p_limit integer,
+                                                    p_offset integer)
+      RETURNS TABLE
+              (
+              id                  bigint,
+              last_sent timestamp,
+              closed boolean,
+              phone_number text,
+              last_message_text text,
+              outbound_message boolean,
+              projects json,
+              conversation_owners json
+
+              )
+  AS
+$$
+DECLARE
+  v_conversations     json[];
+BEGIN
+    --if showExternal then get the list of external conversations
+    --if showInternal then get the list of internal conversations
+    --combine both lists
+    --get the non-paginated total count of rows from the combined list
+
+    explain analyse
+    select pc.id,
+           pc.last_sent,
+           pc.closed,
+           pc.phone_number,
+           pc.last_message_text,
+           pc.outbound_message,
+           count(*) over() as total_rows,
+           (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
+                      FROM (
+                               select p.id as "projectId",
+                                      c.id as "contactId",
+                                      p.project_name as "projectName",
+                                      s.abbreviation as state
+                               from flow.project p
+                                        inner join flow.contact c on p.contact_id = c.id
+                                        left join flow.company_state cs on p.company_state_id = cs.id
+                                        left join flow.state s ON s.id = cs.state_id
+                               where c.archived is false
+                                 and p.archived is false
+                                 and c.search_phones = pc.phone_number
+                           ) st), '[]')) as "projects",
+           (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
+                      FROM (select st.id as "smsTeamId",
+                                   st.team_name                                              as "teamName",
+                                   pco.user_id as "userId",
+                                   u.first_name as "userFirstName",
+                                   u.last_name as "userLastName"
+                            from flow.external_conversation_owner pco
+                                     inner join flow.sms_team st on pco.sms_team_id = st.id
+                                     left join flow.user u on pco.user_id = u.id
+                            where pco.external_conversation_id = pc.id
+                              and pco.archived is false) st), '[]')) as "conversationOwners"
+    from flow.external_conversation pc
+             left join flow.external_conversation_owner pco on pc.id = pco.external_conversation_id
+    where pc.outbound_message = not(:showInbox)
+      and (pco.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
+           (case when :unassigned is true then pco.user_id is null
+                 else pco.user_id = any (array [ :ownerIds ]::bigint[]) end))
+      and case
+              when array_length(array [ :notifConversationIds ]::bigint[], 1) > 0 then
+                  (pc.id = any (array [ :notifConversationIds ]::bigint[]))
+              else true end
+    order by pc.last_sent desc
+    limit :limit
+    offset :offset;
+
+END;
+$$
+  LANGUAGE plpgsql
+  VOLATILE
+  COST 100;

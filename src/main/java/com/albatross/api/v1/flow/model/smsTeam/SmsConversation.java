@@ -1,9 +1,7 @@
-package com.albatross.api.v1.flow.model;
+package com.albatross.api.v1.flow.model.smsTeam;
 
-import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
 import com.albatross.api.v1.flow.model.smsTeam.SmsOwner;
 import com.albatross.api.v1.flow.model.smsTeam.SmsProject;
-import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,10 +16,10 @@ import java.util.List;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProjectConversation {
+public class SmsConversation {
 
-  private Long id, userId;
-  private String lastMessageText;
+  private Long internalConversationId, externalConversationId, userId;
+  private String lastMessageText, fullName;
   private Date lastSent;
   private boolean closed, showAssignedToMeButton = false;
   private List<SmsOwner> conversationOwners;

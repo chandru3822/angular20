@@ -141,7 +141,7 @@ const addTeamDetails = async () => {
 const cancel = () => {
   teamToSave.value = ''
   ownersToSave.value = []
-  emit('closeTeamAdded')
+  emit('closeTeamAdded', true)
 }
 const isTeamAlreadyAdded = (team) => {
   let teamAlreadyAdded = false

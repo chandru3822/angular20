@@ -141,7 +141,7 @@
             <span class="albatross-body-3">Add Member</span>
           </v-tooltip>
         </template>
-        <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
+        <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded"></AddTeamDropdown>
       </v-menu>
   </v-chip-group>
 </template>
@@ -209,10 +209,13 @@ onMounted(() => {
   }
 })
 
-const teamAdded = () => {
+const teamAdded = (cancel) => {
   teamsMenuOpen.value = false
   unassignedTeamMenuOpen.value = false
-  emit('updateOwner')
+  // don't update anything if they hit cancel
+  if(!cancel) {
+    emit('updateOwner')
+  }
 }
 const close =  (user) => {
   userToRemove.value = user

@@ -418,7 +418,7 @@ const fileUploaded = (attachment, error) => {
 const loadAllPageDetails = async() => {
   //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
   let params = {}
-  if ((!objectTypeId.value || objectTypeId.value === 1) && !allowUpload.value && !loadLinked.value) {
+  if ((!objectTypeId.value || objectTypeId.value === 1) && !allowUpload.value && !loadLinked.value && projectId.value) {
     typePath.value = `/combined/project`
     attachmentPath.value = `/project/${projectId.value}/combinedAttachments`
     params.ppsEventId = projectProcessStepEventId.value
@@ -454,6 +454,7 @@ const loadAllPageDetails = async() => {
   //   params.ppsEventId = projectProcessStepEventId.value
   //   params.ppsId = projectProcessStepId.value
   // }
+  console.log('randalogger',attachmentPath.value)
 
   if (typePath.value && attachmentPath.value) {
     loadingDetails.value = true

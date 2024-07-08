@@ -193,7 +193,7 @@
 <script setup>
 import {getRequest, getRequestWithParams, putRequest, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 
-import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
+import {ref, computed, onMounted, getCurrentInstance, watch, toRefs} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
@@ -213,6 +213,9 @@ const props = defineProps({
   ownerUserId: Number,
   isInbox: Boolean
 })
+
+const { showNewMessageDialog } = toRefs(props)
+
 
 const selectedProjectIds = ref([])
 const availableProjects = ref([])
@@ -239,8 +242,8 @@ const messageSuccess = ref(false)
 const conversationIsLoading = ref(false)
 
 onMounted(() => {
-  getUsers();
-  fetchTeamsForUser();
+    getUsers();
+    fetchTeamsForUser();
 })
 const attachmentsText = computed(() => {
   if (uploadedFiles.value.length === 1) {
@@ -469,6 +472,7 @@ const getProjects = async (val) => {
 }
 const getUsers = async () => {
   try {
+    console.log('hitme')
     const { data } = await getRequest(`/messaging/availableUsers`)
     availableUsers.value = data
 
