@@ -289,7 +289,7 @@ declare
   v_state_id                                            bigint;
   v_utility_company_id                                  bigint;
   v_total_loan_amount                                   numeric;
-  v_total_amount_to_be_financed     numeric;
+  v_total_amount_to_be_financed                         numeric;
   v_down_payment_amount                                 numeric;
   v_total_system_cost                                   numeric;
   v_panel_degradation_factor                            numeric;
@@ -385,7 +385,7 @@ declare
   v_financier                                           varchar;
   v_financier_id                                        bigint;
   v_cash_price_storage                                  numeric;
-  v_storage_cost_with_fees                                  numeric;
+  v_storage_cost_with_fees                              numeric;
   v_main_panel_upgrade_cost                             numeric;
   v_structural_upgrade_cost                             numeric;
   v_reroof_cost                                         numeric;
@@ -516,7 +516,13 @@ declare
   v_panel_model                                         text;
   v_financed_pv_price_per_watt_to_customer              numeric;
   v_first_year_avoided_bill                             numeric;
-v_max_base_price_per_watt  numeric;
+  v_max_base_price_per_watt                             numeric;
+  v_maximum_funding_amount_discount                     numeric;
+  v_minimum_funding_amount_discount                     numeric;
+  v_redline_funding_amount_discount                     numeric;
+  v_virtual_sales_price_amount_discount                 numeric;
+  v_qualifies_for_swr                                   boolean;
+  v_kwh_rate_discount                                   numeric;
 
 BEGIN
   select proposal_id,
@@ -831,7 +837,31 @@ BEGIN
     v_virtual_sales_base_price,v_max_base_price_per_watt
   from brs.get_proposal_pricing(v_version_id, v_utility_company_id);
 
+  select kwh_rate_discount,
+         maximum_funding_amount_discount,
+         minimum_funding_amount_discount,
+         redline_funding_amount_discount,
+         virtual_sales_price_amount_discount,
+         qualifies_for_swr
+  into
+    v_kwh_rate_discount,
+    v_maximum_funding_amount_discount,
+    v_minimum_funding_amount_discount,
+    v_redline_funding_amount_discount,
+    v_virtual_sales_price_amount_discount,
+    v_qualifies_for_swr
+  from brs.get_proposal_discounts(v_version_id, v_utility_company_id, true::boolean);
 
+  v_current_estimated_cost_per_kwh = case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true  then (v_current_estimated_cost_per_kwh - coalesce(v_kwh_rate_discount,0)) else v_current_estimated_cost_per_kwh end;
+
+  --raise notice 'v_kwh_rate_discount = %',v_kwh_rate_discount;
+  --raise notice 'v_maximum_funding_amount_discount = %',v_maximum_funding_amount_discount;
+  --raise notice 'v_minimum_funding_amount_discount = %',v_minimum_funding_amount_discount;
+  --raise notice 'v_redline_funding_amount_discount = %',v_redline_funding_amount_discount;
+  --raise notice 'v_virtual_sales_price_amount_discount = %',v_virtual_sales_price_amount_discount;
+  --raise notice 'v_qualifies_for_swr = %',v_qualifies_for_swr;
+
+  --raise notice 'v_current_estimated_cost_per_kwh = %',v_current_estimated_cost_per_kwh;
   --raise notice 'v_instant_use_assumption = %',v_instant_use_assumption;
   --raise notice 'v_net_metring_rate = %',v_net_metring_rate;
   --raise notice 'production_factor_east_west = %',v_production_factor_east_west;
@@ -965,7 +995,10 @@ BEGIN
   v_production_factor = v_first_year_production_estimate / (v_system_size * 1000);
   --raise notice 'v_production_factor = %',v_production_factor;
 
-  v_funding_range = v_maximum_funding_amount_per_watt - v_minimum_funding_amount_per_watt;
+  v_funding_range = case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true then
+    (v_maximum_funding_amount_per_watt - coalesce(v_maximum_funding_amount_discount,0)) else
+      v_maximum_funding_amount_per_watt end - case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true then
+        (v_minimum_funding_amount_per_watt - coalesce(v_minimum_funding_amount_discount,0)) else v_minimum_funding_amount_per_watt end ;
 
   --raise notice 'v_funding_range = %',v_funding_range;
   v_production_factor_range = v_production_factor_south - v_production_factor_east_west;
@@ -1007,7 +1040,7 @@ BEGIN
           case when  v_commission_strategy_id = 24102 and v_dealer = 2291 and v_version_id > 137 then
                  coalesce(v_dealer_redline_price, 0)
           else
-            coalesce(v_red_line_funding_amount, 0) end + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
+            case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true then coalesce(v_red_line_funding_amount, 0) - coalesce(v_redline_funding_amount_discount, 0) else coalesce(v_red_line_funding_amount, 0) end end + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
     --raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
     --raise notice 'v_redline_markup = %',v_redline_markup;
     --raise notice 'v_lead_source_discount = %',v_lead_source_discount;
@@ -1015,10 +1048,10 @@ BEGIN
     --raise notice 'v_red_line_funding_amount = %',v_red_line_funding_amount;
   elsif v_virtual_sales_price_adjustment is not null and v_virtual_sales_base_price is not null and
         v_commission_strategy_id = 24103 then
-    v_adjusted_price_per_watt  = v_virtual_sales_base_price + v_virtual_sales_price_adjustment;
+    v_adjusted_price_per_watt  = v_virtual_sales_base_price + case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true then (v_virtual_sales_price_adjustment - coalesce(v_virtual_sales_price_amount_discount,0)) else v_virtual_sales_price_adjustment end;
   elsif v_commission_strategy_id is not null and v_commission_strategy_id not in (24103,24102,24443)  then
     v_adjusted_price_per_watt =
-        v_maximum_funding_amount_per_watt +
+      case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true then (v_maximum_funding_amount_per_watt - coalesce(v_maximum_funding_amount_discount,0)) else v_maximum_funding_amount_per_watt end +
         v_max_price_adjustment;
   end if;
   --raise notice 'v_virtual_sales_price_adjustment = %',v_virtual_sales_price_adjustment;
@@ -1872,7 +1905,7 @@ BEGIN
     end if;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 and v_state_id != 47 then
     v_federal_tax_incentive_amount =
-      (v_total_loan_amount + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0)+ case when v_version_id > 110 then coalesce(v_above_line_rebate,0) else 0::numeric end) * v_federal_tax_incentive_rate;
+      (v_total_loan_amount  + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0)+ case when v_version_id > 110 then coalesce(v_above_line_rebate,0) - coalesce(v_eto_rebate_amount,0) else 0::numeric end) * v_federal_tax_incentive_rate;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 459 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate;
   end if;
