@@ -369,7 +369,6 @@ import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from '@/views/blueraven/settings/proposalDesigner/store.js'
 import { storeToRefs } from 'pinia'
 import { buildContext, exec } from '@/views/blueraven/proposals/exec.js'
-import { vIntersectionObserver } from '@vueuse/components'
 
 const { VITE_HIDE_PROPOSAL } = import.meta.env
 
