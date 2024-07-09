@@ -208,7 +208,7 @@
                 Proposal <span>#{{ proposal.proposalNbr }}</span>
               </label>
               <v-spacer />
-              <div class="prop-button-group" v-if="canEdit && !proposal.locked">
+              <div class="prop-button-group" v-if="canEdit">
                 <a-btn
                   v-if="canEdit && !proposal.locked"
                   variant="text"
