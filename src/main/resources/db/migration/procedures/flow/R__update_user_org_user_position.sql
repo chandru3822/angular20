@@ -55,7 +55,7 @@ BEGIN
                   left join flow.position p on p.id = up.position_id
                   left join flow.org o on o.id = up.org_id and o.company_id = p.company_id
                   left join flow.company_state cs on cs.id = o.company_state_id
-                  left join flow.user_org_hierarchy(o.id) org_hierarchy on true
+                  cross join flow.user_org_hierarchy(o.id) org_hierarchy
          where u.id = any (p_user_ids)
             and up.archived is false);
 
