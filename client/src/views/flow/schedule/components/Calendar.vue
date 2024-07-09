@@ -530,8 +530,8 @@ const sortedOrgs = computed(() => {
 })
 //users
 const sortedUsers = computed(() => {
-  const sUsers = users.value.filter(user => selectedUsers.value.includes(user));
-  const usUsers = users.value.filter(user => !selectedUsers.value.includes(user));
+  const sUsers = users.value?.length > 0 ? users.value?.filter(user => selectedUsers.value?.includes(user)) : [];
+  const usUsers = users.value?.length > 0 ? users.value?.filter(user => !selectedUsers.value?.includes(user)) : [];
   return sUsers.concat(usUsers)
 })
 

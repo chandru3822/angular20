@@ -243,21 +243,21 @@ onMounted(() => {
   fetchTeamsForUser();
 })
 const attachmentsText = computed(() => {
-  if (uploadedFiles.value.length === 1) {
+  if (uploadedFiles.value?.length === 1) {
     return uploadedFiles.value[0][0].name
   }
-  else if (uploadedFiles.value.length > 1) {
-    return uploadedFiles.value.length + ' files'
+  else if (uploadedFiles.value?.length > 1) {
+    return uploadedFiles.value?.length + ' files'
   }
 })
 const sortedProjects = computed(() => {
-  const selectedProjects = availableProjects.value.filter(project => selectedProjectIds.value.includes(project.id));
-  const unselectedProjects = availableProjects.value.filter(project => !selectedProjectIds.value.includes(project.id));
+  const selectedProjects = availableProjects.value?.length > 0 ? availableProjects.value.filter(project => selectedProjectIds.value?.includes(project.id)) : []
+  const unselectedProjects = availableProjects.value?.length > 0 ? availableProjects.value.filter(project => !selectedProjectIds.value?.includes(project.id)) : []
   return selectedProjects.concat(unselectedProjects);
 })
 const sortedUsers = computed(() => {
-  const selectedUsers = availableUsers.value.filter(user => selectedUserIds.value.includes(user.userId));
-  const unselectedUsers = availableUsers.value.filter(user => !selectedUserIds.value.includes(user.userId));
+  const selectedUsers = availableUsers.value?.length > 0 ? availableUsers.value?.filter(user => selectedUserIds.value?.includes(user.userId)) : []
+  const unselectedUsers = availableUsers.value?.length > 0 ? availableUsers.value?.filter(user => !selectedUserIds.value?.includes(user.userId)) : []
   return selectedUsers.concat(unselectedUsers);
 })
 

@@ -1,4 +1,4 @@
-import { getRequest } from '@/helpers/helpers'
+import { getRequest, getRequestWithParams } from '@/helpers/helpers'
 
 export async function getOrgTypes() {
   return await getRequest(`/orgType`)
@@ -18,4 +18,9 @@ export async function getOrgFilters() {
 
 export async function getOrgLevels() {
   return await getRequest(`/orgType/levels`)
+}
+
+export async function getAvailableSalesOrgs(positionId, orgId) {
+  let params = { positionId, orgId }
+  return await getRequestWithParams(`/userPosition/availableSalesOrgs`, {params})
 }

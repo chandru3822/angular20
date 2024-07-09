@@ -14,7 +14,7 @@
         <a-btn
             color="primary "
             @click="validate"
-            :disabled="loadingUserInsertFields || (newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)"
+            :disabled="disableSave || loadingUserInsertFields || (newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)"
             text="Save"
         ></a-btn>
       </v-card-title>
@@ -92,18 +92,19 @@
                               item-title="position"
                               item-value="id"
                               attach
-                              @input="populateHierarchy(newPosition, true)"/>
-              <div v-if="newPositionHierarchyPopulated">
+                              @input="[newPosition.orgId = null, populateHierarchy(newPosition, true), getSalesOrgs(true)]"/>
+              <div v-if="newPositionHierarchyPopulated"  :key="keyGarbageAgain">
                 <div v-for="(f, index) in filters" :key="index">
                   <a-autocomplete
                       v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
-                      v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
+                      v-model="newPosition.orgId"
                       :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
                       :label="f.levelName"
                       :rules="requiredRules"
                       item-value="id"
                       item-title="orgName"
                       autocomplete="off"
+                      @change="[keyGarbageAgain++, getSalesOrgs(true)]"
                       type="search"
                       attach
                   >
@@ -116,6 +117,15 @@
                   </a-autocomplete>
                 </div>
               </div>
+              <a-autocomplete v-if="salesOrgs?.length > 0"
+                              v-model="newPosition.salesOrgId"
+                              :items="salesOrgs"
+                              :rules="requiredRules"
+                              label="Sales Org"
+                              item-value="id"
+                              item-title="orgName"
+              >
+              </a-autocomplete>
               <a-btn
                   color="primary"
                   class="mr-2"
@@ -143,7 +153,7 @@ import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import {getUserStatusTypes} from '@/services/userService'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
 import keyBy from 'lodash.keyby'
-import {getOrgFilters} from '@/services/orgService'
+import {getOrgFilters, getAvailableSalesOrgs} from '@/services/orgService'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
@@ -162,6 +172,9 @@ const user = ref({})
 const states = ref([])
 const countries = ref([])
 const dirtyCfvs = ref([])
+const disableSave = ref(false)
+const salesOrgs = ref([])
+const keyGarbageAgain = ref(0)
 const loadingUserInsertFields = ref(true)
 const customFieldGroups = ref([])
 const userStatusTypes = ref([])
@@ -200,6 +213,36 @@ const validate = () => {
     saveUser()
   }
 }
+
+const getSalesOrgs = async (isNew) => {
+  disableSave.value = true
+  salesOrgs.value = []
+  newPosition.value.salesOrgId = null
+
+  if(isNew && newPosition.value.positionId && newPosition.value.orgId) {
+    try {
+      console.log('positionId', newPosition.value.positionId)
+      console.log('orgId', newPosition.value.orgId)
+      let params = {
+        positionId: newPosition.value.positionId,
+        orgId: newPosition.value.orgId
+      }
+      const { data, status } = await getAvailableSalesOrgs(newPosition.value.positionId, newPosition.value.orgId)
+      if( data?.length > 0) {
+        salesOrgs.value = data
+      }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
+    } finally {
+      disableSave.value = false
+    }
+  } else {
+    salesOrgs.value = []
+    disableSave.value = false
+  }
+}
+
 const getCustomFieldGroups = async() => {
   loadingUserInsertFields.value = true
   appStore.loading = true
@@ -364,7 +407,6 @@ const savePosition = async(userId) => {
     let params = {
       ...newPosition.value,
       userId: userId,
-      orgId: newPosition.value?.hierarchy[0]?.orgId,
       primaryFlag: true
     }
 
