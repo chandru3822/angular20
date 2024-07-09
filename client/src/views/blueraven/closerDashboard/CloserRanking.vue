@@ -242,7 +242,7 @@
                     <span v-if="getDropdownById(closerOfficeDateRange)?.name === 'CUSTOM' && officeCustom.name != null" class="selected-option body-small">
                             {{officeCustom.name}}</span>
                     <span v-else-if="getDropdownById(closerOfficeDateRange)?.name === 'PERIOD'" class="selected-option body-small">
-                    {{ getDropdownById(closerOfficeDateRange).periodList[roundRobinPeriod].shortLabel}}
+                    {{ getDropdownById(closerOfficeDateRange).periodList[closerOfficePeriod].shortLabel}}
                     </span>
                     <span v-else class="selected-option body-small">
                     {{ getDropdownById(closerOfficeDateRange)?.friendlyName}}
@@ -786,8 +786,8 @@ const loadRankingTables = async(selectedTable) => {
   let startDate = moment(getDropdownById(closerOfficeDateRange.value).startDate).format('YYYY-MM-DD')
   let endDate = moment(getDropdownById(closerOfficeDateRange.value).endDate).format('YYYY-MM-DD')
   if(getDropdownById(closerOfficeDateRange.value).name === 'PERIOD'){
-    startDate = getDropdownById(closerOfficeDateRange.value).periodList[officePeriod.value].startDate
-    endDate = getDropdownById(closerOfficeDateRange.value).periodList[officePeriod.value].endDate
+    startDate = getDropdownById(closerOfficeDateRange.value).periodList[closerOfficePeriod.value].startDate
+    endDate = getDropdownById(closerOfficeDateRange.value).periodList[closerOfficePeriod.value].endDate
   }
   else if(getDropdownById(closerOfficeDateRange.value).name === 'CUSTOM'){
     startDate = officeCustom.value.startDate.format('MM/DD/YY')
@@ -817,10 +817,13 @@ const loadRankingTables = async(selectedTable) => {
     }
 
     if(selectedTable === 1 || selectedTable === 0) {
+     officeRankingData.value = []
       processRankingData(cloneDeep(data), 'Office Ranking')
     }
     if(selectedTable === 2 || selectedTable === 0) {
+      repsData.value = []
       processRankingData(cloneDeep(data), 'Top Reps')
+      console.log(dropdownValues.value)
     }
 
     rankingTablesLoaded.value = true
