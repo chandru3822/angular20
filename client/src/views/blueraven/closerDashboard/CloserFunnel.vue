@@ -3466,6 +3466,8 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     funnelDrilldownTitle.value = funnel.name + ' ' + moment(dateRange.startDate).format('M/D/YYYY') + ' - ' + moment(dateRange.endDate).format('M/D/YYYY')
   }
 
+
+  console.log(funnelDrilldownHeaders.value)
   funnelDrilldownHeaders.value[1].show = true
   funnelDrilldownHeaders.value[2].show = true
   funnelDrilldownHeaders.value[4].show = true
@@ -3511,6 +3513,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
       funnelDrilldownHeaders.value[17].show = true // credit_check
       break
     case 4: // Bookings Complete
+      funnelDrilldownHeaders.value[9].show = true
       funnelDrilldownHeaders.value[18].show = true // installation_agreement_signed_date
       funnelDrilldownHeaders.value[20].show = true // site_survey_completed_date
       break
@@ -3529,6 +3532,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
       funnelDrilldownHeaders.value[24].show = true // utility_bill_verified_date
       break
     case 21: // Final Designs Completed
+      funnelDrilldownHeaders.value[9].show = true
       funnelDrilldownHeaders.value[27].show = true // final_design_complete_date
       break
     case 8: // Installations Completed
