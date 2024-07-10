@@ -22,17 +22,17 @@ declare
   v_all_sources              boolean;
   v_filter_appointment_types boolean;
   v_is_round_robin           boolean;
+
 BEGIN
   --If p_user_position_ids has a -1 that means get data for the whole company
   select -1 = any (p_user_position_ids) into v_whole_company;
   select -1 = any (p_lead_source_ids) into v_all_sources;
-  v_filter_appointment_types = false;
-  if p_appointment_type_ids is not null and array_length(p_appointment_type_ids, 1) = 1 then
-    v_filter_appointment_types = true;
-    v_is_round_robin = false;
-    if 1 = any (p_appointment_type_ids) then
-      v_is_round_robin = true;
-    end if;
+  v_filter_appointment_types = true;
+  v_is_round_robin = false;
+  if (p_appointment_type_ids is null) or p_appointment_type_ids is not null and array_length(p_appointment_type_ids, 1) = 2 then
+    v_filter_appointment_types = false;
+  elsif 1 = any (p_appointment_type_ids) then
+    v_is_round_robin = true;
   end if;
 --   raise notice 'v_whole_company %',v_whole_company;
 --   raise notice 'v_all_sources %',v_all_sources;

@@ -40,13 +40,12 @@ BEGIN
   --If p_user_position_ids has a -1 that means get the funnel for the whole company
   select -1 = any (p_user_position_ids) into v_whole_company;
   select -1 = any (p_lead_source_ids) into v_all_sources;
-  v_filter_appointment_types = false;
-  if p_appointment_type_ids is not null and array_length(p_appointment_type_ids, 1) = 1 then
-    v_filter_appointment_types = true;
-    v_is_round_robin = false;
-    if 1 = any (p_appointment_type_ids) then
-      v_is_round_robin = true;
-    end if;
+  v_filter_appointment_types = true;
+  v_is_round_robin = false;
+  if (p_appointment_type_ids is null) or p_appointment_type_ids is not null and array_length(p_appointment_type_ids, 1) = 2 then
+    v_filter_appointment_types = false;
+  elsif 1 = any (p_appointment_type_ids) then
+    v_is_round_robin = true;
   end if;
 
   select hide_future, only_future, exclude_values, funnel_type_id, closer_appt_outcome_int_values
@@ -196,7 +195,7 @@ BEGIN
                     when f.id = 23 then
                       ((prioritized_closer_dashboard_start_time at time zone 'UTC') at time zone
                        'US/Mountain')::date between p_start_date and p_end_date and
-                      not prioritized_closer_dashboard_outcome_id is null and
+                       prioritized_closer_dashboard_outcome_id is null and
                       case
                         when p_is_checked_in_column is true then
                           pd.prioritized_closer_dashboard_checkin is not null
