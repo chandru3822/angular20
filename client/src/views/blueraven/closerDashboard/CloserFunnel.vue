@@ -1254,7 +1254,7 @@
                     {{ index + 1 }}
                   </td>
                   <td>{{ item.owner_name || '' }}</td>
-                  <td>{{ item.office || '' }}</td>rt
+                  <td>{{ item.office || '' }}</td>
                   <td>{{ item.state || '' }}</td>
                   <td>{{ item.metro_area || '' }}</td>
                   <td>{{ item.status_type || '' }}</td>
@@ -1436,7 +1436,7 @@
               <td v-if="funnelDrilldownHeaders[3].show">{{ item.state || '' }}</td>
               <td v-if="funnelDrilldownHeaders[4].show">{{ item.metro_area || '' }}</td>
               <td v-if="funnelDrilldownHeaders[5].show">{{ item.status_type || '' }}</td>
-              <td v-if="funnelDrilldownHeaders[6].show" class="customer-name">{{ item.customer_name || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[6].show">{{ item.project_name || '' }}</td>
               <td v-if="funnelDrilldownHeaders[7].show">
                 <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
                              :to="`/project/${item.project_id}/status`">
