@@ -149,7 +149,8 @@ const toggleCollapseExpand = () => {
 </style>
 
 <style lang="scss">
-#project-details-container div.v-expansion-panel-content__wrap{
-  padding:0;
-}
+//removing this because it causes issues with the uploaded and linked documents expansion panels and I can't tell that it's actually doing anything for the project tabs
+//#project-details-container div.v-expansion-panel-content__wrap{
+//  padding:0;
+//}
 </style>
