@@ -14,19 +14,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Joseph Canto on 2020-02-07.
- */
 @RestController
+@RequestMapping(value = "/api/v1/company/blueraven/reimbursement", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-@RequestMapping(value = "/api/v1/company/blueraven/reimbursement")
 public class ReimbursementController {
 
   private final ReimbursementService reimbursementService;
   private final ExpenseBudgetService expenseBudgetService;
   private final AttachmentService attachmentService;
 
-  @PostMapping(value = "/request", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/request")
   public ResponseEntity submitReimbursementRequest(@RequestBody ReimbursementRequest reimbursementRequest) {
 
     Optional<ExpenseBudget> expenseBudget = Optional.empty();
@@ -47,7 +44,7 @@ public class ReimbursementController {
       Long id = reimbursementService.updateRequest(reimbursementRequest, false);
       reimbursementRequest.setId(id);
 
-      if(null != reimbursementRequest.getId() && null != reimbursementRequest.getAttachmentId()){
+      if (null != reimbursementRequest.getId() && null != reimbursementRequest.getAttachmentId()) {
         //add to the attachment join table
         //todo: @randa this
         attachmentService.addToJoinTable(reimbursementRequest.getAttachmentId(), reimbursementRequest.getId(), 4L, true);
@@ -58,51 +55,51 @@ public class ReimbursementController {
     return null;
   }
 
-  @PutMapping(value = "/request", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/request")
   public void updateReimbursementRequest(@RequestBody ReimbursementRequest reimbursementRequest) {
     reimbursementService.updateRequest(reimbursementRequest, true);
   }
 
-  @PostMapping(value = "/request/updateStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/request/updateStatus")
   public void updateReimbursementRequestStatus(@RequestBody ReimbursementRequest reimbursementRequest) {
     reimbursementService.updateRequestStatus(reimbursementRequest);
   }
 
   //endpoint used for the requests screen
-  @GetMapping(value = "/requests/pending", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/requests/pending")
   public List<ReimbursementRequest> getPendingReimbursementRequests() {
     return reimbursementService.getPendingReimbursementRequests();
   }
 
-  @GetMapping(value = "/request/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/request/{id}/image")
   public String getRequestAttachmentPresignedUrl(@PathVariable Long id) {
     return attachmentService.getAttachmentPresignedUrl(id, 4L);
   }
 
-  @GetMapping(value = "/requests/byStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/requests/byStatus")
   public List<ReimbursementRequest> getRequestsForUserByStatus(@RequestParam Long statusId,
                                                                @RequestParam String startDate,
                                                                @RequestParam String endDate) {
     return reimbursementService.getRequestsForUserByStatus(statusId, startDate, endDate);
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}")
   public void deleteRequest(@PathVariable Long id) {
     reimbursementService.deleteRequest(id);
   }
 
-  @GetMapping(value = "/requests/approved", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/requests/approved")
   public List<ReimbursementRequest> getApprovedRequests(@RequestParam String startDate,
                                                         @RequestParam String endDate) {
     return reimbursementService.getApprovedRequests(startDate, endDate);
   }
 
-  @GetMapping(value = "/requests/unpaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/requests/unpaid")
   public List<ReimbursementRequest> getUnpaidRequests() {
     return reimbursementService.getUnpaidRequests();
   }
 
-  @PostMapping(value = "/requests/markPaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/requests/markPaid")
   public void markRequestsPaid(@RequestBody List<ReimbursementRequest> requests) {
     reimbursementService.markRequestsPaid(requests);
   }

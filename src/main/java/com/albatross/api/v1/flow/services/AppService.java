@@ -31,7 +31,7 @@ public class AppService {
   private final SqlCache sqlCache;
   private final AmazonS3 s3;
   private final SecurityService securityService;
-  private String s3Url = "https://%s.s3.amazonaws.com/%s";
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -45,6 +45,7 @@ public class AppService {
    * @param a
    */
   private void setAttachmentUrl(String bucket, AppAttachment a) {
+    String s3Url = "https://%s.s3.amazonaws.com/%s";
     a.setUrl(String.format(s3Url, bucket, a.getS3Key()));
   }
 
@@ -311,7 +312,7 @@ public class AppService {
       appLimit);
   }
 
-  public void insertAppAttachmentRecordsFromS3(
+  private void insertAppAttachmentRecordsFromS3(
     boolean isIos,
     String pathPrefix,
     String contentType,
@@ -353,7 +354,7 @@ public class AppService {
     }
   }
 
-  public String uploadToS3(User currentUser, String keyPattern, MultipartFile attachment)
+  private String uploadToS3(User currentUser, String keyPattern, MultipartFile attachment)
     throws IOException {
     String key = String.format(currentUser.getAwsBucket() + "/" + keyPattern, UUID.randomUUID());
 
@@ -374,7 +375,7 @@ public class AppService {
    * @param id ID of the Attachment to find.
    * @return
    */
-  public AppAttachment findById(Long id) {
+  private AppAttachment findById(Long id) {
     Long appAttachmentEnvironmentId = AppAttachmentEnvironment.get(environment).id;
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -384,7 +385,7 @@ public class AppService {
     if (attachments.isEmpty()) {
       return null;
     }
-    AppAttachment attachment = attachments.get(0);
+    AppAttachment attachment = attachments.getFirst();
     setAttachmentUrl(storageBucket, attachment);
     setAttachmentPresignedUrl(storageBucket, attachment);
     return attachment;

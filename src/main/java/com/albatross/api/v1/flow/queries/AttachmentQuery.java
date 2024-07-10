@@ -82,32 +82,6 @@ SELECT
     """;
 
   //language=PostgreSQL
-  public final static String getAttachmentsByType = """
-SELECT
-      a.id,
-      a.attachment_type_id,
-      a.content_type,
-      a.filename,
-      a.s3_key,
-      a.size,
-      a.display_name,
-      a.uuid,
-      a.show,
-      substring(a.filename, '\\.([^\\.]+)$') as file_extension,
-      src.source_id,
-      a.date_created,
-      concat(u.first_name, ' ', u.last_name) as uploaded_by,
-      a.date_modified,
-      a.archived
-    FROM flow.attachment a
-      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
-      inner join flow."user" u on u.id = a.created_by_id
-    WHERE a.attachment_type_id = :attachmentTypeId
-      AND a.archived IS NOT TRUE
-      order by a.date_created desc
-    """;
-
-  //language=PostgreSQL
   public final static String getAttachmentByUUID = """
     SELECT
       a.id,

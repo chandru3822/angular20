@@ -37,7 +37,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +88,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService, stripeService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, marketoService, listOfValueService, null, null, customerPortalService, birdeyeService, pubSubService, stripeService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");

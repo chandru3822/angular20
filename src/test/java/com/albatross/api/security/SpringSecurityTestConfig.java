@@ -27,7 +27,7 @@ class SpringSecurityTestConfig extends GlobalMethodSecurityConfiguration {
   @Bean
   @Primary
   public SecurityService securityService() {
-    return new SecurityService() {
+    return new SecurityService( null, null, null) {
       private static final Map<String, UserAccountDetails> USER_ACCOUNTS =
           Map.of(
               "blueraven",

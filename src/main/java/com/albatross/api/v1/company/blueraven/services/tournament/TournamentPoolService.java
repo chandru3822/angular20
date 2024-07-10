@@ -14,7 +14,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -25,15 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Randa Nunn on 2021-03-12.
- */
 @Service
 @RequiredArgsConstructor
 public class TournamentPoolService {
-
-  @Value("${aws.storageBucket}")
-  private String bucket;
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
@@ -41,13 +34,12 @@ public class TournamentPoolService {
   private final ObjectMapper om;
 
   public Optional<TournamentPool> getPoolDetails(Long tournamentId, Long tournamentPoolTypeId) {
-//    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolTypeId", tournamentPoolTypeId);
     Optional<TournamentPool> result = sqlCache.getBySql(TournamentPoolQuery.getDetails, params, new TournamentPoolMapper<>(TournamentPool.class, om));
     if (result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
-      result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(bucket, result.get().getBackgroundAttachmentId()));
+      result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(result.get().getBackgroundAttachmentId()));
     }
     return result;
   }
@@ -70,15 +62,13 @@ public class TournamentPoolService {
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolTypeId", tournamentPoolTypeId);
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
-    String result = sqlCache.queryForObjectBySql(TournamentPoolQuery.getPoolUsers, params, String.class);
-    return result;
+    return sqlCache.queryForObjectBySql(TournamentPoolQuery.getPoolUsers, params, String.class);
   }
 
   public Optional<TournamentPoolPosition> getPoolPosition(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<TournamentPoolPosition> result = sqlCache.getBySql(TournamentPoolQuery.getPosition, params, TournamentPoolPosition.class);
-    return result;
+    return sqlCache.getBySql(TournamentPoolQuery.getPosition, params, TournamentPoolPosition.class);
   }
 
   public Optional<TournamentPoolPosition> addPositionToPool(Long poolId, Long positionId) {
@@ -103,8 +93,7 @@ public class TournamentPoolService {
   public Optional<TournamentPoolUser> getPoolUser(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<TournamentPoolUser> result = sqlCache.getBySql(TournamentPoolQuery.getUser, params, TournamentPoolUser.class);
-    return result;
+    return sqlCache.getBySql(TournamentPoolQuery.getUser, params, TournamentPoolUser.class);
   }
 
   public List<TournamentPoolUser> addCustomUsers(Long poolId, TournamentPoolCustomUserRequest req) {
@@ -119,8 +108,7 @@ public class TournamentPoolService {
     params.put("createdById", user.trueUserId());
     sqlCache.queryBySql(TournamentPoolQuery.addCustomUsers, params, String.class);
 
-    List<TournamentPoolUser> results = sqlCache.queryBySql(TournamentPoolQuery.getAllUsersInPool, params, TournamentPoolUser.class);
-    return results;
+    return sqlCache.queryBySql(TournamentPoolQuery.getAllUsersInPool, params, TournamentPoolUser.class);
   }
 
   public Optional<TournamentPoolUser> addUserToPool(Long poolId, Long userId) {

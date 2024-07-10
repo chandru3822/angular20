@@ -65,7 +65,6 @@ public class MessagingService {
   private final SecurityService securityService;
   private final NamedParameterJdbcTemplate jdbc;
   private final CacheManager cacheManager;
-  private final UserService userService;
 
   public ConversationMessageProperties getProject(Long projectId, Long modifiedByUserId) {
     Optional<ConversationMessageProperties> conversationMessageProps =
@@ -137,7 +136,7 @@ public class MessagingService {
           pageable);
 
       if (!projects.isEmpty()) {
-        count = projects.get(0).getProjectIdsForFilter().size();
+        count = projects.getFirst().getProjectIdsForFilter().size();
         conversations.addAll(projects);
       }
     }
@@ -153,12 +152,12 @@ public class MessagingService {
           pageable);
 
       if (!users.isEmpty()) {
-        count += users.get(0).getUserIdsForFilter().size();
+        count += users.getFirst().getUserIdsForFilter().size();
         conversations.addAll(users);
         if (getProjects) {
-          conversations.get(0).setUserIdsForFilter(users.get(0).getUserIdsForFilter());
-          conversations.get(0).setUserIdsInbox(users.get(0).getUserIdsInbox());
-          conversations.get(0).setUserIdsSent(users.get(0).getUserIdsSent());
+          conversations.getFirst().setUserIdsForFilter(users.getFirst().getUserIdsForFilter());
+          conversations.getFirst().setUserIdsInbox(users.getFirst().getUserIdsInbox());
+          conversations.getFirst().setUserIdsSent(users.getFirst().getUserIdsSent());
         }
       }
     }
@@ -307,7 +306,7 @@ public class MessagingService {
   }
 
   private List<Long> getUsersCount(Map<String, Object> params) {
-      return sqlCache.queryBySql(
+    return sqlCache.queryBySql(
       MessagingQuery.getUsersCount,
       params,
       new SingleColumnRowMapper<>(Long.class));
@@ -472,8 +471,8 @@ public class MessagingService {
     // Check if Project is closed, if so open it - unless the default team is being added
     // automatically
     if (!defaultTeamAdded
-      && conversationMessageProps.isPresent()
-      && conversationMessageProps.get().isClosed()) {
+        && conversationMessageProps.isPresent()
+        && conversationMessageProps.get().isClosed()) {
       updateProjectStatus(projectId, false, modifiedByUserId);
     }
   }
@@ -618,8 +617,8 @@ public class MessagingService {
     // Check if Project is closed, if so open it - unless the default team is being added
     // automatically
     if (!defaultTeamAdded
-      && userMessageProps.isPresent()
-      && userMessageProps.get().isClosed()) {
+        && userMessageProps.isPresent()
+        && userMessageProps.get().isClosed()) {
       updateUserStatus(userId, false, modifiedByUserId);
     }
   }
@@ -1082,11 +1081,16 @@ public class MessagingService {
         sqlCache.updateBySql(
           MessagingQuery.insertUser,
           Map.of("userId", userId, "createdById", modifiedByUserId));
-        User user = userService.findUserById(userId);
-        Optional<Long> teamId = getDefaultTeamId(user.getCompanyId());
+
+        Long companyId = getUserCompanyId(userId);
+        Optional<Long> teamId = getDefaultTeamId(companyId);
         teamId.ifPresent(aLong -> addTeamForUser(userId, aLong, null, true, modifiedByUserId));
       }
     }
+  }
+
+  private Long getUserCompanyId(Long userId) {
+    return sqlCache.queryForObjectBySql(SmsTeamQuery.getUserCompany, Map.of("id", userId), Long.class);
   }
 
   private Optional<Long> getDefaultTeamId(Long companyId) {
