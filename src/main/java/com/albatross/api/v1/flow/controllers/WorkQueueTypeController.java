@@ -43,6 +43,11 @@ public class WorkQueueTypeController {
     return workQueueTypeService.getType(id);
   }
 
+  @GetMapping(value = "/{id}/settings", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<WorkQueueType> getWorkQueueTypeForSettings(@PathVariable Long id) {
+    return workQueueTypeService.getTypeForSettings(id);
+  }
+
   @GetMapping(value = "/{id}/inUseBy", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getItemsUsingWorkQueue(@PathVariable Long id) {
     return workQueueTypeService.getItemsUsingWorkQueueType(id);

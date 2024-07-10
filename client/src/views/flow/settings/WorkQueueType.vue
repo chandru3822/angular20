@@ -532,7 +532,7 @@ const getPsAndEventsUsingWqt = async () => {
 const getWorkQueueType = async () => {
   try {
     workQueueLoading.value = true;
-    const {data, status} = await getRequest(`/workQueueType/${workQueueTypeId.value}`)
+    const {data, status} = await getRequest(`/workQueueType/${workQueueTypeId.value}/settings`)
     workQueueType.value = data
     defaultFields.value = workQueueType.value?.defaultColumnDisplay
     if (workQueueType.value.schedule.length < 1) {
