@@ -156,9 +156,10 @@ public class InstallAgreementService {
 
     body.setElectricUtility(srec.getUtilityCompanyName());
 
-    //Naperville users qualify as municipal utility, which is what the external API accepts
+    //Naperville users qualify as municipal utility but 3rd part is picky and needs this exact naming
     if (body.getElectricUtility().equalsIgnoreCase("Naperville Electric Utility")) {
-      body.setElectricUtility("Municipal Utility");
+        body.setElectricUtility("Municipal Utility");
+        body.setMuniCOOPName("City of Naperville");
     }
 
     body.setDepositOwed(srec.getTotalCost());

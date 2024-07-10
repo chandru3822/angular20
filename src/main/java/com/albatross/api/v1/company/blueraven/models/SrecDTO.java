@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -250,6 +251,10 @@ public class SrecDTO {
 
   @JsonProperty("transfer_requirements")
   private String transferRequirements;
+
+  @JsonProperty("muni_coop_name")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String muniCOOPName;
 
   public SrecDTO() {
     this.formType = "purchase_form";
