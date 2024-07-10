@@ -69,11 +69,13 @@ import { useFileStore } from '@/stores/FileStore.js'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
+import {useStickyStore} from "@/stores/StickyStore.js";
 
 const route = useRoute()
 const router = useRouter()
 const fileStore = useFileStore()
 const userStore = useUserStore()
+const stickyStore = useStickyStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
@@ -176,6 +178,7 @@ const getUserImage = async () => {
 const logout = () => {
   menuOpen.value = false
   userStore.logout()
+  stickyStore.logout()
   router.push('/login')
 }
 </script>

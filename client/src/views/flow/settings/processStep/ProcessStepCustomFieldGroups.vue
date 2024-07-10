@@ -525,7 +525,7 @@
                               color="primary"
                               size="small"
                               @click="[$set(cf, 'edit', !cf.edit), getPositions()]"
-                              v-if="userCanEdit && !cf.dataViewFieldConfigId && !cf.dataViewChildFieldConfigId"
+                              v-if="userCanEdit"
                               :prepend-icon="!cf.edit ? 'edit' : 'close'"
                           ></a-btn>
                           <a-btn
@@ -615,7 +615,7 @@ const positions = ref([])
 const positionsLoading = ref(false)
 const newGroup = ref({})
 const newField = ref({})
-// = selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet)
+// = selectedIndex is a dumb workaround because `index` is not available in the `expanded-item` slot yet
 const selectedIndex = ref(null)
 const createNew = ref(false)
 const newFieldType = ref('native')
@@ -964,6 +964,7 @@ const saveReadOnlyAndWhiteList = async (field) => {
       vueInstance.$set(field, 'whiteListedPositions', [])
     }
     handleHidingGlobalLoader(status)
+    appStore.showSnack('SUCCESS', 'Read Only Saved')
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Field')
@@ -979,6 +980,8 @@ const saveHiddenAndWhiteList = async (field) => {
       vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
     }
     handleHidingGlobalLoader(status)
+    appStore.showSnack('SUCCESS', 'Hidden Saved')
+
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Field')

@@ -12,6 +12,7 @@
           <SuperSearch
             class="px-3"
             :filter-options="headers"
+            :initial-value="searchQuery"
             v-model="searchQuery"
             @click:clear="searchProjects"
             :keyup.enter="closeKeyboard"
@@ -168,8 +169,8 @@ const showConfirmDialog = ref(false)
 const source = ref(null)
 const columnFilterName = ref('')
 
-const useSavedFilter = computed(() => {
-  return route.params.useSavedFilter
+const useSavedFilters = computed(() => {
+  return route.params.useSavedFilters
 })
 
 const reformatPhone = (phoneNumber) => {
@@ -205,7 +206,7 @@ const setSearchQuery = (newValue, columnName="") => {
   searchProjects()
 }
 onMounted(() => {
-  if(useSavedFilter.value === 'true') {
+  if(useSavedFilters.value === 'true') {
     searchQuery.value = localStorage.getItem('projectSearch') || ''
   } else {
     localStorage.removeItem('projectSearch')

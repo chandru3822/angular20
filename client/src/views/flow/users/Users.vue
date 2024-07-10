@@ -713,8 +713,8 @@ const attachmentsText = computed(() => {
     return textFiles.value.length + ' files'
   }
 })
-const useSavedFilter = computed(() => {
-  return route.params.useSavedFilter
+const useSavedFilters = computed(() => {
+  return route.params.useSavedFilters
 })
 
 onMounted(() => {
@@ -723,7 +723,7 @@ onMounted(() => {
   getEmailSenders()
   fetchTeamsForUser()
 
-  if(useSavedFilter.value === 'true') {
+  if(useSavedFilters.value === 'true') {
     JSON.parse(localStorage.getItem('store'))
     if(localStorage.getItem('userFilters') != null) {
       filters.value = JSON.parse(localStorage.getItem('userFilters'))
@@ -732,7 +732,7 @@ onMounted(() => {
     localStorage.removeItem('userFilters')
   }
   // getStatuses calls getUsers because we have to know company statuses before we can filter the list
-  getStatuses(useSavedFilter.value === 'true')
+  getStatuses(useSavedFilters.value === 'true')
 })
 
 const handleUpdateStatusesListEmit = (newList) => {

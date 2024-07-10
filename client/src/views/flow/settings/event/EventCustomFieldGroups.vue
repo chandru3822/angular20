@@ -625,19 +625,16 @@
                                         :alternateLabel = "'Denied Positions'"
                                         :allow="cf.customFieldGroupAssignmentHiddenAllow || null == cf.customFieldGroupAssignmentHiddenAllow"
                                         :contentLoading="positionsLoading"
+                                        save-button
+                                        save-button-text="Save Hidden"
                                         full-size
                                         @selected-changed="cfgHiddenSelectedEventListener($event, cf)"
                                         @allow-changed="cfgHiddenAllowEventListener($event, cf)"
-                                        @checkbox-changed="cfgHiddenCheckboxEventListener($event, cf)"></multi-select-group>
+                                        @checkbox-changed="cfgHiddenCheckboxEventListener($event, cf)"
+                                        @save-multi-select="saveHiddenAndWhiteList(cf)"
+                                      />
 
                                       <br/>
-                                      <a-btn color="primary"
-                                                       dark
-                                                       class="d-inline-block white--text"
-                                                       @click="saveHiddenAndWhiteList(cf)"
-                                                       prepend-icon="save"
-                                                       text="Save Hidden"
-                                      />
                                     </v-card-text>
                                   </v-card>
                                   </v-row>

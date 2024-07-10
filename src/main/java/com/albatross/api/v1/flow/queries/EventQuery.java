@@ -667,7 +667,7 @@ public class EventQuery {
       select e.event_name
       from flow.event_company_event_status_type ecest
         inner join flow.event e on ecest.event_id = e.id
-      where e.archived is false and company_event_status_type_id = :id
+      where e.archived is false and company_event_status_type_id = :id and ecest.archived is false
       order by e.event_name
     """;
 

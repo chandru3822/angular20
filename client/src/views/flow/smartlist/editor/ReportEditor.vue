@@ -61,7 +61,7 @@
               :smartlist-id="report.id"
               :disabled="!canDelete"
               :show-text="true"
-              @deleted="report.archived = true; router.go(-1)"
+              @deleted="deleteReport"
             />
 
             <SmartlistShare
@@ -86,6 +86,7 @@
               :smartlist="report"
               :show-text="true"
               :disabled="!report?.id"
+              timezone="UTC"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -420,6 +421,10 @@ watch(() => route.params?.reportId, async () => {
   }
 })
 
+watch (() => userStore.timezone.value, () => {
+  refreshReport()
+})
+
 const refreshReport = async (forceUpdate = false) => {
   await getReport()
 
@@ -685,6 +690,11 @@ onMounted(async () => {
 })
 
 onUnmounted(() => window.removeEventListener('beforeunload', windowLeave))
+
+const deleteReport = () => {
+  report.archived = true;
+  router.go(-1)
+}
 
 onBeforeRouteLeave(async (to, from, next) => {
   if (hasUnsavedChanges.value && !report.value.archived) {

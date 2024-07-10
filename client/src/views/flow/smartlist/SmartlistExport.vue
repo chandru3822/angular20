@@ -33,6 +33,11 @@ const props = defineProps({
     type: Boolean,
     required: false,
     default: false
+  },
+  timezone: {
+    type: String,
+    required: false,
+    default: null,
   }
 })
 
@@ -42,10 +47,13 @@ const userStore = useUserStore()
 const appStore = useAppStore()
 
 let exportSmartlist = async () => {
-
+  let timezone = props.timezone
+  if (props.timezone === null) {
+    timezone = userStore.timezone.value
+  }
   try {
     appStore.loading = true
-    const params = {timezone: userStore.timezone.value}
+    const params = {timezone: timezone}
     const {data} = await getRequestWithParams(`/smartlist/${props.smartlist.id}/export`, {params})
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'

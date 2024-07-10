@@ -29,6 +29,9 @@
 <script setup>
 import {ref, onMounted, defineProps, getCurrentInstance, computed, reactive} from "vue";
 import debounce from "lodash.debounce";
+import {useStickyStore} from "@/stores/StickyStore.js";
+
+const stickyStore = useStickyStore()
 
 const emit = defineEmits(['updateQuery'])
 const filterSelection = ref('')
@@ -67,6 +70,7 @@ const syncSearchBar = () => {
     searchString.value = ''
     filterSelection.value = ''
   }
+  stickyStore.projectFilter = filterSelection.value
   vueInstance.$nextTick(() => vueInstance.$refs.focusSearchBar.focus())
 }
 
@@ -112,6 +116,10 @@ const createSearchRegex = () => {
 
 onMounted(() => {
   createSearchRegex()
+  filterSelection.value = stickyStore?.projectFilter
+  if (filterSelection.value !== '') {
+    searchString.value = props.filterOptions.find(f => filterSelection.value === f.value).text.concat(': ')
+  }
 })
 
 </script>

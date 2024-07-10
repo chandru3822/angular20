@@ -564,7 +564,7 @@
                           item.referenceProcessStepName
                         }}</a>
                     </span>
-                <span v-if="item.processStepRequirementTypeId === 12">
+                <span v-else-if="item.processStepRequirementTypeId === 12">
                       {{ item.dataViewChildFieldName || item.dataViewFieldName }}
                     </span>
                 <span v-else>
