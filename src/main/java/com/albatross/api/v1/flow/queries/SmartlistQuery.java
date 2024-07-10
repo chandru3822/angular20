@@ -550,7 +550,8 @@ public class SmartlistQuery {
     where
       cot.object_type_id = any(array[ :objectTypeIds ]::bigint[]) and
       cot.company_id = :companyId and
-      cot.archived is not true
+      cot.archived is not true and
+      sf.archived is not true
     union
     -- custom fields
     select
@@ -618,7 +619,12 @@ public class SmartlistQuery {
       cdt.data_type_id != 12 and
       cfga.ancillary_custom_field_group_assignment_id is null and
       cfga.archived is not true and
-      cfg.archived is not true
+      cfg.archived is not true and
+      case
+          when ps.id is not null then ps.archived is not true
+          when ps2.id is not null then ps2.archived is not true
+          else true
+      end
     union
     -- PSs with CFGs but only ancillary fields
     select
@@ -648,6 +654,7 @@ public class SmartlistQuery {
     inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
     inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
     where
+      ps.archived is not true and
       cfg.archived is not true and
       ps.archived is not true and
       cfga.archived is not true and
