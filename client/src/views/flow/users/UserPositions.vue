@@ -166,10 +166,10 @@
                   </template>
                 </a-autocomplete>
               </div>
-              <div v-if="item.salesOrgId">
+              <div v-if="item.salesOrgName">
                 <a-text-field
                   label="Sales Org"
-                  :value="item.salesOrgId"
+                  :value="item.salesOrgName"
                   readonly
                   disabled>
                 </a-text-field>
