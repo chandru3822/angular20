@@ -13,10 +13,21 @@ drop function if exists brs.qualify_user_for_past_residual(p_user_id bigint, p_r
                                                            p_earned_residual numeric,
                                                            p_end_of_period_date date, p_grace_period_end date,
                                                            p_clawback_due numeric);
+drop function if exists brs.qualify_user_for_past_residual(p_user_id bigint, p_residual_id bigint,
+                                                           p_project_qualified_date_type brs.project_qualified_date_type[],
+                                                           p_lifetime_qualified_fds bigint,
+                                                           p_qualified_fdc_in_period bigint,
+                                                           p_qualified_this_period_system_size bigint,
+                                                           p_fdc_not_qualified_in_period bigint,
+                                                           p_potential_residual numeric,
+                                                           p_earned_residual numeric,
+                                                           p_end_of_period_date date, p_grace_period_end date,
+                                                           p_clawback_due numeric);
 CREATE OR REPLACE FUNCTION brs.qualify_user_for_past_residual(p_user_id bigint, p_residual_id bigint,
                                                               p_project_qualified_date_type brs.project_qualified_date_type[],
                                                               p_lifetime_qualified_fds bigint,
                                                               p_qualified_fdc_in_period bigint,
+                                                              p_qualified_this_period_system_size numeric,
                                                               p_fdc_not_qualified_in_period bigint,
                                                               p_potential_residual numeric,
                                                               p_earned_residual numeric,
@@ -29,7 +40,7 @@ DECLARE
   v_user_residual_snapshot_id bigint;
   rec                         brs.project_qualified_date_type;
   v_lifetime_fds              bigint;
-  v_count_qualified_fdc       numeric;
+  v_count_qualified_fdc       bigint;
   v_sum_system_size_qualified numeric;
   v_system_size_by_source     numeric;
 BEGIN
@@ -66,7 +77,8 @@ BEGIN
       percent_of_residual_earned  = 100,
       potential_residual          = p_potential_residual,
       earned_residual             = p_earned_residual,
-      residual_total              = p_earned_residual
+      residual_total              = p_earned_residual,
+      qualified_this_period_system_size = p_qualified_this_period_system_size
   where id = v_user_residual_snapshot_id;
 
   select count(1)
