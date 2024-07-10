@@ -34,12 +34,15 @@ select u.id                                      as user_id,
               and cus.archived is not true) as has_access,
        p.scheduler                             as position_scheduler,
        o.company_state_id,
-       u.phone_extension
+       u.phone_extension,
+       up.sales_org_id,
+       o2.org_name as sales_org_name
 from flow."user" u
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id
          left join flow.org o on o.id = up.org_id and o.company_id = p.company_id
          left join flow.company_state cs on o.company_state_id = cs.id
+         left join flow.org o2 on o2.id = up.sales_org_id
          cross join flow.user_org_hierarchy(o.id) org_hierarchy
 WITH DATA;
 

@@ -14,7 +14,7 @@ BEGIN
                                        user_archived, position_schedulable, position_scheduler,
                                        position, position_id, user_position_id, company_id, email,
                                        phone_number, phone_extension, available_to_children,
-                                       user_status_type_id, has_access)
+                                       user_status_type_id, has_access,sales_org_id,sales_org_name)
         (select u.id                             as user_id,
                 u.first_name,
                 u.last_name,
@@ -49,12 +49,15 @@ BEGIN
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
                  where ust.company_id = p.company_id
                    and cus.user_id = u.id
-                   and cus.archived is not true) as has_access
+                   and cus.archived is not true) as has_access,
+           up.sales_org_id,
+           o2.org_name
          from flow."user" u
                   left join flow.user_position up on up.user_id = u.id
                   left join flow.position p on p.id = up.position_id
                   left join flow.org o on o.id = up.org_id and o.company_id = p.company_id
                   left join flow.company_state cs on cs.id = o.company_state_id
+                  left join flow.org as o2 on o2.id = up.sales_org_id
                   cross join flow.user_org_hierarchy(o.id) org_hierarchy
          where u.id = any (p_user_ids)
             and up.archived is false);
