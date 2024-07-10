@@ -335,7 +335,7 @@
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-              <span @click="funnelDrilldown(item, getDropdownById(firstDateRange), 'apptsCreatedPipeline', true)" class="appts-data">
+              <span @click="funnelDrilldown(item, getDropdownById(firstDateRange), 'apptsCreatedPipeline', true, firstCustom)" class="appts-data">
               {{ item.leads_created_count ? item.leads_created_count : 0 }}
               <span v-on="viewTrends?on:null">
                 <span v-if="viewTrends && item.trend>0 "
@@ -361,7 +361,7 @@
                     v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-            <span @click="funnelDrilldown(item, getDropdownById(secondDateRange), 'apptsCreatedPipeline', true)" class="appts-data">
+            <span @click="funnelDrilldown(item, getDropdownById(secondDateRange), 'apptsCreatedPipeline', true, secondCustom)" class="appts-data">
               {{ column2Values[index].leads_created_count  ? column2Values[index].leads_created_count  : 0 }}
               <span v-on="viewTrends?on:null">
                 <span v-if="viewTrends && column2Values[index].trend>0"
@@ -389,7 +389,7 @@
                     v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-            <span @click="funnelDrilldown(item, getDropdownById(thirdDateRange), 'apptsCreatedPipeline', true)" class="appts-data">
+            <span @click="funnelDrilldown(item, getDropdownById(thirdDateRange), 'apptsCreatedPipeline', true, thirdCustom)" class="appts-data">
               {{ column3Values[index].leads_created_count ? column3Values[index].leads_created_count : 0 }}
               <span v-on="viewTrends?on:null">
                 <span v-if="viewTrends && column3Values[index].trend>0"
@@ -1095,7 +1095,7 @@
           </template>
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true)" class="fdc-data">
+                            <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true, fdcFirstCustom)" class="fdc-data">
                 {{ item.custom_date_range_count ? item.custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
@@ -1129,7 +1129,7 @@
           <template #item.actualTotal2="{item, index}" class="milestone-col-td"
                     v-if="fdcSecondDateRange != null && filteredFdcColumn2Values != null && filteredFdcColumn2Values.length > 0">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true)" class="fdc-data">
+                            <span @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true, fdcSecondCustom)" class="fdc-data">
                 {{ filteredFdcColumn2Values[index].custom_date_range_count ? filteredFdcColumn2Values[index].custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
@@ -1162,7 +1162,7 @@
           <template #item.actualTotal3="{item, index}" class="milestone-col-td"
                     v-if="fdcThirdDateRange != null && filteredFdcColumn3Values != null && filteredFdcColumn3Values.length > 0">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true)" class="fdc-data">
+                            <span @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true, fdcThirdCustom)" class="fdc-data">
                 {{ filteredFdcColumn3Values[index].custom_date_range_count ? filteredFdcColumn3Values[index].custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
@@ -3426,7 +3426,7 @@ const repLoad = async(preSelectLists) => {
 }
 
 
-const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn) => {
+const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn, customColumn) => {
   appStore.loading = true;
   // selectedFunnel.value = funnel
   let sourceIds = []
@@ -3435,6 +3435,8 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
   let appointmentTypeIds = null
   let start, end
   let datesMatch = false
+  let selectedStartDate = dateRange.startDate
+  let selectedEndDate = dateRange.endDate
 
   if (pipelineName === 'apptsCreatedPipeline') {
     let brsSourceIds = brsProvidedSourceModel.value.map(brsProvidedSource => brsProvidedSource.sourceId)
@@ -3458,16 +3460,21 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     }
   }
 
-  datesMatch = moment(dateRange.startDate).format('YYYY-MM-DD') === moment(dateRange.endDate).format('YYYY-MM-DD')
-
+  if(dateRange.name === 'CUSTOM'){
+    datesMatch = moment(customColumn.startDate).format('YYYY-MM-DD') === moment(customColumn.endDate).format('YYYY-MM-DD')
+    selectedStartDate = moment( customColumn.startDate ).format('YYYY-MM-DD')
+    selectedEndDate = moment( customColumn.endDate ).format('YYYY-MM-DD')
+  }
+  else {
+    datesMatch = moment(dateRange.startDate).format('YYYY-MM-DD') === moment(dateRange.endDate).format('YYYY-MM-DD')
+  }
   if (datesMatch) {
-    funnelDrilldownTitle.value = funnel.name + ' on ' + moment(dateRange.startDate).format('M/D/YYYY')
+    funnelDrilldownTitle.value = funnel.name + ' on ' + moment(selectedStartDate).format('M/D/YYYY')
   } else {
-    funnelDrilldownTitle.value = funnel.name + ' ' + moment(dateRange.startDate).format('M/D/YYYY') + ' - ' + moment(dateRange.endDate).format('M/D/YYYY')
+    funnelDrilldownTitle.value = funnel.name + ' ' + moment(selectedStartDate).format('M/D/YYYY') + ' - ' + moment(selectedEndDate).format('M/D/YYYY')
   }
 
 
-  console.log(funnelDrilldownHeaders.value)
   funnelDrilldownHeaders.value[1].show = true
   funnelDrilldownHeaders.value[2].show = true
   funnelDrilldownHeaders.value[4].show = true
@@ -3552,8 +3559,8 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
   }
 
   const requestBody = {
-    start: dateRange.startDate,
-    end: dateRange.endDate,
+    start: selectedStartDate,
+    end: selectedEndDate,
     funnelId: funnel.id,
     hideInactive: hideInactiveReps.value,
     leadSourceIds: fdcSourceModel.value.map(leadSource => leadSource.sourceId),
