@@ -1095,7 +1095,7 @@
           </template>
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true, fdcFirstCustom)" class="fdc-data">
+                            <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', false, fdcFirstCustom)" class="fdc-data">
                 {{ item.custom_date_range_count ? item.custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
@@ -1117,7 +1117,7 @@
               <span
                 v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="item.checked_in_custom_date_range_count != null && item.show_checked_in_column" class="checked_in_container body-small">
+              <span v-if="item.checked_in_custom_date_range_count != null && item.show_checked_in_column" class="checked_in_container body-small" @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true, fdcFirstCustom)">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
@@ -1129,7 +1129,7 @@
           <template #item.actualTotal2="{item, index}" class="milestone-col-td"
                     v-if="fdcSecondDateRange != null && filteredFdcColumn2Values != null && filteredFdcColumn2Values.length > 0">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true, fdcSecondCustom)" class="fdc-data">
+                            <span @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', false, fdcSecondCustom)" class="fdc-data">
                 {{ filteredFdcColumn2Values[index].custom_date_range_count ? filteredFdcColumn2Values[index].custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
@@ -1151,7 +1151,7 @@
               <span
                 v-if="viewFdcTrends && (filteredFdcColumn2Values[index].trend_count ===null || filteredFdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="filteredFdcColumn2Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn2Values[index].show_checked_in_column" class="checked_in_container body-small">
+              <span v-if="filteredFdcColumn2Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn2Values[index].show_checked_in_column" class="checked_in_container body-small" @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true, fdcSecondCustom)">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
@@ -1162,7 +1162,7 @@
           <template #item.actualTotal3="{item, index}" class="milestone-col-td"
                     v-if="fdcThirdDateRange != null && filteredFdcColumn3Values != null && filteredFdcColumn3Values.length > 0">
             <span class="d-flex align-items-center">
-                            <span @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true, fdcThirdCustom)" class="fdc-data">
+                            <span @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', false, fdcThirdCustom)" class="fdc-data">
                 {{ filteredFdcColumn3Values[index].custom_date_range_count ? filteredFdcColumn3Values[index].custom_date_range_count : 0 }}
               </span>
             <v-tooltip bottom v-if="viewFdcTrends">
@@ -1184,7 +1184,7 @@
               <span
                 v-if="viewFdcTrends && (filteredFdcColumn3Values[index].trend_count ===null || filteredFdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
             </v-tooltip>
-              <span v-if="filteredFdcColumn3Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn3Values[index].show_checked_in_column" class="checked_in_container body-small">
+              <span v-if="filteredFdcColumn3Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn3Values[index].show_checked_in_column" class="checked_in_container body-small" @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true, fdcThirdCustom)">
                 <v-icon size="20" class="checked_in_icon">
                     mdi-check-circle-outline
                 </v-icon>
@@ -1378,7 +1378,7 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-    </div>      <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
+    </div>      <v-dialog v-model="fdcFunnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
     <v-card id="funnel-drilldown">
       <v-card-title class="mb-1">
         <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
@@ -1647,6 +1647,7 @@ const fdcOpenFirstMenu = ref(false)
 const fdcOpenSecondMenu = ref(false)
 const fdcOpenThirdMenu = ref(false)
 const funnelDrilldownDialog = ref(false)
+const fdcFunnelDrilldownDialog = ref(false)
 const currentUserOrgId = ref(null)
 const dropdownValuesLoading = ref(true)
 const dropdownValues = ref([])
@@ -3587,7 +3588,6 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
                                                                                                                 status
                                                                                                               }) => {
       funnelDrilldownData.value = data?.length > 0 ? data : []
-
       if (funnelDrilldownData.value?.length > 0) {
         // for (let i = 0; i < funnelDrilldownData.value.length; i++) {
         //   funnelDrilldownData.value[i].rowNum = i + 1
@@ -3596,7 +3596,12 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
         markMissingDrilldownData()
       }
 
-      funnelDrilldownDialog.value = true
+      if (pipelineName === 'apptsCreatedPipeline') {
+        funnelDrilldownDialog.value = true
+      }
+      else{
+        fdcFunnelDrilldownDialog.value = true
+      }
       handleHidingGlobalLoader( status)
       appStore.loading = false
     })
@@ -3876,6 +3881,7 @@ const toggleSelectAppointmentTypes = () => {
 
 const closeFunnelDrilldownDialog = () => {
   funnelDrilldownDialog.value = false
+  fdcFunnelDrilldownDialog.value = false
   resetScrollBarPosition()
 }
 /* FUNNEL-RELATED CODE END */
@@ -3983,7 +3989,7 @@ const closeFunnelDrilldownDialog = () => {
   overflow: hidden;
   padding: 8px;
   border-radius: 4px;
-
+  cursor: pointer;
   height: 28px;
 }
 .table-collapse-button{
