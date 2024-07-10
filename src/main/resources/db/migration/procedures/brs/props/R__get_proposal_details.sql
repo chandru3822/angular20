@@ -147,7 +147,7 @@ BEGIN
            pcfv24.numeric_value,
 	       (ppscfv46.json_value->>'system_size_ac')::numeric as system_size_ac,
          (ppscfv47.json_value ->'arrays'->0->'module'->>'name')::text as panel_model,
-           pcfv26.boolean_value
+           pcfv_48.boolean_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -200,8 +200,6 @@ BEGIN
                                                                pcfv23.custom_field_group_assignment_id = 490
            left join brs.proposal_custom_field_value pcfv25 on prop.id = pcfv25.proposal_id and
                                                                pcfv25.custom_field_group_assignment_id = 581
-           left join brs.proposal_custom_field_value pcfv26 on prop.id = pcfv26.proposal_id and
-                                                               pcfv26.custom_field_group_assignment_id = 596
            left join flow.project_process_step_custom_field_value ppscfv30
                      on pps.id = ppscfv30.project_process_step_id and
                         ppscfv30.custom_field_group_assignment_id = 22573
@@ -257,6 +255,8 @@ BEGIN
                                                                               ppscfv46.custom_field_group_assignment_id = 22682
            left join flow.project_process_step_custom_field_value ppscfv47 on ppscfv47.project_process_step_id = pps.id and
                                                                               ppscfv47.custom_field_group_assignment_id = 22682
+           left join flow.project_custom_field_value pcfv_48 on pcfv_48.project_id = p.id and
+                                                                pcfv_48.custom_field_group_assignment_id = 27524
 
     where prop.id = p_proposal_id;
 
