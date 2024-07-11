@@ -2156,7 +2156,7 @@ declare
       coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0) + coalesce(v_deposit_amount, 0);
 
   --raise notice 'v_total_system_cost at the end %',v_total_system_cost;
-  v_above_line_rebate_without_odoe = (coalesce(v_above_line_rebate,0) - coalesce(v_odoe_rebate,0) - coalesce(v_eto_rebate_amount,0)- coalesce(v_denver_care_rebate_amount,0));
+  v_above_line_rebate_without_odoe = (coalesce(v_above_line_rebate,0) - coalesce(v_odoe_rebate,0) - coalesce(v_eto_rebate_amount,0)- coalesce(v_denver_care_rebate_amount,0)- coalesce(v_denver_care_rebate_battery_amount,0)- coalesce(v_denver_care_rebate_mpu_amount,0));
   v_below_line_rebate = coalesce(v_below_line_rebate - coalesce(v_federal_tax_incentive_amount,0));
   --raise notice 'v_below_line_rebate %',v_below_line_rebate;
   --raise notice 'Carlins new value %',((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/v_total_system_cost;
