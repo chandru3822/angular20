@@ -1,6 +1,6 @@
 <template>
   <v-container id="closer-dash-container">
-    <v-row id="closer-dash-toolbar-container" v-if="!hideHeader">
+    <v-row id="closer-dash-toolbar-container">
       <v-col cols="12" id="closer-dash-toolbar">
         <v-toolbar id="closer-dash-title-container" class="elevation-1">
           <v-toolbar-title>Closer Dashboard</v-toolbar-title>
