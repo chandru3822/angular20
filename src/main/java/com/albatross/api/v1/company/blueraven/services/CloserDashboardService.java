@@ -209,6 +209,10 @@ public class CloserDashboardService {
     return sqlCache.queryBySql(CloserDashboardQuery.getSelfGenSources, null, Source.class);
   }
 
+  public List<Source> getLeadsCreatedSources() {
+    return sqlCache.queryBySql(CloserDashboardQuery.getLeadsCreatedSources, null, Source.class);
+  }
+
   public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
     String sqlQuery =
         "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, :trendStart::date, :trendEnd::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[], array[ :leadsCreatedSourceIds ]::bigint[])";

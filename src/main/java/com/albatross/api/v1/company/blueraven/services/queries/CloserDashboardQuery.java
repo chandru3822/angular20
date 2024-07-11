@@ -220,6 +220,16 @@ public class CloserDashboardQuery {
       ORDER BY source_name
     """;
 
+  public final static String getLeadsCreatedSources = """
+    SELECT DISTINCT pd.source source_id,
+             lov.name source_name
+      FROM brs.project_details pd
+        INNER JOIN flow.list_of_value lov ON lov.id = pd.source
+        WHERE lov.parent_id = 520
+        AND pd.company_id = 3
+      ORDER BY source_name
+    """;
+
   //language=PostgreSQL
   public final static String getSelfGenSources = """
     SELECT DISTINCT pd.source source_id,

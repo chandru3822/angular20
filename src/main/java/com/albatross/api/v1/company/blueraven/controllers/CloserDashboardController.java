@@ -94,6 +94,11 @@ public class CloserDashboardController {
     return closerDashboardService.getSelfGenSources();
   }
 
+  @GetMapping(value = "/getLeadsCreatedSources")
+  public List<Source> getLeadsCreatedSources() {
+    return closerDashboardService.getLeadsCreatedSources();
+  }
+
   @PostMapping(value = "/funnel/apptsCreatedPipeline")
   public String apptsCreatedPipeline(@RequestBody FunnelRequest funnelRequest) {
     return closerDashboardService.apptsCreatedPipeline(funnelRequest);

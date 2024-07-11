@@ -1436,7 +1436,7 @@
               <td v-if="funnelDrilldownHeaders[3].show">{{ item.state || '' }}</td>
               <td v-if="funnelDrilldownHeaders[4].show">{{ item.metro_area || '' }}</td>
               <td v-if="funnelDrilldownHeaders[5].show">{{ item.status_type || '' }}</td>
-              <td v-if="funnelDrilldownHeaders[6].show">{{ item.project_name || '' }}</td>
+              <td v-if="funnelDrilldownHeaders[6].show">{{ item.project_name || item.customer_name || '' }}</td>
               <td v-if="funnelDrilldownHeaders[7].show">
                 <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
                              :to="`/project/${item.project_id}/status`">
@@ -2850,14 +2850,18 @@ const loadSources = async() => {
         res.data = filteredData
       }
       brsProvidedSourceData.value = res.data
-      leadsCreatedSourceData.value = res.data
-      fdcSourceData.value = res.data
       brsProvidedSourceModel.value = cloneDeep(filteredData)
-      leadsCreatedSourceModel.value = cloneDeep(filteredData);
-      fdcSourceModel.value = cloneDeep(filteredData);
       getRequest('/closerDashboard/getSelfGenSources', 'blueraven', []).then(res => {
         selfGenSourceData.value = res.data
         selfGenSourceModel.value = cloneDeep(selfGenSourceData.value)
+      })
+
+      getRequest('/closerDashboard/getLeadsCreatedSources', 'blueraven', []).then(res => {
+        leadsCreatedSourceData.value = res.data
+        fdcSourceData.value = res.data
+        let filteredData = res.data.filter((data) => data.sourceName != 'EPC')
+        leadsCreatedSourceModel.value = cloneDeep(filteredData);
+        fdcSourceModel.value = cloneDeep(filteredData);
         apptsCreatedPipelineLoad(1)
       })
     })
@@ -3508,6 +3512,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     case 23: // Yet to occur
     case 11: // Pitched
       // funnelDrilldownHeaders.value[14].show = true // appointment_outcome
+      funnelDrilldownHeaders.value[9].show = true //source
       funnelDrilldownHeaders.value[15].show = true // appointment_outcome
       funnelDrilldownHeaders.value[29].show = isCheckedInColumn // check_in_time
       break
@@ -3521,18 +3526,21 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
       funnelDrilldownHeaders.value[17].show = true // credit_check
       break
     case 4: // Bookings Complete
-      funnelDrilldownHeaders.value[9].show = true
+      funnelDrilldownHeaders.value[9].show = true //source
       funnelDrilldownHeaders.value[18].show = true // installation_agreement_signed_date
       funnelDrilldownHeaders.value[20].show = true // site_survey_completed_date
       break
     case 5: // Site Surveys Verified
+      funnelDrilldownHeaders.value[9].show = true //source
       funnelDrilldownHeaders.value[19].show = true // site_survey_verified_date
       break
     case 6: // Final Designs sent to Homeowner
+      funnelDrilldownHeaders.value[9].show = true //source
       funnelDrilldownHeaders.value[21].show = true // final_design_sent_to_homeowner_date
       funnelDrilldownHeaders.value[22].show = true // final_design_signed_date
       break
     case 7: // Final Designs Approved
+      funnelDrilldownHeaders.value[9].show = true //source
       funnelDrilldownHeaders.value[22].show = true // final_design_signed_date
       funnelDrilldownHeaders.value[25].show = true // financial_agreement_signed_date
       funnelDrilldownHeaders.value[23].show = true // proof_of_homeowners_insurance_obtained_date
@@ -3544,6 +3552,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
       funnelDrilldownHeaders.value[27].show = true // final_design_complete_date
       break
     case 8: // Installations Completed
+      funnelDrilldownHeaders.value[9].show = true //source
       funnelDrilldownHeaders.value[28].show = true // substantial_completion_date
       break
     case 34:
