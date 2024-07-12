@@ -2,7 +2,8 @@
 import { defineStore } from 'pinia'
 
 const defaultState = {
-  projectFilter: '' // filter value when on the project search page
+  projectFilter: '', // filter value when on the project search page
+  projectSearchString: ''
 }
 export const useStickyStore = defineStore('StickyStore', {
   persist: false,

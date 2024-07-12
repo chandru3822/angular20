@@ -12,7 +12,6 @@
           <SuperSearch
             class="px-3"
             :filter-options="headers"
-            :initial-value="searchQuery"
             v-model="searchQuery"
             @click:clear="searchProjects"
             :keyup.enter="closeKeyboard"
@@ -130,6 +129,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import SuperSearch from "@/components/SuperSearch.vue";
+import {useStickyStore} from "@/stores/StickyStore.js";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -137,6 +137,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const stickyStore = useStickyStore()
 
 const vuetify = vueInstance.$vuetify
 
@@ -206,12 +207,11 @@ const setSearchQuery = (newValue, columnName="") => {
   searchProjects()
 }
 onMounted(() => {
-  if(useSavedFilters.value === 'true') {
-    searchQuery.value = localStorage.getItem('projectSearch') || ''
+  if (stickyStore.projectSearchString === "") {
+    getProjects()
   } else {
-    localStorage.removeItem('projectSearch')
+    searchProjects()
   }
-  getProjects()
 })
 
 watch(page, async() => {
@@ -240,7 +240,6 @@ const getRoute = (project) => {
 }
 const getProjects = async() => {
   const {page, itemsPerPage} = options.value
-
   if(source.value){
     source.value.cancel();
   }
@@ -271,7 +270,6 @@ const getProjects = async() => {
 const searchProjects = debounce((query) => {
   //don't allow searchQuery to be null - causes issues
   searchQuery.value = searchQuery.value || ''
-  localStorage.setItem('projectSearch', searchQuery.value)
   getProjects()
 }, 500)
 const closeKeyboard = () => {

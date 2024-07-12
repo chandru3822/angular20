@@ -30,6 +30,7 @@
 import {ref, onMounted, defineProps, getCurrentInstance, computed, reactive} from "vue";
 import debounce from "lodash.debounce";
 import {useStickyStore} from "@/stores/StickyStore.js";
+import {onBeforeRouteLeave} from "vue-router/composables";
 
 const stickyStore = useStickyStore()
 
@@ -74,7 +75,6 @@ const syncSearchBar = () => {
   vueInstance.$nextTick(() => vueInstance.$refs.focusSearchBar.focus())
 }
 
-
 const debouncedSyncFilter = debounce(() => {
   syncFilter()
   let found
@@ -100,6 +100,7 @@ const syncFilter = () => {
   } else {
     filterSelection.value = ""
   }
+  stickyStore.projectSearchString = searchString.value
 }
 
 const createSearchRegex = () => {
@@ -115,11 +116,24 @@ const createSearchRegex = () => {
 }
 
 onMounted(() => {
+  console.log(`SS Start OnMounted: ${searchString.value}`)
   createSearchRegex()
   filterSelection.value = stickyStore?.projectFilter
   if (filterSelection.value !== '') {
     searchString.value = props.filterOptions.find(f => filterSelection.value === f.value).text.concat(': ')
   }
+  if (stickyStore.projectSearchString !== '') {
+    searchString.value = stickyStore.projectSearchString
+  }
+})
+
+onBeforeRouteLeave(async (to, from, next) => {
+  if (to.path.includes("/project")) {
+    stickyStore.projectSearchString = searchString.value
+  } else {
+    stickyStore.projectSearchString = ""
+  }
+  next()
 })
 
 </script>
