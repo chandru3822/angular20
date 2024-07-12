@@ -555,8 +555,9 @@ const getWorkDetails = async() => {
 
     //hide default columns based on backend
     workQueue.value.defaultColumnDisplay.forEach(c => {
+
       if (!c.show) {
-        const index = headers.value.findIndex((h) => h.value === c.value)
+        const index = headers.value.findIndex((h) => h.text === c.text)
         headers.value[index].show = false
       }
     })
