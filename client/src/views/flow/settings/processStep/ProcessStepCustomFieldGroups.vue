@@ -496,7 +496,7 @@
                             <div class="text-center">(click to copy)</div>
                           </v-tooltip>
                           <v-menu offset-y
-                                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="userCanEdit">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
