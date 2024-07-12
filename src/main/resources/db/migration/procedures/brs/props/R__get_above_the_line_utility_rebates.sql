@@ -153,6 +153,7 @@ BEGIN
           if p_main_panel_upgrade_cost > 0 then
             v_denver_care_rebate_mpu =
               least((p_main_panel_upgrade_cost * x.mpu_rebate_percent_of_cost), x.mpu_rebate_cap_amount);
+            v_above_the_line_rebate_amount = v_above_the_line_rebate_amount + v_denver_care_rebate_mpu;
             v_rebates = COALESCE(v_rebates, '{}'::jsonb) ||
                         jsonb_build_object('Denver Care Rebate (Electric Service Upgrade)',
                                            round(v_denver_care_rebate_mpu, 2));
@@ -160,8 +161,10 @@ BEGIN
           if p_storage_capacity > 0 then
             if 2509 = any (p_rebate_id) then
               v_denver_care_rebate_battery = 2750;
+              v_above_the_line_rebate_amount = v_above_the_line_rebate_amount + v_denver_care_rebate_battery;
             else
               v_denver_care_rebate_battery = 500;
+              v_above_the_line_rebate_amount = v_above_the_line_rebate_amount + v_denver_care_rebate_battery;
             end if;
             v_rebates = COALESCE(v_rebates, '{}'::jsonb) ||
                         jsonb_build_object('Denver Care Rebate (Battery)', round(v_denver_care_rebate_battery, 2));
