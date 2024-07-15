@@ -6,8 +6,13 @@
 *
 *@description
 * props
-*   value: Boolean
-*   userIdIn: Number
+*   currentUserId: Number,
+    userIdToMessage: Number, -- dialog displays when this prop has a value
+    title: String,
+    adjustVertical: {
+      type:Boolean,
+      default: true
+    }
 *
 *
 */
@@ -23,13 +28,12 @@ const props = defineProps({
   currentUserId: Number,
   userIdToMessage: Number,
   title: String,
-  centerLeft:Boolean,
   adjustVertical: {
     type:Boolean,
     default: true
   }
 })
-const {currentUserId, userIdToMessage, centerLeft, adjustVertical} = toRefs(props)
+const {currentUserId, userIdToMessage, adjustVertical} = toRefs(props)
 const emit = defineEmits(['close'])
 
 const userAssigned = ref(false)
@@ -38,6 +42,7 @@ const teamsAssociatedToUser = ref([])
 const teamNamesAssociatedToUser = ref([])
 const conversationIsLoading = ref(false)
 const userHasTeam = ref(false)
+const minimized = ref(false)
 
 
 const appStore = useAppStore()
@@ -45,6 +50,7 @@ const appStore = useAppStore()
 watch(userIdToMessage, () => {
   if(userIdToMessage.value) {
     fetchTeamsForUser()
+    minimized.value = false
   }
   else {
     resetAllRefs()
@@ -138,19 +144,20 @@ const joinConversation = async (selectedTeam) => {
 }
 
 const getContentClass = () => {
-  if(centerLeft.value && adjustVertical.value) {
-    return 'messaging-dialog map-open'
-  }
-  else if(adjustVertical.value) {
+  if(adjustVertical.value) {
     return 'messaging-dialog'
   }
   return ''
+}
+
+const minimize = () => {
+  minimized.value = !minimized.value
 }
 </script>
 
 <template>
   <v-dialog :value="userIdToMessage"  @click:outside="emit('close')" custom-classes="px-0" width="500" hide-overlay :content-class="getContentClass()">
-    <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned}"><!--the v-if is to make sure the messages reset when you close the dialog-->
+    <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned, 'minimized': minimized}"><!--the v-if is to make sure the messages reset when you close the dialog-->
       <div class="d-flex flex-column one-hunned px-0 sticky-header srmd-header" :class="{'srmd-header-dense': messageProperties.smsTeamOwners?.length <= 0}">
         <div class="d-flex px-4 py-2 align-start">
           <v-tooltip right>
@@ -162,10 +169,12 @@ const getContentClass = () => {
             Open user in new tab
           </v-tooltip>
           <v-spacer/>
+          <a-btn :prepend-icon="minimized ? 'mdi-chevron-up' : 'mdi-minus'" variant="text" icon @click="minimize"/>
           <a-btn prepend-icon="mdi-close" variant="text" icon @click="emit('close')"/>
         </div>
         <div v-if="messageProperties.smsTeamOwners?.length > 0" class="one-hunned">
       <TeamAssignmentChips
+          v-if="!minimized"
           :sms-team-owners="messageProperties.smsTeamOwners"
           :team-names-associated-to-user="teamNamesAssociatedToUser"
           :reloading="conversationIsLoading"
@@ -180,7 +189,7 @@ const getContentClass = () => {
         </div>
 
       </div>
-    <Messaging :user-id-in="userIdToMessage" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned" hide-template-btn/>
+    <Messaging v-if="!minimized" :user-id-in="userIdToMessage" :teams-associated-to-user="teamsAssociatedToUser" :user-assigned="userAssigned" hide-template-btn/>
     </div>
   </v-dialog>
 </template>
@@ -212,11 +221,9 @@ const getContentClass = () => {
 
   ::v-deep .messaging-dialog {
     position: absolute;
-    bottom: 5%;
+    bottom: -22px;
+    left:0;
 
-    &.map-open {
-      left: 8%;
-    }
   }
 }
 
@@ -235,4 +242,8 @@ const getContentClass = () => {
   max-height:350px;
 }
 
+#schedule-resource-message-dialog.minimized > div.srmd-header[data-v-b6bbbd73] {
+  height: 52px !important;
+  max-height: 52px !important;
+}
 </style>
