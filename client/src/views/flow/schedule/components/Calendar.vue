@@ -1,7 +1,7 @@
 <template>
   <div id="calendar-container">
-
-    <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1">
+    <MessagingDialog v-if="currentUserId" :current-user-id="currentUserId" :user-id-to-message="userToMessage?.userId" :title="userToMessage?.title" :center-left="mapOpen" @close="[userToMessage = null]"/>
+    <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1" :class="{'background-clear': isSidebarView}">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
   <v-row class="py-0 d-flex align-baseline">
@@ -268,7 +268,7 @@
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
             <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
-            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
+            <a v-else :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
             <div>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
@@ -279,6 +279,14 @@
                 </template>
                 <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
                 <span v-else>Pin on map</span>
+              </v-tooltip>
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+                <template v-slot:activator="{on}">
+                  <a-btn v-if="resource.id.charAt(0)==='2' && !isSidebarView && userCanSms" icon size="small" @click="[userToMessage = {userId: Number(resource.id.substring(1)), title:resource.title}]" :activation-handler="on" class="mx-1">
+                    <v-icon color="grey darken-1">mdi-forum</v-icon>
+                  </a-btn>
+                </template>
+                <span>Message Resource</span>
               </v-tooltip>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
@@ -322,6 +330,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
+import MessagingDialog from "@/views/flow/schedule/components/MessagingDialog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -332,6 +341,8 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
 const filters = vueInstance.$filters
+
+const userToMessage = ref(null)
 
 const resourcesExpandedMobile = ref(false)
 
@@ -344,6 +355,10 @@ const collapseExpandResources = () => {
 
 const eventCalendar = ref(null)
 const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
+const userCanSms = computed(() => userStore.userHasFeature('SMS_INBOX'))
+const currentUserId = computed(() => {
+  return userStore.details.id
+})
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -356,6 +371,8 @@ const props = defineProps({
   showFilters:Boolean,
   preselectedEvent: {type:Object, required: false}
 })
+
+const isSidebarView = computed(() => route.path.includes('inboxConversation'))
 
 const timezone = ref(scheduleStore.getTimezone)
 const scheduleTimezone = computed(() => scheduleStore.getTimezone)
@@ -549,6 +566,11 @@ const sortedUsers = computed(() => {
   const usUsers = users.value?.length > 0 ? users.value?.filter(user => !selectedUsers.value?.includes(user)) : [];
   return sUsers.concat(usUsers)
 })
+
+const isResourceUser = (resource) => {
+  const found = users.value.find(u => u.id === resource.id)
+  return !!found
+}
 
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
@@ -1329,6 +1351,9 @@ a.resource-title:hover{
   @media(max-width: 600px) {
     max-height:50%;
     overflow-y: scroll;
+  }
+  &.background-clear {
+    background-color: transparent;
   }
 }
 .calendar-resize-container {

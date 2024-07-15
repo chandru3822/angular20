@@ -19,6 +19,7 @@
     "@fullcalendar/moment-timezone": "^6.1.10",
     "@fullcalendar/resource": "^6.1.10",
     "@fullcalendar/resource-timeline": "^6.1.10",
+	"@fullcalendar/timegrid": "^6.1.14",
     "@fullcalendar/vue": "^6.1.10",
     "@mdi/font": "^7.4.47",
     "@sentry/vue": "^8.7.0",

@@ -24,7 +24,9 @@
   >
     <slot name="default">
       <template>
-        <v-icon v-if="props.prependIcon" :class="{'mr-1': props.text !== ''}">
+        <v-icon v-if="props.prependIcon" :class="{'mr-1': props.text !== ''}" :large="props.size === 'large'"
+                :small="props.size === 'small'"
+                :x-small="size === 'x-small'">
           {{ props.prependIcon }}
         </v-icon>
         <span :class="{ 'hide-sm': props.hideTextOnMobile }">

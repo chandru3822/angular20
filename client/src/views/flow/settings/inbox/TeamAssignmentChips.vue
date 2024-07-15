@@ -125,7 +125,7 @@
         </v-card>
 
       </v-dialog>
-      <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly">
+      <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly && !miniDialog">
         <template v-slot:activator="{on: menu, attrs}">
           <v-tooltip top small>
             <template v-slot:activator="{on: tooltip, attrs}">
@@ -169,7 +169,8 @@ const props = defineProps({
   showSelectedStyles: Boolean,
   showAssignToMeButton: Boolean,
   reloading: Boolean,
-  userId: Number
+  userId: Number,
+  miniDialog: Boolean
 })
 
 const showRemoveDialog = ref(false)
