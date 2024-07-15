@@ -89,6 +89,10 @@ const filterByParentId = (parent) => {
     outline: 1px solid #2196f3 !important;
   }
 
+  &:hover {
+    outline: 2px dashed white !important;
+  }
+
   &.debug {
     position: relative;
 

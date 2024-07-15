@@ -1,86 +1,176 @@
 <template>
-  <v-card flat v-if="availableBlocks.length > 0">
-    <v-card-title>Add Component</v-card-title>
-    <div class="d-flex">
+  <v-card flat class="height-one-hunned">
+    <v-card-title class="pb-0">Add Component Block</v-card-title>
+    <div class="d-flex flex-column px-4">
+      <v-card flat class="px-3 mb-4">
+      <a-text-field type="string"
+                    color="primary"
+                    v-model="blockName"
+                    dense
+                    label="Block Name"
+                    class="pb-2"
+      ></a-text-field>
       <a-select
-          variant="outlined"
           density="compact"
-          v-model="newComponent"
+          variant="outlined"
+          v-model="newComponentType"
           :items="availableBlocks"
           item-title="label"
           item-value="id"
           return-object
-          single-line
+          label="Block Type"
       />
+      </v-card>
+      <div v-if="newComponentType && newComponentType !== PAGE_BLOCK">
+        <v-card flat class="text-left px-3" color="transparent">
+          <v-card-title class="px-0 py-0">Parent</v-card-title>
+          <v-card-text>
+           <a-text-field :value="parentBlock?.displayName" hint="Please select parent block from pdf or tree tab." :rules="parentRules()">
+           </a-text-field>
+          </v-card-text>
+        </v-card>
+      </div>
+      <div v-if="newComponentType === PAGE_BLOCK || (!!parentBlock.id && parentBlock.blockTypeId !== TEXT_BLOCK.typeId)" class="pb-4">
+      <v-card flat class="text-left px-3" color="transparent">
+        <v-card-title class="px-0 pt-0">Location</v-card-title>
+        <v-card-text>
+        <LocationSelectorWidget attr="pageLocation" :existing-blocks="siblings" @input="setLocation($event)"/>
+        </v-card-text>
+      </v-card>
+      </div>
+<!--      <div v-if-->
+      <div class="d-flex justify-end mx-0">
+        <a-btn text="Cancel" style="width: 25%" variant="outlined" class="mr-2" @click="emit('cancel')"/>
       <a-btn
+          style="width: 70%"
         color="primary"
-        :disabled="!newComponent"
-        @click="add(newComponent)"
+        :disabled="!newComponentReadyToAdd"
+        @click="add(newComponentType)"
         text="Add"
       ></a-btn>
+      </div>
     </div>
   </v-card>
 </template>
 <script setup>
-import { computed, ref } from 'vue'
+import {computed, ref, watch} from 'vue'
 import useProposalStore from '../store.js'
+import LocationSelectorWidget from "@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue";
+import {storeToRefs} from "pinia";
+import {BLOCK_TYPES, PAGE_BLOCK, TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK} from "@/views/blueraven/settings/proposalDesigner/blocks/PropsDesignerConstants.js";
 
 const store = useProposalStore()
+const props = defineProps({
+  existingBlocks:Array,
+})
+const emit = defineEmits(['cancel', 'input'])
 
-const TEXT_BLOCK = {
-  id: 'TextBlock',
-  typeId: 3,
-  label: 'Text Block',
-  value: {
-    type: 'doc',
-    content: [
-      {
-        type: 'paragraph',
+const selected = computed(() => store.selectedBlock)
+const { selectedId } = storeToRefs(store)
+
+const parentBlock = ref({})
+const parentRules = () => [
+    () =>  (parentBlock) || `Parent is required for block type ${newComponent.value.blockType}`,
+    () =>  (parentBlock?.value?.blockTypeId !== TEXT_BLOCK.typeId) || `Parent Block cannot be a ${TEXT_BLOCK.label}`
+  ]
+
+
+watch(selectedId, async () => {
+  if(newComponentType.value.typeId !== PAGE_BLOCK.typeId) {
+    parentBlock.value = selected.value
+  }
+})
+
+const siblings = computed(() => props.existingBlocks.filter(b => {
+  if(!newComponentType.value?.typeId){
+    return false
+  } else if(newComponentType.value.typeId === PAGE_BLOCK.typeId){
+    return b.parentId === undefined
+  }
+  return b.parentId === parentBlock?.value?.id
+}))
+
+const newComponentType = ref(null)
+const newComponent = ref({
+  templateId: 1,//hardcoded for now, if we start doing more templates, will need to change
+  blockStyle:{
+    backgroundPosition:"center center",
+    backgroundSize:"cover",
+    color:"#000000",
+    display:"block",
+    width: "100%"
+  },
+  id:-1,
+})
+const getValueByTypeId = (typeId) => {
+  switch (typeId){
+    case TEXT_BLOCK.typeId:
+      return {
+        type: 'doc',
         content: [
           {
-            type: 'text',
-            text: 'Add text here'
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Add text here'
+              }
+            ]
           }
         ]
       }
-    ]
+
+    case IMAGE_BLOCK.typeId:
+      return { url: 'https://picsum.photos/200' }
+    case PAGE_BLOCK.id:
+    case CONTAINER_BLOCK.typeId:
+    case PLACEHOLDER_BLOCK.typeId:
+    default:
+      return {}
   }
 }
-const IMAGE_BLOCK = {
-  id: 'ImageBlock',
-  label: 'Image Block',
-  typeId: 4,
-  value: { url: 'https://picsum.photos/200' }
-}
-const CONTAINER_BLOCK = {
-  id: 'ContainerBlock',
-  label: 'Container Block',
-  typeId: 2,
-  value: {}
-}
-const PLACEHOLDER_BLOCK = {
-  id: 'PlaceholderBlock',
-  label: 'Placeholder Block',
-  typeId: 5,
-  value: {}
+const blockOrder = ref(null)
+const parentId = ref(null)
+const blockLocation = ref(null)
+const blockName = ref(null)
+
+const setLocation = (locationInfo) => {
+  parentId.value = locationInfo.parentId
+  blockLocation.value = locationInfo
 }
 
-const AVAILABLE = {
-  PageBlock: [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK],
-  ContainerBlock: [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
-}
-const newComponent = ref(null)
-
-const emit = defineEmits(['input'])
 
 const availableBlocks = computed(() => {
-  if (!store.selectedBlock) {
-    return []
-  }
-  return AVAILABLE[store.selectedBlock?.blockType] ?? []
+  return BLOCK_TYPES
 })
-const add = ({ id, typeId, value }) => {
-  emit('input', { blockType: id, blockTypeId: typeId, blockValue: value })
+const newComponentReadyToAdd = computed(() => {
+  if(!newComponent || blockLocation.value === null){
+    return false
+  }
+  if(newComponent.value === PAGE_BLOCK){
+    return true
+  }
+  return true
+})
+const add = ({ id, typeId }) => {
+  const value = getValueByTypeId(typeId) //doing it this way because when I tried to get it direct from the constants I was getting observables, which was causing weirdness
+  emit('input', {
+    newBlock: {
+      ...newComponent.value,
+      blockType: id,
+      blockTypeId: typeId,
+      blockValue: value,
+      blockName: blockName.value,
+      blockOrder: blockOrder.value,
+      parentId: parentBlock.value.id,
+      version: 0,
+      modified: true
+    },
+    blockLocation: {
+      blockLocation: blockLocation.value.location,
+      relativeBlock: blockLocation.value.relativeBlock
+    }
+  })
   newComponent.value = null
 }
 </script>

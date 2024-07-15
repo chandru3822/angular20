@@ -21,6 +21,8 @@ public class ProposalTemplateBlock implements Serializable {
 
   private String blockType;
 
+  private String blockName;
+
   private Integer blockKindId;
 
   private String blockKind;

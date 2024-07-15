@@ -46,6 +46,16 @@ public class ProposalTemplateController {
         templateId, update.blocks, details.getTrueUserId());
   }
 
+  @PostMapping(value = "/{templateId}/archiveBlock/{blockId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+  public List<Integer> archiveBlockFromTemplate(
+          @PathVariable Long templateId,
+          @PathVariable Integer blockId,
+          @AuthenticationPrincipal UserAccountDetails details
+  ){
+      return proposalTemplateService.archiveBlockFromTemplate(templateId, blockId, details.getTrueUserId());
+  }
+
   @GetMapping(value = "/tags")
   public List<ProposalTag> getTemplateTags() {
     return proposalTemplateService.getAvailableTags();
