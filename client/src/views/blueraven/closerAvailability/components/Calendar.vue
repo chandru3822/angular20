@@ -22,6 +22,14 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
  const vuetify = vueInstance.$vuetify
 const filters = vueInstance.$filters
+const resourcesExpandedMobile = ref(false)
+
+const collapseExpandResources = () => {
+  resourcesExpandedMobile.value = !resourcesExpandedMobile.value
+  let calendarApi = eventCalendar.value.getApi()
+  calendarApi.setOption('resourceAreaWidth', vuetify.breakpoint.smAndDown && !resourcesExpandedMobile.value ? '25%' : 300 )
+
+}
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 const eventCalendar = ref(null)
@@ -43,7 +51,7 @@ const calendarOptions = ref({
   initialView: 'resourceTimelineDay',
   firstDay: 1,
   resources: [],
-  resourceAreaWidth: 300,
+  resourceAreaWidth: vuetify.breakpoint.smAndDown && !resourcesExpandedMobile.value ? '25%' : 300,
   eventSources:[
     (info, successCallback, failureCallback) => getEventSources(info, successCallback, failureCallback)
   ],
@@ -497,7 +505,14 @@ onMounted (async () => {
         </v-tooltip>
         <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
       </template>
-
+      <template v-slot:resourceAreaHeaderContent>
+        <div class="d-flex one-hunned">
+          <a-btn v-if="vuetify.breakpoint.smAndDown" variant="text" icon size="small" @click="collapseExpandResources">
+            <v-icon v-if="resourcesExpandedMobile">mdi-unfold-less-vertical</v-icon>
+            <v-icon v-else>mdi-unfold-more-vertical</v-icon></a-btn>
+          <span>Resources</span>
+        </div>
+      </template>
     </FullCalendar>
     </div>
   </div>

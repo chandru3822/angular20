@@ -244,7 +244,13 @@
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
         <template v-slot:resourceAreaHeaderContent>
           <div class="d-flex justify-space-between align-baseline">
-          <span>Resources</span>
+          <span>
+            <a-btn v-if="vuetify.breakpoint.smAndDown" variant="text" icon size="small" @click="collapseExpandResources">
+            <v-icon v-if="resourcesExpandedMobile">mdi-unfold-less-vertical</v-icon>
+            <v-icon v-else>mdi-unfold-more-vertical</v-icon>
+            </a-btn>
+            Resources
+          </span>
             <div>
             <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
               <template v-slot:activator="{on}">
@@ -327,6 +333,15 @@ const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
 const filters = vueInstance.$filters
 
+const resourcesExpandedMobile = ref(false)
+
+const collapseExpandResources = () => {
+  resourcesExpandedMobile.value = !resourcesExpandedMobile.value
+  let calendarApi = eventCalendar.value.getApi()
+  calendarApi.setOption('resourceAreaWidth', vuetify.breakpoint.smAndDown && !resourcesExpandedMobile.value ? '25%' : 300 )
+
+}
+
 const eventCalendar = ref(null)
 const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
 
@@ -353,7 +368,7 @@ const calendarOptions = ref({
   firstDay: 1,
   initialView: 'resourceTimelineDay',
   resources: [],
-  resourceAreaWidth: vuetify.breakpoint.smAndDown? 200: 300,
+  resourceAreaWidth: vuetify.breakpoint.smAndDown? '25%': 300,
   resourceGroupLaneClassNames:['resourceLaneClass'],
   schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   eventSources:[
