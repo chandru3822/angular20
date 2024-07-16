@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomBehaviorService;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.ObjectType;
@@ -39,6 +40,7 @@ import java.util.*;
 public class ContactService {
 
   private final SqlCache sqlCache;
+  private final SqlCacheRO sqlCacheRO;
 
   private final SecurityService securityService;
 
@@ -101,12 +103,16 @@ public class ContactService {
       searchSql = ContactQuery.search;
     }
 
-    List<Contact> results =
-      sqlCache.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
+    List<Contact> results;
+    // move contact searching to replica to help balance DB load
+    if (searchSql.equals(ContactQuery.search)) {
+        results = sqlCacheRO.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
+    } else {
+        results = sqlCache.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
+    }
 
     int count = 10000;
-    return new PageImpl<>(
-      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public Contact getContact(Long contactId) {

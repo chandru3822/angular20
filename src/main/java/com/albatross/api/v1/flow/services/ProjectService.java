@@ -5,6 +5,7 @@ import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
@@ -50,6 +51,7 @@ import java.util.*;
 public class ProjectService {
 
   private final SqlCache sqlCache;
+  private final SqlCacheRO sqlCacheRO;
   private final SecurityService securityService;
   private final ProjectStatusService projectStatusService;
   private final AttachmentService attachmentService;
@@ -178,12 +180,15 @@ public class ProjectService {
       searchSql = ProjectQuery.search;
     }
 
-    List<Project> projects =
-      sqlCache.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
-
+    List<Project> projects;
+    // move project searching to replica to help balance DB load
+    if (searchSql.equals(ProjectQuery.search)) {
+        projects = sqlCacheRO.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
+    } else {
+        projects = sqlCache.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
+    }
     int total = 10000;
-    return new PageImpl<>(
-      projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
+    return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
   public List<ProjectStatusCount> projectCountsByStatus(String overrideType) {
