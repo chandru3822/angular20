@@ -19,4 +19,5 @@ public class AhjDesign {
     // these are only used when updates are performed for all AHJ Designs in a specified state
     private Boolean updateAllInState;
     private List<Long> ahjIds, designIds;
+    private Boolean archived;
 }

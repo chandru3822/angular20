@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.featDB.DatabaseHistory;
 import com.albatross.api.v1.company.blueraven.services.featDB.AhjDesignService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class AhjDesignController {
 
     private final AhjDesignService ahjDesignService;
 
+    @PostAuthorize("returnObject.get().getArchived() == true && hasFeatureAccessLevel('AHJ_ADMIN') || returnObject.get().getArchived() == false")
     @GetMapping(value = "")
     public Optional<AhjDesignDetail> getAhjDesignDetail(@PathVariable Long ahjId) {
         return ahjDesignService.getAhjDesignDetailByAhjId(ahjId);

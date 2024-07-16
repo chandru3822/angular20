@@ -13,7 +13,7 @@ public class Utility {
     private Long id;
     private Long utilityId, ahjId, stateId, metroAreaId, companyStateId;
     private String name, metroArea, state;
-    private Boolean archived;
+    private Boolean archived, active;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

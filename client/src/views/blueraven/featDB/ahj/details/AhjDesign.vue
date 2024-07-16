@@ -143,6 +143,9 @@ import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import axios from "axios";
+import constants from "@/helpers/constants.js";
+import {requestInterceptor, responseInterceptor} from "@/helpers/interceptors.js";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -184,7 +187,17 @@ const expandedAll = computed(() => {
 const ahjId = computed(() => {
   return route.params.ahjId
 })
+const http = axios.create({
+  baseURL: `${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/flow`,
+})
+http.interceptors.request.use(requestInterceptor)
+http.interceptors.response.use((response) => {
+  if (response.status !== 403 && response.status !== 500 && response.status !== 200) {
+    responseInterceptor({ response })
+  }
 
+  return response
+})
 
 onMounted(async() => {
   //this is how it was before. don't hate
@@ -215,21 +228,29 @@ const toggleMinimizeAll = () => {
 
 }
 const getChangeLog = async() => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/design/getAhjDesignHistory`, 'blueraven')
-    changeLog.value = cloneDeep(data)
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving AHJ Design Change Log')
-    appStore.loading = false
+  if (hasManageAccess) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/design/getAhjDesignHistory`, 'blueraven')
+      changeLog.value = cloneDeep(data)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error retrieving AHJ Design Change Log')
+      appStore.loading = false
+    }
   }
 }
 const getAhjDesign = async() => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/design`, 'blueraven')
+    const apiPath ='company/blueraven'
+    const path = `/featDb/utility/${utilityId.value}`
+    const {data, status} = await http.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {
+      data: {},
+      status: null
+    }
+    // const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/design`, 'blueraven')
     window.document.title = `AHJ - ${data.ahjName}`
     ahjDesign.value = cloneDeep(data)
     ahjDesign.value.updateAllInArea = "";

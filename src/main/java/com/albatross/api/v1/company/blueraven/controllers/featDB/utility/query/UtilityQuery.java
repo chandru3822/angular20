@@ -12,7 +12,8 @@ public class UtilityQuery {
                  cs.state_id,
                  s.state,
                  s.abbreviation as state_abbreviation,
-                 u.archived
+                 u.archived,
+                 u.active
           FROM brs.feat_db_utility u
                    LEFT JOIN flow.list_of_value lov ON lov.id = u.metro_area_id
                    left join flow.company_state cs on cs.id = u.company_state_id
@@ -28,7 +29,8 @@ public class UtilityQuery {
              metro_area_id = :metroAreaId,
              company_state_id = :companyStateId,
              date_modified = now(),
-             modified_by_id = :currentUser
+             modified_by_id = :currentUser,
+             active = :active
            WHERE id = :id
     """;
 
@@ -41,14 +43,36 @@ public class UtilityQuery {
             metro_area_id = :metroAreaId,
             company_state_id = :companyStateId,
             date_modified = now(),
-            modified_by_id = :currentUser
+            modified_by_id = :currentUser,
+            active = :active
           WHERE id = :id
     """;
 
   //language=PostgreSQL
   public final static String insert = """
-           INSERT INTO brs.feat_db_utility(name, archived,  metro_area_id, company_state_id, date_created, created_by_id,date_modified, modified_by_id)
-           VALUES (:utilityName, false, :metroAreaId, :companyStateId,now(), :currentUser, now(), :currentUser)
+           INSERT INTO brs.feat_db_utility(name, archived,  metro_area_id, company_state_id, date_created, created_by_id,date_modified, modified_by_id, active)
+           VALUES (:utilityName, false, :metroAreaId, :companyStateId,now(), :currentUser, now(), :currentUser, true)
+    """;
+
+  //language=PostgreSQL
+  public final static String delete = """
+    UPDATE brs.feat_db_utility
+          SET
+            archived = true,
+            active = false,
+            date_modified = now(),
+            modified_by_id = :userId
+          WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String restore = """
+    UPDATE brs.feat_db_utility
+          SET archived = false,
+              active = true,
+              date_modified = now(),
+              modified_by_id = :userId
+          WHERE id = :id and archived = true
     """;
 
   //language=PostgreSQL
@@ -150,5 +174,9 @@ public class UtilityQuery {
         order by ucfva.date_modified desc;
     """;
 
+  //language=PostgreSQL
+  public final static String utilityArchiveStatus = """
+    select archived from brs.feat_db_utility where id = :id;
+    """;
 
 }

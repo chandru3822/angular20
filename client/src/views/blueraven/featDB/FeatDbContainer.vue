@@ -15,12 +15,15 @@
             ></a-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
+          <v-switch class="pt-6" label="Show Inactive" v-model="showInactiveItems" v-if="showInactiveSwitch"></v-switch>
         </v-toolbar>
       </v-col>
     </v-row>
     <router-view
       :nameSearch="nameSearchValue"
-      @updateNameSearch="updateNameSearch"></router-view>
+      :showInactive="showInactiveItems"
+      @updateNameSearch="updateNameSearch">
+    </router-view>
   </v-container>
 </template>
 
@@ -28,10 +31,12 @@
   import constants from '@/helpers/constants'
 
   import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import { getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
   import {useUserStore} from '@/stores/UserStore.js'
   import {useRoute, useRouter} from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStore.js'
+  import axios from "axios";
+  import {requestInterceptor, responseInterceptor} from "@/helpers/interceptors.js";
 
   const appStore = useAppStore()
   const route = useRoute()
@@ -40,10 +45,25 @@
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
 
+  const http = axios.create({
+    baseURL: `${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/flow`,
+  })
+  http.interceptors.request.use(requestInterceptor)
+  http.interceptors.response.use((response) => {
+    if (response.status !== 403 && response.status !== 200) {
+      responseInterceptor({ response })
+    }
+
+    return response
+  })
   const nameSearchValue = ref('')
 
   const tabs = ref(FEAT_DB_TABS)
-
+  // const showInactive = ref(false)
+  const showInactiveSwitch = computed(() => {
+    return tabs.value.map(t => t.path).includes(route.path)
+  })
+  const showInactiveItems = ref(false)
 
   const isActiveBtn = (btn)  => {
     return btn.pathMatches.some(pm => {

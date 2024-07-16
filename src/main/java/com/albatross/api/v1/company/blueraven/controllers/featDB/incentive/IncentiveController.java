@@ -4,6 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.featDB.IncentiveService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class IncentiveController {
     return incentiveService.getAllIncentives();
   }
 
+  @PostAuthorize("returnObject.get().getArchived() == true && hasFeatureAccessLevel('INCENTIVE_ADMIN') || returnObject.get().getArchived() == false")
   @GetMapping(value = "/{id}")
   public Optional<IncentiveDetail> getIncentiveById(@PathVariable Long id) {
     return incentiveService.getIncentiveById(id);
@@ -51,11 +53,15 @@ public class IncentiveController {
     return incentiveService.updateIncentive(incentive);
   }
 
-  @DeleteMapping(value="/{id}")
+  @DeleteMapping(value="/{id}/archive")
   public void deleteIncentive(@PathVariable Long id) {
       incentiveService.deleteIncentive(id);
   }
 
+  @PostMapping(value = "/{id}/restore")
+  public Optional<IncentiveDetail> restoreAhj(@PathVariable Long id) {
+    return incentiveService.restoreIncentive(id);
+  }
   // CONTACTS
   @PostMapping(value = "/{incentiveId}/contacts")
   public Optional<FeatDbContact> addIncentiveContact(@PathVariable Long incentiveId,

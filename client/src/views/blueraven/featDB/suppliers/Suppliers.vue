@@ -59,44 +59,51 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
+            <tr :class="{'shaded-row': !(index % 2)}" class="clickable text-sm-left row-hover"
+                v-if="item.archived === false || (item.archived === true && userStore.userHasFeatureAccessLevel('SUPPLIER', 'ADMIN'))"
+            >
               <td class="text-left clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/supplier/${item.id}/details`">
-                  {{ item.name || '' }}
+                  <v-chip
+                    color="warning"
+                    small
+                    v-if="item.archived === true &&
+                    userStore.userHasFeatureAccessLevel('SUPPLIERS', 'ADMIN')"
+                    class="mr-2">
+                    ARCHIVED
+                  </v-chip>
+                  <span :class="{'strike-thru': !item.active}">{{ item.name ? item.name : '' }}</span>
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/supplier/${item.id}/details`">
                   {{ item.state || '' }}
                 </router-link>
               </td>
-              <td class="text-right">
-                <a-btn
-                    :to="`/database/supplier/${item.id}/details`"
-                    variant="text"
-                    size="x-small"
-                    fab
-                    color="unset"
-                    prepend-icon="mdi-arrow-right"
-                ></a-btn>
-                <a-btn
-                    v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')"
-                    size="small"
-                    icon
-                    color="primary"
-                    class="mr-3 feat-db-link-icon"
-                    @click="editSupplier(item)"
-                    prepend-icon="edit"
-                ></a-btn>
-                <a-btn
-                    v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'DELETE')"
-                    size="small"
-                    color="primary"
-                    icon
-                    class="mr-3 feat-db-link-icon"
-                    @click="deleteSupplier(item)"
-                    prepend-icon="delete"
-                ></a-btn>
+              <td class="text-right" >
+                <v-icon
+                  v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')"
+                  color="primary"
+                  class="mr-3"
+                  @click="editSupplier(item)">
+                  edit
+                </v-icon>
+                <v-tooltip top small>
+                  <template v-slot:activator="{on, attrs}">
+                    <a-btn
+                      v-bind="attrs"
+                      color="primary"
+                      :activation-handler="on"
+                      size="small"
+                      variant="text"
+                      @click="item.archived === false ? deleteSupplier(item) : restoreSupplier(item)"
+                      v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'ADMIN')"
+                      :append-icon="!item.archived ? 'inventory' : 'undo'"
+                    ></a-btn>
+                  </template>
+                  <span v-if="!item.archived" class="albatross-body-3">Archive</span>
+                  <span v-if="item.archived" class="albatross-body-3">Restore</span>
+                </v-tooltip>
               </td>
             </tr>
           </template>
@@ -123,6 +130,7 @@
                         v-model="editedItem.name"
                         required
                         variant="filled"
+                        @focus="setDirtyItems('name')"
           ></a-text-field>
           <a-autocomplete label="State"
                           :items="states"
@@ -134,6 +142,14 @@
                           required
                           variant="filled"
           ></a-autocomplete>
+          <v-switch
+            v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'MANAGE') && !addMode"
+            :label="editedItem.active ? 'Active' : 'Inactive'"
+            v-model="editedItem.active"></v-switch>
+          <label v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'ADMIN') &&
+                     editedItem.archived === true && editedItem.active === true">
+            This Supplier is currently Archived. Activating this Supplier will un-archive this Supplier.
+          </label>
         </v-card-text>
 
         <v-card-actions>
@@ -172,9 +188,6 @@
       </v-row>
       <template v-slot:yes>Create</template>
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!supplierToDelete" @confirm="confirmDeleteSupplier" @close-dialog="supplierToDelete=null">
-      Are you sure you want to delete {{ supplierToDeleteName }}?
-    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -183,7 +196,14 @@ import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
 
-import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+import {
+  canRestoreDBEntry,
+  deleteRequest,
+  getRequest,
+  handleHidingGlobalLoader,
+  postRequest,
+  putRequest
+} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch, defineProps } from 'vue'
@@ -211,15 +231,22 @@ const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: cons
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
   'items-per-page-options': [25, 50, 100, 1000]})
 const supplierDialog = ref(false)
-const editedItem = ref({name: '',})
+const editedItem = ref({id: '', name: '',archived:'', active:''})
+const dirtyItems = ref({name: false})
 const suppliers = ref([])
 const addMode = ref(false)
 const supplierToDelete = ref(null)
 const duplicateDialog = ref(false)
 const duplicateSupplierMatch = ref(null)
 
+const setDirtyItems = (item) => {
+  if (item === 'name') {
+    dirtyItems.value.name = true
+  }
+}
 const props = defineProps({
   nameSearch: String,
+  showInactive: Boolean,
 })
 
 const emit = defineEmits(['updateNameSearch'])
@@ -229,7 +256,9 @@ const filteredSuppliers = computed(() => {
   return suppliers.value && suppliers.value.filter(supplier => {
     return Object.keys(supplierFilters.value).every(filterName => {
       const filter = supplierFilters.value[filterName]
-
+      if (props.showInactive === false && supplier?.active === false) {
+        return false
+      }
       if (filter.value?.length < 1) {
         return true
       }
@@ -281,7 +310,7 @@ const fetchSuppliers = async() => {
   appStore.loading = true
   try {
     const {data, status} = await getRequest('/featDb/supplier/list/all', 'blueraven')
-    suppliers.value = cloneDeep(data).filter(supplier => supplier.archived === false)
+    suppliers.value = cloneDeep(data)
     dataLoading.value = false
     handleHidingGlobalLoader( status)
   } catch (e) {
@@ -318,16 +347,10 @@ const close = ()  => {
   supplierDialog.value = false
   editedItem.value = {}
 }
-const deleteSupplier = (item)  => {
-  supplierToDelete.value = {
-    id: item.id,
-    name: item.name
-  }
-}
-const confirmDeleteSupplier = async() => {
+const deleteSupplier = async(supplier) => {
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/featDb/supplier/${supplierToDelete.value.id}`, 'blueraven')
+    const {status} = await deleteRequest(`/featDb/supplier/${supplier.id}/archive`, 'blueraven')
     appStore.showSnack('SUCCESS', 'Supplier deleted')
 
     await fetchSuppliers().then(() => fetchStates())
@@ -340,20 +363,45 @@ const confirmDeleteSupplier = async() => {
   }
   supplierToDelete.value = null
 }
-const newSupplierDuplicateCheck = ()  => {
-  duplicateSupplierMatch.value = suppliers.value.find(supplier => {
 
-    return doNamesMatch(editedItem.value.name, supplier.name) &&
+const restoreSupplier = async (supplier)  => {
+  appStore.loading = true
+  if (canRestoreDBEntry(suppliers.value, supplier)) {
+    try {
+      await postRequest(`/featDb/supplier/${supplier.id}/restore`, null, 'blueraven')
+      close()
+      initFilters()
+      await fetchSuppliers().then(() => fetchStates())
+      appStore.showSnack('SUCCESS', 'Supplier Has Been Restored')
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Restoring Supplier')
+      appStore.loading = false
+    }
+  } else {
+    appStore.showSnack('ERROR', `Cannot restore ${supplier.name}. An un-archived record already exists.`)
+    appStore.loading = false
+  }
+}
+const newSupplierDuplicateCheck = ()  => {
+  if (dirtyItems.value.name) {
+    duplicateSupplierMatch.value = suppliers.value.find(supplier => {
+
+      return doNamesMatch(editedItem.value.name, supplier.name) &&
         editedItem.value.companyStateId === supplier.companyStateId
-  })
-  if(duplicateSupplierMatch.value){
-    supplierDialog.value = false
-    //add state name for display purposes
-    editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
-    duplicateDialog.value = true
+    })
+    if (duplicateSupplierMatch.value) {
+      supplierDialog.value = false
+      //add state name for display purposes
+      editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
+      duplicateDialog.value = true
+    } else {
+      saveSupplier()
+    }
   } else {
     saveSupplier()
   }
+  dirtyItems.value.name = false
 }
 const doNamesMatch = (name1, name2) => {
   //step 1: remove all punctuation and whitespaces (we don't care if those match)
@@ -383,9 +431,12 @@ const saveSupplier = async() => {
     }
   } else {
     try {
-      const {status} = await putRequest(`/featDb/supplier/simpleUpdate`, editedItem.value, 'blueraven')
+      const currentSupplier = cloneDeep(editedItem.value)
+      const {status} = await putRequest(`/featDb/supplier/simpleUpdate`, currentSupplier, 'blueraven')
       appStore.showSnack('SUCCESS', 'Supplier updated')
-
+      if (currentSupplier?.archived === true && currentSupplier?.active === true) {
+        await restoreSupplier(currentSupplier)
+      }
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)

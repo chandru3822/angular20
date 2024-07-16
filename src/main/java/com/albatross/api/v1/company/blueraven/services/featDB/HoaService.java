@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.hoa.query.HoaContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.hoa.query.HoaLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.hoa.query.HoaQuery;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -55,6 +57,7 @@ public class HoaService {
     params.put("managementCompanyId", hoa.getManagementCompanyId());
     params.put("archived", hoa.getArchived());
     params.put("id", hoa.getId());
+    params.put("active", hoa.getActive());
 
     sqlCache.updateBySql(HoaQuery.simpleUpdate, params);
     return getHoaById(hoa.getId());
@@ -69,6 +72,7 @@ public class HoaService {
     params.put("companyStateId", hoa.getCompanyStateId());
     params.put("managementCompanyId", hoa.getManagementCompanyId());
     params.put("archived", hoa.getArchived());
+    params.put("active", hoa.getActive());
 
     Long id;
 
@@ -91,7 +95,6 @@ public class HoaService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("currentUser", currentUser.trueUserId());
-
     sqlCache.updateBySql(HoaQuery.delete, params);
   }
 
@@ -139,6 +142,18 @@ public class HoaService {
 
     sqlCache.updateBySql(FeatDbContactQuery.delete, params);
   }
+
+  @Transactional
+  public Optional<HoaDetail> restoreHoa(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.updateBySql(HoaQuery.restore, params);
+
+    return getHoaById(id);
+  }
+
 
   // LINKS
   public Optional<FeatDbLink> saveHoaLink(Long hoaId, Long linkId, FeatDbLink link) {

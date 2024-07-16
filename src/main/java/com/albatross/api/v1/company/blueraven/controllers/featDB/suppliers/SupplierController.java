@@ -4,6 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.featDB.SupplierService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class SupplierController {
     return supplierService.getAllSuppliers();
   }
 
+  @PostAuthorize("returnObject.get().getArchived() == true && hasFeatureAccessLevel('SUPPLIER_ADMIN') || returnObject.get().getArchived() == false")
   @GetMapping(value = "/{id}")
   public Optional<SupplierDetail> getSupplierById(@PathVariable Long id) {
     return supplierService.getSupplierById(id);
@@ -42,11 +44,15 @@ public class SupplierController {
     return supplierService.updateSupplier(supplier);
   }
 
-  @DeleteMapping(value="/{id}")
+  @DeleteMapping(value="/{id}/archive")
   public void deleteSupplier(@PathVariable Long id) {
       supplierService.deleteSupplier(id);
   }
 
+  @PostMapping(value = "/{id}/restore")
+  public Optional<SupplierDetail> restoreAhj(@PathVariable Long id) {
+    return supplierService.restoreSupplier(id);
+  }
   // CONTACTS
   @PostMapping(value = "/{supplierId}/contacts")
   public Optional<FeatDbContact> addSupplierContact(@PathVariable Long supplierId,

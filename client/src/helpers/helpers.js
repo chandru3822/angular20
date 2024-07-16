@@ -366,3 +366,20 @@ export function getProjectPath() {
     return {pathSuffix: 'details', tabName: projectPathSuffix}
   }
 }
+
+export function canRestoreDBEntry(entryList, entryItem) {
+  let validParams = true
+  if (entryItem.hasOwnProperty('id') && entryItem.hasOwnProperty('name')) {
+    return !entryList.find((a) => (a.name === entryItem.name && a?.archived === false && a.id !== entryItem.id));
+  } else {
+    validParams = false
+  }
+
+  if (validParams === false) {
+    const appStore = useAppStore()
+    appStore.loading = true
+    appStore.showSnack('ERROR', 'Cannot Restore Entry. Unable to verify if this will cause duplicate entries')
+    appStore.loading = false
+  }
+  return false
+}

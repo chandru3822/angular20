@@ -6,10 +6,10 @@
             :headers="headers"
             :items="filteredUtilities"
             :loading="dataLoading"
-            :items-per-page="-1"
+            :items-per-page="100"
             :mobile-breakpoint="0"
             fixed-header
-            hide-default-footer
+            :footer-props="footerProps"
             class="elevation-1 utility-table"
         >
           <template #header.icons="{}">
@@ -61,41 +61,58 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': !(index % 2),
-                         'strike-thru': item.archived }" class="clickable text-sm-left row-hover">
+            <tr :class="{'shaded-row': !(index % 2)}" class="clickable text-sm-left row-hover"
+                          v-if="item.archived === false || (item.archived === true && userStore.userHasFeatureAccessLevel('UTILITY', 'ADMIN'))"
+            >
               <td class="text-left" :class="{}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/utility/${item.id}/details`">
-                  {{ item.name ? item.name : '' }}
+                  <v-chip
+                    color="warning"
+                    small
+                    v-if="item.archived === true &&
+                    userStore.userHasFeatureAccessLevel('UTILITY', 'ADMIN')"
+                    class="mr-2">
+                      ARCHIVED
+                  </v-chip>
+                  <span :class="{'strike-thru': !item.active}">{{ item.name ? item.name : '' }}</span>
                 </router-link>
               </td>
-              <td class="text-left">
+              <td class="text-left" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/utility/${item.id}/details`">
                   {{ item.metroArea ? item.metroArea : '' }}
                 </router-link>
               </td>
-              <td class="text-left">
+              <td class="text-left" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/utility/${item.id}/details`">
                   {{ item.state ? item.state : '' }}
                 </router-link>
               </td>
               <td class="text-right">
                 <a-btn
-                    :to="`/database/utility/${item.id}/details`"
-                    variant="text"
-                    size="x-small"
-                    fab
-                    color="unset"
-                    prepend-icon="mdi-arrow-right"
-                ></a-btn>
-                <a-btn
                     icon
                     color="primary"
                     size="small"
-                    class="mr-3 feat-db-link-icon"
+                    class="mr-5 feat-db-link-icon"
                     @click.native.stop="editUtility(item)"
                     v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'EDIT')"
                     prepend-icon="edit"
                 ></a-btn>
+                <v-tooltip top small>
+                  <template v-slot:activator="{on, attrs}">
+                    <a-btn
+                      v-bind="attrs"
+                      color="primary"
+                      :activation-handler="on"
+                      size="small"
+                      variant="text"
+                      @click="item.archived === false ? deleteUtility(item.id) : restoreUtility(item)"
+                      v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'ADMIN')"
+                      :append-icon="!item.archived ? 'inventory' : 'undo'"
+                      ></a-btn>
+                  </template>
+                  <span v-if="!item.archived" class="albatross-body-3">Archive</span>
+                  <span v-if="item.archived" class="albatross-body-3">Restore</span>
+                </v-tooltip>
               </td>
             </tr>
           </template>
@@ -114,7 +131,6 @@
             <v-card-title>
               <span class="text-h5">{{ utilityFormTitle }}</span>
             </v-card-title>
-
             <v-card-text>
               <a-text-field
                   label="Name"
@@ -142,11 +158,15 @@
                               variant="filled"
                               attach
               ></a-autocomplete>
-              <v-checkbox
-                  v-if="!addMode"
-                  label="Archived"
-                  v-model="editedItem.archived"
-              ></v-checkbox>
+              <v-switch
+                v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'MANAGE') && !addMode"
+                :label="editedItem.active ? 'Active' : 'Inactive'"
+                v-model="editedItem.active"
+                ></v-switch>
+              <label v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'ADMIN') &&
+                     editedItem.archived === true && editedItem.active === true">
+                This utility is currently Archived. Activating this Utility will un-archive this utility.
+              </label>
             </v-card-text>
 
             <v-card-actions>
@@ -174,7 +194,14 @@
 
 <script setup>
 import cloneDeep from 'lodash.clonedeep'
-import { handleHidingGlobalLoader, getRequest, putRequest, postRequest,  } from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  putRequest,
+  postRequest,
+  deleteRequest,
+  canRestoreDBEntry,
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 import {getActiveStates} from '@/services/stateService'
@@ -203,8 +230,7 @@ const headers = ref([
 ])
 const utilities = ref([])
 const states = ref([])
-const editedItem = ref({utilityName: '',metroAreaId: '',archived: ''
-})
+const editedItem = ref({id: '', utilityName: '',metroAreaId: '',archived: '', active: ''})
 const utilityDialog = ref(false)
 const addMode = ref(false)
 const utilityFilters = ref([])
@@ -212,15 +238,21 @@ const metroAreas = ref([])
 
 const props = defineProps({
   nameSearch: String,
+  showInactive: Boolean,
 })
 
 const emit = defineEmits(['updateNameSearch'])
 
+const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+  'items-per-page-options': [25, 50, 100, 1000]})
 const filteredUtilities = computed(() => {
   return utilities.value && utilities.value.filter(utility => {
     return Object.keys(utilityFilters.value).every(filterName => {
       const filter = utilityFilters.value[filterName]
-
+      if (props.showInactive === false && utility?.active === false) {
+        return false
+      }
       if (filter.value?.length < 1) {
         return true
       }
@@ -328,6 +360,7 @@ const editUtility = (item) => {
   addMode.value = false
   utilityDialog.value = true
 }
+
 const close = () => {
   utilityDialog.value = false
   editedItem.value = {}
@@ -348,9 +381,12 @@ const saveUtility = async () => {
     }
   } else {
     try {
-      const {status} = await putRequest('/featDb/utility/simpleUpdate', editedItem.value, 'blueraven')
+      const myValue = cloneDeep(editedItem.value)
+      const {status} = await putRequest('/featDb/utility/simpleUpdate', myValue, 'blueraven')
       appStore.showSnack('SUCCESS', 'Utility updated')
-
+      if (myValue?.archived === true && myValue.active === true) {
+        await restoreUtility(myValue.id)
+      }
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
@@ -365,8 +401,40 @@ const saveUtility = async () => {
   await fetchUtilities()
   editedItem.value = {}
 }
-const goToRoute =(id) => {
-  router.push('utility/' + id + '/details')
+
+const deleteUtility = async (utilityID)  => {
+  appStore.loading = true
+  try {
+    await deleteRequest(`/featDb/utility/${utilityID}/archive`, 'blueraven')
+    close()
+    initFilters()
+    await fetchUtilities().then(() => fetchStates())
+    appStore.showSnack('SUCCESS', 'AHJ Has Been Archived')
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Archiving Utility')
+    appStore.loading = false
+  }
+}
+
+const restoreUtility = async (utility)  => {
+  if (canRestoreDBEntry(utilities.value, utility)) {
+    appStore.loading = true
+    try {
+      await postRequest(`/featDb/utility/${utility.id}/restore`, null, 'blueraven')
+      close()
+      initFilters()
+      await fetchUtilities().then(() => fetchStates())
+      appStore.showSnack('SUCCESS', 'Utility Has Been Restored')
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Restoring Utility')
+      appStore.loading = false
+    }
+  } else {
+    appStore.showSnack('ERROR', `Cannot restore ${utility.name}. An un-archived record already exists.`)
+    appStore.loading = false
+  }
 }
 </script>
 
@@ -401,7 +469,7 @@ const goToRoute =(id) => {
 
 @media (min-width: 769px) {
   .v-data-table ::v-deep .v-data-table__wrapper {
-    max-height: calc(100vh - 162px);
+    max-height: calc(100vh - 202px);
   }
 }
 </style>

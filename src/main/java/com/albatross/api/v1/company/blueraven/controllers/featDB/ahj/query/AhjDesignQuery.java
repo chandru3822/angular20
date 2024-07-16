@@ -11,7 +11,8 @@ public class AhjDesignQuery {
             ahj.name as ahj_name,
             cs.state_id,
             s.state AS "stateName",
-            lov.name as metro_area
+            lov.name as metro_area,
+            ahj.archived
           FROM brs.feat_db_ahj_design d
             INNER JOIN brs.feat_db_ahj ahj ON ahj.id = d.ahj_id
             LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
@@ -34,16 +35,17 @@ public class AhjDesignQuery {
             LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
              left join flow.company_state cs on cs.id = ahj.company_state_id
           WHERE cs.state_id = :stateId
-            AND ahj.archived IS FALSE
+            AND ahj.active IS TRUE
     """;
 
+  //language=postgresql
   public final static String searchAhjsByMetro = """
          SELECT d.id, d.ahj_id
          FROM brs.feat_db_ahj_design d
            INNER JOIN brs.feat_db_ahj ahj ON ahj.id = d.ahj_id
            LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
          WHERE lov.id = :metroId
-           AND ahj.archived IS FALSE
+           AND ahj.active IS TRUE
     """;
 
   //language=PostgreSQL
@@ -85,7 +87,8 @@ public class AhjDesignQuery {
                 end as updated_value,
             adcfva.date_modified,
             concat(u.first_name, ' ', u.last_name) as modified_by,
-            dt.id as dataType
+            dt.id as dataType,
+            ahj.archived
         from brs.feat_db_ahj_design_custom_field_value_audit adcfva
                  join brs.feat_db_ahj_design_custom_field_value adcfv on adcfv.id = adcfva.ahj_design_custom_field_value_id
                  join brs.feat_db_ahj_design ahjd on adcfv.ahj_design_id = ahjd.id

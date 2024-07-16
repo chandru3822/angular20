@@ -3297,7 +3297,7 @@ public class ReportEngine {
 
     String sqlQuery = sqlCacheRO.queryForObjectBySql(CustomFieldQuery.getCustomFieldSql, Collections.emptyMap(), String.class);
     query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s), ", sqlQuery));
-    query.append("\"customFieldSql.brs.utilityCompanyList\" as (select a.id, a.name::text from brs.feat_db_utility a where archived is not true) ");
+    query.append("\"customFieldSql.brs.utilityCompanyList\" as (select a.id, a.name::text from brs.feat_db_utility a where active is true) ");
 
 
 

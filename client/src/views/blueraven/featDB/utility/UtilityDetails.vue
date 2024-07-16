@@ -127,7 +127,7 @@ import orderBy from "lodash.orderby"
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue"
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue"
 
-import {getRequest, getRequestWithParams,  handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
+import {getRequest, getRequestWithParams,  handleHidingGlobalLoader, putRequest, apiRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 import FeatDbCustomFields from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import {CollapseExpandEnum, UtilityDocumentTypes} from "@/views/blueraven/featDB/FeatDbConstants";
@@ -139,6 +139,9 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
+import axios from "axios";
+import constants from "@/helpers/constants.js";
+import {requestInterceptor, responseInterceptor} from "@/helpers/interceptors.js";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -188,19 +191,35 @@ const utilityId = computed(() => {
 
 onMounted(async() => {
   await pageLoad(true)
-  await getChangeLog()
+  if (hasManageAccess) {
+    await getChangeLog()
+  }
+})
+
+const http = axios.create({
+  baseURL: `${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/flow`,
+})
+http.interceptors.request.use(requestInterceptor)
+http.interceptors.response.use((response) => {
+  if (response.status !== 403 && response.status !== 200) {
+    responseInterceptor({ response })
+  }
+
+  return response
 })
 
 const getChangeLog = async() => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}/getUtilityHistory`, 'blueraven')
-    changeLog.value = cloneDeep(data)
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving Utility Change Log')
-    appStore.loading = false
+  if (hasManageAccess === true) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}/getUtilityHistory`, 'blueraven')
+      changeLog.value = cloneDeep(data)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error retrieving Utility Change Log')
+      appStore.loading = false
+    }
   }
 }
 
@@ -218,17 +237,36 @@ const toggleCollapseExpand = (wasExpanded) => {
 const getUtility = async() => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}`, "blueraven")
+    const apiPath ='company/blueraven'
+    const path = `/featDb/utility/${utilityId.value}`
+    const {data, status} = await http.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {
+      data: {},
+      status: null
+    }
+
+    // const {data, status} = await apiRequest('blueraven', {
+    //   method: 'get',
+    //   url: path,
+    //   data: {},
+    //   status: null
+    // })
+
+    //const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}`, "blueraven")
     utility.value = cloneDeep(data)
     window.document.title = `Utility - ${utility.value.name}`
     utility.value.links = orderBy(utility.value.links, link => link.name?.toLowerCase())
     utility.value.contacts = orderBy(utility.value.contacts, contact => contact.name?.toLowerCase())
     handleHidingGlobalLoader( status)
   } catch (e) {
-    console.error("*** ERROR ***", e)
-    appStore.showSnack("ERROR", "Error retrieving Utility")
+    if (e.response.status === 403) {
+      await router.push({path: "/database/utility"})
+      appStore.showSnack("ERROR", "Utility Does Not Exists")
+    } else {
+      console.error("*** ERROR ***", e)
+      appStore.showSnack("ERROR", "Error retrieving Utility")
 
-    appStore.loading = false
+      appStore.loading = false
+    }
   }
 }
 const getAllDocuments = async() => {
@@ -341,7 +379,9 @@ const saveUtility = async() => {
     utility.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "Utility saved")
-    await getChangeLog()
+    if (hasManageAccess) {
+      await getChangeLog()
+    }
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)

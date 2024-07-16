@@ -5,13 +5,16 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjDesignQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -31,7 +33,7 @@ public class UtilityService {
 
   private final SqlCache sqlCache;
   private final ObjectMapper om;
-  private final SecurityService securityService;
+  public final SecurityService securityService;
   private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public List<Utility> getAllUtilities() {
@@ -41,8 +43,26 @@ public class UtilityService {
 
   public Optional<UtilityDetail> getUtilityById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
+    User currentUser = securityService.getCurrentUser();
     params.put("id", id);
 
+//    Map<String, Object> context = new HashMap<>();
+//    context = sqlCache.queryForMapBySql(UtilityQuery.utilityArchiveStatus, params);
+//    boolean archived = (boolean) (context.get("archived"));
+//
+//    User user = securityService.getUser(securityService.getCurrentUser().getUsername());
+//    List<String> accessCodes = new ArrayList<String>();
+//    accessCodes.add("ADMIN");
+//    Boolean hasAccess = securityService.userHasFeatureAccessLevel(currentUser.getId(), currentUser.getCompanyId(), currentUser.getHighestCompanyId(), "UTILITY", accessCodes);
+//
+//    if (archived) {
+//      if (hasAccess) {
+//        return sqlCache.getBySql(
+//          UtilityQuery.detailById, params, new UtilityDetailMapper<>(UtilityDetail.class, om));
+//      } else {
+//        return Optional.empty();
+//      }
+//    }
     return sqlCache.getBySql(
       UtilityQuery.detailById, params, new UtilityDetailMapper<>(UtilityDetail.class, om));
   }
@@ -56,6 +76,7 @@ public class UtilityService {
     params.put("metroAreaId", utility.getMetroAreaId());
     params.put("companyStateId", utility.getCompanyStateId());
     params.put("archived", utility.getArchived());
+    params.put("active", utility.getActive());
     params.put("id", utility.getId());
 
     sqlCache.updateBySql(UtilityQuery.simpleUpdate, params);
@@ -71,6 +92,7 @@ public class UtilityService {
     params.put("metroAreaId", utility.getMetroAreaId());
     params.put("companyStateId", utility.getCompanyStateId());
     params.put("archived", utility.getArchived());
+    params.put("active", utility.getActive());
 
     Long id;
 
@@ -84,6 +106,27 @@ public class UtilityService {
 
     blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
         ObjectType.UTILITY, utility.getCustomFieldGroups(), id);
+
+    return getUtilityById(id);
+  }
+
+  @Transactional
+  public void deleteUtility(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+
+    sqlCache.updateBySql(UtilityQuery.delete, params);
+  }
+
+  public Optional<UtilityDetail> restoreUtility(Long id) {
+    System.out.println("Restoring Utility");
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.updateBySql(UtilityQuery.restore, params);
 
     return getUtilityById(id);
   }

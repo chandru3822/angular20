@@ -57,18 +57,28 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
+            <tr :class="{'shaded-row': !(index % 2)}" class="clickable text-sm-left row-hover"
+                v-if="item.archived === false || (item.archived === true && userStore.userHasFeatureAccessLevel('AHJ', 'ADMIN'))"
+            >
               <td class="text-left clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/ahj/${item.id}/permit`">
-                  {{ item.name ? item.name : '' }}
+                  <v-chip
+                    color="warning"
+                    small
+                    v-if="item.archived === true &&
+                    userStore.userHasFeatureAccessLevel('AHJ', 'ADMIN')"
+                    class="mr-2">
+                    ARCHIVED
+                  </v-chip>
+                  <span :class="{'strike-thru': !item.active}">{{ item.name ? item.name : '' }}</span>
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/ahj/${item.id}/permit`">
                   {{ item.metroArea ? item.metroArea : '' }}
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/ahj/${item.id}/permit`">
                   {{ item.state ? item.state : '' }}
                 </router-link>
@@ -80,12 +90,25 @@
                   <router-link :to="`ahj/${item.id}/inspection`" class="mr-3 ahj-link primary--text">Inspection</router-link>
                   <router-link :to="`ahj/${item.id}/design`" class="mr-3 ahj-link primary--text">Design</router-link>
                 </span>
-                <v-icon v-if="userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                <v-icon v-if="userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')" color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
                 </v-icon>
-                <v-icon v-if="userStore.userHasFeatureAccessLevel('AHJ', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
-                  delete
-                </v-icon>
+                <v-tooltip top small>
+                  <template v-slot:activator="{on, attrs}">
+                    <a-btn
+                      v-bind="attrs"
+                      color="primary"
+                      :activation-handler="on"
+                      size="small"
+                      variant="text"
+                      @click="item.archived === false ? deleteAhj(item) : restoreAhj(item)"
+                      v-if="userStore.userHasFeatureAccessLevel('AHJ', 'ADMIN')"
+                      :append-icon="!item.archived ? 'inventory' : 'undo'"
+                    ></a-btn>
+                  </template>
+                  <span v-if="!item.archived" class="albatross-body-3">Archive</span>
+                  <span v-if="item.archived" class="albatross-body-3">Restore</span>
+                </v-tooltip>
               </td>
             </tr>
           </template>
@@ -130,7 +153,14 @@
                               variant="filled"
                               attach
               ></a-autocomplete>
-
+              <v-switch
+                v-if="userStore.userHasFeatureAccessLevel('AHJ', 'MANAGE') && !addMode"
+                :label="editedItem.active ? 'Active' : 'Inactive'"
+                v-model="editedItem.active"></v-switch>
+              <label v-if="userStore.userHasFeatureAccessLevel('AHJ', 'ADMIN') &&
+                     editedItem.archived === true && editedItem.active === true">
+                This AHJ is currently Archived. Activating this AHJ will un-archive this AHJ.
+              </label>
             </v-card-text>
 
             <v-card-actions>
@@ -153,16 +183,19 @@
         </v-dialog>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!ahjToDelete" @confirm="deleteAhj" @close-dialog="ahjToDelete=null">
-      Are you sure you want to delete the AHJ for {{ ahjToDeleteName }}?
-
-    </ConfirmationDialog>
   </v-container>
 </template>
 
 <script setup>
 import cloneDeep from 'lodash.clonedeep'
-import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest,  } from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  canRestoreDBEntry,
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getActiveStates} from '@/services/stateService'
 import { onBeforeRouteLeave } from 'vue-router/composables'
@@ -182,7 +215,8 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
 const props = defineProps({
-  nameSearch: String
+  nameSearch: String,
+  showInactive: Boolean,
 })
 const emit = defineEmits(['updateNameSearch'])
 
@@ -195,8 +229,7 @@ const headers = ref([
   { text: null, value: 'icons', sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
 ])
 const ahjs = ref([])
-const editedItem = ref({name: '',metroAreaId: ''
-})
+const editedItem = ref({id: '', name: '',metroAreaId: '', archived:'', active:''})
 const ahjDialog = ref(false)
 const ahjDeleteDialog = ref(false)
 const addMode = ref(false)
@@ -213,7 +246,9 @@ const filteredAhjs = computed( () => {
   return ahjs.value && ahjs.value?.filter(ahj => {
     return Object.keys(ahjFilters.value).every(filterName => {
       const filter = ahjFilters.value[filterName]
-
+      if (props.showInactive === false && ahj?.active === false) {
+        return false
+      }
       if (filter.value?.length < 1) {
         return true
       }
@@ -307,12 +342,6 @@ const editAhj = (item) => {
   addMode.value = false
   ahjDialog.value = true
 }
-const deleteItem = (item) => {
-  ahjToDelete.value = {
-    id: item.id,
-    name: item.name
-  }
-}
 const close = () => {
   ahjDialog.value = false
   ahjDeleteDialog.value = false
@@ -332,8 +361,13 @@ const saveAhj = async ()  => {
     }
   } else {
     try {
-      const {status} = await putRequest(`/featDb/ahj/${editedItem.value.id}`, editedItem.value, 'blueraven')
+      const myValue = cloneDeep(editedItem.value)
+
+      const {status} = await putRequest(`/featDb/ahj/simpleUpdate`, myValue, 'blueraven')
       appStore.showSnack('SUCCESS', 'AHJ updated')
+      if (myValue?.archived === true && myValue?.active === true) {
+        await restoreAhj(myValue)
+      }
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
@@ -347,22 +381,40 @@ const saveAhj = async ()  => {
   await fetchAhjs().then(() => fetchStates())
   editedItem.value = {}
 }
-const deleteAhj = async ()  => {
-  const id = ahjToDelete.value.id
+const deleteAhj = async (ahj)  => {
   appStore.loading = true
   try {
-    await deleteRequest(`/featDb/ahj/${id}`, 'blueraven')
+    await deleteRequest(`/featDb/ahj/${ahj.id}/archive`, 'blueraven')
     close()
     initFilters()
     await fetchAhjs().then(() => fetchStates())
-    appStore.showSnack('SUCCESS', 'AHJ deleted')
+    appStore.showSnack('SUCCESS', 'AHJ has been Archived')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error deleting AHJ')
+    appStore.showSnack('ERROR', 'Error Archiving AHJ')
     appStore.loading = false
   }
-  ahjToDelete.value = null
 }
+
+const restoreAhj = async (ahj)  => {
+  if (canRestoreDBEntry(ahjs.value, ahj)) {
+    appStore.loading = true
+    try {
+      await postRequest(`/featDb/ahj/${ahj.id}/restore`, null, 'blueraven')
+      close()
+      initFilters()
+      await fetchAhjs().then(() => fetchStates())
+      appStore.showSnack('SUCCESS', 'AHJ Has Been Restored')
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Restoring AHJ')
+      appStore.loading = false
+    }
+  } else {
+    appStore.showSnack('ERROR', `Cannot restore ${ahj.name}. An un-archived record already exists.`)
+  }
+}
+
 const fetchStates = async ()  => {
   appStore.loading = true
   try {
