@@ -245,7 +245,7 @@ const getAhjDesign = async() => {
   appStore.loading = true
   try {
     const apiPath ='company/blueraven'
-    const path = `/featDb/utility/${utilityId.value}`
+    const path = `/featDb/ahj/${ahjId.value}`
     const {data, status} = await http.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {
       data: {},
       status: null

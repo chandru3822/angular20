@@ -91,7 +91,6 @@
                 <a-btn
                     icon
                     color="primary"
-                    size="small"
                     class="mr-5 feat-db-link-icon"
                     @click.native.stop="editUtility(item)"
                     v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'EDIT')"

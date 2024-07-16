@@ -3,61 +3,86 @@ alter table if exists brs.feat_db_ahj
   add column if not exists active boolean not null DEFAULT false;
 
 update brs.feat_db_ahj
-set active = not archived;
+  set active = true
+where archived = false;
+
+update brs.feat_db_ahj
+  set active = false
+where archived = true;
 
 -- UPDATE UTILITY
 alter table if exists brs.feat_db_utility
   add column if not exists active boolean not null DEFAULT false;
 
 update brs.feat_db_utility
-  set active = not archived;
+set active = true
+where archived = false;
+
+update brs.feat_db_utility
+set active = false
+where archived = true;
 
 -- UPDATE HOA
 alter table if exists brs.feat_db_hoa
   add column if not exists active boolean not null DEFAULT false;
 
 update brs.feat_db_hoa
-  set active = not archived;
+set active = true
+where archived = false;
+
+update brs.feat_db_hoa
+set active = false
+where archived = true;
 
 -- UPDATE SUPPLIER
 alter table if exists brs.feat_db_supplier
   add column if not exists active boolean not null DEFAULT false;
 
 update brs.feat_db_supplier
-  set active = not archived;
+set active = true
+where archived = false;
+
+update brs.feat_db_supplier
+set active = false
+where archived = true;
 
 -- UPDATE INCENTIVE
 alter table if exists brs.feat_db_incentive
   add column if not exists active boolean not null DEFAULT false;
 
 update brs.feat_db_incentive
-  set active = not archived;
-
--- SET ACTIVE COLUMNS
-update brs.feat_db_ahj
-set archived = false,
-    active = false
-where archived = true and name not ilike '%test%';
-
-update brs.feat_db_utility
-set archived = false,
-    active = false
-where archived = true and name not ilike '%test%';
-
-update brs.feat_db_hoa
-set archived = false,
-    active = false
-where archived = true and name not ilike '%test%';
-
-update brs.feat_db_supplier
-set archived = false,
-    active = false
-where archived = true and name not ilike '%test%';
+set active = true
+where archived = false;
 
 update brs.feat_db_incentive
-set archived = false,
-    active = false
-where archived = true and name not ilike '%test%';
+set active = false
+where archived = true;
+
+-- -- SET ACTIVE COLUMNS
+-- update brs.feat_db_ahj
+-- set archived = false,
+--     active = false
+-- where archived = true and name not ilike '%test%';
+--
+-- update brs.feat_db_utility
+-- set archived = false,
+--     active = false
+-- where archived = true and name not ilike '%test%';
+--
+-- update brs.feat_db_hoa
+-- set archived = false,
+--     active = false
+-- where archived = true and name not ilike '%test%';
+--
+-- update brs.feat_db_supplier
+-- set archived = false,
+--     active = false
+-- where archived = true and name not ilike '%test%';
+--
+-- update brs.feat_db_incentive
+-- set archived = false,
+--     active = false
+-- where archived = true and name not ilike '%test%';
 
 -- UPDATE CUSTOM FIELDS WITH CUSTOM SQL REFERENCING THE DATABASES
 UPDATE flow.custom_field

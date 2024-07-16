@@ -89,7 +89,6 @@
                 <a-btn
                     icon
                     v-if="userStore.userHasFeatureAccessLevel('HOA', 'EDIT')"
-                    size="small"
                     color="primary"
                     class="mr-3 feat-db-link-icon"
                     @click="editHoa(item)"
