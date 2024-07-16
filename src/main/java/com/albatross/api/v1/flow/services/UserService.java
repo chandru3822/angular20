@@ -9,6 +9,7 @@ import com.albatross.api.security.jwt.JwtAuthenticationProvider;
 import com.albatross.api.security.jwt.JwtClaims;
 import com.albatross.api.security.jwt.JwtUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.controllers.UserController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
@@ -44,6 +45,7 @@ public class UserService {
 
   private final AttachmentService attachmentService;
   private final SqlCache sqlCache;
+  private final SqlCacheRO sqlCacheRO;
   private final SecurityService securityService;
   private final MessagingService messagingService;
   private final SmsTeamService smsTeamService;
@@ -72,8 +74,7 @@ public class UserService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    List<User> results =
-      sqlCache.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
+    List<User> results = sqlCacheRO.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
 
     return new PageImpl<>(
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), 100000);
