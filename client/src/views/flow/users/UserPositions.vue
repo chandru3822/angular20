@@ -447,9 +447,12 @@ const savePosition = async (item) => {
     addNew.value = false
     let itemIndex = userPositions.value.indexOf(item)
 
-    // let lowestHierarchy = item?.hierarchy?.reduce((prev, current) => {
-    //   return (prev.level > current.level) ? prev : current
-    // })
+    if(!item.orgId) {
+      let lowestHierarchy = item?.hierarchy?.reduce((prev, current) => {
+        return (prev.level > current.level) ? prev : current
+      })
+      item.orgId = lowestHierarchy.orgId
+    }
     let itemId = item.id
     // item.orgId = randaTest.value
     let params = {
