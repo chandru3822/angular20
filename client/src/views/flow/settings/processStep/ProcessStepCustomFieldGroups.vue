@@ -102,7 +102,6 @@
 							variant="text"
 							color="primary"
 							icon
-							size="small"
 							class="handle"
 							v-if="userCanEdit"
 							prepend-icon="drag_handle"
@@ -228,7 +227,6 @@
 							<v-tooltip left>
 								<template v-slot:activator="{ on, attrs }">
 									<a-btn
-										size="small"
 										icon
 										color="primary"
 										@click="copyToClipBoard(item.id)"
@@ -242,14 +240,12 @@
 							</v-tooltip>
 							<a-btn
 								v-if="userCanAdd"
-								size="small"
 								variant="text"
 								color="primary"
 								@click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]"
 								:prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
 							></a-btn>
 							<a-btn
-								size="small"
 								variant="text"
 								color="primary"
 								@click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
@@ -257,7 +253,6 @@
 							></a-btn>
 							<a-btn
 								v-if="userCanEdit"
-								size="small"
 								variant="text"
 								color="primary"
 								@click="customFieldGroupToDelete=item"
@@ -502,7 +497,6 @@
                                 <template v-slot:activator="{ on: tooltip }">
                                   <a-btn
                                       variant="text"
-                                      size="small"
                                       color="primary"
                                       :activation-handler="{...tooltip, ...menu}"
                                       v-if="!cf.ancillaryCustomFieldGroupAssignmentId"
@@ -523,7 +517,6 @@
                           <a-btn
                               variant="text"
                               color="primary"
-                              size="small"
                               @click="[$set(cf, 'edit', !cf.edit), getPositions()]"
                               v-if="userCanEdit"
                               :prepend-icon="!cf.edit ? 'edit' : 'close'"
@@ -851,6 +844,9 @@ const deleteWithChecks = async () => {
     } else {
       fieldsInUse.value = []
       item.archived = true
+      if( null == customFieldGroupAssignmentId){
+        customFieldGroups.value = customFieldGroups.value.filter(g => g.id !== item.id)
+      }
       appStore.showSnack('SUCCESS', 'Item Deleted')
       handleHidingGlobalLoader(status)
     }
