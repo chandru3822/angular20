@@ -921,7 +921,6 @@
                   variant="text"
                   v-if="userCanEdit"
                   icon
-                  size="small"
                   class="handle"
                   color="primary"
                   prepend-icon="drag_handle"
@@ -942,7 +941,6 @@
                 <v-tooltip left small>
                   <template v-slot:activator="{on, attrs}">
                     <a-btn
-                        size="small"
                         variant="text"
                         color="primary"
                         :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
@@ -956,7 +954,6 @@
                   <span class="label-small">Duplicate action</span>
                 </v-tooltip>
                 <a-btn
-                    size="small"
                     variant="text"
                     color="primary"
                     :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
@@ -965,7 +962,6 @@
                     prepend-icon="edit"
                 ></a-btn>
                 <a-btn
-                    size="small"
                     variant="text"
                     color="primary"
                     :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
@@ -977,7 +973,6 @@
                 <a-btn
                     v-if="userCanEdit"
                     :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
-                    size="small"
                     variant="text"
                     color="primary"
                     @click="[itemToDelete=item, showDeleteDialog=true]"
@@ -1327,7 +1322,6 @@ const saveChildFunctionOrder = async (actionId, childFns) => {
         fnsToSave.push(f)
       }
     })
-
     // save them here
     if (fnsToSave.length > 0) {
       await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
@@ -1489,19 +1483,24 @@ const getCancelledStatuses = async (item) => {
     appStore.showSnack('ERROR', 'Error fetching process step statuses')
   }
 }
+
+const mapActionsFromData = (data) => {
+  actions.value = data.map(a => {
+    const selectedCategories = categories.value.filter(c => a.processStepStatusTypeIds.includes(c.id))
+    const selectedStatuses = statuses.value.filter(s => a.companyProcessStepStatusTypeIds.includes(s.id) && !s.isRoot)
+    return {
+      ...a,
+      // used for the vuetify v-autocomplete model and is stupid having to do it this way
+      stupidSelectedStatuses: selectedCategories.concat(selectedStatuses)
+    }
+  })
+}
+
 const getActions = async () => {
   appStore.loading = true
   try {
     const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
-    actions.value = data.map(a => {
-        const selectedCategories = categories.value.filter(c => a.processStepStatusTypeIds.includes(c.id))
-        const selectedStatuses = statuses.value.filter(s => a.companyProcessStepStatusTypeIds.includes(s.id) && !s.isRoot)
-        return {
-            ...a,
-            // used for the vuetify v-autocomplete model and is stupid having to do it this way
-            stupidSelectedStatuses: selectedCategories.concat(selectedStatuses)
-        }
-    })
+    mapActionsFromData(data)
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -1854,7 +1853,8 @@ const saveRowChanges = async (rows) => {
   if (rows?.length > 0) {
     appStore.loading = true
     try {
-      const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
+      const {data, status} = await postRequest(`/processStep/${processStepId.value}/action/order`, rows)
+      mapActionsFromData(data)
       appStore.showSnack('SUCCESS', 'Action Order Saved')
       handleHidingGlobalLoader(status)
     } catch (e) {
