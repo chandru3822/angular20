@@ -17,8 +17,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -60,7 +62,6 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage(ex.getMessage()));
   }
 
-
   @ExceptionHandler(value = ApiException.class)
   protected ResponseEntity<ErrorMessage> handleApiException(ApiException ex) {
     final Throwable rootCause = ExceptionUtils.getRootCause(ex);
@@ -70,6 +71,11 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(value = ClientAbortException.class)
   protected void handleClientAbortException() {
     // client was impatient or cancelled a request and we don't currently care about it
+  }
+
+  @ExceptionHandler(value= AsyncRequestTimeoutException.class)
+  protected void handleAsyncRequestTimeoutException(){
+    //omitting on purpose
   }
 
   @ExceptionHandler(value = MultipartException.class)
@@ -83,6 +89,15 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(value = IOException.class)
   protected void ioExHandler(IOException e, WebRequest request) {
+    if (e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
+      if (request instanceof NativeWebRequest webRequest){
+        final var servletRequest = ((ServletWebRequest) webRequest).getRequest();
+        if (servletRequest.getRequestURI().contains("/notifications/")){
+          log.debug("Ignored broken pipe exception for /notifications URL");
+          return;
+        }
+      }
+    }
     logFileUploadException(request);
     log.error(e.getMessage());
   }

@@ -33,13 +33,13 @@ public class PubSubService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final Set<Subscriber> subscribers = ConcurrentHashMap.newKeySet();
 
-  public Subscriber subscribe(Subscriber subscriber) {
+  public synchronized Subscriber subscribe(Subscriber subscriber) {
 
     subscriber.onCompletion(() -> subscribers.remove(subscriber));
     subscriber.onTimeout(() -> subscribers.remove(subscriber));
     subscriber.onError((err) -> subscribers.remove(subscriber));
-
     subscribers.add(subscriber);
+
     log.debug(
       "[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
 
@@ -54,6 +54,10 @@ public class PubSubService {
     return subscriber;
   }
 
+  private synchronized void removeSubscriber(Subscriber subscriber) {
+    subscribers.remove(subscriber);
+  }
+
   @Async
   public void publish(EventChannel channel, IEventMessage notification) {
     redisTemplate.convertAndSend(channel.getName(), notification);
@@ -61,13 +65,18 @@ public class PubSubService {
 
   @Async
   public void broadcast(EventChannel channel, @NonNull IEventMessage eventMessage) {
+    try {
+      setLastMessageRecv();
 
-    setLastMessageRecv();
-
-    subscribers.stream()
-      .filter(subscriber -> subscriber.getEventChannel() == channel)
-      .filter(subscriber -> subscriber.acceptsEventMessage(eventMessage))
-      .forEach(subscriber -> notify(subscriber, eventMessage));
+      synchronized (subscribers) {
+        subscribers.stream()
+          .filter(subscriber -> subscriber.getEventChannel() == channel)
+          .filter(subscriber -> subscriber.acceptsEventMessage(eventMessage))
+          .forEach(subscriber -> notify(subscriber, eventMessage));
+      }
+    } catch (Exception e) {
+      log.error("[PubSub] Error during broadcasting event", e);
+    }
   }
 
   public void notify(Subscriber subscriber, IEventMessage eventMessage) {
@@ -83,7 +92,7 @@ public class PubSubService {
       subscriber.send(event);
     } catch (Exception exception) {
       log.debug("[PubSub] Unable to process message to subscriber. Removing from list");
-      subscriber.completeWithError(exception);
+      removeSubscriber(subscriber);
     }
   }
 
@@ -101,8 +110,6 @@ public class PubSubService {
     return redisTemplate.opsForValue().get(LAST_MESSAGE_RECV);
   }
 
-//  TODO (scholeskk): fix this
-
   /**
    * there really isn't a great way to know if a client closes a connection so we broadcast a
    * simple ping message periodically allowing us to close the connection on the server side
@@ -117,20 +124,24 @@ public class PubSubService {
         Set<Subscriber> deadEmitters = new HashSet<>();
 
         log.debug("[PubSub] Sending out ping");
-        subscribers.forEach(
-          sub -> {
-            try {
-              this.sendKeepAlive(sub);
-            } catch (Exception e) {
-              log.debug(
-                "[PubSub] Error sending keepalive ping (likely client closed connection)", e);
-              deadEmitters.add(sub);
-            }
-          });
+        synchronized (subscribers) {
+          subscribers.forEach(
+            sub -> {
+              try {
+                this.sendKeepAlive(sub);
+              } catch (Exception e) {
+                log.debug(
+                  "[PubSub] Error sending keepalive ping (likely client closed connection)", e);
+                deadEmitters.add(sub);
+              }
+            });
+        }
 
         if (!deadEmitters.isEmpty()) {
           log.debug("[PubSub] Removing {} dead emitters", deadEmitters.size());
-          deadEmitters.forEach(this.subscribers::remove);
+          synchronized (subscribers) {
+            deadEmitters.forEach(subscribers::remove);
+          }
         }
       }
     } catch (Exception e) {
