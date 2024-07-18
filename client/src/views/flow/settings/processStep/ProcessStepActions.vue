@@ -1561,7 +1561,14 @@ const duplicateAction = async (actionId) => {
   appStore.loading = true
   try {
     const {data} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/duplicate`)
-    actions.value.push(data)
+    //doing this for the vuetify autocomplete model
+    const selectedCategories = categories.value.filter(c => data.processStepStatusTypeIds.includes(c.id))
+    const selectedStatuses = statuses.value.filter(s => data.companyProcessStepStatusTypeIds.includes(s.id) && !s.isRoot)
+    const mappedAction = {
+      ...data,
+      stupidSelectedStatuses: selectedCategories.concat(selectedStatuses)
+    }
+    actions.value.push(mappedAction)
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
