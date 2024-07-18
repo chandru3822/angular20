@@ -73,10 +73,11 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
     // client was impatient or cancelled a request and we don't currently care about it
   }
 
-//  @ExceptionHandler(value= AsyncRequestTimeoutException.class)
-//  protected void handleAsyncRequestTimeoutException(){
-//    //omitting on purpose
-//  }
+  @Override
+  protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    //don't log this out
+    return null;
+  }
 
   @ExceptionHandler(value = MultipartException.class)
   protected void multiExHandler(MultipartException e, WebRequest request) {
