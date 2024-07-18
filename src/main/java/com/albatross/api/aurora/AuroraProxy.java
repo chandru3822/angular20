@@ -11,7 +11,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -311,7 +310,7 @@ public class AuroraProxy {
                     .toEntity(String.class)
                     .timeout(Duration.ofSeconds(30))
                     .onErrorMap(Exception.class, e -> {
-                      System.out.println("Humes said it work work. It would be fun he said");
+                      log.error("error fetching design racking arrays", e);
                       return e;
                     })
                     .block();

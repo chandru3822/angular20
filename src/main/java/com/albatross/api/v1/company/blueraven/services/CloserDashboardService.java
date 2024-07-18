@@ -111,7 +111,6 @@ public class CloserDashboardService {
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    System.out.println(params);
     List<CloserTableScore> roundRobinLeadAllocationData =
         sqlCache.queryBySql(
             CloserDashboardQuery.getRoundRobinLeadAllocationRank,

@@ -90,7 +90,7 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(value = IOException.class)
   protected void ioExHandler(IOException e, WebRequest request) {
-    if (e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
+    if (e.getMessage() != null && e.getMessage().contains("Broken pipe") || e.getMessage().contains("Operation timed out")) {
       if (request instanceof NativeWebRequest webRequest){
         final var servletRequest = ((ServletWebRequest) webRequest).getRequest();
         if (servletRequest.getRequestURI().contains("/notifications/")){

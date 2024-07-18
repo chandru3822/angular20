@@ -8,7 +8,6 @@ import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjQu
 import com.albatross.api.v1.company.blueraven.controllers.featDB.hoa.query.HoaContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.hoa.query.HoaLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.hoa.query.HoaQuery;
-import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;

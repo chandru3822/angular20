@@ -8,7 +8,6 @@ import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjQu
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveQuery;
-import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;

@@ -28,5 +28,5 @@ public class CloserDashboardDateRange {
     this.trendText = trendText;
   }
 
-  public CloserDashboardDateRange(){};
+  public CloserDashboardDateRange(){}
 }

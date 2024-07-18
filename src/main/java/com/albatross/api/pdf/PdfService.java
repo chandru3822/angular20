@@ -1,6 +1,5 @@
 package com.albatross.api.pdf;
 
-import com.albatross.api.config.AppProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.PathResource;
