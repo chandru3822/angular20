@@ -145,7 +145,7 @@ BEGIN
                                 coalesce(
                                   round(case
                                           when pd.cancelled_date is not null then 0::numeric
-                                          when f.commission_strategy =24102 then
+                                          when f.commission_strategy =24102 and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1)  then
                                               (opru.red_line_m1_allocation) * f.total_commissions
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
@@ -157,6 +157,7 @@ BEGIN
                                 INNER JOIN brs.override_plan_receiving_user opru
                                            ON opru.override_plan_id = op.id
                                 INNER JOIN flow.user u ON u.id = opru.user_id
+                                left join brs.commission_plan cp on cp.id = f.commission_plan_id
                          where f.project_id = pd.project_id
                            and exists (select ppscfv.id
                                        from flow.project_process_step pps
@@ -175,7 +176,7 @@ BEGIN
                                 u.last_name,
                                 coalesce(
                                   round(case when pd.cancelled_date is not null then 0::numeric
-                                             when d.commission_strategy =24102  then
+                                             when d.commission_strategy =24102 and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1)  then
                                                  (opru.red_line_m2_allocation) * d.total_commissions
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
@@ -187,6 +188,7 @@ BEGIN
                                 INNER JOIN brs.override_plan_receiving_user opru
                                            ON opru.override_plan_id = op.id
                                 INNER JOIN flow.user u ON u.id = opru.user_id
+                                left join brs.commission_plan cp on cp.id = d.commission_plan_id
                          where d.project_id = pd.project_id
                            and exists (select ppscfv.id
                                        from flow.project_process_step pps

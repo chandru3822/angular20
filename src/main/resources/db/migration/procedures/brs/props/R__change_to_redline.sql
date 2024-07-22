@@ -175,7 +175,7 @@ BEGIN
           where id = v_df_dca_id;
         else
           insert into flow.project_process_step_custom_field_value(project_process_step_id,
-                                                                   custom_field_group_assignment_id, int_value,
+                                                                   custom_field_group_assignment_id, numeric_value,
                                                                    date_created, date_modified, created_by_id,
                                                                    modified_by_id)
           values (v_df_pps_id, 26166, v_closer_commission_amount, now(), now(), 99999999, 99999999);
@@ -216,7 +216,7 @@ BEGIN
           where id = v_booking_dca_id;
         else
           insert into flow.project_process_step_custom_field_value(project_process_step_id,
-                                                                   custom_field_group_assignment_id, int_value,
+                                                                   custom_field_group_assignment_id, numeric_value,
                                                                    date_created, date_modified, created_by_id,
                                                                    modified_by_id)
           values (v_booking_pps_id, 26943, v_closer_commission_amount, now(), now(), 99999999, 99999999);
