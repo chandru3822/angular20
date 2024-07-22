@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_misc_adders(p_version_id bigint)
           (
             unit_type_id  integer,
             adder_amount  numeric,
+            rete_incentive text,
             default_value boolean,
             adder_id      bigint[]
           )
@@ -14,6 +15,7 @@ BEGIN
   return query
     select (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::integer as unit_type_id,
            (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as adder_amount,
+           (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 718)') ->> 'value')::text   as rete_incentive,
            (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 329)') ->> 'value')::boolean   as default_value,
            (SELECT ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 126)') ->>
                                                            'intArrayValue')::jsonb)))::bigint[] as adder_id

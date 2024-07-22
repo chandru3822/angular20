@@ -183,7 +183,13 @@ create type brs.calculated_proposal_value as
   denver_care_rebate_mpu_amount_number numeric,
   denver_care_rebate_mpu_amount  varchar,
   denver_care_rebate_battery_amount_number numeric,
-  denver_care_rebate_battery_amount varchar
+  denver_care_rebate_battery_amount varchar,
+  rete_reamortized_monthly_payment_all_credits_to_loan numeric,
+  rete_incentive_applied boolean,
+  rete_itc_incentive_amount_number numeric,
+  rete_itc_incentive_amount varchar,
+  rete_depreciation_incentive_amount_number numeric,
+  rete_depreciation_incentive_amount varchar
 );
 
 drop type brs.excluded_proposal_value;
@@ -352,184 +358,188 @@ declare
   v_after_net_metering                                  numeric;
   v_adjusted_annual_production                          numeric;
   v_instant_use_assumption                              numeric;
-  v_net_metring_rate                                    numeric;
-  v_cost_of_solar                                       numeric;
-  v_monthly_cost_30_year_average_with_solar             numeric;
-  v_reamortized_payment_factor_without_itc_paydown      numeric;
-  v_secondary_monthly_payment_no_credits_to_loan        numeric;
-  v_proposal_id                                         bigint;
-  v_project_id                                          bigint;
-  v_proposal_archived                                   boolean;
-  v_contact_first_name                                  character varying;
-  v_contact_last_name                                   character varying;
-  v_contact_phone                                       character varying;
-  v_contact_email                                       character varying;
-  v_project_name                                        character varying;
-  v_project_street1                                     character varying;
-  v_project_street2                                     character varying;
-  v_city                                                character varying;
-  v_postal_code                                         character varying;
-  v_project_state                                       character varying;
-  v_project_state_abbrev                                character varying;
-  v_panel_brand                                         character varying;
-  v_panel_quantity                                      bigint;
-  v_inverter_brand                                      varchar;
-  v_inverter_brand_id                                   bigint;
-  v_aurora_design_id                                    text;
-  v_product_name                                        character varying;
-  v_proposal_nbr                                        bigint;
-  v_display_name                                        varchar;
-  v_other_adder_and_discount                            text;
-  v_other_adder_and_discount_amount                     numeric;
-  v_adder                                               text;
-  v_required_down_payment                               numeric;
-  v_non_solar_cap                                       numeric;
-  v_storage_type_id                                     bigint;
-  v_storage_type                                        varchar;
-  v_financier                                           varchar;
-  v_financier_id                                        bigint;
-  v_cash_price_storage                                  numeric;
-  v_storage_cost_with_fees                              numeric;
-  v_main_panel_upgrade_cost                             numeric;
-  v_structural_upgrade_cost                             numeric;
-  v_reroof_cost                                         numeric;
-  v_tree_trimming_cost                                  numeric;
-  v_trenching_cost                                      numeric;
-  v_ac_unit_relocation_cost                             numeric;
-  v_zone_adder                                          numeric;
-  v_loan_type                                           varchar;
-  v_unapproved_zip_code_adder                           numeric;
-  v_csu_rebate_unit_type_id                             integer;
-  v_financial_option                                    varchar;
-  v_check_from_br                                       numeric;
-  v_site_survey_time_adders                             bigint[];
-  v_site_survey_time_estimate                           integer;
-  v_site_survey_resource_type_yn                        text;
-  v_site_survey_resource_type                           text;
-  v_site_survey_items                                   text;
-  v_number_of_batteries                                 numeric;
-  v_estimated_backup_days                               numeric(10, 1);
-  v_solar_rebate_for_hic                                numeric;
-  v_total_square_footage                                numeric;
-  v_net_payment_from_customer                           numeric(10, 2);
-  v_total_system_cost_before_rebates                    numeric;
-  v_srec_realization                                    numeric;
-  v_il_srec_greater_25                                  numeric;
-  v_il_srec_less_10                                     numeric;
-  v_il_srec_between_10_25                               numeric;
-  v_ill_srec_rebate_amount                              numeric;
-  v_srec_rebate_cap_percent_of_total                    numeric;
-  v_srec_rebate_cap_amount                              numeric;
-  v_financial_product_id                                bigint;
-  v_production_factor_east_west                         numeric;
-  v_production_factor_south                             numeric;
-  v_maximum_funding_amount_per_watt                     numeric;
-  v_minimum_funding_amount_per_watt                     numeric;
-  v_unit_type_id_smart_thermostat                       bigint;
-  v_unit_type_id_led                                    bigint;
-  v_misc_adders_array                                   bigint[];
-  v_panel_unit_type_id                                  bigint;
-  v_panel_adder_amount                                  numeric;
-  v_panel_states                                        bigint[];
-  v_inverter_unit_type_id                               bigint;
-  v_inverter_adder_amount                               numeric;
-  v_small_system_size_adder_amount                      numeric;
-  v_small_system_size_adder                             numeric;
-  v_small_system_size_unit_type_id                      bigint;
-  v_small_system_size_value                             numeric;
-  v_rebate_amount                                       numeric;
-  v_rebate_cap_amount                                   numeric;
-  v_rebate_cap_percentage                               numeric;
-  v_odoe_income_status                                  bigint;
-  v_battery_rebate_amount                               numeric;
-  v_battery_rebate_cap_percent_of_total                 numeric;
-  v_battery_rebate_cap_amount                           numeric;
-  v_odoe_rebate                                         numeric;
-  v_system_size_cutoff                                  numeric;
-  v_commission_strategy_id                              bigint;
-  v_closer_gen_discount                                 numeric;
-  v_red_line_funding_amount                             numeric;
-  v_desired_commission_amount                           numeric;
-  v_source_id                                           bigint;
-  v_adjusted_price_per_watt                             numeric;
-  v_lead_source_discount                                numeric;
-  v_redline_markup                                      numeric;
-  v_admin_discount                                      numeric;
-  v_storage_capacity                                    numeric;
-  v_required_down_payment_number                        numeric;
-  v_minimum_odoe_tsrf                                   bigint;
-  v_odoe_rebate_id                                      bigint;
-  v_virginia_srec_rebate_amount                         numeric;
-  v_virginia_srec_rate                                  numeric;
-  v_initial_monthly_payment_all_credits_to_loan_bpPlus  numeric;
-  v_above_line_rebate_without_odoe                      numeric;
-  v_ancillary_cost_portion_of_loan_before_rebates       numeric;
-  v_additional_fee_for_exceeding_non_solar_threshold    numeric;
-  v_non_solar_threshold_for_additional_fee              numeric;
-  v_maximum_dollar_per_watt_for_solar                   numeric;
-  v_no_ancillary_amount_to_finance                      numeric;
-  v_dealer                                              bigint;
-  v_dealer_markup                                       numeric;
-  v_dealer_redline_price                                numeric;
-  v_deposit_amount                                      numeric;
-  v_deposit_amount_number                               numeric;
-  v_has_critter_guard                                   boolean;
-  v_storage_name                                        text;
-  v_storage_id                                          bigint;
-  v_storage_brand                                       text;
-  v_storage_brand_id                                    bigint;
-  v_qualifies_for_incentive                             bigint[];
-  v_qualifies_for_incentive_boolean                     boolean;
-  v_below_line_rebate                                   numeric;
-  v_above_the_line_utility_rebate_amount                numeric;
-  v_above_the_line_utility_rebates                      jsonb;
-  v_rebates                                             jsonb;
-  v_below_the_line_utility_rebate_amount                numeric;
-  v_below_the_line_utility_rebates                      jsonb;
-  v_below_the_line_state_rebate_amount                  numeric;
-  v_below_the_line_state_rebates                        jsonb;
-  v_above_the_line_state_rebate_amount                  numeric;
-  v_above_the_line_state_rebates                        jsonb;
-  v_referral_promotion_rebate_name                      text;
-  v_ill_srec_rebate_name                                text;
-  v_virginia_srec_rebate_name                           text;
-  v_odoe_rebate_name                                    text;
-  v_federal_tax_incentive_rebate_name                   text;
-  v_below_the_line_state_rebate_first_year_cap_amount   numeric;
-  v_below_the_line_utility_rebate_first_year_cap_amount numeric;
-  v_total_rebate_first_year_cap_amount                  numeric;
-  v_eto_rebate_amount                                   numeric;
-  v_nominal_power                                       numeric;
-  v_battery_manufacturers_warranty                      bigint;
-  v_battery_workmanship_warranty                        bigint;
-  v_adder_amount                                        numeric;
-  v_company_process_id                                  integer;
-  v_virtual_sales_price_adjustment                      numeric;
-  v_virtual_sales_base_price                            numeric;
-  v_total_ancillary_costs                               numeric;
-  v_solar_only_cap_down_payment                         numeric;
-  v_ancillary_percent_cap_down_payment                  numeric;
-  v_battery_cap_down_payment                            numeric;
-  v_all_ancillary_costs                                 jsonb;
-  v_denver_care_rebate_amount                           numeric;
-  v_denver_care_rebate_amount_number                    numeric;
-  v_site_survey_resource_type_id                        bigint;
-  v_loan_term_id                                        bigint;
-  v_other_oregon_discount                               numeric;
-  v_site_survey_item_ids                                bigint[];
-  v_panel_model                                         text;
-  v_financed_pv_price_per_watt_to_customer              numeric;
-  v_first_year_avoided_bill                             numeric;
-  v_max_base_price_per_watt                             numeric;
-  v_maximum_funding_amount_discount                     numeric;
-  v_minimum_funding_amount_discount                     numeric;
-  v_redline_funding_amount_discount                     numeric;
-  v_virtual_sales_price_amount_discount                 numeric;
-  v_qualifies_for_swr                                   boolean;
-  v_proposal_qualifies_for_swr                          boolean;
-  v_kwh_rate_discount                                   numeric;
-  v_denver_care_rebate_battery_amount                   numeric;
-  v_denver_care_rebate_mpu_amount                       numeric;
+  v_net_metring_rate                                     numeric;
+  v_cost_of_solar                                        numeric;
+  v_monthly_cost_30_year_average_with_solar              numeric;
+  v_reamortized_payment_factor_without_itc_paydown       numeric;
+  v_secondary_monthly_payment_no_credits_to_loan         numeric;
+  v_proposal_id                                          bigint;
+  v_project_id                                           bigint;
+  v_proposal_archived                                    boolean;
+  v_contact_first_name                                   character varying;
+  v_contact_last_name                                    character varying;
+  v_contact_phone                                        character varying;
+  v_contact_email                                        character varying;
+  v_project_name                                         character varying;
+  v_project_street1                                      character varying;
+  v_project_street2                                      character varying;
+  v_city                                                 character varying;
+  v_postal_code                                          character varying;
+  v_project_state                                        character varying;
+  v_project_state_abbrev                                 character varying;
+  v_panel_brand                                          character varying;
+  v_panel_quantity                                       bigint;
+  v_inverter_brand                                       varchar;
+  v_inverter_brand_id                                    bigint;
+  v_aurora_design_id                                     text;
+  v_product_name                                         character varying;
+  v_proposal_nbr                                         bigint;
+  v_display_name                                         varchar;
+  v_other_adder_and_discount                             text;
+  v_other_adder_and_discount_amount                      numeric;
+  v_adder                                                text;
+  v_required_down_payment                                numeric;
+  v_non_solar_cap                                        numeric;
+  v_storage_type_id                                      bigint;
+  v_storage_type                                         varchar;
+  v_financier                                            varchar;
+  v_financier_id                                         bigint;
+  v_cash_price_storage                                   numeric;
+  v_storage_cost_with_fees                               numeric;
+  v_main_panel_upgrade_cost                              numeric;
+  v_structural_upgrade_cost                              numeric;
+  v_reroof_cost                                          numeric;
+  v_tree_trimming_cost                                   numeric;
+  v_trenching_cost                                       numeric;
+  v_ac_unit_relocation_cost                              numeric;
+  v_zone_adder                                           numeric;
+  v_loan_type                                            varchar;
+  v_unapproved_zip_code_adder                            numeric;
+  v_csu_rebate_unit_type_id                              integer;
+  v_financial_option                                     varchar;
+  v_check_from_br                                        numeric;
+  v_site_survey_time_adders                              bigint[];
+  v_site_survey_time_estimate                            integer;
+  v_site_survey_resource_type_yn                         text;
+  v_site_survey_resource_type                            text;
+  v_site_survey_items                                    text;
+  v_number_of_batteries                                  numeric;
+  v_estimated_backup_days                                numeric(10, 1);
+  v_solar_rebate_for_hic                                 numeric;
+  v_total_square_footage                                 numeric;
+  v_net_payment_from_customer                            numeric(10, 2);
+  v_total_system_cost_before_rebates                     numeric;
+  v_srec_realization                                     numeric;
+  v_il_srec_greater_25                                   numeric;
+  v_il_srec_less_10                                      numeric;
+  v_il_srec_between_10_25                                numeric;
+  v_ill_srec_rebate_amount                               numeric;
+  v_srec_rebate_cap_percent_of_total                     numeric;
+  v_srec_rebate_cap_amount                               numeric;
+  v_financial_product_id                                 bigint;
+  v_production_factor_east_west                          numeric;
+  v_production_factor_south                              numeric;
+  v_maximum_funding_amount_per_watt                      numeric;
+  v_minimum_funding_amount_per_watt                      numeric;
+  v_unit_type_id_smart_thermostat                        bigint;
+  v_unit_type_id_led                                     bigint;
+  v_misc_adders_array                                    bigint[];
+  v_panel_unit_type_id                                   bigint;
+  v_panel_adder_amount                                   numeric;
+  v_panel_states                                         bigint[];
+  v_inverter_unit_type_id                                bigint;
+  v_inverter_adder_amount                                numeric;
+  v_small_system_size_adder_amount                       numeric;
+  v_small_system_size_adder                              numeric;
+  v_small_system_size_unit_type_id                       bigint;
+  v_small_system_size_value                              numeric;
+  v_rebate_amount                                        numeric;
+  v_rebate_cap_amount                                    numeric;
+  v_rebate_cap_percentage                                numeric;
+  v_odoe_income_status                                   bigint;
+  v_battery_rebate_amount                                numeric;
+  v_battery_rebate_cap_percent_of_total                  numeric;
+  v_battery_rebate_cap_amount                            numeric;
+  v_odoe_rebate                                          numeric;
+  v_system_size_cutoff                                   numeric;
+  v_commission_strategy_id                               bigint;
+  v_closer_gen_discount                                  numeric;
+  v_red_line_funding_amount                              numeric;
+  v_desired_commission_amount                            numeric;
+  v_source_id                                            bigint;
+  v_adjusted_price_per_watt                              numeric;
+  v_lead_source_discount                                 numeric;
+  v_redline_markup                                       numeric;
+  v_admin_discount                                       numeric;
+  v_storage_capacity                                     numeric;
+  v_required_down_payment_number                         numeric;
+  v_minimum_odoe_tsrf                                    bigint;
+  v_odoe_rebate_id                                       bigint;
+  v_virginia_srec_rebate_amount                          numeric;
+  v_virginia_srec_rate                                   numeric;
+  v_initial_monthly_payment_all_credits_to_loan_bpPlus   numeric;
+  v_above_line_rebate_without_odoe                       numeric;
+  v_ancillary_cost_portion_of_loan_before_rebates        numeric;
+  v_additional_fee_for_exceeding_non_solar_threshold     numeric;
+  v_non_solar_threshold_for_additional_fee               numeric;
+  v_maximum_dollar_per_watt_for_solar                    numeric;
+  v_no_ancillary_amount_to_finance                       numeric;
+  v_dealer                                               bigint;
+  v_dealer_markup                                        numeric;
+  v_dealer_redline_price                                 numeric;
+  v_deposit_amount                                       numeric;
+  v_deposit_amount_number                                numeric;
+  v_has_critter_guard                                    boolean;
+  v_storage_name                                         text;
+  v_storage_id                                           bigint;
+  v_storage_brand                                        text;
+  v_storage_brand_id                                     bigint;
+  v_qualifies_for_incentive                              bigint[];
+  v_qualifies_for_incentive_boolean                      boolean;
+  v_below_line_rebate                                    numeric;
+  v_above_the_line_utility_rebate_amount                 numeric;
+  v_above_the_line_utility_rebates                       jsonb;
+  v_rebates                                              jsonb;
+  v_below_the_line_utility_rebate_amount                 numeric;
+  v_below_the_line_utility_rebates                       jsonb;
+  v_below_the_line_state_rebate_amount                   numeric;
+  v_below_the_line_state_rebates                         jsonb;
+  v_above_the_line_state_rebate_amount                   numeric;
+  v_above_the_line_state_rebates                         jsonb;
+  v_referral_promotion_rebate_name                       text;
+  v_ill_srec_rebate_name                                 text;
+  v_virginia_srec_rebate_name                            text;
+  v_odoe_rebate_name                                     text;
+  v_federal_tax_incentive_rebate_name                    text;
+  v_below_the_line_state_rebate_first_year_cap_amount    numeric;
+  v_below_the_line_utility_rebate_first_year_cap_amount  numeric;
+  v_total_rebate_first_year_cap_amount                   numeric;
+  v_eto_rebate_amount                                    numeric;
+  v_nominal_power                                        numeric;
+  v_battery_manufacturers_warranty                       bigint;
+  v_battery_workmanship_warranty                         bigint;
+  v_adder_amount                                         numeric;
+  v_company_process_id                                   integer;
+  v_virtual_sales_price_adjustment                       numeric;
+  v_virtual_sales_base_price                             numeric;
+  v_total_ancillary_costs                                numeric;
+  v_solar_only_cap_down_payment                          numeric;
+  v_ancillary_percent_cap_down_payment                   numeric;
+  v_battery_cap_down_payment                             numeric;
+  v_all_ancillary_costs                                  jsonb;
+  v_denver_care_rebate_amount                            numeric;
+  v_denver_care_rebate_amount_number                     numeric;
+  v_site_survey_resource_type_id                         bigint;
+  v_loan_term_id                                         bigint;
+  v_other_oregon_discount                                numeric;
+  v_site_survey_item_ids                                 bigint[];
+  v_panel_model                                          text;
+  v_financed_pv_price_per_watt_to_customer               numeric;
+  v_first_year_avoided_bill                              numeric;
+  v_max_base_price_per_watt                              numeric;
+  v_maximum_funding_amount_discount                      numeric;
+  v_minimum_funding_amount_discount                      numeric;
+  v_redline_funding_amount_discount                      numeric;
+  v_virtual_sales_price_amount_discount                  numeric;
+  v_qualifies_for_swr                                    boolean;
+  v_proposal_qualifies_for_swr                           boolean;
+  v_kwh_rate_discount                                    numeric;
+  v_denver_care_rebate_battery_amount                    numeric;
+  v_denver_care_rebate_mpu_amount                        numeric;
+  v_rete_incentive_applied                               boolean;
+  v_rete_itc_incentive_amount                                numeric;
+  v_rete_depreciation_incentive_amount                             numeric;
+  v_rete_reamortized_monthly_payment_all_credits_to_loan numeric;
   BEGIN
   select proposal_id,
          version_id,
@@ -597,7 +607,10 @@ declare
          virtual_sales_price_adjustment,
          system_size_ac,
          panel_model,
-         qualifies_for_swr
+         qualifies_for_swr,
+         rete_incentive_applied,
+         rete_itc_incentive_amount,
+         rete_depreciation_incentive_amount
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -664,7 +677,10 @@ declare
     v_virtual_sales_price_adjustment,
     v_system_size_ac,
     v_panel_model,
-    v_proposal_qualifies_for_swr
+    v_proposal_qualifies_for_swr,
+    v_rete_incentive_applied,
+    v_rete_itc_incentive_amount,
+    v_rete_depreciation_incentive_amount
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -697,6 +713,9 @@ declare
   --raise notice 'v_trenching_cost = % ',v_trenching_cost;
   --raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
   --raise notice 'v_qualifies_for_incentive = % ',v_qualifies_for_incentive;
+  --raise notice 'v_rete_incentive_applied = % ',v_rete_incentive_applied;
+  --raise notice 'v_rete_itc_incentive_amount = % ',v_rete_itc_incentive_amount;
+  --raise notice 'v_rete_depreciation_incentive_amount = % ',v_rete_depreciation_incentive_amount;
 
   select dealer_redline_price
   into v_dealer_redline_price
@@ -1085,21 +1104,22 @@ declare
   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_PANEL_DETAIL', v_panel_adder_amount::numeric,
                                      v_panel_unit_type_id::bigint, 0::numeric, v_panel_states, v_state_id)
   into v_equipment_panel_adder;
-  -- --raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
+  --raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
 
   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_INVERTER_DETAILS', v_inverter_adder_amount::numeric,
                                      v_inverter_unit_type_id::bigint, 0::numeric, null, null)
   into v_equipment_inverter_adder;
-  -- --raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
+  --raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
   v_has_critter_guard = false;
   if 23457 = any (v_misc_adders_array) then
     v_has_critter_guard = true;
   end if;
 
-  --todo change this back to not include the 1
-  v_misc_adders = brs.get_misc_adder_amount(v_version_id,v_system_size, v_misc_adders_array);
+
+  v_misc_adders = brs.get_misc_adder_amount(v_version_id,v_system_size, v_misc_adders_array,v_rete_incentive_applied);
   --raise notice 'v_misc_adders = %',v_misc_adders;
   --raise notice 'v_has_critter_guard = %',v_has_critter_guard;
+
 
   v_smart_thermostat_adder = 0.00::numeric;
   if v_smart_thermostat is not null and v_smart_thermostat_value is not null then
@@ -1907,7 +1927,9 @@ declare
   from brs.get_proposal_rebates(v_version_id)
   where rebate_type_id = 453;
 
-  if v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
+  if v_rete_incentive_applied is true  then
+    v_federal_tax_incentive_amount = coalesce(v_rete_itc_incentive_amount,0);
+  elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate * v_system_size * 1000;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 and v_state_id = 47 then
 
@@ -1928,10 +1950,14 @@ declare
   if v_federal_tax_incentive_rebate_name is not null then
     v_rebates = coalesce(v_rebates,'{}'::jsonb) || jsonb_build_object(v_federal_tax_incentive_rebate_name, round(v_federal_tax_incentive_amount,2));
   end if;
+  if v_rete_incentive_applied is true and coalesce(v_rete_depreciation_incentive_amount,0) > 0 then
+    v_rebates = coalesce(v_rebates,'{}'::jsonb) || jsonb_build_object('RETE DEPRECIATION INCENTIVE', round(v_rete_depreciation_incentive_amount,2));
+  end if;
+  --raise notice 'v_rebates = %',v_rebates;
   --raise notice 'v_federal_tax_incentive_rate = %',v_federal_tax_incentive_rate;
   --raise notice 'v_federal_tax_incentive_amount = %',v_federal_tax_incentive_amount;
 
-  v_below_line_rebate = coalesce(v_below_the_line_state_rebate_amount,0) + coalesce(v_below_the_line_utility_rebate_amount,0) + coalesce(v_federal_tax_incentive_amount,0) + coalesce(v_virginia_srec_rebate_amount,0);
+  v_below_line_rebate = case when v_rete_incentive_applied is true then coalesce(v_rete_depreciation_incentive_amount,0) else 0::numeric end + coalesce(v_below_the_line_state_rebate_amount,0) + coalesce(v_below_the_line_utility_rebate_amount,0) + coalesce(v_federal_tax_incentive_amount,0) + coalesce(v_virginia_srec_rebate_amount,0);
   v_total_rebate_first_year_cap_amount = coalesce(v_below_the_line_utility_rebate_first_year_cap_amount,0) + coalesce(v_below_the_line_state_rebate_first_year_cap_amount,0) + coalesce(v_federal_tax_incentive_amount,0) + coalesce(v_virginia_srec_rebate_amount,0);
 
   --raise notice 'v_above_line_rebate = %',v_above_line_rebate;
@@ -2002,8 +2028,10 @@ declare
     (coalesce(v_total_loan_amount, 0) - coalesce(v_total_rebate_first_year_cap_amount,0) + coalesce(v_virginia_srec_rebate_amount,0)) * v_reamortization_factor;
   -- end if;
 
-  --raise notice 'v_reamortized_monthly_payment_all_credits_to_loan = %',v_reamortized_monthly_payment_all_credits_to_loan;
+  v_rete_reamortized_monthly_payment_all_credits_to_loan = (coalesce(v_total_loan_amount, 0) - coalesce(v_total_rebate_first_year_cap_amount,0) - coalesce(v_rete_depreciation_incentive_amount,0) + coalesce(v_virginia_srec_rebate_amount,0)) * v_reamortization_factor;
 
+  --raise notice 'v_reamortized_monthly_payment_all_credits_to_loan = %',v_reamortized_monthly_payment_all_credits_to_loan;
+  --raise notice 'v_rete_reamortized_monthly_payment_all_credits_to_loan = %',v_rete_reamortized_monthly_payment_all_credits_to_loan;
   v_cost_of_solar = v_reamortized_monthly_payment_all_credits_to_loan * 12 * v_loan_term;
   --raise notice 'v_cost_of_solar = %',v_cost_of_solar;
 
@@ -2293,7 +2321,11 @@ declare
                                          financed_pv_price_per_watt_to_customer,
                                          first_year_avoided_bill,
                                          battery_workmanship_warranty,
-                                         battery_manufacturers_warranty)
+                                         battery_manufacturers_warranty,
+                                         rete_incentive_applied,
+                                         rete_itc_incentive_amount,
+                                         rete_depreciation_incentive_amount,
+                                         rete_reamortized_monthly_payment_all_credits_to_loan)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2415,7 +2447,12 @@ declare
             v_financed_pv_price_per_watt_to_customer,
             v_first_year_avoided_bill,
             v_battery_workmanship_warranty,
-            v_battery_manufacturers_warranty);
+            v_battery_manufacturers_warranty,
+            v_rete_incentive_applied,
+            v_rete_itc_incentive_amount,
+            v_rete_depreciation_incentive_amount,
+            v_rete_reamortized_monthly_payment_all_credits_to_loan
+            );
   end if;
 
   return query
@@ -2617,7 +2654,13 @@ declare
            v_denver_care_rebate_mpu_amount,
            to_char(v_denver_care_rebate_mpu_amount, '$FM9,999,999')::varchar,
            v_denver_care_rebate_battery_amount,
-           to_char(v_denver_care_rebate_battery_amount, '$FM9,999,999')::varchar;
+           to_char(v_denver_care_rebate_battery_amount, '$FM9,999,999')::varchar,
+           v_rete_reamortized_monthly_payment_all_credits_to_loan,
+           v_rete_incentive_applied,
+           v_rete_itc_incentive_amount,
+           to_char(v_rete_itc_incentive_amount, '$FM9,999,999')::varchar,
+           v_rete_depreciation_incentive_amount,
+           to_char(v_rete_depreciation_incentive_amount, '$FM9,999,999')::varchar;
 
 
 END
