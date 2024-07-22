@@ -116,7 +116,6 @@ const createSearchRegex = () => {
 }
 
 onMounted(() => {
-  console.log(`SS Start OnMounted: ${searchString.value}`)
   createSearchRegex()
   filterSelection.value = stickyStore?.projectFilter
   if (filterSelection.value !== '') {
