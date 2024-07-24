@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.disclosureForm.DisclosureFormService;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
@@ -71,6 +72,7 @@ public class ProjectProcessStepEventService {
   private final MessagingService messagingService;
   private final PubSubService pubSubService;
   private final UserPositionService userPositionService;
+  private final DisclosureFormService disclosureFormService;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
@@ -710,7 +712,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);
