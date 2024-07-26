@@ -1154,6 +1154,7 @@ defineExpose({
 })
 
 const handleEventClick = (info) => {
+  debugger
   if(info.event.title && info.event.display === 'auto' && info.event.extendedProps?.projectProcessStepId) {
     let props = info.event.extendedProps
     //open event clicks in new window every time so they dont have to keep reloading the calendar

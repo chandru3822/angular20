@@ -419,7 +419,7 @@ onMounted (async () => {
 
 <template>
   <div id="closer-availability-calendar-container">
-    <MessagingDialog v-if="currentUserId && userCanSms" :current-user-id="currentUserId" :user-id-to-message="userToMessage?.userId" :title="userToMessage?.title" :adjust-vertical="false" @close="[showMessagingDialog = false, userToMessage = null]"/>
+    <MessagingDialog v-if="currentUserId && userCanSms" :current-user-id="currentUserId" :user-id-to-message="userToMessage?.userId" :title="userToMessage?.title" @close="[showMessagingDialog = false, userToMessage = null]"/>
     <div id="calendar-filter-container" class="pa-6 pt-4">
   <v-row class="py-0 d-flex align-baseline">
     <v-col class="py-0" >
