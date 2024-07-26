@@ -479,7 +479,7 @@ const debounceFindCustomFields = debounce((query) => {
         });
 
         object.companyDataTypeId = object.companyDataType.id
-        debugger
+
         object.fieldName = object.fieldName
         const {data, status} = await postRequest(`/customField`, object, props.apiPath);
         data.companyDataType = companyDataTypes.value.find(dt => dt.id === data.companyDataTypeId);

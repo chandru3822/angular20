@@ -4,6 +4,7 @@ import Login from './views/Login.vue'
 import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
 import {getRequest} from '@/helpers/helpers'
 import ProposalVersionSettingsRoutes from '@/views/blueraven/settings/proposals/routes'
+import PartsMasterVersionSettingsRoutes from '@/views/blueraven/settings/partsMaster/routes';
 import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/routes'
 import pinia from '@/store'
 import { useUserStore } from '@/stores/UserStore.js'
@@ -631,6 +632,7 @@ const router = new Router({
           component: () => import( './views/flow/settings/Settings.vue'),
           children: [
             ProposalVersionSettingsRoutes,
+            PartsMasterVersionSettingsRoutes,
             {
               path: 'pushNotifications',
               component: () => import('./views/flow/pushNotifications/Admin.vue')
