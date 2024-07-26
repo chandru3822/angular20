@@ -56,8 +56,8 @@
       <v-card-text class="py-0 default-text-color">
         <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
         <div class="text-formatting">
-          <div v-if="query && query !== ''" :inner-html.prop="a.note | searchHighlight(query)"/>
-          <vue-clamp v-else ellipsis="" autoresize :max-lines="5">{{removeNoteTagEmail(a.note)}}
+          <div v-if="query && query !== ''" :inner-html.prop="filterFormatting(removeNoteTagEmail(a.note)) | searchHighlight(`(?<!<[^>]*)${query}(?![^<]*>)`)"/>
+          <vue-clamp v-else ellipsis="" autoresize :max-lines="5" :inner-html.prop="filterFormatting(removeNoteTagEmail(a.note))">
             <template #after="{ toggle, clamped, expanded }">
               <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
               <button v-if="expanded" @click="toggle" class="see-more-btn"> see less</button>
@@ -87,7 +87,14 @@
 </template>
 
 <script setup>
-import {getRequest, deleteRequest, postRequest, putRequest, postRequestWithRequestParams,  handleHidingGlobalLoader} from '@/helpers/helpers'
+import {
+  getRequest,
+  deleteRequest,
+  postRequest,
+  putRequest,
+  postRequestWithRequestParams,
+  handleHidingGlobalLoader
+} from '@/helpers/helpers'
 
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -108,6 +115,20 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+
+const urlRegex = /\bhttps?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_+.~#?&\/=]*\b/gi // thank you https://uibakery.io/regex-library/url
+const taggedUserRegex = /@\w+(?: [\w&]+)*(?=\s*\(|\s|$)/g // thank you chat gpt
+
+const formatQueries = ref([
+  {
+    name: "URL",
+    regex: urlRegex
+  },
+  {
+    name: "USER",
+    regex: taggedUserRegex
+  }
+])
 
 const props = defineProps({
   activities: Array,
@@ -150,11 +171,10 @@ const infiniteHandler = ($state) => {
 }
 const infiniteStateLoaded = (hitMaxHere) => {
   //the counts are loaded from the parent so we have to wait to set the state here
-  if(hitMaxHere) {
+  if (hitMaxHere) {
     hitMax.value = true
     loaderState.value?.complete()
-  }
-  else {
+  } else {
     loaderState.value?.loaded()
   }
 }
@@ -163,16 +183,16 @@ const editItem = (item) => {
 }
 const goToPath = (activity) => {
   let path = ''
-  if(null !== activity.linkedPpseId) {
+  if (null !== activity.linkedPpseId) {
     path = `/project/${projectId.value}/processStep/${activity.linkedPpsId}/event/${activity.linkedPpseId}`
-  } else if(null !== activity.linkedPpsId) {
+  } else if (null !== activity.linkedPpsId) {
     path = `/project/${projectId.value}/processStep/${activity.linkedPpsId}`
   }
-  if(path !== route.path) {
+  if (path !== route.path) {
     router.push(path)
   }
 }
-const pinActivity = async(activity) => {
+const pinActivity = async (activity) => {
   try {
     activity.pinned = !activity.pinned
     let params = {
@@ -190,7 +210,7 @@ const pinActivity = async(activity) => {
     savingActivity.value = false
   }
 }
-const deleteActivity = async(activity) => {
+const deleteActivity = async (activity) => {
   try {
     await deleteRequest(`/activity/${activity.id}/${sectionType.value}`)
     activity.archived = true
@@ -206,6 +226,51 @@ const deleteActivity = async(activity) => {
   }
 }
 
+const openUrl = (event) => {
+  const element = event.target
+  const urlText = element.innerText // extractUrlText(element);
+  window.open(urlText, "_blank")
+}
+
+onMounted(() => {
+  window.openUrl = openUrl;
+})
+
+const filterFormatting = (value) => {
+  if (value) {
+    formatQueries.value.forEach((q) => {
+      switch (q.name) {
+        case "URL":
+          if (new RegExp(q.regex).test(value)) {
+            value = value.replace(
+              new RegExp(q.regex),
+              (v) => `<span class="al-url" onclick="window.openUrl(event)">${v}</span>`
+            )
+          }
+          break
+        case "USER":
+          if (new RegExp(q.regex).test(value)) {
+            value = value.replace(
+              new RegExp(q.regex),
+              (v) => `<span class="al-taggedUser">${v}</span>`
+            )
+          }
+          break
+        case "USERLONG":
+          if (new RegExp(q.regex).test(value)) {
+            value = value.replace(
+              new RegExp(q.regex),
+              (v) => `<span class="al-taggedUser">${v}</span>`
+            )
+          }
+          break
+        default:
+          break
+      }
+    })
+  }
+  return value
+}
 defineExpose({infiniteStateLoaded})
 </script>
 
@@ -246,16 +311,6 @@ defineExpose({infiniteStateLoaded})
   font-size: 14px;
   color: var(--v-grey-darken2);
 }
-
-//.blah {
-//  display: -webkit-box;
-//  -webkit-line-clamp: 5;
-//  -webkit-box-orient: vertical;
-//  overflow: hidden;
-//  text-overflow: ellipsis " [..]";
-//}
-
-
 </style>
 <style lang="scss">
 #activity-card-title {
@@ -267,5 +322,19 @@ defineExpose({infiniteStateLoaded})
       white-space: unset !important;
     }
   }
+}
+
+.al-taggedUser {
+  color: var(--v-primary-lighten3);
+}
+
+.al-url {
+  color: var(--v-primary-lighten3);
+  text-decoration: underline;
+}
+
+.al-url:hover {
+  color: var(--v-primary-base);
+  cursor: pointer;
 }
 </style>

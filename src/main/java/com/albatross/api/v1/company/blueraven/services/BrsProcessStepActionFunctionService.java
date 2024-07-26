@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.aurora.AuroraProxy;
+import com.albatross.api.disclosureForm.DisclosureFormService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
@@ -8,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeCheckIn
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeReviewInvitation;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
+import com.albatross.api.disclosureForm.Srec;
 import com.albatross.api.v1.company.blueraven.services.queries.MarketoQuery;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
 import com.albatross.api.v1.flow.model.Contact;
@@ -59,6 +61,8 @@ public class BrsProcessStepActionFunctionService {
   private final BirdEyeService birdeyeService;
 
   private final StripeService stripeService;
+
+  private final DisclosureFormService disclosureFormService;
 
 
   // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
@@ -621,4 +625,55 @@ public class BrsProcessStepActionFunctionService {
       }
     }
   }
+
+    /**
+     * Send disclosure form and save returned form ID to given CFGA ID
+     * @param func
+     * @param systemValues
+     */
+    public void sendDisclosureForm(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+        Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+        List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
+        Long propCFGAID = Long.parseLong(paramValues.getFirst().getDynamicValue());
+
+        Long ppsID = Long.parseLong(systemValues.get("ppsId").toString());
+        Long propNbr = disclosureFormService.getProposalNumber(propCFGAID, ppsID);
+
+        if (propNbr == null) {
+            throw new RuntimeException(formatErrorMessage(func, "unable to fetch proposal number"));
+        }
+
+        Srec srec = disclosureFormService.getSrec(projectId, propNbr);
+
+        if (srec == null) {
+            throw new RuntimeException(formatErrorMessage(func, "unable to fetch proposal"));
+        }
+
+        String disclosureID = srec.getIlSrecDisclosureFormId();
+        if (disclosureID == null) {
+            var success = disclosureFormService.send(projectId, propNbr);
+            if (!success) {
+                throw new RuntimeException(formatErrorMessage(func, "unable to send disclosure form"));
+            }
+            srec = disclosureFormService.getSrec(projectId, propNbr);
+            disclosureID = srec.getIlSrecDisclosureFormId();
+        }
+
+        Long userID = Long.parseLong(systemValues.get("userId").toString());
+        Long disclosureCFGAID = Long.parseLong(paramValues.get(1).getDynamicValue());
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userID);
+        params.put("sourceId", ppsID);
+        params.put("customFieldGroupAssignmentId", disclosureCFGAID);
+        params.put("textValue", disclosureID);
+        params.put("dateValue", null);
+        params.put("timestampValue", null);
+        params.put("booleanValue", null);
+        params.put("numericValue", null);
+        params.put("intValue", null);
+        params.put("intArrayValue", null);
+        params.put("richTextValue", null);
+        params.put("jsonValue", null);
+        sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+    }
 }

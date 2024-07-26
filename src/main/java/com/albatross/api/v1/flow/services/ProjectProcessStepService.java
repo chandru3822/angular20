@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.disclosureForm.DisclosureFormService;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
@@ -80,6 +81,7 @@ public class ProjectProcessStepService {
   private final BirdEyeService birdeyeService;
   private final PubSubService pubSubService;
   private final StripeService stripeService;
+  private final DisclosureFormService disclosureFormService;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
@@ -1230,7 +1232,7 @@ public class ProjectProcessStepService {
           systemValues.put("companyId", user.getCompanyId());
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
             functionClass.marketoEnabled = marketoEnabled;
             //this is dumb but i really dont want to fill in the info on the design for dev-ing stuff
             functionClass.ignoreAuroraErrors = ignoreAuroraErrors;
