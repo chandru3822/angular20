@@ -186,10 +186,9 @@ create type brs.calculated_proposal_value as
   denver_care_rebate_battery_amount varchar,
   rete_reamortized_monthly_payment_all_credits_to_loan varchar,
   rete_incentive_applied boolean,
-  rete_itc_incentive_amount_number numeric,
-  rete_itc_incentive_amount varchar,
   rete_depreciation_incentive_amount_number numeric,
-  rete_depreciation_incentive_amount varchar
+  rete_depreciation_incentive_amount varchar,
+  rete_adder  varchar
 );
 
 drop type brs.excluded_proposal_value;
@@ -537,9 +536,9 @@ declare
   v_denver_care_rebate_battery_amount                    numeric;
   v_denver_care_rebate_mpu_amount                        numeric;
   v_rete_incentive_applied                               boolean;
-  v_rete_itc_incentive_amount                                numeric;
   v_rete_depreciation_incentive_amount                             numeric;
   v_rete_reamortized_monthly_payment_all_credits_to_loan numeric;
+v_rete_adder numeric;
   BEGIN
   select proposal_id,
          version_id,
@@ -609,7 +608,6 @@ declare
          panel_model,
          qualifies_for_swr,
          rete_incentive_applied,
-         rete_itc_incentive_amount,
          rete_depreciation_incentive_amount
   into v_proposal_id,
     v_version_id,
@@ -679,7 +677,6 @@ declare
     v_panel_model,
     v_proposal_qualifies_for_swr,
     v_rete_incentive_applied,
-    v_rete_itc_incentive_amount,
     v_rete_depreciation_incentive_amount
   from brs.get_proposal_details(p_proposal_id);
 
@@ -714,7 +711,6 @@ declare
   --raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
   --raise notice 'v_qualifies_for_incentive = % ',v_qualifies_for_incentive;
   --raise notice 'v_rete_incentive_applied = % ',v_rete_incentive_applied;
-  --raise notice 'v_rete_itc_incentive_amount = % ',v_rete_itc_incentive_amount;
   --raise notice 'v_rete_depreciation_incentive_amount = % ',v_rete_depreciation_incentive_amount;
 
   select dealer_redline_price
@@ -1115,9 +1111,11 @@ declare
     v_has_critter_guard = true;
   end if;
 
-
-  v_misc_adders = brs.get_misc_adder_amount(v_version_id,v_system_size, v_misc_adders_array,v_rete_incentive_applied);
+  select misc_adder,rete_incentive_adder
+  into v_misc_adders,v_rete_adder
+  from brs.get_misc_adder_amount(v_version_id,v_system_size, v_misc_adders_array,v_rete_incentive_applied);
   --raise notice 'v_misc_adders = %',v_misc_adders;
+  --raise notice 'v_rete_adder = %',v_rete_adder;
   --raise notice 'v_has_critter_guard = %',v_has_critter_guard;
 
 
@@ -1748,7 +1746,7 @@ declare
                                             (coalesce(v_total_amount_to_be_financed,0) +
                                              coalesce(v_down_payment_amount, 0) -
                                              coalesce(v_maximum_dollar_per_watt_for_solar,0) * v_system_size * 1000 * (1 - v_dealer_fee) -
-                                             coalesce(v_admin_discount,0)*(1-v_dealer_fee)) /
+                                             (coalesce(v_admin_discount,0)-coalesce(v_rete_adder,0))*(1-v_dealer_fee)) /
                                             (case when v_product_id = 293 then
                                                     ((v_initial_payment_factor * 18) /
                                                      ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
@@ -1761,7 +1759,7 @@ declare
                                             (coalesce(v_no_ancillary_amount_to_finance, 0) +
                                              coalesce(v_down_payment_amount, 0) -
                                              coalesce(v_maximum_dollar_per_watt_for_solar,0)* v_system_size * 1000 * (1 - v_dealer_fee) -
-                                             coalesce(v_admin_discount,0)*(1-v_dealer_fee)) /
+                                             (coalesce(v_admin_discount,0)-coalesce(v_rete_adder,0))*(1-v_dealer_fee)) /
                                             (case when v_product_id = 293 then
                                                     ((v_initial_payment_factor * 18) /
                                                      ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
@@ -1864,7 +1862,7 @@ declare
           when v_version_id < 74 then
             (284.00::numeric / (1 - v_dealer_fee))
           else 0::numeric end
-      else 0::numeric end - coalesce(v_admin_discount, 0);
+      else 0::numeric end - coalesce(v_admin_discount, 0)+coalesce(v_rete_adder,0);
   --raise notice 'v_total_loan_amount = %',v_total_loan_amount;
   --raise notice 'v_above_line_rebate = %',v_above_line_rebate;
   --raise notice 'v_admin_discount = %',v_admin_discount;
@@ -1927,9 +1925,7 @@ declare
   from brs.get_proposal_rebates(v_version_id)
   where rebate_type_id = 453;
 
-  if v_rete_incentive_applied is true  then
-    v_federal_tax_incentive_amount = coalesce(v_rete_itc_incentive_amount,0);
-  elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
+  if v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate * v_system_size * 1000;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 and v_state_id = 47 then
 
@@ -2323,9 +2319,9 @@ declare
                                          battery_workmanship_warranty,
                                          battery_manufacturers_warranty,
                                          rete_incentive_applied,
-                                         rete_itc_incentive_amount,
                                          rete_depreciation_incentive_amount,
-                                         rete_reamortized_monthly_payment_all_credits_to_loan)
+                                         rete_reamortized_monthly_payment_all_credits_to_loan,
+                                         rete_adder)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2449,9 +2445,9 @@ declare
             v_battery_workmanship_warranty,
             v_battery_manufacturers_warranty,
             v_rete_incentive_applied,
-            v_rete_itc_incentive_amount,
             v_rete_depreciation_incentive_amount,
-            v_rete_reamortized_monthly_payment_all_credits_to_loan
+            v_rete_reamortized_monthly_payment_all_credits_to_loan,
+            v_rete_adder
             );
   end if;
 
@@ -2657,10 +2653,9 @@ declare
            to_char(v_denver_care_rebate_battery_amount, '$FM9,999,999')::varchar,
            to_char(v_rete_reamortized_monthly_payment_all_credits_to_loan, '$FM9,999,999')::varchar,
            v_rete_incentive_applied,
-           v_rete_itc_incentive_amount,
-           to_char(v_rete_itc_incentive_amount, '$FM9,999,999')::varchar,
            v_rete_depreciation_incentive_amount,
-           to_char(v_rete_depreciation_incentive_amount, '$FM9,999,999')::varchar;
+           to_char(v_rete_depreciation_incentive_amount, '$FM9,999,999')::varchar,
+           to_char(v_rete_adder, '$FM9,999,999')::varchar;
 
 
 END
