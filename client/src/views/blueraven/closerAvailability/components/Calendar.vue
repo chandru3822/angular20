@@ -511,7 +511,7 @@ onMounted (async () => {
           <div>
             <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
               <template v-slot:activator="{on}">
-                <a-btn v-if="userCanSms" icon size="small" @click="[showMessagingDialog = true, userToMessage = {userId:Number(resource.extendedProps.userId), title: resource.extendedProps.fullName}]" :activation-handler="on" class="mx-1">
+                <a-btn v-if="userCanSms && resource.extendedProps.hasSMSAccess" icon size="small" @click="[showMessagingDialog = true, userToMessage = {userId:Number(resource.extendedProps.userId), title: resource.extendedProps.fullName}]" :activation-handler="on" class="mx-1">
                   <v-icon color="grey darken-1">mdi-forum</v-icon>
                 </a-btn>
               </template>

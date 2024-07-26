@@ -282,7 +282,7 @@
               </v-tooltip>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-                  <a-btn v-if="resource.id.charAt(0)==='2' && !isSidebarView && userCanSms" icon size="small" @click="[userToMessage = {userId: Number(resource.id.substring(1)), title:resource.title}]" :activation-handler="on" class="mx-1">
+                  <a-btn v-if="!isSidebarView && userCanSms && resource.id.charAt(0)==='2' && resource.extendedProps.hasSMSAccess" icon size="small" @click="[userToMessage = {userId: Number(resource.id.substring(1)), title:resource.title}]" :activation-handler="on" class="mx-1">
                     <v-icon color="grey darken-1">mdi-forum</v-icon>
                   </a-btn>
                 </template>

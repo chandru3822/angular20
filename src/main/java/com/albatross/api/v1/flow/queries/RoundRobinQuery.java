@@ -440,6 +440,16 @@ public class RoundRobinQuery {
                pczu.round_robin_user_type_id,
                concat(u.first_name, ' ', u.last_name) AS full_name,
                concat(u.first_name, ' ', u.last_name, ' - ', pcz.round_robin_name) AS title,
+               coalesce((select p.sms_enabled
+                                                                from flow.user_position up
+                                                                         inner join flow.position p on p.id = up.position_id
+                                                                         inner join flow.company_user_status cus on cus.user_id = up.user_id
+                                                                         inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+                                                                where up.user_id = pczu.user_id
+                                                                  and up.primary_flag is true
+                                                                  and up.archived is not true
+                                                                  and ust.has_access is true
+                                                                  and p.company_id = :companyId), false) as "hasSMSAccess",
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(positions)))
                           FROM (
