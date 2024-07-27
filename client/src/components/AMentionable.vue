@@ -85,7 +85,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['search', 'open', 'close', 'apply', 'clear'])
-
 const currentKey = ref(null)
 let currentKeyIndex = 0
 const oldKey = ref(null)
@@ -100,7 +99,7 @@ const filteredItems = computed(() => {
   if (!searchText.value || props.filteringDisabled) {
     return props.items
   }
-  const finalSearchText = searchText.value.toLowerCase()
+  const finalSearchText = searchText.value.trim().toLowerCase()
   return props.items.filter(item => {
     let text = item.searchText || item.label || ''
     for (const key in item) {
@@ -115,13 +114,17 @@ const filteredItems = computed(() => {
 const displayedItems = computed(() => filteredItems.value.slice(0, parseInt(props.limit)))
 
 watch(searchText, (value, oldValue) => {
-  if (value) {
-    emit('search', value, oldValue)
-  }
+  emit('search', value, oldValue)
 })
 
-watch(displayedItems, () => {
+watch(displayedItems, (newItems) => {
   selectedIndex.value = 0
+  if (searchText.value) {
+    const match = newItems.find(item => item?.label?.toLowerCase() === searchText.value.trim().toLowerCase() || item?.value?.toLowerCase() === searchText.value.trim().toLowerCase());
+    if (match) {
+      applyMention(newItems.indexOf(match) + 1 );
+    }
+  }
 }, { deep: true })
 
 const getInput = () => el.value.querySelector('input') || el.value.querySelector('textarea') || el.value.querySelector('[contenteditable="true"]')
@@ -235,12 +238,12 @@ const checkKey = () => {
   if (index >= 0) {
     const { key, keyIndex } = getLastKeyBeforeCaret(index)
     const text = getLastSearchText(index, keyIndex, key)
-    if (!(keyIndex < 1 || /\s/.test(getValue()[keyIndex - 1]))) {
-      return false
-    }
+    // if (!(keyIndex < 1 || /(\s)/.test(getValue()[keyIndex - 1]))) {
+    //   return false
+    // }
     if (text != null) {
       openMenu(key, keyIndex)
-      searchText.value = text
+      searchText.value = text.trim()
       return true
     }
   }
@@ -254,15 +257,15 @@ const checkKey = () => {
 const getLastKeyBeforeCaret = (caretIndex) => {
   const [keyData] = props.keys.map(key => ({
     key,
-    keyIndex: getValue().lastIndexOf(key, caretIndex - 1)
+    keyIndex: getValue().toLowerCase().lastIndexOf(key.toLowerCase(), caretIndex - 1),
   })).sort((a, b) => b.keyIndex - a.keyIndex)
   return keyData
 }
 
 const getLastSearchText = (caretIndex, keyIndex, key) => {
   if (keyIndex !== -1) {
-    const text = getValue().substring(keyIndex + key.length, caretIndex).trimStart()
-    if (!/\s/.test(text)) {
+    const text = getValue().substring(keyIndex + key.length, caretIndex)
+    if (!/((\s)(?:.*)){4,}/.test(text)) {
       return text
     }
   }
@@ -293,6 +296,7 @@ const applyMention = (itemIndex) => {
     itemIndex = 1
   }
   const item = displayedItems.value[itemIndex -1]
+  console.log(item.value)
   const value = (props.omitKey ? '' : currentKey.value) + String(props.mapInsert ? props.mapInsert(item, currentKey.value) : item.value) + (props.insertSpace ? ' ' : '')
   if (input.isContentEditable) {
     const range = window.getSelection().getRangeAt(0)
@@ -311,7 +315,7 @@ const applyMention = (itemIndex) => {
 }
 
 const replaceText = (text, searchString, newText, index, key) => {
-  return text.slice(0, index) + newText + text.slice(index + searchString.length + key.length, text.length)
+  return text.slice(0, index) + newText + text.slice(index + searchString.length + key.length + 1, text.length)
 }
 </script>
 
