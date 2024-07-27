@@ -149,6 +149,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  stateLoaded: {
+    type: Boolean,
+    default: false,
+  }
 })
 const { contactId, orgId, userId, currentUserId,
   projectId, sectionType, highlightPinnedActivity, query, useInfiniteLoader } = toRefs(props)
@@ -167,6 +171,12 @@ const removeNoteTagEmail = (note) => {
 
 const infiniteHandler = ($state) => {
   loaderState.value = $state
+  if (props.stateLoaded) {
+    hitMax.value = true
+    loaderState.value?.complete()
+  } else {
+    loaderState.value?.loaded()
+  }
   emit('bottomHitCount')
 }
 const infiniteStateLoaded = (hitMaxHere) => {
@@ -271,7 +281,7 @@ const filterFormatting = (value) => {
   }
   return value
 }
-defineExpose({infiniteStateLoaded})
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
