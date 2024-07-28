@@ -1,5 +1,6 @@
 drop function if exists brs.get_misc_adder_amount(p_system_size numeric, p_adders bigint[]);
 drop function if exists brs.get_misc_adder_amount(p_system_size numeric, p_adders bigint[],p_rete_incentive_applied boolean);
+drop function if exists brs.get_misc_adder_amount(bigint, numeric, bigint[], boolean);
 CREATE OR REPLACE FUNCTION brs.get_misc_adder_amount(p_version_id bigint,p_system_size numeric, p_adders bigint[],p_rete_incentive_applied boolean)
   returns table (misc_adder numeric,rete_incentive_adder numeric)
 AS
