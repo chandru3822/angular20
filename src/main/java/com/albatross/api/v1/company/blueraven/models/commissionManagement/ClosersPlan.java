@@ -13,9 +13,11 @@ import java.util.List;
 public class ClosersPlan {
 
     @Id
-    private Long id, userId, commissionPlanId, overridePlanId, userStatusTypeId;
+    private Long id, userId, commissionPlanId, overridePlanId, userStatusTypeId, residualPlanId;
     private String name, orgName;
-    private String commissionPlan, commissionDescription, overridePlan, overrideDescription;
+    private Date commissionPlanStart, overridePlanStart, residualPlanStart;
+    private String commissionPlan, commissionDescription, overridePlan, overrideDescription, residualPlan,
+      employeeId, primaryPosition, availableCommissionStrategies;
 
     private List<ReceivingPlan> receivingPlans;
 
