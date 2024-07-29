@@ -436,14 +436,10 @@ const sortedFilteredActivities = computed(() => {
 
   getPinnedActivitiesOnly(activities.value)
   if(sortedList.length > (activitiesToShow.value * bottomHitCount.value) ) {
-    if(activityList.value) {
-      stateLoadedStatus.value = false
-    }
+    stateLoadedStatus.value = false
     return sortedList.slice(0, (activitiesToShow.value * bottomHitCount.value))
   } else {
-    if(activityList.value) {
-      stateLoadedStatus.value = true
-    }
+    stateLoadedStatus.value = true
     return sortedList
   }
   // return []
@@ -487,6 +483,7 @@ onMounted(() => {
 
 const bottomHitCallback = () => {
   bottomHitCount.value = bottomHitCount.value + 1
+
 }
 const getLinkLabel = () => {
   return editedActivity.value.linked && null != editedActivity.value.linkLabel ? `Link ${editedActivity.value.linkLabel}` : `Link ${projectStore.linkLabel}`
@@ -529,7 +526,7 @@ const countedCategoryLabel = (activities, activityTypeId)=> {
 }
 const activityContainsSearch = (activity) => {
   if(search.value.userId){
-    return activity.createdById === search.value.userId
+    return activity.createdById === search.value.userId || activity.modifiedById === search.value.userId
   }
   else if(search.value.position){
     return activity.createdByPosition === search.value.position
