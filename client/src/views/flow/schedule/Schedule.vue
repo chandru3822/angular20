@@ -395,7 +395,8 @@ const zoomToMap = (item, zoomOverride) => {
 #schedule-container .v-data-table td {
   height: 30px;
 }
-.mobile-btns{
+.mobile-btns.v-speed-dial,
+.mobile-btns {
   position: absolute;
   z-index: 5;
   right: 24px;
