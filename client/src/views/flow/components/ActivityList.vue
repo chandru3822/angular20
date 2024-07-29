@@ -79,7 +79,7 @@
       <span slot="no-more"></span>
       <span slot="no-results"></span>
     </infinite-loading>
-    <SpinnerInline :size="20" color="primary" v-if="!hitMax && useInfiniteLoader"/>
+    <SpinnerInline :size="20" color="primary" v-if="!props.stateLoaded && useInfiniteLoader"/>
     <ConfirmationDialog :open-dialog="activityToDelete != null" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
       You won’t be able to recover this note. Are you sure you want to delete it?
     </ConfirmationDialog>
@@ -160,7 +160,6 @@ const { contactId, orgId, userId, currentUserId,
 const loaderState = ref(null)
 const editedIndex = ref(null)
 const activityToDelete = ref(null)
-const hitMax = ref(false)
 
 const emit = defineEmits(['bottomHitCount', 'reload', 'remove-deleted'])
 
@@ -171,18 +170,12 @@ const removeNoteTagEmail = (note) => {
 
 const infiniteHandler = ($state) => {
   loaderState.value = $state
-  if (props.stateLoaded) {
-    hitMax.value = true
-    loaderState.value?.complete()
-  } else {
-    loaderState.value?.loaded()
-  }
+  infiniteStateLoaded(props.stateLoaded)
   emit('bottomHitCount')
 }
-const infiniteStateLoaded = (hitMaxHere) => {
+const infiniteStateLoaded = (loadedState) => {
   //the counts are loaded from the parent so we have to wait to set the state here
-  if (hitMaxHere) {
-    hitMax.value = true
+  if (loadedState) {
     loaderState.value?.complete()
   } else {
     loaderState.value?.loaded()
