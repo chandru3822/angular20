@@ -712,6 +712,7 @@ v_rete_adder numeric;
   --raise notice 'v_qualifies_for_incentive = % ',v_qualifies_for_incentive;
   --raise notice 'v_rete_incentive_applied = % ',v_rete_incentive_applied;
   --raise notice 'v_rete_depreciation_incentive_amount = % ',v_rete_depreciation_incentive_amount;
+  --raise notice 'v_misc_adders_array = % ',v_misc_adders_array;
 
   select dealer_redline_price
   into v_dealer_redline_price
