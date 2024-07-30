@@ -6,6 +6,13 @@
       justify="center"
       no-gutters
     >
+      <a-btn
+          v-if="constants.VUE_APP_ENV !== 'prod'"
+          color="primary"
+          @click="mockReply()"
+          text="Mock Reply"
+      ></a-btn>
+
       <div v-if="messageList.length <= 0" class="pt-4">No messages to show</div>
       <!-- MESSAGING TAB -->
       <template>
@@ -111,6 +118,7 @@ import {
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
+import constants from "@/helpers/constants.js";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -249,6 +257,38 @@ const sendMessage = (text) => {
       ? newMessagesCount.value
       : newMessagesCount.value + 1
     onMessageWasSent({ author: 'me', type: 'text', data: { text } })
+  }
+}
+
+const mockReply = async () => {
+  try {
+    const url = projectId.value ? `/sms/mock/inbound/project/${projectId.value}` :
+      `/sms/mock/inbound/user/${userId.value}`
+
+    await postRequest(url, null)
+
+    //add to the chat without refresh:
+    let reply = {
+      author: undefined,
+      data: {
+        meta: new Intl.DateTimeFormat('default', {
+          dateStyle: 'short',
+          timeStyle: 'short'
+        }).format(new Date()),
+        text: 'MOCK REPLY: Auto Generated Test Reply'
+      },
+      type: 'text'
+    }
+
+    messageList.value = [...messageList.value, reply]
+    console.log('randalogger',messageList.value)
+    newMessagesCount.value = isChatOpen.value
+        ? newMessagesCount.value
+        : newMessagesCount.value + 1
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Creating Mock Reply')
   }
 }
 

@@ -212,6 +212,21 @@ public class SmsServiceQuery {
      and u.archived is false
     """;
 
+  //language=PostgreSQL
+  public final static String getUserPhone = """
+    select u.phone_number
+    from flow.user u
+     where u.id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getProjectPhone = """
+    select coalesce(c.phone, c.mobile) as phone_number
+    from flow.project p
+      inner join flow.contact c on p.contact_id = c.id
+     where p.id = :id
+    """;
+
 //  //language=PostgreSQL
 //  public final static String fetchReply = """
 //      SELECT *

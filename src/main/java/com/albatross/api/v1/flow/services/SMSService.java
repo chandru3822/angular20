@@ -22,11 +22,14 @@ import com.twilio.Twilio;
 import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
+import com.twilio.twiml.MessagingResponse;
 import com.twilio.type.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +58,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SMSService {
 
+  @Value(value = "${app.env}")
+  private String appEnv;
+
   private final PropertiesConfiguration properties;
   private final SqlCache sqlCache;
   private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -65,6 +71,8 @@ public class SMSService {
   private final String webhookPayloadErrorsKey = "twilio-webhook-payload:errors";
   private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
   private final SecurityService securityService;
+  private final MessagingService messagingService;
+  private final ObjectMapper objectMapper;
 
   public Page<SmsQueueRow> getSmsQueue(Pageable pageable, Long objectTypeId, Boolean messageRead) {
     Map<String, Object> params = new HashMap<>();
@@ -236,6 +244,72 @@ public class SMSService {
       msg.getMessageStatus());
 
     updateOrQueueSMSStatusUpdate(msg);
+  }
+
+  /**
+   * Mock twilio reply, inserts "reply" into flow sms_reply table and processes notifications
+   */
+  public String processMockInboundMessage(Long projectId, Long userId) {
+    //todo: this
+    if(null != appEnv && appEnv.equals("prod")) {
+      return "Cannot mock replies in production environment";
+    } else if(null != projectId || null != userId) {
+      boolean isProject = null != projectId;
+      String toPhone = isProject
+        ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
+
+      Map<String, Object> params = new HashMap<>();
+      params.put("id", isProject ? projectId : userId);
+
+      String phoneQuery = isProject ? SmsServiceQuery.getProjectPhone : SmsServiceQuery.getUserPhone;
+      Optional<String> fromPhoneNumber = sqlCache.queryForObjectOptionalBySql(phoneQuery, params, String.class);
+
+      if(fromPhoneNumber.isPresent()) {
+
+        //maybe we can make a prop for this down the road, but I don't see a reason they need the ability to reply with specific text
+        String mockInboundMessage = "MOCK REPLY: Auto Generated Test Reply";
+
+        //(db limit 35 chars) does this value matter? starting with MOCK to easily dif
+        String mockMessageSid = "MOCK" + RandomStringUtils.randomAlphanumeric(28);
+
+        TwilioMessageRequest twilioMsg = TwilioMessageRequest.builder()
+          .messageSid(mockMessageSid)
+          //.smsSid(not sure which prop this is or if it matters)
+          .accountSid(properties.getTwilioAccountSID())
+          .messagingServiceSid(properties.getTwilioMessageServiceSID())
+          .from(fromPhoneNumber.get())
+          .to(toPhone)
+          .body(mockInboundMessage)
+          .numMedia(0)
+          .mediaUrls(null)
+          .build();
+
+        return receiveInboundMessage(twilioMsg);
+      } else {
+        return "Missing Valid From Phone Number";
+      }
+
+    } else {
+      return "Project ID or User ID is required.";
+    }
+
+  }
+
+  /**
+   * Receive an inbound message from twilio as json, map to Java object, process message
+   */
+  public String receiveInboundMessage(Map<String, Object> req) {
+    final TwilioMessageRequest twilioSMS = objectMapper.convertValue(req, TwilioMessageRequest.class);
+    return receiveInboundMessage(twilioSMS);
+  }
+
+  /**
+   * Process a mapped twilio inbound message
+   */
+  public String receiveInboundMessage(TwilioMessageRequest twilioSMS) {
+    saveReply(twilioSMS);
+    messagingService.addNotifications(twilioSMS);
+    return new MessagingResponse.Builder().build().toXml();
   }
 
   /**
