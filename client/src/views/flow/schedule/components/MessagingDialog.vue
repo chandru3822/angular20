@@ -199,7 +199,7 @@ const minimize = () => {
 }
 
 #schedule-resource-message-dialog > div.srmd-header {
-  min-height: 100px;
+  height: 100px;
   border-bottom: var(--v-grey-lighten2) solid 1px;
 
   &.srmd-header-dense {
