@@ -27,7 +27,8 @@ public class ProposalQuery {
            pd.project_state_abbreviation as state,
            pd.project_postal_code as postal_code,
            pd.contact_mobile_phone as mobile,
-           pd.closer_appointment_start,
+           case when pd.closer_appointment_start is not null then
+                      pd.closer_appointment_start - interval '90 minutes' end as closer_appointment_start,
            pd.closer_appointment_end
     from brs.project_details pd
     where pd.archived is false
@@ -531,6 +532,7 @@ where p.id = :proposalId
   public final static String setLocked = """
     update brs.proposal
     set locked_tsz     = now(),
+        locked_by_id   = :modifiedById,
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and locked_tsz is null and archived is false
@@ -539,6 +541,7 @@ where p.id = :proposalId
   public final static String setCreditChecked = """
     update brs.proposal
     set credit_check_submitted_tsz     = now(),
+        credit_check_submitted_by_id = :modifiedById,
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and credit_check_submitted_tsz is null and archived is false
@@ -557,6 +560,7 @@ where p.id = :proposalId
   public final static String setFinanceDocsSent = """
     update brs.proposal
     set finance_docs_sent_tsz     = now(),
+        finance_docs_sent_by_id = :modifiedById,
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and finance_docs_sent_tsz is null and archived is false
@@ -566,6 +570,7 @@ where p.id = :proposalId
   public final static String setInstallationAgreementDocsSent = """
     update brs.proposal
     set installation_agreement_sent_tsz     = now(),
+        installation_agreement_sent_by_id = :modifiedById,
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and installation_agreement_sent_tsz is null and archived is false

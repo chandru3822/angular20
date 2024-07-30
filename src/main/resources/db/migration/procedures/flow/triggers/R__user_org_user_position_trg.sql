@@ -169,7 +169,7 @@ BEGIN
     select array_agg(user_id)
     into v_user_ids
     from flow.user_position
-        where org_id = new.id;
+        where org_id in (select id from flow.org_hierarchy_filter_down(array[new.id]));
     perform flow.update_user_org_user_position(v_user_ids);
 
 

@@ -14,7 +14,7 @@ public class Incentive {
     private Long stateId, companyStateId, typeId, statusId;
     private String name, state, type, status;
     private Date dateCreated;
-    private Boolean archived;
+    private Boolean archived, active;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

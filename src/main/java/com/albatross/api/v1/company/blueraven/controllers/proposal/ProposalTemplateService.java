@@ -30,6 +30,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -321,19 +322,29 @@ public class ProposalTemplateService {
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalTemplateBlock> updateTemplateBlocks(
     Long templateId, List<ProposalTemplateBlock> blocks, Long currentUserId) {
+      final Map<Boolean, List<ProposalTemplateBlock>> collect =
+              blocks.stream()
+                      .collect(
+                              Collectors.partitioningBy(block -> block.getId() >= 0)
+                      );
 
-    final List<Map<String, Object>> params =
+      final Map<Boolean, List<Map<String, Object>>> params =
       blocks.stream()
         .map(
           block -> {
             final Map<String, Object> map = new HashMap<>();
-            map.put("id", block.getId());
+            if(block.getId() >= 0) {
+                map.put("id", block.getId());
+            } else {
+                map.put("id", null);
+            }
             map.put("templateId", templateId);
             map.put("version", block.getVersion());
             map.put("themeValueId", block.getThemeKeyId());
             map.put("blockTypeId", block.getBlockTypeId());
             map.put("blockKindId", block.getBlockKindId());
             map.put("blockStyle", getPGobject(block.getBlockStyle()));
+            map.put("blockName", block.getBlockName());
             map.put("blockValue", getPGobject(block.getBlockValue()));
             map.put("visibility", block.getVisibility());
             map.put("blockOrder", block.getBlockOrder());
@@ -341,15 +352,50 @@ public class ProposalTemplateService {
             map.put("modifiedById", currentUserId);
             return map;
           })
-        .toList();
-
-    sqlCache.updateBatchBySql(ProposalTemplateQuery.updateBlocks, params);
-
+              .collect(
+              Collectors.partitioningBy(block -> block.get("id") != null)
+      );
+      final List<Map<String, Object>> updateParams = params.get(true);
+      final List<Map<String, Object>> insertParams = params.get(false);
+      for(Map<String, Object> paramMap : insertParams){
+         Number insertedId = sqlCache.updateBySqlReturningId(ProposalTemplateQuery.insertBlock, paramMap, "id");
+         paramMap.put("id", insertedId);
+      }
+      updateParams.addAll(insertParams);
+    sqlCache.updateBatchBySql(ProposalTemplateQuery.updateBlocks, updateParams);
     final Set<Integer> updated =
-      blocks.stream().map(ProposalTemplateBlock::getId).collect(Collectors.toSet());
+            updateParams.stream().map(m -> {
+                    if(m.get("id") instanceof Long){
+                        return ((Long)m.get("id")).intValue();
+                    }
+                    return (Integer) m.get("id");
+            }).collect(Collectors.toSet());
 
     return getTemplateBlocks(updated);
   }
+
+    @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE, key = "#templateId")
+    @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+    public List<Integer> archiveBlockFromTemplate(Long templateId, Integer blockId, Long currentUserId) {
+      HashMap<String, Object> getParams = new HashMap<>();
+      getParams.put("parentId", blockId);
+      getParams.put("templateId", templateId);
+      //delete the block and any of its children
+        List<Integer> idsToDelete = sqlCache.queryBySql(ProposalTemplateQuery.findBlocksByParentId, getParams, new SingleColumnRowMapper<>(Integer.class));
+        idsToDelete.add(blockId);
+        final List<Map<String, Object>> params =
+                idsToDelete.stream().map(
+                        id -> {
+                            final Map<String, Object> map = new HashMap<>();
+                            map.put("templateId", templateId);
+                            map.put("id", id);
+                            map.put("modifiedById", currentUserId);
+                            return map;
+                        }).toList();
+        sqlCache.updateBatchBySql(ProposalTemplateQuery.archiveBlock, params);
+        return idsToDelete;
+
+    }
 
   @Cacheable(value = CachingConfig.PROPOSAL_TEMPLATE)
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")

@@ -4,6 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.featDB.UtilityService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class UtilityController {
         return utilityService.getAllUtilities();
     }
 
+    @PostAuthorize("returnObject.get().getArchived() == true && hasFeatureAccessLevel('UTILITY_ADMIN') || returnObject.get().getArchived() == false")
     @GetMapping(value = "/{id}")
     public Optional<UtilityDetail> getUtilityById(@PathVariable Long id) {
         return utilityService.getUtilityById(id);
@@ -43,6 +45,15 @@ public class UtilityController {
     @PutMapping(value = "")
     public Optional<UtilityDetail> editUtility(@RequestBody Utility utility) {
         return utilityService.updateUtility(utility);
+    }
+
+    @DeleteMapping(value = "/{id}/archive")
+    public void deleteUtility(@PathVariable Long id) {
+      utilityService.deleteUtility(id);
+    }
+    @PostMapping(value = "/{id}/restore")
+    public Optional<UtilityDetail> restoreUtility(@PathVariable Long id) {
+      return utilityService.restoreUtility(id);
     }
 
     // CONTACTS

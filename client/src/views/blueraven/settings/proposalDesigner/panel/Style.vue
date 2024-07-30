@@ -2,8 +2,9 @@
   <fragment>
     <fragment v-if="type === 'TextBlock'">
       <div>
-        <v-card-title>Typography</v-card-title>
-        <v-btn-toggle v-model="cssStyle.textAlign">
+        <v-card-title class="px-0 title-medium">Typography</v-card-title>
+        <v-card-text class="pb-0">
+        <v-btn-toggle v-model="cssStyle.textAlign" class="pb-4">
           <a-btn
             size="small"
             value="left"
@@ -38,6 +39,9 @@
           variant="outlined"
           v-model="cssStyle.fontWeight"
           label="Font Weight"
+          hint="Can be a keyword like 'bold', 'light', or a number like 700"
+          persistent-hint
+          class="pb-2"
           @change="doUpdateStyles({ fontWeight: $event })"
         />
         <a-text-field
@@ -53,13 +57,15 @@
           :value="cssStyle.fontSize"
           @input="doUpdateStyles($event)"
         />
+        </v-card-text>
       </div>
 
       <div>
-        <v-card-title>Colors</v-card-title>
+        <v-card-title class="px-0 py-0">Colors</v-card-title>
+        <v-card-text class="pb-0">
         <color-widget :value="cssStyle.color" @input="doUpdateStyles($event)">
           <template #title>
-            <span class="flex-grow-1"> Font Color </span>
+            <span class="flex-grow-1 label-medium"> Font Color </span>
           </template>
         </color-widget>
 
@@ -69,29 +75,33 @@
           @input="doUpdateStyles($event)"
         >
           <template #title>
-            <span class="flex-grow-1"> Background Color </span>
+            <span class="flex-grow-1 label-medium"> Background Color </span>
           </template>
         </color-widget>
+        </v-card-text>
       </div>
     </fragment>
     <!--    -->
     <fragment v-if="type === 'PageBlock' || type === 'ContainerBlock'">
       <div>
-        <v-card-title>Background</v-card-title>
-        <div>
+        <v-card-title class="px-0">Background</v-card-title>
+        <v-card-text>
           <image-selector-widget ref="imageSelector" />
           <a-btn
             @click="openSelectImage('@backgroundImage')"
             color="unset"
+            variant="outlined"
             text="Open Image"
+            size="small"
           ></a-btn>
           <a-btn
             variant="text"
             @click="doUpdateStyles({ '@backgroundImage': undefined })"
             color="unset"
             text="Clear Image"
+            size="small"
           ></a-btn>
-        </div>
+        </v-card-text>
 
         <a-select
           density="compact"
@@ -106,10 +116,10 @@
     </fragment>
 
     <div>
-      <v-card-title>Props</v-card-title>
+      <v-card-title class="px-0">Display</v-card-title>
+      <v-card-text>
       <a-select
-        variant="outlined
-        "
+        variant="outlined"
         density="compact"
         v-model="cssStyle.display"
         :items="displayItems"
@@ -118,18 +128,18 @@
       />
 
       <fragment v-if="isFlex">
+        <span class="label-large pb-2">Flex Options</span>
+        <div class="px-1">
         <a-select
-          variant="outlined
-          "
+          variant="outlined"
           density="compact"
           v-model="cssStyle.flexDirection"
           :items="flexDirectionItems"
-          label="Direction"
+          label="Flex Direction"
           @change="doUpdateStyles({ flexDirection: $event })"
         />
         <a-select
-          variant="outlined
-          "
+          variant="outlined"
           density="compact"
           v-model="cssStyle.justifyContent"
           :items="flexJustifyItems"
@@ -137,8 +147,7 @@
           @change="doUpdateStyles({ justifyContent: $event })"
         />
         <a-select
-          variant="outlined
-          "
+          variant="outlined"
           density="compact"
           v-model="cssStyle.alignItems"
           :items="flexAlignItems"
@@ -150,18 +159,63 @@
           variant="outlined"
           v-model="cssStyle.flexBasis"
           label="Flex Basis"
+          hint="Initial size: can be 'auto', an number, or a width like '50px'"
+          persistent-hint
           @change="doUpdateStyles({ flexBasis: $event })"
         />
+        </div>
       </fragment>
+      </v-card-text>
     </div>
 
     <div>
-      <v-card-title>Padding</v-card-title>
+      <v-card-title class="px-0 pt-0">Size</v-card-title>
+      <v-card-text class="pb-0">
+        <v-btn-toggle v-model="sizeToggle" mandatory class="pb-4">
+          <a-btn
+              variant="text"
+              size="small"
+              value="auto"
+              color="unset"
+              text="Auto"
+              @click = clearSize
+          ></a-btn>
+          <a-btn
+              variant="text"
+              size="small"
+              value="manual"
+              color="unset"
+              text="Manual"
+          ></a-btn>
+        </v-btn-toggle>
+        <div v-if="sizeToggle ==='manual'">
+          <size-widget
+              label="Height"
+              attr="height"
+              show-unit-options
+              :value="cssStyle.height"
+              @input="doUpdateStyles($event)"
+          />
+          <size-widget
+              label="Width"
+              attr="width"
+              show-unit-options
+              :value="cssStyle.width"
+              @input="doUpdateStyles($event)"
+          />
+        </div>
+      </v-card-text>
+    </div>
+
+    <div>
+      <v-card-title class="px-0 pt-0">Padding</v-card-title>
+      <v-card-text class="pb-0">
       <space-widget
         attr="padding"
         :value="cssStyle.padding"
         @input="doUpdateStyles($event)"
       />
+      </v-card-text>
     </div>
   </fragment>
 </template>
@@ -193,6 +247,7 @@ const props = defineProps({
 const style = ref({})
 const imageSelector = ref(null)
 const paddingToggle = ref(null)
+const sizeToggle = ref(null)
 const displayItems = ref(['block', 'flex'])
 const flexDirectionItems = ref([
   'row',
@@ -210,6 +265,9 @@ const flexJustifyItems = ref([
 const flexAlignItems = ref(['flex-start', 'center', 'flex-end'])
 const backgroundSizeItems = ref(['auto', 'contain', 'cover'])
 
+const heightValue = ref(undefined)
+const widthValue = ref(undefined)
+
 const isFlex = computed(() => {
   return props.cssStyle?.display === 'flex'
 })
@@ -217,6 +275,13 @@ const isFlex = computed(() => {
 onMounted(() => {
   style.value = { ...props.cssStyle }
 })
+
+
+
+const clearSize = () => {
+  props.cssStyle.height = undefined
+  props.cssStyle.width = undefined
+}
 
 const doUpdateStyles = (styles) => {
   emit('input', { ...props.cssStyle, ...styles })

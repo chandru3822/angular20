@@ -2,13 +2,12 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.services.AttachmentService;
-import com.albatross.api.v1.flow.services.CustomFieldValueService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -19,18 +18,16 @@ import java.util.Map;
 public class AttachmentController {
 
   private final AttachmentService attachmentService;
-  private final CustomFieldValueService customFieldValueService;
-
 
   @GetMapping(value = "")
   public List<Attachment> getAttachments(
-      @RequestParam(required = false) Long sourceId, @RequestParam Long attachmentTypeId) {
+    @RequestParam(required = false) Long sourceId, @RequestParam Long attachmentTypeId) {
     return attachmentService.getAttachmentsBySourceIdAndType(sourceId, attachmentTypeId);
   }
 
   @GetMapping(value = "/{id}/url")
   public void getAttachmentUrl(@PathVariable Long id, HttpServletResponse response)
-      throws IOException {
+    throws IOException {
     String attachmentUrl = attachmentService.getAttachmentUrl(id);
     response.sendRedirect(attachmentUrl);
   }
@@ -43,12 +40,12 @@ public class AttachmentController {
 
   @PostMapping(value = "")
   public Attachment uploadAttachment(
-      @RequestParam(required = false) Long sourceId,
-      @RequestParam Long attachmentTypeId,
-      @RequestParam String displayName,
-      @RequestParam(required = false, defaultValue = "true") Boolean deleteFirst,
-      @RequestParam MultipartFile file)
-      throws IOException {
+    @RequestParam(required = false) Long sourceId,
+    @RequestParam Long attachmentTypeId,
+    @RequestParam String displayName,
+    @RequestParam(required = false, defaultValue = "true") Boolean deleteFirst,
+    @RequestParam MultipartFile file)
+    throws IOException {
     return attachmentService.create(file, sourceId, attachmentTypeId, displayName, deleteFirst);
   }
 
@@ -59,13 +56,13 @@ public class AttachmentController {
 
   @GetMapping(value = "/getOne")
   public Attachment getOneBySourceIdAndType(
-      @RequestParam Long sourceId, @RequestParam Long attachmentTypeId) {
+    @RequestParam Long sourceId, @RequestParam Long attachmentTypeId) {
     return attachmentService.getOneBySourceIdAndType(sourceId, attachmentTypeId);
   }
 
   @GetMapping(value = "/getAttachmentPresignedUrlsForUserList")
   public Map<Long, String> getAttachmentPresignedUrlsForUserList(
-      @RequestParam List<Long> sourceIds, @RequestParam Long attachmentTypeId) {
+    @RequestParam List<Long> sourceIds, @RequestParam Long attachmentTypeId) {
     return attachmentService.getAttachmentPresignedUrlsForUserList(sourceIds, attachmentTypeId);
   }
 }

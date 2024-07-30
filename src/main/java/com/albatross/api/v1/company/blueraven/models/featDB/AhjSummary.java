@@ -9,4 +9,5 @@ import lombok.Data;
 public class AhjSummary {
   private Long id, stateId, metroAreaId, companyStateId;
   private String name, state, metroArea;
+  private Boolean archived, active;
 }

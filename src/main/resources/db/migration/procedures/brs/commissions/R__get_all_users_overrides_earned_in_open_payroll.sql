@@ -40,9 +40,9 @@ BEGIN
              case
                when cancelled_date is not null then
                  0
-               when foo.commission_strategy =24102 and foo.substantial_completion_date is not null then
+               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and  foo.substantial_completion_date is not null then
                    (foo.red_line_m1_allocation + foo.red_line_m2_allocation) * foo.total_commissions
-               when foo.commission_strategy =24102 and foo.substantial_completion_date is null then
+               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is null then
                    (foo.red_line_m1_allocation) * foo.total_commissions
                when foo.substantial_completion_date is null then
                  foo.system_size * foo.milestone1_amount
@@ -51,28 +51,28 @@ BEGIN
              case
                when cancelled_date is not null  then
                  0
-               when foo.commission_strategy =24102 and foo.substantial_completion_date is not null then
+               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is not null then
                    (foo.red_line_m1_allocation + case when foo.substantial_completion_date is not null and
                                                            foo.substantial_completion_date <= v_period_end_date then
                                                         foo.red_line_m2_allocation else 0 end) * foo.total_commissions
-               when foo.commission_strategy =24102 and foo.substantial_completion_date is null then
+               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is null then
                    (foo.red_line_m1_allocation) * foo.total_commissions
                when foo.substantial_completion_date is null then
                  foo.system_size * foo.milestone1_amount
                else foo.system_size * (foo.milestone1_amount + foo.milestone2_amount) end -
              foo.overrides_paid                                                                                as current_pay,
              foo.name                                                                                          as override_plan_name,
-             case when foo.commission_strategy =24102 then
+             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                     foo.red_line_m1_allocation + foo.red_line_m2_allocation
               else foo.user_allocation end ,
-             case when foo.commission_strategy =24102 then
+             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                foo.red_line_m1_allocation
               else foo.milestone1_amount end ,
-             case when foo.commission_strategy =24102 then
+             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                foo.red_line_m2_allocation
               else
               foo.milestone2_amount end ,
-             case when foo.commission_strategy =24102 then
+             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                0::numeric
                else foo.plan_total  end                                                                                  as plan_total
       from (select pd.project_id                                      as project_id,
@@ -101,7 +101,8 @@ BEGIN
                    op.name                                   as name,
                    fd.substantial_completion_date,
                    fd.overrides_earned_m1,
-                   fd.cancelled_date
+                   fd.cancelled_date,
+                   cp.commission_strategy_type_id
             from brs.payroll p1
                     inner join brs.project_details pd on pd.project_id = any (p1.selected_project_ids)
                    inner join brs.financial_details fd on fd.project_id = pd.project_id
@@ -110,6 +111,7 @@ BEGIN
                               on opru1.override_plan_id = op.id
                    inner join flow.user u on u.id = opru1.user_id
                    left join flow.user_custom_field_value ucfv on ucfv.user_id = u.id and ucfv.custom_field_group_assignment_id = 19176
+                   left join brs.commission_plan cp  on cp.id = fd.commission_plan_id
             where p1.id = p_payroll_id
               and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
               and op.position_id = 1
@@ -139,13 +141,15 @@ BEGIN
                    null                               as name,
                    fd.substantial_completion_date,
                    fd.overrides_earned_m1,
-                   fd.cancelled_date
+                   fd.cancelled_date,
+                   c.commission_strategy_type_id
             from brs.payroll p1
                      inner join brs.project_details pd on pd.project_id = any (p1.selected_project_ids)
                    inner join brs.financial_details fd on fd.project_id = pd.project_id
                    inner join brs.project_commission_ledger pcl on pcl.project_id = fd.project_id and
                                                                    ledger_type_id = 3 and
                                                                    p1.position_id = 1
+                   left join brs.commission_plan c on c.id = fd.commission_plan_id
                    inner join flow.user u on u.id = pcl.user_id
               and not exists(select id
                              from brs.override_plan_receiving_user opru1

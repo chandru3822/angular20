@@ -4,6 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.featDB.HoaService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class HoaController {
     return hoaService.getAllHoa();
   }
 
+  @PostAuthorize("returnObject.get().getArchived() == true && hasFeatureAccessLevel('HOA_ADMIN') || returnObject.get().getArchived() == false")
   @GetMapping(value = "/{id}")
   public Optional<HoaDetail> getHoaById(@PathVariable Long id) {
     return hoaService.getHoaById(id);
@@ -46,6 +48,17 @@ public class HoaController {
   public void deleteHoa(@PathVariable Long id) {
       hoaService.deleteHoa(id);
   }
+
+  @DeleteMapping(value = "/{id}/archive")
+  public void deleteAhj(@PathVariable Long id) {
+    hoaService.deleteHoa(id);
+  }
+
+  @PostMapping(value = "/{id}/restore")
+  public Optional<HoaDetail> restoreHoa(@PathVariable Long id) {
+    return hoaService.restoreHoa(id);
+  }
+
 
   @GetMapping(value = "/list/companies")
   public List<HoaCompany> getHoaCompanies() {

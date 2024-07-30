@@ -111,7 +111,6 @@ public class CloserDashboardService {
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    System.out.println(params);
     List<CloserTableScore> roundRobinLeadAllocationData =
         sqlCache.queryBySql(
             CloserDashboardQuery.getRoundRobinLeadAllocationRank,
@@ -207,6 +206,10 @@ public class CloserDashboardService {
 
   public List<Source> getSelfGenSources() {
     return sqlCache.queryBySql(CloserDashboardQuery.getSelfGenSources, null, Source.class);
+  }
+
+  public List<Source> getLeadsCreatedSources() {
+    return sqlCache.queryBySql(CloserDashboardQuery.getLeadsCreatedSources, null, Source.class);
   }
 
   public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
@@ -559,13 +562,11 @@ public class CloserDashboardService {
     if(isAdmin) {
       CloserDashboardDateRange periodRange = new CloserDashboardDateRange();
       periodRange.setId(11);
-      Collections.reverse(companyPeriods);
       for(int x=1; x<companyPeriods.size(); x++){
-        if(x > 0){
-          companyPeriods.get(x).setTrendStart(companyPeriods.get(x-1).getStartDate());
-          companyPeriods.get(x).setTrendEnd(companyPeriods.get(x-1).getEndDate());
-        }
+        companyPeriods.get(x).setTrendStart(companyPeriods.get(x-1).getStartDate());
+        companyPeriods.get(x).setTrendEnd(companyPeriods.get(x-1).getEndDate());
       }
+      Collections.reverse(companyPeriods);
       periodRange.setPeriodList(companyPeriods);
       periodRange.setTrendText("the period before the selected period");
       periodRange.setFriendlyName("Period");

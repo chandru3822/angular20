@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.services.featDB;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjDesignQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionQuery;

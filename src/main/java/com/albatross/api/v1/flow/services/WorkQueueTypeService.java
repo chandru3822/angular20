@@ -64,6 +64,17 @@ public class WorkQueueTypeService {
       WorkQueueTypeQuery.getDurationTypes, Collections.emptyMap(), DurationType.class);
   }
 
+  public Optional<WorkQueueType> getTypeForSettings(Long id){
+      var wqt = WorkQueueTypeQuery.getType;
+
+      Optional<WorkQueueType> type = sqlCache.getBySql(
+              wqt,
+              Map.of("id", id),
+              new WorkQueueTypeMapper<>(WorkQueueType.class, om));
+      return type;
+
+  }
+
   public Optional<WorkQueueType> getType(Long id) {
     User user = securityService.getCurrentUser();
     var wqt = WorkQueueTypeQuery.getType;

@@ -238,7 +238,7 @@
                       id="qa-non-admin-add"
                       label="Allowed Positions"
                       alternateLabel = "Denied Positions"
-                      :allow="true"
+                      :allow="processStep.nonAdminAddAllow"
                       :contentLoading="positionsLoading"
                       save-button
                       full-size
@@ -461,12 +461,14 @@ onMounted(async () => {
     }
     const deleteStatusTypeFromStep = async (item) => {
       appStore.loading = true
+      psLoading.value = true //forces work queue types to update with the changed status
       try {
         //have to close the add new ps editor to for the component to refresh available values
         addNewProcessStepStatusType.value = false
         expanded.value = []
         const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${processStepId.value}`)
         item.archived = true
+        psLoading.value = false
         appStore.showSnack('SUCCESS', 'Status Type Deleted')
         handleHidingGlobalLoader(status)
       } catch (e) {
@@ -498,6 +500,7 @@ onMounted(async () => {
     }
     const assignStatusTypeToProcessStep = async () => {
       appStore.loading = true
+      psLoading.value = true //forces work queue types to update with the new status
       try {
         newType.value.processStepId = processStepId
         const {data, status} = await postRequest(`/processStep/status/assignCompanyStatus/${newProcessStepStatusTypeId.value}/toProcessStep/${processStepId.value}`)
@@ -505,6 +508,7 @@ onMounted(async () => {
         // reset fields
         addNewProcessStepStatusType.value = false
         newProcessStepStatusTypeId.value = null
+        psLoading.value = false
         appStore.showSnack('SUCCESS', 'Status Type Added')
         handleHidingGlobalLoader(status)
       } catch (e) {

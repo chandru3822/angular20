@@ -1052,6 +1052,8 @@ public class ReportEngine {
 
     query.append(";");
 
+    query.insert(0, "-- report ID: " + smartlist.getId() + "\n");
+
     return query.toString();
   }
 
@@ -1553,7 +1555,11 @@ public class ReportEngine {
     }
 
     //combine the query clauses and add the finishing semicolon
-    return defaultFields.append(selectQuery).append(query).append(";").toString();
+    query = defaultFields.append(selectQuery).append(query).append(";");
+
+    query.insert(0, "-- report ID: " + smartlist.getId() + "\n");
+    
+    return query.toString();
   }
 
   public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Integer limit) {
@@ -2353,6 +2359,8 @@ public class ReportEngine {
     }
 
     query.append(";");
+
+    query.insert(0, "-- report ID: " + smartlist.getId() + "\n");
 
     return query.toString();
   }
@@ -3288,6 +3296,8 @@ public class ReportEngine {
 
     query.append(";");
 
+    query.insert(0, "-- report ID: " + smartlist.getId() + "\n");
+
     return query.toString();
   }
 
@@ -3297,7 +3307,7 @@ public class ReportEngine {
 
     String sqlQuery = sqlCacheRO.queryForObjectBySql(CustomFieldQuery.getCustomFieldSql, Collections.emptyMap(), String.class);
     query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s), ", sqlQuery));
-    query.append("\"customFieldSql.brs.utilityCompanyList\" as (select a.id, a.name::text from brs.feat_db_utility a where archived is not true) ");
+    query.append("\"customFieldSql.brs.utilityCompanyList\" as (select a.id, a.name::text from brs.feat_db_utility a where active is true) ");
 
 
 
@@ -3388,6 +3398,8 @@ public class ReportEngine {
     }
 
     query.append(";");
+
+    query.insert(0, "-- report ID: " + smartlist.getId() + "\n");
 
     return query.toString();
   }

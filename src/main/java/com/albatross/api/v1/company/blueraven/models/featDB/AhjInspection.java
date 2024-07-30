@@ -19,4 +19,5 @@ public class AhjInspection {
     // these are only used when updates are performed for all AHJ Inspections in a specified state
     private Boolean updateAllInState;
     private List<Long> ahjIds, inspectionIds;
+    private Boolean archived;
 }

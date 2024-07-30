@@ -173,12 +173,18 @@ public class Five9Service {
         log.warn("FIVE9: Invalid first appointment date format for contactId=" + contactId);
       }
     }
+    else {
+      b.addParameter("first_pitch_date", "");
+    }
 
     Optional<String> bookingDate =
       sqlCache.getBySql(
         Five9Query.getBookingDate, params, new SingleColumnRowMapper<>(String.class));
     if (bookingDate.isPresent()) {
       b.addParameter("booking_date", bookingDate.get());
+    }
+    else {
+      b.addParameter("booking_date", "");
     }
 
     if (isRetarget) {
@@ -260,6 +266,8 @@ public class Five9Service {
     populateCronContactLists(Five9Query.getContactIdsVirtualSalDevRetargets, "virtual_retarget");
     populateCronContactLists(Five9Query.getContactIdsInsideSalesPitchedNotBooked, "digitalleads_pnb");
     populateCronContactLists(Five9Query.getContactIdsBreezePostFDA, "digital_breeze_postFDAx");
+    populateCronContactLists(Five9Query.getContactIdsInsideSalesPitchedNotBookedBreeze, "digitalleads_pnb_breeze");
+    populateCronContactLists(Five9Query.getContactIdsInsideSalesPitchedNotBookedOrganic, "digitalleads_pnb_organic");
   }
 
   private void populateCronContactLists(String contactListQuery, String five9ContactListName) {

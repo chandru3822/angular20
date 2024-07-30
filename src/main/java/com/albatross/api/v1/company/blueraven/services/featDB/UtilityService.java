@@ -4,7 +4,6 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQuery;
-import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjDesignQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
@@ -19,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +31,7 @@ public class UtilityService {
 
   private final SqlCache sqlCache;
   private final ObjectMapper om;
-  private final SecurityService securityService;
+  public final SecurityService securityService;
   private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
 
   public List<Utility> getAllUtilities() {
@@ -56,6 +56,7 @@ public class UtilityService {
     params.put("metroAreaId", utility.getMetroAreaId());
     params.put("companyStateId", utility.getCompanyStateId());
     params.put("archived", utility.getArchived());
+    params.put("active", utility.getActive());
     params.put("id", utility.getId());
 
     sqlCache.updateBySql(UtilityQuery.simpleUpdate, params);
@@ -71,6 +72,7 @@ public class UtilityService {
     params.put("metroAreaId", utility.getMetroAreaId());
     params.put("companyStateId", utility.getCompanyStateId());
     params.put("archived", utility.getArchived());
+    params.put("active", utility.getActive());
 
     Long id;
 
@@ -84,6 +86,27 @@ public class UtilityService {
 
     blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
         ObjectType.UTILITY, utility.getCustomFieldGroups(), id);
+
+    return getUtilityById(id);
+  }
+
+  @Transactional
+  public void deleteUtility(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+
+    sqlCache.updateBySql(UtilityQuery.delete, params);
+  }
+
+  public Optional<UtilityDetail> restoreUtility(Long id) {
+    System.out.println("Restoring Utility");
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.updateBySql(UtilityQuery.restore, params);
 
     return getUtilityById(id);
   }

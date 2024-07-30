@@ -11,6 +11,19 @@
                 single-line
                 hide-details
             ></a-text-field>
+            <v-spacer></v-spacer>
+            <v-switch
+                v-model="includeInactive"
+                class=""
+                label="Include Inactive"
+                @change="getUsers()"
+            />
+            <a-btn
+                color="primary"
+                class="ml-3"
+                @click="exportData()"
+                text="Export"
+            ></a-btn>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
@@ -37,7 +50,7 @@
                   <a-btn
                       variant="text"
                       class="anchor"
-                      :to="`/commissionManagement/users/${item.id}`"
+                      :to="`/commissionManagement/users/${item.userId}`"
                       color="unset"
                       :text="item.name"
                   ></a-btn>
@@ -45,30 +58,29 @@
                 <td class="text-left pt-1" >
                   {{ item.orgName }}
                 </td>
+                <td class="text-left pt-1" >
+                  {{ item.availableCommissionStrategies }}
+                </td>
                 <td class="text-left pt-1">
-                  <a v-if="item.commissionPlan !== null" @click="goToDetails(item, 1)">
+                  <a v-if="item.commissionPlan !== null" @click="goToDetails(item.commissionPlanId, 1)">
                     {{item.commissionPlan}}:<br/>
                     {{item.commissionDescription}}
                   </a>
                   <div v-else class="pt-2">--</div>
                 </td>
                 <td class="text-left pt-1">
-                  <a v-if="item.overridePlan !== null" @click="goToDetails(item, 2)">
+                  <a v-if="item.overridePlan !== null" @click="goToDetails(item.overridePlanId, 2)">
                     {{item.overridePlan}}:<br/>
                     {{item.overrideDescription}}
                   </a>
                   <div v-else class="pt-2">--</div>
                 </td>
                 <td class="text-left pt-1">
-                  <span v-if="item.receivingPlans && item.receivingPlans.length > 0">
-                    <div v-for="rp in item.receivingPlans">
-                      <a @click="goToDetails(rp, 3)">
-                        {{rp.receivingPlan}}:<br/>
-                        {{rp.receivingDescription}}
-                      </a>
-                    </div>
-                  </span>
-                  <div v-else  class="pt-2">--</div>
+                  <a v-if="item.residualPlan !== null" @click="goToDetails(item.residualPlanId, 3)">
+                    {{item.residualPlan}}:<br/>
+                    {{item.residualPlan}}
+                  </a>
+                  <div v-else class="pt-2">--</div>
                 </td>
                 <td class="text-left pt-3">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
               </tr>
@@ -84,13 +96,14 @@
 
 <script setup>
 
-import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequestWithParams, } from '@/helpers/helpers'
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { useBrsStore } from '@/stores/BrsStore.js'
 import { storeToRefs } from 'pinia'
+import { saveAs } from 'file-saver'
 
 const brsStore = useBrsStore()
 const { commissionPositionId } = storeToRefs(brsStore)
@@ -107,15 +120,17 @@ onMounted(() => {
 })
 
 const dataLoading = ref(true)
+const includeInactive = ref(false)
 const search = ref('')
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 1000]})
 const headers = ref([
   {text: 'User', value: 'name', show: true},
   {text: 'Office', value: 'orgName', show: true},
-  {text: 'Commissions Assigned To', value: 'commissionPlan', show: true},
-  {text: 'Overrides Assigned To', value: 'overridePlan', show: true},
-  {text: 'Receiving Overrides From', value: 'receivingPlan', show: true},
+  {text: 'Available Commission Strategies', value: 'availableCommissionStrategies', show: true},
+  {text: 'Commission Plan', value: 'commissionPlan', show: true},
+  {text: 'Override Plan', value: 'overridePlan', show: true},
+  {text: 'Residual Plan', value: 'residualPlan', show: true},
   {text: 'Has Commission Plan Gap', value: 'hasCommissionPlanGap', show: true},
 ])
 const users = ref([])
@@ -128,9 +143,12 @@ watch(commissionPositionId, () => {
 const getUsers = async () => {
   appStore.loading = true
   try {
+    let params = {
+      includeInactive: includeInactive.value
+    }
     let url = commissionPositionId.value === 1 ? '/commissionManagement/closers' : '/commissionManagement/setters'
-    const {data, status} = await getRequest(url, 'blueraven', [])
-    users.value = data.filter(d => d.isActiveUser)
+    const {data, status} = await getRequestWithParams(url, { params }, 'blueraven', [])
+    users.value = data
     dataLoading.value = false
     handleHidingGlobalLoader( status)
   } catch (e) {
@@ -140,11 +158,63 @@ const getUsers = async () => {
     appStore.loading = false
   }
 }
-const goToDetails = async(item, planType) => {
-  // 1 = commission, 2 = override, 3 = receiving
-  let name = planType === 1 ? 'commission' : 'override'
-  let id = planType === 1 ? item.commissionPlanId : planType === 2 ? item.overridePlanId : item.receivingPlanId
-  await router.push({name, params: {id}})
+const goToDetails = async(planId, planType) => {
+  // 1 = commission, 2 = override, 3 = residual
+  let pathName
+  switch(planType) {
+    case 1:
+      pathName = 'commission'
+      break
+    case 2:
+      pathName = 'override'
+      break
+    case 3:
+      pathName = 'residualPlan'
+      break
+    default:
+      pathName = null
+  }
+  await router.push({name: pathName, params: { id: planId}})
+}
+
+const exportData = async () => {
+  appStore.loading = true
+  try {
+    let filename = `Commission_Users.csv`;
+
+    let csvData = 'User ID, User Name, User Employee ID, Primary Position, Office, Available Commission Strategies, Commission Plan Start Date, Commission Plan, Override Plan Start Date, Override Plan, Residual Plan Start Date, Residual Plan';
+      csvData += '\n'
+
+      users.value.forEach(p => {
+        csvData +=
+            p.userId + ',' +
+            '"' + p.name + '",' +
+            p.employeeId + ',' +
+            p.primaryPosition + ',' +
+            '"' + p.orgName + '",' +
+            '"' + p.availableCommissionStrategies + '",' +
+            (p.commissionPlanStart || '') + ',' +
+            (p.commissionPlan || '') + ',' +
+            (p.overridePlanStart || '') + ',' +
+            (p.overridePlan || '') + ',' +
+            (p.residualPlanStart || '') + ',' +
+            (p.residualPlan || '')
+
+        csvData += '\n';
+      })
+
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
+
+    saveAs(blob, filename);
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Exporting Data')
+
+    appStore.loading = false
+  }
 }
 </script>
 

@@ -78,7 +78,7 @@ export const useNotificationStore = defineStore('notification', {
         const newState = this.notifications?.filter(n => !notificationIds.includes(n.id))
         this.setNotifications(newState)
 
-        await postRequest(`/notifications/markNotificationAsRead/`, { notificationIds })
+        await postRequest(`/notifications/markNotificationAsRead`, { notificationIds })
       } catch (e) {
         console.error('*** ERROR ***', e)
       }

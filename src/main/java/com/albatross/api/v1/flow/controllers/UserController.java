@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
@@ -62,7 +64,7 @@ public class UserController {
   }
 
   @PutMapping(value = "")
-  public ResponseEntity saveUser(
+  public ResponseEntity<?> saveUser(
     @RequestParam(required = false) Boolean userIsAlbatross, @RequestBody User user) {
     if (userService.emailExists(user.getEmail(), user.getId())) {
       throw new ResponseStatusException(
@@ -91,7 +93,7 @@ public class UserController {
   }
 
   @GetMapping(value = "/{id}")
-  public ResponseEntity getUser(
+  public ResponseEntity<?> getUser(
     @PathVariable Long id, @RequestParam(required = false) Boolean userIsAlbatross) {
     Optional<User> result =
       userService.getUser(id, null != userIsAlbatross ? userIsAlbatross : false);
@@ -147,29 +149,37 @@ public class UserController {
   }
 
   @PostMapping(value = "/changeContext/{id}")
-  public ResponseEntity changeContext(@PathVariable Long id) {
-    return userService.changeContext(id);
+  public ResponseEntity<?> changeContext(@PathVariable Long id) {
+    User user = userService.changeContext(id);
+    if (user != null) {
+      return ResponseEntity.ok(user);
+    }
+    return ResponseEntity.badRequest().body("Invalid Company For User");
   }
 
   @GetMapping(value = "/current")
-  public ResponseEntity getLoggedInUser(@RequestHeader("Authorization") String authHeader) {
-    return userService.getLoggedInUser(authHeader);
+  public ResponseEntity<?> getLoggedInUser(@RequestHeader("Authorization") String authHeader) {
+    User user = userService.getLoggedInUser(authHeader);
+    if (user != null) {
+      return ResponseEntity.ok(user);
+    }
+    return ResponseEntity.badRequest().body("No user found");
   }
 
   @PostMapping(value = "/validate")
-  public ResponseEntity validatePassword(@RequestBody Map<String, String> requestData) {
+  public ResponseEntity<?> validatePassword(@RequestBody Map<String, String> requestData) {
     Boolean response = securityService.validatePassword(requestData.get("password"));
     return response
-      ? new ResponseEntity(HttpStatus.OK)
-      : new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
+      ? ResponseEntity.ok().build()
+      : ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
   }
 
   @PostMapping(value = "/forgotPassword")
-  public ResponseEntity forgotPassword(@RequestBody PasswordResetRequest passwordResetRequest)
+  public ResponseEntity<?> forgotPassword(@RequestBody PasswordResetRequest passwordResetRequest)
     throws Exception {
-    if (!StringUtils.isEmpty(passwordResetRequest.getUsernameOrEmail())) {
+    if (!ObjectUtils.isEmpty(passwordResetRequest.getUsernameOrEmail())) {
       User user =
-        securityService.getUserByUsernameOrEmail(passwordResetRequest.getUsernameOrEmail());
+        userService.findByUsernameOrEmailIgnoreCase(passwordResetRequest.getUsernameOrEmail());
       if (user != null) {
         Calendar calendar = Calendar.getInstance();
         java.util.Date now = calendar.getTime();
@@ -180,28 +190,31 @@ public class UserController {
         user.setExpiryDate(currentTimestamp);
         userService.saveForgotPasswordFields(user, false);
 
-        InputStream inputStream =
-          ScheduledConfig.class.getResourceAsStream(
-            "/communication/templates/password-reset.ftl.html");
-        String template = IOUtils.toString(inputStream);
+        try (
+          InputStream inputStream =
+            ScheduledConfig.class.getResourceAsStream(
+              "/communication/templates/password-reset.ftl.html")) {
 
-        Map<String, Object> context = new HashMap<>();
-        context.put("link", homeUrl + "/passwordReset/" + uuid);
-        context.put("from", "Blue Raven Solar Sales HR");
-        context.put("mailTo", "saleshr@blueravensolar.com");
+          String template = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
-        communicationService.sendEmail(
-          "Click on link to reset your password",
-          StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()),
-          template,
-          context,
-          "SalesOps@blueravensolar.com",
-          "Blue Raven Sales Operation",
-          user.trueUserId(),
-          null);
-        log.debug(
-          "AUTH: Password reset email has been sent to {}",
-          passwordResetRequest.getUsernameOrEmail());
+          Map<String, Object> context = new HashMap<>();
+          context.put("link", homeUrl + "/passwordReset/" + uuid);
+          context.put("from", "Blue Raven Solar Sales HR");
+          context.put("mailTo", "saleshr@blueravensolar.com");
+
+          communicationService.sendEmail(
+            "Click on link to reset your password",
+            StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()),
+            template,
+            context,
+            "SalesOps@blueravensolar.com",
+            "Blue Raven Sales Operation",
+            user.trueUserId(),
+            null);
+          log.debug(
+            "AUTH: Password reset email has been sent to {}",
+            passwordResetRequest.getUsernameOrEmail());
+        }
       } else {
         log.debug(
           "AUTH: Password reset attempted for unknown user email {}.",
@@ -230,11 +243,11 @@ public class UserController {
             HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
         } else {
           result = userService.updatePassword(passwordResetRequest);
-          userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+          securityService.updateLoginAttempts(0, passwordResetRequest.getUserId());
         }
       } else {
         result = userService.updatePassword(passwordResetRequest);
-        userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+        securityService.updateLoginAttempts(0, passwordResetRequest.getUserId());
       }
     }
 
@@ -242,9 +255,9 @@ public class UserController {
   }
 
   @GetMapping(value = "/forgotPassword/reset/{uuid}")
-  public ResponseEntity forgotPasswordReset(@PathVariable("uuid") UUID userUuid) {
+  public ResponseEntity<?> forgotPasswordReset(@PathVariable("uuid") UUID userUuid) {
     final float divider = 3600000;
-    User user = securityService.findUserByUuid(userUuid);
+    User user = userService.findUserByUuid(userUuid);
 
     if (user != null) {
       Calendar calendar = Calendar.getInstance();
@@ -284,8 +297,8 @@ public class UserController {
   }
 
   @DeleteMapping(value = "/token")
-  public ResponseEntity<Void> removeTokenFromUser(@RequestParam(name="id") String tokenId,
-                                             @AuthenticationPrincipal UserAccountDetails details) {
+  public ResponseEntity<Void> removeTokenFromUser(@RequestParam(name = "id") String tokenId,
+                                                  @AuthenticationPrincipal UserAccountDetails details) {
     userService.removeNotificationToken(details.getTrueUserId(), tokenId);
     return ResponseEntity.noContent().build();
   }
@@ -332,14 +345,15 @@ public class UserController {
 
 
   /**
-   *  Temporary: used for testing
+   * Temporary: used for testing
+   *
    * @param query
    * @param pageable
    * @return
    */
   @Hidden
-  @GetMapping(value="/notifications")
-  public List<BasicNotificationUser> getUsersWithNotificationAccess(@RequestParam(required = false) String query, Pageable pageable){
+  @GetMapping(value = "/notifications")
+  public List<BasicNotificationUser> getUsersWithNotificationAccess(@RequestParam(required = false) String query, Pageable pageable) {
     return userService.getNotificationEnabledUsers(query, pageable);
   }
 

@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -119,11 +116,11 @@ public class MosaicService {
     String applicationId = respJson.getString("id");
     setMosaicApplicationId(projectId, proposalNbr, applicationId);
     shareApplication.put("loanType", "Solar");
-    String[] method = {"Link"};
-    shareApplication.put("methods", method);
+    String[] methodArray = {"Email","Link"};
+    shareApplication.put("methods", methodArray);
 
     // Get the link for the application via share
-    res = POST("/v2/applications/"+applicationId+"/share", IOUtils.toInputStream(shareApplication.toString(), (Charset) null));
+    res = POST("/v2/applications/" + applicationId + "/share", IOUtils.toInputStream(shareApplication.toString(), (Charset) null));
     if (res.getResponseCode() != 200) {
       StringBuilder errorMessage = new StringBuilder();
       errorMessage.append("%s\n".formatted("Error creating Mosaic loan application: "));
@@ -142,10 +139,16 @@ public class MosaicService {
     }
     respJson = res.getJSON();
     JSONArray sharesArray = respJson.getJSONArray("shares");
-    JSONObject share = sharesArray.getJSONObject(0);
-    String applicationUrl = share.getString("link");
 
-    return applicationUrl;
+    for (int i = 0; i < sharesArray.length(); i++) {
+      JSONObject share = sharesArray.getJSONObject(i);
+      String method = share.getString("method");
+      if (!method.equals("Link")) {
+        continue;
+      }
+      return share.getString("link");
+    }
+    throw new Exception("Error creating Mosaic loan application: Unable to generate application link");
   }
 
   public void sendLoanDocs(Long projectId, Long proposalNbr, InstallAgreementService.PropLogDetail propLogDetail) throws Exception {
@@ -185,13 +188,13 @@ public class MosaicService {
       // Approved
       Double propRate = Double.parseDouble(propLogDetail.getInterestRate()) * 100;
       propRate = Math.round(propRate * 100.0) / 100.0;
-      String financeProductId = getFinanceProductId(creditDecision, propRate, propLogDetail.getLoanTerm());
+      String financeProductId = getFinanceProductId(creditDecision, propRate, propLogDetail.getLoanTerm(), isEnsembleProposal(propLogDetail.getState()));
       if (financeProductId.isEmpty()) {
         throw new Exception("No matching Mosaic finance offer found for: " + propLogDetail.getLoanTerm() + " year loan term, "
           + propRate + "% APR");
       }
 
-      String offerId = createOffer(propLogDetail.getLoanAmount(), applicationId, financeProductId);//"cda38149-6365-4888-90af-257d0b31bf96";//
+      String offerId = createOffer(propLogDetail.getLoanAmount(), applicationId, financeProductId);
       shareOffer(offerId);
     }
     else {
@@ -254,7 +257,7 @@ public class MosaicService {
     }
   }
 
-  private String getFinanceProductId(JSONObject creditDecision, Double proposalRate, String proposalTerm) {
+  private String getFinanceProductId(JSONObject creditDecision, Double proposalRate, String proposalTerm, Boolean isEnsembleProposal) {
     int termMonths = Integer.parseInt(proposalTerm) * 12;
     JSONArray financingProducts = creditDecision.getJSONArray("financingProducts");
     for (int i = 0; i < financingProducts.length(); i++) {
@@ -263,11 +266,30 @@ public class MosaicService {
       int totalPeriods = financeProduct.getInt("totalPeriods");
       String financingProductType = financeProduct.getString("financingProductType");
       if (financingProductType.equals("Choice") && rate == proposalRate && totalPeriods == termMonths) {
-        return financeProduct.getString("id");
+        if (!isEnsembleProposal) {
+          return financeProduct.getString("id");
+        }
+        else {
+          // If this is an Ensemble proposal, only return an Ensemble product (based on the product name)
+          String name = financeProduct.getString("name");
+          if (name.contains("Blue Raven Ensemble")) {
+            return financeProduct.getString("id");
+          }
+        }
       }
     }
 
     return "";
+  }
+
+  private Boolean isEnsembleProposal(String state) {
+    final HashSet<String> nonEnsembleStates = new HashSet<>(Arrays.asList("VA", "NC", "KY", "OH", "CO", "SC", "NV"));
+    if (nonEnsembleStates.contains(state)) {
+      return false;
+    }
+    else {
+      return true;
+    }
   }
 
   private String createOffer(String loanAmount, String applicationId, String financeProductId) throws Exception {

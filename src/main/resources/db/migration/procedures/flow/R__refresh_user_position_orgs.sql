@@ -26,9 +26,21 @@ BEGIN
   delete from flow.user_positions_vw;
   delete from flow.user_position_hierarchy_vw;
 
-  insert into flow.user_positions_vw
-  select *
-  from flow.user_positions_materialized_vw;
+  insert into flow.user_positions_vw(user_id, first_name, last_name,
+                                     org_id, org_name, org_level_id, position_level,
+                                     primary_flag, start_date, end_date, archived, company_state_id,
+                                     user_archived, position_schedulable, position_scheduler,
+                                     position, position_id, user_position_id, company_id, email,
+                                     phone_number, phone_extension, available_to_children,
+                                     user_status_type_id, has_access,sales_org_id,sales_org_name)
+  select user_id, first_name, last_name,
+         org_id, org_name, org_level_id, position_level,
+         primary_flag, start_date, end_date, pv.archived, company_state_id,
+         user_archived, position_schedulable, position_scheduler,
+         position, position_id, user_position_id, company_id, email,
+         phone_number, phone_extension, available_to_children,
+         user_status_type_id, has_access,sales_org_id,sales_org_name
+  from flow.user_positions_materialized_vw pv;
 
   insert into flow.user_position_hierarchy_vw
   select *

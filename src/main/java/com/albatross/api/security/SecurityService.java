@@ -3,13 +3,15 @@ package com.albatross.api.security;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.queries.CompanyQuery;
 import com.albatross.api.v1.flow.queries.FeatureQuery;
+import com.albatross.api.v1.flow.queries.UserPositionQuery;
 import com.albatross.api.v1.flow.queries.UserQuery;
-import com.albatross.api.v1.flow.services.CompanyService;
 import com.albatross.api.v1.flow.services.UserPositionService;
 import com.albatross.api.v1.flow.services.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,59 +21,65 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class SecurityService implements UserDetailsService {
 
-  @Autowired private UserService userService;
+  private final SqlCache sqlCache;
+  private final ObjectMapper om;
+  private final PasswordEncoder passwordEncoder;
 
-  @Autowired private UserPositionService userPositionService;
-
-  @Autowired private CompanyService companyService;
-
-  @Autowired private SqlCache sqlCache;
-
-  @Autowired private PasswordEncoder passwordEncoder;
-
-  /** Look up a user by username */
+  /**
+   * Look up a user by username
+   */
   @Override
   public UserAccountDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User user = getUser(username);
+    User user = findByUsernameIgnoreCase(username);
     if (user == null) {
       throw new UsernameNotFoundException("Could not find user " + username);
     }
-    // todo: come back and add permissions when the re-write is complete
     List<FeatureAccessControl> results = getUserFeatureAccess(user.getId(), user.getCompanyId());
     return new UserAccountDetails(user, results);
   }
 
   public User getUser(String username) {
-    return userService.findByUsernameIgnoreCase(username, null);
+    return findByUsernameIgnoreCase(username);
   }
 
-  public User getUserByUsernameOrEmail(String usernameOrEmail) {
-    return userService.findByUsernameOrEmailIgnoreCase(usernameOrEmail);
+  private User findByUsernameIgnoreCase(String username) {
+    // i updated this to find by username or by userId so that we can call the same function on
+    // login AND on change context
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("username", username);
+    params.put("userId", null);
+    // had to make a change cuz for a 7oaks employee in a non-alba context it wasn't loading some
+    // company specific columns we needed on the frontend
+    return sqlCache.getBySql(UserQuery.findByUsernameIgnoreCase, params, new UserService.UserMapper<>(User.class, om))
+      .orElse(null);
   }
+
 
   public void updateLoginAttempts(int loginAttempts, Long userId) {
-    userService.updateLoginAttempts(loginAttempts, userId);
+    // update count of login attempts
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("loginAttempts", loginAttempts);
+    params.put("userId", userId);
+    sqlCache.updateBySql(UserQuery.updateLoginAttempts, params);
   }
 
   public Optional<UserAccountDetails> getUserDetailsById(Long id) {
-    return findUserById(id).map(user->{
-      List<FeatureAccessControl> results =
-        getUserFeatureAccess(user.getId(), user.getCompanyId());
-      return new UserAccountDetails(user, results);
-    });
-  }
-
-  public boolean isLoggedIn() {
-    return getCurrentUser() != null;
+    User userById = findUserById(id);
+    return Optional.ofNullable(userById)
+      .map(user -> {
+        List<FeatureAccessControl> results =
+          getUserFeatureAccess(user.getId(), user.getCompanyId());
+        return new UserAccountDetails(user, results);
+      });
   }
 
   public User getCurrentUser() {
@@ -109,7 +117,7 @@ public class SecurityService implements UserDetailsService {
           user.setId(details.getId());
           user.setHasAccess(true);
         } else {
-          user = userService.findUserById(details.getId());
+          user = findUserById(details.getId());
           user.setMasqueradingUserId(((UserAccountDetails) p).getMasqueradingUserId());
           // if the user is masquerading - hard code their company id to the current one so we dont
           // override the user's default
@@ -118,10 +126,10 @@ public class SecurityService implements UserDetailsService {
             user.setCompanyId(((UserAccountDetails) p).getCompanyId());
           }
           List<FeatureAccessControl> results =
-              getUserFeatureAccess(details.getId(), user.getCompanyId());
+            getUserFeatureAccess(details.getId(), user.getCompanyId());
           user.setFeatureAccess(results);
-          UserPosition userPosition = userPositionService.getUserPrimaryPosition(user.getId(), user.getCompanyId());
-          if(userPosition != null) {
+          UserPosition userPosition = getUserPrimaryPosition(user.getId(), user.getCompanyId());
+          if (userPosition != null) {
             user.setUserPositionId(userPosition.getPositionId());
             user.setPrimaryPosition(userPosition.getPosition());
           }
@@ -135,12 +143,25 @@ public class SecurityService implements UserDetailsService {
     return user;
   }
 
-  public User findUserByUuid(UUID uuid) {
-    return userService.findByUserUuid(uuid);
+  private UserPosition getUserPrimaryPosition(Long userId, Long companyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("companyId", companyId);
+
+    return sqlCache
+      .getBySql(
+        UserPositionQuery.getUserPrimaryPosition,
+        params,
+        new UserPositionService.UserPositionMapper<>(UserPosition.class, om))
+      .orElse(null);
   }
 
-  private Optional<User> findUserById(Long id) {
-    return Optional.ofNullable(userService.findUserById(id));
+  private User findUserById(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    // note: i had to change this query a bunch cuz if it was a 7oaks employee it was not returning
+    // the company's api path or aws bucket even when in that context
+    return sqlCache.getBySql(UserQuery.findUserById, params, new UserService.UserMapper<>(User.class, om)).orElse(null);
   }
 
   public UserAccountDetails getCurrentUserDetails() {
@@ -156,14 +177,8 @@ public class SecurityService implements UserDetailsService {
 
   public void setCurrentUserDetails(UserAccountDetails uad) {
     SecurityContextHolder.getContext()
-        .setAuthentication(
-            new UsernamePasswordAuthenticationToken(uad, null, uad.getAuthorities()));
-  }
-
-  public UserAccountDetails getRequiredCurrentUserDetails() {
-    UserAccountDetails result = getCurrentUserDetails();
-    Assert.notNull(result, "Couldn't determine current user");
-    return result;
+      .setAuthentication(
+        new UsernamePasswordAuthenticationToken(uad, null, uad.getAuthorities()));
   }
 
   public List<FeatureAccessControl> getUserFeatureAccess(Long userId, Long companyId) {
@@ -175,7 +190,7 @@ public class SecurityService implements UserDetailsService {
   }
 
   public List<FeatureAccessControl> getMasqueradedUserFeatureAccess(
-      Long userId, Long companyId, Long trueUserId) {
+    Long userId, Long companyId, Long trueUserId) {
     // this function gets ALL access for a user (combining user/position access control as needed)
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
@@ -198,8 +213,8 @@ public class SecurityService implements UserDetailsService {
     params.put("userId", userId);
 
     return sqlCache
-        .queryForObjectOptionalBySql(UserQuery.isSuperAdmin, params, Boolean.class)
-        .orElse(false);
+      .queryForObjectOptionalBySql(UserQuery.isSuperAdmin, params, Boolean.class)
+      .orElse(false);
   }
 
   // use to validate masquerading user stuff
@@ -209,19 +224,19 @@ public class SecurityService implements UserDetailsService {
     params.put("companyId", companyId);
 
     return sqlCache
-        .queryForObjectOptionalBySql(UserQuery.hasAccessInCompany, params, Boolean.class)
-        .orElse(false);
+      .queryForObjectOptionalBySql(UserQuery.hasAccessInCompany, params, Boolean.class)
+      .orElse(false);
   }
 
   /*
   Return whether user has any of the given access levels to the given feature
    */
   public Boolean userHasFeatureAccessLevel(
-      Long userId,
-      Long companyId,
-      Long userHighestCompanyId,
-      String featureCode,
-      List<String> accessCodes) {
+    Long userId,
+    Long companyId,
+    Long userHighestCompanyId,
+    String featureCode,
+    List<String> accessCodes) {
     List<FeatureAccessControl> featureAccessControlList = getUserFeatureAccess(userId, companyId);
     for (FeatureAccessControl fac : featureAccessControlList) {
       if (fac.getFeatureCode().equals(featureCode) && accessCodes.contains(fac.getAccessCode())) {
@@ -238,9 +253,9 @@ public class SecurityService implements UserDetailsService {
   Return whether user has any of the positions requested
    */
   public Boolean userHasPosition(
-      Long userHighestCompanyId,
-      List<Long> positionIdsToCheckFor,
-      List<UserPosition> userPositions) {
+    Long userHighestCompanyId,
+    List<Long> positionIdsToCheckFor,
+    List<UserPosition> userPositions) {
     for (UserPosition up : userPositions) {
       if (positionIdsToCheckFor.contains(up.getPositionId())) {
         return true;
@@ -253,13 +268,13 @@ public class SecurityService implements UserDetailsService {
   }
 
   public void validateUserFeatureAccessLevel(
-      Long userId,
-      Long companyId,
-      Long userHighestCompanyId,
-      String featureCode,
-      List<String> accessCodes) {
+    Long userId,
+    Long companyId,
+    Long userHighestCompanyId,
+    String featureCode,
+    List<String> accessCodes) {
     if (!userHasFeatureAccessLevel(
-        userId, companyId, userHighestCompanyId, featureCode, accessCodes)) {
+      userId, companyId, userHighestCompanyId, featureCode, accessCodes)) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized.", new Exception());
     }
   }
@@ -280,7 +295,7 @@ public class SecurityService implements UserDetailsService {
   public Boolean passwordIsCompanyDefault(Long userId, String password) {
     // have to check if the user's password matches ANY company default that they have access to
     boolean match = false;
-    List<Company> companiesUserHasAccessTo = companyService.getCompaniesAssignedToUser(userId);
+    List<Company> companiesUserHasAccessTo = getCompaniesAssignedToUser(userId);
 
     for (Company c : companiesUserHasAccessTo) {
       if (password.equalsIgnoreCase(c.getDefaultPassword())) {
@@ -291,11 +306,7 @@ public class SecurityService implements UserDetailsService {
     return match;
   }
 
-  public void validateCompanyAccess(Long companyId) {
-    User user = getCurrentUser();
-    if (!user.getCompanyId().equals(companyId)) {
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "You do not have access to this company data.", new Exception());
-    }
+  private List<Company> getCompaniesAssignedToUser(Long userId) {
+    return sqlCache.queryBySql(CompanyQuery.getCompaniesAssignedToUser, Map.of("userId", userId), Company.class);
   }
 }

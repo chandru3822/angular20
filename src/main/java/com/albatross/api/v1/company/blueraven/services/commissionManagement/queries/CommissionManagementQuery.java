@@ -236,65 +236,7 @@ public class CommissionManagementQuery {
 
   //language=PostgreSQL
   public final static String getClosers = """
-    SELECT u.id                                      AS id,
-               u.id                                         AS userId,
-               concat(u.first_name, ' ', u.last_name) AS name,
-               o.org_name,
-               ust.id                        AS userStatusTypeId,
-               cp.name                                      AS commissionPlan,
-               cp.description                               AS commissionDescription,
-               cp.id                                        AS commissionPlanId,
-               op.name                                      AS overridePlan,
-               op.description                               AS overrideDescription,
-               op.id                                        AS overridePlanId,
-               coalesce((
-                          select case when up2.id is null then null else true end as closer_active
-                          from flow.user_position up2
-                                 inner join flow.position p on up2.position_id = p.id
-                          where up2.user_id = u.id
-                            and p.company_id = 3
-                            and up2.primary_flag IS TRUE
-                            AND up2.end_date IS NULL
-                            AND up2.archived IS NOT TRUE
-                            and up2.id in (select up5.id
-                                           from flow.user_position up5
-                                                  inner join flow.position p2 on up5.position_id = p2.id
-                                                  inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
-                                           where up5.primary_flag is true
-                                             and up5.archived is false
-                                             and p2.company_id = 3
-                                             and cf.archived is false)
-                            AND ust.has_access is true),false) AS "is_active_user",
-               (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-                FROM (SELECT op2.name AS "receivingPlan", op2.description AS "receivingDescription", op2.id AS "receivingPlanId"
-
-                      FROM brs.override_plan_receiving_user opru
-                             INNER JOIN brs.override_plan op2 ON opru.override_plan_id = op2.id and op2.position_id = 1
-                      WHERE opru.user_id = u.id
-                        AND op2.status_id = 2) AS sub_rows) AS "receivingPlans"
-        FROM flow.user u
-               INNER JOIN flow.user_position up ON up.user_id = u.id AND
-                                                   ((up.primary_flag IS TRUE AND up.end_date IS NULL AND up.archived IS NOT TRUE) OR
-                                                    1 = 1)
-          AND up.id IN (select up5.id
-                        from flow.user_position up5
-                               inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
-                        where up5.primary_flag is true
-                          and up5.archived is false
-                          and cf.archived is false)
-                inner join flow.org o on o.id = up.org_id
-               inner join flow.company_user_status cus on cus.user_id = u.id
-               inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.has_access is true and ust.company_id = 3
-               LEFT JOIN brs.commission_plan_user cpu ON cpu.user_id = u.id AND (cpu.start_date <= CURRENT_TIMESTAMP AND
-                                                                                 (cpu.end_date >= current_timestamp OR cpu.end_date IS NULL))
-               LEFT JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id and cp.position_id = 1
-               LEFT JOIN brs.override_plan_assigned_user opau ON opau.user_id = u.id AND
-                                                                 (opau.start_date <= CURRENT_TIMESTAMP AND
-                                                                  (opau.end_date >= current_timestamp OR opau.end_date IS NULL))
-               LEFT JOIN brs.override_plan op ON opau.override_plan_id = op.id and op.position_id = 1
-
-        GROUP BY u.id, o.org_name, u.first_name, u.last_name, ust.id, cp.name, cp.description, cp.id, op.name, op.description, op.id
-        ORDER BY name
+    select * from brs.get_commission_users(:includeInactive::boolean)
     """;
 
   //language=PostgreSQL
@@ -429,12 +371,17 @@ FROM (SELECT upv.user_id                                        AS "userId",
                         op.id,
                         op.description,
                         opru.m1_allocation as "m1Allocation",
-                        opru.m2_allocation as "m2Allocation"
+                        opru.m2_allocation as "m2Allocation",
+                        ops.status_type as "statusType",
+                        opru.red_line_m1_allocation as "redLineM1Allocation",
+                        opru.red_line_m2_allocation as "redLineM2Allocation"
                     FROM brs.override_plan_receiving_user opru
                              INNER JOIN brs.override_plan op ON op.id = opru.override_plan_id
+                            inner join brs.override_plan_status ops on ops.id = op.status_id
                     WHERE opru.user_id = upv.user_id
                       AND op.name IS NOT NULL
-                      AND op.name != '') receiving), '[]')              AS receiving
+                      AND op.name != ''
+                      order by ops.status_type) receiving), '[]')              AS receiving
       FROM flow.user_positions_vw upv
       WHERE upv.user_id = :userId
         and upv.primary_flag is true

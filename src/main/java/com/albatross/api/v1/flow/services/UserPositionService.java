@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserOrgHierarchy;
 import com.albatross.api.v1.flow.model.UserPosition;
+import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.queries.UserPositionQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +39,15 @@ public class UserPositionService {
 
     return sqlCache.queryBySql(
       UserPositionQuery.getAll, params, new UserPositionMapper<>(UserPosition.class, om));
+  }
+
+  public List<Org> getAvailableSalesOrgs(Long positionId, Long orgId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("positionId", positionId);
+    params.put("orgId", orgId);
+
+    return sqlCache.queryBySql(
+      UserPositionQuery.getAvailableSalesOrgs, params, Org.class);
   }
 
   public List<UserPosition> getAllActiveUserPositions(Long userId) {
@@ -107,6 +117,7 @@ public class UserPositionService {
     params.put("userId", userPosition.getUserId());
     params.put("positionId", userPosition.getPositionId());
     params.put("orgId", userPosition.getOrgId());
+    params.put("salesOrgId", userPosition.getSalesOrgId());
     params.put("startDate", userPosition.getStartDate());
     params.put("endDate", userPosition.getEndDate());
     params.put("primaryFlag", primaryFlag);

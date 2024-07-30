@@ -162,11 +162,14 @@ public class CommissionManagementService {
     return sqlCache.queryBySql(CommissionManagementQuery.getAvailableSources, params, Source.class);
   }
 
-  public List<ClosersPlan> getClosers() {
+  public List<ClosersPlan> getClosers(Boolean includeInactive) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("includeInactive", includeInactive);
+
     List<ClosersPlan> closers =
         sqlCache.queryBySql(
           CommissionManagementQuery.getClosers,
-            Collections.emptyMap(),
+            params,
             new ClosersPlanMapper<>(ClosersPlan.class, om));
     List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).toList();
     Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);

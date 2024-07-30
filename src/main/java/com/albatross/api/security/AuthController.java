@@ -156,7 +156,7 @@ public class AuthController {
     Boolean newUserIsInCurrentCompany =
         securityService.userHasAccessInCompany(userId, user.getCompanyId());
     // mke sure that the user is not trying to alias as themselves
-    Boolean userIsSelf = user.getId().equals(userId);
+    boolean userIsSelf = user.getId().equals(userId);
 
     if (userHasMasqueradeAccess && !newUserIs7oaks && newUserIsInCurrentCompany && !userIsSelf) {
       Instant issuedAt = Instant.now();
@@ -208,7 +208,7 @@ public class AuthController {
   @JsonInclude(NON_NULL)
   @Data
   @Accessors(chain = true)
-  private static class MasqueradeResponseBody {
+  public static class MasqueradeResponseBody {
     private String result;
 
     @JsonSerialize(using = JwtClaimsSerializer.class)

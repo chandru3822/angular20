@@ -59,49 +59,57 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
+            <tr :class="{'shaded-row': !(index % 2)}" class="clickable text-sm-left row-hover"
+                v-if="item.archived === false || (item.archived === true && userStore.userHasFeatureAccessLevel('HOA', 'ADMIN'))"
+            >
               <td class="text-left clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
-                  {{ item.name || '' }}
+                  <v-chip
+                    color="warning"
+                    small
+                    v-if="item.archived === true &&
+                    userStore.userHasFeatureAccessLevel('HOA', 'ADMIN')"
+                    class="mr-2">
+                    ARCHIVED
+                  </v-chip>
+                  <span :class="{'strike-thru': !item.active}">{{ item.name ? item.name : '' }}</span>
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
                   {{ item.state || '' }}
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
                   {{ item.managementCompany || '' }}
                 </router-link>
               </td>
               <td class="text-right">
                 <a-btn
-                    :to="`/database/hoa/${item.id}/details`"
-                    variant="text"
-                    size="x-small"
-                    fab
-                    color="unset"
-                    prepend-icon="mdi-arrow-right"
-                ></a-btn>
-                <a-btn
                     icon
                     v-if="userStore.userHasFeatureAccessLevel('HOA', 'EDIT')"
-                    size="small"
                     color="primary"
                     class="mr-3 feat-db-link-icon"
                     @click="editHoa(item)"
                     prepend-icon="edit"
                 ></a-btn>
-                <a-btn
-                    icon
-                    v-if="userStore.userHasFeatureAccessLevel('HOA', 'DELETE')"
-                    size="small"
-                    color="primary"
-                    class="mr-3 feat-db-link-icon"
-                    @click="deleteHoa(item)"
-                    prepend-icon="delete"
-                ></a-btn>
+                <v-tooltip top small>
+                  <template v-slot:activator="{on, attrs}">
+                    <a-btn
+                      v-bind="attrs"
+                      color="primary"
+                      :activation-handler="on"
+                      size="small"
+                      variant="text"
+                      @click="item.archived === false ? deleteHoa(item) : restoreHoa(item)"
+                      v-if="userStore.userHasFeatureAccessLevel('HOA', 'ADMIN')"
+                      :append-icon="!item.archived ? 'inventory' : 'undo'"
+                    ></a-btn>
+                  </template>
+                  <span v-if="!item.archived" class="albatross-body-3">Archive</span>
+                  <span v-if="item.archived" class="albatross-body-3">Restore</span>
+                </v-tooltip>
               </td>
             </tr>
           </template>
@@ -128,6 +136,7 @@
                         v-model="editedItem.name"
                         required
                         variant="filled"
+                        @focus="setDirtyItem('name')"
           ></a-text-field>
           <a-autocomplete label="State"
                           :items="states"
@@ -148,6 +157,7 @@
                           type="search"
                           autocomplete="off"
                           variant="filled"
+                          @focus="setDirtyItem('managementCompanyId')"
           ></a-autocomplete>
           <a-text-field label="New Management Company"
                         v-if="addingManagementCompany"
@@ -155,6 +165,14 @@
                         variant="filled"
           ></a-text-field>
           <a @click="addNewManagementCompany"> {{ addNewManagementCompanyButton }} </a>
+          <v-switch
+            v-if="userStore.userHasFeatureAccessLevel('HOA', 'MANAGE') && !addMode"
+            :label="editedItem.active ? 'Active' : 'Inactive'"
+            v-model="editedItem.active"></v-switch>
+          <label v-if="userStore.userHasFeatureAccessLevel('HOA', 'ADMIN') &&
+                     editedItem.archived === true && editedItem.active === true">
+            This HOA is currently Archived. Activating this HOA will un-archive this HOA.
+          </label>
         </v-card-text>
 
         <v-card-actions>
@@ -199,9 +217,6 @@
       </v-row>
       <template v-slot:yes>Create</template>
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!hoaToDelete" @confirm="confirmDeleteHoa" @close-dialog="hoaToDelete=null">
-      Are you sure you want to delete {{ hoaToDeleteName }}?
-    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -210,7 +225,14 @@ import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
 
-import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+import {
+  canRestoreDBEntry,
+  deleteRequest,
+  getRequest,
+  handleHidingGlobalLoader,
+  postRequest,
+  putRequest
+} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch, defineProps } from 'vue'
@@ -226,10 +248,11 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const props = defineProps({
-  nameSearch: String
+  nameSearch: String,
+  showInactive: Boolean,
 })
 
-const emit = defineEmits('updateNameSearch')
+const emit = defineEmits(['updateNameSearch'])
 
 const dataLoading = ref(true)
 const hoaFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},managementCompany: {value: '', type: 'text', model: 'managementCompany'}})
@@ -245,7 +268,8 @@ const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: cons
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
   'items-per-page-options': [25, 50, 100, 1000]})
 const hoaDialog = ref(false)
-const editedItem = ref({name: '',managementCompanyId: '',})
+const editedItem = ref({id: '', name: '',managementCompanyId: '',archived:'', active:''})
+const dirtyItems = ref({name:false, managementCompanyId: false})
 const hoas = ref([])
 const addMode = ref(false)
 const managementCompanies = ref([])
@@ -255,11 +279,20 @@ const hoaToDelete = ref(null)
 const duplicateDialog = ref(false)
 const duplicateHoaMatch = ref(null)
 
+const setDirtyItem = (item) => {
+  if (item === 'name') {
+    dirtyItems.value.name = true
+  } else {
+    dirtyItems.value.managementCompanyId = true
+  }
+}
 const filteredHoas = computed(() => {
   return hoas.value && hoas.value.filter(hoa => {
     return Object.keys(hoaFilters.value).every(filterName => {
       const filter = hoaFilters.value[filterName]
-
+      if (props.showInactive === false && hoa?.active === false) {
+        return false
+      }
       if (filter.value?.length < 1) {
         return true
       }
@@ -286,9 +319,6 @@ const btnTxt = computed(() => {
 })
 const addNewManagementCompanyButton = computed(() => {
   return addingManagementCompany.value ? 'Select An Existing Management Company': 'Add New Management Company'
-})
-const hoaToDeleteName = computed(()=> {
-  return hoaToDelete.value ? hoaToDelete.value.name : ''
 })
 
 onMounted(() => {
@@ -326,7 +356,7 @@ const fetchHoas = async()  => {
   appStore.loading = true
   try {
     const {data, status} = await getRequest('/featDb/hoa/list/all', 'blueraven')
-    hoas.value = cloneDeep(data).filter(hoa => hoa.archived === false)
+    hoas.value = cloneDeep(data)
     dataLoading.value = false
     handleHidingGlobalLoader( status)
   } catch (e) {
@@ -365,47 +395,67 @@ const close = () => {
   hoaDialog.value = false
   editedItem.value = {}
 }
-const deleteHoa = (item) => {
-  hoaToDelete.value = {
-    id: item.id,
-    name: item.name
-  }
-}
-const confirmDeleteHoa = async()  => {
+const deleteHoa = async(hoa)  => {
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/featDb/hoa/${hoaToDelete.value.id}`, 'blueraven')
-    appStore.showSnack('SUCCESS', 'HOA deleted')
+    const {status} = await deleteRequest(`/featDb/hoa/${hoa.id}/archive`, 'blueraven')
+    appStore.showSnack('SUCCESS', 'HOA has been Archived')
 
     await fetchHoas().then(() => fetchStates())
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error deleting HOA')
+    appStore.showSnack('ERROR', 'Error Archiving HOA')
 
     appStore.loading = false
   }
   hoaToDelete.value = null
 }
-const newHoaDuplicateCheck = () => {
-  editedItem.value.managementCompany = !!editedItem.value.managementCompanyId ? managementCompanies.value.find(co => co.id === editedItem.value.managementCompanyId)?.managementCompany : newManagementCompany.value
-  duplicateHoaMatch.value = hoas.value.find(hoa => {
 
-    return doNamesMatch(editedItem.value.name, hoa.name) &&
+const restoreHoa = async (hoa)  => {
+  appStore.loading = true
+  if (canRestoreDBEntry(hoas.value, hoa)) {
+    try {
+      await postRequest(`/featDb/hoa/${hoa.id}/restore`, null, 'blueraven')
+      close()
+      initFilters()
+      await fetchHoas().then(() => fetchStates())
+      appStore.showSnack('SUCCESS', 'HOA Has Been Restored')
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Restoring HOA')
+      appStore.loading = false
+    }
+  } else {
+    appStore.showSnack('ERROR', `Cannot restore ${hoa.name}. An un-archived record already exists.`)
+    appStore.loading = false
+  }
+}
+const newHoaDuplicateCheck = () => {
+  if (dirtyItems.value.name || dirtyItems.value.managementCompanyId) {
+    editedItem.value.managementCompany = !!editedItem.value.managementCompanyId ? managementCompanies.value.find(co => co.id === editedItem.value.managementCompanyId)?.managementCompany : newManagementCompany.value
+    duplicateHoaMatch.value = hoas.value.find(hoa => {
+
+      return doNamesMatch(editedItem.value.name, hoa.name) &&
         editedItem.value.companyStateId === hoa.companyStateId &&
         (doNamesMatch(editedItem.value.managementCompany, hoa.managementCompany)
-            || !hoa.managementCompany || !editedItem.value.managementCompany)
-  })
-  if(duplicateHoaMatch.value){
-    hoaDialog.value = false
-    //add managementCompany name and state name for display purposes
-    editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
-    duplicateDialog.value = true
+          || !hoa.managementCompany || !editedItem.value.managementCompany)
+    })
+    if (duplicateHoaMatch.value) {
+      hoaDialog.value = false
+      //add managementCompany name and state name for display purposes
+      editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
+      duplicateDialog.value = true
+    } else {
+      saveHoa()
+    }
   } else {
     saveHoa()
   }
+  dirtyItems.value.name = false
+  dirtyItems.value.managementCompanyId = false
 }
-const doNamesMatch = (name1, name2)=> {
+const doNamesMatch = (name1, name2) => {
   //step 1: remove all punctuation and whitespaces (we don't care if those match)
   const name1Clean = cleanName(name1)
   const name2Clean = cleanName(name2)
@@ -442,9 +492,12 @@ const saveHoa = async()  => {
     }
   } else {
     try {
-      const {status} = await putRequest(`/featDb/hoa/simpleUpdate`, editedItem.value, 'blueraven')
+      const myValue = cloneDeep(editedItem.value)
+      const {status} = await putRequest(`/featDb/hoa/simpleUpdate`, myValue, 'blueraven')
       appStore.showSnack('SUCCESS', 'HOA updated')
-
+      if (myValue?.archived === true && myValue?.active === true) {
+        await restoreHoa(myValue)
+      }
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)

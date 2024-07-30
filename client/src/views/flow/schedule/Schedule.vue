@@ -8,9 +8,10 @@
              :useRightPanelMobile="true"
              :right-open="showMap"
              :showRightCollapseBtn="false"
+             :class="{'height-one-hunned': isSidebarView}"
   >
     <template v-slot:main-column>
-      <a-btn id="map-btn" v-if="!showMap && vuetify.breakpoint.mdAndUp" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
+      <a-btn id="map-btn" v-if="!showMap && vuetify.breakpoint.mdAndUp && !isSidebarView" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
       <a-btn id="close-filters-mobile" v-if="showHideFilters && vuetify.breakpoint.smAndDown" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="[showHideFilters = false, showMobileBtns = false]"><v-icon>mdi-filter-remove</v-icon></a-btn>
       <v-speed-dial
           v-if="vuetify.breakpoint.smAndDown && !showHideFilters"
@@ -157,6 +158,8 @@ const activeComp = computed(() => {
 })
 const showMap = computed(() => scheduleStore.showMap)
 
+const isSidebarView = computed(() => route.path.includes('inboxConversation'))
+
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
 })
@@ -202,13 +205,22 @@ const validateSaveEvent =  () => {
     saveInvalid.value = false
   }
 }
+const chooseMapPinForZoom = (pins) => {
+  const viablePins = pins.filter(p => p.coordinates[0] && p.coordinates[1])
+  if(viablePins.length > 0){
+    return viablePins[viablePins.length-1]
+  }
+  return null
+}
 const resourceMapCallback =  (newValue, addPin) => {
   mapResources.value = newValue
   if(newValue.length > 0 && addPin){
     //only show the map if we're adding a pin, not when removing a pin
     showHideMap(true)
-    let zoomObj = newValue[newValue.length-1] //choose the most recently added one?
-    zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
+    let zoomObj = chooseMapPinForZoom(newValue)
+    if(zoomObj) {
+      zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
+    }
   }
 }
 const projectMapMarkersCallback = (newValue)=> {
@@ -383,7 +395,8 @@ const zoomToMap = (item, zoomOverride) => {
 #schedule-container .v-data-table td {
   height: 30px;
 }
-.mobile-btns{
+.mobile-btns.v-speed-dial,
+.mobile-btns {
   position: absolute;
   z-index: 5;
   right: 24px;

@@ -296,11 +296,12 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams} from '@/help
 import SpinnerInline from '@/components/SpinnerInline'
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
-
+import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
+const appStore = useAppStore()
 const userStore = useUserStore()
 
 const currentUserOrgId = ref(null)

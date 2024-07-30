@@ -23,6 +23,7 @@ public class ProposalTemplateQuery {
                                   ptv.theme_key               as "themeKey",
                                   ptbt.id                     as "blockTypeId",
                                   ptbt.block_type             as "blockType",
+                                  ptb.block_name             as "blockName",
                                   ptbk.id                     as "blockKindId",
                                   ptbk.block_kind             as "blockKind",
                                   ptb.block_style             as "blockStyle",
@@ -62,6 +63,7 @@ public class ProposalTemplateQuery {
            ptb.block_value             as "blockValue",
            ptb.block_order             as "blockOrder",
            ptb.version,
+           ptb.block_name             as "blockName",
            ptb.parent_id               as "parentId",
            ptb.visibility,
            ptb.block_uuid              as "blockUUID"
@@ -75,6 +77,23 @@ public class ProposalTemplateQuery {
       and ptb.date_archived is null
     """;
 
+  public final static String findBlocksByParentId= """
+  select id from brs.proposal_template_block where parent_id = :parentId and proposal_template_id = :templateId
+""";
+
+  public final static String insertBlock = """
+          insert into brs.proposal_template_block(proposal_template_id, proposal_template_block_type_id, block_order, date_modified, modified_by_id)
+            values (:templateId, :blockTypeId, :blockOrder, now(), :modifiedById);
+            """;
+
+  public final static String archiveBlock = """
+          update brs.proposal_template_block
+          set date_archived                   = now(),
+              modified_by_id                  = :modifiedById
+          where proposal_template_id = :templateId
+                and id = :id
+          """;
+
   //language=PostgreSQL
   public final static String updateBlocks = """
 update brs.proposal_template_block
@@ -82,6 +101,7 @@ set proposal_theme_value_id         = :themeValueId,
     proposal_template_block_type_id = :blockTypeId,
     proposal_template_block_kind_id = :blockKindId,
     block_style                     = :blockStyle,
+    block_name                     = :blockName,
     block_value                     = :blockValue,
     block_order                     = :blockOrder,
     parent_id                       = :parentId,

@@ -12,7 +12,8 @@ public class SupplierQuery {
                  s.state,
                  s.abbreviation as state_abbreviation,
                  h.date_created as "dateCreated",
-                 h.archived
+                 h.archived,
+                 h.active
           FROM brs.feat_db_supplier h
                    left join flow.company_state cs on cs.id = h.company_state_id
                    left join flow.state s on s.id = cs.state_id
@@ -26,7 +27,8 @@ public class SupplierQuery {
             archived = :archived,
             company_state_id = :companyStateId,
             date_modified = now(),
-            modified_by_id = :currentUser
+            modified_by_id = :currentUser,
+            active = :active
           WHERE id = :id
     """;
 
@@ -38,7 +40,8 @@ public class SupplierQuery {
             archived = :archived,
             company_state_id = :companyStateId,
             date_modified = now(),
-            modified_by_id = :currentUser
+            modified_by_id = :currentUser,
+            active = :active
           WHERE id = :id
     """;
 
@@ -47,14 +50,25 @@ public class SupplierQuery {
         UPDATE brs.feat_db_supplier
             SET archived = TRUE,
                 date_modified = now(),
-                modified_by_id = :currentUser
+                modified_by_id = :currentUser,
+                active = FALSE
             WHERE id = :id
     """;
 
   //language=PostgreSQL
+  public final static String restore = """
+    UPDATE brs.feat_db_supplier
+          SET archived = false,
+              active = true,
+              date_modified = now(),
+              modified_by_id = :userId
+          WHERE id = :id and archived = true
+    """;
+
+  //language=PostgreSQL
   public final static String insert = """
-          INSERT INTO brs.feat_db_supplier(name, archived, company_state_id, date_created, created_by_id,date_modified, modified_by_id)
-          VALUES (:supplierName, false, :companyStateId, now(), :currentUser, now(), :currentUser)
+          INSERT INTO brs.feat_db_supplier(name, archived, company_state_id, date_created, created_by_id,date_modified, modified_by_id, active)
+          VALUES (:supplierName, false, :companyStateId, now(), :currentUser, now(), :currentUser, true)
     """;
 
   //language=PostgreSQL

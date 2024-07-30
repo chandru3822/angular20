@@ -4,10 +4,10 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveQuery;
-import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +69,7 @@ public class IncentiveService {
     params.put("statusId", incentive.getStatusId());
     params.put("archived", incentive.getArchived());
     params.put("id", incentive.getId());
+    params.put("active", incentive.getActive());
 
     sqlCache.updateBySql(IncentiveQuery.simpleUpdate, params);
     return getIncentiveById(incentive.getId());
@@ -83,6 +85,7 @@ public class IncentiveService {
     params.put("typeId", incentive.getTypeId());
     params.put("statusId", incentive.getStatusId());
     params.put("archived", incentive.getArchived());
+    params.put("active", incentive.getActive());
 
     Long id;
 
@@ -107,6 +110,17 @@ public class IncentiveService {
     params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.updateBySql(IncentiveQuery.delete, params);
+  }
+
+  @Transactional
+  public Optional<IncentiveDetail> restoreIncentive(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.updateBySql(IncentiveQuery.restore, params);
+
+    return getIncentiveById(id);
   }
 
   // CONTACTS

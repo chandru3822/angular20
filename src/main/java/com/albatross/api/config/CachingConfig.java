@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCust
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
@@ -26,34 +27,32 @@ public class CachingConfig {
 
   @Bean
   public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
-    return builder -> {
-      builder
-        .withCacheConfiguration(
-          PROPOSAL_TEMPLATE,
-          RedisCacheConfiguration.defaultCacheConfig()
-            .serializeValuesWith(
-              RedisSerializationContext.SerializationPair.fromSerializer(
-                new GenericJackson2JsonRedisSerializer()))
-            .entryTtl(Duration.ofMinutes(5L)))
-        .withCacheConfiguration(
-          NOTIFICATION,
-          RedisCacheConfiguration.defaultCacheConfig()
-            .serializeValuesWith(
-              RedisSerializationContext.SerializationPair.fromSerializer(
-                new GenericJackson2JsonRedisSerializer()))
-            .entryTtl(Duration.ofMinutes(5L)))
-        .withCacheConfiguration(
-          ATTACHMENT,
-          RedisCacheConfiguration.defaultCacheConfig()
-            .serializeValuesWith(
-              RedisSerializationContext.SerializationPair.fromSerializer(
-                new GenericJackson2JsonRedisSerializer()))
-            .entryTtl(Duration.ofHours(24L)));
-    };
+    return builder -> builder
+      .withCacheConfiguration(
+        PROPOSAL_TEMPLATE,
+        RedisCacheConfiguration.defaultCacheConfig()
+          .serializeValuesWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(
+              new GenericJackson2JsonRedisSerializer()))
+          .entryTtl(Duration.ofMinutes(5L)))
+      .withCacheConfiguration(
+        NOTIFICATION,
+        RedisCacheConfiguration.defaultCacheConfig()
+          .serializeValuesWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(
+              new GenericJackson2JsonRedisSerializer()))
+          .entryTtl(Duration.ofMinutes(5L)))
+      .withCacheConfiguration(
+        ATTACHMENT,
+        RedisCacheConfiguration.defaultCacheConfig()
+          .serializeValuesWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(
+              new GenericJackson2JsonRedisSerializer()))
+          .entryTtl(Duration.ofHours(24L)));
   }
 
   @Bean
-  public LoadingCache<Object, Optional<UserAccountDetails>> caffeineCache(@Autowired final SecurityService securityService) {
+  public LoadingCache<Object, Optional<UserAccountDetails>> caffeineCache(@Autowired @Lazy final SecurityService securityService) {
     return Caffeine.newBuilder()
       .maximumSize(500)
       .expireAfterWrite(1, TimeUnit.MINUTES)

@@ -114,7 +114,79 @@ public class Five9Query {
                        )
     select id
     from results
-    where (next_event is null or next_event < current_date - 10)  -- Make sure latest Closer Appointment is at least 10 days old
+    where (next_event is null or (next_event between current_date - 10 and current_date - 30)) -- Make sure latest Closer Appointment is between 10 and 30 days old
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsInsideSalesPitchedNotBookedBreeze = """
+    with results as (select pd.contact_id             as id,
+                            pd.closer_appointment_start,
+                            (SELECT max(start_time) next_event
+                             FROM flow.project_process_step_event ppse
+                                      inner join flow.project_process_step pps
+                                                 on ppse.project_process_step_id = pps.id and pps.project_id = pd.project_id
+                             where ppse.process_step_event_id = 14 -- Closer Appointment
+                               and ppse.company_event_status_type_id NOT IN (3,4,24) -- Cancelled, Complete, Rescheduled
+                               and ppse.archived is false
+                             group by pps.project_id) as next_event,
+                            (select ccfv.int_value
+                             from flow.contact_custom_field_value ccfv
+                             where ccfv.custom_field_group_assignment_id = 399 -- lead status
+                               and ccfv.contact_id = pd.contact_id) as lead_status_id
+                     from brs.project_details pd
+                     where pd.first_appointment_pitched is not null
+                       and (((pd.closer_appointment_start at time zone 'UTC') at time zone
+                             'US/Mountain') :: date between current_date - 180 and current_date - 10)
+                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
+                       AND (COALESCE((select ccfv.int_value
+                               from flow.contact_custom_field_value ccfv
+                               where ccfv.custom_field_group_assignment_id = 20977
+                               and ccfv.contact_id = pd.contact_id), 0) in
+                               (0, 1, 2, 40)) -- contacts with certain lead level
+                       AND pd.complete_date_booking is null
+                       AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
+                                                         from flow.company_configuration_value
+                                                      where code = 'PNB_EXCLUDED_USER_IDS')
+                       )
+    select id
+    from results
+    where (next_event is null or next_event >= current_date - 30) -- Make sure latest Closer Appointment is greater than or equal to 30 days old
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsInsideSalesPitchedNotBookedOrganic = """
+    with results as (select pd.contact_id             as id,
+                            pd.closer_appointment_start,
+                            (SELECT max(start_time) next_event
+                             FROM flow.project_process_step_event ppse
+                                      inner join flow.project_process_step pps
+                                                 on ppse.project_process_step_id = pps.id and pps.project_id = pd.project_id
+                             where ppse.process_step_event_id = 14 -- Closer Appointment
+                               and ppse.company_event_status_type_id NOT IN (3,4,24) -- Cancelled, Complete, Rescheduled
+                               and ppse.archived is false
+                             group by pps.project_id) as next_event,
+                            (select ccfv.int_value
+                             from flow.contact_custom_field_value ccfv
+                             where ccfv.custom_field_group_assignment_id = 399 -- lead status
+                               and ccfv.contact_id = pd.contact_id) as lead_status_id
+                     from brs.project_details pd
+                     where pd.first_appointment_pitched is not null
+                       and (((pd.closer_appointment_start at time zone 'UTC') at time zone
+                             'US/Mountain') :: date between current_date - 180 and current_date - 10)
+                       and pd.source_name in ('Organic', 'Organic with Referral')
+                       AND (COALESCE((select ccfv.int_value
+                               from flow.contact_custom_field_value ccfv
+                               where ccfv.custom_field_group_assignment_id = 20977
+                               and ccfv.contact_id = pd.contact_id), 0) in
+                               (0, 1, 2, 40)) -- contacts with certain lead level
+                       AND pd.complete_date_booking is null
+                       AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
+                                                         from flow.company_configuration_value
+                                                      where code = 'PNB_EXCLUDED_USER_IDS')
+                       )
+    select id
+    from results
+    where (next_event is null or next_event >= current_date - 30) -- Make sure latest Closer Appointment is greater than or equal to 30 days old
     """;
 
   //language=PostgreSQL

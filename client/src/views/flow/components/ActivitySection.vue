@@ -2,13 +2,27 @@
   <v-container class="px-5 py-0">
     <div v-if="mobileView" class="headline-small pt-3">Notes</div>
     <div class="activity-header" >
-      <a-text-field
-          prepend-inner-icon="search"
-          label="Search"
-          clearable
-          @click:clear="clearSearch"
-          v-model="searchText"
-      ></a-text-field>
+      <v-container class="pa-0">
+        <AMentionable
+          :keys="mentionableItems.map(i => i.text)"
+          :items="mentionableList"
+          offset="6"
+          @open="UpdateMentionableList"
+          @close="CloseMentionableList"
+          @apply="applyMention"
+          @clear="clearSearch"
+          clear-on-backspace
+        >
+          <a-text-field
+            prepend-inner-icon="search"
+            label="Search"
+            clearable
+            @click:clear="clearSearch"
+            @click.stop=""
+            v-model="searchText"
+          ></a-text-field>
+        </AMentionable>
+      </v-container>
       <a-btn
           variant="text"
           size="small"
@@ -100,7 +114,7 @@
                   <ActivityList v-if="!savingActivity"
                                 :activities="sortAndFilterActivities(h.activities, h.sortDirection)"
                                 :project-id="projectId"
-                                ref="activityList"
+                                ref="activityListTopic"
                                 :contact-id="contactId"
                                 :user-id="userId"
                                 :current-user-id="currentUserId"
@@ -132,8 +146,9 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
-                    ref="activityListTopic"
+                    ref="activityList"
                     :use-infinite-loader="true"
+                    :state-loaded="stateLoadedStatus"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
@@ -159,11 +174,13 @@
           text="Add note"
       ></a-btn>
       <div v-else>
-        <Mentionable
+        <AMentionable
             :keys="['@']"
             :items="users"
             offset="6"
             insert-space
+            limit=3
+            width="400"
         >
           <a-textarea class="body-large note-text-area"
                       hide-details
@@ -172,7 +189,10 @@
                       rows="2"
                       variant="outlined"
                       :disabled="editedActivity.createdById !== currentUserId && !addActivity"
-                      v-model="editedActivity.note">
+                      v-model="editedActivity.note"
+                      @click.stop=""
+                      @keydown.delete="clearTaggedUserInInput(editedActivity, $event)">
+
           </a-textarea>
 
           <template #no-result>
@@ -180,10 +200,10 @@
           </template>
           <template #item-@="{ item }">
             <div class="user">
-              ({{ item.value }})
+              {{ item.value }}
             </div>
           </template>
-        </Mentionable>
+        </AMentionable>
         <div v-if="editedActivity.createdById !== currentUserId && !addActivity && previouslySelectedTopics.value?.length > 0" class="pt-2">
           Existing topics: {{previouslySelectedTopicNames.value}}
         </div>
@@ -259,6 +279,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import AMentionable from "@/components/AMentionable.vue";
 
 const appStore = useAppStore()
 const projectStore = useProjectStore()
@@ -268,6 +289,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
+const stateLoadedStatus = ref(false)
 const props = defineProps({
   contactId: Number,
   orgId: Number,
@@ -285,6 +307,15 @@ const search = ref({userId: null,position: null,teamId: null,categoryId: null,})
 const queryText = ref('')
 const linkLabel = ref('')
 const users = ref([])
+const keywordRegex = ref(null)
+const showMentionables = ref(false)
+const userMentionables = ref([])
+const teamMentionables = ref([])
+const positionMentionables = ref([])
+const mentionableList = ref([])
+const mentionType = ref(0)
+const selectedIndex = ref(-1)
+
 const addActivity = ref(false)
 const blankActivity = ref({id: null, activityHashtags: []})
 const editedActivity = ref({})
@@ -310,6 +341,38 @@ const bottomHitCount = ref(1)
 const activitiesToShow = ref(constants.ACTIVITIES_SHOWN)
 const activityList = ref(null)
 const activityListTopic = ref(null)
+const mentionableItems = ref([
+  {text: "User:", value: "User", filterType: SearchTypeEnum.USER, itemList: userMentionables.value},
+  {text: "Position:", value: "Position", filterType: SearchTypeEnum.POSITION, itemList: positionMentionables.value},
+  {text: "Team:", value: "Team", filterType: SearchTypeEnum.TEAM, itemList: teamMentionables.value},
+])
+
+
+const applyMention = (item, keyWord, value, clearSearchData = true) => {
+  if (item.mentionType === 1) {
+    searchByClick(item.text, item.id, SearchTypeEnum.USER, clearSearchData)
+    return item.value
+  } else if (item.mentionType === 2) {
+    searchByClick(item.text, item.text, SearchTypeEnum.POSITION, clearSearchData)
+    return item.value
+  } else if (item.mentionType === 3) {
+    searchByClick(item.text, item.id, SearchTypeEnum.TEAM, clearSearchData)
+    return item.value
+  }
+  return item.value
+}
+
+const UpdateMentionableList = (keyFilter) => {
+
+  const objectKeys = mentionableItems.value.map(i => i.text)
+  if (objectKeys.includes(keyFilter)) {
+    mentionableList.value = mentionableItems.value[objectKeys.findIndex((k) => k === keyFilter)].itemList
+  }
+}
+
+const CloseMentionableList = () => {
+  mentionableList.value = []
+}
 
 const emit = defineEmits(['scrollToTop'])
 
@@ -327,6 +390,18 @@ watch(searchText, () => {
     queryText.value = cleanQueryText?.replace(']','\\]')
   }
 })
+
+const clearTaggedUserInInput = (activity, event) => {
+  const emailRegex = /@.*(?:\))/g
+  const taggedUserString = activity.note.match(emailRegex)
+  if (taggedUserString) {
+    const cursorPosition = event.target.selectionStart
+    const indexOfRegex = activity.note.indexOf(taggedUserString[0]) + taggedUserString[0].length
+    if (cursorPosition - indexOfRegex === 0) {
+      activity.note = activity.note.replace(taggedUserString[0], '')
+    }
+  }
+}
 
 const userIsAdmin = computed(() => {
   return userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
@@ -361,14 +436,10 @@ const sortedFilteredActivities = computed(() => {
 
   getPinnedActivitiesOnly(activities.value)
   if(sortedList.length > (activitiesToShow.value * bottomHitCount.value) ) {
-    if(activityList.value) {
-      activityList.value[0].infiniteStateLoaded(false)
-    }
+    stateLoadedStatus.value = false
     return sortedList.slice(0, (activitiesToShow.value * bottomHitCount.value))
   } else {
-    if(activityListTopic.value) {
-      activityListTopic.value.infiniteStateLoaded(true)
-    }
+    stateLoadedStatus.value = true
     return sortedList
   }
   // return []
@@ -412,6 +483,7 @@ onMounted(() => {
 
 const bottomHitCallback = () => {
   bottomHitCount.value = bottomHitCount.value + 1
+
 }
 const getLinkLabel = () => {
   return editedActivity.value.linked && null != editedActivity.value.linkLabel ? `Link ${editedActivity.value.linkLabel}` : `Link ${projectStore.linkLabel}`
@@ -424,7 +496,7 @@ const sortAndFilterActivities = (activities, sortDirection)=> {
     let shownActivityTypes = activityTypes.value.filter(at => at.show).map(at => at.id)
 
     return !a.archived
-        && (((search.value == null || search.value === {}) && (searchText.value == null || searchText.value === '')) || activityContainsSearch(a))
+        && (((searchText.value == null || searchText.value === '')) || activityContainsSearch(a))
         && shownActivityTypes.includes(a.activityTypeId)
 
   }), ['dateCreated'], [ sortDirection])
@@ -454,7 +526,7 @@ const countedCategoryLabel = (activities, activityTypeId)=> {
 }
 const activityContainsSearch = (activity) => {
   if(search.value.userId){
-    return activity.createdById === search.value.userId
+    return activity.createdById === search.value.userId || activity.modifiedById === search.value.userId
   }
   else if(search.value.position){
     return activity.createdByPosition === search.value.position
@@ -506,6 +578,25 @@ const getActivities = async () => {
     activitiesLoading.value = true
     try {
       const {data} = await getRequest(`/activity/${sectionType.value}/${primaryId.value}`)
+      data.reduce((acc, obj) => {
+        if (!acc.includes(obj.createdByPositionOrgId) && obj.createdByPositionOrg !== null) {
+          teamMentionables.value.push({id: obj.createdByPositionOrgId, text: obj.createdByPositionOrg, value: obj.createdByPositionOrg, mentionType: 3})
+          acc.push(obj.createdByPositionOrgId)
+        }
+        if (!acc.includes(obj.createdByPosition) && obj.createdByPosition !== '') {
+          positionMentionables.value.push({id: obj.null, text: obj.createdByPosition, value: obj.createdByPosition, mentionType: 2})
+          acc.push(obj.createdByPosition)
+        }
+        if (!acc.includes(obj.createdById)) {
+          userMentionables.value.push({id: obj.createdById, text: obj.createdBy, value: obj.createdBy, mentionType: 1})
+          acc.push(obj.createdById)
+        }
+        if (!acc.includes(obj.modifiedById)) {
+          userMentionables.value.push({id: obj.modifiedById, text: obj.modifiedBy, value: obj.modifiedBy, mentionType: 1})
+          acc.push(obj.createdById)
+        }
+        return acc
+      }, [])
       activities.value = data
     } catch (e) {
       console.error('*** ERROR ***', e)
@@ -548,8 +639,11 @@ const getTopics = async() => {
     topicsLoading.value = false
   }
 }
-const searchByClick = (text, id, searchType) => {
-  clearSearch()
+const searchByClick = (text, id, searchType, clearSearchData = true) => {
+  // if (clearSearchData) {
+  //   clearSearch()
+  // }
+
   switch (searchType){
     case SearchTypeEnum.USER:
       searchText.value= `User: ${text}`
@@ -574,10 +668,13 @@ const searchByClick = (text, id, searchType) => {
       searchText.value = text
   }
   queryText.value = text
+  showMentionables.value = false
 }
 const clearSearch = () => {
   search.value={}
 }
+
+
 const setEditedActivity = (item)  => {
   addActivity.value = false
   editedActivity.value = cloneDeep(item)
@@ -706,6 +803,14 @@ const removeDeletedActivity = (activityId) => {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+
+.mention-selected {
+  color: blue;
+}
+
+.userSearchMentionable {
+  width: 100%;
+}
 .pinned-card {
   background: #FB8C0010;
 }
@@ -773,10 +878,6 @@ const removeDeletedActivity = (activityId) => {
 
 </style>
 <style lang="scss">
-.mention-selected {
-  color: var(--v-primary-base);
-  font-weight: bold;
-}
 .note-text-area {
   textarea {
     max-height: 300px;

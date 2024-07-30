@@ -6,6 +6,7 @@
       justify="center"
       no-gutters
     >
+      <div v-if="messageList.length <= 0" class="pt-4">No messages to show</div>
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
@@ -50,6 +51,7 @@
         <v-tooltip bottom small>
           <template #activator="{ on: tooltip, attrs }">
             <a-btn
+                v-if="!hideTemplateBtn"
               icon
               color="primary"
               v-bind="attrs"
@@ -120,7 +122,11 @@ const filters = vueInstance.$filters
 const props = defineProps({
   userAssigned: Boolean,
   userIdIn: Number,
-  teamsAssociatedToUser: Array
+  teamsAssociatedToUser: Array,
+  hideTemplateBtn: {
+    type: Boolean,
+    default: false
+  }
 })
 const { userAssigned, userIdIn, teamsAssociatedToUser } = toRefs(props)
 
@@ -195,7 +201,9 @@ const userId = computed(() => {
 })
 
 watch([projectId, userId], async () => {
-  await fetchProjectData()
+  if (projectId.value) {
+    await fetchProjectData()
+  }
 })
 
 watch(teamsAssociatedToUser, async (value, oldValue, onCleanup) => {

@@ -270,7 +270,10 @@ begin
       select foo.user_id,
              foo.closer_name,
              foo.required_fdc_residual_this_period,
-             foo.qualified_fdc_residual_this_period,
+             case when foo.is_system_size then
+               foo.qualified_this_period_system_size
+            else foo.qualified_fdc_residual_this_period
+             end as qualified_fdc_residual_this_period,
              foo.residual_qualified,
              foo.has_current_snapshot,
              foo.potential_residual,
@@ -283,18 +286,39 @@ begin
              coalesce(foo.fda_in_month_not_qualifying::json, '[]')::json,
              coalesce(foo.qualified_fdc::json, '[]')::json,
              coalesce(foo.clawback_projects::json, '[]')::json,
-             '[]'::json,
+             (select array_to_json(array_agg(row_to_json(clawback_projects_drilldown1)))
+              from (select distinct on (rl.project_id,rl.residual_id)
+                      p_closer_user_id,
+                      pd.project_id,
+                      case when rl.amount is null then 0 else rl.amount end as amount,
+                      rl.date_created::date,
+                      rl.residual_id,
+                      rl.date_created::date as paid_date,
+                      r.description,
+                      fd.residual_plan                                      as plan_name
+                    from brs.user_residual_snapshot urs
+                           inner join brs.residual r on r.id = urs.residual_id
+                           inner join brs.user_residual_project_snapshot urps on urps.user_residual_snapshot_id = urs.id and
+                                                                                 urps.user_residual_project_snapshot_type_id = 4
+                           inner join brs.project_details pd  on pd.project_id = urps.project_id
+                           inner join brs.financial_details fd on fd.project_id = pd.project_id
+                           inner join brs.residual_ledger rl on rl.project_id = pd.project_id and rl.ledger_type_id = 4 and
+                                                                rl.residual_clawback_paid = true
+                    where urs.id = v_has_current_snapshot_id and urs.user_id = p_closer_user_id and rl.user_id = p_closer_user_id) as clawback_projects_drilldown1)                           as clawback_projects_drilldown,
              coalesce(foo.total_qualifying_fdc_to_date::json, '[]')::json,
              foo.cancelled_fdc_during_period,
              v_lifetime_fds - foo.prior_period_qualified_fdc - foo.qualified_fdc_residual_this_period +
              foo.cancelled_fdc_during_period as reactivated_fdc,
              foo.residual_qualified_fdc,
              foo.v_no_previous_month_message,
-             false,
+             foo.is_system_size,
              foo.existing_clawbacks,
              foo.current_clawbacks_in_period
+
       from (select urs2.user_id,
+                   urs2.qualified_this_period_system_size,
                    urs2.user_full_name                                                                as closer_name,
+                   rp2.is_system_size,
                    coalesce(urs2.required_fdc_per_month, 0)                                              required_fdc_residual_this_period,
                    coalesce(urs2.qualified_fdc_in_period, 0)                                             qualified_fdc_residual_this_period,
                    coalesce(urs2.qualified_fdc_in_period, 0) >=
@@ -325,11 +349,19 @@ begin
                                  urps.cancelled_date,
                                  urps.on_hold_date,
                                  urps.total_cash_down_payment,
-                                 urps.first_cash_payment_amount
+                                 urps.first_cash_payment_amount,
+                                 urps.system_size_adjusted_for_source,
+                                 urps.system_size_by_source,
+                                 urps.system_size,
+                                 p2.source_name,
+                                 fd.residual_plan as plan_name,
+                                 rp.is_system_size
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
                                  inner join brs.project_details p2 on p2.project_id = urps.project_id
+                                 inner join brs.financial_details fd on fd.project_id = p2.project_id
+                                 inner join brs.residual_plan rp on rp.id = fd.residual_plan_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code =
@@ -349,11 +381,19 @@ begin
                                  urps.cancelled_date,
                                  urps.on_hold_date,
                                  urps.total_cash_down_payment,
-                                 urps.first_cash_payment_amount
+                                 urps.first_cash_payment_amount,
+                                 urps.system_size_adjusted_for_source,
+                                 urps.system_size_by_source,
+                                 urps.system_size,
+                                 p2.source_name,
+                                 fd.residual_plan as plan_name,
+                                 rp.is_system_size
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
                                  inner join brs.project_details p2 on p2.project_id = urps.project_id
+                                 inner join brs.financial_details fd on fd.project_id = p2.project_id
+                                 inner join brs.residual_plan rp on rp.id = fd.residual_plan_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code = 'FDS_QUALIFIED_THIS_PERIOD'
@@ -363,11 +403,16 @@ begin
                     from (select p2.contact_name,
                                  urps.project_id,
                                  urps.cancelled_date,
-                                 urps.total
+                                 urps.total,
+                                 fd.system_size,
+                                 rp.name as plan_name,
+                                 urs.current_clawbacks_in_period as current_clawbacks
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
                                  inner join brs.project_details p2 on p2.project_id = urps.project_id
+                                 inner join brs.financial_details fd on fd.project_id = p2.project_id
+                                 inner join brs.residual_plan rp on rp.id = fd.residual_plan_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code = 'CLAWBACKS'
@@ -379,11 +424,19 @@ begin
                                  urps.system_size,
                                  urps.residual_plan,
                                  urps.qualified_date,
-                                 urps.total
+                                 urps.total as expected_residual,
+                                 urps.system_size_adjusted_for_source,
+                                 urps.system_size_by_source,
+                                 urps.system_size,
+                                 p2.source_name,
+                                 fd.residual_plan as plan_name,
+                                 rp.is_system_size
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
                                  inner join brs.project_details p2 on p2.project_id = urps.project_id
+                                 inner join brs.financial_details fd on fd.project_id = p2.project_id
+                                 inner join brs.residual_plan rp on rp.id = fd.residual_plan_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code = 'LIFETIME_QUALIFIED_FDS'
@@ -400,6 +453,7 @@ begin
               urs2.existing_clawbacks,
               urs2.current_clawbacks_in_period
             from brs.user_residual_snapshot urs2
+            inner join brs.residual_plan rp2 on rp2.id = urs2.residual_plan_id
             where urs2.id = v_has_current_snapshot_id) as foo;
 
     end case;

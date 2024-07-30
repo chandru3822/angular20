@@ -4,10 +4,10 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.suppliers.query.SupplierContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.suppliers.query.SupplierLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.suppliers.query.SupplierQuery;
-import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -54,6 +55,7 @@ public class SupplierService {
     params.put("companyStateId", supplier.getCompanyStateId());
     params.put("archived", supplier.getArchived());
     params.put("id", supplier.getId());
+    params.put("active", supplier.getActive());
 
     sqlCache.updateBySql(SupplierQuery.simpleUpdate, params);
     return getSupplierById(supplier.getId());
@@ -67,6 +69,7 @@ public class SupplierService {
     params.put("supplierName", supplier.getName());
     params.put("companyStateId", supplier.getCompanyStateId());
     params.put("archived", supplier.getArchived());
+    params.put("active", supplier.getActive());
 
     Long id;
 
@@ -93,6 +96,16 @@ public class SupplierService {
     sqlCache.updateBySql(SupplierQuery.delete, params);
   }
 
+
+  public Optional<SupplierDetail> restoreSupplier(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.updateBySql(SupplierQuery.restore, params);
+
+    return getSupplierById(id);
+  }
   // CONTACTS
   public Optional<FeatDbContact> getSupplierContactById(Long contactId) {
     return sqlCache.getBySql(FeatDbContactQuery.findById, Map.of("id", contactId), FeatDbContact.class);

@@ -12,7 +12,7 @@ public class Supplier {
     private Long stateId, companyStateId;
     private String name, state;
     private Date dateCreated;
-    private Boolean archived;
+    private Boolean archived, active;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

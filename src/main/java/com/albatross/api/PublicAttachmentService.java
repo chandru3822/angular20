@@ -4,7 +4,6 @@ import com.albatross.api.config.AppProperties;
 import com.albatross.api.config.AwsProperties;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.model.ImageOptions;
-import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.NonNull;
@@ -28,7 +27,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PublicAttachmentService {
 
-  private final SecurityService securityService;
   private final AttachmentService attachmentService;
   private final AwsProperties awsProperties;
   private final AppProperties appProperties;

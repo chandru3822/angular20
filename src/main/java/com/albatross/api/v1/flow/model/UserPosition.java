@@ -9,8 +9,8 @@ import java.util.List;
 @Setter
 public class UserPosition {
 
-    private Long id, userId, positionId, orgId, companyStateId, stateId, companyId;
-    private String position, orgName, fullName;
+    private Long id, userId, positionId, orgId, companyStateId, stateId, companyId, salesOrgId;
+    private String position, orgName, fullName, salesOrgName;
     private String startDate, endDate;
     private Boolean archived, primaryFlag, scheduler, schedulable, useSlotSchedule;
     private List<UserOrgHierarchy> hierarchy;

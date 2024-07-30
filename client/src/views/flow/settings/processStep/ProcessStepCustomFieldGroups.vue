@@ -102,7 +102,6 @@
 							variant="text"
 							color="primary"
 							icon
-							size="small"
 							class="handle"
 							v-if="userCanEdit"
 							prepend-icon="drag_handle"
@@ -228,7 +227,6 @@
 							<v-tooltip left>
 								<template v-slot:activator="{ on, attrs }">
 									<a-btn
-										size="small"
 										icon
 										color="primary"
 										@click="copyToClipBoard(item.id)"
@@ -242,14 +240,12 @@
 							</v-tooltip>
 							<a-btn
 								v-if="userCanAdd"
-								size="small"
 								variant="text"
 								color="primary"
 								@click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]"
 								:prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
 							></a-btn>
 							<a-btn
-								size="small"
 								variant="text"
 								color="primary"
 								@click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
@@ -257,7 +253,6 @@
 							></a-btn>
 							<a-btn
 								v-if="userCanEdit"
-								size="small"
 								variant="text"
 								color="primary"
 								@click="customFieldGroupToDelete=item"
@@ -496,13 +491,12 @@
                             <div class="text-center">(click to copy)</div>
                           </v-tooltip>
                           <v-menu offset-y
-                                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="userCanEdit">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
                                   <a-btn
                                       variant="text"
-                                      size="small"
                                       color="primary"
                                       :activation-handler="{...tooltip, ...menu}"
                                       v-if="!cf.ancillaryCustomFieldGroupAssignmentId"
@@ -523,9 +517,8 @@
                           <a-btn
                               variant="text"
                               color="primary"
-                              size="small"
                               @click="[$set(cf, 'edit', !cf.edit), getPositions()]"
-                              v-if="userCanEdit && !cf.dataViewFieldConfigId && !cf.dataViewChildFieldConfigId"
+                              v-if="userCanEdit"
                               :prepend-icon="!cf.edit ? 'edit' : 'close'"
                           ></a-btn>
                           <a-btn
@@ -615,7 +608,7 @@ const positions = ref([])
 const positionsLoading = ref(false)
 const newGroup = ref({})
 const newField = ref({})
-// = selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet)
+// = selectedIndex is a dumb workaround because `index` is not available in the `expanded-item` slot yet
 const selectedIndex = ref(null)
 const createNew = ref(false)
 const newFieldType = ref('native')
@@ -851,6 +844,9 @@ const deleteWithChecks = async () => {
     } else {
       fieldsInUse.value = []
       item.archived = true
+      if( null == customFieldGroupAssignmentId){
+        customFieldGroups.value = customFieldGroups.value.filter(g => g.id !== item.id)
+      }
       appStore.showSnack('SUCCESS', 'Item Deleted')
       handleHidingGlobalLoader(status)
     }
@@ -964,6 +960,7 @@ const saveReadOnlyAndWhiteList = async (field) => {
       vueInstance.$set(field, 'whiteListedPositions', [])
     }
     handleHidingGlobalLoader(status)
+    appStore.showSnack('SUCCESS', 'Read Only Saved')
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Field')
@@ -979,6 +976,8 @@ const saveHiddenAndWhiteList = async (field) => {
       vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
     }
     handleHidingGlobalLoader(status)
+    appStore.showSnack('SUCCESS', 'Hidden Saved')
+
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Field')

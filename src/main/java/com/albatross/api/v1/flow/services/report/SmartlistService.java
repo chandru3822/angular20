@@ -854,7 +854,7 @@ public class SmartlistService {
       query = reportEngine.buildProjectDetailsSql(report, fields, requirements, null);
     } else if (List.of(4L, 6L).contains(report.getObjectTypeId()) && null == report.getWorkQueueTypeId()) {
       if (report.getObjectTypeId() == 4) {
-        query = reportEngine.buildProcessStepSql(report, fields, requirements, null);
+        query = reportEngine.buildProcessStepSql(report, fields, requirements, timezone, false, null);
       } else {
         query = reportEngine.buildEventSql(report, fields, requirements, timezone, null);
       }

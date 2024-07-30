@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.v1.flow.model.UserPosition;
+import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.services.UserPositionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,12 @@ public class UserPositionController {
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteUserPosition(@PathVariable Long id) {
     userPositionService.deleteUserPosition(id);
+  }
+
+  @GetMapping(value = "/availableSalesOrgs", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Org> deleteUserPosition(@RequestParam Long positionId,
+                                      @RequestParam Long orgId) {
+    return userPositionService.getAvailableSalesOrgs(positionId, orgId);
   }
 
 }

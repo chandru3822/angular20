@@ -238,6 +238,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
+import {useStickyStore} from "@/stores/StickyStore.js";
 
 const projectStore = useProjectStore()
 const fileStore = useFileStore()
@@ -266,6 +267,7 @@ const toPath = ref(null)
 const query = ref({})
 const projectForm = ref(null)
 const errors = ref(null)
+const stickySearch = useStickyStore()
 
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
@@ -303,6 +305,10 @@ onBeforeRouteLeave(async (to, from, next) => {
     toPath.value = to.path
     query.value = to.query
     unsavedFieldsModal.value = true
+  }
+
+  if (!(to.path === '/projects')) {
+    stickySearch.projectSearchString = ""
   }
 })
 onBeforeRouteUpdate(async (to, from, next) => {

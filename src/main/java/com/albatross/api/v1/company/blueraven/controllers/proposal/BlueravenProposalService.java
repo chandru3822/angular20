@@ -54,7 +54,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.text.NumberFormat;
@@ -98,6 +97,7 @@ public class BlueravenProposalService {
   public Optional<ProposalProjectDetails> getProposalProjectById(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
+    //note: closerAppointmentStart was hacked/manually adjusted to return closerAppointmentStart - 90 mins so that both mobile and web, who were both already subtracting 30 mins, would change to 2 hours without requiring a mobile release
     return sqlCache.getBySql(ProposalQuery.getProjectById, params, ProposalProjectDetails.class);
   }
 
@@ -794,15 +794,13 @@ public class BlueravenProposalService {
 
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    Proposal unlockedProposal = getUnlockedProposal(proposalId, currentUser.getId());
-
-    var calculatedProposalValues = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
-    sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+    Proposal unlockedProposal = getSimpleProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
 
     //insert values immediately in to proposal log history
-    getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, true);
+    getCalculatedProposalValues(unlockedProposal.getId(), ProposalGeneratedType.PRINT, true);
 
-    return getProposal(proposalId, currentUser.getId());
+    sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", unlockedProposal.getId(), "modifiedById", currentUser.getTrueUserId()));
+    return getProposal(unlockedProposal.getId(), currentUser.getId());
   }
 
   private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {

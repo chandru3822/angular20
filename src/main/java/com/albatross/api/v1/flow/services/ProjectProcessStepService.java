@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.disclosureForm.DisclosureFormService;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
@@ -19,11 +20,6 @@ import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.*;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -45,7 +41,6 @@ import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -72,7 +67,6 @@ public class ProjectProcessStepService {
   private final SecurityService securityService;
   private final ProjectService projectService;
   private final AttachmentService attachmentService;
-  private final AmazonS3 s3;
   private final ProcessStepActionService processStepActionService;
   private final ObjectMapper om;
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
@@ -83,14 +77,11 @@ public class ProjectProcessStepService {
   private final ListOfValueService listOfValueService;
   private final CommunicationService communicationService;
   private final MessagingService messagingService;
-  private final UserPositionService userPositionService;
   private final CustomerPortalService customerPortalService;
   private final BirdEyeService birdeyeService;
   private final PubSubService pubSubService;
   private final StripeService stripeService;
-
-  @Value("${aws.storageBucket}")
-  private String storageBucket;
+  private final DisclosureFormService disclosureFormService;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
@@ -103,7 +94,7 @@ public class ProjectProcessStepService {
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("linked", null != linked ? linked : false);
     List<Attachment> attachments = sqlCache.queryBySql(ProjectProcessStepQuery.getProjectProcessStepAttachments, params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
+    return attachmentService.getAttachmentPresignedUrls(attachments, null != isMobile ? isMobile : false);
   }
 
   public void linkAttachment(Long projectProcessStepId, Long attachmentId, Boolean doLink) {
@@ -123,106 +114,48 @@ public class ProjectProcessStepService {
 
   public List<Attachment> addAttachments(MultipartFile[] files, Long projectProcessStepId, Long attachmentTypeId) throws IOException {
     List<Attachment> results = new ArrayList<>();
-    Attachment a;
-    for(MultipartFile file : files) {
-      a = addAttachment(file, projectProcessStepId, attachmentTypeId, file.getOriginalFilename());
+    for (MultipartFile file : files) {
+      Attachment a = addAttachment(file, projectProcessStepId, attachmentTypeId, file.getOriginalFilename());
       results.add(a);
     }
 
     return results;
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
   public Attachment addAttachment(MultipartFile file, Long projectProcessStepId, Long attachmentTypeId, String displayName) throws IOException {
     User user = securityService.getCurrentUser();
 
-    if (file.isEmpty()) {
-      throw new RuntimeException("File cannot be empty");
-    }
-
     //had to change this so that a parent looking at a child project could still see project statuses
-    HashMap<String, Object> p2 = new HashMap<>();
-    p2.put("projectProcessStepId", projectProcessStepId);
-    Long companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, p2, Long.class);
+    Long companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, Map.of("projectProcessStepId", projectProcessStepId), Long.class);
 
-    //get keyPattern from attachmentType
-    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key = String.format(user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+    Attachment attachment = attachmentService.create(file, null, attachmentTypeId, displayName, false, companyId);
 
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(file.getSize());
-    metadata.setContentType(file.getContentType());
-    metadata.setCacheControl("public, max-age=31536000");
-
-    PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
-
-    PutObjectResult result = s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
-
-    String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
-    params.put("contentType", file.getContentType());
-    params.put("key", key);
-    params.put("size", file.getSize());
-    params.put("createdById", user.trueUserId());
-    params.put("attachmentTypeId", attachmentTypeId);
-    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
-    params.put("companyId", companyId);
-
-    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
-
-    params.clear();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    params.put("attachmentId", attachmentId);
+    params.put("attachmentId", attachment.getId());
     params.put("createdById", user.trueUserId());
 
     sqlCache.updateBySql(ProjectProcessStepQuery.addAttachment, params);
 
-    return attachmentService.findById(attachmentId);
+    return attachment;
   }
 
-  public Attachment addAttachmentByInputStream(@NonNull Long ppsId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream, String displayName){
+  public Attachment addAttachmentByInputStream(@NonNull Long ppsId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream, String displayName) {
     User currentUser = securityService.getCurrentUser();
 
     //had to change this so that a parent looking at a child project could still see project statuses
-    HashMap<String, Object> p2 = new HashMap<>();
-    p2.put("projectProcessStepId", ppsId);
-    Long companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, p2, Long.class);
+    Long companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, Map.of("projectProcessStepId", ppsId), Long.class);
 
-    // get keyPattern from attachmentType
-    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key =
-      String.format(
-        currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+    Attachment attachment = attachmentService.create(inputStream, null, attachmentTypeId, displayName, filename, contentType, contentLength, false, companyId);
 
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(contentLength);
-    metadata.setContentType(contentType);
-
-    final PutObjectRequest putObjectRequest = new PutObjectRequest(storageBucket, key, inputStream, metadata);
-    s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(filename));
-    params.put("contentType", contentType);
-    params.put("key", key);
-    params.put("size", contentLength);
-    params.put("createdById", currentUser.trueUserId());
-    params.put("companyId", companyId);
-    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
-    params.put("attachmentTypeId", attachmentTypeId);
-
-    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
-
-    params.clear();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", ppsId);
-    params.put("attachmentId", attachmentId);
+    params.put("attachmentId", attachment.getId());
     params.put("createdById", currentUser.trueUserId());
 
     sqlCache.updateBySql(ProjectProcessStepQuery.addAttachment, params);
 
-    return attachmentService.findById(attachmentId);
+    return attachment;
   }
 
   public void removeOwner(Long projectProcessStepId) {
@@ -313,20 +246,21 @@ public class ProjectProcessStepService {
   }
 
   public ProjectProcessStep getPpsForAutotrigger(Long ppsId) {
-      var user = securityService.getCurrentUser();
-      try {
-          String json = sqlCache.queryForObjectBySql(
-              ProjectProcessStepQuery.getPPSForAutotrigger,
-              Map.of("ppsId", ppsId, "companyId", user.getCompanyId()),
-              String.class
-          );
-          if (json == null) {
-              throw new RuntimeException();
-          }
-          return om.readValue(json, new TypeReference<>() {});
-      } catch (Exception e) {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new RuntimeException());
+    var user = securityService.getCurrentUser();
+    try {
+      String json = sqlCache.queryForObjectBySql(
+        ProjectProcessStepQuery.getPPSForAutotrigger,
+        Map.of("ppsId", ppsId, "companyId", user.getCompanyId()),
+        String.class
+      );
+      if (json == null) {
+        throw new RuntimeException();
       }
+      return om.readValue(json, new TypeReference<>() {
+      });
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new RuntimeException());
+    }
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
@@ -338,9 +272,10 @@ public class ProjectProcessStepService {
     try {
       String json = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getProjectProcessStep, params, String.class);
       if (null != json) {
-        ProjectProcessStep step = om.readValue(json, new TypeReference<>() {});
+        ProjectProcessStep step = om.readValue(json, new TypeReference<>() {
+        });
 
-        if(!step.getReadonlyAllow() && (step.getWhiteListedPositions() == null || step.getWhiteListedPositions().size() == 0)){
+        if (!step.getReadonlyAllow() && (step.getWhiteListedPositions() == null || step.getWhiteListedPositions().size() == 0)) {
           step.setReadonly(false);
         }
 
@@ -435,16 +370,15 @@ public class ProjectProcessStepService {
       sqlCache.queryBySql(ActivityQuery.addSystemActivityWithoutProjectId, actParams, String.class);
 
       sqlCache.queryBySql(
-          ProjectProcessStepQuery.delete,
-          Map.of("projectProcessStepId", projectProcessStepId, "currentUserId", securityService.getCurrentUser().trueUserId()),
-          String.class
+        ProjectProcessStepQuery.delete,
+        Map.of("projectProcessStepId", projectProcessStepId, "currentUserId", securityService.getCurrentUser().trueUserId()),
+        String.class
       );
     }
   }
 
   public List<ProjectProcessStepHistory> getPpsHistory(Long projectProcessStepId) {
-    List<ProjectProcessStepHistory> results = sqlCache.queryBySql(ProjectProcessStepQuery.getHistory, Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStepHistory.class);
-    return results;
+    return sqlCache.queryBySql(ProjectProcessStepQuery.getHistory, Map.of("projectProcessStepId", projectProcessStepId), ProjectProcessStepHistory.class);
   }
 
   public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
@@ -487,11 +421,11 @@ public class ProjectProcessStepService {
   public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
     ProjectProcessStep pps = getPpsForAutotrigger(ppsId);
     ProjectProcessStepAction action = pps.getActions().stream()
-                                         .filter(a -> a.getId().equals(actionId))
-                                         .findFirst()
-                                         .orElse(null);
+      .filter(a -> a.getId().equals(actionId))
+      .findFirst()
+      .orElse(null);
     if (action == null) {
-        throw new RuntimeException("Unable to find given ppsId");
+      throw new RuntimeException("Unable to find given ppsId");
     }
     return canPerformAction(action, pps);
   }
@@ -523,40 +457,40 @@ public class ProjectProcessStepService {
       }
     }
 
-    log.info("TRIGGERS: PPS created by time based auto triggers: " + createdPpsIds.size());
-    log.info("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
+    log.info("TRIGGERS: PPS created by time based auto triggers: {}", createdPpsIds.size());
+    log.info("TRIGGERS: PPS ids created by time based auto triggers: {}", createdPpsIds);
   }
 
-    // This method is for manually performing autotriggers on specific PPSs. It mimics the timebased autotrigger function
-    public void performManualAutotriggers(List<Long> ppsIds) {
+  // This method is for manually performing autotriggers on specific PPSs. It mimics the timebased autotrigger function
+  public void performManualAutotriggers(List<Long> ppsIds) {
 
-        User cronUser = new User();
-        cronUser.setId(SystemSettings.CRON_USER.getId());
-        cronUser.setHasAccess(true);
-        // hardcoded to BRS company
-        cronUser.setCompanyId(3L);
+    User cronUser = new User();
+    cronUser.setId(SystemSettings.CRON_USER.getId());
+    cronUser.setHasAccess(true);
+    // hardcoded to BRS company
+    cronUser.setCompanyId(3L);
 
-        List<Long> createdPpsIds = new ArrayList<>();
+    List<Long> createdPpsIds = new ArrayList<>();
 
-        int counter = 0;
+    int counter = 0;
 
-        log.info("TRIGGERS: Starting manual autotriggers");
+    log.info("TRIGGERS: Starting manual autotriggers");
 
-        for (Long id : ppsIds) {
-            try {
-                log.info("TRIGGERS: Starting #%s for ppsId: %s".formatted(counter++, id));
-                PpsActionResult ppsActionResult = performAutoTriggerActions(id, new UserAccountDetails(cronUser, Collections.emptyList()));
-                if (!ppsActionResult.getPpsIds().isEmpty()) {
-                    createdPpsIds.addAll(ppsActionResult.getPpsIds());
-                }
-            } catch (Exception e) {
-                // Errors will already be printed to log. Silently swallow exception so we can keep trying other PPSs
-            }
+    for (Long id : ppsIds) {
+      try {
+        log.info("TRIGGERS: Starting #%s for ppsId: %s".formatted(counter++, id));
+        PpsActionResult ppsActionResult = performAutoTriggerActions(id, new UserAccountDetails(cronUser, Collections.emptyList()));
+        if (!ppsActionResult.getPpsIds().isEmpty()) {
+          createdPpsIds.addAll(ppsActionResult.getPpsIds());
         }
-
-        log.info("TRIGGERS: PPS created by manual run: " + createdPpsIds.size());
-        log.info("TRIGGERS: PPS ids created by manual run: " + createdPpsIds);
+      } catch (Exception e) {
+        // Errors will already be printed to log. Silently swallow exception so we can keep trying other PPSs
+      }
     }
+
+    log.info("TRIGGERS: PPS created by manual run: {}", createdPpsIds.size());
+    log.info("TRIGGERS: PPS ids created by manual run: {}", createdPpsIds);
+  }
 
   public void updateProjectTagsViaRedis(Boolean doUpdate, Long projectId, List<Long> ppsIds) {
     if (doUpdate) {
@@ -661,8 +595,7 @@ public class ProjectProcessStepService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ppseId", ppseId);
 
-    Optional<ProjectProcessStepEvent> result = sqlCache.getBySql(ProjectProcessStepEventQuery.getWithStatus, params, ProjectProcessStepEvent.class);
-    return result;
+    return sqlCache.getBySql(ProjectProcessStepEventQuery.getWithStatus, params, ProjectProcessStepEvent.class);
   }
 
   @Transactional
@@ -769,14 +702,14 @@ public class ProjectProcessStepService {
     }
 
     if (action.getActionTypeId() == 2) {
-        // Check assigned PS statuses/categories for actionTypeId 2 (buttons)
-        boolean isInAssignedCategory = action.getProcessStepStatusTypeIds().contains(pps.getProcessStepStatusTypeId());
-        boolean isInAssignedStatus = action.getCompanyProcessStepStatusTypeIds().contains(pps.getCompanyProcessStepStatusTypeId());
-        boolean assignedStatusSet = !action.getProcessStepStatusTypeIds().isEmpty() || !action.getCompanyProcessStepStatusTypeIds().isEmpty();
-        if (assignedStatusSet && !isInAssignedCategory && !isInAssignedStatus) {
-            action.setCanPerform(false);
-            return action;
-        }
+      // Check assigned PS statuses/categories for actionTypeId 2 (buttons)
+      boolean isInAssignedCategory = action.getProcessStepStatusTypeIds().contains(pps.getProcessStepStatusTypeId());
+      boolean isInAssignedStatus = action.getCompanyProcessStepStatusTypeIds().contains(pps.getCompanyProcessStepStatusTypeId());
+      boolean assignedStatusSet = !action.getProcessStepStatusTypeIds().isEmpty() || !action.getCompanyProcessStepStatusTypeIds().isEmpty();
+      if (assignedStatusSet && !isInAssignedCategory && !isInAssignedStatus) {
+        action.setCanPerform(false);
+        return action;
+      }
     }
 
     if (action.getAlwaysEnabled()) {
@@ -785,15 +718,15 @@ public class ProjectProcessStepService {
     }
 
     if (action.getProcessStepLogicList().isEmpty()) {
-        action.setCanPerform(false);
-        return action;
+      action.setCanPerform(false);
+      return action;
     }
 
 
-      List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
-                                       .map(ProcessStepLogic::getProcessStepRequirementId)
-                                       .filter(Objects::nonNull)
-                                       .toList();
+    List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
+      .map(ProcessStepLogic::getProcessStepRequirementId)
+      .filter(Objects::nonNull)
+      .toList();
     List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
 
     // If there are not any requirements, then it can be completed
@@ -1299,13 +1232,13 @@ public class ProjectProcessStepService {
           systemValues.put("companyId", user.getCompanyId());
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
             functionClass.marketoEnabled = marketoEnabled;
             //this is dumb but i really dont want to fill in the info on the design for dev-ing stuff
             functionClass.ignoreAuroraErrors = ignoreAuroraErrors;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);
-            if(null != backendActionResult) {
+            if (null != backendActionResult) {
               ppsActionResult.childFunctionReturnedStrings.add(backendActionResult.toString());
             }
           } else {
@@ -2164,13 +2097,11 @@ public class ProjectProcessStepService {
           log.debug("TWILIO: attempting text for contact ID: {}", contactId);
           if (null != contact) {
             Long smsTeamId = null;
-            if(null != smsTemplate.getTeamIds() && smsTemplate.getTeamIds().size() == 1) {
-              smsTeamId = smsTemplate.getTeamIds().get(0);
+            if (null != smsTemplate.getTeamIds() && smsTemplate.getTeamIds().size() == 1) {
+              smsTeamId = smsTemplate.getTeamIds().getFirst();
             }
             communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, smsTeamId);
-            smsTemplate.getTeamIds().forEach(teamId -> {
-              messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
-            });
+            smsTemplate.getTeamIds().forEach(teamId -> messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId()));
           } else {
             throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,

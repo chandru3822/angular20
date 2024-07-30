@@ -87,54 +87,58 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
+            <tr :class="{'shaded-row': !(index % 2)}" class="clickable text-sm-left row-hover"
+                v-if="item.archived === false || (item.archived === true && userStore.userHasFeatureAccessLevel('INCENTIVE', 'ADMIN'))"
+            >
               <td class="text-left clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
-                  {{ item.name || '' }}
+                  <v-chip
+                    color="warning"
+                    small
+                    v-if="item.archived === true &&
+                    userStore.userHasFeatureAccessLevel('INCENTIVE', 'ADMIN')"
+                    class="mr-2">
+                    ARCHIVED
+                  </v-chip>
+                  <span :class="{'strike-thru': !item.active}">{{ item.name ? item.name : '' }}</span>
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
                   {{ item.state || '' }}
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
                   {{ item.type || '' }}
                 </router-link>
               </td>
-              <td class="text-left clickable">
+              <td class="text-left clickable" :class="{'strike-thru': !item.active}">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
                   {{ item.status || '' }}
                 </router-link>
               </td>
               <td class="text-right">
-                <a-btn
-                    :to="`/database/incentive/${item.id}/details`"
-                    variant="text"
-                    size="x-small"
-                    fab
-                    color="unset"
-                    prepend-icon="mdi-arrow-right"
-                ></a-btn>
-                <a-btn
-                    v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'EDIT')"
-                    size="small"
-                    icon
-                    color="primary"
-                    class="mr-3 feat-db-link-icon"
-                    @click="editIncentive(item)"
-                    prepend-icon="edit"
-                ></a-btn>
-                <a-btn
-                    v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'DELETE')"
-                    size="small"
-                    color="primary"
-                    icon
-                    class="mr-3 feat-db-link-icon"
-                    @click="deleteIncentive(item)"
-                    prepend-icon="delete"
-                ></a-btn>
+                <v-icon v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'EDIT')"
+                        color="primary" class="mr-3 feat-db-link-icon" @click="editIncentive(item)">
+                  edit
+                </v-icon>
+                <v-tooltip top small>
+                  <template v-slot:activator="{on, attrs}">
+                    <a-btn
+                      v-bind="attrs"
+                      color="primary"
+                      :activation-handler="on"
+                      size="small"
+                      variant="text"
+                      @click="item.archived === false ? deleteIncentive(item) : restoreIncentive(item)"
+                      v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'ADMIN')"
+                      :append-icon="!item.archived ? 'inventory' : 'undo'"
+                    ></a-btn>
+                  </template>
+                  <span v-if="!item.archived" class="albatross-body-3">Archive</span>
+                  <span v-if="item.archived" class="albatross-body-3">Restore</span>
+                </v-tooltip>
               </td>
             </tr>
           </template>
@@ -161,6 +165,7 @@
                         v-model="editedItem.name"
                         required
                         variant="filled"
+                        @focus="setDirtyFields('name')"
           ></a-text-field>
           <a-autocomplete label="State"
                           :items="states"
@@ -190,6 +195,14 @@
                           type="search"
                           variant="filled"
           ></a-autocomplete>
+          <v-switch
+            v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'MANAGE') && !addMode"
+            :label="editedItem.active ? 'Active' : 'Inactive'"
+            v-model="editedItem.active"></v-switch>
+          <label v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'ADMIN') &&
+                     editedItem.archived === true && editedItem.active === true">
+            This Incentive is currently Archived. Activating this Incentive will un-archive this Incentive.
+          </label>
         </v-card-text>
 
         <v-card-actions>
@@ -232,9 +245,6 @@
       </v-row>
       <template v-slot:yes>Create</template>
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!incentiveToDelete" @confirm="confirmDeleteIncentive" @close-dialog="incentiveToDelete=null">
-      Are you sure you want to delete {{ incentiveToDeleteName }}?
-    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -243,7 +253,14 @@ import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
 
-import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+import {
+  canRestoreDBEntry,
+  deleteRequest,
+  getRequest,
+  handleHidingGlobalLoader,
+  postRequest,
+  putRequest
+} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch, defineProps } from 'vue'
@@ -259,6 +276,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const props = defineProps({
   nameSearch: String,
+  showInactive: Boolean,
 })
 
 const emit = defineEmits(['updateNameSearch'])
@@ -280,18 +298,26 @@ const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: cons
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
   'items-per-page-options': [25, 50, 100, 1000]})
 const incentiveDialog = ref(false)
-const editedItem = ref({name: '',statusId: '',typeId: '',})
+const editedItem = ref({id: '', name: '',statusId: '',typeId: '', archived: '', active: ''})
+const dirtyFields = ref({name: false})
 const incentives = ref([])
 const addMode = ref(false)
 const incentiveToDelete = ref(null)
 const duplicateDialog = ref(false)
 const duplicateIncentiveMatch = ref(null)
 
+const setDirtyFields = (item) => {
+  if (item === 'name') {
+    dirtyFields.value.name = true
+  }
+}
 const filteredIncentives = computed(() => {
   return incentives.value && incentives.value.filter(incentive => {
     return Object.keys(incentiveFilters.value).every(filterName => {
       const filter = incentiveFilters.value[filterName]
-
+      if (props.showInactive === false && incentive?.active === false) {
+        return false
+      }
       if (filter.value?.length < 1) {
         return true
       }
@@ -374,7 +400,7 @@ const fetchIncentives = async() => {
   appStore.loading = true
   try {
     const {data, status} = await getRequest('/featDb/incentive/list/all', 'blueraven')
-    incentives.value = cloneDeep(data).filter(incentive => incentive.archived === false)
+    incentives.value = cloneDeep(data)
     dataLoading.value = false
     handleHidingGlobalLoader( status)
   } catch (e) {
@@ -416,16 +442,11 @@ const close = ()  => {
   incentiveDialog.value = false
   editedItem.value = {}
 }
-const deleteIncentive = (item)  => {
-  incentiveToDelete.value = {
-    id: item.id,
-    name: item.name
-  }
-}
-const confirmDeleteIncentive = async() => {
+
+const deleteIncentive = async(incentive) => {
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/featDb/incentive/${incentiveToDelete.value.id}`, 'blueraven')
+    const {status} = await deleteRequest(`/featDb/incentive/${incentive.id}/archive`, 'blueraven')
     appStore.showSnack('SUCCESS', 'Incentive deleted')
 
     await fetchIncentives().then(() => fetchStates())
@@ -439,22 +460,47 @@ const confirmDeleteIncentive = async() => {
   incentiveToDelete.value = null
 }
 
-const newIncentiveDuplicateCheck = ()  => {
-  duplicateIncentiveMatch.value = incentives.value.find(incentive => {
+const restoreIncentive = async (incentive)  => {
+  appStore.loading = true
+  if (canRestoreDBEntry(incentives.value, incentive)) {
+    try {
+      await postRequest(`/featDb/incentive/${incentive.id}/restore`, null, 'blueraven')
+      close()
+      initFilters()
+      await fetchIncentives().then(() => fetchStates())
+      appStore.showSnack('SUCCESS', 'Incentive Has Been Restored')
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Restoring Incentive')
+      appStore.loading = false
+    }
+  } else {
+    appStore.showSnack('ERROR', `Cannot restore ${incentive.name}. An un-archived record already exists.`)
+    appStore.loading = false
+  }
+}
 
-    return doNamesMatch(editedItem.value.name, incentive.name) &&
+const newIncentiveDuplicateCheck = ()  => {
+  if (dirtyFields.value.name) {
+    duplicateIncentiveMatch.value = incentives.value.find(incentive => {
+
+      return doNamesMatch(editedItem.value.name, incentive.name) &&
         editedItem.value.companyStateId === incentive.companyStateId
-  })
-  if(duplicateIncentiveMatch.value){
-    incentiveDialog.value = false
-    //add state name for display purposes
-    editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
-    editedItem.value.type = types.value.find(type => type.id === editedItem.value.typeId)?.type
-    editedItem.value.status = statuses.value.find(status => status.id === editedItem.value.statusId)?.status
-    duplicateDialog.value = true
+    })
+    if (duplicateIncentiveMatch.value) {
+      incentiveDialog.value = false
+      //add state name for display purposes
+      editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
+      editedItem.value.type = types.value.find(type => type.id === editedItem.value.typeId)?.type
+      editedItem.value.status = statuses.value.find(status => status.id === editedItem.value.statusId)?.status
+      duplicateDialog.value = true
+    } else {
+      saveIncentive()
+    }
   } else {
     saveIncentive()
   }
+  dirtyFields.value.name = false
 }
 
 const doNamesMatch = (name1, name2) => {
@@ -488,9 +534,12 @@ const saveIncentive = async() => {
     }
   } else {
     try {
-      const {status} = await putRequest(`/featDb/incentive/simpleUpdate`, editedItem.value, 'blueraven')
+      const incentive = cloneDeep(editedItem.value)
+      const {status} = await putRequest(`/featDb/incentive/simpleUpdate`, incentive, 'blueraven')
       appStore.showSnack('SUCCESS', 'Incentive updated')
-
+      if (incentive?.archived === true && incentive?.active === true) {
+        await restoreIncentive(incentive)
+      }
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)

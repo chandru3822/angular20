@@ -1,5 +1,5 @@
 <template>
-  <v-card width="446">
+  <v-card class="overflow-y-auto" width="446" id="dbChangeLogScrollRef">
     <v-card-title>Change Log</v-card-title>
     <a-text-field
       class="mx-4 mt-0 pt-0 mb-n5"
@@ -21,7 +21,7 @@
       :data-type="item.dataType"/>
     <a-btn
       :disabled="btnIsDisabled"
-      class="mb-4 ml-4 load-more-btn"
+      class="mb-4 load-more-btn"
       variant="text"
       :text="cardSlices.length === 0 ? 'No Available Entries' : (btnIsDisabled ? 'No Additional Entries' :  'Load More')"
       @click="visibleCards+=10"

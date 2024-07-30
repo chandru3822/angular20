@@ -29,6 +29,7 @@ BEGIN
                          from flow.org o
                                 inner join flow.org_type ot on ot.id = o.org_type_id
                          where o.id = any (p_org_ids)
+                           and o.archived is false and o.active_flag is true
                          UNION
                          select o.id,
                                 o.parent_org_id,
@@ -39,7 +40,8 @@ BEGIN
                                 ot.org_type
                          from flow.org o
                                 inner join flow.org_type ot on ot.id = o.org_type_id
-                                INNER JOIN subordinates s ON s.id = o.parent_org_id)
+                                INNER JOIN subordinates s ON s.id = o.parent_org_id
+                         where o.archived is false and o.active_flag is true)
     SELECT s1.id::bigint,
            s1.parent_org_id::bigint,
            s1.org_name::text,

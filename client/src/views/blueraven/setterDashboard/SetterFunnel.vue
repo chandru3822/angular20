@@ -969,7 +969,7 @@ const repLoad = async (preSelectLists, loadFilterOnFirstLoad) => {
     funnelStats.value = []
 
     if (!initialPageLoad.value || loadFilterOnFirstLoad) {
-      pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, false)
+      pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, isSetter.value ? false : selectAllReps.value)
     }
   })
 
@@ -1026,7 +1026,7 @@ const funnelAllReps = () => {
     {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
   ]
 
-  pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, false)
+  pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, isSetter.value ? false : selectAllReps.value)
 }
 const pipelineLoad = async (start, end, useRepDataInstead) => {
   setterPipelineLoading.value = true
@@ -1042,6 +1042,7 @@ const pipelineLoad = async (start, end, useRepDataInstead) => {
   officeModel.value.forEach(org => orgs.push(org.org_id))
 
   modelOverride.value = false
+  console.log(useRepDataInstead)
   if (useRepDataInstead) {
     repData.value.forEach((rep, index) => {
       reps.push(rep.user_position_id)
@@ -1158,7 +1159,7 @@ const choosePipelineDateRange = (dateRange) => {
 const updatePipelineCalendar = () => {
   pipeline_menu1.value = false
   pipeline_menu2.value = false
-  pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, false)
+  pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, isSetter.value ? false : selectAllReps.value)
 }
 const yesterday = () => {
   pipeline_dt1.value = moment().subtract(1, 'd').format('YYYY-MM-DD')
@@ -1206,7 +1207,7 @@ const viewSelected = (view) => {
     viewSelect.value = view
 
     if ((repModel.value.length > 0) || repModel.value[0]?.user_position_id === -1) {
-      pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, false)
+      pipelineLoad(pipeline_dt1.value, pipeline_dt2.value, isSetter.value ? false : selectAllReps.value)
     }
   }
 }

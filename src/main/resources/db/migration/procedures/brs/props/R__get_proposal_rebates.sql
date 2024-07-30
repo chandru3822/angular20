@@ -24,6 +24,9 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_rebates(p_version_id bigint)
             odoe_system_size_cutoff           numeric,
             rebate text,
             selectable_by_user boolean,
+            qualifies_for_swr boolean,
+            mpu_rebate_percent_of_cost numeric,
+            mpu_rebate_cap_amount numeric,
             applicable_storage_types bigint[]
           )
 AS
@@ -55,6 +58,9 @@ BEGIN
         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 385)') ->> 'value')::numeric as odoe_system_size_cutoff,
         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 93)') ->> 'value')::text as rebate,
         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 414)') ->> 'value')::boolean as selectable_by_user,
+        (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 502)') ->> 'value')::boolean as qualifies_for_swr,
+        (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 703)') ->> 'value')::numeric as mpu_rebate_percent_of_cost,
+        (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 704)') ->> 'value')::numeric as mpu_rebate_cap_amount,
         ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 494)') -> 'intArrayValue')))::bigint[] as applicable_storage_types
       from brs.get_proposal_version_value(p_version_id, array [(null, null, null, null)::ProposalFieldFilter],
                                           'PROPOSAL_REBATE');

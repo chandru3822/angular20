@@ -19,4 +19,5 @@ public class AhjPermit {
     // these are only used when updates are performed for all AHJ Permits in a specified state
     private Boolean updateAllInState;
     private List<Long> ahjIds, permitIds;
+    private Boolean archived;
 }

@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.AhjType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.flow.model.User;
@@ -43,6 +44,7 @@ public class AhjService {
     params.put("name", ahjSummary.getName());
     params.put("metroAreaId", ahjSummary.getMetroAreaId());
     params.put("companyStateId", ahjSummary.getCompanyStateId());
+    params.put("active", ahjSummary.getActive());
 
     if (id == null) {
       Optional<AhjSummary> ahj = sqlCache.getBySql(AhjQuery.checkForDuplicate, params, AhjSummary.class);
@@ -75,6 +77,17 @@ public class AhjService {
     sqlCache.updateBySql(AhjQuery.delete, params);
   }
 
+  @Transactional
+  public Optional<AhjSummary> restoreAhj(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.updateBySql(AhjQuery.restore, params);
+
+    return getAhjById(id);
+  }
+
   public Optional<AhjSummary> getAhjById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -82,6 +95,21 @@ public class AhjService {
     return sqlCache.getBySql(AhjQuery.findById, params, AhjSummary.class);
   }
 
+  public Optional<AhjSummary> simpleUpdate(AhjSummary ahjSummary) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUser", currentUser.trueUserId());
+    params.put("id", ahjSummary.getId());
+    params.put("name", ahjSummary.getName());
+    params.put("archived", ahjSummary.getArchived());
+    params.put("metroAreaId", ahjSummary.getMetroAreaId());
+    params.put("companyStateId", ahjSummary.getCompanyStateId());
+    params.put("active", ahjSummary.getActive());
+
+    sqlCache.updateBySql(AhjQuery.simpleUpdate, params);
+    return getAhjById(ahjSummary.getId());
+  }
   // CONTACTS
   public Optional<FeatDbContact> getAhjContactById(Long contactId) {
     HashMap<String, Object> params = new HashMap<>();

@@ -436,4 +436,14 @@ public class SmsTeamQuery {
       where user_id = :userId and sms_team_id = :smsTeamId
     """;
 
+  public final static String getUserCompany = """
+    select coalesce(u.default_company_id, uc.company_id) as company_id
+    from flow.user u
+             inner join flow.user_company uc on uc.user_id = u.id
+             inner join flow.company c on c.id = uc.company_id
+    where u.id = :id
+      and uc.is_default is true
+      and uc.archived is not true
+      and c.archived is not true
+    """;
 }

@@ -3,8 +3,6 @@ package com.albatross.api.v1.company.blueraven.models;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @NoArgsConstructor
 public class FunnelColumn {

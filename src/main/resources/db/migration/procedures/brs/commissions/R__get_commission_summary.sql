@@ -38,11 +38,11 @@ begin
                                                                                   when pd.cancelled_date is not null
                                                                                     then
                                                                                     0::numeric
-                                                                                  when fd.commission_strategy =24102 and fd.substantial_completion_date is not null then
+                                                                                  when fd.commission_strategy =24102 and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1) and fd.substantial_completion_date is not null then
                                                                                     (opru.red_line_m1_allocation +case when fd.substantial_completion_date is not null and
                                                                                                                             fd.substantial_completion_date <= p.period_end then
                                                                                                                          opru.red_line_m2_allocation else 0 end) * fd.total_commissions
-                                                                                  when fd.commission_strategy =24102 and fd.substantial_completion_date is null then
+                                                                                  when fd.commission_strategy =24102 and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1) and fd.substantial_completion_date is null then
                                                                                     (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
@@ -61,6 +61,7 @@ begin
                                                                          from brs.payroll p
                                                                                 inner join brs.project_details pd on pd.project_id = any (p.selected_project_ids)
                                                                                 inner join brs.financial_details fd on fd.project_id = pd.project_id
+                                                                                left join brs.commission_plan cp on cp.id = fd.commission_plan_id
                                                                                 inner join brs.override_plan op on op.id = fd.override_plan_id
                                                                                 inner join brs.override_plan_receiving_user opru
                                                                                           on opru.override_plan_id =
@@ -77,6 +78,7 @@ begin
                                                                                   opru.red_line_m1_allocation,
                                                                                   opru.red_line_m2_allocation,
                                                                                   fd.total_commissions,
+                                                                                  cp.commission_strategy_type_id,
                                                                                   p.period_end) as foo) as foo1),
                                                             0)   AS total_overrides,
 
@@ -142,7 +144,7 @@ begin
                                                              when foo.cancelled_date is not null
                                                                then
                                                                0::numeric
-                                                             when foo.commission_strategy = 24102 and
+                                                             when foo.commission_strategy = 24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and
                                                                   foo.substantial_completion_date is not null then
                                                                (foo.red_line_m1_allocation + case
                                                                                                when
@@ -152,7 +154,7 @@ begin
                                                                                                  foo.red_line_m2_allocation
                                                                                                else 0 end) *
                                                                foo.total_commissions
-                                                             when foo.commission_strategy = 24102 and
+                                                             when foo.commission_strategy = 24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and
                                                                   foo.substantial_completion_date is null then
                                                                (foo.red_line_m1_allocation) * foo.total_commissions
                                                              when foo.substantial_completion_date is not null
@@ -190,11 +192,13 @@ begin
                                                                  pd.system_size,
                                                                  pay.period_end,
                                                                  pd.cancelled_date,
-                                                                 concat(u.first_name, ' ', u.last_name) AS closer_user
+                                                                 concat(u.first_name, ' ', u.last_name) AS closer_user,
+                                                                 c.commission_strategy_type_id
                                                           from brs.payroll pay
                                                                  inner join brs.project_details pd
                                                                             on pd.project_id = any (pay.selected_project_ids)
                                                                  inner join brs.financial_details f on f.project_id = pd.project_id
+                                                                 left join brs.commission_plan c on c.id = f.commission_plan_id
                                                                  inner join brs.override_plan_receiving_user o on o.override_plan_id = f.override_plan_id
                                                                  inner join commission_users cu on not o.user_id = any (cu.user_id)
                                                                  inner join flow.user u on u.id =o.user_id
@@ -227,11 +231,13 @@ begin
                                                                  pd.system_size,
                                                                  pay.period_end,
                                                                  pd.cancelled_date,
-                                                                 concat(u.first_name, ' ', u.last_name) AS closer_user
+                                                                 concat(u.first_name, ' ', u.last_name) AS closer_user,
+                                                                 c.commission_strategy_type_id
                                                           from brs.payroll pay
                                                                  inner join brs.project_details pd
                                                                             on pd.project_id = any (pay.selected_project_ids)
                                                                  inner join brs.financial_details f on f.project_id = pd.project_id
+                                                                 left join brs.commission_plan c on c.id = f.commission_plan_id
                                                                  inner join brs.override_plan_receiving_user o on o.override_plan_id = f.override_plan_id
                                                                  inner join brs.project_commission_ledger l
                                                                             on l.project_id =

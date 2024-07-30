@@ -385,6 +385,7 @@
       const {status} = await putRequest(`/processStep/status`, s)
       selectedStatusTypeId.value = null
       expanded.value = []
+      await getAllCompanyStatusTypes()
       appStore.showSnack('SUCCESS', 'Status Updated')
 
       handleHidingGlobalLoader(status)

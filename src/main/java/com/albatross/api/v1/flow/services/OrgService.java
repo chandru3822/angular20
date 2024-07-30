@@ -3,23 +3,16 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.OrgController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserOrgAccess;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.org.OrgExportTemplate;
 import com.albatross.api.v1.flow.model.org.OrgFilter;
-import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.OrgQuery;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -30,38 +23,30 @@ import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
-//@PreAuthorize("hasFeatureAccess('ORGS')")
 @RequiredArgsConstructor
 public class OrgService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final CustomFieldValueService customFieldValueService;
-  private final AmazonS3 s3;
   private final AttachmentService attachmentService;
   private final ObjectMapper om;
 
-  @Value("${aws.storageBucket}")
-  private String storageBucket;
-
   public void doOrgStructureRefresh() {
-    sqlCache.updateBySql(OrgQuery. orgStructureRefresh, Collections.emptyMap());
+    sqlCache.updateBySql(OrgQuery.orgStructureRefresh, Collections.emptyMap());
   }
 
   public List<Org> getOrgsForCompany() {
@@ -124,7 +109,7 @@ public class OrgService {
     try (SequenceWriter outToBuffer = writer.writeValues(buffer)) {
       // first, get deets
       Collection<OrgExportTemplate> details =
-          Collections2.transform(results, OrgExportTemplate::from);
+        Collections2.transform(results, OrgExportTemplate::from);
 
       // next, write them to a buffer so we can identify errors before writing across the network
       outToBuffer.writeAll(details);
@@ -144,7 +129,7 @@ public class OrgService {
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
     Optional<Org> result = sqlCache.getBySql(OrgQuery.getOne, params, new OrgMapper<>(Org.class, om));
-    if(result.isPresent()) {
+    if (result.isPresent()) {
       return result.get();
     } else {
       throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
@@ -160,8 +145,8 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
     params.put("schedulable", null != org.getSchedulable() ? org.getSchedulable() : false);
     params.put(
-        "availableToChildren",
-        null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
+      "availableToChildren",
+      null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
     params.put("companyStateId", org.getCompanyStateId());
     params.put("active", org.getActiveFlag());
     params.put("companyTimezoneId", org.getCompanyTimezoneId());
@@ -179,9 +164,9 @@ public class OrgService {
 
     if (null != org.getCustomFieldGroups() && !org.getCustomFieldGroups().isEmpty()) {
       customFieldValueService.updateCustomFieldValues(
-          org.getCustomFieldGroups().getFirst().getCustomFieldValues(),
-          id,
-          ObjectType.ORGANIZATION);
+        org.getCustomFieldGroups().getFirst().getCustomFieldValues(),
+        id,
+        ObjectType.ORGANIZATION);
     }
 
     return getOrg(id);
@@ -192,7 +177,7 @@ public class OrgService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     List<OrgFilter> results =
-        sqlCache.queryBySql(OrgQuery.getOrgFiltersForCompany, params, OrgFilter.class);
+      sqlCache.queryBySql(OrgQuery.getOrgFiltersForCompany, params, OrgFilter.class);
 
     for (OrgFilter f : results) {
       // build the list of options
@@ -245,7 +230,7 @@ public class OrgService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     List<OrgFilter> results =
-        sqlCache.queryBySql(OrgQuery.getOrgFiltersForCompany, params, OrgFilter.class);
+      sqlCache.queryBySql(OrgQuery.getOrgFiltersForCompany, params, OrgFilter.class);
 
     Map<String, Object> p2 = new HashMap<>();
     p2.put("selectedOrgs", selectedOrgs);
@@ -254,9 +239,9 @@ public class OrgService {
     for (OrgFilter f : results) {
       // build the list of options
       f.setOrgs(
-          orgs.stream()
-              .filter(o -> (o.getOrgLevelId().equals(f.getOrgLevelId())))
-              .collect(Collectors.toList()));
+        orgs.stream()
+          .filter(o -> (o.getOrgLevelId().equals(f.getOrgLevelId())))
+          .collect(Collectors.toList()));
     }
 
     return results;
@@ -269,7 +254,7 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
 
 
-    if(userHasFullCalendarAccess(userId)) {
+    if (userHasFullCalendarAccess(userId)) {
       //get all scheduling orgs for company if user has full access
       return getSchedulingOrgs(null, true);
     } else {
@@ -304,8 +289,8 @@ public class OrgService {
     //save the full calendar access every time...for now cuz this is taking too long
     sqlCache.updateBySql(OrgQuery.saveUserFullCalendarAccess, params);
 
-    if(!request.isFullCalendarAccess()) {
-      if(!orgIdsSentIn.isEmpty()) {
+    if (!request.isFullCalendarAccess()) {
+      if (!orgIdsSentIn.isEmpty()) {
         //delete any orgs that exist and werent sent in
         sqlCache.updateBySql(OrgQuery.deleteArchivedUserOrgAccess, params);
         //add any orgs that are new and not archived
@@ -314,7 +299,7 @@ public class OrgService {
 
     }
 
-    if(request.isFullCalendarAccess() || orgIdsSentIn.isEmpty()) {
+    if (request.isFullCalendarAccess() || orgIdsSentIn.isEmpty()) {
       sqlCache.updateBySql(OrgQuery.deleteAllUserOrgAccess, params);
     }
 
@@ -328,9 +313,8 @@ public class OrgService {
     params.put("linked", linked);
     params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
-        sqlCache.queryBySql(OrgQuery.getOrgAttachments, params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(
-        attachments, storageBucket, null != isMobile ? isMobile : false);
+      sqlCache.queryBySql(OrgQuery.getOrgAttachments, params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(attachments, null != isMobile ? isMobile : false);
   }
 
   public void linkAttachment(Long orgId, Long attachmentId, Boolean doLink) {
@@ -342,58 +326,26 @@ public class OrgService {
     params.put("companyId", currentUser.getCompanyId());
 
     String sql = OrgQuery.linkAttachment;
-    if(!doLink) {
+    if (!doLink) {
       sql = OrgQuery.unlinkAttachment;
     }
     sqlCache.updateBySql(sql, params);
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped
-  // code right now and I hate it
   public Attachment addAttachment(MultipartFile file, Long orgId, Long attachmentTypeId, String displayName)
-      throws IOException {
+    throws IOException {
     User user = securityService.getCurrentUser();
 
-    if (file.isEmpty()) {
-      throw new RuntimeException("File cannot be empty");
-    }
-
-    // get keyPattern from attachmentType
-    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key =
-        String.format(
-            user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
-
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(file.getSize());
-    metadata.setContentType(file.getContentType());
-
-    PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
-
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    Attachment attachment = attachmentService.create(file, null, attachmentTypeId, displayName, false);
 
     Map<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
-    params.put("contentType", file.getContentType());
-    params.put("key", key);
-    params.put("size", file.getSize());
-    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
-    params.put("createdById", user.trueUserId());
-    params.put("attachmentTypeId", attachmentTypeId);
-    params.put("companyId", user.getCompanyId());
-
-    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
-
-    params.clear();
     params.put("orgId", orgId);
-    params.put("attachmentId", attachmentId);
+    params.put("attachmentId", attachment.getId());
     params.put("createdById", user.trueUserId());
 
     sqlCache.updateBySql(OrgQuery.addAttachment, params);
 
-    return attachmentService.findById(attachmentId);
+    return attachment;
   }
 
   public static class OrgMapper<T> extends BeanPropertyRowMapper<T> {
@@ -406,7 +358,8 @@ public class OrgService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Org>> childOrgsRef = new TypeReference<>() {};
+      TypeReference<List<Org>> childOrgsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class, "childOrgs", new JsonCollectionDeserializer(childOrgsRef, objectMapper));
     }

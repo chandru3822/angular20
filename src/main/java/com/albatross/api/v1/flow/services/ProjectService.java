@@ -5,20 +5,16 @@ import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
-import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.queries.ProjectStatusQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -29,7 +25,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -56,32 +51,21 @@ import java.util.*;
 public class ProjectService {
 
   private final SqlCache sqlCache;
-
+  private final SqlCacheRO sqlCacheRO;
   private final SecurityService securityService;
-
   private final ProjectStatusService projectStatusService;
-
   private final AttachmentService attachmentService;
-
-  private final AmazonS3 s3;
-
   private final ObjectMapper om;
-
   private final MapboxApiService mapboxApiService;
-
   private final SqlArrayService sqlArrayService;
-
   private final UserPositionService userPositionService;
-
-  @Value("${aws.storageBucket}")
-  private String storageBucket;
 
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
     return sqlCache.queryBySql(
       ProjectQuery.getAllForCompanyProcess,
-        Map.of("companyId", user.getCompanyId(), "processId", processId),
-        Project.class);
+      Map.of("companyId", user.getCompanyId(), "processId", processId),
+      Project.class);
   }
 
   public Long getProjectIdByProjectProcessStepId(Long projectProcessStepId) {
@@ -95,8 +79,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     try {
       params.put("ppsIds", sqlArrayService.createSqlArrayOfType("int", ppsIds));
-      List<Long> results = sqlCache.queryBySql(ProjectQuery.getProjectIdsByPpsIds, params, new SingleColumnRowMapper<>(Long.class));
-      return results;
+      return sqlCache.queryBySql(ProjectQuery.getProjectIdsByPpsIds, params, new SingleColumnRowMapper<>(Long.class));
     } catch (SQLException e) {
       log.error("PROJECT: error retrieving project ids for ppsIds: {}", e.getMessage());
       throw new ResponseStatusException(
@@ -141,39 +124,39 @@ public class ProjectService {
       }
     } else {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Invalid Bound Parameters", new Exception());
+        HttpStatus.BAD_REQUEST, "Invalid Bound Parameters", new Exception());
     }
   }
 
   public Page<Project> searchProjects(
-      String query,
-      Long companyProjectStatusTypeId,
-      String overrideType,
-      String sortColumn,
-      String sortDirection,
-      Boolean includeCommissionDetails,
-      Pageable pageable,
-      String searchColumn) {
+    String query,
+    Long companyProjectStatusTypeId,
+    String overrideType,
+    String sortColumn,
+    String sortDirection,
+    Boolean includeCommissionDetails,
+    Pageable pageable,
+    String searchColumn) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll =
-        securityService.userHasFeatureAccessLevel(
-            user.getId(),
-            user.getCompanyId(),
-            user.getHighestCompanyId(),
-            "PROJECTS",
-            List.of("VIEW_ALL"));
+      securityService.userHasFeatureAccessLevel(
+        user.getId(),
+        user.getCompanyId(),
+        user.getHighestCompanyId(),
+        "PROJECTS",
+        List.of("VIEW_ALL"));
     Boolean viewCustom = false;
 
     if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
         || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
       viewCustom =
-          securityService.userHasFeatureAccessLevel(
-              user.getId(),
-              user.getCompanyId(),
-              user.getHighestCompanyId(),
-              "PROJECTS",
-              List.of("VIEW_CUSTOM"));
+        securityService.userHasFeatureAccessLevel(
+          user.getId(),
+          user.getCompanyId(),
+          user.getHighestCompanyId(),
+          "PROJECTS",
+          List.of("VIEW_CUSTOM"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -197,34 +180,37 @@ public class ProjectService {
       searchSql = ProjectQuery.search;
     }
 
-    List<Project> projects =
-        sqlCache.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
-
+    List<Project> projects;
+    // move project searching to replica to help balance DB load
+    if (searchSql.equals(ProjectQuery.search)) {
+        projects = sqlCacheRO.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
+    } else {
+        projects = sqlCache.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
+    }
     int total = 10000;
-    return new PageImpl<>(
-        projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
+    return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
   public List<ProjectStatusCount> projectCountsByStatus(String overrideType) {
     User user = securityService.getCurrentUser();
     Boolean viewAll =
-        securityService.userHasFeatureAccessLevel(
-            user.getId(),
-            user.getCompanyId(),
-            user.getHighestCompanyId(),
-            "PROJECTS",
-            List.of("VIEW_ALL"));
+      securityService.userHasFeatureAccessLevel(
+        user.getId(),
+        user.getCompanyId(),
+        user.getHighestCompanyId(),
+        "PROJECTS",
+        List.of("VIEW_ALL"));
     Boolean viewCustom = false;
 
     if ((!viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view")))
         || (null != overrideType && overrideType.equalsIgnoreCase("downline"))) {
       viewCustom =
-          securityService.userHasFeatureAccessLevel(
-              user.getId(),
-              user.getCompanyId(),
-              user.getHighestCompanyId(),
-              "PROJECTS",
-              List.of("VIEW_CUSTOM"));
+        securityService.userHasFeatureAccessLevel(
+          user.getId(),
+          user.getCompanyId(),
+          user.getHighestCompanyId(),
+          "PROJECTS",
+          List.of("VIEW_CUSTOM"));
     }
 
     HashMap<String, Object> params = new HashMap<>();
@@ -240,10 +226,7 @@ public class ProjectService {
       searchSql = ProjectQuery.countsByStatus;
     }
 
-    List<ProjectStatusCount> results =
-        sqlCache.queryBySql(searchSql, params, new ProjectStatusCountMapper<>(ProjectStatusCount.class, om));
-
-    return results;
+    return sqlCache.queryBySql(searchSql, params, new ProjectStatusCountMapper<>(ProjectStatusCount.class, om));
   }
 
   // i tried to genericize this but it is still pretty specific to only brs.
@@ -271,63 +254,61 @@ public class ProjectService {
     params.put("projectId", projectId);
     params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
 
-    List<ProjectStatusField> results = sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
-
-    return results;
+    return sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
   }
 
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 
     Map<String, Object> params = Map.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
-      Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
-      if (result.isPresent()) {
+    Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
+    if (result.isPresent()) {
 
-        if(result.get().getStatusReadOnly()) {
-          boolean statusWhiteListed = false;
-          boolean statusAllowFlag = result.get().getStatusReadOnlyAllow();
+      if (result.get().getStatusReadOnly()) {
+        boolean statusWhiteListed = false;
+        boolean statusAllowFlag = result.get().getStatusReadOnlyAllow();
 
-          //Checks if the user's position is in the whitelist
-          for (int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++) {
-            for(int z = 0; z < user.getUserPositions().size(); z++) {
-              if (result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
-                statusWhiteListed = true;
-              }
+        //Checks if the user's position is in the whitelist
+        for (int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++) {
+          for (int z = 0; z < user.getUserPositions().size(); z++) {
+            if (result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+              statusWhiteListed = true;
             }
           }
-
-          //If the flag is set to deny, flip the whitelist to be a deny list
-          if (!statusAllowFlag) {
-            statusWhiteListed = !statusWhiteListed;
-          }
-          result.get().getStatusReadOnlyWhiteListedPositions().clear();
-          result.get().setStatusReadOnly(!statusWhiteListed);
-        }
-        if(result.get().getOwnerReadOnly()) {
-          boolean ownerWhiteListed = false;
-          boolean ownerAllowFlag = result.get().getOwnerReadOnlyAllow();
-
-          //Checks if the user's position is in the whitelist
-          for (int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++) {
-            for(int z = 0; z < user.getUserPositions().size(); z++) {
-              if (result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
-                ownerWhiteListed = true;
-              }
-            }
-          }
-
-          //If the flag is set to deny, flip the whitelist to be a deny list
-          if (!ownerAllowFlag) {
-            ownerWhiteListed = !ownerWhiteListed;
-          }
-          result.get().getOwnerReadOnlyWhiteListedPositions().clear();
-          result.get().setOwnerReadOnly(!ownerWhiteListed);
         }
 
-        return result;
-      } else {
-          throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!statusAllowFlag) {
+          statusWhiteListed = !statusWhiteListed;
+        }
+        result.get().getStatusReadOnlyWhiteListedPositions().clear();
+        result.get().setStatusReadOnly(!statusWhiteListed);
       }
+      if (result.get().getOwnerReadOnly()) {
+        boolean ownerWhiteListed = false;
+        boolean ownerAllowFlag = result.get().getOwnerReadOnlyAllow();
+
+        //Checks if the user's position is in the whitelist
+        for (int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++) {
+          for (int z = 0; z < user.getUserPositions().size(); z++) {
+            if (result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+              ownerWhiteListed = true;
+            }
+          }
+        }
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!ownerAllowFlag) {
+          ownerWhiteListed = !ownerWhiteListed;
+        }
+        result.get().getOwnerReadOnlyWhiteListedPositions().clear();
+        result.get().setOwnerReadOnly(!ownerWhiteListed);
+      }
+
+      return result;
+    } else {
+      throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+    }
   }
 
   public void deleteProject(Long projectId) {
@@ -335,11 +316,11 @@ public class ProjectService {
     // todo: security: this is still a problem if the user doesn't have access to the specific
     // company
     securityService.validateUserFeatureAccessLevel(
-        user.getId(),
-        user.getCompanyId(),
-        user.getHighestCompanyId(),
-        "PROCESS_STEPS",
-        List.of("ADMIN"));
+      user.getId(),
+      user.getCompanyId(),
+      user.getHighestCompanyId(),
+      "PROCESS_STEPS",
+      List.of("ADMIN"));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.trueUserId());
@@ -354,11 +335,11 @@ public class ProjectService {
 
     return sqlCache.queryBySql(
       ProjectQuery.getOwners,
-        Map.of(
-            "companyId", user.getCompanyId(),
-            "isParent", isParent,
-            "parentCompanyId", user.getHighestParentCompanyId()),
-        Owner.class);
+      Map.of(
+        "companyId", user.getCompanyId(),
+        "isParent", isParent,
+        "parentCompanyId", user.getHighestParentCompanyId()),
+      Owner.class);
   }
 
   public void updateProject(Project project) throws Exception {
@@ -404,48 +385,48 @@ public class ProjectService {
     sqlCache.updateBySql(ProjectQuery.update, params);
   }
 
-  public void updateProjectFromContact(Contact contact, Boolean updateProjectName, Boolean updateProjectAddress) throws Exception{
-        User currentUser = securityService.getCurrentUser();
-        if (updateProjectName != null && updateProjectName && !contact.getProjects().isEmpty()
-                && !contact
-                .getProjects()
-                .get(0)
-                .getProjectName()
-                .equals(contact.getFirstName().trim() + " " + contact.getLastName().trim())) {
-            sqlCache.updateBySql(ProjectQuery.updateNameByContactId,
-                    Map.of(
-                            "contactId",
-                            contact.getId(),
-                            "name",
-                            contact.getFirstName().trim() + " " + contact.getLastName().trim(),
-                            "userId",
-                            currentUser.trueUserId()));
-        }
-        if(null != updateProjectAddress && updateProjectAddress && !contact.getProjects().isEmpty()){
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("contactId", contact.getId());
-            params.put("modifiedById", currentUser.trueUserId());
-            params.put("street1", contact.getStreet1());
-            params.put("city", contact.getCity());
-            params.put("companyStateId", contact.getCompanyStateId());
-            params.put("postalCode", contact.getPostalCode());
-            params.put("companyCountryId", contact.getCompanyCountryId());
-            params.put("latitude", contact.getLatitude());//this should have already been updated when the contact was updated
-            params.put("longitude", contact.getLongitude());
-            String timezone = null;
-            if (null != contact.getLatitude() && null != contact.getLongitude()) {
-                // if we have a lat/long then attempt to load the timezone
-                try {
-                    timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
-                } catch (Exception e) {
-                    //do nothing because the getTimezone function already logged this error
-                }
-            }
-            params.put("timezone", timezone);
-            sqlCache.updateBySql(ProjectQuery.updateAddressByContactId, params);
-        }
+  public void updateProjectFromContact(Contact contact, Boolean updateProjectName, Boolean updateProjectAddress) throws Exception {
+    User currentUser = securityService.getCurrentUser();
+    if (updateProjectName != null && updateProjectName && !contact.getProjects().isEmpty()
+        && !contact
+      .getProjects()
+      .getFirst()
+      .getProjectName()
+      .equals(contact.getFirstName().trim() + " " + contact.getLastName().trim())) {
+      sqlCache.updateBySql(ProjectQuery.updateNameByContactId,
+        Map.of(
+          "contactId",
+          contact.getId(),
+          "name",
+          contact.getFirstName().trim() + " " + contact.getLastName().trim(),
+          "userId",
+          currentUser.trueUserId()));
     }
+    if (null != updateProjectAddress && updateProjectAddress && !contact.getProjects().isEmpty()) {
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("contactId", contact.getId());
+      params.put("modifiedById", currentUser.trueUserId());
+      params.put("street1", contact.getStreet1());
+      params.put("city", contact.getCity());
+      params.put("companyStateId", contact.getCompanyStateId());
+      params.put("postalCode", contact.getPostalCode());
+      params.put("companyCountryId", contact.getCompanyCountryId());
+      params.put("latitude", contact.getLatitude());//this should have already been updated when the contact was updated
+      params.put("longitude", contact.getLongitude());
+      String timezone = null;
+      if (null != contact.getLatitude() && null != contact.getLongitude()) {
+        // if we have a lat/long then attempt to load the timezone
+        try {
+          timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+        } catch (Exception e) {
+          //do nothing because the getTimezone function already logged this error
+        }
+      }
+      params.put("timezone", timezone);
+      sqlCache.updateBySql(ProjectQuery.updateAddressByContactId, params);
+    }
+  }
 
   public void updateProjectOwner(Long projectId, Owner owner) {
     User currentUser = securityService.getCurrentUser();
@@ -464,7 +445,7 @@ public class ProjectService {
     if (null != contactId && null != processId) {
       // Get active company project status type so new projects can have an active status
       CompanyProjectStatusType companyStatusType =
-          projectStatusService.getDefaultCompanyProjectStatusType(contact.getCompanyId());
+        projectStatusService.getDefaultCompanyProjectStatusType(contact.getCompanyId());
       Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
       HashMap<String, Object> params = new HashMap<>();
@@ -483,7 +464,7 @@ public class ProjectService {
 
       // with my most recent changes the contact should already have a valid lat/long if the address was valid
       // we only insert the lat/long/timezone stuff if the contact is in an active State, otherwise they will have to update the project with a valid address
-      if(saveAddress) {
+      if (saveAddress) {
         params.put("latitude", contact.getLatitude());
         params.put("longitude", contact.getLongitude());
         String timezone = null;
@@ -506,9 +487,9 @@ public class ProjectService {
       return getProject(id);
     } else {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Contact ID and Process ID are required to add a project.",
-          new Exception());
+        HttpStatus.BAD_REQUEST,
+        "Contact ID and Process ID are required to add a project.",
+        new Exception());
     }
   }
 
@@ -520,9 +501,8 @@ public class ProjectService {
     params.put("companyId", currentUser.getCompanyId());
     // Get project attachments
     List<Attachment> attachments =
-        sqlCache.queryBySql(ProjectQuery.getAttachments, params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(
-        attachments, storageBucket, null != isMobile ? isMobile : false);
+      sqlCache.queryBySql(ProjectQuery.getAttachments, params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(attachments, null != isMobile ? isMobile : false);
   }
 
   public List<Attachment> getCombinedAttachments(Long projectId, Long ppsId, Long ppsEventId) {
@@ -535,8 +515,7 @@ public class ProjectService {
     // Get project attachments
     List<Attachment> attachments =
       sqlCache.queryBySql(ProjectQuery.getCombinedAttachments, params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(
-      attachments, storageBucket, false);
+    return attachmentService.getAttachmentPresignedUrls(attachments, false);
   }
 
   public void linkAttachment(Long projectId, Long attachmentId, Boolean doLink) {
@@ -548,7 +527,7 @@ public class ProjectService {
     params.put("companyId", currentUser.getCompanyId());
 
     String sql = ProjectQuery.linkAttachment;
-    if(!doLink) {
+    if (!doLink) {
       sql = ProjectQuery.unlinkAttachment;
     }
     sqlCache.updateBySql(sql, params);
@@ -557,7 +536,7 @@ public class ProjectService {
   public List<Attachment> addAttachments(MultipartFile[] files, Long projectId, Long attachmentTypeId) throws IOException {
     List<Attachment> results = new ArrayList<>();
     Attachment a;
-    for(MultipartFile file : files) {
+    for (MultipartFile file : files) {
       a = addAttachment(file, projectId, attachmentTypeId, file.getOriginalFilename());
       results.add(a);
     }
@@ -565,58 +544,31 @@ public class ProjectService {
     return results;
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped
-  // code right now and I hate it
   public Attachment addAttachment(MultipartFile file, @NonNull Long projectId, Long attachmentTypeId, String displayName)
-      throws IOException {
+    throws IOException {
     if (file.isEmpty()) {
       throw new RuntimeException("File cannot be empty");
     }
     return addAttachment(projectId, attachmentTypeId, file.getSize(), file.getContentType(), file.getOriginalFilename(), new ByteArrayInputStream(file.getBytes()), displayName);
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
-  public Attachment addAttachment(@NonNull Long projectId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream, String displayName){
+  public Attachment addAttachment(@NonNull Long projectId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream, String displayName) {
     User currentUser = securityService.getCurrentUser();
 
-    // had to change this so that a parent looking at a child project could still see project
-    // statuses
+    // had to change this so that a parent looking at a child project could still see project statuses
     Long companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, Map.of("projectId", projectId), Long.class);
 
-    // get keyPattern from attachmentType
-    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key =
-      String.format(
-        currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
-
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(contentLength);
-    metadata.setContentType(contentType);
-
-    final PutObjectRequest putObjectRequest = new PutObjectRequest(storageBucket, key, inputStream, metadata);
-    s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    Attachment attachment = attachmentService.create(inputStream, null, attachmentTypeId, displayName, filename, contentType, contentLength, false, companyId);
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(filename));
-    params.put("contentType", contentType);
-    params.put("key", key);
-    params.put("size", contentLength);
-    params.put("createdById", currentUser.trueUserId());
-    params.put("companyId", companyId);
-    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
-    params.put("attachmentTypeId", attachmentTypeId);
-
-    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
-
-    params.clear();
     params.put("projectId", projectId);
-    params.put("attachmentId", attachmentId);
+    params.put("attachmentId", attachment.getId());
     params.put("linked", false);
     params.put("createdById", currentUser.trueUserId());
 
     sqlCache.updateBySql(ProjectQuery.addAttachment, params);
 
-    return attachmentService.findById(attachmentId);
+    return attachment;
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId, Long statusTypeId) {
@@ -630,8 +582,8 @@ public class ProjectService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     return sqlCache.queryBySql(
       ProjectQuery.getProcessStepsByProjectId,
-        params,
-        new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
+      params,
+      new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
   public List<ProjectWorkQueueHistory> getWorkQueueHistoryByProjectId(Long projectId) {
@@ -658,28 +610,28 @@ public class ProjectService {
     params.put("companyId", user.getCompanyId());
     List<ProjectProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
 
-      for(ProjectProcessStepEvent event: processStepEvents){
-          if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
-              HashMap<String, Object> moreParams = new HashMap<>();
-              moreParams.put("objectTypeId", 6); //6 is the event object type
-              moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
-              moreParams.put("primaryId", event.getId());
-              List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
-              event.setCustomFieldDisplayValue(cfvs.get(0));
-          }
+    for (ProjectProcessStepEvent event : processStepEvents) {
+      if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+        HashMap<String, Object> moreParams = new HashMap<>();
+        moreParams.put("objectTypeId", 6); //6 is the event object type
+        moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+        moreParams.put("primaryId", event.getId());
+        List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
+        event.setCustomFieldDisplayValue(cfvs.getFirst());
       }
-    if(!user.isSystemAdmin()){
-      for(int x = 0; x < processStepEvents.size(); x++) {
-        if(!processStepEvents.get(x).getEventHiddenAllow() && (processStepEvents.get(x).getEventHiddenWhiteListedPositions() == null || processStepEvents.get(x).getEventHiddenWhiteListedPositions().size() == 0)){
+    }
+    if (!user.isSystemAdmin()) {
+      for (int x = 0; x < processStepEvents.size(); x++) {
+        if (!processStepEvents.get(x).getEventHiddenAllow() && (processStepEvents.get(x).getEventHiddenWhiteListedPositions() == null || processStepEvents.get(x).getEventHiddenWhiteListedPositions().size() == 0)) {
           processStepEvents.get(x).setEventHidden(false);
         }
-        if(processStepEvents.get(x).getEventHidden()) {
+        if (processStepEvents.get(x).getEventHidden()) {
           boolean whiteListed = false;
           boolean allowFlag = processStepEvents.get(x).getEventHiddenAllow();
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
-            for(int z = 0; z < user.getUserPositions().size(); z++) {
+            for (int z = 0; z < user.getUserPositions().size(); z++) {
               if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
                 whiteListed = true;
               }
@@ -694,7 +646,7 @@ public class ProjectService {
 
           processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
           processStepEvents.get(x).setEventHidden(!whiteListed);
-          if(!whiteListed){
+          if (!whiteListed) {
             processStepEvents.remove(x);
             x--;
           }
@@ -745,10 +697,10 @@ public class ProjectService {
   public String generateReport(String query) {
     User user = securityService.getCurrentUser();
     List<Map<String, Object>> projects =
-        sqlCache.queryBySql(
-          ProjectQuery.generateReport,
-            Map.of("companyId", user.getCompanyId(), "query", query),
-            new ColumnMapRowMapper());
+      sqlCache.queryBySql(
+        ProjectQuery.generateReport,
+        Map.of("companyId", user.getCompanyId(), "query", query),
+        new ColumnMapRowMapper());
 
     // write CSV
     CsvSchema.Builder builder = CsvSchema.builder();
@@ -781,58 +733,64 @@ public class ProjectService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<Contact> contactRef = new TypeReference<>() {};
+      TypeReference<Contact> contactRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
+        Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
 
-      TypeReference<Owner> ownerRef = new TypeReference<>() {};
+      TypeReference<Owner> ownerRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
+        Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
 
       TypeReference<List<ProjectTag>> projectTagsRef =
-        new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "tags",
         new JsonCollectionDeserializer(projectTagsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> statusReadOnlyWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "statusReadOnlyWhiteListedPositions",
-          new JsonCollectionDeserializer(statusReadOnlyWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "statusReadOnlyWhiteListedPositions",
+        new JsonCollectionDeserializer(statusReadOnlyWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> ownerReadOnlyWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
-          List.class,
-          "ownerReadOnlyWhiteListedPositions",
-          new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "ownerReadOnlyWhiteListedPositions",
+        new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
 
     }
   }
 
 
-    private static class ProjectStatusFieldMapper<T> extends BeanPropertyRowMapper<T> {
-      public final ObjectMapper objectMapper;
+  private static class ProjectStatusFieldMapper<T> extends BeanPropertyRowMapper<T> {
+    public final ObjectMapper objectMapper;
 
-      public ProjectStatusFieldMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-        super(mappedClass);
-        this.objectMapper = objectMapper;
-      }
-
-      @Override
-      protected void initBeanWrapper(BeanWrapper bw) {
-        TypeReference<List<ProjectStatusField.AssignedField>> assignedFieldsRef =
-          new TypeReference<>() {};
-        bw.registerCustomEditor(
-          List.class,
-          "assignedFields",
-          new JsonCollectionDeserializer(assignedFieldsRef, objectMapper));
-
-      }
+    public ProjectStatusFieldMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
     }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ProjectStatusField.AssignedField>> assignedFieldsRef =
+        new TypeReference<>() {
+        };
+      bw.registerCustomEditor(
+        List.class,
+        "assignedFields",
+        new JsonCollectionDeserializer(assignedFieldsRef, objectMapper));
+
+    }
+  }
 
   private static class ProjectStatusCountMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
@@ -844,7 +802,8 @@ public class ProjectService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<ProjectCommissions> commissionsRef = new TypeReference<>() {};
+      TypeReference<ProjectCommissions> commissionsRef = new TypeReference<>() {
+      };
 
       bw.registerCustomEditor(
         Object.class, "commissions", new JsonCollectionDeserializer(commissionsRef, objectMapper));

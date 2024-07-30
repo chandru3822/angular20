@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.services.featDB.AhjPermitService;
 import com.albatross.api.v1.company.blueraven.services.featDB.AhjService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class AhjPermitController {
 
     private final AhjService ahjService;
 
+    @PostAuthorize("returnObject.get().getArchived() == true && hasFeatureAccessLevel('AHJ_ADMIN') || returnObject.get().getArchived() == false")
     @GetMapping(value = "")
     public Optional<AhjPermitDetail> getAhjPermitDetail(@PathVariable Long ahjId) {
         return ahjPermitService.getAhjPermitDetailByAhjId(ahjId);
@@ -94,6 +96,7 @@ public class AhjPermitController {
                                  @PathVariable Long linkId) {
         ahjPermitService.deletePermitLink(ahjId, permitId, linkId);
     }
+
 
   @GetMapping(value="/getAhjPermitHistory")
   public List<DatabaseHistory> getAhjPermitHistory(@PathVariable Long ahjId) {

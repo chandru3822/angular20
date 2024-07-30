@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.disclosureForm.DisclosureFormService;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
@@ -22,10 +23,6 @@ import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
 import com.albatross.api.v1.flow.queries.*;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -36,7 +33,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -44,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -62,15 +57,12 @@ public class ProjectProcessStepEventService {
   private final SecurityService securityService;
   private final CustomFieldValueService customFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
-
   private final ProcessStepEventService processStepEventService;
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
   private final AttachmentService attachmentService;
-  private final AmazonS3 s3;
   private final ObjectMapper om;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
-
   private final MarketoService marketoService;
   private final CustomerPortalService customerPortalService;
   private final ListOfValueService listOfValueService;
@@ -79,37 +71,34 @@ public class ProjectProcessStepEventService {
   private final CommunicationService communicationService;
   private final MessagingService messagingService;
   private final PubSubService pubSubService;
-
-  @Value("${aws.storageBucket}")
-  private String storageBucket;
+  private final UserPositionService userPositionService;
+  private final DisclosureFormService disclosureFormService;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
-  private final UserPositionService userPositionService;
-
   public List<ProjectProcessStepEvent> getByPpsId(Long ppsId) {
-      User user = securityService.getCurrentUser();
-      Map<String, Object> params = new HashMap<>();
-      params.put("ppsId", ppsId);
-      params.put("companyId", user.getCompanyId());
-      params.put("isSystemAdmin", user.getHighestCompanyId() == 1L);
-      params.put("userPositions", userPositionService.getAllActiveUserPositionIds(user));
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("ppsId", ppsId);
+    params.put("companyId", user.getCompanyId());
+    params.put("isSystemAdmin", user.getHighestCompanyId() == 1L);
+    params.put("userPositions", userPositionService.getAllActiveUserPositionIds(user));
 
-      var events = sqlCache.queryBySql(ProjectProcessStepEventQuery.getByPpsId, params, new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
+    var events = sqlCache.queryBySql(ProjectProcessStepEventQuery.getByPpsId, params, new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
 
-      for (ProjectProcessStepEvent event : events) {
-          if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
-              HashMap<String, Object> moreParams = new HashMap<>();
-              moreParams.put("objectTypeId", 6); //6 is the event object type
-              moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
-              moreParams.put("primaryId", event.getId());
-              List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
-              event.setCustomFieldDisplayValue(cfvs.get(0));
-          }
+    for (ProjectProcessStepEvent event : events) {
+      if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+        HashMap<String, Object> moreParams = new HashMap<>();
+        moreParams.put("objectTypeId", 6); //6 is the event object type
+        moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+        moreParams.put("primaryId", event.getId());
+        List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
+        event.setCustomFieldDisplayValue(cfvs.getFirst());
       }
+    }
 
-      return events;
+    return events;
   }
 
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
@@ -124,7 +113,7 @@ public class ProjectProcessStepEventService {
 
     Optional<ProjectProcessStepEvent> result = getPpsEvent(projectProcessStepId, id);
 
-    if(result.isPresent()) {
+    if (result.isPresent()) {
       //this will only add the activity if the company has it enabled
       HashMap<String, Object> actParams = new HashMap<>();
       actParams.put("activityId", SystemActivity.EVENT_CREATED.id);
@@ -453,31 +442,31 @@ public class ProjectProcessStepEventService {
 
   @Transactional
   public ProjectProcessStepEvent performStepEventActionTransactional(
-      Long ppsId,
-      Long eventId,
-      Long actionId,
-      ProjectProcessStepEventController.SaveEventRequest saveEvent
+    Long ppsId,
+    Long eventId,
+    Long actionId,
+    ProjectProcessStepEventController.SaveEventRequest saveEvent
   ) throws Exception {
-      // save the custom field values and default values
-      savePpsEventDetails(ppsId, eventId, saveEvent);
+    // save the custom field values and default values
+    savePpsEventDetails(ppsId, eventId, saveEvent);
 
-      // do the action
-      PpseActionResult ppseActionResult = performStepEventAction(ppsId, eventId, actionId);
+    // do the action
+    PpseActionResult ppseActionResult = performStepEventAction(ppsId, eventId, actionId);
 
-      if (ppseActionResult.getShouldRunProjectTagUpdate()) {
-          //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
-          ProjectTagMessage ptm = new ProjectTagMessage();
-          ptm.setProjectId(ppseActionResult.getProjectId());
-          pubSubService.publish(EventChannel.NOTIFICATION, ptm);
-      }
+    if (ppseActionResult.getShouldRunProjectTagUpdate()) {
+      //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
+      ProjectTagMessage ptm = new ProjectTagMessage();
+      ptm.setProjectId(ppseActionResult.getProjectId());
+      pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+    }
 
-      //why in the world do we return the entire object here?
-      Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
+    //why in the world do we return the entire object here?
+    Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
 
-      //add in the child function returned strings
-      ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
+    //add in the child function returned strings
+    ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
 
-      return ppsEvent.orElse(null);
+    return ppsEvent.orElse(null);
   }
 
   @Transactional
@@ -650,6 +639,7 @@ public class ProjectProcessStepEventService {
         HttpStatus.NOT_FOUND, "This action could not be found.", new Exception());
     }
   }
+
   public void performSmsTemplates(Long actionId, Long ppsId, Long projectId, Long contactId) {
     List<ProcessStepEventActionChildSmsTemplate> childSmsTemplates = processStepEventService.getChildSmsTemplates(actionId);
     if (!childSmsTemplates.isEmpty()) {
@@ -661,13 +651,11 @@ public class ProjectProcessStepEventService {
           log.debug("TWILIO: attempting text for contact ID: {}", contactId);
           if (null != contact) {
             Long smsTeamId = null;
-            if(null != smsTemplate.getTeamIds() && smsTemplate.getTeamIds().size() == 1) {
-              smsTeamId = smsTemplate.getTeamIds().get(0);
+            if (null != smsTemplate.getTeamIds() && smsTemplate.getTeamIds().size() == 1) {
+              smsTeamId = smsTemplate.getTeamIds().getFirst();
             }
             communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, smsTeamId);
-            smsTemplate.getTeamIds().forEach(teamId -> {
-              messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
-            });
+            smsTemplate.getTeamIds().forEach(teamId -> messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId()));
           } else {
             throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
@@ -724,11 +712,11 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);
-            if(null != backendActionResult) {
+            if (null != backendActionResult) {
               ppseActionResult.childFunctionReturnedStrings.add(backendActionResult.toString());
             }
           } else {
@@ -778,8 +766,7 @@ public class ProjectProcessStepEventService {
       sqlCache.queryBySql(ProjectProcessStepEventQuery.getProjectProcessStepEventAttachments,
         params,
         Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(
-      attachments, storageBucket, null != isMobile ? isMobile : false);
+    return attachmentService.getAttachmentPresignedUrls(attachments, null != isMobile ? isMobile : false);
   }
 
   public void linkAttachment(Long projectProcessStepEventId, Long attachmentId, Boolean doLink) {
@@ -800,7 +787,7 @@ public class ProjectProcessStepEventService {
   public List<Attachment> addAttachments(MultipartFile[] files, Long projectProcessStepEventId, Long attachmentTypeId) throws IOException {
     List<Attachment> results = new ArrayList<>();
     Attachment a;
-    for(MultipartFile file : files) {
+    for (MultipartFile file : files) {
       a = addAttachment(file, projectProcessStepEventId, attachmentTypeId, file.getOriginalFilename());
       results.add(a);
     }
@@ -808,16 +795,10 @@ public class ProjectProcessStepEventService {
     return results;
   }
 
-  // @TODO: this needs to work better with the attachment service's create method. Too much duped
-  // code right now and I hate it
-  public Attachment addAttachment(
-    MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId, String displayName)
+  public Attachment addAttachment(MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId, String displayName)
     throws IOException {
-    User user = securityService.getCurrentUser();
 
-    if (file.isEmpty()) {
-      throw new RuntimeException("File cannot be empty");
-    }
+    User user = securityService.getCurrentUser();
 
     // had to change this so that a parent looking at a child project could still see project
     // statuses
@@ -826,42 +807,16 @@ public class ProjectProcessStepEventService {
     Long companyId =
       sqlCache.queryForObjectBySql(ProjectProcessStepEventQuery.getCompanyId, p2, Long.class);
 
-    // get keyPattern from attachmentType
-    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
-    String key =
-      String.format(
-        user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
-
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(file.getSize());
-    metadata.setContentType(file.getContentType());
-
-    PutObjectRequest objectRequest =
-      new PutObjectRequest(
-        storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
-
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+    Attachment attachment = attachmentService.create(file, null, attachmentTypeId, displayName, false, companyId);
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
-    params.put("contentType", file.getContentType());
-    params.put("key", key);
-    params.put("size", file.getSize());
-    params.put("createdById", user.getId());
-    params.put("attachmentTypeId", attachmentTypeId);
-    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
-    params.put("companyId", companyId);
-
-    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
-
-    params.clear();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
-    params.put("attachmentId", attachmentId);
+    params.put("attachmentId", attachment.getId());
     params.put("createdById", user.getId());
 
     sqlCache.updateBySql(ProjectProcessStepEventQuery.addAttachment, params);
 
-    return attachmentService.findById(attachmentId);
+    return attachment;
   }
 
   public Optional<ProjectProcessStepEvent> getActiveCloserAppointment(Long projectId) {
@@ -898,7 +853,8 @@ public class ProjectProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {};
+      TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class,
         "eventActions",
@@ -909,93 +865,104 @@ public class ProjectProcessStepEventService {
         new JsonCollectionDeserializer(eventActionsRef, objectMapper));
 
       TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "availableResources",
         new JsonCollectionDeserializer(availableResourcesRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> eventHiddenWhiteListedPositionsRef =
-                new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "eventHiddenWhiteListedPositions",
         new JsonCollectionDeserializer(eventHiddenWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> readonlyWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "readonlyWhiteListedPositions",
         new JsonCollectionDeserializer(readonlyWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> startTimeWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "startTimeWhiteListedPositions",
         new JsonCollectionDeserializer(startTimeWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> startTimeHiddenWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "startTimeHiddenWhiteListedPositions",
         new JsonCollectionDeserializer(startTimeHiddenWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> endTimeWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "endTimeWhiteListedPositions",
         new JsonCollectionDeserializer(endTimeWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> endTimeHiddenWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "endTimeHiddenWhiteListedPositions",
         new JsonCollectionDeserializer(endTimeHiddenWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> resourceWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "resourceWhiteListedPositions",
         new JsonCollectionDeserializer(resourceWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> resourceHiddenWhiteListedPositionsRef =
-          new TypeReference<>() {};
+        new TypeReference<>() {
+        };
       bw.registerCustomEditor(
         List.class,
         "resourceHiddenWhiteListedPositions",
         new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
 
-		TypeReference<List<Long>> companyEventStatusTypeIdsRef = new TypeReference<>() {};
-		bw.registerCustomEditor(
-			List.class,
-			"companyEventStatusTypeIds",
-			new JsonCollectionDeserializer(companyEventStatusTypeIdsRef, objectMapper)
-		);
+      TypeReference<List<Long>> companyEventStatusTypeIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class,
+        "companyEventStatusTypeIds",
+        new JsonCollectionDeserializer(companyEventStatusTypeIdsRef, objectMapper)
+      );
 
-		TypeReference<List<Long>> eventStatusTypeIdsRef = new TypeReference<>() {};
-		bw.registerCustomEditor(
-			List.class,
-			"eventStatusTypeIds",
-			new JsonCollectionDeserializer(eventStatusTypeIdsRef, objectMapper)
-		);
+      TypeReference<List<Long>> eventStatusTypeIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class,
+        "eventStatusTypeIds",
+        new JsonCollectionDeserializer(eventStatusTypeIdsRef, objectMapper)
+      );
     }
   }
 
-  public List<ScheduleEvent> checkForSchedulingConflict(ProjectProcessStepEventController.SaveEventRequest saveEvent, Long eventId){
-    if(saveEvent.getStartTime() == null || saveEvent.getEndTime() == null){
+  public List<ScheduleEvent> checkForSchedulingConflict(ProjectProcessStepEventController.SaveEventRequest saveEvent, Long eventId) {
+    if (saveEvent.getStartTime() == null || saveEvent.getEndTime() == null) {
       return null;
     }
     List<ScheduleEvent> eventList = new ArrayList<>();
 
     List<ResourceAppointment> appointments = getResourceAppointmentsInRange(saveEvent.getResourceId(), null, saveEvent.getStartTime().toString(), saveEvent.getEndTime().toString());
 
-    for(ResourceAppointment appointment : appointments){
+    for (ResourceAppointment appointment : appointments) {
       ScheduleEvent appointmentEvent = new ScheduleEvent();
       appointmentEvent.setResourceName(appointment.getResourceName());
       appointmentEvent.setStart(new Timestamp(appointment.getStartTime().getTime()));
@@ -1013,16 +980,15 @@ public class ProjectProcessStepEventService {
     params.setStartTime(saveEvent.getStartTime().toString());
     params.setEndTime(saveEvent.getEndTime().toString());
     List<ScheduleEvent> events = getConflictingEventsForCompanyByOrgAndUser(params);
-    for(ScheduleEvent event : events){
-      if(event.getProjectProcessStepEventId().equals(saveEvent.getId()) || event.getStart().equals(saveEvent.getEndTime()) || event.getEnd().equals(saveEvent.getStartTime())){
+    for (ScheduleEvent event : events) {
+      if (event.getProjectProcessStepEventId().equals(saveEvent.getId()) || event.getStart().equals(saveEvent.getEndTime()) || event.getEnd().equals(saveEvent.getStartTime())) {
         continue;
-      }
-      else{
+      } else {
         eventList.add(event);
       }
     }
     return eventList;
-}
+  }
 
   public List<ResourceAppointment> getResourceAppointmentsInRange(
     Long userId, List<Long> orgIds, String startTime, String endTime) {
@@ -1036,7 +1002,7 @@ public class ProjectProcessStepEventService {
     params.put("companyId", user.getCompanyId());
 
     return sqlCache.queryBySql(
-        AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
+      AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
   }
 
   public List<ScheduleEvent> getConflictingEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
@@ -1044,7 +1010,7 @@ public class ProjectProcessStepEventService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     List<Long> combined;
 
-    if(null != esp.getUserPositionIds()) {
+    if (null != esp.getUserPositionIds()) {
       combined = esp.getUserPositionIds();
     } else {
       HashMap<String, Object> p2 = new HashMap<>();
@@ -1052,27 +1018,27 @@ public class ProjectProcessStepEventService {
       combined = sqlCache.queryBySql(ScheduleQuery.getUserPositionIdsForUsers, p2, new SingleColumnRowMapper<>(Long.class));
     }
 
-    if(null != esp.getOrgIds()) {
+    if (null != esp.getOrgIds()) {
       combined.addAll(esp.getOrgIds());
     }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("combined", combined );
-    params.put("includeCancelled", esp.getIncludeCancelled() != null ? esp.getIncludeCancelled() : false );
+    params.put("combined", combined);
+    params.put("includeCancelled", esp.getIncludeCancelled() != null ? esp.getIncludeCancelled() : false);
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getConflictingEvents, params, ScheduleEvent.class);
-    for(ScheduleEvent event : results) {
-      if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+    for (ScheduleEvent event : results) {
+      if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
         HashMap<String, Object> moreParams = new HashMap<>();
         moreParams.put("objectTypeId", 6); //6 is the event object type
         moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
         moreParams.put("primaryId", event.getProjectProcessStepEventId());
         List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
-        event.setCustomFieldDisplayValue(cfvs.get(0));
+        event.setCustomFieldDisplayValue(cfvs.getFirst());
       }
     }
     return results;

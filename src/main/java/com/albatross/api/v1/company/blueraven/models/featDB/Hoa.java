@@ -12,7 +12,7 @@ public class Hoa {
     private Long stateId, companyStateId, managementCompanyId;
     private String name, state, managementCompany;
     private Date dateCreated;
-    private Boolean archived;
+    private Boolean archived, active;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

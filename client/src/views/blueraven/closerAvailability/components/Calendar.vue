@@ -3,7 +3,7 @@ import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
-import {handleHidingGlobalLoader, getRequest, postRequest, getEventColorClass} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getEventColorClass, getHostUrl} from '@/helpers/helpers'
 import moment from "moment/moment.js";
 import constants from "@/helpers/constants.js";
 import FullCalendar from "@fullcalendar/vue";
@@ -12,6 +12,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
+import MessagingDialog from "@/views/flow/schedule/components/MessagingDialog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -22,9 +23,23 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
  const vuetify = vueInstance.$vuetify
 const filters = vueInstance.$filters
+const resourcesExpandedMobile = ref(false)
+
+const collapseExpandResources = () => {
+  resourcesExpandedMobile.value = !resourcesExpandedMobile.value
+  let calendarApi = eventCalendar.value.getApi()
+  calendarApi.setOption('resourceAreaWidth', vuetify.breakpoint.smAndDown && !resourcesExpandedMobile.value ? '25%' : 300 )
+
+}
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 const eventCalendar = ref(null)
+
+//sms
+const userCanSms = computed(() => userStore.userHasFeature('SMS_INBOX'))
+const currentUserId = computed(() => userStore.details.id)
+const showMessagingDialog = ref(false)
+const userToMessage = ref(null)
 
 // Calendar Info
 const calendarApi = ref(null)
@@ -43,7 +58,7 @@ const calendarOptions = ref({
   initialView: 'resourceTimelineDay',
   firstDay: 1,
   resources: [],
-  resourceAreaWidth: 300,
+  resourceAreaWidth: vuetify.breakpoint.smAndDown && !resourcesExpandedMobile.value ? '25%' : 300,
   eventSources:[
     (info, successCallback, failureCallback) => getEventSources(info, successCallback, failureCallback)
   ],
@@ -128,7 +143,7 @@ const handleEventClick = (info) => {
   }
 }
 
-watch(() => timezoneFriendly, (value) => {
+watch(timezoneFriendly, (value) => {
   //when the schedule timezone value changes, update the calendar plugin's timezone
   calendarApi.value.setOption('timeZone', timezoneFriendly.value)
 })
@@ -312,7 +327,7 @@ const getAvailability = async(info) => {
       endTime: info.end,
       timezone: info.timeZone
     }
-    console.log(info.timeZone)
+
     const {data} = await postRequest(`/closerAvailability`, params, 'blueraven', [])
     data.forEach(d => {
       if (d.allDay) {
@@ -397,12 +412,14 @@ onMounted (async () => {
   calendarApi.value = eventCalendar.value.getApi()
   await getRoundRobins()
   await getRoundRobinUsers()
+
 })
 
 </script>
 
 <template>
   <div id="closer-availability-calendar-container">
+    <MessagingDialog v-if="currentUserId && userCanSms" :current-user-id="currentUserId" :user-id-to-message="userToMessage?.userId" :title="userToMessage?.title" @close="[showMessagingDialog = false, userToMessage = null]"/>
     <div id="calendar-filter-container" class="pa-6 pt-4">
   <v-row class="py-0 d-flex align-baseline">
     <v-col class="py-0" >
@@ -488,6 +505,23 @@ onMounted (async () => {
         ></v-progress-circular>
       </div>
     <FullCalendar ref="eventCalendar" id="closer-availability-calendar" :options="calendarOptions">
+      <template v-slot:resourceLabelContent="{resource, index}">
+        <div class="d-flex justify-space-between align-baseline">
+          <a :href="`${getHostUrl()}/user/${resource.extendedProps.userId}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
+          <div>
+            <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+              <template v-slot:activator="{on}">
+                <a-btn v-if="userCanSms && resource.extendedProps.hasSMSAccess" icon size="small" @click="[showMessagingDialog = true, userToMessage = {userId:Number(resource.extendedProps.userId), title: resource.extendedProps.fullName}]" :activation-handler="on" class="mx-1">
+                  <v-icon color="grey darken-1">mdi-forum</v-icon>
+                </a-btn>
+              </template>
+              <span>Message Resource</span>
+            </v-tooltip>
+            <a-btn icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
+          </div>
+        </div>
+      </template>
+
       <template v-slot:eventContent="{event}">
         <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
           <template v-slot:activator="{ on, attrs }">
@@ -497,7 +531,14 @@ onMounted (async () => {
         </v-tooltip>
         <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
       </template>
-
+      <template v-slot:resourceAreaHeaderContent>
+        <div class="d-flex one-hunned">
+          <a-btn v-if="vuetify.breakpoint.smAndDown" variant="text" icon size="small" @click="collapseExpandResources">
+            <v-icon v-if="resourcesExpandedMobile">mdi-unfold-less-vertical</v-icon>
+            <v-icon v-else>mdi-unfold-more-vertical</v-icon></a-btn>
+          <span>Resources</span>
+        </div>
+      </template>
     </FullCalendar>
     </div>
   </div>

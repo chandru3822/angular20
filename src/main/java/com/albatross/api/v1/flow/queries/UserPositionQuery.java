@@ -13,6 +13,8 @@ public class UserPositionQuery {
                     upv.position,
                     upv.position_id,
                     upv.company_id,
+                    upv.sales_org_id,
+                    upv.sales_org_name,
                     uphv.hierarchy,
                     p.use_slot_schedule
           from flow.user_positions_vw upv
@@ -25,6 +27,13 @@ public class UserPositionQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getAvailableSalesOrgs = """
+    select *
+      from brs.get_available_sales_orgs(:orgId::bigint,:positionId::bigint);
+    """;
+
+
+  //language=PostgreSQL
   public final static String getAllActive = """
     select distinct upv.user_position_id as id,
                     upv.user_id,
@@ -32,6 +41,8 @@ public class UserPositionQuery {
                     upv.primary_flag,
                     upv.start_date,
                     upv.end_date,
+                    upv.sales_org_id,
+                    upv.sales_org_name,
                     upv.position,
                     upv.position_id,
                     upv.company_id
@@ -51,6 +62,8 @@ public class UserPositionQuery {
                     upv.primary_flag,
                     upv.start_date,
                     upv.end_date,
+                    upv.sales_org_id,
+                    upv.sales_org_name,
                     upv.position,
                     upv.position_id,
                     upv.company_id,
@@ -66,6 +79,8 @@ public class UserPositionQuery {
                        upv.user_id,
                        upv.archived,
                        upv.primary_flag,
+                       upv.sales_org_id,
+                       upv.sales_org_name,
                        upv.start_date,
                        upv.end_date,
                        upv.position,
@@ -95,6 +110,7 @@ public class UserPositionQuery {
                 start_date = :startDate::date,
                 end_date = :endDate::date,
                 org_id = :orgId,
+                sales_org_id = :salesOrgId,
                 date_modified = now(),
                 modified_by_id = :modifiedById,
                 primary_flag = :primaryFlag
@@ -103,8 +119,8 @@ public class UserPositionQuery {
 
   //language=PostgreSQL
   public final static String insertUserPosition = """
-    insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, primary_flag, created_by_id, date_created, modified_by_id, date_modified)
-      values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :primaryFlag, :createdById, now(), :createdById, now())
+    insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, primary_flag, created_by_id, date_created, modified_by_id, date_modified, sales_org_id)
+      values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :primaryFlag, :createdById, now(), :createdById, now(), :salesOrgId)
     """;
 
   //language=PostgreSQL

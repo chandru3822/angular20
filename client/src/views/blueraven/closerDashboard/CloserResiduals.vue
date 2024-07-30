@@ -160,8 +160,8 @@
         Monthly Residual Quota - Qualified Projects
         <v-spacer></v-spacer>
         <div class="residual-total-count text-right">
-          Total System Size: {{ getTotalsForField(residualData.qualified_fdc, 'system_size') }} <br>
-          Total Counted for Quota: {{ getTotalsForField(residualData.qualified_fdc, 'system_size_adjusted_for_source') }}
+          Total System Size: {{ getTotalsForField(residualData.qualified_fdc, 'system_size') | currency('', 2) }} <br>
+          Total Counted for Quota: {{ getTotalsForField(residualData.qualified_fdc, 'system_size_adjusted_for_source') | currency('', 2)}}
         </div>
       </v-card-title>
       <v-card-text>
@@ -216,8 +216,8 @@
         Projects in month - Not Qualifying
         <v-spacer></v-spacer>
         <div class="residual-total-count text-right">
-          Total System Size: {{ getTotalsForField(residualData.fda_in_month_not_qualifying, 'system_size') }} <br>
-          Total Counted for Quota: {{ getTotalsForField(residualData.fda_in_month_not_qualifying, 'system_size_adjusted_for_source') }}
+          Total System Size: {{ getTotalsForField(residualData.fda_in_month_not_qualifying, 'system_size') | currency('', 2) }} <br>
+          Total Counted for Quota: {{ getTotalsForField(residualData.fda_in_month_not_qualifying, 'system_size_adjusted_for_source') | currency('', 2) }}
         </div>
       </v-card-title>
       <v-card-text>

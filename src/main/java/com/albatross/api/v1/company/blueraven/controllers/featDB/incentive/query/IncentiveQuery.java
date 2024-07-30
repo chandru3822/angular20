@@ -16,7 +16,8 @@ public class IncentiveQuery {
                  lovis.name as status,
                  s.abbreviation as state_abbreviation,
                  h.date_created as "dateCreated",
-                 h.archived
+                 h.archived,
+                 h.active
           FROM brs.feat_db_incentive h
                    left join brs.list_of_value lovit on lovit.id = h.type_id and lovit.parent_id = 452
                    left join brs.list_of_value lovis on lovis.id = h.status_id and lovis.parent_id = 2066
@@ -34,7 +35,8 @@ public class IncentiveQuery {
             type_id = :typeId,
             status_id = :statusId,
             date_modified = now(),
-            modified_by_id = :currentUser
+            modified_by_id = :currentUser,
+            active = :active
           WHERE id = :id
     """;
 
@@ -48,7 +50,8 @@ public class IncentiveQuery {
             type_id = :typeId,
             status_id = :statusId,
             date_modified = now(),
-            modified_by_id = :currentUser
+            modified_by_id = :currentUser,
+            active = :active
           WHERE id = :id
     """;
 
@@ -57,14 +60,25 @@ public class IncentiveQuery {
         UPDATE brs.feat_db_incentive
             SET archived = TRUE,
                 date_modified = now(),
-                modified_by_id = :currentUser
+                modified_by_id = :currentUser,
+                active = FALSE
             WHERE id = :id
     """;
 
   //language=PostgreSQL
+  public final static String restore = """
+    UPDATE brs.feat_db_incentive
+          SET archived = false,
+              active = true,
+              date_modified = now(),
+              modified_by_id = :userId
+          WHERE id = :id and archived = true
+    """;
+
+  //language=PostgreSQL
   public final static String insert = """
-          INSERT INTO brs.feat_db_incentive(name, archived, company_state_id, type_id, status_id, date_created, created_by_id,date_modified, modified_by_id)
-          VALUES (:incentiveName, false, :companyStateId, :typeId, :statusId, now(), :currentUser, now(), :currentUser)
+          INSERT INTO brs.feat_db_incentive(name, archived, company_state_id, type_id, status_id, date_created, created_by_id,date_modified, modified_by_id, active)
+          VALUES (:incentiveName, false, :companyStateId, :typeId, :statusId, now(), :currentUser, now(), :currentUser, true)
     """;
 
   //language=PostgreSQL

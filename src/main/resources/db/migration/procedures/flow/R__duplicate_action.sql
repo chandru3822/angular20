@@ -11,11 +11,11 @@ BEGIN
   -- the company_id comes from the login token, so it ensures the user has access to the company/data
 
   --duplicate the action
-  insert into flow.process_step_action(process_step_id, action_type_id, action_name, company_process_step_status_type_id, trigger_automatically,
+  insert into flow.process_step_action(process_step_id, action_type_id, action_name, company_process_step_status_type_id, company_process_step_status_type_ids, process_step_status_type_ids, trigger_automatically,
                                        date_created, date_modified, created_by_id, modified_by_id, archived, always_enabled, display_order, time_based_trigger,
                                        company_project_status_type_id, hide_from_mobile, multiple_uses, remove_process_step_owner, hide_from_web, color, content, bg_color)
     (select process_step_id, action_type_id, concat(action_name, ' (copy)'),
-            company_process_step_status_type_id, trigger_automatically, now(), now(),
+            company_process_step_status_type_id, company_process_step_status_type_ids, process_step_status_type_ids, trigger_automatically, now(), now(),
             p_current_user_id, p_current_user_id, psa.archived, always_enabled,  (select coalesce(max(display_order) + 1, 0)
                                                                                   from flow.process_step_action
                                                                                   where process_step_id = (select process_step_id from flow.process_step_action where id = p_process_step_action_id)

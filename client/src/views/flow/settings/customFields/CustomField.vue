@@ -465,6 +465,7 @@ const debounceFindCustomFields = debounce((query) => {
       }
     }
     const saveChanges = async (object)  => {
+
       appStore.loading = true;
       try {
         // set the display order to save to DB
@@ -478,15 +479,16 @@ const debounceFindCustomFields = debounce((query) => {
         });
 
         object.companyDataTypeId = object.companyDataType.id
-
+        debugger
         object.fieldName = object.fieldName
         const {data, status} = await postRequest(`/customField`, object, props.apiPath);
         data.companyDataType = companyDataTypes.value.find(dt => dt.id === data.companyDataTypeId);
         vueInstance.$set(object, "listOfValues", data.listOfValues);
 
-        // if it was a new field, add the id to the url
+        // if it was a new field, add the id to the customField object and the url
         if (undefined === customFieldId.value || null === customFieldId.value) {
           let path = null == props.apiPath ? `/settings/customField/${data.id}` : `/settings/companyCustomField/${data.id}`
+          customField.value.id = data.id
           await router.push(path)
         }
 

@@ -14,7 +14,8 @@ public class HoaQuery {
                  lov.id as management_company_id,
                  lov.name as management_company,
                  h.date_created as "dateCreated",
-                 h.archived
+                 h.archived,
+                 h.active
           FROM brs.feat_db_hoa h
                    left join brs.list_of_value lov on lov.id = h.management_company_id and lov.parent_id = 759
                    left join flow.company_state cs on cs.id = h.company_state_id
@@ -30,7 +31,8 @@ public class HoaQuery {
             company_state_id = :companyStateId,
             management_company_id = :managementCompanyId,
             date_modified = now(),
-            modified_by_id = :currentUser
+            modified_by_id = :currentUser,
+            active = :active
           WHERE id = :id
     """;
 
@@ -43,7 +45,8 @@ public class HoaQuery {
             company_state_id = :companyStateId,
             management_company_id = :managementCompanyId,
             date_modified = now(),
-            modified_by_id = :currentUser
+            modified_by_id = :currentUser,
+            active = :active
           WHERE id = :id
     """;
 
@@ -52,14 +55,25 @@ public class HoaQuery {
         UPDATE brs.feat_db_hoa
             SET archived = TRUE,
                 date_modified = now(),
-                modified_by_id = :currentUser
+                modified_by_id = :currentUser,
+                active = FALSE
             WHERE id = :id
     """;
 
   //language=PostgreSQL
+  public final static String restore = """
+    UPDATE brs.feat_db_hoa
+          SET archived = false,
+              active = true,
+              date_modified = now(),
+              modified_by_id = :userId
+          WHERE id = :id and archived = true
+    """;
+
+  //language=PostgreSQL
   public final static String insert = """
-          INSERT INTO brs.feat_db_hoa(name, archived, company_state_id, management_company_id, date_created, created_by_id,date_modified, modified_by_id)
-          VALUES (:hoaName, false, :companyStateId, :managementCompanyId, now(), :currentUser, now(), :currentUser)
+          INSERT INTO brs.feat_db_hoa(name, archived, company_state_id, management_company_id, date_created, created_by_id,date_modified, modified_by_id, active)
+          VALUES (:hoaName, false, :companyStateId, :managementCompanyId, now(), :currentUser, now(), :currentUser, true)
     """;
 
   //language=PostgreSQL

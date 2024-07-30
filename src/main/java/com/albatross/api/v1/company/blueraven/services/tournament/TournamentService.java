@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -21,16 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Randa Nunn on 2021-03-12.
- */
 @Service
 @PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('TOURNAMENTS')")
 @RequiredArgsConstructor
 public class TournamentService {
-
-  @Value("${aws.storageBucket}")
-  private String bucket;
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
@@ -38,15 +31,13 @@ public class TournamentService {
   private final ObjectMapper om;
 
   public List<Tournament> getTournaments() {
-    List<Tournament> results = sqlCache.queryBySql(TournamentQuery.getTournaments, Collections.emptyMap(), Tournament.class);
-    return results;
+    return sqlCache.queryBySql(TournamentQuery.getTournaments, Collections.emptyMap(), Tournament.class);
   }
 
   public String getFormulaColumns(Long tournamentId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentId", tournamentId);
-    String result = sqlCache.queryForObjectBySql(TournamentQuery.getFormulaColumns, params, String.class);
-    return result;
+    return sqlCache.queryForObjectBySql(TournamentQuery.getFormulaColumns, params, String.class);
   }
 
   public String getUserScores(Long tournamentId, Long userId, String startDate, String endDate) {
@@ -55,27 +46,23 @@ public class TournamentService {
     params.put("userId", userId);
     params.put("startDate", startDate);
     params.put("endDate", endDate);
-    Optional<String> results = sqlCache.queryForObjectOptionalBySql(TournamentQuery.getUserScores, params, String.class);
-    return results.orElse(null);
+    return sqlCache.queryForObjectOptionalBySql(TournamentQuery.getUserScores, params, String.class).orElse(null);
   }
 
   public List<TournamentOwnerType> getTournamentOwnerTypes() {
-    List<TournamentOwnerType> results = sqlCache.queryBySql(TournamentQuery.getOwnerTypes, Collections.emptyMap(), TournamentOwnerType.class);
-    return results;
+    return sqlCache.queryBySql(TournamentQuery.getOwnerTypes, Collections.emptyMap(), TournamentOwnerType.class);
   }
 
   public List<TournamentFormula> getTournamentFormulas(Long ownerTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ownerTypeId", ownerTypeId);
-    List<TournamentFormula> results = sqlCache.queryBySql(TournamentQuery.getFormulas, params, TournamentFormula.class);
-    return results;
+    return sqlCache.queryBySql(TournamentQuery.getFormulas, params, TournamentFormula.class);
   }
 
   public List<TournamentFormulaField> getTournamentFormulaFields(Long formulaId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("formulaId", formulaId);
-    List<TournamentFormulaField> results = sqlCache.queryBySql(TournamentQuery.getFormulaFields, params, TournamentFormulaField.class);
-    return results;
+    return sqlCache.queryBySql(TournamentQuery.getFormulaFields, params, TournamentFormulaField.class);
   }
 
   public void deleteTournament(Long id) {
@@ -141,8 +128,7 @@ public class TournamentService {
   }
 
   public List<Tournament> getActiveTournaments() {
-    List<Tournament> results = sqlCache.queryBySql(TournamentQuery.getActiveTournaments, Collections.emptyMap(), Tournament.class);
-    return results;
+    return sqlCache.queryBySql(TournamentQuery.getActiveTournaments, Collections.emptyMap(), Tournament.class);
   }
 
   public Optional<Tournament> getTournament(Long id) {
@@ -151,7 +137,7 @@ public class TournamentService {
 
     Optional<Tournament> result = sqlCache.getBySql(TournamentQuery.get, params, new TournamentMapper<>(Tournament.class, om));
     if (result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
-      result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(bucket, result.get().getBackgroundAttachmentId()));
+      result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(result.get().getBackgroundAttachmentId()));
     }
     return result;
   }
@@ -161,16 +147,14 @@ public class TournamentService {
     params.put("tournamentId", tournamentId);
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    String results = sqlCache.queryForObjectBySql(TournamentQuery.getBrackets, params, String.class);
-    return results;
+    return sqlCache.queryForObjectBySql(TournamentQuery.getBrackets, params, String.class);
   }
 
   public Optional<Bracket> getBracket(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<Bracket> result = sqlCache.getBySql(TournamentQuery.getBracket, params, new BracketMapper<>(Bracket.class, om));
-    return result;
+    return sqlCache.getBySql(TournamentQuery.getBracket, params, new BracketMapper<>(Bracket.class, om));
   }
 
   public Optional<Bracket> addBracket(Bracket bracket) {
@@ -354,5 +338,4 @@ public class TournamentService {
         new JsonCollectionDeserializer(roundsRef, objectMapper));
     }
   }
-
 }

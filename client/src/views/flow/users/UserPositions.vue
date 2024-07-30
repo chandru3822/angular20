@@ -26,15 +26,16 @@
                             label="Positions"
                             item-title="position"
                             item-value="id"
-                            @input="populateHierarchy(newPosition, true)"/>
-            <div v-if="newPositionHierarchyPopulated">
+                            @input="[newPosition.orgId = null, populateHierarchy(newPosition, true), getSalesOrgs(true)]"/>
+            <div v-if="newPositionHierarchyPopulated" :key="keyGarbageAgain">
               <div v-for="(f, index) in filters" :key="index">
                 <a-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
-                                v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
+                                v-model="newPosition.orgId"
                                 :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
                                 :rules="requiredRules"
                                 :label="f.levelName"
                                 item-value="id"
+                                @change="[keyGarbageAgain++, getSalesOrgs(true)]"
                                 item-title="orgName"
                 >
                   <template  v-slot:selection="{item, index}">
@@ -46,6 +47,15 @@
                 </a-autocomplete>
               </div>
             </div>
+            <a-autocomplete v-if="salesOrgs?.length > 0"
+                            v-model="newPosition.salesOrgId"
+                            :items="salesOrgs"
+                            :rules="requiredRules"
+                            label="Sales Org"
+                            item-value="id"
+                            item-title="orgName"
+            >
+            </a-autocomplete>
             <div v-if="newPosition.startDate >= newPosition.endDate" class="error-text mb-2">
               End date must be null or after the start date
             </div>
@@ -53,13 +63,13 @@
                 variant="text"
                 color="primary"
                 class="mr-2"
-                @click="[newPosition = [], addNew = !addNew]"
+                @click="[newPosition = {}, addNew = !addNew]"
                 text="Cancel"
             ></a-btn>
             <a-btn
                 color="primary"
                 class="mr-2"
-                :disabled="!newPosition.positionId || (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) || (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
+                :disabled="disableSave || !newPosition.positionId || (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) || (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
                 @click="validate(newPosition)"
                 text="Add"
             ></a-btn>
@@ -156,6 +166,14 @@
                   </template>
                 </a-autocomplete>
               </div>
+              <div v-if="item.salesOrgName">
+                <a-text-field
+                  label="Sales Org"
+                  :value="item.salesOrgName"
+                  readonly
+                  disabled>
+                </a-text-field>
+              </div>
               <div v-if="item.startDate >= item.endDate" class="error-text mb-2">
                 End date must be null or after the start date
               </div>
@@ -179,7 +197,8 @@
                 <input type="checkbox" v-model="item.primaryFlag" disabled>
               </td>
               <td class="text-left user-column" v-for="(f, index) in filters" :key="index">
-                <a v-if="getOrgIdForFilter(item.hierarchy, f.orgLevelId)" :href="`/org/${getOrgIdForFilter(item.hierarchy, f.orgLevelId)}`">{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</a>
+                <a v-if="f.level === 7 && item.salesOrgName" :href="`/org/${item.salesOrgId}`">*{{ item.salesOrgName}}</a>
+                <a v-else-if="getOrgIdForFilter(item.hierarchy, f.orgLevelId)" :href="`/org/${getOrgIdForFilter(item.hierarchy, f.orgLevelId)}`">{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</a>
                 <span v-else>{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</span>
               </td>
               <td width="150" class="d-flex">
@@ -223,9 +242,9 @@
 <script setup>
 
 import keyBy from 'lodash.keyby'
-import {getOrgFilters} from '@/services/orgService'
+import {getOrgFilters, getAvailableSalesOrgs} from '@/services/orgService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, } from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequestWithParams, getRequest, deleteRequest, postRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 
@@ -251,6 +270,9 @@ const addNew = ref(false)
 const newPositionHierarchyPopulated = ref(false)
 const filters = ref([])
 const expanded = ref([])
+const disableSave = ref(false)
+const salesOrgs = ref([])
+const keyGarbageAgain = ref(0)
 const userId = ref(route.params.id)
 const headers = ref([
   { text: 'Start Date', value: 'startDate', show: true },
@@ -273,7 +295,7 @@ const positionToDeleteName = computed(() => {
   return positionToDelete.value ? positionToDelete.value.position : ''
 })
 const filteredUserPositions = computed(() => {
-  return userPositions.value.filter(wqc => { return !wqc.archived})
+  return userPositions.value?.filter(wqc => { return !wqc.archived})
 })
 
 onMounted(() => {
@@ -287,6 +309,36 @@ const validate =  (item) => {
     savePosition(item)
   }
 }
+
+const getSalesOrgs = async (isNew) => {
+  disableSave.value = true
+  salesOrgs.value = []
+  newPosition.value.salesOrgId = null
+
+  if(isNew && newPosition.value.positionId && newPosition.value.orgId) {
+    try {
+      console.log('positionId', newPosition.value.positionId)
+      console.log('orgId', newPosition.value.orgId)
+      let params = {
+        positionId: newPosition.value.positionId,
+        orgId: newPosition.value.orgId
+      }
+      const { data, status } = await getAvailableSalesOrgs(newPosition.value.positionId, newPosition.value.orgId)
+      if( data?.length > 0) {
+        salesOrgs.value = data
+      }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
+    } finally {
+      disableSave.value = false
+    }
+  } else {
+    salesOrgs.value = []
+    disableSave.value = false
+  }
+}
+
 const getOrgsMatchingPositionOrgType = (orgs, newPosition) => {
   // get orgs that match the org type selected in the position (admin screen)
   let selectedPosition = positions.value.find(p => p.id === newPosition.positionId)
@@ -395,11 +447,14 @@ const savePosition = async (item) => {
     addNew.value = false
     let itemIndex = userPositions.value.indexOf(item)
 
-    let lowestHierarchy = item?.hierarchy?.reduce((prev, current) => {
-      return (prev.level > current.level) ? prev : current
-    })
+    if(!item.orgId) {
+      let lowestHierarchy = item?.hierarchy?.reduce((prev, current) => {
+        return (prev.level > current.level) ? prev : current
+      })
+      item.orgId = lowestHierarchy.orgId
+    }
     let itemId = item.id
-    item.orgId = lowestHierarchy.orgId
+    // item.orgId = randaTest.value
     let params = {
       ...item,
       primaryFlag: !itemId && userPositions.value.filter(up => !up.archived).length === 0 ? true : item.primaryFlag,

@@ -63,11 +63,14 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             misc_adders_array                       bigint[],
             commission_strategy_id                  bigint,
             qualifies_for_incentive                 bigint[],
-            adder_amount numeric,
-            company_process_id  bigint,
-            virtual_sales_price_adjustment numeric,
-	        system_size_ac numeric,
-            panel_model text
+            adder_amount                            numeric,
+            company_process_id                      bigint,
+            virtual_sales_price_adjustment          numeric,
+            system_size_ac                          numeric,
+            panel_model                             text,
+            qualifies_for_swr                       boolean,
+            rete_incentive_applied                  boolean,
+            rete_depreciation_incentive_amount      numeric
           )
 
 AS
@@ -76,14 +79,14 @@ declare
 
 BEGIN
   return query
-    select prop.id                                   as proposal_id,
+    select prop.id                                                             as proposal_id,
            proposal_version_id,
            prop.project_process_step_id,
            coalesce(pcfv3.boolean_value, false),
            coalesce(pcfv4.numeric_value, 0),
            pcfv5.int_value,
            lov.name,
-           p.id                                      as project_id,
+           p.id                                                                as project_id,
            prop.archived,
            c.first_name,
            c.last_name,
@@ -93,7 +96,7 @@ BEGIN
            p.city,
            p.postal_code,
            s.state,
-           s.abbreviation                            as state_abbreviation,
+           s.abbreviation                                                      as state_abbreviation,
            c.mobile,
            c.email,
            (pcfv7.numeric_value),
@@ -112,7 +115,7 @@ BEGIN
            case
              when prop.revision_number = 0 then ''
              else ' (' || prop.revision_number::varchar || ')' end
-             || ' - ' || prop.proposal_nbr || '.pdf' as display_name,
+             || ' - ' || prop.proposal_nbr || '.pdf'                           as display_name,
            pcfv17.int_value,
            pcfv18.int_value,
            pcfv19.numeric_value,
@@ -144,8 +147,11 @@ BEGIN
            ppscfv45.numeric_value,
            p.company_process_id,
            pcfv24.numeric_value,
-	       (ppscfv46.json_value->>'system_size_ac')::numeric as system_size_ac,
-         (ppscfv47.json_value ->'arrays'->0->'module'->>'name')::text as panel_model
+           (ppscfv46.json_value ->> 'system_size_ac')::numeric                 as system_size_ac,
+           (ppscfv47.json_value -> 'arrays' -> 0 -> 'module' ->> 'name')::text as panel_model,
+           pcfv_48.boolean_value,
+           pcfv26.boolean_value,
+           pcfv28.numeric_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -198,6 +204,10 @@ BEGIN
                                                                pcfv23.custom_field_group_assignment_id = 490
            left join brs.proposal_custom_field_value pcfv25 on prop.id = pcfv25.proposal_id and
                                                                pcfv25.custom_field_group_assignment_id = 581
+           left join brs.proposal_custom_field_value pcfv26 on prop.id = pcfv26.proposal_id and
+                                                               pcfv26.custom_field_group_assignment_id = 864
+           left join brs.proposal_custom_field_value pcfv28 on prop.id = pcfv28.proposal_id and
+                                                               pcfv28.custom_field_group_assignment_id = 866
            left join flow.project_process_step_custom_field_value ppscfv30
                      on pps.id = ppscfv30.project_process_step_id and
                         ppscfv30.custom_field_group_assignment_id = 22573
@@ -239,7 +249,7 @@ BEGIN
            left join flow.project_process_step_custom_field_value ppscfv43
                      on ppscfv43.project_process_step_id = pps.id and
                         ppscfv43.custom_field_group_assignment_id = 25981
-        -- 45 = adder amount
+      -- 45 = adder amount
            left join flow.project_process_step_custom_field_value ppscfv45
                      on ppscfv45.project_process_step_id = pps.id and
                         ppscfv45.custom_field_group_assignment_id = 26217
@@ -249,10 +259,14 @@ BEGIN
            left join brs.feat_db_utility utility35 on utility35.id = ppscfv35.int_value
            left join brs.proposal_custom_field_value pcfv24 on prop.id = pcfv24.proposal_id and
                                                                pcfv24.custom_field_group_assignment_id = 517
-           left join flow.project_process_step_custom_field_value ppscfv46 on ppscfv46.project_process_step_id = pps.id and
-                                                                              ppscfv46.custom_field_group_assignment_id = 22682
-           left join flow.project_process_step_custom_field_value ppscfv47 on ppscfv47.project_process_step_id = pps.id and
-                                                                              ppscfv47.custom_field_group_assignment_id = 22682
+           left join flow.project_process_step_custom_field_value ppscfv46
+                     on ppscfv46.project_process_step_id = pps.id and
+                        ppscfv46.custom_field_group_assignment_id = 22682
+           left join flow.project_process_step_custom_field_value ppscfv47
+                     on ppscfv47.project_process_step_id = pps.id and
+                        ppscfv47.custom_field_group_assignment_id = 22682
+           left join flow.project_custom_field_value pcfv_48 on pcfv_48.project_id = p.id and
+                                                                pcfv_48.custom_field_group_assignment_id = 27524
 
     where prop.id = p_proposal_id;
 

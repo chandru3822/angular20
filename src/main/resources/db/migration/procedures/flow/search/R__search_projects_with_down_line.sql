@@ -113,6 +113,7 @@ BEGIN
              limited_projects.company_project_status_type_id::bigint,
              limited_projects.project_status_type,
              limited_projects.contact,
+             null::numeric,
              limited_projects.root_project_status_type,
              limited_projects.closer_name
       FROM (select *
