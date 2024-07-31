@@ -8,7 +8,9 @@
              :useRightPanelMobile="true"
              :right-open="showMap"
              :showRightCollapseBtn="false"
+             useRightDrawer
              :class="{'height-one-hunned': isSidebarView}"
+             @closeRight="showHideMap($event)"
   >
     <template v-slot:main-column>
       <a-btn id="map-btn" v-if="!showMap && vuetify.breakpoint.mdAndUp && !isSidebarView" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
@@ -386,6 +388,9 @@ const zoomToMap = (item, zoomOverride) => {
   height: calc(40vh - 118px);
   //this is smaller because it is the inner wrapper of the table
   min-height: 211px;
+}
+#schedule-container > aside.v-navigation-drawer--right {
+  width:90% !important;
 }
 
 #schedule-container .v-data-footer__pagination {

@@ -36,11 +36,11 @@ const props = defineProps({
   viewChangeCallback: Function, //@required,
   subMenuSelectedView: Object, //@optional, allows us to close the menu when using a submenu and the route doesn't change
   showRightCol:Boolean,
+  useRightDrawer:Boolean,
   rightOpen:Boolean,
 })
-const emit = defineEmits(['selectMenuItem'])
+const emit = defineEmits(['selectMenuItem', 'closeRight'])
 
-const showRight = ref(props.rightOpen)
 
 const showMenu=ref(false)
 const toggleMenu = (forceClose) => {
@@ -64,6 +64,10 @@ const toggleMenu = (forceClose) => {
 const chooseSelectedView = (view, id) => {
   selectedViewId.value = id
   props.viewChangeCallback(view, true)
+}
+
+const rightDrawerInput = (event) => {
+  emit('closeRight', event)
 }
 
 </script>
@@ -94,6 +98,9 @@ const chooseSelectedView = (view, id) => {
       <slot v-else name="right-column"/>
     </v-col>
   </v-row>
+    <v-navigation-drawer v-if="useRightDrawer" v-model="rightOpen" right absolute temporary @input="rightDrawerInput($event)">
+      <slot name="right-column"/>
+    </v-navigation-drawer>
   </v-container>
 </template>
 
