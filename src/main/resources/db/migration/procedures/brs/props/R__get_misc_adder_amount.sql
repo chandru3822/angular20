@@ -24,14 +24,14 @@ BEGIN
     if x.adder_id && p_adders or (x.default_value is not null and x.default_value is true) or (p_rete_incentive_applied is true and x.rete_incentive = 'RETE Adder') then
       if x.unit_type_id = 459 then
         if (p_rete_incentive_applied is true and x.rete_incentive = 'RETE Adder') then
-          v_rete_amount = coalesce(v_amount, 0) + x.adder_amount;
+          v_rete_amount = coalesce(v_rete_amount, 0) + x.adder_amount;
         elsif x.rete_incentive is null or x.rete_incentive != 'RETE Adder' then
           v_amount = coalesce(v_amount, 0) + x.adder_amount;
         end if;
 
       elsif x.unit_type_id = 460 then
         if (p_rete_incentive_applied is true and x.rete_incentive = 'RETE Adder') then
-          v_rete_amount = coalesce(v_amount, 0) + x.adder_amount * p_system_size * 1000;
+          v_rete_amount = coalesce(v_rete_amount, 0) + x.adder_amount * p_system_size * 1000;
         elsif x.rete_incentive is null or x.rete_incentive != 'RETE Adder' then
           v_amount = coalesce(v_amount, 0) + x.adder_amount * p_system_size * 1000;
         end if;
