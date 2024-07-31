@@ -86,8 +86,9 @@ const fetchTeamsForUser = async () => {
 
 const loadConversation = async () => {
   userAssigned.value = false
+  if(userIdToMessage.value) {
     try {
-      const { data, status } = await getRequest(
+      const {data, status} = await getRequest(
           '/messaging/user/' + userIdToMessage.value
       )
       messageProperties.value = data
@@ -108,6 +109,7 @@ const loadConversation = async () => {
 
       conversationIsLoading.value = false
     }
+  }
 }
 
 const startJoinConversation = () => {
