@@ -282,7 +282,6 @@ const props = defineProps({
   collapseBtnIcon: String
 })
 const {
-  showSmsTab,
   contactId,
   userIdIn,
   orgId,
@@ -298,7 +297,7 @@ const isMobile = computed(() => {
 })
 const viewOptions = computed(() => {
   let vo = [
-    { icon: 'mdi-forum-outline', visible: showSmsTab },
+    { icon: 'mdi-forum-outline', visible: props.showSmsTab },
     { icon: 'mdi-text-long', visible: true }
   ]
 
@@ -341,7 +340,7 @@ const projectProcessStepEventId = computed(() => {
 })
 const viewId = computed(() => {
   return null == selectedTab.value ||
-    (selectedTab.value === 0 && !showSmsTab.value)
+    (selectedTab.value === 0 && !props.showSmsTab)
     ? 1
     : selectedTab.value
 })
@@ -520,7 +519,7 @@ const joinConversation = async (selectedTeam) => {
   }
 }
 const fetchTeamsForUser = async () => {
-  if (showSmsTab.value) {
+  if (props.showSmsTab) {
     try {
       conversationIsLoading.value = true
       const { data, status } = await getRequest(
