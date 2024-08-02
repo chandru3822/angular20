@@ -171,6 +171,7 @@
         :reloading="conversationIsLoading"
         :show-assign-to-me-button="!userAssigned && userHasTeam"
         :user-id="userId"
+        :project-id="projectId"
         class="px-6 pb-1 mt-n1"
         @updateOwner="loadConversation"
         @joinConversation="startJoinConversation"
