@@ -666,9 +666,6 @@ onMounted (async () => {
 .resource-title {
   max-width: 60%;
   white-space: break-spaces;
-  @media(max-width: 960px) {
-    max-width: 30%;
-  }
 }
 .v-tooltip__content {
   background-color: white;
