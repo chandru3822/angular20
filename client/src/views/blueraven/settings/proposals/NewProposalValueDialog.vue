@@ -158,9 +158,11 @@ const fetchObjectFields = async (objectCode) => {
 const updateFieldValue = (field) => {
   const { value, id } = extractFieldData(field)
   if (value.value === undefined) {
-    delete dirtyCfvs.value[id]
+    dirtyCfvs.value = dirtyCfvs.value?.filter((f) => f.id !== id)
   } else {
-    dirtyCfvs.value[id] = { id, value }
+    const val = { ...dirtyCfvs.value }
+    val[id] = { id, value }
+    dirtyCfvs.value = { ...val }
   }
 }
 const save = () => {
