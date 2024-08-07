@@ -281,7 +281,6 @@ const mockReply = async () => {
     }
 
     messageList.value = [...messageList.value, reply]
-    console.log('randalogger',messageList.value)
     newMessagesCount.value = isChatOpen.value
         ? newMessagesCount.value
         : newMessagesCount.value + 1
