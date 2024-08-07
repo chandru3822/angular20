@@ -221,7 +221,7 @@ const minimize = () => {
 }
 
 </style>
-<style lang="scss">
+<style lang="scss" scoped>
 #app > div.v-dialog__content.v-dialog__content--active > div{
   max-height:500px;
 }
