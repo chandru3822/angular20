@@ -44,12 +44,19 @@ public class DisclosureFormQuery {
             plh.proposal_nbr = :propNbr
     """;
 
+    // the prop nbr custom field is a system list w/custom sql where the prop log history ID is saved as the int_value
     //language=PostgreSQL
     public final static String getProposalNumber = """
-        select int_value as proposal_number
-        from flow.project_process_step_custom_field_value
-        where
+        with prop as (
+          select int_value as id
+          from flow.project_process_step_custom_field_value
+          where
             custom_field_group_assignment_id = :cfgaID and
             project_process_step_id = :ppsID
+        )
+        select plh.proposal_nbr
+        from brs.proposal_log_history plh
+        inner join prop on prop.id = plh.id
     """;
 }
+
