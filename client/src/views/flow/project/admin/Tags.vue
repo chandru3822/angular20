@@ -47,26 +47,47 @@
 
         <v-row class="pl-4">
           <v-col cols="12">
-            <v-list>
-              <v-list-item v-for="(tag, index) in filteredProjectTags"
-                           :key="index">
-                <v-list-item-title>
-                  {{ tag.tagName }}
-                  <a-btn
-                      size="small"
-                      variant="text"
-                      color="primary"
-                      @click="removeTagFromProject(tag)"
-                      prepend-icon="delete"
-                  ></a-btn>
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
+            <v-data-table
+              :headers="tagHeaders"
+              :items="filteredProjectTags"
+            >
+              <template #no-data>
+                <span class="default-text-color">No Tags Applied :(</span>
+              </template>
+
+              <template #no-results>
+                <span class="default-text-color">Can't Load Tags</span>
+              </template>
+
+              <template #item="{ item }">
+                <tr :class="{'shaded-row': filteredProjectTags.indexOf(item) % 2}">
+                  <td class="text-left" >{{ item.tagName }}</td>
+                  <td class="text-right">
+                    <v-tooltip left small>
+                      <template v-slot:activator="{ on, attrs }">
+                        <a-btn
+                          variant="text"
+                          prepend-icon="info"
+                          v-bind="attrs"
+                          :activation-handler="on"
+                        />
+                      </template>
+                      <span>Tag ID: {{ item.tagId }}</span>
+                    </v-tooltip>
+                    <a-btn variant="text" prepend-icon="delete" @click="removeTagFromProject(item)" />
+                  </td>
+                </tr>
+              </template>
+            </v-data-table>
+
           </v-col>
         </v-row>
       </v-col>
     </v-row>
-    <v-divider/>
+    <v-toolbar flat class="project-header">
+      <v-toolbar-title>Project Tag History</v-toolbar-title>
+    </v-toolbar>
+    <v-divider></v-divider>
     <div>
       <v-data-table class="pa-5 ma-3"
                     :items="tag_entries"
@@ -109,6 +130,10 @@ const displayDropdown = ref(false)
 const tagsLoading = ref(false)
 const allTags = ref([])
 const selectedTag = ref({})
+const tagHeaders = ref([
+  { text: 'Tag Name', value: 'tagName'},
+  { text: '', value: ''}
+])
 const headers = ref([
   { text: 'Tag Name', value: 'tag'},
   { text: 'Date Created', value: 'date_added'},
