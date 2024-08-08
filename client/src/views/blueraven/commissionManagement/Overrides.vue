@@ -28,16 +28,21 @@
                 single-line
                 hide-details
             ></a-text-field>
+            <v-spacer></v-spacer>
+            <div class="d-flex hide-inactive-switch-container align-items-center">
+              <v-label class="hide-inactive-label">Hide Inactive Plans</v-label>
+              <v-switch hide-details v-model="hideInactivePlans" class="hide-inactive-switch"></v-switch>
+            </div>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
               :headers="headers"
-              :items="overridePlans"
+              :items="filteredPlans"
               :fixed-header="true"
-              :items-per-page="-1"
+              :footer-props="footerProps"
+              :items-per-page="100"
               :search="search"
               :loading="dataLoading"
-              hide-default-footer
               class="elevation-1"
           >
             <template #no-data>
@@ -74,6 +79,7 @@ import {useRoute, useRouter} from "vue-router/composables";
 import {useAppStore} from '@/stores/AppStore.js'
 import {useBrsStore} from '@/stores/BrsStore.js'
 import { storeToRefs } from 'pinia'
+import constants from "@/helpers/constants.js";
 
 const brsStore = useBrsStore()
 const { commissionPositionId } = storeToRefs(brsStore)
@@ -94,6 +100,11 @@ watch(commissionPositionId, () => {
 
 const dataLoading = ref(true)
 const search = ref('')
+const hideInactivePlans = ref(true)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
 const headers = ref([
   {text: 'Name', value: 'name', show: true},
   {text: 'Description', value: 'description', show: true},
@@ -102,6 +113,12 @@ const headers = ref([
   {text: 'Active Assigned Users', value: 'activeAssignedUsers', show: true}
 ])
 const overridePlans = ref([])
+
+const filteredPlans = computed(() => {
+  return overridePlans.value?.filter(p => {
+    return hideInactivePlans.value ? p.statusId !== 3 : true
+  })
+})
 
 const getOverridePlans = async () => {
   try {
@@ -130,6 +147,20 @@ const goToDetails = async (item) => {
 <style lang="scss" scoped>
 .v-data-table {
   border-radius: 0;
+}
+
+.hide-inactive-label{
+  margin-right: 16px;
+  margin-top: 23px;
+  letter-spacing: normal;
+}
+.hide-inactive-switch-container{
+  width: 200px;
+}
+.hide-inactive-switch{
+  //margin-right: 8px;
+  //margin-bottom: 6px;
+  //margin-top: -4px;
 }
 </style>
 
