@@ -182,6 +182,12 @@
             </td>
           </tr>
         </template>
+        <template #footer.prepend v-if="selectedExpenses.length > 0">
+          <span>Sum of Selected Expenses: ${{ sumSelectedAmount.toFixed(2) }}</span>
+          <v-spacer/>
+          <span>Selected Expenses: {{ numSelected }}</span>
+          <v-spacer/>
+        </template>
       </v-data-table>
     </div>
     <v-row v-else>
@@ -427,6 +433,19 @@ const filteredSubmittedExpenses = computed(() => {
   return submittedExpenses.value.filter(glc => !glc.archived)
 })
 
+const sumSelectedAmount = computed(() => {
+  return selectedExpenses.value.reduce((a, se) => {
+    if (se?.selected === true) {
+      return a + se.amount
+    } else {
+      return a
+    }
+  }, 0)
+})
+
+const numSelected = computed(() => {
+  return selectedExpenses.value?.length
+})
 
 const searchGlCodes = (item, queryText) => {
   let data = item.code.toLowerCase() + ' - ' + item.description.toLowerCase()
