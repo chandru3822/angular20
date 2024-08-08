@@ -643,29 +643,55 @@ const searchByClick = (text, id, searchType, clearSearchData = true) => {
   // if (clearSearchData) {
   //   clearSearch()
   // }
-
   switch (searchType){
     case SearchTypeEnum.USER:
-      searchText.value= `User: ${text}`
-      search.value.userId = id
+      if (search.value !== null && search.value?.userId !== id) {
+        searchText.value= `User: ${text}`
+        search.value.userId = id
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
       break;
     case SearchTypeEnum.POSITION:
-      searchText.value = `Position: ${text}`
-      search.value.position = text
+      if (search.value !== null && search.value?.position !== text) {
+        searchText.value = `Position: ${text}`
+        search.value.position = text
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
+
       break;
     case SearchTypeEnum.TEAM:
-      searchText.value = `Team: ${text}`
-      search.value.teamId = id
+      if (search.value !== null && search.value?.teamId !== id) {
+        searchText.value = `Team: ${text}`
+        search.value.teamId = id
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
       break;
     case SearchTypeEnum.TAG:
       if(id === -1){
         searchText.value = `[${text}]`
       } else {
-        searchText.value = text
+        if (searchText.value !== text) {
+          searchText.value = text
+        } else {
+          clearSearch()
+          searchText.value = ""
+        }
       }
       break;
     default:
-      searchText.value = text
+      if (searchText.value !== text) {
+        searchText.value = text
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
+
   }
   queryText.value = text
   showMentionables.value = false
