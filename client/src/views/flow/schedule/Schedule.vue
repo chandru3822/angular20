@@ -51,6 +51,7 @@
                 :states="states"
                 :callback="resourceMapCallback"
                 :date-callback="dateCallback"
+                :company-holidays="companyHolidays"
                 @scheduleResource="scheduleResourceToCurrentProject"
                 @unscheduleResource="unscheduleResourceFromCurrentProject"
       />
@@ -92,7 +93,7 @@
 </template>
 
 <script setup>
-import { postRequest } from '@/helpers/helpers'
+import {getRequest, postRequest} from '@/helpers/helpers'
 import {getActiveStatesByHierarchy} from '@/services/stateService'
 import Map from './components/Map'
 import Calendar from './components/Calendar'
@@ -154,7 +155,7 @@ const calendarResourceToSchedule =ref({})
 const mapChild =ref()
 const showHideFilters = ref(false)
 const showMobileBtns = ref(false)
-
+const companyHolidays = ref([])
 const activeComp = computed(() => {
   return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
 })
@@ -176,6 +177,7 @@ onMounted(() => {
   fetchStatusTypes()
   fetchEventStatusTypes()
   fetchEventTypes()
+  fetchHolidays()
   if(route.query && route.query.projectProcessStepEventId) {
     //projectId, eventId, processStepStatusTypeId
     getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId), true)
@@ -351,6 +353,17 @@ const fetchStatusTypes = async() =>  {
   } catch (e) {
     console.error('*** ERROR ***', e)
 	appStore.showSnack('ERROR', 'Error Retrieving Status Types')
+    appStore.loading = false
+  }
+}
+
+const fetchHolidays = async() => {
+  try {
+    const {data, status} = await getRequest(`/availability/companyHolidays`)
+    companyHolidays.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Company Holidays')
     appStore.loading = false
   }
 }

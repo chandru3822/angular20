@@ -998,6 +998,62 @@ public class AvailabilityService {
     sqlCache.updateBySql(AvailabilityQuery.deleteSlotSchedule, params);
   }
 
+  public List<CompanyHoliday> getAllCompanyHolidays() {
+    User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    return sqlCache.queryBySql(
+      AvailabilityQuery.getAllCompanyHolidays,
+      params,
+      new CompanyHolidayMapper<>(CompanyHoliday.class, om));
+  }
+
+  public Optional<CompanyHoliday> getCompanyHoliday(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("companyId", user.getCompanyId());
+    Optional<CompanyHoliday> result =
+      sqlCache.getBySql(AvailabilityQuery.getCompanyHolidayById,
+        params,
+        new CompanyHolidayMapper<>(CompanyHoliday.class, om));
+    return result;
+  }
+
+  public Optional<CompanyHoliday> updateCompanyHoliday(CompanyHoliday companyHoliday) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("name", companyHoliday.getName());
+    params.put("date", companyHoliday.getDate());
+    params.put("companyId", user.getCompanyId());
+
+
+    if (null != companyHoliday.getId()) {
+      params.put("id", companyHoliday.getId());
+      params.put("modifiedById", user.trueUserId());
+
+      return sqlCache.getBySql(AvailabilityQuery.updateCompanyHoliday,
+          params,
+          new CompanyHolidayMapper<>(CompanyHoliday.class, om));
+    } else {
+      params.put("createdById", user.trueUserId());
+      params.put("modifiedById", user.trueUserId());
+      return sqlCache.getBySql(AvailabilityQuery.insertCompanyHoliday,
+        params,
+        new CompanyHolidayMapper<>(CompanyHoliday.class, om));
+    }
+  }
+
+  public void archiveCompanyHoliday(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", user.trueUserId());
+    params.put("companyId", user.getCompanyId());
+    sqlCache.updateBySql(AvailabilityQuery.archiveCompanyHoliday, params);
+  }
+
   public ResourceAppointment getOneResourceAppointment(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -1033,6 +1089,16 @@ public class AvailabilityService {
         List.class, "slotTimes", new JsonCollectionDeserializer(slotTimesRef, objectMapper));
     }
   }
+
+  public static class CompanyHolidayMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public CompanyHolidayMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+  }
+
 
   public static class ResourceScheduleMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;

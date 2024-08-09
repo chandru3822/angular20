@@ -174,7 +174,6 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error Loading Organizations')
-
     }
   }
   const getUsers = async () => {
