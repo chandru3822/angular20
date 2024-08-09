@@ -1,37 +1,38 @@
 <template>
   <v-text-field
-                :placeholder="placeholder"
-                :value="value"
-                :type="type"
-                :id="id"
-                ref="albatrossTextField"
-                :prepend-icon="prependIcon"
-                :prepend-inner-icon="prependInnerIcon"
-                :append-icon="appendInnerIcon"
-                :append-outer-icon="appendIcon"
-                :clearable="clearable"
-                v-on="$listeners"
-                :hint="hint"
-                :single-line="singleLine"
-                :rules="combinedRules"
-                :readonly="readonly"
-                :disabled="disabled"
-                :hide-details="hideDetails"
-                :counter="counter"
-                :dense="density === 'compact'"
-                :color="color"
-                :filled="variant === 'filled'"
-                :clear-icon="clearIcon"
-                :outlined="variant === 'outlined'"
-                :solo="variant === 'solo'"
-                :maxlength="maxlength"
-                :autofocus="autofocus"
-                :autocomplete="autocomplete"
-                :persistent-hint="persistentHint"
-                :class="[customClasses]"
-                :label="label"
-                :v-maska="maskaOptions">
-
+    :placeholder="placeholder"
+    :value="value"
+    :type="type"
+    :id="id"
+    ref="albatrossTextField"
+    :prepend-icon="prependIcon"
+    :prepend-inner-icon="prependInnerIcon"
+    :append-icon="appendInnerIcon"
+    :append-outer-icon="appendIcon"
+    :clearable="clearable"
+    v-on="$listeners"
+    :hint="hint"
+    persistent-hint
+    :single-line="singleLine"
+    :rules="combinedRules"
+    :readonly="readonly"
+    :disabled="disabled"
+    :hide-details="hideDetails"
+    :counter="counter"
+    :dense="density === 'compact'"
+    :color="color"
+    :filled="variant === 'filled'"
+    :clear-icon="clearIcon"
+    :outlined="variant === 'outlined'"
+    :solo="variant === 'solo'"
+    :maxlength="maxlength"
+    :autofocus="autofocus"
+    :autocomplete="autocomplete"
+    :persistent-hint="persistentHint"
+    :class="[customClasses]"
+    :label="label"
+    :v-maska="maskaOptions"
+  >
     <template v-for="(index, name) in $scopedSlots" v-slot:[name]="data">
       <slot :name="name" v-bind="data"></slot>
     </template>
@@ -40,15 +41,13 @@
     <template v-for="(_, slot) in $slots" :slot="slot">
       <slot :name="slot"></slot>
     </template>
-
   </v-text-field>
 </template>
 
 <script setup>
-import {ref, computed} from 'vue'
+import { ref, computed } from 'vue'
 import constants from '@/helpers/constants'
 import { vMaska } from 'maska/vue'
-import {objType} from "html2pdf.js/src/utils.js";
 
 // reminder that v-model is sugar syntax for :value="value" @input="v => $emit('input', v)"
 const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
@@ -70,11 +69,11 @@ const props = defineProps({
   appendInnerIcon: String,
   type: {
     type: String,
-    default: "text"
+    default: 'text'
   },
   rules: {
     type: Array,
-    default: () => ([])
+    default: () => []
   },
   customClasses: {
     type: String,
@@ -91,12 +90,12 @@ const props = defineProps({
   persistentHint: Boolean,
   density: String,
   step: Number,
-  counter: Boolean,  //this counter and maxlength is not how vuetify defines the props but it is the only combo that actually stops the user from typing when they hit the limit
+  counter: Boolean, //this counter and maxlength is not how vuetify defines the props but it is the only combo that actually stops the user from typing when they hit the limit
   maxlength: Number,
   maskaOptions: {
     type: Object,
-    default: () => ({mask: null})
-  },
+    default: () => ({ mask: null })
+  }
 })
 
 const albatrossTextField = ref(null)
@@ -106,7 +105,7 @@ const combinedRules = computed(() => {
   //set the rules to any rules that were passed in
   tempRules = props.rules
   // if the field is marked as "required" also add the basic required rule
-  if(props.required) {
+  if (props.required) {
     tempRules = tempRules.concat(basicRequiredRule.value)
   }
   return tempRules
@@ -119,10 +118,6 @@ const newFocus = () => {
 defineExpose({
   focus: newFocus
 })
-
-
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

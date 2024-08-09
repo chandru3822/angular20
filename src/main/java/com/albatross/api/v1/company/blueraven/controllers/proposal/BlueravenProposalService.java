@@ -489,6 +489,9 @@ public class BlueravenProposalService {
   private static final Long commissionStrategyFieldId = 467L;
   private static final Long flowPanelBrandFieldId = 204L;
   private static final Long brsPanelBrandFieldId = 138L;
+  private static final Long brsPricePerWattFieldId = 724L;
+  private static final Long brsOtherMaxDiscount = 135L;
+
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId, Long userId) {
     Optional<Long> userOrgId = findUserOrgId(userId);
@@ -516,7 +519,6 @@ public class BlueravenProposalService {
     proposal.getCustomFieldGroups()
       .forEach(cfg -> cfg.getCustomFieldValues().stream()
         .filter(cfv -> cfv.getCustomFieldId() != null)
-        .filter(CustomFieldValue::getHasListValues)
         .forEach(cfv -> {
           if (financialProductFieldId.equals(cfv.getCustomFieldId())) {
             // BRS needs to filter out financial products by state
@@ -543,6 +545,15 @@ public class BlueravenProposalService {
           if (commissionStrategyFieldId.equals(cfv.getCustomFieldId())) {
             filterCustomFieldValues(cfv, filterCommissionStrategiesByUser(proposalVersionId, userId), false);
           }
+
+          if (brsPricePerWattFieldId.equals(cfv.getCustomFieldId()) && proposal.getMinPricePerWatt() != null) {
+            cfv.setMinValue(proposal.getMinPricePerWatt().doubleValue());
+          }
+
+          if (brsOtherMaxDiscount.equals(cfv.getCustomFieldId()) && proposal.getMaxDiscountAmount() != null) {
+            cfv.setMaxValue(proposal.getMaxDiscountAmount().doubleValue());
+          }
+
         }));
 
     //filter out any custom fields that _should_ have a list of values but don't (previously filtered)

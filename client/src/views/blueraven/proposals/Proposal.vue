@@ -537,17 +537,25 @@ const toggleFullscreen = () => {
   }
 }
 
+const PricePerWattCfgaId = 869
+const OtherMaxDiscountCfgaId = 167
+
 const getHint = (field) => {
   if (!field) {
     return undefined
   }
 
-  if (field.customFieldGroupAssignmentId === 167) {
+  if (field.customFieldGroupAssignmentId === PricePerWattCfgaId) {
+    const minPricePerWatt = proposal.value.minPricePerWatt
+    if (minPricePerWatt) {
+      return `Price Per Watt must be greater than ${minPricePerWatt}`
+    }
+  }
+
+  if (field.customFieldGroupAssignmentId === OtherMaxDiscountCfgaId) {
     const maxDiscountAmount = proposal.value.maxDiscountAmount
     if (maxDiscountAmount) {
-      return `Max discount allowed is ${USD.format(
-        proposal.value.maxDiscountAmount
-      )}`
+      return `Max discount allowed is ${USD.format(maxDiscountAmount)}`
     }
   }
 }
