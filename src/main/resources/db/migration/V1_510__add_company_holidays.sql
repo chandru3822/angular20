@@ -1,5 +1,5 @@
 drop table if exists flow.company_holiday;
-create table if not exists company_holiday (
+create table if not exists flow.company_holiday (
   id BIGSERIAL PRIMARY KEY,
   name TEXT,
   date DATE,
@@ -14,7 +14,7 @@ create table if not exists company_holiday (
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-create table if not exists company_holiday_audit (
+create table if not exists flow.company_holiday_audit (
   id BIGSERIAL,
   name TEXT,
   date DATE,
