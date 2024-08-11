@@ -166,10 +166,12 @@ create type brs.calculated_proposal_value as
   below_the_line_utility_rebate_amount_number numeric,
   above_the_line_state_rebate_amount varchar,
   below_the_line_state_rebate_amount varchar,
+  below_the_line_state_rebate_amount_number numeric,
   all_rebates jsonb,
   eto_rebate_amount varchar,
   eto_rebate_number numeric,
   virginia_srec_rebate_amount varchar,
+  virginia_srec_rebate_amount_number numeric,
   storage_capacity numeric,
   nominal_power numeric,
   battery_manufacturers_warranty bigint,
@@ -2138,6 +2140,7 @@ v_rete_adder numeric;
         coalesce(v_down_payment_amount, 0) -
         coalesce(v_below_line_rebate, 0);
   --raise notice 'v_net_system_cost = %',v_net_system_cost;
+  --raise notice 'v_below_line_rebate4444444444444444 = %',v_below_line_rebate;
 
   v_current_estimated_annual_utility_bill =
       v_estimated_annual_energy_consumption_kwh * v_current_estimated_cost_per_kwh;
@@ -2634,10 +2637,12 @@ v_rete_adder numeric;
            v_below_the_line_utility_rebate_amount,
            to_char(v_above_the_line_state_rebate_amount, '$FM9,999,999')::varchar,
            to_char(v_below_the_line_state_rebate_amount, '$FM9,999,999')::varchar,
+           v_below_the_line_state_rebate_amount::numeric,
            v_rebates,
            to_char(v_eto_rebate_amount, '$FM9,999,999')::varchar,
            v_eto_rebate_amount,
            to_char(v_virginia_srec_rebate_amount, '$FM9,999,999')::varchar,
+           v_virginia_srec_rebate_amount::numeric,
            v_storage_capacity,
            v_nominal_power,
            v_battery_manufacturers_warranty,

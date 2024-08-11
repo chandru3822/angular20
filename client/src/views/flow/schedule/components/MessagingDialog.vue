@@ -86,8 +86,9 @@ const fetchTeamsForUser = async () => {
 
 const loadConversation = async () => {
   userAssigned.value = false
+  if(userIdToMessage.value) {
     try {
-      const { data, status } = await getRequest(
+      const {data, status} = await getRequest(
           '/messaging/user/' + userIdToMessage.value
       )
       messageProperties.value = data
@@ -108,6 +109,7 @@ const loadConversation = async () => {
 
       conversationIsLoading.value = false
     }
+  }
 }
 
 const startJoinConversation = () => {
@@ -199,7 +201,7 @@ const minimize = () => {
 }
 
 #schedule-resource-message-dialog > div.srmd-header {
-  min-height: 100px;
+  height: 100px;
   border-bottom: var(--v-grey-lighten2) solid 1px;
 
   &.srmd-header-dense {
@@ -219,7 +221,7 @@ const minimize = () => {
 }
 
 </style>
-<style lang="scss">
+<style lang="scss" scoped>
 #app > div.v-dialog__content.v-dialog__content--active > div{
   max-height:500px;
 }

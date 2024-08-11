@@ -118,7 +118,7 @@
                         size="small"
                         :loading="fieldsSaving"
                         :disabled="customFieldsLoading"
-                        class="mt-3"
+                        class="mt-3 mr-4"
                         color="primary"
                         @click="saveAndUpload()"
                         :text="isExisting ? 'Save Changes' : 'Save and Upload'"
@@ -563,7 +563,7 @@ const updateFieldGroups = async(attachmentId) => {
 
 .coversheet-left-pane {
   box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-  height: 100%;
+  height: 80%;
   //max-height: 90vh;
   overflow-y: auto;
   padding-bottom: 0 !important;

@@ -582,4 +582,42 @@ public class AvailabilityQuery {
         select time_slot_id, :resourceScheduleAvailabilityId, now(), :userId, now(), :userId from unnest(ARRAY[ :excludedResourceSlotTimeIds ]) as time_slot_id
         on conflict (resource_slot_time_id, resource_schedule_availability_id) do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
     """;
+
+
+  //language=PostgreSQL
+  public final static String getAllCompanyHolidays = """
+    SELECT * FROM flow.company_holiday where archived = false and company_id = :companyId
+  """;
+
+  //language=PostgreSQL
+  public final static String getCompanyHolidayById = """
+    SELECT * from flow.company_holiday where id = :id and company_id = :companyId
+  """;
+
+  //language=PostgreSQL
+  public final static String insertCompanyHoliday = """
+      insert into flow.company_holiday (name, date, date_created, date_modified, created_by_id, modified_by_id, company_id, archived)
+      VALUES (:name, :date, now(), now(), :createdById, :modifiedById, :companyId, false)
+      returning id, name, date, company_id, archived;
+  """;
+
+  //language=PostgreSQL
+  public final static String updateCompanyHoliday = """
+      Update flow.company_holiday
+          Set name = :name,
+              date = :date,
+              date_modified = now(),
+              modified_by_id = :modifiedById
+      WHERE id = :id and company_id = :companyId
+      returning id, name, date, company_id, archived
+  """;
+
+  //language=PostgreSQL
+  public final static String archiveCompanyHoliday = """
+      UPDATE flow.company_holiday
+      SET archived = true,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      WHERE id = :id and company_id = :companyId
+  """;
 }

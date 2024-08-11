@@ -171,6 +171,7 @@
         :reloading="conversationIsLoading"
         :show-assign-to-me-button="!userAssigned && userHasTeam"
         :user-id="userId"
+        :project-id="projectId"
         class="px-6 pb-1 mt-n1"
         @updateOwner="loadConversation"
         @joinConversation="startJoinConversation"
@@ -185,6 +186,7 @@
     />
 
     <ActivitySection
+        v-if="projectId || contactId || userId || orgId"
       :contact-id="contactId"
       :user-id="userId"
       :timeline-view="toggleTimelineView === 0"
@@ -290,9 +292,6 @@ const props = defineProps({
   collapseBtnIcon: String
 })
 const {
-  showSmsTab,
-  showNotesTab,
-  showAttachmentsTab,
   contactId,
   userIdIn,
   orgId,
@@ -308,8 +307,8 @@ const isMobile = computed(() => {
 })
 const viewOptions = computed(() => {
   let vo = [
-    { icon: 'mdi-forum-outline', visible: showSmsTab },
-    { icon: 'mdi-text-long', visible: showNotesTab }
+    { icon: 'mdi-forum-outline', visible: props.showSmsTab },
+    { icon: 'mdi-text-long', visible: props.showNotesTab }
   ]
 
   //show the schedule tab if displaying data for a user; otherwise, show the docs tab
@@ -317,7 +316,7 @@ const viewOptions = computed(() => {
     vo.push({id:'schedule', icon: 'mdi-calendar', visible: true})
   }
   else {
-    vo.push({ id:'docs', icon: 'mdi-folder-outline', visible: showAttachmentsTab })
+    vo.push({ id:'docs', icon: 'mdi-folder-outline', visible: props.showAttachmentsTab })
   }
   return vo
 })
@@ -352,7 +351,7 @@ const projectProcessStepEventId = computed(() => {
 })
 const viewId = computed(() => {
   return null == selectedTab.value ||
-    (selectedTab.value === 0 && !showSmsTab.value)
+    (selectedTab.value === 0 && !props.showSmsTab)
     ? 1
     : selectedTab.value
 })
@@ -531,7 +530,7 @@ const joinConversation = async (selectedTeam) => {
   }
 }
 const fetchTeamsForUser = async () => {
-  if (showSmsTab.value) {
+  if (props.showSmsTab) {
     try {
       conversationIsLoading.value = true
       //todo - randa not hit anymore

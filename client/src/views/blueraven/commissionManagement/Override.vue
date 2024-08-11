@@ -17,7 +17,7 @@
           <a-btn
               color="primary"
               class="mr-2"
-              v-if="userIsAdmin && overrideId"
+              v-if="userIsAdmin && overrideId && !override.orgId"
               @click="showProjectAssignmentModal = true"
               text="Admin"
           ></a-btn>
@@ -37,18 +37,25 @@
               @click="approveOverride()"
               text="Approve"
           ></a-btn>
+<!--          <a-btn-->
+<!--              color="error"-->
+<!--              class="mr-2"-->
+<!--              v-if="overrideId && override.status !== 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"-->
+<!--              :disabled="errorMessages.length > 0"-->
+<!--              @click="openDeleteDialog(override, deleteTypes.OVERRIDE)"-->
+<!--              text="Delete"-->
+<!--          ></a-btn>-->
           <a-btn
-              color="error"
+              color="primary"
               class="mr-2"
-              v-if="overrideId && override.status !== 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-              :disabled="errorMessages.length > 0"
-              @click="openDeleteDialog(override, deleteTypes.OVERRIDE)"
-              text="Delete"
+              v-if="overrideId && override.orgId && override.status === 'ACTIVE' && userCanEdit"
+              @click="setOverrideToPending()"
+              text="Adjust Template"
           ></a-btn>
           <a-btn
               color="error"
               class="mr-2"
-              v-else-if="overrideId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+              v-if="overrideId && override.status === 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
               @click="inactivateConfirm=true"
               text="Inactivate"
           ></a-btn>
@@ -77,7 +84,7 @@
           </MultiOptionDialog>
           <a-btn
               color="primary"
-              v-if="overrideId && override && userCanAdd"
+              v-if="overrideId && override && userCanAdd && !override.orgId"
               @click="showCloneDialog=true"
               text="Clone"
           ></a-btn>
@@ -164,6 +171,22 @@
                         item-title="label"
                         item-value="id"
               ></a-select>
+              <a-text-field v-if="override.id && override.orgId"
+                            label="Template Organization"
+                            readonly
+                            disabled
+                            v-model="override.orgName"></a-text-field>
+              <a-autocomplete attach v-model="override.orgId" v-else-if="!override.id"
+                        :items="orgs"
+                        :readonly="!userCanEdit"
+                        :disabled="override.id != null || !userCanEdit"
+                        no-data-text="No Orgs Available"
+                        label="Template Organization"
+                        clearable
+                        item-title="orgName"
+                        item-value="id"
+              ></a-autocomplete>
+
               <a-text-field
                             :readonly="!userCanEdit"
                             :disabled="(override.id && override.status !== 'PENDING') || !userCanEdit"
@@ -359,7 +382,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <v-row v-if="overrideId">
+    <v-row v-if="overrideId && !override.orgId">
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
@@ -556,7 +579,7 @@
       </v-col>
     </v-row>
     <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteConfirmed" @close-dialog="closeDeleteDialog">
-      <div v-if="deleteType==deleteTypes.OVERRIDE">Are you sure you want to delete this plan?</div>
+      <div v-if="deleteType === deleteTypes.OVERRIDE">Are you sure you want to delete this plan?</div>
       <div v-else>Are you sure you want to delete <strong>{{itemToDeleteName}}</strong>?</div>
 
     </ConfirmationDialog>
@@ -630,6 +653,7 @@
     { id: 1, label: 'Closer' },
     { id: 4, label: 'Setter' }
   ]);
+  const orgs = ref([])
   const addAssignedUser = ref(false);
   const assignedUsersLoading = ref(false);
   const newAssignedUser = ref({});
@@ -697,7 +721,8 @@
     if(overrideId.value) {
       getOverrideDetails()
     } else {
-      dataLoading.value = false
+      override.value.positionId = commissionPositionId.value
+      getAvailableCloserSalesOffices()
     }
   })
 
@@ -760,6 +785,19 @@
           appStore.loading = false
         }
       }
+  const getAvailableCloserSalesOffices = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/commissionManagement/overrides/salesOrgs`, 'blueraven')
+      orgs.value = data
+      dataLoading.value = false
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Loading Orgs')
+      appStore.loading = false
+    }
+  }
       const checkErrorMessages = () => {
         errorMessages.value = []
         //sum of all m1 and m2's should equal rate per kw$ (or base pay for setter)
@@ -891,6 +929,7 @@
             positionId: override.value.positionId,
             total: override.value.total,
             id: override.value.id,
+            orgId: override.value.orgId,
             customFieldGroups: customFieldGroups.value
           }
           const {data, status} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
@@ -931,6 +970,20 @@
           appStore.loading = false
         }
       }
+  const setOverrideToPending = async () => {
+    appStore.loading = true
+    try {
+      await postRequest(`/commissionManagement/overrides/${overrideId.value}/pending`, {}, 'blueraven')
+      appStore.showSnack('SUCCESS', 'Override Plan Status Set To Pending')
+      override.value.status = 'Pending'
+      override.value.statusId = 1
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Setting Override Plan to Pending')
+    } finally {
+      appStore.loading = false
+    }
+  }
       const updateAssignedUser = async(item) => {
         appStore.loading = true
         try {

@@ -8,7 +8,9 @@
              :useRightPanelMobile="true"
              :right-open="showMap"
              :showRightCollapseBtn="false"
+             useRightDrawer
              :class="{'height-one-hunned': isSidebarView}"
+             @closeRight="showHideMap($event)"
   >
     <template v-slot:main-column>
       <a-btn id="map-btn" v-if="!showMap && vuetify.breakpoint.mdAndUp && !isSidebarView" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
@@ -49,6 +51,7 @@
                 :states="states"
                 :callback="resourceMapCallback"
                 :date-callback="dateCallback"
+                :company-holidays="companyHolidays"
                 @scheduleResource="scheduleResourceToCurrentProject"
                 @unscheduleResource="unscheduleResourceFromCurrentProject"
       />
@@ -90,7 +93,7 @@
 </template>
 
 <script setup>
-import { postRequest } from '@/helpers/helpers'
+import {getRequest, postRequest} from '@/helpers/helpers'
 import {getActiveStatesByHierarchy} from '@/services/stateService'
 import Map from './components/Map'
 import Calendar from './components/Calendar'
@@ -152,7 +155,7 @@ const calendarResourceToSchedule =ref({})
 const mapChild =ref()
 const showHideFilters = ref(false)
 const showMobileBtns = ref(false)
-
+const companyHolidays = ref([])
 const activeComp = computed(() => {
   return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
 })
@@ -174,6 +177,7 @@ onMounted(() => {
   fetchStatusTypes()
   fetchEventStatusTypes()
   fetchEventTypes()
+  fetchHolidays()
   if(route.query && route.query.projectProcessStepEventId) {
     //projectId, eventId, processStepStatusTypeId
     getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId), true)
@@ -353,6 +357,17 @@ const fetchStatusTypes = async() =>  {
   }
 }
 
+const fetchHolidays = async() => {
+  try {
+    const {data, status} = await getRequest(`/availability/companyHolidays`)
+    companyHolidays.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Company Holidays')
+    appStore.loading = false
+  }
+}
+
 const resetMapZoom = ()=> {
   zoomToMap(
       {
@@ -386,6 +401,9 @@ const zoomToMap = (item, zoomOverride) => {
   height: calc(40vh - 118px);
   //this is smaller because it is the inner wrapper of the table
   min-height: 211px;
+}
+#schedule-container > aside.v-navigation-drawer--right {
+  width:90% !important;
 }
 
 #schedule-container .v-data-footer__pagination {

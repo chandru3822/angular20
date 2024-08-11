@@ -270,6 +270,7 @@ const getProjects = async() => {
 const searchProjects = debounce((query) => {
   //don't allow searchQuery to be null - causes issues
   searchQuery.value = searchQuery.value || ''
+  console.log(searchQuery.value)
   getProjects()
 }, 500)
 const closeKeyboard = () => {

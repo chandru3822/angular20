@@ -137,6 +137,8 @@
                   required
                   type="search"
                   filled
+                  maxlength="100"
+                  counter
               ></a-text-field>
               <a-autocomplete
                   label="Metro Area"

@@ -1,9 +1,11 @@
 package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
+import com.albatross.api.v1.company.blueraven.enums.commissionManagement.OverridePlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanService;
+import com.albatross.api.v1.flow.model.org.Org;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +32,11 @@ public class OverridePlanController {
   @GetMapping(value = "/plans/{positionId}")
   public String getOverridePlans(@PathVariable Long positionId) {
     return overridePlanService.findOverridePlans(positionId, false);
+  }
+
+  @GetMapping(value = "/salesOrgs")
+  public List<Org> getAvailableSalesOffices() {
+    return overridePlanService.getAvailableSalesOffices();
   }
 
   @PostMapping(value = "/plan/{id}/assignToPlan")
@@ -123,14 +131,22 @@ public class OverridePlanController {
 
   @PostMapping(value = "/{id}/inactivate")
   public ResponseEntity<Object> inactivateOverridePlan(@PathVariable Long id) {
-    overridePlanService.inactivatePlan(id);
+    overridePlanService.setStatus(id, OverridePlanStatus.INACTIVE.getId());
     return getOverridePlanDetails(id);
   }
 
-  @DeleteMapping(value = "/{id}")
-  public void deletePlan(@PathVariable Long id) {
-    overridePlanService.deletePlan(id);
+  @PostMapping(value = "/{id}/pending")
+  public void setPendingOverridePlan(@PathVariable Long id) {
+    overridePlanService.setStatus(id, OverridePlanStatus.PENDING.getId());
   }
+
+  //we are taking out the option to delete to see how often this is even used. if this gets added back in then
+  //it needs to be changed to not delete the plan if it has ever been used in financial details. also, if archived flag gets added
+  //then anything checking for assigned users would need to be adjusted to ignore inactive plans or maybe archive receiving users/assigned users
+//  @DeleteMapping(value = "/{id}")
+//  public void deletePlan(@PathVariable Long id) {
+//    overridePlanService.deletePlan(id);
+//  }
 
   @PostMapping(value = "/{id}/receivingUsers")
   public String addReceivingUser(

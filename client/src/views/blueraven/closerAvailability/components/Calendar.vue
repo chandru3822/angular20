@@ -408,6 +408,16 @@ const getFormattedDate = (date) => {
   return filters.formatDate(date, 'timestamp', 'h:mm a')
 }
 
+const closeResource = (resource) => {
+  let index = selectedUsers.value.findIndex(r =>
+      r.userId === resource.extendedProps.userId
+  )
+  if(index >= 0){
+   selectedUsers.value.splice(index, 1)
+  }
+  calendarOptions.value.resources = [...selectedUsers.value]
+}
+
 onMounted (async () => {
   calendarApi.value = eventCalendar.value.getApi()
   await getRoundRobins()
@@ -656,9 +666,6 @@ onMounted (async () => {
 .resource-title {
   max-width: 60%;
   white-space: break-spaces;
-  @media(max-width: 960px) {
-    max-width: 30%;
-  }
 }
 .v-tooltip__content {
   background-color: white;

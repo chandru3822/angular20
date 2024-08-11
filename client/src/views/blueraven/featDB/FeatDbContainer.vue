@@ -45,6 +45,9 @@
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
 
+
+  // using custom http helper manage  direct url access to archived AHJ's.
+  // only admins can access archived ahjs.
   const http = axios.create({
     baseURL: `${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/flow`,
   })

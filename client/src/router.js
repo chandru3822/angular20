@@ -1380,6 +1380,18 @@ const router = new Router({
                       return accessDenied()
                     }
                   },
+                },
+                {
+                  path: 'holidays',
+                  props: true,
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                    if (userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')) {
+                      return import ("./views/flow/settings/availability/Holidays.vue")
+                    } else {
+                      return accessDenied()
+                    }
+                  }
                 }
               ]
             }, {

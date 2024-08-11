@@ -2,7 +2,11 @@
   <div>
     <v-row class="d-flex justify-space-between align-center">
       <v-col v-if="showFieldName">
-        {{ field.fieldName }}
+        <span
+          :title="`ID: ${field.id}, DataType: (${field.dataType}) ${field.dataTypeId} `"
+        >
+          {{ field.fieldName }}
+        </span>
         <span class="ancillary" v-if="field.ancillaryCustomFieldHint">
           {{ field.ancillaryCustomFieldHint }}
         </span>
@@ -10,7 +14,8 @@
         <span
           class="ancillary"
           v-else-if="field.ancillaryCustomFieldGroupAssignmentId"
-          >(Primary)
+        >
+          (Primary)
         </span>
       </v-col>
 
@@ -338,13 +343,15 @@
           <quill-editor
             :options="toolbarOptions"
             class="cvi-rich-text-editor albatross-body-2"
-            :class="
-              [{
-                'cvi-rich-text-editor-required': required && !field.richTextValue,
-                'cvi-rich-text-editor-readonly': readonly || (locked && lockFeature)
+            :class="[
+              {
+                'cvi-rich-text-editor-required':
+                  required && !field.richTextValue,
+                'cvi-rich-text-editor-readonly':
+                  readonly || (locked && lockFeature)
               },
-              customClass]
-            "
+              customClass
+            ]"
             :readonly="readonly"
             :disabled="readonly || (locked && lockFeature)"
             @change="(q) => doRichTextFieldCallback(field, q)"
@@ -711,8 +718,6 @@ const selectSelf = () => {
 .cvi-rich-text-editor-readonly .ql-toolbar {
   display: none;
 }
-
-
 
 .cvi-rich-text-editor-required {
   border: solid 2px red !important;
