@@ -2,12 +2,12 @@
   <component :is="activeComp"
     id="main-inbox-container"
     :header-hidden="true"
-    :right-hidden="!route.params.projectId && !route.params.userId"
+    :right-hidden="!route.params.smsThreadId"
     :left-hidden="true"
     :half-n-half="true"
     :auto-overflow-left="true"
     :show-right-collapse-btn="false"
-             :show-right-col="route.params.projectId"
+    :show-right-col="route.params.smsThreadId"
     @closeRight="router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>
@@ -192,7 +192,7 @@
 
         <template #item="{ item, index }">
           <v-col class="inbox-row pa-6 clickable"
-                 :class="{'selected': (item.projectId && route.params.projectId === item.projectId) || (item.userId && route.params.userId === item.userId)}"
+                 :class="{'selected': (item.parentId && route.params.smsThreadId === item.parentId)}"
                  @click="openConversation(item)">
             <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
               <v-col cols="11" class="pa-0">
@@ -206,23 +206,23 @@
                       v-if="getNotificationCount(item) > 0"
                     >
                     </v-badge>
-                    <b>{{ item.projects?.length > 0 ? item.projects[0].projectName : item.fullName }}</b>
+                    <b>{{ item.fullName }}</b>
                   </div>
-                  <span class="albatross-body-2 px-2">{{ getTime(item.lastSent) }}</span>
-                  <span class="albatross-body-2 px-1 grey--text text--darken-2" v-if="item.projects?.length">{{ item.projects[0].state }}</span>
-                  <v-chip class="customer-chip ml-1" small  v-if="item.projects?.length">
+                  <span class="albatross-body-2 px-2">{{ getTime(item.dateCreated) }}</span>
+                  <span class="albatross-body-2 px-1 grey--text text--darken-2" v-if="item.recipientTypeId === 2">{{ item.stateAbbreviation }}</span>
+                  <v-chip class="customer-chip ml-1" small  v-if="item.recipientTypeId === 2">
                     <span >Customer</span>
                   </v-chip>
                   <v-chip class="internal-chip" small v-else>
                     <span >Internal</span>
                   </v-chip>
                 </div>
-                <div class="text-ellipses mt-1">{{ item.lastMessageText }}
+                <div class="text-ellipses mt-1">{{ item.message }}
                 </div>
               </v-col>
             </v-row>
             <TeamAssignmentChips
-              :sms-team-owners="item.conversationOwners"
+              :sms-team-owners="item.smsTeamOwners"
               :team-names-associated-to-user="teamNamesAssociatedToUser"
               :reloading="reloadInProgress"
               :show-assign-to-me-button="false"
@@ -250,7 +250,9 @@
       <ProjectActivity v-if="!thingsLoading && null != selectedConversation" collapseBtnIcon="close"
                        :show-attachments-tab="false"
                        :show-notes-tab="false"
-                       :allowSidebarCollapse="false" @collapseCallback="closeConversation"></ProjectActivity>
+                       :show-sms-tab="true"
+                       :allowSidebarCollapse="false"
+                       @collapseCallback="closeConversation"></ProjectActivity>
     </template>
   </component>
 </template>
@@ -828,16 +830,15 @@ const teamSelectionChanged = () => {
 }
 const openConversation = (item) => {
   selectedConversation.value = item
-  if (item.projectId) {
-    clearProjectNotification(item.projectId)
-    projectStore.selectedTab = 0
-    router.push({path: `/inbox/inboxConversation/project/${item.projectId}`});
-  }
+    //todo: sms figure this out
+  // clearProjectNotification(item.projectId)
+  // projectStore.selectedTab = 0
+  router.push({path: `/inbox/inboxConversation/sms/${item.parentId}`});
 
-  if (item.userId) {
-    clearUserNotification(item.userId)
-    router.push({path: `/inbox/inboxConversation/user/${item.userId}`});
-  }
+  // if (item.userId) {
+  //   clearUserNotification(item.userId)
+  //   router.push({path: `/inbox/inboxConversation/user/${item.userId}`});
+  // }
 }
 const closeConversation = () => {
   selectedConversation.value = null

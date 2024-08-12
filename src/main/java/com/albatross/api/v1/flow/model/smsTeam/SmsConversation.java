@@ -18,11 +18,13 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SmsConversation {
 
-  private Long internalConversationId, externalConversationId, userId;
-  private String lastMessageText, fullName;
-  private Date lastSent;
+  private Long id, parentId, userId, recipientTypeId;
+  private String message, fullName, stateAbbreviation;
+  private Date dateCreated;
   private boolean closed, showAssignedToMeButton = false;
   private List<SmsOwner> conversationOwners;
+  private List<SmsTeam> smsTeamOwners;
+
   private List<SmsProject> projects;
   private List<Long> projectIdsForFilter, projectIdsInbox, projectIdsSent, userIdsForFilter, userIdsInbox, userIdsSent;
 }

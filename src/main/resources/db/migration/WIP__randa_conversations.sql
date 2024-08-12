@@ -8,6 +8,7 @@ drop trigger if exists update_sms_cache_trg on flow.sms_queue;
 drop function if exists flow.update_cache_sms_reply() cascade;
 drop trigger if exists update_sms_reply_trg on flow.sms_reply;
 
+
 alter table flow.project_message_team
 add column if not exists user_id bigint references flow.user(id);
     --this is in case the user id isn't present from the pump/dump
@@ -19,8 +20,8 @@ drop index if exists flow.pmt_project_sms_team_id_ix;
 -- pretty sure we dont need this cuz of the user id stuff
 -- create unique INDEX if not exists pmt_project_sms_team_id_ix on flow.project_message_team (project_id, sms_team_id) where archived is false and user_id is null;
 
-drop index if exists flow.pmt_project_sms_user_id_ix;
-create unique INDEX if not exists pmt_project_sms_user_id_ix on flow.project_message_team (project_id, sms_team_id, user_id) where archived is false;
+-- drop index if exists flow.pmt_project_sms_user_id_ix;
+-- create unique INDEX if not exists pmt_project_sms_user_id_ix on flow.project_message_team (project_id, sms_team_id, user_id) where archived is false;
 
 insert into flow.project_message_team(project_id, sms_team_id, user_id, archived, date_created, date_modified, created_by_id, modified_by_id)
 select project_id, sms_team_id, user_id, archived, date_created, date_modified, created_by_id, modified_by_id
@@ -40,8 +41,6 @@ ALTER TABLE IF EXISTS flow.project_message_properties
     RENAME TO old_project_message_properties;
 ALTER TABLE IF EXISTS flow.sms_cache
     RENAME TO old_sms_cache;
-ALTER TABLE IF EXISTS flow.sms_reply
-    RENAME TO old_sms_reply;
 
 --prep the sms queue stuff
 alter table flow.sms_queue
@@ -77,8 +76,9 @@ alter table flow.sms_queue
 
 
 --import replies into the queue
-insert into flow.sms_queue(message, media_urls, message_sid, message_status, from_phone, to_phone, updated, created, num_media, account_sid, messaging_service_sid, twilio_received)
-select coalesce(body, ''), media_urls, message_sid, 'received', from_phone, to_phone, date_received, date_received, num_media, account_sid, messaging_service_sid, date_received
+alter table flow.sms_queue alter column recipient_type_id drop default;
+insert into flow.sms_queue(message, media_urls, message_sid, message_status, from_phone, to_phone, updated, created, num_media, account_sid, messaging_service_sid, twilio_received, recipient_type_id)
+select coalesce(body, ''), media_urls, message_sid, 'received', from_phone, to_phone, date_received, date_received, num_media, account_sid, messaging_service_sid, date_received, case when to_phone = '+18014480029' then 1 else 2 end
 from flow.sms_reply;
 ;
 
@@ -110,25 +110,247 @@ where twilio_received is not null;
 alter table flow.sms_queue
     add column if not exists parent_id bigint;
 
+ALTER TABLE flow.sms_queue ADD COLUMN is_last_inserted BOOLEAN DEFAULT FALSE;
+
+--add a temp column for use by updating parent id since it needs to be to_phone for outgoing and from_phone for incoming
+ALTER TABLE flow.sms_queue ADD COLUMN temp_thread_phone text;
+
+update flow.sms_queue
+set temp_thread_phone = case when inbound then search_from_phone else search_to_phone end
+where id > 0;
+--^^ this took 10 mins, 4.1 million rows, took 30 mins the 2nd time
 
 
+--this loop took 25 minutes. trying an index to see if it is faster next time
+-- took 50 minutes the 2nd time
+CREATE INDEX if not exists sq_temp_thread_phone_idx ON flow.sms_queue (temp_thread_phone);
+
+DO
+$do$
+    declare
+        x    record;
+        v_id bigint;
+        v_rowcount bigint;
+    BEGIN
+        v_rowcount = 0;
+        for x in select id,
+                        parent_id,
+                        date_created,
+                        temp_thread_phone,
+                        CASE
+                            WHEN ROW_NUMBER() OVER (PARTITION BY temp_thread_phone ORDER BY date_created, temp_thread_phone) = 1
+                                THEN true
+                            ELSE false END AS is_first_row,
+                        CASE
+                            WHEN ROW_NUMBER() OVER (PARTITION BY temp_thread_phone ORDER BY date_created desc, temp_thread_phone) = 1
+                                THEN true
+                            ELSE false END AS is_last_row,
+                        is_last_inserted
+                 from flow.sms_queue
+                 where parent_id is null
+                 order by temp_thread_phone, date_created
+            loop
+                v_rowcount = v_rowcount + 1;
+                if x.is_first_row is true then
+                    v_id = x.id;
+                end if;
+                update flow.sms_queue sq
+                set parent_id = v_id,
+                    is_last_inserted = case when x.is_last_row is true then true else false end
+                where id = x.id;
+                if v_rowcount = 50000 then
+                    commit;
+                    raise notice 'HIT ROW COUNT: %', v_rowcount;
+                    v_rowcount = 0;
+                end if;
+            end loop;
+        v_rowcount = 0;
+    end
+$do$;
 
 --rename the queue table
 alter table flow.sms_queue
     rename to sms_thread;
 
---blah
-alter table flow.sms_thread_owner
-    add column if not exists sms_thread_id bigint references flow.sms_thread_owner(id);
+drop function if exists flow.update_last_inserted() cascade;
+CREATE OR REPLACE FUNCTION flow.update_last_inserted()
+    RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE flow.sms_thread
+    SET is_last_inserted = FALSE
+    WHERE parent_id = NEW.parent_id AND is_last_inserted = TRUE;
 
+    NEW.is_last_inserted = TRUE;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+drop trigger if exists set_last_inserted on flow.sms_thread;
+CREATE TRIGGER set_last_inserted
+    BEFORE INSERT ON flow.sms_thread
+    FOR EACH ROW
+EXECUTE FUNCTION flow.update_last_inserted();
+
+
+--rename the reply table:
+alter table flow.sms_reply
+    rename to sms_reply_deprecated;
+
+--owner stuff for projects
+ALTER TABLE IF EXISTS flow.project_message_team
+    RENAME TO sms_thread_owner;
+
+
+alter table flow.sms_thread_owner
+    drop column if exists sms_thread_id;
+alter table flow.sms_thread_owner
+    add column if not exists sms_thread_id bigint references flow.sms_thread(id);
+
+--sometimes if a project phone number changed we will lose that history (1.2 mins)
 update flow.sms_thread_owner co
-set sms_thread_id = (select id from flow.sms_thread c where c.project_id = co.project_id and c.parent_id is null)
-where id > 0;
+set sms_thread_id = (
+    select st.id
+    from flow.sms_thread st
+        inner join flow.project p on st.sent_to_project_id = p.id
+        inner join flow.contact c on p.contact_id = c.id
+    where st.sent_to_project_id = co.project_id
+      and st.id = st.parent_id
+    and st.temp_thread_phone = c.search_phones)
+where co.id > 0;
 
 --this deletes from the owner table if there was no matching conversation/project id stuff in the sms queue
+--only if archived so we dont have to create ghost threads
 delete from flow.sms_thread_owner
-    where sms_thread_id is null;
+    where sms_thread_id is null
+and archived is true;
+
+--add "ghost threads" for any threads that have owners but no messages in the thread, 2 = projects
+alter table flow.sms_thread
+add column if not exists archived boolean not null default false;
+
+insert into flow.sms_thread(message, from_phone, to_phone, recipient_type_id, message_sent_by_user_id, sent_to_project_id, archived, temp_thread_phone)
+select distinct 'THREAD INITIALIZATION', '+18014480212', c.search_phones, 2, 99999999, sto.project_id, true, c.search_phones
+    from flow.sms_thread_owner sto
+        inner join flow.project p on sto.project_id = p.id
+        inner join flow.contact c on p.contact_id = c.id
+        where sto.sms_thread_id is null;
+
+update flow.sms_thread
+    set parent_id = id
+where message = 'THREAD INITIALIZATION'
+  and recipient_type_id = 2;
+
+--run the update again for those that are null
+update flow.sms_thread_owner co
+set sms_thread_id = (
+    select st.id
+    from flow.sms_thread st
+             inner join flow.project p on st.sent_to_project_id = p.id
+             inner join flow.contact c on p.contact_id = c.id
+    where st.sent_to_project_id = co.project_id
+      and st.id = st.parent_id
+      and st.temp_thread_phone = c.search_phones)
+where co.sms_thread_id is null;
 
 alter table flow.sms_thread_owner alter column sms_thread_id set not null;
 
---so far this has been for refactoring the project stuff...need to do the user stuff
+alter table flow.sms_thread_owner
+    rename column project_id to project_id_deprecated;
+
+
+--refactor some user message stuff then insert it into the sms_thread_owner stuff
+alter table flow.user_message_team
+    add column if not exists owner_user_id bigint references flow.user(id);
+
+drop index if exists sms_owner_user_id_idx;
+CREATE INDEX if not exists sms_owner_user_id_idx ON flow.user_message_team (owner_user_id);
+
+insert into flow.user_message_team(owner_user_id, sms_team_id, user_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+select owner_user_id, sms_team_id, user_id, archived, date_created, date_modified, created_by_id, modified_by_id
+from flow.user_message_owner;
+
+--9399 team owners
+--7805 user owners
+
+ALTER TABLE IF EXISTS flow.user_message_owner
+    RENAME TO old_user_message_owner;
+
+alter table flow.user_message_team
+add column if not exists sms_thread_id bigint;
+
+--took 3 mins
+update flow.user_message_team umt
+set sms_thread_id = (select st.id
+                     from flow.sms_thread st
+                              inner join flow.user u on u.id = st.sent_to_user_id
+                     where st.sent_to_user_id = umt.user_id
+                       and st.id = st.parent_id
+                       and st.temp_thread_phone = u.search_phone)
+where umt.id > 0;
+
+delete from flow.user_message_team
+where sms_thread_id is null
+and archived is true;
+
+insert into flow.sms_thread(message, from_phone, to_phone, recipient_type_id, message_sent_by_user_id, sent_to_user_id, archived, temp_thread_phone)
+select distinct 'THREAD INITIALIZATION', '+18014480029', u.search_phone, 1, 99999999, sto.user_id, true, u.search_phone
+from flow.user_message_team sto
+         inner join flow.user u on u.id = sto.user_id
+where sto.sms_thread_id is null;
+
+update flow.sms_thread
+set parent_id = id
+where message = 'THREAD INITIALIZATION'
+and recipient_type_id = 1;
+
+update flow.user_message_team umt
+set sms_thread_id = (select st.id
+                     from flow.sms_thread st
+                              inner join flow.user u on u.id = st.sent_to_user_id
+                     where st.sent_to_user_id = umt.user_id
+                       and st.id = st.parent_id
+                       and st.temp_thread_phone = u.search_phone)
+where umt.sms_thread_id is null;
+
+--now that the data is ready, insert into the sms_thread_owner
+alter table flow.sms_thread_owner add column if not exists user_id_deprecated bigint;
+alter table flow.sms_thread_owner alter column project_id_deprecated drop not null;
+
+insert into flow.sms_thread_owner(sms_team_id, archived, date_created, date_modified, created_by_id, modified_by_id, sms_thread_id, user_id, user_id_deprecated)
+select sms_team_id, archived, date_created, date_modified, created_by_id, modified_by_id, sms_thread_id, owner_user_id, user_id
+from flow.user_message_team;
+
+ALTER TABLE IF EXISTS flow.user_message_team
+    RENAME TO old_user_message_team;
+ALTER TABLE IF EXISTS flow.user_message_properties
+    RENAME TO old_user_message_properties;
+
+
+--need to populated the closed property
+alter table flow.sms_thread
+add column if not exists closed boolean not null default false;
+
+--7min
+update flow.sms_thread st
+set closed = true
+from flow.old_project_message_properties op
+where op.project_id = st.sent_to_project_id
+and op.closed is true;
+
+--5 mins
+update flow.sms_thread st
+set closed = true
+from flow.old_user_message_properties op
+where op.user_id = st.sent_to_user_id
+  and op.closed is true;
+
+CREATE INDEX if not exists sto_sms_thread_id_idx ON flow.sms_thread_owner (sms_thread_id);
+CREATE INDEX if not exists st_parent_id_idx ON flow.sms_thread (parent_id);
+CREATE INDEX if not exists st_search_to_phone_idx ON flow.sms_thread (search_to_phone);
+CREATE INDEX if not exists st_search_from_phone_idx ON flow.sms_thread (search_from_phone);
+
+
+-- TODO: need to do project_message_owner_history and user_message_owner_history into sms_thread_owner_history
+

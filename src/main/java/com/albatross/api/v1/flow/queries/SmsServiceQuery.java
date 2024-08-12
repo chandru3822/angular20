@@ -3,65 +3,21 @@ package com.albatross.api.v1.flow.queries;
 public class SmsServiceQuery {
 
   //language=PostgreSQL
-  public final static String fetchByProjectId = """
-    SELECT sms.message,
-           array_to_json(sms.media_urls) AS media_urls,
-           created,
-           sms.from_phone,
-           sms.recipient_type_id,
-           sms.message_sent_by_user_id   as user_id,
-           case
-               when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text)
-               end                       as full_name
-    FROM flow.sms_queue sms
-             inner join flow.user u on sms.message_sent_by_user_id = u.id
-             inner join flow.contact c on c.search_phones = sms.search_to_phone and c.archived is false
-             inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
-        AND error_message IS NULL
-        AND sms.recipient_type_id = 2
-    UNION ALL
-    SELECT body          as message,
-           array_to_json(media_urls),
-           date_received as created,
-           from_phone,
-           1             as recipient_type_id,
-           null::bigint     as user_id,
-           null::text    as full_name
-    from flow.sms_reply sr
-             inner join flow.contact c on c.search_phones = sr.search_from_phone and c.archived is false
-             inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
-        where sr.to_phone = '+18014480212'
-    ORDER BY created ASC
-    """;
-
-  //language=PostgreSQL
-  public final static String fetchByUserId = """
-    SELECT sms.message,
-           array_to_json(sms.media_urls) AS media_urls,
-           created,
-           sms.from_phone,
-           sms.recipient_type_id,
-           sms.message_sent_by_user_id   as user_id,
-           case
-               when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text)
-               end                       as full_name
-    FROM flow.sms_queue sms
-             inner join flow.user u on sms.message_sent_by_user_id = u.id
-        AND error_message IS NULL
-        AND sms.search_to_phone = (select u2.search_phone from flow.user u2 where u2.id = :userId)
-        AND sms.recipient_type_id = 1
-    UNION ALL
-    SELECT body          as message,
-           array_to_json(media_urls),
-           date_received as created,
-           from_phone,
-           1             as recipient_type_id,
-           null::bigint     as user_id,
-           null::text    as full_name
-    from flow.sms_reply sr
-    where sr.search_from_phone = (select u3.search_phone from flow.user u3 where u3.id = :userId)
-          AND sr.to_phone = '+18014480029'
-    ORDER BY created ASC
+  public final static String fetchByThreadId = """
+    SELECT st.message,
+           array_to_json(st.media_urls) AS media_urls,
+           st.date_created,
+           st.from_phone,
+           st.inbound,
+           st.recipient_type_id,
+           st.message_sent_by_user_id   as user_id,
+           concat(u.first_name, ' ', u.last_name::text) as full_name
+    FROM flow.sms_thread st
+             left join flow.user u on st.message_sent_by_user_id = u.id
+    where error_message IS NULL
+        AND st.parent_id = :smsThreadId
+        and st.archived is false
+    ORDER BY st.date_created ASC
     """;
 
   //language=PostgreSQL
@@ -182,10 +138,7 @@ public class SmsServiceQuery {
 
   //language=PostgreSQL
   public final static String saveReply = """
-        INSERT INTO flow.sms_reply (
-            message_sid, account_sid, messaging_service_sid,
-            from_phone, to_phone, body, num_media, media_urls
-        ) VALUES (
+        select from flow.sms_save_reply(
             :messageSid,
             :accountSid,
             :messagingServiceSid,
@@ -193,8 +146,25 @@ public class SmsServiceQuery {
             :to,
             :body,
             :numMedia,
-            :mediaUrls
+            :mediaUrls::text[],
+            :recipientTypeId
         )
+    """;
+
+  //language=PostgreSQL
+  public final static String getThreadId = """
+    select * from flow.get_thread_id(:projectId::int, :userId::int, :fromPhoneNumber::text)
+    """;
+
+  //language=PostgreSQL
+  public final static String getThreadInfo = """
+    select st.parent_id,
+           st.recipient_type_id,
+           st.inbound,
+           st.search_from_phone,
+           st.search_to_phone
+    from flow.sms_thread st
+    where st.id = :smsThreadId
     """;
 
   //language=PostgreSQL
@@ -212,22 +182,7 @@ public class SmsServiceQuery {
      and u.archived is false
     """;
 
-  //language=PostgreSQL
-  public final static String getUserPhone = """
-    select u.phone_number
-    from flow.user u
-     where u.id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String getProjectPhone = """
-    select coalesce(c.phone, c.mobile) as phone_number
-    from flow.project p
-      inner join flow.contact c on p.contact_id = c.id
-     where p.id = :id
-    """;
-
-//  //language=PostgreSQL
+  //  //language=PostgreSQL
 //  public final static String fetchReply = """
 //      SELECT *
 //      FROM flow.sms_reply

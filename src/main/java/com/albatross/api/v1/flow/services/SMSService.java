@@ -88,16 +88,55 @@ public class SMSService {
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
+  public Long getThreadId(Long projectId, Long userId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    String fromPhone = projectId != null
+      ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
+    params.put("fromPhone", fromPhone);
+
+    Long threadId = sqlCache.queryForObjectBySql(SmsServiceQuery.getThreadId, params, Long.class);
+    return threadId;
+  }
+
+  public SMSQueueItem getThreadInfo(Long smsThreadId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("smsThreadId", smsThreadId);
+
+    Optional<SMSQueueItem> result = sqlCache.getBySql(SmsServiceQuery.getThreadInfo, params, SMSQueueItem.class);
+    return result.orElse(null);
+  }
+
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
-    Map<String, Object> params = Map.of("projectId", projectId);
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    Long smsThreadId = getThreadId(projectId, null);
+
+    params.put("smsThreadId", smsThreadId);
     return sqlCache.queryBySql(
-      SmsServiceQuery.fetchByProjectId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      SmsServiceQuery.fetchByThreadId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public List<SMSQueueItem> getSmsByUserId(Long userId) {
-    Map<String, Object> params = Map.of("userId", userId);
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+
+    Long smsThreadId = getThreadId(null, userId);
+
+    params.put("smsThreadId", smsThreadId);
+
     return sqlCache.queryBySql(
-      SmsServiceQuery.fetchByUserId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      SmsServiceQuery.fetchByThreadId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+  }
+
+  public List<SMSQueueItem> getSmsByThreadId(Long smsThreadId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("smsThreadId", smsThreadId);
+
+    return sqlCache.queryBySql(
+      SmsServiceQuery.fetchByThreadId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public SMSQueueItem queueMessage(
@@ -249,22 +288,25 @@ public class SMSService {
   /**
    * Mock twilio reply, inserts "reply" into flow sms_reply table and processes notifications
    */
-  public String processMockInboundMessage(Long projectId, Long userId) {
+  public String processMockInboundMessage(Long projectId, Long userId, Long smsThreadId) {
     //todo: this
     if(null != appEnv && appEnv.equals("prod")) {
       return "Cannot mock replies in production environment";
-    } else if(null != projectId || null != userId) {
-      boolean isProject = null != projectId;
-      String toPhone = isProject
+    } else if(null != projectId || null != userId || null != smsThreadId) {
+
+      //if the thread is null (meaning it came from project or user screen) get a thread id (it will create one if needed)
+      if(smsThreadId == null) {
+        smsThreadId = getThreadId(projectId, userId);
+      }
+
+      SMSQueueItem threadInfo = getThreadInfo(smsThreadId);
+
+      String toPhone = threadInfo.getRecipientType() == RecipientType.PROJECT
         ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
 
-      Map<String, Object> params = new HashMap<>();
-      params.put("id", isProject ? projectId : userId);
+      String fromPhoneNumber = threadInfo.isInbound() ? threadInfo.getSearchFromPhone() : threadInfo.getSearchToPhone();
 
-      String phoneQuery = isProject ? SmsServiceQuery.getProjectPhone : SmsServiceQuery.getUserPhone;
-      Optional<String> fromPhoneNumber = sqlCache.queryForObjectOptionalBySql(phoneQuery, params, String.class);
-
-      if(fromPhoneNumber.isPresent()) {
+      if(!fromPhoneNumber.isBlank()) {
 
         //maybe we can make a prop for this down the road, but I don't see a reason they need the ability to reply with specific text
         String mockInboundMessage = "MOCK REPLY: Auto Generated Test Reply";
@@ -277,7 +319,7 @@ public class SMSService {
           //.smsSid(not sure which prop this is or if it matters)
           .accountSid(properties.getTwilioAccountSID())
           .messagingServiceSid(properties.getTwilioMessageServiceSID())
-          .from(fromPhoneNumber.get())
+          .from(fromPhoneNumber)
           .to(toPhone)
           .body(mockInboundMessage)
           .numMedia(0)
@@ -484,7 +526,14 @@ public class SMSService {
 
   public void saveReply(TwilioMessageRequest sms) {
     log.debug("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
-    sqlCache.updateBySql(SmsServiceQuery.saveReply, sms.toHashMap());
+
+//    todo this now needs to check for an existing sms thread and add one if there isn't one
+    Map<String, Object> params = new HashMap<>();
+    params = sms.toHashMap();
+    params.put("recipientTypeId",
+      Objects.equals(sms.getTo(), properties.getTwilioPhoneNumber()) ? RecipientType.PROJECT.ordinal() : RecipientType.USER.ordinal());
+
+    sqlCache.queryBySql(SmsServiceQuery.saveReply, params, String.class);
   }
 
   public String cleanPhoneNumber(String input, String region) throws NumberParseException {

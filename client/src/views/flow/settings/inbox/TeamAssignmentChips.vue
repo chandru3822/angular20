@@ -1,7 +1,7 @@
 <template xmlns="http://www.w3.org/1999/html">
   <v-chip-group :column="!miniDialog" class="team-chips" show-arrows="always" :class="{'mini': miniDialog}">
     <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap" :key="index">
-        <v-chip v-if="team.users.length === 0"
+        <v-chip v-if="team.users && team.users.length === 0"
                 label
                 :close="teamNamesAssociatedToUser.includes(team.teamName) && userCanView"
                 close-icon="mdi-close"

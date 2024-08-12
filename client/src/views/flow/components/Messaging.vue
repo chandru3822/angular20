@@ -130,19 +130,22 @@ const filters = vueInstance.$filters
 const props = defineProps({
   userAssigned: Boolean,
   userIdIn: Number,
+  smsThreadId: Number,
   teamsAssociatedToUser: Array,
   hideTemplateBtn: {
     type: Boolean,
     default: false
   }
 })
-const { userAssigned, userIdIn, teamsAssociatedToUser } = toRefs(props)
+const { userAssigned, userIdIn, smsThreadId, teamsAssociatedToUser } = toRefs(props)
 
 onMounted(() => {
   if (projectId.value) {
     fetchProjectData()
   } else if (userId.value) {
     fetchUserData()
+  } else if (smsThreadId.value) {
+    fetchSmsData()
   }
   toggleChatBox()
 })
@@ -214,6 +217,12 @@ watch([projectId, userId], async () => {
   }
 })
 
+watch(smsThreadId, async () => {
+  if (smsThreadId.value) {
+    await fetchSmsData()
+  }
+})
+
 watch(teamsAssociatedToUser, async (value, oldValue, onCleanup) => {
   templateTeams.value = []
   if (teamsAssociatedToUser.value.length > 0) {
@@ -262,7 +271,7 @@ const sendMessage = (text) => {
 
 const mockReply = async () => {
   try {
-    const url = projectId.value ? `/sms/mock/inbound/project/${projectId.value}` :
+    const url = smsThreadId.value ? `/sms/mock/inbound/thread/${smsThreadId.value}` : projectId.value ? `/sms/mock/inbound/project/${projectId.value}` :
       `/sms/mock/inbound/user/${userId.value}`
 
     await postRequest(url, null)
@@ -309,12 +318,8 @@ const onMessageWasSent = async (message) => {
     const attachmentUrl = projectId.value
       ? `/project/${projectId.value}/attachment`
       : `/user/${userId.value}/attachment`
-    const sendTextUrl = projectId.value
-      ? `/communication/sendTextsForProject/${projectId.value}`
-      : `/communication/sendTextsForUser/${userId.value}`
-    const lastSentUrl = projectId.value
-      ? `/messaging/setLastSent/project/` + projectId.value
-      : `/messaging/setLastSent/user/` + userId.value
+    const sendTextUrl = `/communication/sendTextsForThread/${smsThreadId.value}`
+
     const createNotificationUrl = projectId.value
       ? `/messaging/createNotification/project/${projectId.value}`
       : `/messaging/createNotification/user/${userId.value}`
@@ -361,7 +366,6 @@ const onMessageWasSent = async (message) => {
         await postRequest(sendTextUrl, params)
       }
 
-      await putRequest(lastSentUrl)
       await postRequest(createNotificationUrl)
 
       //dont add to the ui unless the message goes thru successfully
@@ -419,10 +423,8 @@ const fetchContact = async () => {
 const fetchSmsData = async () => {
   try {
     let fetchSmsDataUrl = ''
-    if (projectId.value) {
-      fetchSmsDataUrl = `/sms/messages/project/${projectId.value}`
-    } else if (userId.value) {
-      fetchSmsDataUrl = `/sms/messages/user/${userId.value}`
+    if (smsThreadId.value) {
+      fetchSmsDataUrl = `/sms/messages/thread/${smsThreadId.value}`
     } else {
       return
     }
@@ -448,8 +450,8 @@ const fetchSmsData = async () => {
               name: u.message,
               url: u.mediaUrls[0],
               meta: u.fullName
-                ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp')
-                : filters.formatDate(u.created, 'timestamp')
+                ? u.fullName + ' ' + filters.formatDate(u.dateCreated, 'timestamp')
+                : filters.formatDate(u.dateCreated, 'timestamp')
             }
           }
         }
@@ -460,8 +462,8 @@ const fetchSmsData = async () => {
         data: {
           text: u.message,
           meta: u.fullName
-            ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp')
-            : filters.formatDate(u.created, 'timestamp')
+            ? u.fullName + ' ' + filters.formatDate(u.dateCreated, 'timestamp')
+            : filters.formatDate(u.dateCreated, 'timestamp')
         }
       }
     })

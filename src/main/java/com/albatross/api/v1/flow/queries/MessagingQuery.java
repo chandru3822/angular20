@@ -3,50 +3,76 @@ package com.albatross.api.v1.flow.queries;
 public class MessagingQuery {
 
   //language=PostgreSQL
-  public final static String getExternalConversations = """
-    select pc.id,
-                          pc.last_sent,
-                          pc.closed,
-                          pc.phone_number,
-                          pc.last_message_text,
-                          pc.outbound_message,
-                          (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
-                                     FROM (
-                                         select p.id as "projectId",
-                                                c.id as "contactId",
-                                                p.project_name as "projectName",
-                                                s.abbreviation as state
-                                           from flow.project p
-                                               inner join flow.contact c on p.contact_id = c.id
-                                               left join flow.company_state cs on p.company_state_id = cs.id
-                                               left join flow.state s ON s.id = cs.state_id
-                                           where c.archived is false
-                                             and p.archived is false
-                                             and c.search_phones = pc.phone_number
-                                          ) st), '[]')) as "projects",
-                          (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
-                                     FROM (select st.id as "smsTeamId",
-                                                  st.team_name                                              as "teamName",
-                                                  pco.user_id as "userId",
-                                                  u.first_name as "userFirstName",
-                                                  u.last_name as "userLastName"
-                                           from flow.external_conversation_owner pco
-                                               inner join flow.sms_team st on pco.sms_team_id = st.id
-                                               left join flow.user u on pco.user_id = u.id
-                                           where pco.external_conversation_id = pc.id
-                                             and pco.archived is false) st), '[]')) as "conversationOwners"
-                   from flow.external_conversation pc
-                       left join flow.external_conversation_owner pco on pc.id = pco.external_conversation_id
-                   where pc.outbound_message = not(:showInbox)
-                     and (pco.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
-                          (case when :unassigned is true then pco.user_id is null
-                              else pco.user_id = any (array [ :ownerIds ]::bigint[]) end))
-                     and case
-                           when array_length(array [ :notifConversationIds ]::bigint[], 1) > 0 then
-                               (pc.id = any (array [ :notifConversationIds ]::bigint[]))
-                           else true end
-                   limit :limit
-                   offset :offset
+  public final static String getConversations = """
+       select pc.id,
+              pc.date_created,
+              pc.closed,
+              pc.to_phone,
+              pc.from_phone,
+              pc.inbound,
+              pc.recipient_type_id,
+              pc.parent_id,
+              pc.message,
+              case when pc.recipient_type_id = 1 then
+                  (select concat(u.first_name, ' ', u.last_name)
+                   from flow.user u
+                   where u.archived is false
+                   and (u.search_phone = pc.search_to_phone or u.search_phone = pc.search_from_phone)
+                   limit 1)
+                  else
+                      (select concat(c.first_name, ' ', c.last_name)
+                       from flow.contact c
+                       where c.archived is false
+                         and (c.search_phones = pc.search_to_phone or c.search_phones = pc.search_from_phone)
+                       order by c.date_created desc
+                       limit 1) end as full_name,
+               case when pc.recipient_type_id = 2 then
+                        (select s.abbreviation
+                         from flow.contact c
+                             inner join flow.company_state cs on c.company_state_id = cs.id
+                             inner join flow.state s on cs.state_id = s.id
+                         where c.archived is false
+                           and (c.search_phones = pc.search_to_phone or c.search_phones = pc.search_from_phone)
+                         order by c.date_created desc
+                         limit 1
+                         )
+                   end as state_abbreviation,
+                  (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
+                         FROM (select st.id,
+                                      st.team_name                                                        as "teamName",
+                                      coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
+                                                FROM (SELECT pmo.id,
+                                                             pmo.user_id                            as "userId",
+                                                             concat(u.first_name, ' ', u.last_name) as "name",
+                                                             pmo.sms_team_id                        as "smsTeamId",
+                                                             pmo.archived
+                                                      FROM flow.sms_thread_owner pmo
+                                                               inner join flow.user u on pmo.user_id = u.id
+                                                      WHERE pmo.archived = false
+                                                        and pmo.sms_thread_id = sto.sms_thread_id
+                                                        and pmo.sms_team_id = sto.sms_team_id
+                                                        and pmo.user_id is not null
+                                                        ) tb), '[]') AS "users"
+                               from flow.sms_thread_owner sto
+                                        inner join flow.sms_team st on sto.sms_team_id = st.id and st.archived is false
+                               where sto.sms_thread_id = pc.parent_id
+                                  and sto.user_id is null
+                                 and sto.archived = false) st), '[]')) as "smsTeamOwners"
+       from flow.sms_thread pc
+                inner join flow.sms_thread_owner pco on pc.parent_id = pco.sms_thread_id and pco.archived is false
+       where pc.inbound = :showInbox
+         and pc.is_last_inserted is true
+         and pc.archived is false
+         and (pco.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
+              (case when :unassigned is true then pco.user_id is null
+                    else pco.user_id = any (array [ :ownerIds ]::bigint[]) end))
+         and case
+                 when array_length(array [ :notifConversationIds ]::bigint[], 1) > 0 then
+                     (pc.id = any (array [ :notifConversationIds ]::bigint[]))
+                 else true end
+       order by pc.date_created desc
+       limit :limit
+           offset :offset
     """;
 
   //language=PostgreSQL
@@ -117,35 +143,56 @@ public class MessagingQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getProject = """
-    select p.id                                                     as projectId,
-              p.project_name,
-              s.abbreviation                                           as state,
-              c.company_id,
-              (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
-                         FROM (select st.id,
-                                      st.team_name                                                        as "teamName",
-                                      coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
-                                                FROM (SELECT pmo.id,
-                                                             pmo.user_id                            as "userId",
-                                                             concat(u.first_name, ' ', u.last_name) as "name",
-                                                             pmo.sms_team_id                        as "smsTeamId",
-                                                             pmo.archived
-                                                      FROM flow.project_message_owner pmo
-                                                               inner join flow.user u on pmo.user_id = u.id
-                                                      WHERE pmo.archived = false
-                                                        and pmo.project_id = p.id
-                                                        and pmo.sms_team_id = pmt.sms_team_id) tb), '[]') AS "users"
-                               from flow.project_message_team pmt
-                                        inner join flow.sms_team st on pmt.sms_team_id = st.id
-                               where pmt.project_id = p.id
-                                 and pmt.archived = false) st), '[]')) as "smsTeamOwners"
-       from flow.project p
-                inner join flow.project_message_properties pmp on p.id = pmp.project_id
-                inner join flow.contact c ON c.id = p.contact_id
-                left outer join flow.company_state cs on cs.id = p.company_state_id
-                left outer join flow.state s on s.id = cs.state_id
-       where p.id = :projectId
+  public final static String getThread = """
+    select
+                                  st.closed,
+                                  case when st.recipient_type_id = 1 then
+                                           (select concat(u.first_name, ' ', u.last_name)
+                                            from flow.user u
+                                            where u.archived is false
+                                              and (u.search_phone = st.search_to_phone or u.search_phone = st.search_from_phone)
+                                            limit 1)
+                                       else
+                                           (select concat(c.first_name, ' ', c.last_name)
+                                            from flow.contact c
+                                            where c.archived is false
+                                              and (c.search_phones = st.search_to_phone or c.search_phones = st.search_from_phone)
+                                            order by c.date_created desc
+                                            limit 1) end as full_name,
+                                  case when st.recipient_type_id = 2 then
+                                           (select s.abbreviation
+                                            from flow.contact c
+                                                     inner join flow.company_state cs on c.company_state_id = cs.id
+                                                     inner join flow.state s on cs.state_id = s.id
+                                            where c.archived is false
+                                              and (c.search_phones = st.search_to_phone or c.search_phones = st.search_from_phone)
+                                            order by c.date_created desc
+                                            limit 1
+                                           )
+                                      end as state_abbreviation,
+                                  (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
+                                             FROM (select st.id,
+                                                          st2.team_name                                                        as "teamName",
+                                                          coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
+                                                                    FROM (SELECT pmo.id,
+                                                                                 pmo.user_id                            as "userId",
+                                                                                 concat(u.first_name, ' ', u.last_name) as "name",
+                                                                                 pmo.sms_team_id                        as "smsTeamId",
+                                                                                 pmo.archived
+                                                                          FROM flow.sms_thread_owner pmo
+                                                                                   inner join flow.user u on pmo.user_id = u.id
+                                                                          WHERE pmo.archived = false
+                                                                            and pmo.sms_thread_id = sto.sms_thread_id
+                                                                            and pmo.sms_team_id = sto.sms_team_id
+                                                                            and pmo.user_id is not null
+                                                                         ) tb), '[]') AS "users"
+                                                   from flow.sms_thread_owner sto
+                                                            inner join flow.sms_team st2 on sto.sms_team_id = st2.id and st2.archived is false
+                                                   where sto.sms_thread_id = st.parent_id
+                                                     and sto.user_id is null
+                                                     and sto.archived = false) st), '[]')) as "smsTeamOwners"
+                              from flow.sms_thread st
+                              where st.id = :smsThreadId
     """;
 
   //language=PostgreSQL

@@ -15,7 +15,7 @@ import java.util.List;
 public class SMSQueueItem {
 
   private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId, priorityLevel;
-  private String firstName, lastName, fullName, email, message;
+  private String firstName, lastName, fullName, email, message, searchFromPhone, searchToPhone;
   private String messageGroup,
       messageSid,
       messageStatus,
@@ -25,10 +25,10 @@ public class SMSQueueItem {
       projectStatus,
       sentByName;
   private List<String> mediaUrls;
-  private boolean messageRead;
+  private boolean messageRead, inbound;
   private Owner owner;
 
-  private Date created,
+  private Date dateCreated,
       updated,
       twilioCreated,
       twilioSent,

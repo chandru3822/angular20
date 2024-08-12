@@ -37,6 +37,11 @@ public class SmsController {
     return smsService.getSmsByUserId(userId);
   }
 
+  @GetMapping(value = "/messages/thread/{smsThreadId}")
+  public List<SMSQueueItem> getThreadMessages(@PathVariable Long smsThreadId) {
+    return smsService.getSmsByThreadId(smsThreadId);
+  }
+
   @PostMapping(value = "/updateSms")
   public void updateSms(@RequestBody SMSQueueItem smsQueueItem) {
     smsService.updateSms(smsQueueItem);
@@ -48,7 +53,7 @@ public class SmsController {
     consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
     produces = MediaType.APPLICATION_XML_VALUE)
   public String processMockInboundMessageProject(@PathVariable Long projectId) throws TwiMLException {
-    return smsService.processMockInboundMessage(projectId, null);
+    return smsService.processMockInboundMessage(projectId, null, null);
   }
 
   @ResponseStatus(HttpStatus.ACCEPTED)
@@ -57,6 +62,15 @@ public class SmsController {
     consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
     produces = MediaType.APPLICATION_XML_VALUE)
   public String processMockInboundMessageUser(@PathVariable Long userId) throws TwiMLException {
-    return smsService.processMockInboundMessage(null, userId);
+    return smsService.processMockInboundMessage(null, userId, null);
+  }
+
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @PostMapping(
+    value = "/mock/inbound/thread/{smsThreadId}",
+    consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+    produces = MediaType.APPLICATION_XML_VALUE)
+  public String processMockInboundMessageThread(@PathVariable Long smsThreadId) throws TwiMLException {
+    return smsService.processMockInboundMessage(null, null, smsThreadId);
   }
 }

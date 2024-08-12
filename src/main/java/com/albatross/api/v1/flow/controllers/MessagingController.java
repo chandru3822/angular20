@@ -115,10 +115,10 @@ public class MessagingController {
         pageable);
   }
 
-  @GetMapping(value = "/project/{projectId}")
+  @GetMapping(value = "/thread/{smsThreadId}")
   public SmsConversation getProject(
-      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
-    return messagingService.getProject(projectId, details.getTrueUserId());
+      @PathVariable Long smsThreadId, @AuthenticationPrincipal UserAccountDetails details) {
+    return messagingService.getThread(smsThreadId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/user/{userId}")

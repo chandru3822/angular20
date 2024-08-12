@@ -179,7 +179,7 @@
     </template>
     <Messaging
       v-if="showSmsTab && viewId === 0"
-      :primaryId="projectId"
+      :smsThreadId="smsThreadId"
       :userIdIn="userId"
       :user-assigned="userAssigned"
       :teams-associated-to-user="teamsAssociatedToUser"
@@ -193,7 +193,6 @@
       :object-type-id="objectTypeId"
       :project-id="projectId"
       :org-id="orgId"
-      v-if="viewId === 1"
       @scrollToTop="scrollToTop"
     />
     <AttachmentsFolderList
@@ -350,6 +349,7 @@ const projectProcessStepEventId = computed(() => {
   return parseInt(route.params.ppsEventId) || null
 })
 const viewId = computed(() => {
+  console.log('randalogger',selectedTab.value)
   return null == selectedTab.value ||
     (selectedTab.value === 0 && !props.showSmsTab)
     ? 1
@@ -417,6 +417,10 @@ const projectId = computed(() => {
   return parseInt(route.params.projectId)
 })
 
+const smsThreadId = computed(() => {
+  return parseInt(route.params.smsThreadId)
+})
+
 onMounted(() => {
   const projectActivityParam = parseInt(route.query.activityView | '-1')
   if (projectActivityParam >= 0) {
@@ -425,7 +429,7 @@ onMounted(() => {
   handlePageLoad()
 })
 
-watch(projectId, async () => {
+watch(smsThreadId, async () => {
   if (viewId.value === 0) {
     await fetchTeamsForUser()
   }
@@ -560,9 +564,9 @@ const fetchTeamsForUser = async () => {
 }
 const loadConversation = async () => {
   userAssigned.value = false
-  if (projectId.value) {
+  if (smsThreadId.value) {
     try {
-      const { data } = await getRequest('/messaging/project/' + projectId.value)
+      const { data } = await getRequest('/messaging/thread/' + smsThreadId.value)
       messageProperties.value = data
       messageProperties.value.smsTeamOwners?.forEach((team) => {
         if (teamNamesAssociatedToUser.value.includes(team.teamName)) {
