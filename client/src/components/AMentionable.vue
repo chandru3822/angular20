@@ -179,6 +179,10 @@ const onBlur = () => {
 }
 
 const onKeyDown = (e) => {
+  //the following stops the menu from opening when you're trying to scroll through multi-line text
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.stopImmediatePropagation()
+  }
   if (currentKey.value) {
     if (e.key === 'ArrowDown') {
       selectedIndex.value = (selectedIndex.value + 1) % displayedItems.value.length
@@ -296,7 +300,6 @@ const applyMention = (itemIndex) => {
     itemIndex = 1
   }
   const item = displayedItems.value[itemIndex -1]
-  console.log(item.value)
   const value = (props.omitKey ? '' : currentKey.value) + String(props.mapInsert ? props.mapInsert(item, currentKey.value) : item.value) + (props.insertSpace ? ' ' : '')
   if (input.isContentEditable) {
     const range = window.getSelection().getRangeAt(0)
