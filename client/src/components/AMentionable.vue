@@ -180,7 +180,7 @@ const onBlur = () => {
 
 const onKeyDown = (e) => {
   //the following stops the menu from opening when you're trying to scroll through multi-line text
-  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+  if(!currentKey.value && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){
     e.stopImmediatePropagation()
   }
   if (currentKey.value) {
