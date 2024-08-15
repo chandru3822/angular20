@@ -119,6 +119,8 @@ public class MosaicService {
     String[] methodArray = {"Email","Link"};
     shareApplication.put("methods", methodArray);
 
+    // Mosaic requires a delay to avoid an error between these two calls
+    Thread.sleep(5000);
     // Get the link for the application via share
     res = POST("/v2/applications/" + applicationId + "/share", IOUtils.toInputStream(shareApplication.toString(), (Charset) null));
     if (res.getResponseCode() != 200) {
