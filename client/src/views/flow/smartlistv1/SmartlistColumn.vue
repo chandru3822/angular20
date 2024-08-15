@@ -6,7 +6,8 @@
       </v-toolbar-title>
     </v-toolbar>
     <v-toolbar v-else color="transparent" class="elevation-0">
-      <v-toolbar-title>Columns</v-toolbar-title>
+      <v-toolbar-title v-if="showTable">Columns</v-toolbar-title>
+      <v-toolbar-title v-else="showTable"></v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
         <a-btn
@@ -109,7 +110,7 @@
         ></a-btn>
       </v-col>
     </v-card>
-    <v-list v-if="vuetify.breakpoint.mdAndUp" dense>
+    <v-list v-if="vuetify.breakpoint.mdAndUp && showTable" dense>
       <v-list-item>
         <v-list-item-action v-if="canEdit">
           <v-icon></v-icon>
@@ -221,6 +222,10 @@ const props = defineProps({
   refresh: {
     type: Boolean,
     default: false
+  },
+  showTable: {
+    type: Boolean,
+    default: true,
   }
 })
 const { canEdit, isProjectDetails, companyObjectTypes,
@@ -320,6 +325,7 @@ const addNewField = async () => {
     assignedFields.value.push(data)
     resetNewFieldForm()
     handleHidingGlobalLoader( status)
+    emit('refreshed')
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error adding field to smartlist')
