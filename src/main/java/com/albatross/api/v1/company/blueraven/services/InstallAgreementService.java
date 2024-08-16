@@ -325,7 +325,16 @@ public class InstallAgreementService {
         return enFinService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
       } else if (loanType.toLowerCase().contains("mosaic")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
-        return mosaicService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+        // Check to see if a Mosaic application already exists, if so, open the existing application
+        if (propLogDetail.isPresent() &&
+          propLogDetail.get().getMosaicApplicationId() != null &&
+          !propLogDetail.get().getMosaicApplicationId().isEmpty()) {
+          return mosaicService.shareApplication(propLogDetail.get().getMosaicApplicationId(), false);
+        }
+        else {
+          // Generate a new application
+          return mosaicService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+        }
       } else if (loanType.toLowerCase().contains("sunlight")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
 
@@ -495,7 +504,8 @@ public class InstallAgreementService {
       panelWattage,
       storageBrand,
       numberOfBatteries,
-      allAncillaryCosts;
+      allAncillaryCosts,
+      mosaicApplicationId;
   }
 
   @Data

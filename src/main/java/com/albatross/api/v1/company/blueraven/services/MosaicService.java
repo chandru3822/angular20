@@ -38,7 +38,6 @@ public class MosaicService {
 
   public String saveLoanFields(InstallAgreementService.PropLogDetail propLogDetail, Long projectId, Long proposalNbr) throws Exception {
     JSONObject projectDetails = new JSONObject();
-    JSONObject shareApplication = new JSONObject();
     JSONObject applicantDetails = new JSONObject();
     JSONObject projectAddress = new JSONObject();
 
@@ -115,14 +114,27 @@ public class MosaicService {
 
     String applicationId = respJson.getString("id");
     setMosaicApplicationId(projectId, proposalNbr, applicationId);
-    shareApplication.put("loanType", "Solar");
-    String[] methodArray = {"Email","Link"};
-    shareApplication.put("methods", methodArray);
 
     // Mosaic requires a delay to avoid an error between these two calls
     Thread.sleep(5000);
+    return shareApplication(applicationId, true);
+  }
+
+  public String shareApplication(String applicationId, boolean sendEmail) throws Exception {
+    JSONObject shareApplication = new JSONObject();
+    String[] methodArray;
+    if (sendEmail) {
+      methodArray = new String[]{"Email", "Link"};
+    }
+    else {
+      methodArray = new String[]{"Link"};
+    }
+
+    shareApplication.put("methods", methodArray);
+    shareApplication.put("loanType", "Solar");
     // Get the link for the application via share
-    res = POST("/v2/applications/" + applicationId + "/share", IOUtils.toInputStream(shareApplication.toString(), (Charset) null));
+    JSONObject respJson = new JSONObject();
+    HttpResponse res = POST("/v2/applications/" + applicationId + "/share", IOUtils.toInputStream(shareApplication.toString(), (Charset) null));
     if (res.getResponseCode() != 200) {
       StringBuilder errorMessage = new StringBuilder();
       errorMessage.append("%s\n".formatted("Error creating Mosaic loan application: "));
