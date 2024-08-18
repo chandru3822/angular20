@@ -41,7 +41,7 @@
           <div v-for="i in incentive_constants.totalPointsPossible" class="progress-bar-segment"></div>
           <div id="progress-bar-fill"
                :style="{borderRadius: progressBarIsFull ? '3px' : '3px 8px 8px 3px',
-                          width: percentAchieved.value + '%'}"></div>
+                          width: percentAchieved + '%'}"></div>
         </div>
       </div>
     </v-col>
@@ -118,7 +118,8 @@ const milestoneLevel = (quarterCount) => {
 }
 const calcYearPercentage= () => {
   // Fill progress bar based on closer's points for the year
-  percentAchieved.value = (props.yearlyPointTotal.value / incentive_constants.totalPointsPossible) * 100
+  debugger
+  percentAchieved.value = (props.yearlyPointTotal / incentive_constants.totalPointsPossible) * 100
   percentAchieved.value = percentAchieved.value > 100 ? 100 : percentAchieved.value
   progressBarIsFull.value = percentAchieved.value === 100
 }
