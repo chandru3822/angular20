@@ -118,7 +118,6 @@ const milestoneLevel = (quarterCount) => {
 }
 const calcYearPercentage= () => {
   // Fill progress bar based on closer's points for the year
-  debugger
   percentAchieved.value = (props.yearlyPointTotal / incentive_constants.totalPointsPossible) * 100
   percentAchieved.value = percentAchieved.value > 100 ? 100 : percentAchieved.value
   progressBarIsFull.value = percentAchieved.value === 100
