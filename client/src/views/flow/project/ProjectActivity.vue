@@ -179,8 +179,8 @@
     </template>
     <Messaging
       v-if="showSmsTab && viewId === 0"
-      :smsThreadId="smsThreadId"
-      :userIdIn="userId"
+      :sms-thread-id="smsThreadId"
+      :user-id-in="userId"
       :user-assigned="userAssigned"
       :teams-associated-to-user="teamsAssociatedToUser"
     />
@@ -349,7 +349,6 @@ const projectProcessStepEventId = computed(() => {
   return parseInt(route.params.ppsEventId) || null
 })
 const viewId = computed(() => {
-  console.log('randalogger',selectedTab.value)
   return null == selectedTab.value ||
     (selectedTab.value === 0 && !props.showSmsTab)
     ? 1
@@ -564,9 +563,20 @@ const fetchTeamsForUser = async () => {
 }
 const loadConversation = async () => {
   userAssigned.value = false
+
+  let threadUrl = ''
   if (smsThreadId.value) {
+    threadUrl = `/messaging/thread/${smsThreadId.value}`
+  } else if (projectId.value) {
+    threadUrl = `/messaging/thread/project/${projectId.value}`
+  } else if (userId.value) {
+    threadUrl = `/messaging/thread/user/${userId.value}`
+  } else {
+    return
+  }
+
     try {
-      const { data } = await getRequest('/messaging/thread/' + smsThreadId.value)
+      const { data } = await getRequest(threadUrl)
       messageProperties.value = data
       messageProperties.value.smsTeamOwners?.forEach((team) => {
         if (teamNamesAssociatedToUser.value.includes(team.teamName)) {
@@ -582,35 +592,11 @@ const loadConversation = async () => {
       conversationIsLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error fetching project messaging details')
+      appStore.showSnack('ERROR', 'Error fetching messaging details')
 
       conversationIsLoading.value = false
     }
-  } else if (userId.value) {
-    try {
-      const { data, status } = await getRequest(
-        '/messaging/user/' + userId.value
-      )
-      messageProperties.value = data
-      messageProperties.value.smsTeamOwners?.forEach((team) => {
-        if (teamNamesAssociatedToUser.value.includes(team.teamName)) {
-          team.users?.forEach((owner) => {
-            if (owner.userId === currentUserId.value) {
-              userAssigned.value = true
-              myOwner.value.push(owner)
-            }
-          })
-        }
-      })
-      handleHidingGlobalLoader(status)
-      conversationIsLoading.value = false
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error fetching user messaging details')
 
-      conversationIsLoading.value = false
-    }
-  }
 }
 const getAvailableTeams = async () => {
   // appStore.loading = true

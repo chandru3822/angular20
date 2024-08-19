@@ -9,9 +9,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ProjectMessageOwner {
+public class SmsThreadOwner {
 
-  private Long projectId, smsTeamId, userId;
+  private Long threadId, smsTeamId, userId;
   private String name;
   private boolean archived;
 }

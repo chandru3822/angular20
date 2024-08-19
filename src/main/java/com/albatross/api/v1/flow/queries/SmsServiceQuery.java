@@ -7,7 +7,8 @@ public class SmsServiceQuery {
     SELECT st.message,
            array_to_json(st.media_urls) AS media_urls,
            st.date_created,
-           st.from_phone,
+           st.external_phone,
+           st.internal_phone,
            st.inbound,
            st.recipient_type_id,
            st.message_sent_by_user_id   as user_id,
@@ -22,32 +23,31 @@ public class SmsServiceQuery {
 
   //language=PostgreSQL
   public final static String insert = """
-    WITH sq AS (INSERT INTO flow.sms_queue (
-                           message_group,user_id,contact_id, project_id, message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id,sms_team_id, priority_level
+    WITH sq AS (INSERT INTO flow.sms_thread (
+                           message_group,sent_to_user_id, sent_to_project_id, message,media_urls,external_phone,recipient_type_id,message_sent_by_user_id,sms_team_id, priority_level
                 ) VALUES (
                            :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId, :priorityLevel
                          )
-                RETURNING id,user_id,contact_id, project_id,message,media_urls,
+                RETURNING id,sent_to_user_id, sent_to_project_id,message,media_urls,
                   message_group,message_sid,message_status,error_message,
-                  from_phone,to_phone,twilio_created,twilio_sent,twilio_delivered,
-                  updated,created,recipient_type_id, message_sent_by_user_id, sms_team_id)
+                  internal_phone,external_phone,twilio_created,twilio_sent,twilio_delivered,
+                  date_modified,date_created,recipient_type_id, message_sent_by_user_id, sms_team_id)
               SELECT sq.id,
-                     sq.user_id,
-                     sq.contact_id,
-                     sq.project_id,
+                     sq.sent_to_user_id,
+                     sq.sent_to_project_id,
                      sq.message,
                      array_to_json(sq.media_urls)       AS media_urls,
                      sq.message_group,
                      sq.message_sid,
                      sq.message_status,
                      sq.error_message,
-                     sq.from_phone,
-                     sq.to_phone,
+                     sq.internal_phone,
+                     sq.external_phone,
                      sq.twilio_created,
                      sq.twilio_sent,
                      sq.twilio_delivered,
-                     sq.updated,
-                     sq.created,
+                     sq.date_modified,
+                     sq.date_created,
                      sq.recipient_type_id,
                      sq.message_sent_by_user_id,
                      sq.sms_team_id
@@ -66,16 +66,18 @@ public class SmsServiceQuery {
                   sms.message_group,
                   sms.message_sid,
                   sms.message_status,
-                  sms.from_phone,
-                  sms.to_phone,
+                  sms.internal_phone,
+                  sms.external_phone,
                   sms.twilio_created,
                   sms.twilio_sent,
                   sms.twilio_delivered,
                   sms.updated,
                   sms.created
-                FROM flow.sms_queue sms
+                FROM flow.sms_thread sms
                 WHERE message_sid IS NULL
-                      AND sms.to_phone IS NOT NULL
+                      AND sms.external_phone IS NOT NULL
+                      AND sms.inbound is false
+                      and sms.archived is false
                       AND (
                         error_message IS NULL OR (
                           LOWER(error_message) IN (
@@ -93,22 +95,22 @@ public class SmsServiceQuery {
 
   //language=PostgreSQL
   public final static String updateById = """
-            UPDATE flow.sms_queue
+            UPDATE flow.sms_thread
             SET
                 message_sid = :messageSid,
                 message_status = :messageStatus,
-                from_phone = :fromPhone,
+                internal_phone = :internalPhone,
                 error_message = :errorMessage,
                 twilio_created = :created,
-                updated = now()
+                date_modified = now()
             WHERE id = :id
     """;
 
   //language=PostgreSQL
   public final static String updateByMessageSid = """
-    UPDATE flow.sms_queue SET
-                  updated          = now(),
-                  from_phone       = :fromPhone,
+    UPDATE flow.sms_thread SET
+                  date_modified          = now(),
+                  internal_phone   = :internalPhone,
                   error_message    = :errorMessage,
                   message_status   = (
                     -- don't set the message status to a previous state (for updates that
@@ -161,8 +163,8 @@ public class SmsServiceQuery {
     select st.parent_id,
            st.recipient_type_id,
            st.inbound,
-           st.search_from_phone,
-           st.search_to_phone
+           st.search_internal_phone,
+           st.search_external_phone
     from flow.sms_thread st
     where st.id = :smsThreadId
     """;
@@ -195,32 +197,33 @@ public class SmsServiceQuery {
   //language=PostgreSQL
   public final static String getSmsQueue = """
     select sms.id,
-            sms.user_id,
-            sms.to_phone,
+            sms.message_sent_by_user_id,
+            sms.internal_phone,
+            sms.external_phone,
             sms.message,
-            sms.created,
+            sms.date_created,
             sms.message_read,
             sms.twilio_delivered,
-            sms.user_id                                                  as sent_to_user_id,
+            sms.sent_to_user_id                                                  as sent_to_user_id,
             concat(sent_to_user.first_name, ' ', sent_to_user.last_name) as sent_to_user_name,
             concat(sent_by_user.first_name, ' ', sent_by_user.last_name) as sent_by_user_name,
-            sms.project_id,
-            sms.contact_id,
+            sms.sent_to_project_id,
+            p.contact_id,
             p.project_name,
             cpst.project_status_type,
             case
-                when sms.project_id is not null then 1
-                when sms.contact_id is not null then 2
+                when sms.sent_to_project_id is not null then 1
+                when p.contact_id is not null then 2
                 else 3 end                                               as object_type_id,
             concat(c.first_name, ' ', c.last_name)                       as contact_name
-     from flow.sms_queue sms
-              LEFT JOIN flow.contact c ON sms.contact_id = c.id
-              LEFT JOIN flow.project p on p.id = sms.project_id
+     from flow.sms_thread sms
+              LEFT JOIN flow.project p on p.id = sms.sent_to_project_id
+              LEFT JOIN flow.contact c ON p.contact_id = c.id
               LEFT join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-              LEFT JOIN flow.user sent_to_user on sent_to_user.id = sms.user_id
+              LEFT JOIN flow.user sent_to_user on sent_to_user.id = sms.sent_to_user_id
               INNER JOIN flow.user sent_by_user on sent_by_user.id = sms.message_sent_by_user_id
-     where case when :objectTypeId = 1 then sms.project_id is not null
-                when :objectTypeId = 3 then sms.user_id is not null else true end
+     where case when :objectTypeId = 1 then sms.sent_to_project_id is not null
+                when :objectTypeId = 3 then sms.sent_to_user_id is not null else true end
         and case when :messageRead::boolean is not null then sms.message_read = :messageRead::boolean else true end
      order by sms.id desc
      limit :limit offset :offset
@@ -228,9 +231,9 @@ public class SmsServiceQuery {
 
   //language=PostgreSQL
   public final static String update = """
-          update flow.sms_queue
+          update flow.sms_thread
           set message_read = :messageRead,
-              updated = now()
+              date_modified = now()
             where id = :smsId
     """;
 

@@ -142,10 +142,10 @@ const { userAssigned, userIdIn, smsThreadId, teamsAssociatedToUser } = toRefs(pr
 onMounted(() => {
   if (projectId.value) {
     fetchProjectData()
-  } else if (userId.value) {
-    fetchUserData()
   } else if (smsThreadId.value) {
     fetchSmsData()
+  } else if (userId.value) {
+    fetchUserData()
   }
   toggleChatBox()
 })
@@ -425,6 +425,10 @@ const fetchSmsData = async () => {
     let fetchSmsDataUrl = ''
     if (smsThreadId.value) {
       fetchSmsDataUrl = `/sms/messages/thread/${smsThreadId.value}`
+    } else if (projectId.value) {
+      fetchSmsDataUrl = `/sms/messages/project/${projectId.value}`
+    } else if (userId.value) {
+      fetchSmsDataUrl = `/sms/messages/user/${userId.value}`
     } else {
       return
     }
@@ -433,12 +437,8 @@ const fetchSmsData = async () => {
 
     messageList.value = data.map((u) => {
       let msgFrom = 'me'
-      if (
-        u.fromPhone != null &&
-        u.fromPhone !== '+18014480212' &&
-        u.fromPhone !== '+18014480029'
-      ) {
-        msgFrom = u.contactId
+      if ( u.inbound ) {
+        msgFrom = u.searchExternalPhone
       }
 
       if (u.mediaUrls.length > 0) {
@@ -455,15 +455,16 @@ const fetchSmsData = async () => {
             }
           }
         }
-      }
-      return {
-        type: 'text',
-        author: msgFrom,
-        data: {
-          text: u.message,
-          meta: u.fullName
-            ? u.fullName + ' ' + filters.formatDate(u.dateCreated, 'timestamp')
-            : filters.formatDate(u.dateCreated, 'timestamp')
+      } else {
+        return {
+          type: 'text',
+          author: msgFrom,
+          data: {
+            text: u.message,
+            meta: u.fullName
+              ? u.fullName + ' ' + filters.formatDate(u.dateCreated, 'timestamp')
+              : filters.formatDate(u.dateCreated, 'timestamp')
+          }
         }
       }
     })
@@ -511,7 +512,8 @@ const sendTemplateMessage = async () => {
   showTemplateDialog.value = false
 }
 const fetchProjectData = async () => {
-  await fetchContact()
+  //todo sms what is this?
+  // await fetchContact()
   await fetchSmsData()
   templateTeams.value = []
   if (teamsAssociatedToUser.value?.length > 0) {

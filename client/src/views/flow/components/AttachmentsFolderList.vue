@@ -455,7 +455,6 @@ const loadAllPageDetails = async() => {
   //   params.ppsEventId = projectProcessStepEventId.value
   //   params.ppsId = projectProcessStepId.value
   // }
-  console.log('randalogger',attachmentPath.value)
 
   if (typePath.value && attachmentPath.value) {
     loadingDetails.value = true

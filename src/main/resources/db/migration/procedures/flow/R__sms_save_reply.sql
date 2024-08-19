@@ -28,10 +28,10 @@ begin
 
     select st.id into v_thread_id
         from flow.sms_thread st
-    where (st.search_to_phone = p_from or st.search_from_phone = p_from)
+    where (st.search_external_phone = p_from)
     and st.id = st.parent_id;
 
-    insert into flow.sms_thread(message, from_phone, to_phone, recipient_type_id,
+    insert into flow.sms_thread(message, external_phone, internal_phone, recipient_type_id,
                                 message_sid, account_sid, messaging_service_sid,
                                 num_media, media_urls, message_status, date_modified,
                                 twilio_received, parent_id)

@@ -44,10 +44,10 @@
           <v-radio-group v-model="removeOption">
             <v-radio :key="0" :value="0" class="albatross-body-1 remove-dialog-option mb-4">
               <template v-slot:label><div class="default-text-color"> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</div></template></v-radio>
-            <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
-              <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</div></template>
+            <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove?.teamName} team members on the conversation`]">
+              <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove?.teamName}}&nbsp;</strong> team from the conversation</div></template>
             </v-radio>
-            <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove.teamName}} team members on the conversation</span>
+            <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove?.teamName}} team members on the conversation</span>
           </v-radio-group>
           <v-card-actions class="pb-4">
             <v-spacer/>
@@ -77,7 +77,7 @@
           </v-card-title>
           <v-card-text class="default-text-color albatross-body-1 px-6">
            <div>Because no other team is on the conversation, this action will remove the team and close the conversation.</div>
-            <div>Are you sure you want to remove {{teamToRemove.teamName}} team and close conversation?</div>
+            <div>Are you sure you want to remove {{teamToRemove?.teamName}} team and close conversation?</div>
           </v-card-text>
           <v-card-actions class="pb-4">
             <v-spacer/>
@@ -104,7 +104,7 @@
           </v-card-title>
           <v-card-text class="albatross-body-1 pb-2 default-text-color">
             <div>This action will remove the team from the conversation. </div>
-            <div>Are you sure you want to remove <b>{{teamToRemove.teamName}}</b> team?</div>
+            <div>Are you sure you want to remove <b>{{teamToRemove?.teamName}}</b> team?</div>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -150,7 +150,7 @@
 import {getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 
-import {ref, computed, onMounted} from "vue";
+import {ref, computed, onMounted, toRefs} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
@@ -172,6 +172,8 @@ const props = defineProps({
   userId: Number,
   miniDialog: Boolean
 })
+
+const { teamNamesAssociatedToUser } = toRefs(props)
 
 const showRemoveDialog = ref(false)
 const showRemoveLastTeamDialog = ref(false)
@@ -302,7 +304,7 @@ const removeUser = async () => {
 const unassignedTeamExits = () => {
   let unassignedExists = false;
   props.smsTeamOwners.forEach(team => {
-    if (team.users.length === 0 && props.teamNamesAssociatedToUser.includes(team.teamName)) {
+    if (team.users.length === 0 && teamNamesAssociatedToUser.value.includes(team.teamName)) {
       unassignedExists = true;
     }
   });

@@ -89,7 +89,7 @@ public class ProjectController {
   public void deleteProject(
     @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
     projectService.deleteProject(projectId);
-    messagingService.deleteProjectConversation(projectId, details.getTrueUserId());
+    messagingService.closeThreadConversation(null, projectId, null, details.getTrueUserId());
   }
 
   @GetMapping(value = "/owners")

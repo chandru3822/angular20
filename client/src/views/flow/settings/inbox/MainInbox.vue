@@ -388,8 +388,8 @@ const conversationsFiltered = computed(() => {
   if (conversations.value) {
     return conversationList.sort((a, b) => {
       return sortOldToNew.value ?
-        new Date(a.lastSent) - new Date(b.lastSent) :
-        new Date(b.lastSent) - new Date(a.lastSent)
+        new Date(a.dateCreated) - new Date(b.dateCreated) :
+        new Date(b.dateCreated) - new Date(a.dateCreated)
     })
   }
   else {
@@ -527,10 +527,13 @@ const fetchConversations = async () => {
 
       conversations.value?.forEach(p => {
         p.showAssignToMeButton = teamsAssociatedToUser.value.length > 0
-        p.conversationOwners?.forEach(owner => {
-            if (owner.userId === userId.value) {
+        p.smsTeamOwners?.forEach(owner => {
+          owner.users?.forEach(user => {
+            if (user.userId === userId.value) {
               p.showAssignToMeButton = false
             }
+
+          })
         })
       })
     }
@@ -641,8 +644,6 @@ const joinConversation = async (selectedTeam) => {
       return
     }
     showLoading(true)
-
-    console.log('randalogger', assignToMe.value)
 
     let addTeamUrl = assignToMe.value.externalConversationId ? `/messaging/addTeam/external/${assignToMe.value.externalConversationId}` : `/messaging/addTeam/internal/${assignToMe.value.internalConversationId}`
     await postRequest(addTeamUrl, selectedTeam)

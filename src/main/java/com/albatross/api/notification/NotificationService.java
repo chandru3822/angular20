@@ -207,7 +207,7 @@ public class NotificationService {
     return results;
   }
 
-  public List<Notification> getProjectNotificationsForUser(@NonNull Long userId) {
+  public List<Notification> getThreadNotificationsForUser(@NonNull Long userId) {
     final Map<String, Object> params = Map.of("userId", userId);
     return sqlCache.queryBySql(
       NotificationQuery.getUnreadProjectNotificationsByUser, params, new NotificationMapper(this.objectMapper));

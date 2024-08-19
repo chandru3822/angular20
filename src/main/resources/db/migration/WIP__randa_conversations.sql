@@ -74,11 +74,24 @@ alter table flow.sms_queue alter column messaging_service_sid drop default;
 alter table flow.sms_queue
     add column if not exists twilio_received timestamp;
 
+--rename the to and from columns
+alter table flow.sms_queue rename column from_phone to internal_phone;
+alter table flow.sms_queue rename column to_phone to external_phone;
+alter table flow.sms_queue rename column search_to_phone to search_external_phone;
+alter table flow.sms_queue rename column search_from_phone to search_internal_phone;
+
+--add the inbound column and set true for all replies
+alter table flow.sms_queue
+    add column if not exists inbound boolean not null default false;
+
+alter table flow.sms_queue
+    add column if not exists temp_sms_reply_id bigint;
+
 
 --import replies into the queue
 alter table flow.sms_queue alter column recipient_type_id drop default;
-insert into flow.sms_queue(message, media_urls, message_sid, message_status, from_phone, to_phone, updated, created, num_media, account_sid, messaging_service_sid, twilio_received, recipient_type_id)
-select coalesce(body, ''), media_urls, message_sid, 'received', from_phone, to_phone, date_received, date_received, num_media, account_sid, messaging_service_sid, date_received, case when to_phone = '+18014480029' then 1 else 2 end
+insert into flow.sms_queue(message, media_urls, message_sid, message_status, external_phone, internal_phone, updated, created, num_media, account_sid, messaging_service_sid, twilio_received, recipient_type_id, inbound, temp_sms_reply_id)
+select coalesce(body, ''), media_urls, message_sid, 'received', from_phone, to_phone, date_received, date_received, num_media, account_sid, messaging_service_sid, date_received, case when to_phone = '+18014480029' then 1 else 2 end, true, id
 from flow.sms_reply;
 ;
 
@@ -99,12 +112,10 @@ alter table flow.sms_queue
     add column if not exists search_from_phone     varchar generated always as ("right"(
             translate((COALESCE(from_phone, ''::character varying))::text, '+-() '::text, ''::text), 10)) stored;
 
---add the inbound stuff
-alter table flow.sms_queue
-    add column if not exists inbound boolean not null default false;
-update flow.sms_queue
-    set inbound = true
-where twilio_received is not null;
+--do this as part of the import
+-- update flow.sms_queue
+--     set inbound = true
+-- where twilio_received is not null;
 
 --add the parent stuff
 alter table flow.sms_queue
@@ -354,3 +365,13 @@ CREATE INDEX if not exists st_search_from_phone_idx ON flow.sms_thread (search_f
 
 -- TODO: need to do project_message_owner_history and user_message_owner_history into sms_thread_owner_history
 
+--already done above this was for post updates
+-- update flow.sms_thread
+-- set from_phone = to_phone,
+--     to_phone = from_phone
+-- where inbound is true;
+
+-- alter table flow.sms_thread rename column from_phone to internal_phone;
+-- alter table flow.sms_thread rename column to_phone to external_phone;
+-- alter table flow.sms_thread rename column search_to_phone to search_external_phone;
+-- alter table flow.sms_thread rename column search_from_phone to search_internal_phone;

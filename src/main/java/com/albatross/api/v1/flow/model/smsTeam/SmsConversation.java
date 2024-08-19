@@ -19,7 +19,7 @@ import java.util.List;
 public class SmsConversation {
 
   private Long id, parentId, userId, recipientTypeId;
-  private String message, fullName, stateAbbreviation;
+  private String message, fullName, stateAbbreviation, internalPhone, externalPhone, searchInternalPhone, searchExternalPhone;
   private Date dateCreated;
   private boolean closed, showAssignedToMeButton = false;
   private List<SmsOwner> conversationOwners;

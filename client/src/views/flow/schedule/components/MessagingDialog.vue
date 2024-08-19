@@ -89,7 +89,7 @@ const loadConversation = async () => {
   if(userIdToMessage.value) {
     try {
       const {data, status} = await getRequest(
-          '/messaging/user/' + userIdToMessage.value
+          '/messaging/thread/user/' + userIdToMessage.value
       )
       messageProperties.value = data
       messageProperties.value.smsTeamOwners?.forEach((team) => {

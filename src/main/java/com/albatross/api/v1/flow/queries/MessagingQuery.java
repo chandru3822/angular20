@@ -7,8 +7,8 @@ public class MessagingQuery {
        select pc.id,
               pc.date_created,
               pc.closed,
-              pc.to_phone,
-              pc.from_phone,
+              pc.internal_phone,
+              pc.external_phone,
               pc.inbound,
               pc.recipient_type_id,
               pc.parent_id,
@@ -17,13 +17,13 @@ public class MessagingQuery {
                   (select concat(u.first_name, ' ', u.last_name)
                    from flow.user u
                    where u.archived is false
-                   and (u.search_phone = pc.search_to_phone or u.search_phone = pc.search_from_phone)
+                   and (u.search_phone = pc.search_external_phone)
                    limit 1)
                   else
                       (select concat(c.first_name, ' ', c.last_name)
                        from flow.contact c
                        where c.archived is false
-                         and (c.search_phones = pc.search_to_phone or c.search_phones = pc.search_from_phone)
+                         and (c.search_phones = pc.search_external_phone)
                        order by c.date_created desc
                        limit 1) end as full_name,
                case when pc.recipient_type_id = 2 then
@@ -32,7 +32,7 @@ public class MessagingQuery {
                              inner join flow.company_state cs on c.company_state_id = cs.id
                              inner join flow.state s on cs.state_id = s.id
                          where c.archived is false
-                           and (c.search_phones = pc.search_to_phone or c.search_phones = pc.search_from_phone)
+                           and (c.search_phones = pc.search_external_phone)
                          order by c.date_created desc
                          limit 1
                          )
@@ -150,13 +150,13 @@ public class MessagingQuery {
                                            (select concat(u.first_name, ' ', u.last_name)
                                             from flow.user u
                                             where u.archived is false
-                                              and (u.search_phone = st.search_to_phone or u.search_phone = st.search_from_phone)
+                                              and (u.search_phone = st.search_external_phone)
                                             limit 1)
                                        else
                                            (select concat(c.first_name, ' ', c.last_name)
                                             from flow.contact c
                                             where c.archived is false
-                                              and (c.search_phones = st.search_to_phone or c.search_phones = st.search_from_phone)
+                                              and (c.search_phones = st.search_external_phone)
                                             order by c.date_created desc
                                             limit 1) end as full_name,
                                   case when st.recipient_type_id = 2 then
@@ -165,13 +165,13 @@ public class MessagingQuery {
                                                      inner join flow.company_state cs on c.company_state_id = cs.id
                                                      inner join flow.state s on cs.state_id = s.id
                                             where c.archived is false
-                                              and (c.search_phones = st.search_to_phone or c.search_phones = st.search_from_phone)
+                                              and (c.search_phones = st.search_external_phone)
                                             order by c.date_created desc
                                             limit 1
                                            )
                                       end as state_abbreviation,
                                   (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
-                                             FROM (select st.id,
+                                             FROM (select st2.id,
                                                           st2.team_name                                                        as "teamName",
                                                           coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
                                                                     FROM (SELECT pmo.id,
@@ -399,41 +399,11 @@ select u.user_id, outbound_message from users u
     """;
 
   //language=PostgreSQL
-  public final static String saveProjectStatusOpen = """
-    update flow.project_message_properties
-    set closed = false,
-        date_modified = now(),
-        modified_by_id = :modifiedById
-      where project_id = :projectId
-    """;
-
-  //language=PostgreSQL
-  public final static String saveUserStatusOpen = """
-    update flow.user_message_properties
-    set closed = false,
-        date_modified = now(),
-        modified_by_id = :modifiedById
-      where user_id = :userId
-    """;
-
-  //language=PostgreSQL
-  public final static String saveProjectStatusClosed = """
-    update flow.project_message_properties
-    set closed = true,
-        last_sent = null,
-        date_modified = now(),
-        modified_by_id = :modifiedById
-      where project_id = :projectId
-    """;
-
-  //language=PostgreSQL
-  public final static String saveUserStatusClosed = """
-    update flow.user_message_properties
-    set closed = true,
-        last_sent = null,
-        date_modified = now(),
-        modified_by_id = :modifiedById
-      where user_id = :userId
+  public final static String updateThreadClosedValue = """
+    update flow.sms_thread
+    set closed = :closed,
+        date_modified = now()
+      where parent_id = :smsThreadId
     """;
 
   //language=PostgreSQL
@@ -500,58 +470,28 @@ select u.user_id, outbound_message from users u
     """;
 
   //language=PostgreSQL
-  public final static String getStaleProjects = """
-    select project_id from flow.project_message_properties pmp where pmp.last_sent < ((now() AT TIME ZONE 'US/Mountain') :: DATE) - 3
+  public final static String getStaleThreads = """
+    select parent_id from flow.sms_thread pmp
+    where pmp.is_last_inserted is true 
+      and pmp.date_created < ((now() AT TIME ZONE 'US/Mountain') :: DATE) - 3
     """;
 
   //language=PostgreSQL
-  public final static String getStaleUsers = """
-    select user_id from flow.user_message_properties ump where ump.last_sent < ((now() AT TIME ZONE 'US/Mountain') :: DATE) - 3
-    """;
+  public final static String handleSmsTeamCreation = """
+     select clear_unassigned, array_to_json(newly_selected_user_ids) as newly_selected_user_ids from flow.handle_sms_team_creation(:threadId::bigint, :teamId::bigint, :currentUserId::bigint, :selectedUserIds::bigint[])
+  """;
 
   //language=PostgreSQL
-  public final static String insertProjectTeam = """
-    insert into flow.project_message_team
-    (project_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:projectId, :teamId, :createdById, now(), :createdById, now())
-    on conflict (project_id, sms_team_id) WHERE archived is false
-        do nothing
-    """;
-
-  //language=PostgreSQL
-  public final static String insertUserTeam = """
-    insert into flow.user_message_team
-    (user_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
-    values (:userId, :teamId, :createdById, now(), :createdById, now())
-    """;
-
-  //language=PostgreSQL
-  public final static String removeProjectOwner = """
-    update flow.project_message_owner
+  public final static String removeThreadOwner = """
+    update flow.sms_thread_owner
       set archived = true,
           modified_by_id = :modifiedById,
           date_modified = now()
-      where project_id = :projectId and user_id = :userId and sms_team_id = :smsTeamId
+      where sms_thread_id = :thread_id
+      and user_id = :userId
+      and sms_team_id = :smsTeamId
     """;
 
-  //language=PostgreSQL
-  public final static String removeUserOwner = """
-    update flow.user_message_owner
-      set archived = true,
-          modified_by_id = :modifiedById,
-          date_modified = now()
-      where user_id = :userId and owner_user_id = :ownerUserId and sms_team_id = :smsTeamId
-    """;
-
-  //language=PostgreSQL
-  public final static String getProjectTeamId = """
-    select id from flow.project_message_team where project_id = :projectId and sms_team_id = :teamId and archived = false
-    """;
-
-  //language=PostgreSQL
-  public final static String getUserTeamId = """
-    select id from flow.user_message_team where user_id = :userId and sms_team_id = :teamId and archived = false
-    """;
 
   //language=PostgreSQL
   public final static String getSmsTeamsForProject = """
@@ -596,222 +536,108 @@ select u.user_id, outbound_message from users u
     where umt.user_id = :userId
       and umt.archived = false
     """;
+//
+//  //language=PostgreSQL
+//  public final static String getSmsTeamsForProjectByUser = """
+//    select st.id, st.team_name,
+//              coalesce((
+//                           SELECT array_to_json(array_agg(row_to_json(tb)))
+//                           FROM (
+//                                    SELECT pmo.id,
+//                                           pmo.user_id as "userId",
+//                                           concat(u.first_name, ' ', u.last_name) as "name",
+//                                           pmo.sms_team_id as "smsTeamId",
+//                                           pmo.archived
+//                                    FROM flow.project_message_owner pmo
+//                                        --inner join flow.sms_team_user stu on stu.id = pmu.sms_team_user_id
+//                                        inner join flow.user u on pmo.user_id = u.id
+//                                    WHERE pmo.archived = false and
+//                                          pmo.sms_team_id = st.id) tb), '[]') AS "users"
+//                                     from flow.project_message_team pmt
+//                                         inner join flow.sms_team st on pmt.sms_team_id = st.id
+//                                     where pmt.project_id = :projectId and pmt.archived = false
+//                                   and pmt.sms_team_id in (:userSmsTeamIds)
+//    """;
 
   //language=PostgreSQL
-  public final static String getSmsTeamsForProjectByUser = """
-    select st.id, st.team_name,
-              coalesce((
-                           SELECT array_to_json(array_agg(row_to_json(tb)))
-                           FROM (
-                                    SELECT pmo.id,
-                                           pmo.user_id as "userId",
-                                           concat(u.first_name, ' ', u.last_name) as "name",
-                                           pmo.sms_team_id as "smsTeamId",
-                                           pmo.archived
-                                    FROM flow.project_message_owner pmo
-                                        --inner join flow.sms_team_user stu on stu.id = pmu.sms_team_user_id
-                                        inner join flow.user u on pmo.user_id = u.id
-                                    WHERE pmo.archived = false and
-                                          pmo.sms_team_id = st.id) tb), '[]') AS "users"
-                                     from flow.project_message_team pmt
-                                         inner join flow.sms_team st on pmt.sms_team_id = st.id
-                                     where pmt.project_id = :projectId and pmt.archived = false
-                                   and pmt.sms_team_id in (:userSmsTeamIds)
+  public final static String removeEntireThreadTeam = """
+    update flow.sms_thread_owner
+        set archived = true,
+        date_modified = now(),
+          modified_by_id = :modifiedById
+        where sms_thread_id = :threadId
+      and sms_team_id = :smsTeamId
     """;
 
   //language=PostgreSQL
-  public final static String removeProjectTeam = """
-    update flow.project_message_team set archived = true
-        where project_id = :projectId and sms_team_id = :smsTeamId
-    """;
-
-  //language=PostgreSQL
-  public final static String removeUserTeam = """
-    update flow.user_message_team set archived = true
-        where user_id = :userId and sms_team_id = :smsTeamId
-    """;
-
-  //language=PostgreSQL
-  public final static String removeProjectTeamOwners = """
-      update flow.project_message_owner set archived = true
-        where project_id = :projectId and sms_team_id = :smsTeamId
-    """;
-
-  //language=PostgreSQL
-  public final static String removeUserTeamOwners = """
-      update flow.user_message_owner set archived = true
-        where owner_user_id = :ownerUserId and sms_team_id = :smsTeamId
-    """;
-
-  //language=PostgreSQL
-  public final static String deleteProjectConversation = """
-    update flow.project_message_properties
+  public final static String closeThread = """
+    update flow.sms_thread
      set closed = true,
-         date_modified = now(),
-         modified_by_id = :modifiedById
-       where project_id = :projectId
+         date_modified = now()
+       where parent_id = :threadId
     """;
 
   //language=PostgreSQL
-  public final static String deleteUserConversation = """
-    update flow.user_message_properties
-     set closed = true,
-         date_modified = now(),
-         modified_by_id = :modifiedById
-       where user_id = :userId
-    """;
-
-  //language=PostgreSQL
-  public final static String removeAllProjectTeams = """
-      update flow.project_message_team
+  public final static String removeAllThreadTeams = """
+      update flow.sms_thread_owner
       set archived = true,
           date_modified = now(),
           modified_by_id = :modifiedById
-        where project_id = :projectId
+        where sms_thread_id = :threadId
+        and user_id is null
     """;
 
   //language=PostgreSQL
-  public final static String removeAllUserTeams = """
-      update flow.user_message_team
-      set archived = true,
-          date_modified = now(),
-          modified_by_id = :modifiedById
-        where user_id = :userId
-    """;
-
-  //language=PostgreSQL
-  public final static String removeAllProjectTeamOwners = """
-      update flow.project_message_owner
-      set archived = true,
-          date_modified = now(),
-          modified_by_id = :modifiedById
-        where project_id = :projectId
-    """;
-
-  //language=PostgreSQL
-  public final static String removeAllUserTeamOwners = """
-      update flow.user_message_owner
-      set archived = true,
-          date_modified = now(),
-          modified_by_id = :modifiedById
-        where owner_user_id = :userId
-    """;
-
-  //language=PostgreSQL
-  public final static String markProjectSmsAsReadForUser = """
+  public final static String markThreadSmsAsReadForUser = """
     update flow.notification
     set message_read_tsz   = now(),
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
       and user_id = :userId
-      and (metadata->>'projectId')::bigint = :projectId
+      and (metadata->>'threadId')::bigint = :threadId
       and (metadata->>'smsTeamId')::bigint = :smsTeamId
       and message_read_tsz is null
     """;
 
   //language=PostgreSQL
-  public final static String markProjectSmsAsReadForTeam = """
+  public final static String markThreadSmsAsReadForTeam = """
     update flow.notification
     set message_read_tsz   = now(),
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
-      and (metadata->'projectId')::bigint = :projectId
+      and (metadata->'threadId')::bigint = :threadId
       and (metadata->'smsTeamId')::bigint = :smsTeamId
       and message_read_tsz is null
     """;
 
   //language=PostgreSQL
-  public final static String markAllUserNotificationAsReadForUser = """
-    update flow.notification
-    set message_read_tsz   = now(),
-        date_modified  = now(),
-        modified_by_id = :modifiedById
-    where (metadata->>'userId')::bigint = :userId
-      and message_read_tsz is null
-    """;
-
-  //language=PostgreSQL
-  public final static String markUserSmsAsReadForUser = """
-    update flow.notification
-    set message_read_tsz   = now(),
-        date_modified  = now(),
-        modified_by_id = :modifiedById
-    where notification_topic_id = :notificationTopicId
-      and user_id = :ownerUserId
-      and (metadata->>'userId')::bigint = :userId
-      and (metadata->>'smsTeamId')::bigint = :smsTeamId
-      and message_read_tsz is null
-    """;
-
-  //language=PostgreSQL
-  public final static String markUserSmsAsReadForTeam = """
-    update flow.notification
-    set message_read_tsz   = now(),
-        date_modified  = now(),
-        modified_by_id = :modifiedById
-    where notification_topic_id = :notificationTopicId
-      and (metadata->'userId')::bigint = :userId
-      and (metadata->'smsTeamId')::bigint = :smsTeamId
-      and message_read_tsz is null
-    """;
-
-  //language=PostgreSQL
-  public final static String findUserByForProjectTeam = """
+  public final static String findUserByForThreadTeam = """
     select distinct user_id
     from flow.notification
     where notification_topic_id = :notificationTopicId
-      and (metadata -> 'projectId')::bigint = :projectId
+      and (metadata -> 'threadId')::bigint = :threadId
       and (metadata -> 'smsTeamId')::bigint = :smsTeamId
     """;
 
   //language=PostgreSQL
-  public final static String findUserByForUserTeam = """
-    select distinct user_id
-    from flow.notification
-    where notification_topic_id = :notificationTopicId
-      and (metadata -> 'userId')::bigint = :userId
-      and (metadata -> 'smsTeamId')::bigint = :smsTeamId
-      and message_read_tsz is null
-    """;
-
-  //language=PostgreSQL
-  public final static String markSmsAsReadForProject = """
+  public final static String markSmsAsReadForThread = """
     update flow.notification
     set message_read_tsz   = now(),
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
-      and (metadata->'projectId')::bigint = :projectId
+      and (metadata->'threadId')::bigint = :threadId
       and message_read_tsz is null
     """;
 
   //language=PostgreSQL
-  public final static String markSmsAsReadForUser = """
-    update flow.notification
-    set message_read_tsz   = now(),
-        date_modified  = now(),
-        modified_by_id = :modifiedById
-    where notification_topic_id = :notificationTopicId
-      and (metadata->'userId')::bigint = :ownerUserId
-      and message_read_tsz is null
-    """;
-
-  //language=PostgreSQL
-  public final static String findUserByForProject = """
+  public final static String findUserByForThread = """
     select distinct user_id
     from flow.notification
     where notification_topic_id = :notificationTopicId
-      and (metadata -> 'projectId')::bigint = :projectId
-    """;
-
-  //language=PostgreSQL
-  public final static String findUserByForUser = """
-    select distinct user_id
-    from flow.notification
-    where notification_topic_id = :notificationTopicId
-      and (metadata -> 'userId')::bigint = :ownerUserId
+      and (metadata -> 'threadId')::bigint = :threadId
     """;
 
 }

@@ -15,7 +15,7 @@ import java.util.List;
 public class SMSQueueItem {
 
   private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId, priorityLevel;
-  private String firstName, lastName, fullName, email, message, searchFromPhone, searchToPhone;
+  private String firstName, lastName, fullName, email, message, searchExternalPhone, searchInternalPhone;
   private String messageGroup,
       messageSid,
       messageStatus,

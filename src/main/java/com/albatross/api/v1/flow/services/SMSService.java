@@ -88,17 +88,7 @@ public class SMSService {
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
-  public Long getThreadId(Long projectId, Long userId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
 
-    String fromPhone = projectId != null
-      ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
-    params.put("fromPhone", fromPhone);
-
-    Long threadId = sqlCache.queryForObjectBySql(SmsServiceQuery.getThreadId, params, Long.class);
-    return threadId;
-  }
 
   public SMSQueueItem getThreadInfo(Long smsThreadId) {
     Map<String, Object> params = new HashMap<>();
@@ -112,7 +102,7 @@ public class SMSService {
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
-    Long smsThreadId = getThreadId(projectId, null);
+    Long smsThreadId = messagingService.getThreadId(projectId, null);
 
     params.put("smsThreadId", smsThreadId);
     return sqlCache.queryBySql(
@@ -123,7 +113,7 @@ public class SMSService {
     Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
 
-    Long smsThreadId = getThreadId(null, userId);
+    Long smsThreadId = messagingService.getThreadId(null, userId);
 
     params.put("smsThreadId", smsThreadId);
 
@@ -296,7 +286,7 @@ public class SMSService {
 
       //if the thread is null (meaning it came from project or user screen) get a thread id (it will create one if needed)
       if(smsThreadId == null) {
-        smsThreadId = getThreadId(projectId, userId);
+        smsThreadId = messagingService.getThreadId(projectId, userId);
       }
 
       SMSQueueItem threadInfo = getThreadInfo(smsThreadId);
@@ -304,7 +294,7 @@ public class SMSService {
       String toPhone = threadInfo.getRecipientType() == RecipientType.PROJECT
         ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
 
-      String fromPhoneNumber = threadInfo.isInbound() ? threadInfo.getSearchFromPhone() : threadInfo.getSearchToPhone();
+      String fromPhoneNumber = threadInfo.isInbound() ? threadInfo.getSearchExternalPhone() : threadInfo.getSearchInternalPhone();
 
       if(!fromPhoneNumber.isBlank()) {
 
