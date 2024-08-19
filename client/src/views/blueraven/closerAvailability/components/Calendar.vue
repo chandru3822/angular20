@@ -517,7 +517,8 @@ onMounted (async () => {
     <FullCalendar ref="eventCalendar" id="closer-availability-calendar" :options="calendarOptions">
       <template v-slot:resourceLabelContent="{resource, index}">
         <div class="d-flex justify-space-between align-baseline">
-          <a :href="`${getHostUrl()}/user/${resource.extendedProps.userId}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
+          <a v-if="userStore.userHasFeature('USERS')" :href="`${getHostUrl()}/user/${resource.extendedProps.userId}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
+          <span v-else class="body-large overflow-hidden resource-title">{{resource.title}}</span>
           <div>
             <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
               <template v-slot:activator="{on}">

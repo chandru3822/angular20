@@ -281,11 +281,12 @@
         </template>
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
-            <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`"
+            <a v-if="resource.id.charAt(0)==='1' && userStore.userHasFeature('USERS')" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`"
                target="_blank"
                class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
-            <a v-else :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank"
+            <a v-else-if="resource.id.charAt(0) !=='1' && userStore.userHasFeature('ORGS')" :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank"
                class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
+            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
             <div>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
