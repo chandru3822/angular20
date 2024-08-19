@@ -280,14 +280,14 @@
           </div>
         </template>
         <template v-slot:resourceLabelContent="{resource, index}">
-          <div class="d-flex justify-space-between align-baseline">
+          <div class="d-flex justify-space-between align-baseline flex-wrap">
             <a v-if="resource.id.charAt(0)==='1' && userStore.userHasFeature('USERS')" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`"
                target="_blank"
                class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
             <a v-else-if="resource.id.charAt(0) !=='1' && userStore.userHasFeature('ORGS')" :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank"
                class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
             <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
-            <div>
+            <div class="text-right flex-grow-1">
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
                   <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on"
@@ -1379,11 +1379,7 @@ const createSnackbar = (text) => {
 
 <style lang="scss" scoped>
 .resource-title {
-  max-width: 60%;
   white-space: break-spaces;
-  @media(max-width: 960px) {
-    max-width: 30%;
-  }
 }
 
 a.resource-title {
