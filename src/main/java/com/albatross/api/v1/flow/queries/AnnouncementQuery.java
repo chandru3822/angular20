@@ -117,12 +117,8 @@ public class AnnouncementQuery {
            a.date_modified,
            a.created_by_id,
            a.modified_by_id,
-           a.archived,
-           case when ua.message_read_tsz is null then false else true end as read,
-           case when ua.message_seen_tsz is null then false else true end as seen,
-           case when ua.message_alerted_tsz is null then false else true end as alerted
+           a.archived
     from flow.announcement a
-    left join flow.user_announcement ua on a.id = ua.announcement_id and ua.user_id = :userId
     where a.archived is false
     and case when :mobile::boolean is true then a.show_on_mobile is true
       else a.show_on_web is true
