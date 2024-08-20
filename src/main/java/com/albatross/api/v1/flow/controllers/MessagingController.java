@@ -22,7 +22,7 @@ import java.util.Set;
 @RequestMapping(value = "/api/v1/flow/messaging", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class MessagingController {
-private final GetTheReferralService getTheReferralService;
+
   private final MessagingService messagingService;
   private final MessageTemplateService messageTemplateService;
 
