@@ -165,6 +165,7 @@ const props = defineProps({
   smsTeamOwners: Array,
   teamNamesAssociatedToUser: Array,
   projectId: Number,
+  smsThreadId: Number,
   conversation: Object,
   showSelectedStyles: Boolean,
   showAssignToMeButton: Boolean,
@@ -173,7 +174,9 @@ const props = defineProps({
   miniDialog: Boolean
 })
 
-const { teamNamesAssociatedToUser } = toRefs(props)
+const { teamNamesAssociatedToUser, smsThreadId } = toRefs(props)
+
+console.log('val val val', smsThreadId.value)
 
 const showRemoveDialog = ref(false)
 const showRemoveLastTeamDialog = ref(false)
@@ -247,11 +250,15 @@ const confirmChoice = ()=> {
   showRemoveDialog.value  = false
 }
 const removeTeam = async (teamId) => {
+  debugger
   showRemoveTeamDialog.value = false
   showRemoveLastTeamDialog.value = false
   try {
     let removeTeamUrl = ''
-    if (props.projectId) {
+    if (smsThreadId.value) {
+      removeTeamUrl = `/messaging/removeTeam/thread/`+ props.smsThreadId + '/' + teamId
+    }
+    else if (props.projectId) {
       removeTeamUrl = `/messaging/removeTeam/project/`+ props.projectId + '/' + teamId
     }
     else if (props.userId) {
@@ -260,7 +267,7 @@ const removeTeam = async (teamId) => {
 
     await putRequest(removeTeamUrl)
     // If the project/user is currently opened on the right panel, navigate back to main inbox to close it
-    if (route.path.includes('inboxConversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId))) {
+    if (route.path.includes('inboxConversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId) || route.path.includes(props.smsThreadId))) {
       await router.push({path: `/inbox`})
     }
     appStore.showSnack('SUCCESS', 'Team removed')
@@ -273,7 +280,17 @@ const removeTeam = async (teamId) => {
 }
 const removeUser = async () => {
   try {
-    if (props.projectId) {
+    if (props.smsThreadId) {
+      const bodyData = {
+        projectId: props.projectId,
+        smsTeamId: userToRemove.value.smsTeamId,
+        userId: userToRemove.value.userId,
+        name: userToRemove.value.name,
+        archived: userToRemove.value.archived
+      }
+      await putRequest(`/messaging/removeOwner/thread/`+ props.smsThreadId, bodyData)
+    }
+    else if (props.projectId) {
       const bodyData = {
         projectId: props.projectId,
         smsTeamId: userToRemove.value.smsTeamId,

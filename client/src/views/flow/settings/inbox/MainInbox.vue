@@ -227,6 +227,7 @@
               :reloading="reloadInProgress"
               :show-assign-to-me-button="false"
               :project-id="item.projectId"
+              :sms-thread-id="parseInt(route.params.smsThreadId)"
               :user-id="item.userId"
               :conversation="item"
               show-selected-styles

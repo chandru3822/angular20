@@ -377,13 +377,17 @@ select u.user_id, outbound_message from users u
        SELECT array_to_json(array_agg(row_to_json(history)))
        FROM (
                  select st.team_name, u.first_name || ' ' || u.last_name as "userName", pmoh.date_created, date_removed,
-                        (select u1.first_name || ' ' || u1.last_name from flow.user u1 where u1.id = pmoh.created_by_id) as "addedBy",
-                        (select u2.first_name || ' ' || u2.last_name from flow.user u2 where u2.id = pmoh.modified_by_id) as "removedBy"
-                    from flow.sms_thread_owner_history pmoh
-                 inner join flow.sms_team st on pmoh.sms_team_id = st.id
-                 left join flow.user u on pmoh.user_id = u.id
-                 where sms_thread_id = :threadId
-                  order by pmoh.date_modified desc
+                                                            (select u1.first_name || ' ' || u1.last_name from flow.user u1 where u1.id = pmoh.created_by_id) as "addedBy",
+                                                            (select u2.first_name || ' ' || u2.last_name from flow.user u2 where u2.id = pmoh.modified_by_id) as "removedBy"
+                                                     from flow.sms_thread_owner_audit pmoh
+                                                              inner join flow.sms_team st on pmoh.sms_team_id = st.id
+                                                              left join flow.user u on pmoh.user_id = u.id
+                                                     where sms_thread_owner_id in (
+                                                          select sto.id
+                                                              from flow.sms_thread_owner sto
+                                                                  where sto.sms_thread_id = :threadId
+                                                         )
+                                                     order by pmoh.date_modified desc
             ) history), '[]') AS "conversationHistory"
     """;
 
@@ -415,7 +419,7 @@ select u.user_id, outbound_message from users u
   public final static String removeEntireThreadTeam = """
     update flow.sms_thread_owner
         set archived = true,
-        date_modified = now(),
+          date_modified = now(),
           modified_by_id = :modifiedById
         where sms_thread_id = :threadId
       and sms_team_id = :smsTeamId

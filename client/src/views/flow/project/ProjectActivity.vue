@@ -172,6 +172,7 @@
         :show-assign-to-me-button="!userAssigned && userHasTeam"
         :user-id="userId"
         :project-id="projectId"
+        :sms-thread-id="smsThreadId"
         class="px-6 pb-1 mt-n1"
         @updateOwner="loadConversation"
         @joinConversation="startJoinConversation"
@@ -616,7 +617,9 @@ const getAvailableTeams = async () => {
 const openHistoryDrilldown = async () => {
   try {
     let historyUrl = ''
-    if (projectId.value) {
+    if (smsThreadId.value) {
+      historyUrl = `/messaging/history/thread/${smsThreadId.value}`
+    } else if (projectId.value) {
       historyUrl = `/messaging/history/project/${projectId.value}`
     } else {
       historyUrl = `/messaging/history/user/${userId.value}`

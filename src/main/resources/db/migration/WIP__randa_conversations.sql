@@ -401,3 +401,123 @@ create index if not exists sq_combo_parent_last_inserted_ix
     where (archived is false and is_last_inserted is true);
 
 --in flux - this whole thing took 34 mins
+
+--HISTORY STUFF (project)
+
+alter table flow.project_message_owner_history rename to sms_thread_owner_audit;
+alter table flow.sms_thread_owner_audit
+add column if not exists sms_thread_owner_id bigint references flow.sms_thread_owner(id);
+CREATE INDEX if not exists stoa_sms_thread_owner_id_idx ON flow.sms_thread_owner_audit (sms_thread_owner_id);
+
+update flow.sms_thread_owner_audit stoa
+set sms_thread_owner_id = (
+    select max(sto.id)
+    from flow.sms_thread_owner sto
+    where sto.project_id_deprecated = stoa.project_id
+    and sto.sms_team_id = stoa.sms_team_id
+    and sto.user_id = stoa.user_id
+    and archived is false
+    )
+where id > 0;
+
+create index pmt_temp_randa_project_id_ix
+    on flow.sms_thread_owner (project_id_deprecated, sms_team_id, user_id)
+    where (archived IS true);
+
+
+update flow.sms_thread_owner_audit stoa
+set sms_thread_owner_id = (
+    select max(sto.id)
+    from flow.sms_thread_owner sto
+    where sto.project_id_deprecated = stoa.project_id
+      and sto.sms_team_id = stoa.sms_team_id
+      and sto.user_id = stoa.user_id
+      and archived is true
+)
+where sms_thread_owner_id is null;
+
+update flow.sms_thread_owner_audit stoa
+set sms_thread_owner_id = (
+    select max(sto.id)
+    from flow.sms_thread_owner sto
+    where sto.project_id_deprecated = stoa.project_id
+      and sto.sms_team_id = stoa.sms_team_id
+      and sto.user_id is null
+      and archived is true
+)
+where sms_thread_owner_id is null
+and user_id is null;
+
+drop index if exists flow.pmt_temp_randa_project_id_ix;
+
+delete from flow.sms_thread_owner_audit
+where sms_thread_owner_id is null;
+
+alter table flow.sms_thread_owner_audit
+rename column project_id to project_id_deprecated;
+alter table flow.sms_thread_owner_audit
+    add column if not exists user_id_deprecated bigint;
+
+--HISTORY STUFF (user)
+alter table flow.user_message_owner_history
+add column if not exists sms_thread_owner_id bigint references flow.sms_thread_owner(id);
+
+select *
+from flow.user_message_owner_history;
+
+ create index pmt_temp_randa_user_id_ix
+    on flow.sms_thread_owner (user_id_deprecated, sms_team_id, user_id)
+    where (archived IS true);
+
+update flow.user_message_owner_history stoa
+set sms_thread_owner_id = (
+    select max(sto.id)
+    from flow.sms_thread_owner sto
+    where sto.user_id_deprecated = stoa.owner_user_id
+      and sto.sms_team_id = stoa.sms_team_id
+      and sto.user_id = stoa.user_id
+    and archived is false
+)
+where id > 0;
+
+update flow.user_message_owner_history stoa
+set sms_thread_owner_id = (
+    select max(sto.id)
+    from flow.sms_thread_owner sto
+    where sto.user_id_deprecated = stoa.owner_user_id
+      and sto.sms_team_id = stoa.sms_team_id
+      and sto.user_id = stoa.user_id
+      and archived is true
+)
+where sms_thread_owner_id is null;
+
+update flow.user_message_owner_history stoa
+set sms_thread_owner_id = (
+    select max(sto.id)
+    from flow.sms_thread_owner sto
+    where sto.user_id_deprecated = stoa.owner_user_id
+      and sto.sms_team_id = stoa.sms_team_id
+      and sto.user_id is null
+      and archived is true
+)
+where sms_thread_owner_id is null
+and user_id is null;
+
+drop index if exists flow.pmt_temp_randa_user_id_ix;
+
+delete from flow.user_message_owner_history
+where sms_thread_owner_id is null;
+
+alter table flow.sms_thread_owner_audit
+    add column if not exists user_id_deprecated bigint;
+ALTER TABLE flow.sms_thread_owner_audit
+    RENAME COLUMN project_id TO project_id_deprecated;
+alter table flow.sms_thread_owner_audit alter column project_id_deprecated drop not null;
+
+insert into flow.sms_thread_owner_audit(sms_team_id, user_id, date_created, date_removed, date_modified, created_by_id, modified_by_id, sms_thread_owner_id, user_id_deprecated)
+select sms_team_id, user_id, date_created, date_removed, date_modified, created_by_id, modified_by_id, sms_thread_owner_id, owner_user_id
+    from flow.user_message_owner_history;
+
+alter table flow.user_message_owner_history rename to user_message_owner_history_deprecated;
+
+alter table flow.sms_thread_owner_audit alter column sms_thread_owner_id set not null;

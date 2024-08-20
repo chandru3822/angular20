@@ -936,3 +936,41 @@ CREATE TRIGGER company_holiday_audit_trg
   ON flow.company_holiday
   FOR EACH ROW
 EXECUTE PROCEDURE flow.company_holiday_audit();
+
+
+drop function if exists flow.sms_thread_owner_audit() cascade;
+CREATE OR REPLACE FUNCTION flow.sms_thread_owner_audit()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+
+            insert into flow.sms_thread_owner_audit(sms_thread_owner_id, sms_team_id, user_id, date_created, date_removed, date_modified, created_by_id, modified_by_id)
+            values (new.id, new.sms_team_id, new.user_id, now(), null, now(), new.created_by_id, new.modified_by_id);
+
+    elsif (TG_OP = 'UPDATE') THEN
+
+        update flow.sms_thread_owner_audit
+            set date_modified = now(),
+                date_removed = case when new.archived is true then now() else date_removed end
+        where sms_thread_owner_id = new.id;
+
+    ELSIF (TG_OP = 'DELETE') THEN
+        update flow.sms_thread_owner_audit
+        set date_modified = now(),
+            date_removed = now()
+        where sms_thread_owner_id = new.id;
+    end if;
+
+    RETURN NULL;
+END
+$$
+    LANGUAGE plpgsql;
+
+
+drop trigger if exists sms_thread_owner_audit_trg ON flow.sms_thread_owner;
+CREATE TRIGGER sms_thread_owner_audit_trg
+    after INSERT or update or delete
+    ON flow.sms_thread_owner
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.sms_thread_owner_audit();
