@@ -234,11 +234,19 @@
           </v-col>
           <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4" md="3">
             <v-switch
-              v-model="includeCancelled"
+              v-model="includeCancelledEvents"
+              dense
+              hide-details
+              class="fix-switch-color cancelled-event-switch mt-0 mr-8"
+              label="Cancelled Events"
+              @change="reloadCalendar"
+            />
+            <v-switch
+              v-model="includeCancelledProjects"
               dense
               hide-details
               class="fix-switch-color cancelled-event-switch mt-0"
-              label="Cancelled Events"
+              label="Cancelled Projects"
               @change="reloadCalendar"
             />
           </v-col>
@@ -280,13 +288,14 @@
           </div>
         </template>
         <template v-slot:resourceLabelContent="{resource, index}">
-          <div class="d-flex justify-space-between align-baseline">
-            <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`"
+          <div class="d-flex justify-space-between align-baseline flex-wrap">
+            <a v-if="resource.id.charAt(0)==='1' && userStore.userHasFeature('USERS')" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`"
                target="_blank"
                class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
-            <a v-else :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank"
+            <a v-else-if="resource.id.charAt(0) !=='1' && userStore.userHasFeature('ORGS')" :href="`${getHostUrl()}/user/${resource.id.substring(1)}/details`" target="_blank"
                class="body-large overflow-hidden resource-title text-decoration-none">{{ resource.title }}</a>
-            <div>
+            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
+            <div class="text-right flex-grow-1">
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
                   <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on"
@@ -486,7 +495,8 @@ const calendarOptions = ref({
   }
 })
 const calendarLoading = ref(false)
-const includeCancelled = ref(false)
+const includeCancelledEvents = ref(false)
+const includeCancelledProjects = ref(false)
 const calendarApi = ref(null)
 const calendarStartTime = ref(null)
 const calendarEndTime = ref(null)
@@ -1150,7 +1160,8 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
         userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
         startTime: info.start,
         endTime: info.end,
-        includeCancelled: includeCancelled.value
+        includeCancelledEvents: includeCancelledEvents.value,
+        includeCancelledProjects: includeCancelledProjects.value
       }
       const {data} = await postRequest(`/schedule`, params)
       data.forEach(d => {
@@ -1378,11 +1389,7 @@ const createSnackbar = (text) => {
 
 <style lang="scss" scoped>
 .resource-title {
-  max-width: 60%;
   white-space: break-spaces;
-  @media(max-width: 960px) {
-    max-width: 30%;
-  }
 }
 
 a.resource-title {
