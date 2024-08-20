@@ -54,15 +54,18 @@ public class CommunicationController {
     User user = securityService.getCurrentUser();
 
     Long contactId = 0L;
-    if (sendTexts.getUserIDs() == null || sendTexts.getUserIDs().isEmpty()) {
-      Optional<Project> project = projectService.getProject(projectId);
-      if (project.isPresent()) {
-        contactId = project.get().getContactId();
-      }
+    Optional<Project> project = projectService.getProject(projectId);
+    if(project.isPresent()) {
+      contactId = project.get().getContactId();
     }
-    else {
-      contactId = sendTexts.getUserIDs().get(0);
-    }
+//    if (sendTexts.getUserIDs() == null || sendTexts.getUserIDs().isEmpty()) {
+//      if (project.isPresent()) {
+//        contactId = project.get().getContactId();
+//      }
+//    }
+//    else {
+//      contactId = sendTexts.getUserIDs().get(0);
+//    }
 
     Contact contact = contactService.getContact(contactId);
     log.debug("TWILIO: attempting text for contact ID: {}", contactId);

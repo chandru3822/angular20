@@ -363,6 +363,11 @@ public class CommunicationService {
       CommunicationController.ProjectDetails projectDetails = getProjectTemplateFields(projectId, project.getTimeZone());
 //      CommunicationController.ProjectDetails projectDetails = new CommunicationController.ProjectDetails();
 
+      //this code will only ever get hit locally if you dont have an updated project details table
+      if(projectDetails == null) {
+        projectDetails = new CommunicationController.ProjectDetails();
+      }
+
       Map<String, Object> contextMap =
         Map.of(
           "contact",
@@ -471,7 +476,7 @@ public class CommunicationService {
       LocalDateTime timestampFunctionResult;
       ZonedDateTime zoneTimestampFunctionResult;
 
-      if (projectDetails.getLocalCloserAppointmentStartTime() != null) {
+      if (null != projectDetails && projectDetails.getLocalCloserAppointmentStartTime() != null) {
         timestampFunctionResult = LocalDateTime.parse(projectDetails.getLocalCloserAppointmentStartTime(), dateTimeFormatter);
         zoneTimestampFunctionResult =
           timestampFunctionResult
@@ -485,7 +490,7 @@ public class CommunicationService {
         projectDetails.setLocalCloserAppointmentStartDate(closerAppointmentDate);
       }
 
-      if (projectDetails.getAhjInspectionWorkStartTime() != null) {
+      if (null != projectDetails && projectDetails.getAhjInspectionWorkStartTime() != null) {
         timestampFunctionResult = LocalDateTime.parse(projectDetails.getAhjInspectionWorkStartTime(), dateTimeFormatter);
         zoneTimestampFunctionResult =
           timestampFunctionResult
@@ -499,7 +504,7 @@ public class CommunicationService {
         projectDetails.setAhjInspectionWorkStartTime(ahjInspectionTime);
       }
 
-      if (projectDetails.getInstallationStartTime() != null) {
+      if (null != projectDetails && projectDetails.getInstallationStartTime() != null) {
         LocalDateTime timestampFunctionStartTimeResult = LocalDateTime.parse(projectDetails.getInstallationStartTime(), dateTimeFormatter);
         ZonedDateTime zoneStartTimestampFunctionResult =
           timestampFunctionStartTimeResult
@@ -518,7 +523,7 @@ public class CommunicationService {
       }
 
 
-      if (projectDetails.getInstallationEndTime() != null) {
+      if (null != projectDetails && projectDetails.getInstallationEndTime() != null) {
         LocalDateTime timestampFunctionEndTimeResult =
           LocalDateTime.parse(projectDetails.getInstallationEndTime(), dateTimeFormatter);
         ZonedDateTime zoneEndTimestampFunctionResult =
@@ -534,7 +539,9 @@ public class CommunicationService {
 
     Optional<String> scopeOfWork = projectService.getInstallationScopeOfWork(projectId);
 
-    scopeOfWork.ifPresent(projectDetails::setInstallationScopeOfWork);
+    if(null != projectDetails) {
+      scopeOfWork.ifPresent(projectDetails::setInstallationScopeOfWork);
+    }
 
     return projectDetails;
   }

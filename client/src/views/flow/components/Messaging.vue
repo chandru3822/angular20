@@ -318,7 +318,8 @@ const onMessageWasSent = async (message) => {
     const attachmentUrl = projectId.value
       ? `/project/${projectId.value}/attachment`
       : `/user/${userId.value}/attachment`
-    const sendTextUrl = `/communication/sendTextsForThread/${smsThreadId.value}`
+    const sendTextUrl = projectId.value ? `/communication/sendTextsForProject/${projectId.value}`
+        : `/communication/sendTextsForUser/${userId.value}`
 
     const createNotificationUrl = projectId.value
       ? `/messaging/createNotification/project/${projectId.value}`
