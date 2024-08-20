@@ -85,7 +85,7 @@ public class ScheduleController {
     private List<Long> userIds, orgIds, eventIds, userPositionIds;
     private String startTime, endTime, search, timezone;
     private Long companyStateId, projectId, eventId, processStepStatusTypeId, eventStatusTypeId, projectProcessStepEventId;
-    private Boolean includeCancelled;
+    private Boolean includeCancelledEvents, includeCancelledProjects;
   }
 
   @Data

@@ -1025,7 +1025,8 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("combined", combined);
-    params.put("includeCancelled", esp.getIncludeCancelled() != null ? esp.getIncludeCancelled() : false);
+    params.put("includeCancelledEvents", esp.getIncludeCancelledEvents() != null ? esp.getIncludeCancelledEvents() : false);
+    params.put("includeCancelledProjects", esp.getIncludeCancelledProjects() != null ? esp.getIncludeCancelledProjects() : false);
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());

@@ -234,11 +234,19 @@
           </v-col>
           <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4" md="3">
             <v-switch
-              v-model="includeCancelled"
+              v-model="includeCancelledEvents"
+              dense
+              hide-details
+              class="fix-switch-color cancelled-event-switch mt-0 mr-8"
+              label="Cancelled Events"
+              @change="reloadCalendar"
+            />
+            <v-switch
+              v-model="includeCancelledProjects"
               dense
               hide-details
               class="fix-switch-color cancelled-event-switch mt-0"
-              label="Cancelled Events"
+              label="Cancelled Projects"
               @change="reloadCalendar"
             />
           </v-col>
@@ -487,7 +495,8 @@ const calendarOptions = ref({
   }
 })
 const calendarLoading = ref(false)
-const includeCancelled = ref(false)
+const includeCancelledEvents = ref(false)
+const includeCancelledProjects = ref(false)
 const calendarApi = ref(null)
 const calendarStartTime = ref(null)
 const calendarEndTime = ref(null)
@@ -1151,7 +1160,8 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
         userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
         startTime: info.start,
         endTime: info.end,
-        includeCancelled: includeCancelled.value
+        includeCancelledEvents: includeCancelledEvents.value,
+        includeCancelledProjects: includeCancelledProjects.value
       }
       const {data} = await postRequest(`/schedule`, params)
       data.forEach(d => {
