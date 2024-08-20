@@ -130,6 +130,7 @@ public class MessagingController {
         filterData.getShowExternal(),
         filterData.getShowInternal(),
         filterData.getShowInbox(),
+        filterData.getSortAscending(),
         pageable);
   }
 
@@ -217,6 +218,7 @@ public class MessagingController {
     private Boolean showExternal;
     private Boolean showInternal;
     private Boolean showInbox;
+    private Boolean sortAscending;
   }
 
   @Data

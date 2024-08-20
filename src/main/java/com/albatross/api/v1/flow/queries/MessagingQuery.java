@@ -5,81 +5,93 @@ public class MessagingQuery {
   //language=PostgreSQL
   public final static String getConversations = """
        with owners as (
-           select distinct sto.sms_thread_id
-           from flow.sms_thread_owner sto
-           where sto.archived is false
-             and (sto.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
-               and
-              (case when :unassigned is true then sto.user_id is null
-                    else sto.user_id = any (array [ :ownerIds ]::bigint[]) end))
-       )
-       select st.id,
-              st.date_created,
-              st.closed,
-              st.internal_phone,
-              st.external_phone,
-              st.inbound,
-              st.recipient_type_id,
-              st.parent_id,
-              st.message,
-              case when st.recipient_type_id = 1 then
-                       (select concat(u.first_name, ' ', u.last_name)
-                        from flow.user u
-                        where u.archived is false
-                          and (u.search_phone = st.search_external_phone)
-                        limit 1)
-                   else
-                       (select concat(c.first_name, ' ', c.last_name)
-                        from flow.contact c
-                        where c.archived is false
-                          and (c.search_phones = st.search_external_phone)
-                        order by c.date_created desc
-                        limit 1) end as full_name,
-              case when st.recipient_type_id = 2 then
-                       (select s.abbreviation
-                        from flow.contact c
-                                 inner join flow.company_state cs on c.company_state_id = cs.id
-                                 inner join flow.state s on cs.state_id = s.id
-                        where c.archived is false
-                          and (c.search_phones = st.search_external_phone)
-                        order by c.date_created desc
-                        limit 1
-                       )
-                  end as state_abbreviation
-              ,
-              (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
-                         FROM (select st2.id,
-                                      st2.team_name                                                        as "teamName",
-                                      coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
-                                                FROM (SELECT pmo.id,
-                                                             pmo.user_id                            as "userId",
-                                                             concat(u.first_name, ' ', u.last_name) as "name",
-                                                             pmo.sms_team_id                        as "smsTeamId",
-                                                             pmo.archived
-                                                      FROM flow.sms_thread_owner pmo
-                                                               inner join flow.user u on pmo.user_id = u.id
-                                                      WHERE pmo.archived = false
-                                                        and pmo.sms_thread_id = sto2.sms_thread_id
-                                                        and pmo.sms_team_id = sto2.sms_team_id
-                                                        and pmo.user_id is not null
-                                                     ) tb), '[]') AS "users"
-                               from flow.sms_thread_owner sto2
-                                        inner join flow.sms_team st2 on sto2.sms_team_id = st2.id and st2.archived is false
-                               where sto2.sms_thread_id = st.parent_id
-                                 and sto2.user_id is null
-                                 and sto2.archived = false) st), '[]')) as "smsTeamOwners"
-       from flow.sms_thread st
-           inner join owners o on st.parent_id = o.sms_thread_id
-           inner join flow.recipient_type rt on st.recipient_type_id = rt.id
-       where st.inbound = :showInbox
-         and st.is_last_inserted is true
-         and st.archived is false
-         and case when :showExternal and not :showInternal then rt.external is true
-                  when :showInternal and not :showExternal then rt.external is false
-           else true end
-       order by st.date_created desc
-       limit :limit
-       offset :offset
+                       select distinct sto.sms_thread_id
+                       from flow.sms_thread_owner sto
+                       where sto.archived is false
+                         and (sto.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
+                           and
+                              (case when :unassigned is true then sto.user_id is null
+                                    else sto.user_id = any (array [ :ownerIds ]::bigint[]) end))
+                   ), results as (select st.id,
+                                         st.date_created,
+                                         st.closed,
+                                         st.internal_phone,
+                                         st.external_phone,
+                                         st.search_external_phone,
+                                         st.inbound,
+                                         st.recipient_type_id,
+                                         st.parent_id,
+                                         st.message,
+                                         case
+                                             when st.recipient_type_id = 1 then
+                                                 (select concat(u.first_name, ' ', u.last_name)
+                                                  from flow.user u
+                                                  where u.archived is false
+                                                    and (u.search_phone = st.search_external_phone)
+                                                  limit 1)
+                                             else
+                                                 (select concat(c.first_name, ' ', c.last_name)
+                                                  from flow.contact c
+                                                  where c.archived is false
+                                                    and (c.search_phones = st.search_external_phone)
+                                                  order by c.date_created desc
+                                                  limit 1) end                                     as full_name,
+                                         case
+                                             when st.recipient_type_id = 2 then
+                                                 (select s.abbreviation
+                                                  from flow.contact c
+                                                           inner join flow.company_state cs on c.company_state_id = cs.id
+                                                           inner join flow.state s on cs.state_id = s.id
+                                                  where c.archived is false
+                                                    and (c.search_phones = st.search_external_phone)
+                                                  order by c.date_created desc
+                                                  limit 1)
+                                                  end                                              as state_abbreviation
+                                               ,
+                                         (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
+                                                    FROM (select st2.id,
+                                                                 st2.team_name                                             as "teamName",
+                                                                 coalesce((SELECT array_to_json(array_agg(row_to_json(tb)))
+                                                                           FROM (SELECT pmo.id,
+                                                                                        pmo.user_id                            as "userId",
+                                                                                        concat(u.first_name, ' ', u.last_name) as "name",
+                                                                                        pmo.sms_team_id                        as "smsTeamId",
+                                                                                        pmo.archived
+                                                                                 FROM flow.sms_thread_owner pmo
+                                                                                          inner join flow.user u on pmo.user_id = u.id
+                                                                                 WHERE pmo.archived = false
+                                                                                   and pmo.sms_thread_id = sto2.sms_thread_id
+                                                                                   and pmo.sms_team_id = sto2.sms_team_id
+                                                                                   and pmo.user_id is not null) tb), '[]') AS "users"
+                                                          from flow.sms_thread_owner sto2
+                                                                   inner join flow.sms_team st2 on sto2.sms_team_id = st2.id and st2.archived is false
+                                                          where sto2.sms_thread_id = st.parent_id
+                                                            and sto2.user_id is null
+                                                            and sto2.archived = false) st), '[]')) as "smsTeamOwners"
+                                  from flow.sms_thread st
+                                           inner join owners o on st.parent_id = o.sms_thread_id
+                                           inner join flow.recipient_type rt on st.recipient_type_id = rt.id
+                                  where st.inbound = :showInbox
+                                    and st.is_last_inserted is true
+                                    and st.archived is false
+                                    and case
+                                            when :showExternal and not :showInternal then rt.external is true
+                                            when :showInternal and not :showExternal then rt.external is false
+                                            else true end)
+                   select *
+                   from results r
+                   where case
+                       when lower(trim(:query::text)) is not null then r.search_external_phone like '%' || lower(trim(:query::text)) || '%' OR
+                            lower(r.full_name) like '%' || lower(trim(:query::text)) || '%'
+                       else true end
+                   ORDER BY CASE
+                                WHEN :sortAscending::boolean is true THEN r.date_created
+                                END ASC,
+                            CASE
+                                WHEN :sortAscending::boolean is false THEN r.date_created
+                                END DESC
+                   limit :limit
+                   offset :offset
     """;
 //
 //  //language=PostgreSQL

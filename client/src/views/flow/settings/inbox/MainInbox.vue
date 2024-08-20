@@ -46,7 +46,7 @@
             <v-col cols="12" md="4" lg="3" class="pa-0 pr-6">
             <a-text-field
               prepend-inner-icon="search"
-              label="Search by project or owner"
+              label="Search by project, user or phone number"
               v-model="searchQuery"
               @input="searchConversations"
               :class="teamFilterOptions.length > 0 ? 'conversation-search' : 'conversation-search-no-teams'"
@@ -74,7 +74,7 @@
             </v-col>
             <v-col class="pa-0" cols="2" sm="4">
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 flex-shrink-0"
-                    @click="sortOldToNew = !sortOldToNew">
+                    @click="[sortOldToNew = !sortOldToNew, fetchConversations()]">
               <span v-if="vuetify.breakpoint.smAndUp">{{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}</span>
               <v-icon v-else>{{sortOldToNew ? 'mdi-sort-calendar-ascending' : 'mdi-sort-calendar-descending'}}</v-icon>
             </v-chip>
@@ -170,7 +170,7 @@
           </v-row>
       </div>
       <v-data-table
-        :items="conversationsFiltered"
+        :items="conversations"
         :options.sync="options"
         disable-sort
         ref="pageableTable"
@@ -383,20 +383,7 @@ const smsOwnershipEvents = computed(() => {
 const smsNotification = computed(() => {
   return notificationStore.getNotificationsByTopic('sms_reply')
 })
-const conversationsFiltered = computed(() => {
-  let conversationList = conversations.value
-  if (conversations.value) {
-    return conversationList.sort((a, b) => {
-      return sortOldToNew.value ?
-        new Date(a.dateCreated) - new Date(b.dateCreated) :
-        new Date(b.dateCreated) - new Date(a.dateCreated)
-    })
-  }
-  else {
-    return [];
-  }
 
-})
 const allTeamsSelected = computed(() => {
   return selectedTeamFilters.value.length === teamFilterOptions.value.length
 })
@@ -496,7 +483,8 @@ const fetchConversations = async () => {
       notifUserIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.userId) : [-1]) : [],
       showExternal: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All'),
       showInternal: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All'),
-      showInbox: showInbox.value
+      showInbox: showInbox.value,
+      sortAscending: sortOldToNew.value
     }
     const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
       filterData

@@ -114,7 +114,8 @@ public class MessagingService {
   }
 
   public Page<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifConversationIds,
-                                                Set<Long> notifUserIds, Boolean showExternal, Boolean showInternal, Boolean showInbox, Pageable pageable) {
+                                                Set<Long> notifUserIds, Boolean showExternal, Boolean showInternal,
+                                                Boolean showInbox, Boolean sortAscending, Pageable pageable) {
 
 
     String cleanedQuery = query;
@@ -136,6 +137,7 @@ public class MessagingService {
           showExternal,
           showInternal,
           showInbox,
+          sortAscending,
           pageable);
 
 
@@ -165,7 +167,8 @@ public class MessagingService {
       conversations, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
-  public List<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifConversationIds, Boolean showExternal, Boolean showInternal, Boolean showInbox, Pageable pageable) {
+  public List<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifConversationIds,
+                                                Boolean showExternal, Boolean showInternal, Boolean showInbox, Boolean sortAscending, Pageable pageable) {
     String cleanedQuery = query;
     if (cleanedQuery != null) {
       cleanedQuery = cleanedQuery.replaceAll("[*,.&]", "")
@@ -188,6 +191,7 @@ public class MessagingService {
     params.put("showInbox", showInbox);
     params.put("showInternal", showInternal);
     params.put("showExternal", showExternal);
+    params.put("sortAscending", sortAscending);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
