@@ -51,9 +51,9 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Short Window"
-                                  :disabled="!editType"
-                                  v-model.number="workQueueType.shortWindow"></a-text-field>
+                      label="Short Window"
+                      :disabled="!editType"
+                      v-model.number="workQueueType.shortWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <a-autocomplete
@@ -70,9 +70,9 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Long Window"
-                                  :disabled="!editType"
-                                  v-model.number="workQueueType.longWindow"></a-text-field>
+                      label="Long Window"
+                      :disabled="!editType"
+                      v-model.number="workQueueType.longWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <a-autocomplete
@@ -89,9 +89,9 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Expected Cycle"
-                                  :disabled="!editType"
-                                  v-model.number="workQueueType.expectedCycle"></a-text-field>
+                      label="Expected Cycle"
+                      :disabled="!editType"
+                      v-model.number="workQueueType.expectedCycle"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <a-autocomplete
@@ -109,10 +109,10 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Expected Target % (between 0 and 1)"
-                                  :disabled="!editType"
-                                  :rules="expectedTargetRule"
-                                  v-model.number="workQueueType.expectedTarget"></a-text-field>
+                      label="Expected Target % (between 0 and 1)"
+                      :disabled="!editType"
+                      :rules="expectedTargetRule"
+                      v-model.number="workQueueType.expectedTarget"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <label>Inverse Expectation: </label>
@@ -165,9 +165,9 @@
           @selected-changed="workQueueTypeHiddenSelectedEventListener"
           @allow-changed="workQueueTypeHiddenAllowEventListener"
           @checkbox-changed="workQueueTypeHiddenCheckboxEventListener"></multi-select-group>
-            <br/>
-            <a-btn v-if="userCanEdit" color="primary" class="d-inline-block white--text"
-                   @click="saveHiddenAndWhiteList()" prepend-icon="save" text="Save"/>
+        <br/>
+        <a-btn v-if="userCanEdit" color="primary" class="d-inline-block white--text"
+               @click="saveHiddenAndWhiteList()" prepend-icon="save" text="Save"/>
       </v-col>
     </v-row>
     <v-row v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
@@ -178,11 +178,11 @@
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
               <a-btn variant="text" color="primary" v-if="!editSchedule" class=""
-                               @click="[editSchedule = !editSchedule, savePrevSchedule()]" prepend-icon="edit"/>
+                     @click="[editSchedule = !editSchedule, savePrevSchedule()]" prepend-icon="edit"/>
               <a-btn variant="text" color="primary" class="" v-else
-                               @click="saveType()" prepend-icon="save"/>
+                     @click="saveType()" prepend-icon="save"/>
               <a-btn variant="text" color="primary" v-if="editSchedule" class=""
-                               @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="Cancel" :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''" hide-text-on-mobile/>
+                     @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="Cancel" :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''" hide-text-on-mobile/>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -225,32 +225,32 @@
     <v-row>
       <v-col cols="12" class="pa-0 mt-4">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="title-large text-wrap">Work Queue Columns</v-toolbar-title>
+          <v-toolbar-title class="title-large text-wrap">Default Column Visibility</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
               <a-btn
-                  v-if="!editDefaultFields"
-                  variant="text"
-                  color="primary"
-                  @click="editDefaultFields = !editDefaultFields"
-                  prepend-icon="edit"
+                v-if="!editDefaultFields"
+                variant="text"
+                color="primary"
+                @click="editDefaultFields = !editDefaultFields"
+                prepend-icon="edit"
               ></a-btn>
               <a-btn
-                  v-else
-                  variant="text"
-                  color="primary"
-                  @click="saveType()"
-                  prepend-icon="save"
+                v-else
+                variant="text"
+                color="primary"
+                @click="saveType()"
+                prepend-icon="save"
               ></a-btn>
               <a-btn
-                  variant="text"
-                  color="primary"
-                  v-if="editDefaultFields"
-                  @click="editDefaultFields = false"
-                  text="Cancel"
-                  hide-text-on-mobile
-                  :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
+                variant="text"
+                color="primary"
+                v-if="editDefaultFields"
+                @click="editDefaultFields = false"
+                text="Cancel"
+                hide-text-on-mobile
+                :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
               ></a-btn>
             </div>
           </v-toolbar-items>
@@ -260,29 +260,20 @@
     <v-row>
       <v-col cols="12">
         <v-data-table
-          :headers="workQueueColumnHeaders"
-          :items="workQueueColumnDetails"
+          :items="defaultFields"
+          :headers="defaultCheckboxHeaders"
+          class="table-striped pa-0 ma-0"
           hide-default-footer
-          class="highlight-rows"
         >
-          <template v-slot:item.visible="{ item, index }">
+          <template v-slot:item.show="{ item }">
             <v-checkbox
-              :input-value="item.visible"
+              :input-value="item.show"
               :disabled="!editDefaultFields"
+              @change="updateDefaultFields(item)"
             >
             </v-checkbox>
           </template>
-          <template v-slot:item.delete="{ item }">
-            <a-btn
-              v-if="item.objectType !== 'DEFAULT'"
-              prepend-icon="delete"
-              color="error"
-              variant="text"
-              :disabled="!editDefaultFields"
-            />
-          </template>
         </v-data-table>
-
       </v-col>
     </v-row>
 
@@ -292,16 +283,14 @@
         :can-edit="userIsAdmin"
         :smartlist-id="workQueueType.smartlistId"
         :company-object-types="filteredCompanyObjectTypes"
-
       />
-    </v-row>
 
-  <!--      <a-btn color="primary" class="white&#45;&#45;text build-sql" @click="buildSql"-->
-  <!--             v-if="is7oaksAdmin || userId === 2350555" text="BUILD SQL (only 7oaks)"/>-->
-  <!--      <div>-->
-  <!--        {{ sql }}-->
-  <!--      </div>-->
-<!--      </v-row>-->
+      <a-btn color="primary" class="white--text build-sql" @click="buildSql"
+             v-if="is7oaksAdmin || userId === 2350555" text="BUILD SQL (only 7oaks)"/>
+      <div>
+        {{ sql }}
+      </div>
+    </v-row>
 
   </v-container>
 </template>
@@ -349,7 +338,6 @@ const companyObjectTypes = ref([])
 const durationTypes = ref([])
 const expectedTargetRule = ref(getMinMaxRule(0, 1))
 const workQueueType = ref({})
-const assignedFields = ref({})
 const workQueueLoading = ref(false)
 const positions = ref([])
 const itemsUsingType = ref([])
@@ -357,19 +345,7 @@ const positionsLoading = ref(false)
 const hiddenPositionsChanged = ref(false)
 const sql = ref('')
 const defaultFields = ref([])
-const defaultCheckboxHeaders = ref([
-  {text: "Field Name", value: "text", show: true},
-  {text: "Show", value: "show", show: true}
-])
-const workQueueColumnHeaders = ref([
-  {text: "Field Name", value: "fieldName", show: true},
-  {text: "Sorting", value: "sorting", show: true},
-  {text: "Object Type", value: "objectType", show: true},
-  {text: "Process Step/Event Name", value: "processStepOrEventName", show: true},
-  {text: "Visible", value: "visible", show: true},
-  {text: "", value: "delete", show: true}
-])
-const workQueueColumnDetails = ref([])
+const defaultCheckboxHeaders = ref([{text: "Field Name", value: "text", show: true}, {text: "Show", value: "show", show: true}])
 const editDefaultFields = ref(false)
 const allowedMinutesStep = ref(m => m % 60 === 0)
 const noScheduleDefault = ref([
@@ -444,13 +420,11 @@ onMounted( async () => {
     getDurationTypes(),
     getPositions(),
     getPsAndEventsUsingWqt(),
-    getWorkQueueType(),
-
+    getWorkQueueType()
   ]
   await Promise.all(requests).then(async () => {
     appStore.loading = false;
   })
-  await getAssignedFields()
 })
 
 const selectAllHidden = () => {
@@ -514,7 +488,7 @@ const saveHiddenAndWhiteList = async () => {
 const buildSql = async () => {
   try {
     const {data} = await getRequestWithParams(`/workQueue/smartlist/${workQueueType.value.smartlistId}/buildSql`, {params: {
-      useEventData: workQueueType.value.useEventData
+        useEventData: workQueueType.value.useEventData
       }})
     sql.value = data
     navigator.clipboard.writeText(sql.value);
@@ -540,7 +514,7 @@ const getDurationTypes = async () => {
     durationTypes.value = data
   } catch (e) {
     logError(e)
-    appStore.showSnack('ERROR', 'Er   ror fetching duration types')
+    appStore.showSnack('ERROR', 'Error fetching duration types')
 
   }
 }
@@ -561,17 +535,6 @@ const getWorkQueueType = async () => {
     const {data, status} = await getRequest(`/workQueueType/${workQueueTypeId.value}/settings`)
     workQueueType.value = data
     defaultFields.value = workQueueType.value?.defaultColumnDisplay
-    defaultFields.value.forEach((df) => {
-      workQueueColumnDetails.value.push(
-        {
-          fieldName: df.value,
-          sorting: '',
-          objectType: 'DEFAULT',
-          processStepOrEventName: '',
-          visible: df?.show
-        }
-      )
-    })
     if (workQueueType.value.schedule.length < 1) {
       workQueueType.value.schedule = noScheduleDefault.value;
     }
@@ -581,28 +544,6 @@ const getWorkQueueType = async () => {
     appStore.showSnack('ERROR', 'Error Retrieving Work Queue Types')
 
     appStore.loading = false
-  }
-}
-
-const getAssignedFields = async () => {
-  try {
-    let timezone = userStore.timezone.value
-    const {data} = await getRequest(`/smartlistv1/${workQueueType.value?.smartlistId}/field?timezone=${timezone}`)
-    assignedFields.value = data
-    data.forEach((d) => {
-      workQueueColumnDetails.value.push(
-        {
-          fieldName: d.name,
-          sorting: '',
-          objectType: d.objectType.toUpperCase(),
-          processStepOrEventName: d.processStepName,
-          visible: true
-        })
-    })
-  } catch (e) {
-    logError(e)
-    appStore.showSnack('ERROR', 'Error fetching assigned fields')
-
   }
 }
 const getAllWorkQueueCategories = async () => {
