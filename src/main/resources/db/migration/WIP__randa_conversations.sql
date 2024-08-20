@@ -7,6 +7,15 @@ drop function if exists flow.update_cache_sms_queue() cascade;
 drop trigger if exists update_sms_cache_trg on flow.sms_queue;
 drop function if exists flow.update_cache_sms_reply() cascade;
 drop trigger if exists update_sms_reply_trg on flow.sms_reply;
+DROP FUNCTION IF EXISTS flow.remove_sms_team_project_owners(bigint, bigint, bigint, bigint, bigint);
+DROP FUNCTION IF EXISTS flow.remove_sms_team_user_owners(bigint, bigint, bigint, bigint, bigint);
+
+alter table flow.recipient_type
+    add column if not exists external boolean not null default false;
+
+update flow.recipient_type
+    set external = true
+where type in ('PROJECT', 'CONTACT');
 
 
 alter table flow.project_message_team
@@ -375,3 +384,12 @@ CREATE INDEX if not exists st_search_from_phone_idx ON flow.sms_thread (search_f
 -- alter table flow.sms_thread rename column to_phone to external_phone;
 -- alter table flow.sms_thread rename column search_to_phone to search_external_phone;
 -- alter table flow.sms_thread rename column search_from_phone to search_internal_phone;
+
+-- DROP INDEX if exists flow.sq_created_idx;
+-- CREATE INDEX if not exists sq_created_idx ON flow.sms_thread (date_created);
+
+drop index if exists flow.sq_combo_parent_last_inserted_ix;
+create index if not exists sq_combo_parent_last_inserted_ix
+    on flow.sms_thread (parent_id, inbound)
+    where (archived is false and is_last_inserted is true);
+

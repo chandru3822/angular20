@@ -24,9 +24,9 @@ public class SmsServiceQuery {
   //language=PostgreSQL
   public final static String insert = """
     WITH sq AS (INSERT INTO flow.sms_thread (
-                           message_group,sent_to_user_id, sent_to_project_id, message,media_urls,external_phone,recipient_type_id,message_sent_by_user_id,sms_team_id, priority_level
+                           message_group,sent_to_user_id, sent_to_project_id, message,media_urls,external_phone,recipient_type_id,message_sent_by_user_id,sms_team_id, priority_level, parent_id
                 ) VALUES (
-                           :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId, :priorityLevel
+                           :messageGroup,:userId,:projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId, :priorityLevel, :threadId
                          )
                 RETURNING id,sent_to_user_id, sent_to_project_id,message,media_urls,
                   message_group,message_sid,message_status,error_message,
@@ -58,7 +58,7 @@ public class SmsServiceQuery {
   public final static String next = """
     SELECT
                   sms.id,
-                  sms.user_id,
+                  sms.sent_to_user_id,
                   sms.message,
                   array_to_json(sms.media_urls) AS media_urls,
                   sms.recipient_type_id,
@@ -71,8 +71,8 @@ public class SmsServiceQuery {
                   sms.twilio_created,
                   sms.twilio_sent,
                   sms.twilio_delivered,
-                  sms.updated,
-                  sms.created
+                  sms.date_modified,
+                  sms.date_created
                 FROM flow.sms_thread sms
                 WHERE message_sid IS NULL
                       AND sms.external_phone IS NOT NULL
@@ -85,10 +85,10 @@ public class SmsServiceQuery {
                           ) AND
 
                           -- so we don't retry very very old texts
-                          created >= '2017-11-08'
+                          date_created >= '2017-11-08'
                         )
                       )
-                ORDER BY sms.priority_level, sms.created ASC
+                ORDER BY sms.priority_level, sms.date_created ASC
                 LIMIT 10
                 FOR UPDATE SKIP LOCKED
     """;
@@ -170,29 +170,12 @@ public class SmsServiceQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getProjects = """
-    select p.id from flow.project p
-      inner join flow.contact c on p.contact_id = c.id
-     where c.search_phones = :from
-     and p.archived is false
+  public final static String getThreads = """
+    select st.parent_id
+    from flow.sms_thread st
+     where st.is_last_inserted is true
+     and st.external_phone = :phoneNumber
     """;
-
-  //language=PostgreSQL
-  public final static String getUsers = """
-    select u.id from flow.user u
-     where u.search_phone = :from
-     and u.archived is false
-    """;
-
-  //  //language=PostgreSQL
-//  public final static String fetchReply = """
-//      SELECT *
-//      FROM flow.sms_reply
-//      WHERE from_phone = :phone
-//        AND date_received > :since
-//      ORDER BY date_received DESC
-//      LIMIT 1
-//    """;
 
   //language=PostgreSQL
   public final static String getSmsQueue = """

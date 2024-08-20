@@ -305,9 +305,8 @@ const sendMessage = async () => {
     for (let selectedProjectId of selectedProjectIds.value) {
       attachmentUrl.value = `/project/` + selectedProjectId + `/attachment`
       sendTextUrl.value = `/communication/sendTextsForProject/` + selectedProjectId
-      lastSentUrl.value = `/messaging/setLastSent/project/` + selectedProjectId
       createNotificationUrl.value = `/messaging/createNotification/project/` + selectedProjectId
-      inboxUrl.value = `/inbox/inboxConversation/project/` + selectedProjectId
+      // inboxUrl.value = `/inbox/inboxConversation/project/` + selectedProjectId
       addTeamUrl.value = `/messaging/addTeam/project/` + selectedProjectId
       if (assignAndSend.value) {
         await sendMessageAndAssign();
@@ -322,9 +321,8 @@ const sendMessage = async () => {
     for (let currentUserId of selectedUserIds.value) {
       attachmentUrl.value =  `/user/` + currentUserId + `/attachment`
       sendTextUrl.value = `/communication/sendTextsForUser/` + currentUserId
-      lastSentUrl.value = `/messaging/setLastSent/user/` + currentUserId
       createNotificationUrl.value = `/messaging/createNotification/user/` + currentUserId
-      inboxUrl.value = `/inbox/inboxConversation/user/` + currentUserId
+      // inboxUrl.value = `/inbox/inboxConversation/user/` + currentUserId
       addTeamUrl.value = `/messaging/addTeam/user/` + currentUserId
       if (assignAndSend.value) {
         await sendMessageAndAssign();
@@ -344,9 +342,10 @@ const sendMessage = async () => {
     appStore.loading = false
     if (assignAndSend.value) {
       appStore.showSnack('SUCCESS', 'Message sent and conversation assigned')
-      if (props.isInbox && !route.path.includes(inboxUrl.value)) {
-        await router.push({ path: inboxUrl.value })
-      }
+      //what if more than one project was selected?
+      // if (props.isInbox && !route.path.includes(inboxUrl.value)) {
+      //   await router.push({ path: inboxUrl.value })
+      // }
     }
     else {
       appStore.showSnack('SUCCESS', 'Message sent')
@@ -402,7 +401,6 @@ const onMessageWasSent = async () => {
           mediaURLs: mediaUrls,
           smsTeamId: smsTeamId
         }
-
         await postRequest(sendTextUrl.value, params)
       }
     }
@@ -416,7 +414,6 @@ const onMessageWasSent = async () => {
       await postRequest(sendTextUrl.value, params)
     }
 
-    await putRequest(lastSentUrl.value)
     await postRequest(createNotificationUrl.value)
   } catch (e) {
     console.error('*** ERROR ***', e)

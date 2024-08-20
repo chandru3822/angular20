@@ -151,26 +151,19 @@ public class MessagingController {
     return messagingService.getThread(null, null, userId, details.getTrueUserId());
   }
 
+  @GetMapping(value = "/history/thread/{smsThreadId}")
+  public String getThreadHistory(@PathVariable Long smsThreadId) {
+    return messagingService.getThreadHistory(smsThreadId, null, null);
+  }
+
   @GetMapping(value = "/history/project/{projectId}")
   public String getProjectHistory(@PathVariable Long projectId) {
-    return messagingService.getProjectHistory(projectId);
+    return messagingService.getThreadHistory(null, projectId, null);
   }
 
   @GetMapping(value = "/history/user/{userId}")
   public String getHistory(@PathVariable Long userId) {
-    return messagingService.getUserHistory(userId);
-  }
-
-  @PutMapping(value = "/setLastSent/project/{projectId}")
-  public void setLastSentForProject(
-      @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.setLastSentForProject(projectId, details.getTrueUserId());
-  }
-
-  @PutMapping(value = "/setLastSent/user/{userId}")
-  public void setLastSentForUser(
-    @PathVariable Long userId, @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.setLastSentForUser(userId, details.getTrueUserId());
+    return messagingService.getThreadHistory(null, null, userId);
   }
 
   @PutMapping(value = "/removeOwner/thread/{smsThreadId}")
@@ -197,16 +190,22 @@ public class MessagingController {
     messagingService.removeThreadOwner(null, null, userId, owner, details.getTrueUserId());
   }
 
+  @PostMapping(value = "/createNotification/thread/{smsThreadId}")
+  public void createThreadNotification(
+    @PathVariable Long smsThreadId, @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.addSmsThreadOwnershipNotification(smsThreadId, null, null, details.getTrueUserId());
+  }
+
   @PostMapping(value = "/createNotification/project/{projectId}")
   public void createProjectNotification(
       @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.addSmsProjectOwnershipNotification(projectId, details.getTrueUserId());
+    messagingService.addSmsThreadOwnershipNotification(null, projectId, null, details.getTrueUserId());
   }
 
   @PostMapping(value = "/createNotification/user/{userId}")
   public void createUserNotification(
     @PathVariable Long userId, @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.addSmsUserOwnershipNotification(userId, details.getTrueUserId());
+    messagingService.addSmsThreadOwnershipNotification(null, null, userId, details.getTrueUserId());
   }
 
   @Data

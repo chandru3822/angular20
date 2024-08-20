@@ -143,6 +143,8 @@ public class SMSService {
     Integer priorityLevel) {
 
     if (null != toPhone && !toPhone.isBlank()) {
+      Long threadId = messagingService.getThreadId(projectId, userId);
+
       String queueInsert = SmsServiceQuery.insert;
 
       MapSqlParameterSource source = new MapSqlParameterSource();
@@ -150,6 +152,7 @@ public class SMSService {
       source.addValue("userId", userId);
       source.addValue("contactId", contactId);
       source.addValue("projectId", projectId);
+      source.addValue("threadId", threadId);
       source.addValue("message", message);
       source.addValue("toPhone", toPhone);
       source.addValue("mediaUrls", null);

@@ -186,7 +186,7 @@
     />
 
     <ActivitySection
-        v-if="projectId || contactId || userId || orgId"
+        v-if="viewId === 1 && (projectId || contactId || userId || orgId)"
       :contact-id="contactId"
       :user-id="userId"
       :timeline-view="toggleTimelineView === 0"
