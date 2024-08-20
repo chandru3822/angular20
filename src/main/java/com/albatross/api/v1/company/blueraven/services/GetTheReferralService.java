@@ -203,29 +203,30 @@ public class GetTheReferralService {
     }
   }
 
-  public void updateAdvocateLeadStatuses() {
+  public void updateReferralLeadStatuses() {
     try {
-      updateAdvocatesLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getProjectCreatedMilestoneContacts, null,
+      updateReferralsLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getProjectCreatedMilestoneContacts, null,
         GetTheReferralProject.class), VERIFIED_STATUS_ID, PROJECT_CREATED_GTR_STATUS);
-      updateAdvocatesLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getPitchedMilestoneContacts, null,
+      updateReferralsLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getPitchedMilestoneContacts, null,
         GetTheReferralProject.class), WORKING_STATUS_ID, CONTACT_PITCHED_GTR_STATUS);
-      updateAdvocatesLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getSubstantiallyCompleteMilestoneContacts, null,
+      updateReferralsLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getSubstantiallyCompleteMilestoneContacts, null,
         GetTheReferralProject.class), SOLD_STATUS_ID, SUBSTANTIALLY_COMPLETE_GTR_STATUS);
-      updateAdvocatesLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getProjectCompleteMilestoneContacts, null,
-        GetTheReferralProject.class), CLOSED_STATUS_ID, PROJECT_COMPLETED_GTR_STATUS);
+      // Commenting out for now, updating from status 3 to status 4 is not allowed - possible redesign in the future
+      /*updateReferralsLeadStatus(sqlCache.queryBySql(GetTheReferralQuery.getProjectCompleteMilestoneContacts, null,
+        GetTheReferralProject.class), CLOSED_STATUS_ID, PROJECT_COMPLETED_GTR_STATUS);*/
     } catch (Exception e) {
       String msg = "GetTheReferral: Error updating advocate status, msg=" +e.getMessage();
       log.error(msg);
     }
   }
 
-  private void updateAdvocatesLeadStatus(List<GetTheReferralProject> gtrContacts, String leadStatus, Integer albaGtRLeadStatus) {
+  private void updateReferralsLeadStatus(List<GetTheReferralProject> gtrContacts, String leadStatus, Integer albaGtRLeadStatus) {
     try {
-      String url = apiUrl + "/advocates/updateProjectStage";
+      String url = apiUrl + "/leads/updateStatus";
       for (GetTheReferralProject gtrContact: gtrContacts) {
         JSONObject body = new JSONObject();
-        body.put("email", gtrContact.getContactEmail());
-        body.put("stage", leadStatus);
+        body.put("lead_id", gtrContact.getLeadId().toString());
+        body.put("lead_status", leadStatus);
 
         HttpResponse resp = POST(url, IOUtils.toInputStream(body.toString(), (Charset) null));
         JSONObject respJSON = resp.getJSON();
@@ -252,7 +253,7 @@ public class GetTheReferralService {
         String leadStatus = getLeadStatus(project.getCompanyProjectStatusTypeId());
         // Only push the lead status for a subset of statuses
         if (!leadStatus.isEmpty()) {
-          body.put("stage", "abc");//leadStatus);
+          body.put("stage", leadStatus);
           String url = apiUrl + "/advocates/updateProjectStage";
           HttpResponse resp = POST(url, IOUtils.toInputStream(body.toString(), (Charset) null));
           JSONObject respJSON = resp.getJSON();
@@ -326,7 +327,7 @@ public class GetTheReferralService {
 
   @Data
   private static class GetTheReferralProject {
-    private Long contactId, companyProjectStatusTypeId;
+    private Long contactId, leadId, companyProjectStatusTypeId;
     private String contactEmail;
   }
 }

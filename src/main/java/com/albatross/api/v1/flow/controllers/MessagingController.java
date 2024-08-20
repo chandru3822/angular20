@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.company.blueraven.services.GetTheReferralService;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
@@ -21,7 +22,7 @@ import java.util.Set;
 @RequestMapping(value = "/api/v1/flow/messaging", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class MessagingController {
-
+private final GetTheReferralService getTheReferralService;
   private final MessagingService messagingService;
   private final MessageTemplateService messageTemplateService;
 
@@ -101,6 +102,8 @@ public class MessagingController {
       @RequestParam(required = false, defaultValue = "") String query,
       @RequestBody FilterData filterData,
       Pageable pageable) {
+
+    getTheReferralService.updateReferralLeadStatuses();
 
     return messagingService.getConversations(
         query,

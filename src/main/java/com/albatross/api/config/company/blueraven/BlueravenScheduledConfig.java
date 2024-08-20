@@ -124,7 +124,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       log.info("*** CRON: start processing GetTheReferral contacts ***");
       getTheReferralService.getAdvocates();
       getTheReferralService.getLeads();
-      getTheReferralService.updateAdvocateLeadStatuses();
+      getTheReferralService.updateReferralLeadStatuses();
+      getTheReferralService.updateAdvocateStatusInGtr();
       log.info("*** CRON: end processing GetTheReferral contacts ***");
     }
   }
