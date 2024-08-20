@@ -103,8 +103,6 @@ private final GetTheReferralService getTheReferralService;
       @RequestBody FilterData filterData,
       Pageable pageable) {
 
-    getTheReferralService.updateReferralLeadStatuses();
-
     return messagingService.getConversations(
         query,
         filterData.getOwnerUserIds(),
