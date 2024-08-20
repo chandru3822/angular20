@@ -87,7 +87,7 @@ alter table flow.sms_queue
 alter table flow.sms_queue rename column from_phone to internal_phone;
 alter table flow.sms_queue rename column to_phone to external_phone;
 alter table flow.sms_queue rename column search_to_phone to search_external_phone;
-alter table flow.sms_queue rename column search_from_phone to search_internal_phone;
+
 
 --add the inbound column and set true for all replies
 alter table flow.sms_queue
@@ -118,8 +118,8 @@ alter table flow.sms_queue
 
 --add this after import from reply table
 alter table flow.sms_queue
-    add column if not exists search_from_phone     varchar generated always as ("right"(
-            translate((COALESCE(from_phone, ''::character varying))::text, '+-() '::text, ''::text), 10)) stored;
+    add column if not exists search_internal_phone     varchar generated always as ("right"(
+            translate((COALESCE(internal_phone, ''::character varying))::text, '+-() '::text, ''::text), 10)) stored;
 
 --do this as part of the import
 -- update flow.sms_queue
@@ -133,17 +133,17 @@ alter table flow.sms_queue
 ALTER TABLE flow.sms_queue ADD COLUMN is_last_inserted BOOLEAN DEFAULT FALSE;
 
 --add a temp column for use by updating parent id since it needs to be to_phone for outgoing and from_phone for incoming
-ALTER TABLE flow.sms_queue ADD COLUMN temp_thread_phone text;
+-- ALTER TABLE flow.sms_queue ADD COLUMN temp_thread_phone text;
 
-update flow.sms_queue
-set temp_thread_phone = case when inbound then search_from_phone else search_to_phone end
-where id > 0;
+-- update flow.sms_queue
+-- set temp_thread_phone = case when inbound then search_from_phone else search_to_phone end
+-- where id > 0;
 --^^ this took 10 mins, 4.1 million rows, took 30 mins the 2nd time
 
 
 --this loop took 25 minutes. trying an index to see if it is faster next time
 -- took 50 minutes the 2nd time
-CREATE INDEX if not exists sq_temp_thread_phone_idx ON flow.sms_queue (temp_thread_phone);
+-- CREATE INDEX if not exists sq_temp_thread_phone_idx ON flow.sms_queue (temp_thread_phone);
 
 DO
 $do$
@@ -156,19 +156,19 @@ $do$
         for x in select id,
                         parent_id,
                         date_created,
-                        temp_thread_phone,
+                        search_external_phone,
                         CASE
-                            WHEN ROW_NUMBER() OVER (PARTITION BY temp_thread_phone ORDER BY date_created, temp_thread_phone) = 1
+                            WHEN ROW_NUMBER() OVER (PARTITION BY search_external_phone ORDER BY date_created, search_external_phone) = 1
                                 THEN true
                             ELSE false END AS is_first_row,
                         CASE
-                            WHEN ROW_NUMBER() OVER (PARTITION BY temp_thread_phone ORDER BY date_created desc, temp_thread_phone) = 1
+                            WHEN ROW_NUMBER() OVER (PARTITION BY search_external_phone ORDER BY date_created desc, search_external_phone) = 1
                                 THEN true
                             ELSE false END AS is_last_row,
                         is_last_inserted
                  from flow.sms_queue
                  where parent_id is null
-                 order by temp_thread_phone, date_created
+                 order by search_external_phone, date_created
             loop
                 v_rowcount = v_rowcount + 1;
                 if x.is_first_row is true then
@@ -237,7 +237,7 @@ set sms_thread_id = (
         inner join flow.contact c on p.contact_id = c.id
     where st.sent_to_project_id = co.project_id
       and st.id = st.parent_id
-    and st.temp_thread_phone = c.search_phones)
+    and st.search_external_phone = c.search_phones)
 where co.id > 0;
 
 --this deletes from the owner table if there was no matching conversation/project id stuff in the sms queue
@@ -250,8 +250,8 @@ and archived is true;
 alter table flow.sms_thread
 add column if not exists archived boolean not null default false;
 
-insert into flow.sms_thread(message, from_phone, to_phone, recipient_type_id, message_sent_by_user_id, sent_to_project_id, archived, temp_thread_phone)
-select distinct 'THREAD INITIALIZATION', '+18014480212', c.search_phones, 2, 99999999, sto.project_id, true, c.search_phones
+insert into flow.sms_thread(message, internal_phone, external_phone, recipient_type_id, message_sent_by_user_id, sent_to_project_id, archived)
+select distinct 'THREAD INITIALIZATION', '+18014480212', c.search_phones, 2, 99999999, sto.project_id, true
     from flow.sms_thread_owner sto
         inner join flow.project p on sto.project_id = p.id
         inner join flow.contact c on p.contact_id = c.id
@@ -271,7 +271,7 @@ set sms_thread_id = (
              inner join flow.contact c on p.contact_id = c.id
     where st.sent_to_project_id = co.project_id
       and st.id = st.parent_id
-      and st.temp_thread_phone = c.search_phones)
+      and st.external_phone = c.search_phones)
 where co.sms_thread_id is null;
 
 alter table flow.sms_thread_owner alter column sms_thread_id set not null;
@@ -307,15 +307,15 @@ set sms_thread_id = (select st.id
                               inner join flow.user u on u.id = st.sent_to_user_id
                      where st.sent_to_user_id = umt.user_id
                        and st.id = st.parent_id
-                       and st.temp_thread_phone = u.search_phone)
+                       and st.search_external_phone = u.search_phone)
 where umt.id > 0;
 
 delete from flow.user_message_team
 where sms_thread_id is null
 and archived is true;
 
-insert into flow.sms_thread(message, from_phone, to_phone, recipient_type_id, message_sent_by_user_id, sent_to_user_id, archived, temp_thread_phone)
-select distinct 'THREAD INITIALIZATION', '+18014480029', u.search_phone, 1, 99999999, sto.user_id, true, u.search_phone
+insert into flow.sms_thread(message, external_phone, internal_phone, recipient_type_id, message_sent_by_user_id, sent_to_user_id, archived)
+select distinct 'THREAD INITIALIZATION', '+18014480029', u.search_phone, 1, 99999999, sto.user_id, true
 from flow.user_message_team sto
          inner join flow.user u on u.id = sto.user_id
 where sto.sms_thread_id is null;
@@ -331,12 +331,19 @@ set sms_thread_id = (select st.id
                               inner join flow.user u on u.id = st.sent_to_user_id
                      where st.sent_to_user_id = umt.user_id
                        and st.id = st.parent_id
-                       and st.temp_thread_phone = u.search_phone)
+                       and st.search_external_phone = u.search_phone)
 where umt.sms_thread_id is null;
 
 --now that the data is ready, insert into the sms_thread_owner
 alter table flow.sms_thread_owner add column if not exists user_id_deprecated bigint;
 alter table flow.sms_thread_owner alter column project_id_deprecated drop not null;
+
+-- select count(1)
+--     from flow.user_message_team
+--         where sms_thread_id is null;
+
+-- delete from flow.user_message_team
+-- where sms_thread_id is null;
 
 insert into flow.sms_thread_owner(sms_team_id, archived, date_created, date_modified, created_by_id, modified_by_id, sms_thread_id, user_id, user_id_deprecated)
 select sms_team_id, archived, date_created, date_modified, created_by_id, modified_by_id, sms_thread_id, owner_user_id, user_id
@@ -368,8 +375,8 @@ where op.user_id = st.sent_to_user_id
 
 CREATE INDEX if not exists sto_sms_thread_id_idx ON flow.sms_thread_owner (sms_thread_id);
 CREATE INDEX if not exists st_parent_id_idx ON flow.sms_thread (parent_id);
-CREATE INDEX if not exists st_search_to_phone_idx ON flow.sms_thread (search_to_phone);
-CREATE INDEX if not exists st_search_from_phone_idx ON flow.sms_thread (search_from_phone);
+CREATE INDEX if not exists st_search_external_phone_idx ON flow.sms_thread (search_external_phone);
+CREATE INDEX if not exists st_search_internal_phone_idx ON flow.sms_thread (search_internal_phone);
 
 
 -- TODO: need to do project_message_owner_history and user_message_owner_history into sms_thread_owner_history
@@ -393,3 +400,4 @@ create index if not exists sq_combo_parent_last_inserted_ix
     on flow.sms_thread (parent_id, inbound)
     where (archived is false and is_last_inserted is true);
 
+--in flux - this whole thing took 34 mins
