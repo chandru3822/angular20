@@ -46,9 +46,10 @@ public class BirdEyeService {
   }
 
   public BirdEyeSurveyResponseWrapper getSurveyResponses(String surveyId, String businessNumber, OffsetDateTime lastSyncDate, int pageSize, int page) {
-
+    final OffsetDateTime currentDateTime = OffsetDateTime.now();
     final BirdeyeListSurveyRequest request = BirdeyeListSurveyRequest.builder()
       .startDate(lastSyncDate)
+      .endDate(currentDateTime)
       .build();
 
     return this.birdeyeApi.getSurveyResponses(
