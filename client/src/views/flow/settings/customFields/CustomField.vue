@@ -315,8 +315,8 @@ const availableCustomFields = ref([])
 const usesForField = ref([])
 
 const selectedSystemListTypeIsUsers = computed(() => {
-  let selectedSystemList = systemLists.value.find(sl => sl.id === customField.value.companySystemListId)
-  return selectedSystemList.systemListTypeId === 2; //user type id
+  let selectedSystemList = systemLists.value.find(sl => sl.companySystemListId === customField.value.companySystemListId)
+  return selectedSystemList?.systemListTypeId === 2; //user type id
 })
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
