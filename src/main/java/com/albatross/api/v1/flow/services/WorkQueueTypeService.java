@@ -215,6 +215,7 @@ public class WorkQueueTypeService {
     params.put("expectedTarget", type.getExpectedTarget());
     params.put("schedule", null != type.getSchedule() ? type.getSchedule().toString() : null);
     params.put("defaultColumnDisplay", null != type.getDefaultColumnDisplay() ? type.getDefaultColumnDisplay().toString() : null);
+    params.put("columnSortingOrder", null != type.getColumnSortingOrder() ? type.getColumnSortingOrder().toString() : null);
     sqlCache.updateBySql(WorkQueueTypeQuery.updateType, params);
 
     return getType(type.getId());
@@ -241,6 +242,7 @@ public class WorkQueueTypeService {
     } else {
       params.put("defaultColumnDisplay", "[{\"show\": true, \"text\": \"Project\", \"value\": \"Project Name\"}, {\"show\": true, \"text\": \"Project ID\", \"value\": \"ProjectID\"}, {\"show\": true, \"text\": \"Process Step\", \"value\": \"Process Step Name\"}, {\"show\": true, \"text\": \"Status\", \"value\": \"Process Step Status Type\"}, {\"show\": true, \"text\": \"Days In Queue\", \"value\": \"Days In Queue\"}, {\"show\": true, \"text\": \"State\", \"value\": \"State Abbreviation\"}, {\"show\": true, \"text\": \"Owner\", \"value\": \"Owner\"}, {\"show\": true, \"text\": \"Active Process Steps\", \"value\": \"Active Process Steps\"}]");
     }
+    params.put("columnSortingOrder", null != type.getColumnSortingOrder() ? type.getColumnSortingOrder().toString() : "[{\"columnSortingOrder\":\"Primary\",\"value\":null,\"sortDesc\":false}, {\"columnSortingOrder\":\"Secondary\",\"value\":null,\"sortDesc\":false}, {\"columnSortingOrder\":\"Tertiary\",\"value\":null,\"sortDesc\":false}]");
     Long id = sqlCache.updateBySqlReturningId(WorkQueueTypeQuery.insertType, params, "id").longValue();
 
     // any time a work queue type is created we need to create a smartlist placeholder for any
@@ -597,6 +599,12 @@ public class WorkQueueTypeService {
         List.class,
         "defaultColumnDisplay",
         new JsonCollectionDeserializer(wrkQueueTypeDefaultColumnRef, objectMapper));
+
+      TypeReference<List<WorkQueueTypeSortingOrder>> wrkQueueTypeSortingOrderRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "columnSortingOrder",
+        new JsonCollectionDeserializer(wrkQueueTypeSortingOrderRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(
