@@ -450,6 +450,11 @@ and user_id is null;
 
 drop index if exists flow.pmt_temp_randa_project_id_ix;
 
+--78k
+-- select count(1)
+--     from flow.sms_thread_owner_audit
+--         where sms_thread_owner_id is null;
+
 delete from flow.sms_thread_owner_audit
 where sms_thread_owner_id is null;
 
@@ -461,9 +466,6 @@ alter table flow.sms_thread_owner_audit
 --HISTORY STUFF (user)
 alter table flow.user_message_owner_history
 add column if not exists sms_thread_owner_id bigint references flow.sms_thread_owner(id);
-
-select *
-from flow.user_message_owner_history;
 
  create index pmt_temp_randa_user_id_ix
     on flow.sms_thread_owner (user_id_deprecated, sms_team_id, user_id)
@@ -505,13 +507,16 @@ and user_id is null;
 
 drop index if exists flow.pmt_temp_randa_user_id_ix;
 
+--10k
+-- select count(1)
+-- from flow.user_message_owner_history
+-- where sms_thread_owner_id is null;
+
 delete from flow.user_message_owner_history
 where sms_thread_owner_id is null;
 
 alter table flow.sms_thread_owner_audit
     add column if not exists user_id_deprecated bigint;
-ALTER TABLE flow.sms_thread_owner_audit
-    RENAME COLUMN project_id TO project_id_deprecated;
 alter table flow.sms_thread_owner_audit alter column project_id_deprecated drop not null;
 
 insert into flow.sms_thread_owner_audit(sms_team_id, user_id, date_created, date_removed, date_modified, created_by_id, modified_by_id, sms_thread_owner_id, user_id_deprecated)

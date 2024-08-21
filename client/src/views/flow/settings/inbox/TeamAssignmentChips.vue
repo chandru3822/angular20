@@ -250,7 +250,6 @@ const confirmChoice = ()=> {
   showRemoveDialog.value  = false
 }
 const removeTeam = async (teamId) => {
-  debugger
   showRemoveTeamDialog.value = false
   showRemoveLastTeamDialog.value = false
   try {
