@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.services.UserPositionService;
@@ -18,10 +19,17 @@ import java.util.List;
 public class UserPositionController {
 
   private final UserPositionService userPositionService;
+  private final SecurityService securityService;
 
   @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<UserPosition> getUserPositions(@PathVariable Long userId) {
     return userPositionService.getUserPositions(userId);
+  }
+
+  @GetMapping(value = "/{userId}/primary", produces = MediaType.APPLICATION_JSON_VALUE)
+  public UserPosition getUserPrimaryPosition(@PathVariable Long userId) {
+    var companyId = securityService.getCurrentUser().getCompanyId();
+    return userPositionService.getUserPrimaryPosition(userId, companyId);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)

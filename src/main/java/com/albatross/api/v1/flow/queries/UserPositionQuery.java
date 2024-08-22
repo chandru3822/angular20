@@ -79,6 +79,7 @@ public class UserPositionQuery {
                        upv.user_id,
                        upv.archived,
                        upv.primary_flag,
+                       upv.org_id,
                        upv.sales_org_id,
                        upv.sales_org_name,
                        upv.start_date,
