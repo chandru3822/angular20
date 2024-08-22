@@ -7,7 +7,9 @@ import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.services.UserPositionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,9 +29,13 @@ public class UserPositionController {
   }
 
   @GetMapping(value = "/{userId}/primary", produces = MediaType.APPLICATION_JSON_VALUE)
-  public UserPosition getUserPrimaryPosition(@PathVariable Long userId) {
+  public ResponseEntity<UserPosition> getUserPrimaryPosition(@PathVariable Long userId) {
     var companyId = securityService.getCurrentUser().getCompanyId();
-    return userPositionService.getUserPrimaryPosition(userId, companyId);
+    var position = userPositionService.getUserPrimaryPosition(userId, companyId);
+    if (position == null) {
+      position = new UserPosition();
+    }
+    return new ResponseEntity<>(position, HttpStatus.OK);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
