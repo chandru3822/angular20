@@ -385,11 +385,6 @@ public class UserService {
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }
-        final int updatedRecords =
-          sqlCache.updateBySql(
-            MessagingQuery.markThreadSmsAsReadForUser,
-            Map.of("userId", userId, "modifiedById", userId));
-        log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
       }
       //this tells the jwt to reload the user details (ensuring that an inactive user cannot hit the api)
       jwtAuthProvider.forceReload(userId);
