@@ -113,61 +113,7 @@ public class MessagingService {
     return conversationMessageProps.orElseThrow(() -> new NotFoundException("Project conversation not found"));
   }
 
-  public Page<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifConversationIds,
-                                                Set<Long> notifUserIds, Boolean showExternal, Boolean showInternal,
-                                                Boolean showInbox, Boolean sortAscending, Pageable pageable) {
-
-
-    String cleanedQuery = query;
-    if (cleanedQuery != null) {
-      cleanedQuery = cleanedQuery.replaceAll("[*,.&]", "")
-        .toLowerCase()
-        .trim();
-    }
-
-//    List<SmsConversation> conversations = new ArrayList<>();
-//    int count = 0;
-
-      List<SmsConversation> conversations =
-        getConversations(
-          cleanedQuery,
-          ownerUserIds,
-          smsTeamIds,
-          notifConversationIds,
-          showExternal,
-          showInternal,
-          showInbox,
-          sortAscending,
-          pageable);
-
-
-//    if (showInternal) {
-//      List<SmsConversation> users =
-//        getUsers(
-//          cleanedQuery,
-//          ownerUserIds,
-//          smsTeamIds,
-//          notifUserIds,
-//          showInbox,
-//          pageable);
-//
-//      if (!users.isEmpty()) {
-//        count += users.getFirst().getUserIdsForFilter().size();
-//        conversations.addAll(users);
-//        if (showExternal) {
-//          conversations.getFirst().setUserIdsForFilter(users.getFirst().getUserIdsForFilter());
-//          conversations.getFirst().setUserIdsInbox(users.getFirst().getUserIdsInbox());
-//          conversations.getFirst().setUserIdsSent(users.getFirst().getUserIdsSent());
-//        }
-//      }
-//    }
-
-    int count = 0;
-    return new PageImpl<>(
-      conversations, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-  }
-
-  public List<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifConversationIds,
+  public Page<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifThreadIds,
                                                 Boolean showExternal, Boolean showInternal, Boolean showInbox, Boolean sortAscending, Pageable pageable) {
     String cleanedQuery = query;
     if (cleanedQuery != null) {
@@ -186,7 +132,7 @@ public class MessagingService {
     params.put("query", StringUtils.hasText(query) ? query : null);
     params.put("smsTeamIds", smsTeamIds);
     params.put("ownerIds", ownerUserIds);
-    params.put("notifConversationIds", notifConversationIds);
+    params.put("notifThreadIds", notifThreadIds);
     params.put("unassigned", containsUnassigned);
     params.put("showInbox", showInbox);
     params.put("showInternal", showInternal);
@@ -229,7 +175,9 @@ public class MessagingService {
 //      first.setProjectIdsSent(projectIdsSent);
 //    }
 
-    return conversations;
+    int count = 0;
+    return new PageImpl<>(
+      conversations, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   @Data
@@ -335,15 +283,17 @@ public class MessagingService {
       threadId = smsThreadId;
     }
 
-    List<Long> selectedUserIds = ownersSelected.stream()
-      .map(SmsTeamUser::getUserId)
-      .collect(Collectors.toList());
+    List<Long> selectedUserIds = new ArrayList<>();
+    if(null != ownersSelected && !ownersSelected.isEmpty()) {
+      selectedUserIds = ownersSelected.stream()
+        .map(SmsTeamUser::getUserId)
+        .collect(Collectors.toList());
+    }
 
     Map<String, Object> params = new HashMap<>();
     params.put("threadId", threadId);
     params.put("teamId", teamId);
     params.put("currentUserId", modifiedByUserId);
-    params.put("selectedUserIds", selectedUserIds.toString());
     try {
       params.put("selectedUserIds", sqlArrayService.createSqlArrayOfType("bigint", selectedUserIds));
     } catch (SQLException e) {
@@ -427,7 +377,7 @@ public class MessagingService {
     //don't give a notification if the user added themselves to the group
     userIdsToNotify.remove(modifiedByUserId);
 
-    addSmsThreadReplyNotification(projectId, teamId, userIdsToNotify, modifiedByUserId);
+    addSmsThreadReplyNotification(threadId, teamId, userIdsToNotify, modifiedByUserId);
 
     addSmsThreadOwnershipNotificationForUserList(threadId, teamId, userIdsToNotify, modifiedByUserId);
 
@@ -579,7 +529,11 @@ public class MessagingService {
   @Async
   public void addNotifications(TwilioMessageRequest sms) {
     // database search col is looking for everything after the +1
-    String cleanPhoneNumber = sms.getFrom().replaceAll("[^0-9]", "").substring(1);
+    String cleanPhoneNumber = sms.getFrom().replaceAll("[^0-9]", "");
+    if(cleanPhoneNumber.startsWith("1")) {
+      cleanPhoneNumber = cleanPhoneNumber.substring(1);
+    }
+
     List<Long> threadIds =
       sqlCache.queryBySql(
         SmsServiceQuery.getThreads,
@@ -617,7 +571,7 @@ public class MessagingService {
         } else {
           for (SmsTeamUser smsTeamUser : ownerUsers) {
             addSmsThreadReplyNotification(
-              threadId, smsTeamUser.getSmsTeamId(), new HashSet<>(List.of(smsTeamUser.getUserId())), SystemSettings.SYSTEM_USER.getId());
+              threadId, smsTeamUser.getSmsTeamId(), null != smsTeamUser.getUserId() ? new HashSet<>(List.of(smsTeamUser.getUserId())) : new HashSet<>(), SystemSettings.SYSTEM_USER.getId());
 
             addSmsThreadOwnershipNotification(threadId, null, null, SystemSettings.SYSTEM_USER.getId());
           }
@@ -751,7 +705,7 @@ public class MessagingService {
       Optional<SmsConversation> conversationMessageProps =
         sqlCache.getBySql(
           MessagingQuery.getThread,
-          Map.of("threadId", threadId),
+          Map.of("smsThreadId", threadId),
           new MessagePropertiesMapper<>(SmsConversation.class, om));
 
       // Check if Thread exists
@@ -761,7 +715,9 @@ public class MessagingService {
         //      todo sms how to get company id from a thread?
         if (thread.getSmsTeamOwners().isEmpty()) {
           updateThreadClosedValue(threadId, false, modifiedByUserId);
-          Optional<Long> teamId = getDefaultTeamId(thread.getCompanyId());
+          //todo sms figure out if sms can even work for multiple companies, then un-hardcode this
+          Long companyId = 3L;
+          Optional<Long> teamId = getDefaultTeamId(companyId);
           teamId.ifPresent(aLong -> addSmsTeam(threadId, null, null, aLong, null, true, modifiedByUserId));
         }
       }

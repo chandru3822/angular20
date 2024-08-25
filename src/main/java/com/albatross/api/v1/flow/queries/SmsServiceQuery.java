@@ -176,7 +176,7 @@ public class SmsServiceQuery {
     select st.parent_id
     from flow.sms_thread st
      where st.is_last_inserted is true
-     and st.external_phone = :phoneNumber
+     and st.search_external_phone = :phoneNumber
     """;
 
   //language=PostgreSQL

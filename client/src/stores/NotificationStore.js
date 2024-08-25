@@ -61,8 +61,9 @@ export const useNotificationStore = defineStore('notification', {
         console.error('*** ERROR ***', e)
       }
     },
-    async fetchNotifications() {
+    async fetchNotifications(here) {
       try {
+        console.log('randalogger', here)
         const { data } = await getRequest(`/notifications`)
         this.setNotifications(data ?? [])
       } catch (e) {
@@ -89,7 +90,18 @@ export const useNotificationStore = defineStore('notification', {
 
         //only trigger a notification refresh on this topic
         if (message?.topic === 'sms_reply'){
-          debounce(this.fetchNotifications, 500)
+          // await this.fetchNotifications()
+
+          await debounce(function () { this.fetchNotifications() }, 500)
+          //
+          // await debounce(function () {
+          //   this.fetchNotifications();
+          // }.bind(this), 500);
+          //
+          // await debounce(() => {
+          //   this.fetchNotifications();
+          // }, 500);
+
         }
       }
     }

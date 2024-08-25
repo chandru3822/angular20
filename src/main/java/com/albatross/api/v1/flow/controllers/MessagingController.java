@@ -125,8 +125,7 @@ public class MessagingController {
         query,
         filterData.getOwnerUserIds(),
         filterData.getSmsTeamIds(),
-        filterData.getNotifConversationIds(),
-        filterData.getNotifUserIds(),
+        filterData.getNotifThreadIds(),
         filterData.getShowExternal(),
         filterData.getShowInternal(),
         filterData.getShowInbox(),
@@ -213,8 +212,7 @@ public class MessagingController {
   public static class FilterData {
     private Set<Long> ownerUserIds;
     private Set<Long> smsTeamIds;
-    private Set<Long> notifConversationIds;
-    private Set<Long> notifUserIds;
+    private Set<Long> notifThreadIds;
     private Boolean showExternal;
     private Boolean showInternal;
     private Boolean showInbox;

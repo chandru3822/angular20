@@ -75,6 +75,10 @@ public class MessagingQuery {
                                     and st.is_last_inserted is true
                                     and st.archived is false
                                     and case
+                                      when array_length(array [ :notifThreadIds ]::bigint[], 1) > 0 then
+                                          (st.parent_id = any (array [ :notifThreadIds ]::bigint[]))
+                                      else 1 = 1 end
+                                    and case
                                             when :showExternal and not :showInternal then rt.external is true
                                             when :showInternal and not :showExternal then rt.external is false
                                             else true end)
@@ -426,7 +430,8 @@ select u.user_id, outbound_message from users u
 
   //language=PostgreSQL
   public final static String handleSmsTeamCreation = """
-     select clear_unassigned, array_to_json(newly_selected_user_ids) as newly_selected_user_ids from flow.handle_sms_team_creation(:threadId::bigint, :teamId::bigint, :currentUserId::bigint, :selectedUserIds::bigint[])
+     select clear_unassigned, array_to_json(newly_selected_user_ids) as newly_selected_user_ids
+     from flow.handle_sms_team_creation(:threadId::bigint, :teamId::bigint, :currentUserId::bigint, :selectedUserIds::bigint[])
   """;
 
   //language=PostgreSQL

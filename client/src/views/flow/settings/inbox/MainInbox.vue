@@ -25,14 +25,8 @@
                 v-if="inboxNotificationCount > 0"
               ></v-badge>
             </v-tab>
-            <v-tab text @click="showInbox = false; fetchConversations()">
+            <v-tab text @click="showInbox = false; showUnreadOnly = false; fetchConversations()">
               Sent
-              <v-badge
-                class="inbox-badge"
-                color="#D03331"
-                :content="sentNotificationCount"
-                v-if="sentNotificationCount > 0"
-              ></v-badge>
             </v-tab>
             <v-spacer></v-spacer>
             <a-btn v-if="teamsAssociatedToUser.length > 0" color="primary"
@@ -82,7 +76,7 @@
           </v-row>
           <v-row class="px-2 toolbar-row-2 align-center flex-wrap flex-nowrap-m">
             <v-col class="pa-0" cols="12" sm="4" >
-            <v-checkbox
+            <v-checkbox v-if="showInbox"
               v-model="showUnreadOnly"
               @change="fetchConversations"
               label="Show unread only"
@@ -323,12 +317,7 @@ const reloadInProgress = ref(false)
 const totalConversations = ref(0)
 const page = ref(1)
 const initialLoad = ref(true)
-const projectIdsForCurrentFilter = ref([])
-const projectIdsInbox = ref([])
-const projectIdsSent = ref([])
-const userIdsForCurrentFilter = ref([])
-const userIdsInbox = ref([])
-const userIdsSent = ref([])
+const threadIdsInbox = ref([])
 const messageTypeFilter = ref('All')
 const messageTypes = ref(['All', 'Internal', 'Customer'])
 const isSmsOwnershipEventsRunning = ref(false)
@@ -338,46 +327,9 @@ const userCanViewAll = computed(() => {
 })
 
 const inboxNotificationCount = computed(() => {
-  let count = 0;
-
-  // Get Project notifications
-  let notifProjectIds = smsNotification.value?.map(n => n.metadata?.projectId)
-  notifProjectIds.forEach(npi => {
-    if (projectIdsInbox.value && projectIdsInbox.value.includes(npi)) {
-      count++;
-    }
-  })
-
-  // Get User notifications
-  let notifUserIds = smsNotification.value?.map(n => n.metadata?.userId)
-  notifUserIds.forEach(nui => {
-    if (userIdsInbox.value && userIdsInbox.value.includes(nui)) {
-      count++;
-    }
-  })
-
-  return count;
+  return smsNotification.value?.map(n => n.metadata?.threadId)?.length || 0
 })
-const sentNotificationCount = computed(() => {
-  let count = 0;
-  // Get Project notifications
-  let notifProjectIds = smsNotification.value?.map(n => n.metadata?.projectId)
-  notifProjectIds.forEach(npi => {
-    if (projectIdsSent.value && projectIdsSent.value.includes(npi)) {
-      count++;
-    }
-  })
 
-  // Get User notifications
-  let notifUserIds = smsNotification.value?.map(n => n.metadata?.userId)
-  notifUserIds.forEach(nui => {
-    if (userIdsSent.value && userIdsSent.value.includes(nui)) {
-      count++;
-    }
-  })
-
-  return count;
-})
 const smsOwnershipEvents = computed(() => {
   return notificationStore.getEventsByTopic('sms_ownership').length
 })
@@ -480,27 +432,26 @@ const fetchConversations = async () => {
     let filterData = {
       ownerUserIds: selectedOwnerFilters.value,
       smsTeamIds: selectedTeamFilters.value,
-      notifConversationIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.projectId) : [-1]) : [],
-      notifUserIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.userId) : [-1]) : [],
+      notifThreadIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.threadId) : [-1]) : [],
       showExternal: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All'),
       showInternal: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All'),
       showInbox: showInbox.value,
       sortAscending: sortOldToNew.value
     }
-    const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
+    const { data, status } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
       filterData
     )
 
     if (data) {
       conversations.value = data.content
-      if (conversations.value && conversations.value.length > 0) {
+      // if (conversations.value && conversations.value.length > 0) {
         // projectIdsInbox.value = conversations.value[0].projectIdsInbox
         // projectIdsSent.value = conversations.value[0].projectIdsSent
         // projectIdsForCurrentFilter.value = conversations.value[0].projectIdsForFilter
         // userIdsInbox.value = conversations.value[0].userIdsInbox
         // userIdsSent.value = conversations.value[0].userIdsSent
         // userIdsForCurrentFilter.value = conversations.value[0].userIdsForFilter
-      }
+      // }
 
       //i am confused, the list is reloaded if the filter changes so i think the total conversations it just the length of the content
       totalConversations.value = data.content?.length || 0
@@ -671,34 +622,21 @@ const fetchTeamsForUser = async () => {
   }
 }
 
-const projectNotificationCount = (projectId) => {
-  return smsNotification.value?.filter(n => n.metadata?.projectId === projectId)?.length
+const threadNotificationCount = (threadId) => {
+  return smsNotification.value?.filter(n => n.metadata?.threadId === threadId)?.length
 }
-const userNotificationCount = (userId) => {
-  return smsNotification.value?.filter(n => n.metadata?.userId === userId)?.length
-}
+
 const getNotificationCount = (item) => {
-  if (item.projectId) {
-    return projectNotificationCount(item.projectId)
-  }
-  else if (item.userId) {
-    return userNotificationCount(item.userId)
-  }
+  return threadNotificationCount(item.parentId)
 }
-const clearProjectNotification = (projectId) => {
+const clearThreadNotification = (threadId) => {
   const notificationIds = smsNotification.value
-    ?.filter(n => n.metadata.projectId === projectId)
+    ?.filter(n => n.metadata.threadId === threadId)
     ?.map(notif => notif.id)
 
   notificationStore.markAsRead(notificationIds)
 }
-const clearUserNotification = (userId) => {
-  const notificationIds = smsNotification.value
-    ?.filter(n => n.metadata.userId === userId)
-    ?.map(notif => notif.id)
 
-  notificationStore.markAsRead(notificationIds)
-}
 const toggleSelectAllTeams = () => {
   if (allTeamsSelected.value) {
     selectedTeamFilters.value = []
@@ -820,15 +758,12 @@ const teamSelectionChanged = () => {
 }
 const openConversation = (item) => {
   selectedConversation.value = item
-    //todo: sms figure this out
-  // clearProjectNotification(item.projectId)
-  // projectStore.selectedTab = 0
-  router.push({path: `/inbox/inboxConversation/sms/${item.parentId}`});
 
-  // if (item.userId) {
-  //   clearUserNotification(item.userId)
-  //   router.push({path: `/inbox/inboxConversation/user/${item.userId}`});
-  // }
+  clearThreadNotification(item.parentId)
+  if(item.external) {
+    projectStore.selectedTab = 0
+  }
+  router.push({path: `/inbox/inboxConversation/sms/${item.parentId}`});
 }
 const closeConversation = () => {
   selectedConversation.value = null
