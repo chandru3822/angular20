@@ -555,7 +555,9 @@ const projectId = computed(() => {
 })
 const closerApptRequirementsMet = computed(() => {
   return (
-      //note: closerAppointmentStart was hacked/manually adjusted via backend to return closerAppointmentStart - 90 mins so that both mobile and web, who were both already subtracting 30 mins, would change to 2 hours without requiring a mobile release
+      //note: closerAppointmentStart was hacked/manually adjusted via backend to return closerAppointmentStart - 450 mins
+      // so that both mobile and web, who were both already subtracting 30 mins,
+      // would change to 8 hours without requiring a mobile release
     project.value.closerAppointmentStart != null &&
     moment().isBetween(
       moment(project.value.closerAppointmentStart).subtract(30, 'm'),

@@ -104,7 +104,8 @@ public class WorkQueueTypeQuery {
                expected_target,
                inverse_expectation,
                json(wqt.schedule) as schedule,
-               to_jsonb(wqt.default_column_display) as "defaultColumnDisplay"
+               to_jsonb(wqt.default_column_display) as "defaultColumnDisplay",
+               to_jsonb(wqt.column_sorting_order) as "columnSortingOrder"
         from flow.work_queue_type wqt
                inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
                inner join flow.smartlist s on s.work_queue_type_id = wqt.id
@@ -213,14 +214,15 @@ public class WorkQueueTypeQuery {
              inverse_expectation = :inverseExpectation,
              expected_target = :expectedTarget,
              schedule = :schedule,
-             default_column_display = jsonb(:defaultColumnDisplay)
+             default_column_display = jsonb(:defaultColumnDisplay),
+             column_sorting_order = jsonb(:columnSortingOrder)
          where id = :id
     """;
 
   //language=PostgreSQL
   public final static String insertType = """
-    insert into flow.work_queue_type(company_id, work_queue_type, work_queue_category_id, display_order, created_by_id, date_created, modified_by_id, date_modified, use_event_data, default_column_display)
-      values (:companyId, :workQueueType, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true), :createdById, now(),  :createdById, now(), :useEventData, :defaultColumnDisplay::jsonb)
+    insert into flow.work_queue_type(company_id, work_queue_type, work_queue_category_id, display_order, created_by_id, date_created, modified_by_id, date_modified, use_event_data, default_column_display, column_sorting_order)
+      values (:companyId, :workQueueType, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true), :createdById, now(),  :createdById, now(), :useEventData, :defaultColumnDisplay::jsonb, :columnSortingOrder::jsonb)
     """;
 
   //language=PostgreSQL

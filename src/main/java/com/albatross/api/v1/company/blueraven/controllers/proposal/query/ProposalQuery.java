@@ -28,7 +28,7 @@ public class ProposalQuery {
            pd.project_postal_code as postal_code,
            pd.contact_mobile_phone as mobile,
            case when pd.closer_appointment_start is not null then
-                      pd.closer_appointment_start - interval '90 minutes' end as closer_appointment_start,
+                      pd.closer_appointment_start - interval '450 minutes' end as closer_appointment_start,
            pd.closer_appointment_end
     from brs.project_details pd
     where pd.archived is false

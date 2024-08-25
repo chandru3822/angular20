@@ -54,6 +54,9 @@
             :footer-props="footerProps"
             class="elevation-1 mt-1"
             id="wq-drilldown-table"
+            multi-sort
+            :sort-by="sortOrder"
+            :sort-desc="sortDirection"
         >
           <template #no-data>
             <span class="default-text-color">No available results</span>
@@ -349,6 +352,25 @@ onMounted(async() => {
   await getWorkDetails()
 })
 
+const sortOrder = ref([])
+const sortDirection = ref([])
+
+const sortOrderingInit = async () => {
+  let columnsToSort = workQueue.value.columnSortingOrder.filter(cso => cso.value !== null && cso.value !== "")
+  columnsToSort.forEach(c => {
+    // ^ different fields get extra information tacked onto their header value (like time zones or process steps)
+    // `nextColumn` determines if there is a header that at least matches the entire column name value set in the settings
+    // ex: c.value = Expected Survey End Time, header value = Expected Survey End Time (America/New_York)(Site Survey)
+    let nextColumn = headers.value.filter(h => h.value.startsWith(c.value))
+
+    if (nextColumn.length > 0) {
+      sortOrder.value.push(nextColumn[0].value)
+      sortDirection.value.push(c.sortDesc)
+    }
+  })
+  console.log(sortOrder.value, sortDirection.value)
+}
+
 const getWorkQueueName = async () => {
   appStore.loading = true
   try {
@@ -585,6 +607,7 @@ const getWorkDetails = async() => {
 
     appStore.loading = false
   }
+  await sortOrderingInit()
 }
 const assignToUser = async(item) => {
   try {

@@ -6,8 +6,7 @@
       </v-toolbar-title>
     </v-toolbar>
     <v-toolbar v-else color="transparent" class="elevation-0">
-      <v-toolbar-title v-if="showTable">Columns</v-toolbar-title>
-      <v-toolbar-title v-else="showTable"></v-toolbar-title>
+      <v-toolbar-title>Columns</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
         <a-btn
@@ -110,7 +109,7 @@
         ></a-btn>
       </v-col>
     </v-card>
-    <v-list v-if="vuetify.breakpoint.mdAndUp && showTable" dense>
+    <v-list v-if="vuetify.breakpoint.mdAndUp" dense>
       <v-list-item>
         <v-list-item-action v-if="canEdit">
           <v-icon></v-icon>
@@ -222,16 +221,12 @@ const props = defineProps({
   refresh: {
     type: Boolean,
     default: false
-  },
-  showTable: {
-    type: Boolean,
-    default: true,
   }
 })
 const { canEdit, isProjectDetails, companyObjectTypes,
   projectDetailsColumns, smartlistId, refresh } = toRefs(props)
 
-const emit = defineEmits(['refreshed'])
+const emit = defineEmits(['refreshed', 'customColumns'])
 
 const showNewFieldForm = ref(false)
 const newField = ref({})
@@ -264,6 +259,7 @@ const getAssignedFields = async () => {
     let timezone = userStore.timezone.value
     const {data} = await getRequest(`/smartlistv1/${smartlistId.value}/field?timezone=${timezone}`)
     assignedFields.value = data
+    emit('customColumns', data)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error fetching assigned fields')

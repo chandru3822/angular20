@@ -75,23 +75,27 @@ public class UserPositionQuery {
 
   //language=PostgreSQL
   public final static String getUserPrimaryPosition = """
-    select distinct upv.user_position_id as id,
-                       upv.user_id,
-                       upv.archived,
-                       upv.primary_flag,
-                       upv.sales_org_id,
-                       upv.sales_org_name,
-                       upv.start_date,
-                       upv.end_date,
-                       upv.position,
-                       upv.position_id,
-                       upv.company_id
-       from flow.user_positions_vw upv
-       where upv.user_id = :userId
-       and upv.company_id = :companyId
-       and upv.archived is not true
-       and upv.primary_flag is true
-       and upv.archived is false
+    select up.id,
+    	up.user_id,
+    	up.archived,
+    	up.primary_flag,
+    	up.sales_org_id,
+    	up.org_id,
+    	(select org_name
+    	 from flow.org o
+    	 where o.id = up.sales_org_id) as sales_org_name,
+    	up.start_date,
+    	up.end_date,
+    	p.position,
+    	up.position_id,
+    	p.company_id
+    from flow.user_position up
+    inner join flow.position p on up.position_id = p.id
+    where up.user_id = :userId
+    	and p.company_id = :companyId
+    	and up.archived is not true
+    	and up.primary_flag is true
+    	and up.archived is false
     """;
 
   //language=PostgreSQL
