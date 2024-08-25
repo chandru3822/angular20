@@ -11,7 +11,6 @@ import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
 import com.albatross.api.v1.flow.model.smsQueue.SmsQueueRow;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioMessageRequest;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioSMSResponse;
-import com.albatross.api.v1.flow.model.smsTeam.SmsProject;
 import com.albatross.api.v1.flow.queries.SmsServiceQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,7 +24,6 @@ import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
 import com.twilio.twiml.MessagingResponse;
 import com.twilio.type.PhoneNumber;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -299,9 +297,7 @@ public class SMSService {
       String toPhone = threadInfo.getRecipientType() == RecipientType.PROJECT
         ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
 
-      String fromPhoneNumber = threadInfo.isInbound() ? threadInfo.getSearchExternalPhone() : threadInfo.getSearchInternalPhone();
-
-      if(!fromPhoneNumber.isBlank()) {
+      if(!threadInfo.getSearchExternalPhone().isBlank()) {
 
         //maybe we can make a prop for this down the road, but I don't see a reason they need the ability to reply with specific text
         String mockInboundMessage = "MOCK REPLY: Auto Generated Test Reply";
@@ -314,7 +310,7 @@ public class SMSService {
           //.smsSid(not sure which prop this is or if it matters)
           .accountSid(properties.getTwilioAccountSID())
           .messagingServiceSid(properties.getTwilioMessageServiceSID())
-          .from(fromPhoneNumber)
+          .from(threadInfo.getSearchExternalPhone())
           .to(toPhone)
           .body(mockInboundMessage)
           .numMedia(0)

@@ -19,7 +19,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.smsTeam.SmsConversation;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioMessageRequest;
 import com.albatross.api.v1.flow.model.smsTeam.SmsOwner;
-import com.albatross.api.v1.flow.model.smsTeam.SmsProject;
+import com.albatross.api.v1.flow.model.smsTeam.SmsSource;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamUser;
 import com.albatross.api.v1.flow.queries.MessagingQuery;
@@ -939,11 +939,11 @@ public class MessagingService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<SmsProject>> projectsRef = new TypeReference<>() {};
+      TypeReference<List<SmsSource>> sourcesRef = new TypeReference<>() {};
       bw.registerCustomEditor(
         List.class,
-        "projects",
-        new JsonCollectionDeserializer(projectsRef, objectMapper));
+        "sources",
+        new JsonCollectionDeserializer(sourcesRef, objectMapper));
 
       TypeReference<List<SmsOwner>> ownerRef = new TypeReference<>() {};
       bw.registerCustomEditor(

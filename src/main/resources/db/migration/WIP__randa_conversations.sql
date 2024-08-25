@@ -526,3 +526,15 @@ select sms_team_id, user_id, date_created, date_removed, date_modified, created_
 alter table flow.user_message_owner_history rename to user_message_owner_history_deprecated;
 
 alter table flow.sms_thread_owner_audit alter column sms_thread_owner_id set not null;
+
+--update all threads with a sent to user_id to be recipient type id = 1 (user) 17 mins
+update flow.sms_thread
+set recipient_type_id = 1
+where sent_to_user_id is not null
+and recipient_type_id != 1;
+
+--do the same with projects...although this is way less common 1 min
+update flow.sms_thread
+set recipient_type_id = 2
+where sent_to_project_id is not null
+  and recipient_type_id != 2;

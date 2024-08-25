@@ -163,9 +163,11 @@ public class SmsServiceQuery {
     select st.parent_id,
            st.recipient_type_id,
            st.inbound,
+           rt.external,
            st.search_internal_phone,
            st.search_external_phone
     from flow.sms_thread st
+    inner join flow.recipient_type rt on st.recipient_type_id = rt.id
     where st.id = :smsThreadId
     """;
 

@@ -26,7 +26,7 @@ public class SMSQueueItem {
       projectStatus,
       sentByName;
   private List<String> mediaUrls;
-  private boolean messageRead, inbound;
+  private boolean messageRead, inbound, external;
   private Owner owner;
 
   private Date dateCreated,

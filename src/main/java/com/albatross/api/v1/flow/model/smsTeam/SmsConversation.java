@@ -1,7 +1,5 @@
 package com.albatross.api.v1.flow.model.smsTeam;
 
-import com.albatross.api.v1.flow.model.smsTeam.SmsOwner;
-import com.albatross.api.v1.flow.model.smsTeam.SmsProject;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +23,6 @@ public class SmsConversation {
   private List<SmsOwner> conversationOwners;
   private List<SmsTeam> smsTeamOwners;
 
-  private List<SmsProject> projects;
+  private List<SmsSource> sources;
   private List<Long> projectIdsForFilter, projectIdsInbox, projectIdsSent, userIdsForFilter, userIdsInbox, userIdsSent;
 }

@@ -9,8 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SmsProject {
+public class SmsSource {
 
-  private Long projectId, contactId;
-  private String projectName, state, dateModified, projectStatusType;
+  private Long id;
+  private String fullName, state, dateModified, projectStatusType;
 }

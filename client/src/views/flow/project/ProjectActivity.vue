@@ -8,9 +8,9 @@
     :allowSidebarCollapse="!!allowSidebarCollapse"
     @collapseClicked="$emit('collapseCallback')"
   >
-    <template v-slot:title v-if="showSmsTab && route.path.includes('inboxConversation') && (messageProperties.projects?.length > 1 || messageProperties.users?.length > 1)">
+    <template v-slot:title v-if="showSmsTab && route.path.includes('inboxConversation') && messageProperties.sources?.length > 1">
       <div
-          v-if="!isSidebarCollapsed && messageProperties.external"
+          v-if="!isSidebarCollapsed"
           class="d-inline-block conversation-name-link"
       >
         {{ messageProperties.fullName }}
@@ -25,17 +25,17 @@
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
             <v-chip v-on="on" class="source-list-chip" style="margin-left: 4px" small>
-              <span>{{messageProperties.projects?.length > 0 ? 'Multiple projects' : 'Multiple users'}}</span>
+              <span>{{messageProperties.external ? 'Multiple projects' : 'Multiple users'}}</span>
               <v-icon>mdi-chevron-down</v-icon>
             </v-chip>
           </template>
             <v-card class="square-card">
-              <div class="clickable source-list-item" v-for="(project, index) in messageProperties.projects" :key="index"
-                           @click="goToSource(`/project/${project.projectId}/${defaultProjectPage}`)">
+              <div class="clickable source-list-item" v-for="(source, index) in messageProperties.sources" :key="index"
+                           @click="goToSource(source, messageProperties.external)">
                 <div class="px-5 py-4 ">
-                  <div class="source-list-title">{{project.projectName}} ({{project.projectId}})</div>
-                  <div class="source-list-title">Current Stage: {{project.projectStatusType}}</div>
-                  <div class="source-list-subtitle">Last Updated: {{ project.dateModified | formatDate('timestamp', 'MM/DD/YYYY')}}</div>
+                  <div class="source-list-title">{{source.fullName}} ({{source.id}})</div>
+                  <div class="source-list-title" v-if="source.projectStatusType">Current Stage: {{source.projectStatusType}}</div>
+                  <div class="source-list-subtitle" v-if="source.dateModified">Last Updated: {{ source.dateModified | formatDate('timestamp', 'MM/DD/YYYY')}}</div>
                 </div>
                 <v-divider class="hr-non-transparent"></v-divider>
 
@@ -56,7 +56,7 @@
               v-bind="attrs"
               v-on="on"
               class="d-inline-block clickable conversation-name-link"
-              @click="goToSourceForList(messageProperties.projects, messageProperties.users)"
+              @click="goToSource(messageProperties.sources[0], messageProperties.external)"
           >
             {{ messageProperties.fullName }}
             <v-chip class="customer-chip" style="margin-left: 4px" small>
@@ -68,7 +68,10 @@
           {{messageProperties.external ? 'Go to Project' : 'Go to User'}}
         </span>
       </v-tooltip>
-      <span v-else>{{ sidebarTitle }}</span>
+      <span v-else>
+        {{ sidebarTitle }}
+      </span>
+
       <div
           v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox')"
           style="display: inline-flex"
@@ -495,13 +498,8 @@ const handlePageLoad = () => {
   }
 }
 
-const goToSource = (path) => {
-  let routerData = router.resolve({path})
-  window.open(routerData.href, '_blank')
-}
-
-const goToSourceForList = (projects, users) => {
-  let path = projects?.length > 0 ? `/project/${projects[0].projectId}/${defaultProjectPage.value}` : `/user/${users[0].userId}/details`
+const goToSource = (source, external) => {
+  let path = external ? `/project/${source.id}/${defaultProjectPage.value}` : `/user/${source.id}/details`
   let routerData = router.resolve({path})
   window.open(routerData.href, '_blank')
 }
