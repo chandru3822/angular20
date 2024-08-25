@@ -136,6 +136,7 @@ public class MessagingQuery {
   public final static String getThread = """
     select
                                   st.closed,
+                                  rt.external,
                                   case when st.recipient_type_id = 1 then
                                            (select concat(u.first_name, ' ', u.last_name)
                                             from flow.user u
@@ -180,8 +181,22 @@ public class MessagingQuery {
                                                             inner join flow.sms_team st2 on sto.sms_team_id = st2.id and st2.archived is false
                                                    where sto.sms_thread_id = st.parent_id
                                                      and sto.user_id is null
-                                                     and sto.archived = false) st), '[]')) as "smsTeamOwners"
+                                                     and sto.archived = false) st), '[]')) as "smsTeamOwners",
+                                     coalesce((SELECT ARRAY_TO_JSON(array_agg(row_to_json(projects)))
+                                               FROM (SELECT p.id as "projectId",
+                                                            p.project_name as "projectName",
+                                                            cpst.project_status_type as "projectStatusType",
+                                                            p.date_modified as "dateModified"
+                                                     FROM flow.project p
+                                                         inner join flow.contact c on p.contact_id = c.id
+                                                         inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+                                                     WHERE p.archived is false
+                                                         and c.archived is false
+                                                         and c.search_phones = st.search_external_phone
+                                                     order by p.date_modified desc
+                                                     ) projects),'[]') AS projects
                               from flow.sms_thread st
+                                inner join flow.recipient_type rt on st.recipient_type_id = rt.id
                               where st.id = :smsThreadId
     """;
 

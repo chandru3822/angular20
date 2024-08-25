@@ -176,8 +176,6 @@ const props = defineProps({
 
 const { teamNamesAssociatedToUser, smsThreadId } = toRefs(props)
 
-console.log('val val val', smsThreadId.value)
-
 const showRemoveDialog = ref(false)
 const showRemoveLastTeamDialog = ref(false)
 const showRemoveTeamDialog = ref(false)

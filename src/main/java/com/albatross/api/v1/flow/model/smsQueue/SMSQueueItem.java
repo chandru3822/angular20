@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.model.smsQueue;
 
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.services.SMSService;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;

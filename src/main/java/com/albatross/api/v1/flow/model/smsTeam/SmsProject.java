@@ -12,5 +12,5 @@ import lombok.Setter;
 public class SmsProject {
 
   private Long projectId, contactId;
-  private String projectName, state;
+  private String projectName, state, dateModified, projectStatusType;
 }

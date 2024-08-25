@@ -1,4 +1,5 @@
 <template>
+
   <CollapsableRightPanel
     :view-options="viewOptions"
     :selected-option="viewId"
@@ -7,59 +8,78 @@
     :allowSidebarCollapse="!!allowSidebarCollapse"
     @collapseClicked="$emit('collapseCallback')"
   >
-    <template v-slot:title>
+    <template v-slot:title v-if="showSmsTab && route.path.includes('inboxConversation') && (messageProperties.projects?.length > 1 || messageProperties.users?.length > 1)">
+      <div
+          v-if="!isSidebarCollapsed && messageProperties.external"
+          class="d-inline-block conversation-name-link"
+      >
+        {{ messageProperties.fullName }}
+        <v-chip class="customer-chip" style="margin-left: 4px" small>
+          <span>{{messageProperties.external ? 'Customer' : 'Internal'}}</span>
+        </v-chip>
+
+        <v-menu data-app left
+                offset-y
+                :max-height="`calc(100vh - 20px)`"
+                v-model="sourceListOpen"
+                :close-on-content-click="true">
+          <template v-slot:activator="{ on }">
+            <v-chip v-on="on" class="source-list-chip" style="margin-left: 4px" small>
+              <span>{{messageProperties.projects?.length > 0 ? 'Multiple projects' : 'Multiple users'}}</span>
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-chip>
+          </template>
+            <v-card class="square-card">
+              <div class="clickable source-list-item" v-for="(project, index) in messageProperties.projects" :key="index"
+                           @click="goToSource(`/project/${project.projectId}/${defaultProjectPage}`)">
+                <div class="px-5 py-4 ">
+                  <div class="source-list-title">{{project.projectName}} ({{project.projectId}})</div>
+                  <div class="source-list-title">Current Stage: {{project.projectStatusType}}</div>
+                  <div class="source-list-subtitle">Last Updated: {{ project.dateModified | formatDate('timestamp', 'MM/DD/YYYY')}}</div>
+                </div>
+                <v-divider class="hr-non-transparent"></v-divider>
+
+              </div>
+            </v-card>
+        </v-menu>
+
+      </div>
+    </template>
+    <template v-slot:title v-else>
       <v-tooltip
-        bottom
-        small
-        v-if="showSmsTab && route.path.includes('inboxConversation') && viewId !== 2"
+          bottom
+          small
+          v-if="showSmsTab && route.path.includes('inboxConversation') && viewId !== 2"
       >
         <template v-slot:activator="{ on, attrs }">
           <a
-            v-if="!isSidebarCollapsed && messageProperties.projectName"
-            v-bind="attrs"
-            v-on="on"
-            class="d-inline-block clickable conversation-name-link"
-            :href="`/project/${projectId}/${defaultProjectPage}`"
-          >
-            {{ messageProperties.projectName }}
-            <v-chip class="customer-chip" style="margin-left: 4px" small>
-              <span>Customer</span>
-            </v-chip>
-          </a>
-
-          <a
-            v-else
-            v-bind="attrs"
-            v-on="on"
-            class="d-inline-block clickable conversation-name-link"
-            :href="`/user/${userId}/details`"
+              v-bind="attrs"
+              v-on="on"
+              class="d-inline-block clickable conversation-name-link"
+              @click="goToSourceForList(messageProperties.projects, messageProperties.users)"
           >
             {{ messageProperties.fullName }}
-            <v-chip class="internal-chip" style="margin-left: 4px" small>
-              <span>Internal</span>
+            <v-chip class="customer-chip" style="margin-left: 4px" small>
+              <span>{{ messageProperties.external ? 'Customer' : 'Internal'}}</span>
             </v-chip>
           </a>
         </template>
-        <span v-if="messageProperties.projectName" class="albatross-body-3"
-          >Go to project</span
-        >
-        <span v-else class="albatross-body-3">Go to user</span>
+        <span class="albatross-body-3">
+          {{messageProperties.external ? 'Go to Project' : 'Go to User'}}
+        </span>
       </v-tooltip>
       <span v-else>{{ sidebarTitle }}</span>
       <div
-        v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox')"
-        style="display: inline-flex"
+          v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox')"
+          style="display: inline-flex"
       >
         <v-chip
-          v-if="messageProperties.projectName"
-          class="customer-chip"
-          style="margin-left: 4px"
-          small
+            :class="{'customer-chip': messageProperties.external,
+                     'internal-chip': !messageProperties.external}"
+            style="margin-left: 4px"
+            small
         >
-          <span>Customer</span>
-        </v-chip>
-        <v-chip v-else class="internal-chip" style="margin-left: 4px" small>
-          <span>Internal</span>
+          <span>{{messageProperties.external ? 'Customer' : 'Internal'}}</span>
         </v-chip>
       </div>
     </template>
@@ -251,11 +271,12 @@ import {
   watch
 } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useRoute } from 'vue-router/composables'
+import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import { storeToRefs } from 'pinia'
 import Schedule from "@/views/flow/schedule/Schedule.vue";
 import ScheduleSingleUserView from "@/views/flow/components/ScheduleSingleUserView.vue";
+import constants from "@/helpers/constants.js";
 
 const appStore = useAppStore()
 const notificationStore = useNotificationStore()
@@ -263,6 +284,7 @@ const projectStore = useProjectStore()
 const { selectedTab } = storeToRefs(projectStore)
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
@@ -334,6 +356,7 @@ const teamsMenuOpen = ref(false)
 const myOwner = ref([])
 const conversationHistory = ref([])
 const conversationIsLoading = ref(true)
+const sourceListOpen = ref(false)
 const toggleFocused = ref(isMobile.value ? 1 : 0)
 const hideEmptyFolderStatus = ref(false)
 
@@ -471,6 +494,18 @@ const handlePageLoad = () => {
     handleSmsLoad()
   }
 }
+
+const goToSource = (path) => {
+  let routerData = router.resolve({path})
+  window.open(routerData.href, '_blank')
+}
+
+const goToSourceForList = (projects, users) => {
+  let path = projects?.length > 0 ? `/project/${projects[0].projectId}/${defaultProjectPage.value}` : `/user/${users[0].userId}/details`
+  let routerData = router.resolve({path})
+  window.open(routerData.href, '_blank')
+}
+
 const handleSmsLoad = () => {
   //i dont think we should show the global spinner when the side section is loading
   // appStore.loading = true
@@ -750,5 +785,28 @@ const openHistoryDrilldown = async () => {
 .customer-chip {
   background-color: #fecdd2 !important;
   height: 22px;
+}
+
+.source-list-chip {
+  background-color: #E0E0E0 !important;
+  height: 22px;
+}
+
+.source-list-item {
+  &:hover {
+    background-color: var(--v-primary-lighten9) !important;
+  }
+}
+
+.source-list-title {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.source-list-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 5px;
+  color: gray;
 }
 </style>

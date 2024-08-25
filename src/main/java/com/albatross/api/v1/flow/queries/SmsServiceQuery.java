@@ -16,8 +16,8 @@ public class SmsServiceQuery {
     FROM flow.sms_thread st
              left join flow.user u on st.message_sent_by_user_id = u.id
     where error_message IS NULL
-        AND st.parent_id = :smsThreadId
-        and st.archived is false
+      AND st.parent_id = :smsThreadId
+      and st.archived is false
     ORDER BY st.date_created ASC
     """;
 

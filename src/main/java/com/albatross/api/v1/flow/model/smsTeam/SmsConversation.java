@@ -21,7 +21,7 @@ public class SmsConversation {
   private Long id, parentId, userId, recipientTypeId, companyId;
   private String message, fullName, stateAbbreviation, internalPhone, externalPhone, searchInternalPhone, searchExternalPhone;
   private Date dateCreated;
-  private boolean closed, showAssignedToMeButton = false;
+  private boolean closed, showAssignedToMeButton = false, external;
   private List<SmsOwner> conversationOwners;
   private List<SmsTeam> smsTeamOwners;
 
