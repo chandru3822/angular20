@@ -16,7 +16,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SmsConversation {
 
-  private Long id, parentId, userId, recipientTypeId, companyId;
+  private Long id, parentId, userId, recipientTypeId, companyId, totalRows;
   private String message, fullName, stateAbbreviation, internalPhone, externalPhone, searchInternalPhone, searchExternalPhone;
   private Date dateCreated;
   private boolean closed, showAssignedToMeButton = false, external;

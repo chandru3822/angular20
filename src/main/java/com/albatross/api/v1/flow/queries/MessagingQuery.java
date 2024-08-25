@@ -82,7 +82,8 @@ public class MessagingQuery {
                                             when :showExternal and not :showInternal then rt.external is true
                                             when :showInternal and not :showExternal then rt.external is false
                                             else true end)
-                   select *
+                   select *,
+                    count(*) over() as total_rows
                    from results r
                    where case
                        when lower(trim(:query::text)) is not null then r.search_external_phone like '%' || lower(trim(:query::text)) || '%' OR

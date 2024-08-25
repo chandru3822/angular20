@@ -454,7 +454,8 @@ const fetchConversations = async () => {
       // }
 
       //i am confused, the list is reloaded if the filter changes so i think the total conversations it just the length of the content
-      totalConversations.value = data.content?.length || 0
+      // totalConversations.value = data.content?.length || 0
+      totalConversations.value = conversations.value?.length > 0 ? conversations.value[0].totalRows : 0
 
       // If Projects are being displayed
       // if (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') {
