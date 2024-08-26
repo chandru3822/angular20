@@ -431,11 +431,10 @@ import {handleHidingGlobalLoader, getRequest, postRequest,  getRequestWithParams
 import groupBy from "lodash.groupby";
 import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
-import {useAppStore} from "../../../stores/AppStore.js";
+import { useAppStore } from '@/stores/AppStore.js'
 import {saveAs} from 'file-saver'
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 const appStore = useAppStore()
 const userStore = useUserStore()
 const userOffice = ref('')
@@ -598,7 +597,7 @@ const loadRoundRobins = async() => {
     handleHidingGlobalLoader(this, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving list of round robins')
+    appStore.showSnack('ERROR', 'Error retrieving list of round robins')
     roundRobinRanksLoading.value = false
   }
 }
@@ -630,7 +629,7 @@ const loadOfficeFdcRankData = async() => {
     }
     officeFdcRankLoading.value = false
   } catch (e) {
-    snackbar('ERROR', 'Error retrieving office FDC rank data')
+    appStore.showSnack('ERROR', 'Error retrieving office FDC rank data')
     officeFdcRankLoading.value = false
   }
 }
@@ -652,7 +651,7 @@ const loadCloserOffices  = async() => {
     officeFdcRankLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving list of closer offices')
+    appStore.showSnack('ERROR', 'Error retrieving list of closer offices')
     officeFdcRankLoading.value = false
   }
 }
@@ -670,7 +669,7 @@ const getDropdownValues = async()=>
     handleHidingGlobalLoader(this, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving data')
+    appStore.showSnack('ERROR', 'Error retrieving data')
     isLoading.value = false
   }
 }
@@ -699,7 +698,7 @@ const loadRoundRobinLeadAllocationRankData = async() =>
     }
     roundRobinRanksLoading.value = false
   } catch (e) {
-    snackbar('ERROR', 'Error retrieving round robin lead allocation rank data')
+    appStore.showSnack('ERROR', 'Error retrieving round robin lead allocation rank data')
     roundRobinRanksLoading.value = false
   }
 }
@@ -783,6 +782,7 @@ const assignCloserRanks  = (rankingData, fieldName) => {
 const loadRankingTables = async(selectedTable) => {
   rankingTablesLoaded.value = false
   repsLoading.value = true
+  console.log('randalogger', getDropdownById(closerOfficeDateRange.value))
   let startDate = moment(getDropdownById(closerOfficeDateRange.value).startDate).format('YYYY-MM-DD')
   let endDate = moment(getDropdownById(closerOfficeDateRange.value).endDate).format('YYYY-MM-DD')
   if(getDropdownById(closerOfficeDateRange.value).name === 'PERIOD'){
@@ -830,7 +830,7 @@ const loadRankingTables = async(selectedTable) => {
     repsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving ranking table data')
+    appStore.showSnack('ERROR', 'Error retrieving ranking table data')
     rankingTablesLoaded.value = true
     repsLoading.value = false
   }
@@ -931,7 +931,7 @@ const exportCsv = async (tableName) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Residual Review')
+    appStore.showSnack('ERROR', 'Error Exporting Residual Review')
 
     appStore.loading = false
   }

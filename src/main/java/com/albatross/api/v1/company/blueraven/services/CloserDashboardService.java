@@ -453,7 +453,7 @@ public class CloserDashboardService {
     Boolean isAdmin = securityService.getCurrentUser().isSystemAdmin();
     if(!isAdmin) {
       for (FeatureAccessControl feature : securityService.getCurrentUser().getFeatureAccess()) {
-        if (feature.getFeatureCode().equalsIgnoreCase("COMPANY_DASHBOARD") && feature.getAccessCode().equalsIgnoreCase("ADMIN")) {
+        if (feature.getFeatureCode().equalsIgnoreCase("CLOSER_DASHBOARD") && feature.getAccessCode().equalsIgnoreCase("ADMIN")) {
           isAdmin = true;
         }
       }
