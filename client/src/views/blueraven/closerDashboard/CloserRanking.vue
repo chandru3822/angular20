@@ -135,7 +135,7 @@
                   </v-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in closerOffices" @click="changeCloserOfficeFdc(item)" class="body-large">
                       {{ item.orgName }}
                     </v-list-item>
@@ -497,9 +497,8 @@ onMounted(async() => {
     }
 
   }
-
-  await loadCloserOffices()
   await getDropdownValues()
+  await loadCloserOffices()
   await loadRoundRobins()
   await loadRankingTables(0)
 
@@ -645,7 +644,7 @@ const loadCloserOffices  = async() => {
 
     // if there's only one Closer Office for the current user, this auto-selects it
     if (closerOffices?.value.length === 1) {
-      selectedCloserOffice.value = closerOffices?.value[0].id
+      selectedCloserOffice.value = closerOffices?.value[0]
       await loadOfficeFdcRankData()
     }
     officeFdcRankLoading.value = false
@@ -782,7 +781,6 @@ const assignCloserRanks  = (rankingData, fieldName) => {
 const loadRankingTables = async(selectedTable) => {
   rankingTablesLoaded.value = false
   repsLoading.value = true
-  console.log('randalogger', getDropdownById(closerOfficeDateRange.value))
   let startDate = moment(getDropdownById(closerOfficeDateRange.value).startDate).format('YYYY-MM-DD')
   let endDate = moment(getDropdownById(closerOfficeDateRange.value).endDate).format('YYYY-MM-DD')
   if(getDropdownById(closerOfficeDateRange.value).name === 'PERIOD'){
@@ -823,7 +821,6 @@ const loadRankingTables = async(selectedTable) => {
     if(selectedTable === 2 || selectedTable === 0) {
       repsData.value = []
       processRankingData(cloneDeep(data), 'Top Reps')
-      console.log(dropdownValues.value)
     }
 
     rankingTablesLoaded.value = true
