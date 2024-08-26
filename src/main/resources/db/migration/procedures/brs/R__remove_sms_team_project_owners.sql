@@ -156,13 +156,6 @@ where sms_team_id = p_sms_team_id
   and archived is false;
 
 if p_user_id is null and p_org_id is null and p_position_id is null then
---todo sms do history stuff
--- update flow.sms_thread_owner_history
--- set date_removed   = now(),
---     date_modified  = now(),
---     modified_by_id = p_current_user_id
--- where sms_team_id = p_sms_team_id and
---     date_removed is null;
 
 update flow.sms_thread_owner
 set archived       = true,
@@ -179,14 +172,6 @@ where notification_topic_id = 2
   and (metadata->>'smsTeamId')::bigint = p_sms_team_id;
 
 else
---todo sms do history stuff
--- update flow.sms_thread_owner_history
--- set date_removed   = now(),
---     date_modified  = now(),
---     modified_by_id = p_current_user_id
--- where sms_team_id = p_sms_team_id
---   and user_id = any (v_user_ids) and
---     date_removed is null;
 
 update flow.notification
 set message_read_tsz   = now(),

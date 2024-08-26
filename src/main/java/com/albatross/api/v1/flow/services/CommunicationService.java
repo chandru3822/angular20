@@ -359,9 +359,8 @@ public class CommunicationService {
       }
       Project project = projectIn.get();
 
-      //todo sms put this back
+
       CommunicationController.ProjectDetails projectDetails = getProjectTemplateFields(projectId, project.getTimeZone());
-//      CommunicationController.ProjectDetails projectDetails = new CommunicationController.ProjectDetails();
 
       //this code will only ever get hit locally if you dont have an updated project details table
       if(projectDetails == null) {

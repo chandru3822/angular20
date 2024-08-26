@@ -513,8 +513,6 @@ const sendTemplateMessage = async () => {
   showTemplateDialog.value = false
 }
 const fetchProjectData = async () => {
-  //todo sms what is this?
-  // await fetchContact()
   await fetchSmsData()
   templateTeams.value = []
   if (teamsAssociatedToUser.value?.length > 0) {

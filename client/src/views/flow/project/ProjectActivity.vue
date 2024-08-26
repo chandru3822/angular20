@@ -59,7 +59,8 @@
               @click="goToSource(messageProperties.sources[0], messageProperties.external)"
           >
             {{ messageProperties.fullName }}
-            <v-chip class="customer-chip" style="margin-left: 4px" small>
+            <v-chip :class="{'customer-chip': messageProperties.external,
+                             'internal-chip': !messageProperties.external}" style="margin-left: 4px" small>
               <span>{{ messageProperties.external ? 'Customer' : 'Internal'}}</span>
             </v-chip>
           </a>

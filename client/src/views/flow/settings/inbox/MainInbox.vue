@@ -16,7 +16,7 @@
                                @joinConversation="joinConversation" />
       <div id="inbox-header" class="px-6 pt-1">
           <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4">
-            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; fetchConversations()">
+            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; router.push({path: `/inbox`}); fetchConversations()">
               New
               <v-badge
                 class="inbox-badge"
@@ -25,7 +25,7 @@
                 v-if="inboxNotificationCount > 0"
               ></v-badge>
             </v-tab>
-            <v-tab text @click="showInbox = false; showUnreadOnly = false; fetchConversations()">
+            <v-tab text @click="showInbox = false; showUnreadOnly = false; router.push({path: `/inbox`}); fetchConversations()">
               Sent
             </v-tab>
             <v-spacer></v-spacer>
@@ -477,77 +477,7 @@ const fetchConversations = async () => {
     isInitialLoad.value = false
   }
 }
-//todo figure out why this extra?
-// const reloadConversations = async () => {
-//   try {
-//     showLoading(true)
-//     const {page, itemsPerPage} = options.value
-//
-//     let filterData = {
-//       ownerUserIds: selectedOwnerFilters.value,
-//       smsTeamIds: selectedTeamFilters.value,
-//       notifProjectIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.projectId) : [-1]) : [],
-//       notifUserIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.userId) : [-1]) : [],
-//       showProjects: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All'),
-//       showUsers: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All'),
-//       showInbox: showInbox.value
-//     }
-//
-//     const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
-//       filterData
-//     )
-//
-//     if (data) {
-//       conversations.value = data.content
-//       if (conversations.value && conversations.value.length > 0) {
-//         projectIdsForCurrentFilter.value = conversations.value[0].projectIdsForFilter
-//         userIdsForCurrentFilter.value = conversations.value[0].userIdsForFilter
-//         // If New/Sent notification badges weren't loaded yet (No conversations under New), get values now
-//         if ((!projectIdsInbox.value || projectIdsInbox.value.length === 0) && (!projectIdsSent.value || projectIdsSent.value.length === 0)) {
-//           projectIdsInbox.value = conversations.value[0].projectIdsInbox
-//           projectIdsSent.value = conversations.value[0].projectIdsSent
-//         }
-//
-//         if ((!userIdsInbox.value || userIdsInbox.value.length === 0) && (!userIdsSent.value || userIdsSent.value.length === 0)) {
-//           userIdsInbox.value = conversations.value[0].userIdsInbox
-//           userIdsSent.value = conversations.value[0].userIdsSent
-//         }
-//       }
-//       else {
-//         projectIdsForCurrentFilter.value = []
-//         userIdsForCurrentFilter.value = []
-//       }
-//
-//       // If Projects are being displayed
-//       if (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') {
-//         totalConversations.value = projectIdsForCurrentFilter.value?.length || 0
-//       }
-//       // If Users are being displayed
-//       if (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') {
-//         totalConversations.value += userIdsForCurrentFilter.value?.length || 0
-//       }
-//
-//       conversations.value?.forEach(p => {
-//         p.showAssignToMeButton = teamsAssociatedToUser.value.length > 0
-//         p.conversationOwners?.forEach(owner => {
-//             if (owner.userId === userId.value) {
-//               p.showAssignToMeButton = false
-//             }
-//         })
-//       })
-//     }
-//
-//     handleHidingGlobalLoader(status)
-//     showLoading(false)
-//     reloadInProgress.value = false
-//   } catch (e) {
-//     console.error('*** ERROR ***', e)
-//     appStore.showSnack('ERROR', 'Error fetching conversations')
-//
-//     showLoading(false)
-//     reloadInProgress.value = false
-//   }
-// }
+
 const getTime = (lastMessageSent) => {
   const now = moment()
   const lastMessage = moment(lastMessageSent)

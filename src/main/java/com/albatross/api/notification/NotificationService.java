@@ -199,8 +199,7 @@ public class NotificationService {
         notifications, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
-  //todo sms but this back
-//  @Cacheable(key = "#userId")
+  @Cacheable(key = "#userId")
   public List<Notification> getUserNotifications(@NonNull Long userId) {
     final Map<String, Object> params = Map.of("userId", userId);
     List<Notification> results = sqlCache.queryBySql(

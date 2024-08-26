@@ -381,10 +381,6 @@ public class MessagingService {
 
     addSmsThreadOwnershipNotificationForUserList(threadId, teamId, userIdsToNotify, modifiedByUserId);
 
-    //todo sms see if audit can do this
-//    updateProjectOwnerHistory(
-//      projectId, teamId, ownerUserIds.isEmpty() ? null : ownerUserIds, true, false, modifiedByUserId);
-
     SmsConversation conversationMessageProps = getThread(threadId, null,null, modifiedByUserId);
 
     // Check if Project is closed, if so open it - unless the default team is being added
@@ -410,9 +406,6 @@ public class MessagingService {
     params.put("modifiedById", modifiedByUserId);
 
     sqlCache.updateBySql(MessagingQuery.removeEntireThreadTeam, params);
-
-    //todo sms: figure out if audit works
-//    updateProjectOwnerHistory(projectId, smsTeamId, null, false, true, modifiedByUserId);
 
     try {
       markSmsThreadNotificationsAsRead(threadId, null, projectId, smsTeamId, modifiedByUserId);
@@ -480,9 +473,6 @@ public class MessagingService {
 
 
     sqlCache.updateBySql(MessagingQuery.removeThreadOwner, params);
-
-    //todo sms figure out if audit table is fine
-//    updateProjectOwnerHistory(projectId, owner.getSmsTeamId(), List.of(owner.getUserId()), false, false, modifiedByUserId);
 
     try {
       markSmsThreadNotificationsAsRead(threadId, owner.getUserId(), projectId, owner.getSmsTeamId(), modifiedByUserId);
@@ -712,7 +702,6 @@ public class MessagingService {
       if (conversationMessageProps.isPresent()) {
         SmsConversation thread = conversationMessageProps.get();
         // Check is the thread has any sms owners
-        //      todo sms how to get company id from a thread?
         if (thread.getSmsTeamOwners().isEmpty()) {
           updateThreadClosedValue(threadId, false, modifiedByUserId);
           //todo sms figure out if sms can even work for multiple companies, then un-hardcode this
