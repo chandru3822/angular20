@@ -6,12 +6,14 @@
       justify="center"
       no-gutters
     >
-      <a-btn
-          v-if="constants.VUE_APP_ENV !== 'prod'"
-          color="primary"
-          @click="mockReply()"
-          text="Mock Reply"
-      ></a-btn>
+      <div class="mock-reply">
+        <a-btn
+            v-if="constants.VUE_APP_ENV !== 'prod'"
+            color="primary"
+            @click="mockReply()"
+            text="Mock Reply"
+        ></a-btn>
+      </div>
 
       <div v-if="messageList.length <= 0" class="pt-4">No messages to show</div>
       <!-- MESSAGING TAB -->
@@ -682,5 +684,11 @@ a.chatLink {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 450px;
+}
+
+.mock-reply {
+  width: 100%;
+  margin: 5px 30px 5px 0;
+  text-align: right;
 }
 </style>
