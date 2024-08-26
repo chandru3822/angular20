@@ -296,6 +296,7 @@ const footerProps = ref({
 const searchQuery = ref('')
 const userId = ref(userStore.details.id)
 const sortOldToNew = ref(false)
+const isInitialLoad = ref(true)
 const ownerFilterOptions = ref([])
 const selectedConversation = ref(null)
 const selectedOwnerFilters = ref([])
@@ -444,27 +445,14 @@ const fetchConversations = async () => {
 
     if (data) {
       conversations.value = data.content
-      // if (conversations.value && conversations.value.length > 0) {
-        // projectIdsInbox.value = conversations.value[0].projectIdsInbox
-        // projectIdsSent.value = conversations.value[0].projectIdsSent
-        // projectIdsForCurrentFilter.value = conversations.value[0].projectIdsForFilter
-        // userIdsInbox.value = conversations.value[0].userIdsInbox
-        // userIdsSent.value = conversations.value[0].userIdsSent
-        // userIdsForCurrentFilter.value = conversations.value[0].userIdsForFilter
-      // }
-
-      //i am confused, the list is reloaded if the filter changes so i think the total conversations it just the length of the content
-      // totalConversations.value = data.content?.length || 0
       totalConversations.value = conversations.value?.length > 0 ? conversations.value[0].totalRows : 0
 
-      // If Projects are being displayed
-      // if (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') {
-      //   totalConversations.value = projectIdsForCurrentFilter.value?.length || 25
-      // }
-      // // If Users are being displayed
-      // if (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') {
-      //   totalConversations.value += userIdsForCurrentFilter.value?.length || 25
-      // }
+      if(isInitialLoad.value && route.params.smsThreadId) {
+        selectedConversation.value = conversations.value.find((x) => x.parentId === parseInt(route.params.smsThreadId))
+        if(!selectedConversation.value) {
+          router.push({path: `/inbox`});
+        }
+      }
 
       conversations.value?.forEach(p => {
         p.showAssignToMeButton = teamsAssociatedToUser.value.length > 0
@@ -485,6 +473,8 @@ const fetchConversations = async () => {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error fetching conversations')
     showLoading(false)
+  } finally {
+    isInitialLoad.value = false
   }
 }
 //todo figure out why this extra?

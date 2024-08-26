@@ -98,44 +98,6 @@ public class MessagingQuery {
                    limit :limit
                    offset :offset
     """;
-//
-//  //language=PostgreSQL
-//  public final static String getProjectsCount = """
-//    with owner_filter AS (SELECT project_id, id
-//                          FROM flow.project_message_owner pmo
-//                          where case
-//                                    when array_length(array [ :ownerIds ]::bigint[], 1) > 0 then
-//                                        pmo.user_id = any (array [ :ownerIds ]::bigint[])
-//                                            and pmo.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
-//                                            and pmo.archived is false
-//                                    end),
-//         projects as (select distinct on (p.id) p.id as project_id
-//                      from flow.project p
-//                               inner join flow.project_message_properties pmp on pmp.project_id = p.id
-//                               left join flow.project_message_team pmt on pmt.project_id = p.id
-//                          and pmt.archived is false
-//                               left join flow.project_message_owner pmo2
-//                                         on pmo2.sms_team_id = pmt.sms_team_id
-//                                             and pmo2.project_id = p.id
-//                                             and pmo2.archived is false
-//                               left join flow.user u on pmo2.user_id = u.id
-//                               left join flow.sms_cache sc on p.id = sc.project_id
-//                               left join owner_filter of on of.project_id = p.id
-//                      where case
-//                                when :query::varchar is not null then
-//                                    (p.project_name_search like '%' || :query || '%') or
-//                                    (p.id::varchar like '%' || :query || '%') or
-//                                    (u.user_full_name_search like '%' || :query || '%')
-//                                else 1 = 1 end
-//                        and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
-//                             (of.id is not null or case when :unassigned is true then pmo2.id is null end))
-//                        and case
-//                                when :showInbox
-//                                    then sc.outbound_message is false
-//                                else sc.outbound_message is null or sc.outbound_message is true
-//                          end)
-//    select p.project_id from projects p
-//    """;
 
   //language=PostgreSQL
   public final static String getThread = """
