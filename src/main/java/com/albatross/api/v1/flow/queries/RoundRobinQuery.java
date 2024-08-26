@@ -247,6 +247,15 @@ public class RoundRobinQuery {
     """;
 
   //language=PostgreSQL
+  public final static String deletePostalCodesFromRoundRobin = """
+    update flow.postal_code
+        set round_robin_id = null,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where round_robin_id = :id
+    """;
+
+  //language=PostgreSQL
   public final static String insertRoundRobinUser = """
     insert into flow.round_robin_user(round_robin_id, user_id, round_robin_user_type_id, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified)
         values (:roundRobinId, :userId, :roundRobinUserTypeId, :companyTimezoneId, :createdById, now(), :createdById, now())
