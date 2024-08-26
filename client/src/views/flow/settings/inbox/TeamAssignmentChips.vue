@@ -1,5 +1,5 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <v-chip-group :column="!miniDialog" class="team-chips" show-arrows="always" :class="{'mini': miniDialog}">
+  <v-chip-group :column="!miniDialog" class="team-chips" :class="{'mini': miniDialog}">
     <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap" :key="index">
         <v-chip v-if="team.users && team.users.length === 0"
                 label
@@ -14,8 +14,7 @@
         >
           <span >{{team.teamName}} - Unassigned</span>
         </v-chip>
-        <v-chip v-else v-for="(user, index) in team.users"
-				:key="index"
+        <v-chip v-else v-for="(user, index) in team.users" :key="index"
                 label
                 :close="(user.userId === loggedInUserId && userCanView) || (teamNamesAssociatedToUser.includes(team.teamName) && userCanManage)"
                 close-icon="mdi-close"
