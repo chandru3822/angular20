@@ -24,7 +24,7 @@
                   </v-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in roundRobins" @click="changeRoundRobin(item)" class="body-large">
                       {{ item.roundRobinName }}
                     </v-list-item>
@@ -54,7 +54,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
@@ -165,7 +165,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
@@ -253,7 +253,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
@@ -338,7 +338,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
