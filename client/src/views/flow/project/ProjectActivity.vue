@@ -538,7 +538,6 @@ const scrollToTop = () => {
     .scroll({ top: 0 })
 }
 const startJoinConversation = () => {
-  debugger
   if (teamsAssociatedToUser.value?.length === 1) {
     const selectedSmsTeam = teamsAssociatedToUser.value[0]
     joinConversation(selectedSmsTeam)
