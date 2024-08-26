@@ -538,6 +538,7 @@ const scrollToTop = () => {
     .scroll({ top: 0 })
 }
 const startJoinConversation = () => {
+  debugger
   if (teamsAssociatedToUser.value?.length === 1) {
     const selectedSmsTeam = teamsAssociatedToUser.value[0]
     joinConversation(selectedSmsTeam)
@@ -551,7 +552,12 @@ const openMenu = () => {
 }
 const joinConversation = async (selectedTeam) => {
   try {
-    if (projectId.value) {
+    if (smsThreadId.value) {
+      await postRequest(
+          `/messaging/addTeam/thread/${smsThreadId.value}`,
+          selectedTeam
+      )
+    } else if (projectId.value) {
       await postRequest(
         `/messaging/addTeam/project/${projectId.value}`,
         selectedTeam

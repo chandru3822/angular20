@@ -522,7 +522,7 @@ const joinConversation = async (selectedTeam) => {
     }
     showLoading(true)
 
-    let addTeamUrl = assignToMe.value.externalConversationId ? `/messaging/addTeam/external/${assignToMe.value.externalConversationId}` : `/messaging/addTeam/internal/${assignToMe.value.internalConversationId}`
+    let addTeamUrl = `/messaging/addTeam/thread/${assignToMe.value.parentId}`
     await postRequest(addTeamUrl, selectedTeam)
     appStore.showSnack('SUCCESS', 'Successfully joined conversation')
 
