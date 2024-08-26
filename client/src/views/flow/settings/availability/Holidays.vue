@@ -2,14 +2,14 @@
 import {ref, onMounted, getCurrentInstance} from 'vue'
 import {
   deleteRequest,
-  getRequest,
+  getRequest, handleHidingGlobalLoader,
   putRequest
 } from "@/helpers/helpers.js";
 import {useAppStore} from "@/stores/AppStore.js";
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const date = ref('2024-07-29')
+const date = ref(null)
 const holidayName = ref('')
 const addNew = ref(false)
 const editExisting = ref(false)
@@ -34,6 +34,7 @@ const getHolidays = async () => {
   try {
     const {data, status} = await getRequest(`/availability/companyHolidays`)
     companyHolidays.value = data
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Company Holidays')
@@ -54,6 +55,7 @@ const addHoliday = async () => {
       const {data, status} = await putRequest(`/availability/companyHolidays`, params)
       addNew.value = false
       appStore.showSnack('SUCCESS', 'Created New Holiday')
+      handleHidingGlobalLoader(status)
       await getHolidays()
     } catch (e) {
       console.error('*** ERROR ***', e)
@@ -63,6 +65,15 @@ const addHoliday = async () => {
   }
   holidayName.value = ''
   date.value = null
+}
+
+const getTodaysDate = () => {
+  const hd = new Date();
+  const year = hd.getUTCFullYear();
+  const month = String(hd.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(hd.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`
 }
 
 const editHoliday = (holiday) => {
