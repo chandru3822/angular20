@@ -339,6 +339,7 @@
               :items="sortColumnOptions"
               :disabled="!editSortColumns"
               clearable
+              @change="updateSortOrder"
             >
             </a-autocomplete>
           </template>
@@ -490,13 +491,39 @@ const is7oaksAdmin = computed(() => {
 
 const editSortColumns = ref(false)
 const customColumns = ref(null)
-// const sortColumns = ref([
-//   {sorting: 'Primary', sortDesc: false, value: ''},
-//   {sorting: 'Secondary', sortDesc: false, value: ''},
-//   {sorting: 'Tertiary', sortDesc: false, value: ''}
-// ])
 
 const sortColumns = ref([])
+
+const updateSortOrder = () => {
+  let columnValues = sortColumns.value.filter(sc => {
+    if (sc.value !== null) {
+      return sc
+    }
+  })
+  let nullValues = sortColumns.value.filter (sc => {
+    if (sc.value === null) {
+      return sc
+    }
+  })
+  nullValues?.forEach(nv => {
+    columnValues = columnValues.concat(nv)
+  })
+  columnValues = cloneDeep(columnValues)
+  let i = 0
+  sortColumns.value.forEach((sc) => {
+    if (columnValues[i]) {
+      if (columnValues[i].value === null) {
+        sc.value = null
+        sc.sortDesc = false
+      } else {
+        sc.value = columnValues[i].value
+        sc.sortDesc = columnValues[i].sortDesc
+      }
+    }
+    i++
+  })
+
+}
 
 const sortColumnHeaders = ref([
   {text: 'Sorting', value: 'columnSortingOrder'},
@@ -752,7 +779,6 @@ const  updateDefaultFields = (fieldName) => {
   workQueueType.value?.defaultColumnDisplay.forEach((c) => {
     if (fName === c.text) {
       c.show = !fShow
-      console.log(`Updated ${c.text} field from ${fShow} to ${c.show}`)
     }
   })
   defaultFields.value = workQueueType.value?.defaultColumnDisplay
