@@ -221,8 +221,6 @@ const getSalesOrgs = async (isNew) => {
 
   if(isNew && newPosition.value.positionId && newPosition.value.orgId) {
     try {
-      console.log('positionId', newPosition.value.positionId)
-      console.log('orgId', newPosition.value.orgId)
       let params = {
         positionId: newPosition.value.positionId,
         orgId: newPosition.value.orgId

@@ -242,13 +242,14 @@ public class CommunicationService {
         // sent to
         smsService.queueMessage(
           messageGroupId,
+          null,
           user.getId(),
           null,
           null,
           user.getPhoneNumber(),
           template,
           mediaURLs,
-          RecipientType.USER,
+          RecipientType.USER.ordinal(),
           loggedInUserId,
           null,
           priorityLevel);
@@ -278,6 +279,28 @@ public class CommunicationService {
   }
 
   @Async
+  public void queueTextMessagesForThread(
+    String messageGroupId,
+    Long smsThreadId,
+    String template,
+    List<URI> mediaURLs,
+    Long sentByUserId,
+    Long sentBySmsTeamId) {
+    try {
+
+      smsService.queueMessageForThread(
+        messageGroupId,
+        smsThreadId,
+        template,
+        mediaURLs,
+        sentByUserId,
+        sentBySmsTeamId);
+    } catch (Exception ex) {
+      log.error("MESSAGING: Error queueing SMS ", ex);
+    }
+  }
+
+  @Async
   public void queueTextMessagesForProject(
     String messageGroupId,
     Contact contact,
@@ -291,12 +314,13 @@ public class CommunicationService {
       smsService.queueMessage(
         messageGroupId,
         null,
+        null,
         contact.getId(),
         projectId,
         toPhone,
         template,
         mediaURLs,
-        RecipientType.PROJECT,
+        RecipientType.PROJECT.ordinal(),
         sentByUserId,
         sentBySmsTeamId,
         SmsPriority.PROJECT.level);
@@ -317,13 +341,14 @@ public class CommunicationService {
     try {
       smsService.queueMessage(
         messageGroupId,
+        null,
         recipientUserId,
         null,
         null,
         toPhone,
         template,
         mediaURLs,
-        RecipientType.USER,
+        RecipientType.USER.ordinal(),
         sentByUserId,
         sentBySmsTeamId,
         SmsPriority.USER.level);
@@ -347,6 +372,19 @@ public class CommunicationService {
     }
   }
 
+  public Map<String, Object> sendTextsForThread(Long smsThreadId, User user, String message, List<URI> mediaURLs, Long smsTeamId) {
+    String groupId = UUID.randomUUID().toString();
+
+    queueTextMessagesForThread(
+      groupId,
+      smsThreadId,
+      message,
+      mediaURLs,
+      user.getId(),
+      smsTeamId);
+
+    return Map.of("messageGroup", groupId);
+  }
   public Map<String, Object> sendTextsForProject(Long projectId, Contact contact, User user, String message, List<URI> mediaURLs, Long smsTeamId) {
     String groupId = UUID.randomUUID().toString();
     String phoneNumber = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();

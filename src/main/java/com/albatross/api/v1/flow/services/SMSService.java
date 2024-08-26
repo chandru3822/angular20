@@ -6,11 +6,13 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.JodaDateTimeEditor;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RecipientType;
+import com.albatross.api.v1.flow.enums.SmsPriority;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
 import com.albatross.api.v1.flow.model.smsQueue.SmsQueueRow;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioMessageRequest;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioSMSResponse;
+import com.albatross.api.v1.flow.model.smsTeam.SmsConversation;
 import com.albatross.api.v1.flow.queries.SmsServiceQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -129,21 +131,56 @@ public class SMSService {
       SmsServiceQuery.fetchByThreadId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
+  public SMSQueueItem queueMessageForThread(String messageGroup,
+                                            Long smsThreadId,
+                                            String message,
+                                            List<URI> mediaURLs,
+                                            Long sentByUserId,
+                                            Long sentBySmsTeamId) {
+
+    SmsConversation thread = messagingService.getThread(smsThreadId, null, null, sentByUserId);
+
+    Integer priorityLevel = SmsPriority.PROJECT.level;
+
+    if(!thread.isExternal()) {
+      //if intenal set that priority level
+      priorityLevel = SmsPriority.USER.level;
+    }
+
+    return queueMessage(messageGroup,
+      smsThreadId,
+      null,
+      null,
+      null,
+      thread.getSearchExternalPhone(),
+      message,
+      mediaURLs,
+      thread.getRecipientTypeId().intValue(),
+      sentByUserId,
+      sentBySmsTeamId,
+      priorityLevel);
+  }
+
   public SMSQueueItem queueMessage(
     String messageGroup,
+    Long smsThreadId,
     Long userId,
     Long contactId,
     Long projectId,
     String toPhone,
     String message,
     List<URI> mediaURLs,
-    RecipientType recipientType,
+    Integer recipientTypeId,
     Long sentByUserId,
     Long sentBySmsTeamId,
     Integer priorityLevel) {
 
     if (null != toPhone && !toPhone.isBlank()) {
-      Long threadId = messagingService.getThreadId(projectId, userId);
+      Long threadId = smsThreadId;
+
+      if(threadId == null) {
+        threadId = messagingService.getThreadId(projectId, userId);
+      }
 
       String queueInsert = SmsServiceQuery.insert;
 
@@ -156,7 +193,7 @@ public class SMSService {
       source.addValue("message", message);
       source.addValue("toPhone", toPhone);
       source.addValue("mediaUrls", null);
-      source.addValue("recipientTypeId", recipientType.ordinal());
+      source.addValue("recipientTypeId", recipientTypeId);
       source.addValue("messageSentByUserId", sentByUserId);
       source.addValue("sentBySmsTeamId", sentBySmsTeamId);
       source.addValue("priorityLevel", priorityLevel);

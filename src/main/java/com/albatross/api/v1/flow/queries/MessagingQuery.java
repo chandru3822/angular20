@@ -104,6 +104,8 @@ public class MessagingQuery {
     select
                                                             st.closed,
                                                             rt.external,
+                                                            st.search_external_phone,
+                                                            st.recipient_type_id,
                                                             case when st.recipient_type_id = 1 then
                                                                      (select concat(u.first_name, ' ', u.last_name)
                                                                       from flow.user u
@@ -403,7 +405,7 @@ select u.user_id, outbound_message from users u
       set archived = true,
           modified_by_id = :modifiedById,
           date_modified = now()
-      where sms_thread_id = :thread_id
+      where sms_thread_id = :threadId
       and user_id = :userId
       and sms_team_id = :smsTeamId
     """;

@@ -26,7 +26,7 @@
           :close="closeChat"
           :open="openChat"
           :showEmoji="true"
-          :showFile="true"
+          :showFile="!smsThreadId"
           :showEdition="false"
           :showDeletion="false"
           :showCloseButton="false"
@@ -48,6 +48,7 @@
     </v-row>
 
     <v-menu
+        v-if="!smsThreadId"
       top
       left
       offset-y
@@ -318,11 +319,13 @@ const onMessageWasSent = async (message) => {
     const attachmentUrl = projectId.value
       ? `/project/${projectId.value}/attachment`
       : `/user/${userId.value}/attachment`
-    const sendTextUrl = projectId.value ? `/communication/sendTextsForProject/${projectId.value}`
+    const sendTextUrl = smsThreadId.value ? `/communication/sendTextsForThread/${smsThreadId.value}`
+        : projectId.value ? `/communication/sendTextsForProject/${projectId.value}`
         : `/communication/sendTextsForUser/${userId.value}`
 
-    const createNotificationUrl = projectId.value
-      ? `/messaging/createNotification/project/${projectId.value}`
+    const createNotificationUrl =
+        smsThreadId.value ? `/messaging/createNotification/thread/${smsThreadId.value}`
+        : projectId.value ? `/messaging/createNotification/project/${projectId.value}`
       : `/messaging/createNotification/user/${userId.value}`
 
     try {

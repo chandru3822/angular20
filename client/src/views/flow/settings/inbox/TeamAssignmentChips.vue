@@ -264,8 +264,9 @@ const removeTeam = async (teamId) => {
 
     await putRequest(removeTeamUrl)
     // If the project/user is currently opened on the right panel, navigate back to main inbox to close it
-    if (route.path.includes('inboxConversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId) || route.path.includes(props.smsThreadId))) {
-      await router.push({path: `/inbox`})
+    if (route.path.includes('conversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId) || route.path.includes(props.smsThreadId))) {
+      let path = route.path.includes('outbox') ? '/outbox' : '/inbox'
+      await router.push({ path })
     }
     appStore.showSnack('SUCCESS', 'Team removed')
   } catch (e) {

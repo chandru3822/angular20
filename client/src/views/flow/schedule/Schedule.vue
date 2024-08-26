@@ -161,7 +161,7 @@ const activeComp = computed(() => {
 })
 const showMap = computed(() => scheduleStore.showMap)
 
-const isSidebarView = computed(() => route.path.includes('inboxConversation'))
+const isSidebarView = computed(() => route.path.includes('conversation'))
 
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')

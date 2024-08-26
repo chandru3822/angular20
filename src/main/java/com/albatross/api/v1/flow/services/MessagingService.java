@@ -110,7 +110,7 @@ public class MessagingService {
 //          new MessagePropertiesMapper<>(SmsConversation.class, om));
 //    }
 
-    return conversationMessageProps.orElseThrow(() -> new NotFoundException("Project conversation not found"));
+    return conversationMessageProps.orElseThrow(() -> new NotFoundException("Thread conversation not found"));
   }
 
   public Page<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifThreadIds,
@@ -129,7 +129,7 @@ public class MessagingService {
     }
 
     final HashMap<String, Object> params = new HashMap<>();
-    params.put("query", StringUtils.hasText(query) ? query : null);
+    params.put("query", StringUtils.hasText(cleanedQuery) ? cleanedQuery : null);
     params.put("smsTeamIds", smsTeamIds);
     params.put("ownerIds", ownerUserIds);
     params.put("notifThreadIds", notifThreadIds);

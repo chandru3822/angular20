@@ -8,7 +8,7 @@
     :allowSidebarCollapse="!!allowSidebarCollapse"
     @collapseClicked="$emit('collapseCallback')"
   >
-    <template v-slot:title v-if="showSmsTab && route.path.includes('inboxConversation') && messageProperties.sources?.length > 1">
+    <template v-slot:title v-if="showSmsTab && route.path.includes('conversation') && messageProperties.sources?.length > 1">
       <div
           v-if="!isSidebarCollapsed"
           class="d-inline-block conversation-name-link"
@@ -49,7 +49,7 @@
       <v-tooltip
           bottom
           small
-          v-if="showSmsTab && route.path.includes('inboxConversation') && viewId !== 2"
+          v-if="showSmsTab && route.path.includes('conversation') && viewId !== 2"
       >
         <template v-slot:activator="{ on, attrs }">
           <a
@@ -74,7 +74,7 @@
       </span>
 
       <div
-          v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox')"
+          v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox') && !route.path.includes('outbox')"
           style="display: inline-flex"
       >
         <v-chip
@@ -377,9 +377,11 @@ const projectProcessStepEventId = computed(() => {
   return parseInt(route.params.ppsEventId) || null
 })
 const viewId = computed(() => {
-  return null == selectedTab.value ||
-    (selectedTab.value === 0 && !props.showSmsTab)
-    ? 1
+  //if selected tab is null or it is sms but showSmsTab is false, set it to notes
+  return null == selectedTab.value || (selectedTab.value === 0 && !props.showSmsTab)
+    ? 1 :
+      //if selected tab is not sms, but there is an smsThreadId then set it to sms as that is the only one available here
+    (selectedTab.value !== 0 && null != smsThreadId.value && !Number.isNaN(smsThreadId.value)) ? 0
     : selectedTab.value
 })
 const currentUserId = computed(() => {
@@ -397,25 +399,26 @@ const showScheduleTab = computed(() => {
   return !!userId.value;
 }) //yes, we could just use this check for the userId value inline, but I'm putting this here in case other logic becomes necessary in the future
 const sidebarTitle = computed(() => {
+  let inbox = route.path.includes('conversation')
   switch (viewId.value) {
     case 0:
       if (userCanViewSms.value) {
         if (projectId.value) {
-          return route.path.includes('inboxConversation')
-            ? messageProperties.value.projectName
+          return inbox
+            ? messageProperties.value.fullName
             : 'Communication'
         } else {
-          return route.path.includes('inboxConversation')
+          return inbox
             ? messageProperties.value.fullName
             : 'Communication'
         }
       } else {
         if (projectId.value) {
-          return route.path.includes('inboxConversation')
-            ? messageProperties.value.projectName
+          return inbox
+            ? messageProperties.value.fullName
             : 'Communication (Read-only)'
         } else {
-          return route.path.includes('inboxConversation')
+          return inbox
             ? messageProperties.value.fullName
             : 'Communication (Read-only)'
         }

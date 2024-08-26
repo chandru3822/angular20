@@ -8,15 +8,16 @@
     :auto-overflow-left="true"
     :show-right-collapse-btn="false"
     :show-right-col="route.params.smsThreadId"
-    @closeRight="router.push({path: `/inbox`})"
+    @closeRight="router.push({path: routePrefix.value})"
   >
     <template v-slot:main-column>
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
                                @joinConversation="joinConversation" />
       <div id="inbox-header" class="px-6 pt-1">
-          <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4">
-            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; router.push({path: `/inbox`}); fetchConversations()">
+          <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4" :value="showInbox ? 0 : 1">
+            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''"
+                   text @click="routeToInbox('/inbox'); fetchConversations()">
               New
               <v-badge
                 class="inbox-badge"
@@ -25,7 +26,7 @@
                 v-if="inboxNotificationCount > 0"
               ></v-badge>
             </v-tab>
-            <v-tab text @click="showInbox = false; showUnreadOnly = false; router.push({path: `/inbox`}); fetchConversations()">
+            <v-tab text @click="showUnreadOnly = false; routeToInbox('/outbox'); fetchConversations()">
               Sent
             </v-tab>
             <v-spacer></v-spacer>
@@ -237,7 +238,7 @@
     </template>
     <template v-slot:collapse-button>
       <a-btn class="d-inline-block align-self-center" size="small" variant="text" color="primary"
-                       @click="router.push({path: `/inbox`})"
+                       @click="router.push({path: `${routePrefix.value}`})"
                        prepend-icon="close"
       />
     </template>
@@ -269,7 +270,9 @@ import {useUserStore} from "@/stores/UserStore.js";
 import { useNotificationStore } from '@/stores/NotificationStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
-import {useProjectStore} from "@/stores/ProjectStore.js";
+import {useProjectStore} from "@/stores/ProjectStore.js"
+import { storeToRefs } from 'pinia'
+
 const appStore = useAppStore()
 const projectStore = useProjectStore()
 
@@ -283,6 +286,14 @@ const notificationStore = useNotificationStore()
 
 const activeComp = computed(() => {
   return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
+})
+
+const showInbox = computed(() => {
+  return !route.path.includes('outbox')
+})
+
+const routePrefix = computed(() => {
+  return showInbox.value ? `/inbox` : `/outbox`
 })
 
 const conversations = ref([])
@@ -303,7 +314,6 @@ const selectedOwnerFilters = ref([])
 const teamFilterOptions = ref([])
 const selectedTeamFilters = ref([])
 const showUnreadOnly = ref(false)
-const showInbox = ref(true)
 const pageableTable = ref(null)
 const showAssignToMeDialog = ref(false)
 const showNewMessageDialog = ref(false)
@@ -365,7 +375,7 @@ const ownersIcon = computed(() => {
 const teamFilterChipLimit = computed(() => {
   if (viewWidth.value < 1264) {
     //smaller screen
-    if (route.path.includes('inboxConversation')) {
+    if (route.path.includes('conversation')) {
       //right panel open
       return 0
     }
@@ -373,7 +383,7 @@ const teamFilterChipLimit = computed(() => {
     return 2
   }
   //larger screen
-  if (route.path.includes('inboxConversation')) {
+  if (route.path.includes('conversation')) {
     //right panel open
     return 1
   }
@@ -383,7 +393,7 @@ const teamFilterChipLimit = computed(() => {
 const ownerFilterChipLimit = computed(() => {
   if (viewWidth.value < 1264) {
     //smaller screen
-    if (route.path.includes('inboxConversation')) {
+    if (route.path.includes('conversation')) {
       //right panel open
       return 0
     }
@@ -391,7 +401,7 @@ const ownerFilterChipLimit = computed(() => {
     return 3
   }
   //larger screen
-  if (route.path.includes('inboxConversation')) {
+  if (route.path.includes('conversation')) {
     //right panel open
     return 2
   }
@@ -450,7 +460,7 @@ const fetchConversations = async () => {
       if(isInitialLoad.value && route.params.smsThreadId) {
         selectedConversation.value = conversations.value.find((x) => x.parentId === parseInt(route.params.smsThreadId))
         if(!selectedConversation.value) {
-          router.push({path: `/inbox`});
+          router.push({path: routePrefix.value});
         }
       }
 
@@ -494,6 +504,12 @@ const getTime = (lastMessageSent) => {
     return moment(lastMessageSent).fromNow()
   }
 }
+const routeToInbox = (path) => {
+  // avoids redundant navigation error
+  if (route.path !== path) {
+    router.push({ path })
+  }
+}
 const joinConversation = async (selectedTeam) => {
   try {
     if (teamsAssociatedToUser.value && teamsAssociatedToUser.value?.length === 1) {
@@ -510,8 +526,8 @@ const joinConversation = async (selectedTeam) => {
     await postRequest(addTeamUrl, selectedTeam)
     appStore.showSnack('SUCCESS', 'Successfully joined conversation')
 
-    if (!route.path.includes('inboxConversation')) {
-      let inboxUrl = assignToMe.value.externalConversationId ? `/inbox/inboxConversation/external/${assignToMe.value.externalConversationId}` : `/inbox/inboxConversation/internal/${assignToMe.value.internalConversationId}`
+    if (!route.path.includes('conversation')) {
+      let inboxUrl = assignToMe.value.externalConversationId ? `${routePrefix.value}/conversation/${assignToMe.value.externalConversationId}` : `${routePrefix.value}/conversation/${assignToMe.value.internalConversationId}`
       //avoids redundant navigation console error
       router.push({ path: inboxUrl })
     }
@@ -684,11 +700,11 @@ const openConversation = (item) => {
   if(item.external) {
     projectStore.selectedTab = 0
   }
-  router.push({path: `/inbox/inboxConversation/sms/${item.parentId}`});
+  router.push({path: `${routePrefix.value}/conversation/sms/${item.parentId}`});
 }
 const closeConversation = () => {
   selectedConversation.value = null
-  router.push({path: `/inbox`})
+  router.push({path: `${routePrefix.value}`})
 }
 const searchConversations = debounce(() => {
   //don't allow searchQuery to be null - causes issues
