@@ -24,7 +24,7 @@
                   </v-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in roundRobins" @click="changeRoundRobin(item)" class="body-large">
                       {{ item.roundRobinName }}
                     </v-list-item>
@@ -54,7 +54,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
@@ -135,7 +135,7 @@
                   </v-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in closerOffices" @click="changeCloserOfficeFdc(item)" class="body-large">
                       {{ item.orgName }}
                     </v-list-item>
@@ -165,7 +165,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
@@ -253,7 +253,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
@@ -338,7 +338,7 @@
                   </a-btn>
                 </template>
                 <div>
-                  <v-list style="height: 400px; overflow-y:auto">
+                  <v-list style="max-height: 400px; overflow-y:auto">
                     <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
@@ -431,11 +431,10 @@ import {handleHidingGlobalLoader, getRequest, postRequest,  getRequestWithParams
 import groupBy from "lodash.groupby";
 import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
-import {useAppStore} from "../../../stores/AppStore.js";
+import { useAppStore } from '@/stores/AppStore.js'
 import {saveAs} from 'file-saver'
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 const appStore = useAppStore()
 const userStore = useUserStore()
 const userOffice = ref('')
@@ -498,9 +497,8 @@ onMounted(async() => {
     }
 
   }
-
-  await loadCloserOffices()
   await getDropdownValues()
+  await loadCloserOffices()
   await loadRoundRobins()
   await loadRankingTables(0)
 
@@ -598,7 +596,7 @@ const loadRoundRobins = async() => {
     handleHidingGlobalLoader(this, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving list of round robins')
+    appStore.showSnack('ERROR', 'Error retrieving list of round robins')
     roundRobinRanksLoading.value = false
   }
 }
@@ -630,7 +628,7 @@ const loadOfficeFdcRankData = async() => {
     }
     officeFdcRankLoading.value = false
   } catch (e) {
-    snackbar('ERROR', 'Error retrieving office FDC rank data')
+    appStore.showSnack('ERROR', 'Error retrieving office FDC rank data')
     officeFdcRankLoading.value = false
   }
 }
@@ -646,13 +644,13 @@ const loadCloserOffices  = async() => {
 
     // if there's only one Closer Office for the current user, this auto-selects it
     if (closerOffices?.value.length === 1) {
-      selectedCloserOffice.value = closerOffices?.value[0].id
+      selectedCloserOffice.value = closerOffices?.value[0]
       await loadOfficeFdcRankData()
     }
     officeFdcRankLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving list of closer offices')
+    appStore.showSnack('ERROR', 'Error retrieving list of closer offices')
     officeFdcRankLoading.value = false
   }
 }
@@ -670,7 +668,7 @@ const getDropdownValues = async()=>
     handleHidingGlobalLoader(this, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving data')
+    appStore.showSnack('ERROR', 'Error retrieving data')
     isLoading.value = false
   }
 }
@@ -699,7 +697,7 @@ const loadRoundRobinLeadAllocationRankData = async() =>
     }
     roundRobinRanksLoading.value = false
   } catch (e) {
-    snackbar('ERROR', 'Error retrieving round robin lead allocation rank data')
+    appStore.showSnack('ERROR', 'Error retrieving round robin lead allocation rank data')
     roundRobinRanksLoading.value = false
   }
 }
@@ -823,14 +821,13 @@ const loadRankingTables = async(selectedTable) => {
     if(selectedTable === 2 || selectedTable === 0) {
       repsData.value = []
       processRankingData(cloneDeep(data), 'Top Reps')
-      console.log(dropdownValues.value)
     }
 
     rankingTablesLoaded.value = true
     repsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving ranking table data')
+    appStore.showSnack('ERROR', 'Error retrieving ranking table data')
     rankingTablesLoaded.value = true
     repsLoading.value = false
   }
@@ -931,7 +928,7 @@ const exportCsv = async (tableName) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Residual Review')
+    appStore.showSnack('ERROR', 'Error Exporting Residual Review')
 
     appStore.loading = false
   }

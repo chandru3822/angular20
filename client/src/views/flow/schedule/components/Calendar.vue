@@ -371,7 +371,7 @@ import FullCalendar from "@fullcalendar/vue";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
-import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
+import {computed, getCurrentInstance, nextTick, onMounted, ref, toRef, watch} from "vue";
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import {useAppStore} from '@/stores/AppStore.js'
@@ -424,7 +424,7 @@ const isSidebarView = computed(() => route.path.includes('conversation'))
 const timezone = ref(scheduleStore.getTimezone)
 const scheduleTimezone = computed(() => scheduleStore.getTimezone)
 const userTimezone = computed(() => userStore.timezone)
-
+const currentView = ref('')
 const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
@@ -444,6 +444,7 @@ const calendarOptions = ref({
   slotLabelDidMount: function ({el, date, view, level}) {
     //this is a workaround because the day headers on the week view take you to the wrong view,
     // and they don't trigger navLinkDayClick
+    currentView.value = view.type
     if (view.type === "resourceTimelineWeek" && level === 0) {
       let elA = el.querySelector('a')
       if (elA.dataset.navlink === '') {
@@ -528,8 +529,6 @@ const positionsLoading = ref(true)
 const mapPinnedResources = ref([])
 const mapResourceEvents = ref([])
 const checkedResources = ref([])
-
-const companyHolidays = ref([])
 
 const timezones = ref([
   {friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
@@ -1035,7 +1034,6 @@ const getAvailability = async (info) => {
       timezone: scheduleTimezone.value.value
     }
     const {data} = await postRequest(`/schedule/availability`, params)
-
     data?.forEach(d => {
       if (d.allDay) {
         d.start = moment.utc(d.start).format('YYYY-MM-DD')
@@ -1095,29 +1093,65 @@ const getAvailability = async (info) => {
         backgroundColor: 'rgba(0,0,0,.12)'
       })
     })
-
     props.companyHolidays.forEach((ch) => {
-      let normalizedDate1 = normalizeToDateOnly(new Date(ch.date));
-      let normalizedDate2 = normalizeToDateOnly(new Date(info.start));
-      let normalizedTimestamp1 = normalizedDate1.getTime();
-      let normalizedTimestamp2 = normalizedDate2.getTime();
-      if (normalizedTimestamp1 === normalizedTimestamp2) {
+      if (isHolidayInRange(info.start, info.end, ch.date)) {
         data.push({
           allDay: true,
           backgroundColor: 'rgba(0,0,0,.12)',
-          display: 'inverse-background',
-          end: ch.date,
-          start: ch.date,
+          display: currentView.value === 'resourceTimelineDay' ? 'inverse-background' : 'background',
+          end: currentView.value === 'resourceTimelineDay' ? moment.utc(new Date(ch.date)).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ') : moment.utc(new Date(ch.date)).startOf('d').format('YYYY-MM-DD'),
+          start: currentView.value === 'resourceTimelineDay' ? moment.utc(new Date(ch.date)).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ') : moment.utc(new Date(ch.date)).startOf('d').format('YYYY-MM-DD'),
           title: 'Holiday - '.concat(ch.name),
         })
       }
     })
+    console.log(data)
     return data;
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Availability')
     appStore.loading = false
   }
+}
+
+
+const isHolidayInRange = (startDate, endDate, holiday) => {
+  // Convert startDate and endDate to UTC by setting the time components to UTC
+  const startUTC = new Date(Date.UTC(
+    startDate.getUTCFullYear(),
+    startDate.getUTCMonth(),
+    startDate.getUTCDate(),
+    0, 0, 0, 0 // Setting time to midnight to only compare the date part
+  ));
+
+  const endUTC = new Date(Date.UTC(
+    endDate.getUTCFullYear(),
+    endDate.getUTCMonth(),
+    endDate.getUTCDate(),
+    0, 0, 0, 0 // Setting time to midnight to only compare the date part
+  ));
+
+  // Convert holiday to a Date object and set it to UTC
+  const holidayUTC = new Date(holiday);
+  const holidayDateUTC = new Date(Date.UTC(
+    holidayUTC.getUTCFullYear(),
+    holidayUTC.getUTCMonth(),
+    holidayUTC.getUTCDate(),
+    0, 0, 0, 0 // Setting time to midnight to only compare the date part
+  ));
+
+  // Check if the holiday is the same as the start date
+  if (holidayDateUTC.getTime() === startUTC.getTime()) {
+    return true;
+  }
+
+  // Check if the holiday is between the start and end dates (inclusive)
+  if (holidayDateUTC.getTime() >= startUTC.getTime() && holidayDateUTC.getTime() <= endUTC.getTime()) {
+    return true;
+  }
+
+  // Otherwise, return false
+  return false;
 }
 
 const normalizeToDateOnly = (date) => {
@@ -1133,6 +1167,7 @@ const updateCalDates = async (info) => {
     //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
     let calendarApi = eventCalendar.value.getApi()
     calendarApi.changeView('resourceTimelineDay', new Date)
+
   }
   calendarStartTime.value = info.start
   calendarEndTime.value = info.end
@@ -1151,6 +1186,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
     //i do this here instead of on its own because all of the code above here has to happen for get availability as well
     calendarLoading.value = true
+
     const availabilityData = await getAvailability(info);
     try {
       let params = {
@@ -1207,6 +1243,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       let events = cloneDeep(data)
       events = events.concat(availabilityData)
       successCallback(events)
+
       calendarLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
