@@ -23,6 +23,20 @@
                text="Save"
                class="mt-4">
         </a-btn>
+        <div v-if="userIsAlbatross && nextRelease != null">
+          <div class="title-medium">
+            Upcoming Release: <span class="headline-medium">{{nextRelease.releaseName}}</span>
+          </div>
+          <div class="title-medium">
+            Stage-Lock: <span class="headline-medium">{{ nextRelease.stageLockDate | formatDate('date', 'MMMM DD, YYYY') }}</span>
+          </div>
+          <div class="title-medium">
+            UAT-Lock: <span class="headline-medium">{{ nextRelease.uatLockDate | formatDate('date', 'MMMM DD, YYYY') }}</span>
+          </div>
+          <div class="title-medium">
+            Release Date: <span class="headline-medium">{{ nextRelease.releaseDate | formatDate('date', 'MMMM DD, YYYY') }}</span>
+          </div>
+        </div>
       </v-card-text>
     </v-card>
   </v-container>
@@ -48,6 +62,7 @@ const logoLoaded = ref(false)
 const homePages = ref([])
 const homePageLogo = ref({})
 const homePageAttachmentTypeId = 333
+const nextRelease = ref(null)
 
 const companyId = computed(() => {
   return userStore.details.companyId
@@ -62,6 +77,9 @@ const user = computed(() => {
 onMounted(() => {
   loadHomePageLogo()
   getHomePages()
+  if(userIsAlbatross){
+    getNextRelease()
+  }
 })
 
 const saveUserHomePage = async () => {
@@ -76,6 +94,18 @@ const saveUserHomePage = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Default Home Page')
+  }
+}
+const getNextRelease = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/release/next`)
+    nextRelease.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Home Pages')
+    appStore.loading = false
   }
 }
 const getHomePages = async () => {
