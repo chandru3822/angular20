@@ -721,7 +721,7 @@ const router = new Router({
               path: 'releases',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
+                if (userStore.userHasFeatureAccessLevel('RELEASES', 'VIEW')) {
                   return import ( './views/flow/settings/releases/Releases.vue')
                 } else {
                   return accessDenied()
