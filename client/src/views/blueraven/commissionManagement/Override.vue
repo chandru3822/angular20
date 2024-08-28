@@ -380,7 +380,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <v-row v-if="overrideId && !override.orgId">
+    <v-row v-if="overrideId">
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
