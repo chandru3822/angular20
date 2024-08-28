@@ -162,9 +162,30 @@
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             v-model="override.description"></a-text-field>
-              <a-text-field v-if="override.id"
-                            label="Template Organization"
-                            v-model="override.orgName"></a-text-field>
+            <div v-if="override.id && override.orgId && override.orgName"
+              class="d-flex justify-center align-center mb-5">
+              <a-text-field
+                  hide-details
+                  label="Template Organization"
+                  readonly disabled
+                  v-model="override.orgName"></a-text-field>
+              <a-btn variant="text"
+                  @click="override.orgId = null"
+                  text="Inactivate"
+              >
+                <v-icon>close</v-icon>
+              </a-btn>
+            </div>
+              <a-autocomplete attach v-model="override.orgId" v-else
+                              :items="orgs"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              no-data-text="No Orgs Available"
+                              label="Template Organization"
+                              clearable
+                              item-title="orgName"
+                              item-value="id"
+              ></a-autocomplete>
               <a-select attach v-model="override.positionId"
                         :items="positions"
                         :readonly="!userCanEdit"
@@ -174,16 +195,6 @@
                         item-title="label"
                         item-value="id"
               ></a-select>
-              <a-autocomplete attach v-model="override.orgId" v-else-if="!override.id"
-                        :items="orgs"
-                        :readonly="!userCanEdit"
-                        :disabled="override.id != null || !userCanEdit"
-                        no-data-text="No Orgs Available"
-                        label="Template Organization"
-                        clearable
-                        item-title="orgName"
-                        item-value="id"
-              ></a-autocomplete>
 
               <a-text-field
                             :readonly="!userCanEdit"
@@ -716,11 +727,11 @@
   })
 
   onMounted(() => {
+    getAvailableCloserSalesOffices()
     if(overrideId.value) {
       getOverrideDetails()
     } else {
       override.value.positionId = commissionPositionId.value
-      getAvailableCloserSalesOffices()
     }
   })
 
@@ -931,6 +942,7 @@
             customFieldGroups: customFieldGroups.value
           }
           const {data, status} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
+          override.value.orgName = data.orgName
           if(!overrideId.value) {
             //need to reload some stuff if this was a new plan
             await router.push({name: 'override', params: {id: data.id}})
