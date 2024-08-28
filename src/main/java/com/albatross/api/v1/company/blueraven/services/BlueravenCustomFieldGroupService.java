@@ -71,7 +71,7 @@ public class BlueravenCustomFieldGroupService {
     }
   }
 
-  private void handleCustomListValueForCfv(CustomFieldValue cv, Long companyId, Long projectId) {
+  private void  handleCustomListValueForCfv(CustomFieldValue cv, Long companyId, Long projectId) {
     if (null != cv.getCustomFieldSql()) {
       cv.setHasListValues(true);
       String sql = cv.getCustomFieldSql();
@@ -410,6 +410,7 @@ public class BlueravenCustomFieldGroupService {
                                      cf.system_list_option_ids as "systemListOptionIds",
                                      cf.company_data_type_id as "companyDataTypeId",
                                      cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+                                     cf.flow_custom_field_id as "flowCustomFieldId",
                                      cfg.object_type_id as "objectTypeId",
                                      cdt.data_type_id as "dataTypeId",
                                      cdt.has_list_values as "hasListValues",

@@ -53,6 +53,7 @@ public class OverrideManagementQuery {
     description = :description,
     position_id = :positionId,
     total       = :total,
+    org_id      = :orgId,
     updated_by  = :updatedBy,
     updated     = now()
     WHERE id = :id

@@ -97,6 +97,13 @@ public class PostalCodeQuery {
           archived = false,
           place_name = :placeName,
           state_id = :stateId,
+          round_robin_id = null,
+          postal_code_zone_id = null,
+          disqualified = false,
+          self_gen = false,
+          inside_sales = false,
+          sales_partners = false,
+          call_group_id = null,
           date_modified = now(),
           modified_by_id = :userId
       returning id

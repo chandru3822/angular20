@@ -179,6 +179,9 @@ public class RoundRobinService {
     params.put("modifiedById", user.trueUserId());
 
     sqlCache.updateBySql(RoundRobinQuery.deleteRoundRobin, params);
+
+    //need to unassign any postal codes from this round robin
+    sqlCache.updateBySql(RoundRobinQuery.deletePostalCodesFromRoundRobin, params);
   }
 
   public RoundRobinUser insertUser(RoundRobinUser roundRobinUser, Long roundRobinUserTypeId) {

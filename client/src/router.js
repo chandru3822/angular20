@@ -716,7 +716,19 @@ const router = new Router({
                   return accessDenied()
                 }
               },
-            }, {
+            },
+            {
+              path: 'releases',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (userStore.userHasFeatureAccessLevel('RELEASES', 'VIEW')) {
+                  return import ( './views/flow/settings/releases/Releases.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },
+            {
                   path: 'tournaments',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
