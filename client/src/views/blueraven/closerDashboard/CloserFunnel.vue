@@ -1695,6 +1695,7 @@ const officeModel = ref([])
 const officeData = ref([])
 const repModel = ref([])
 const repData = ref([])
+const selectedRepData = ref([])
 const repDataMaster = ref([])
 const appointmentTypesSelectAll = ref(false)
 const viewAllFilteredReps = ref(false)
@@ -3040,7 +3041,6 @@ const applyCustomDates = async()=> {
 const apptsToFdcPipelineLoad = async(column) => {
   apptsToFdcPipelineLoaded.value = false
   apptsToFdcPipelineDataLoading.value = true
-  let reps = []
   let orgs = []
   let leadsCreatedSources = []
   let dateSelected = null
@@ -3053,11 +3053,12 @@ const apptsToFdcPipelineLoad = async(column) => {
 
   officeModel.value.forEach(org => orgs.push(org.org_id))
 
+  selectedRepData.value = []
   if(viewAllFilteredReps.value && repModel.value.length === 0){
-    filteredRepData.value.forEach(rep => reps.push(rep.user_position_id))
+    filteredRepData.value.forEach(rep => selectedRepData.value.push(rep.user_position_id))
   }
   else {
-    repModel.value.forEach(rep => reps.push(rep.user_position_id))
+    repModel.value.forEach(rep => selectedRepData.value.push(rep.user_position_id))
   }
 
   fdcSourceModel.value.forEach(leadsCreatedSource => {
@@ -3115,7 +3116,7 @@ const apptsToFdcPipelineLoad = async(column) => {
   }
 
   const requestBody = {
-    users: reps,
+    users: selectedRepData.value,
     start: dateSelected.startDate,
     end: dateSelected.endDate,
     trendStart: dateSelected.trendStart,
@@ -3579,14 +3580,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
   if (pipelineName === 'apptsCreatedPipeline') {
     requestBody.sources = sourceIds
   } else {
-    let reps = []
-    if(viewAllFilteredReps.value && repModel.value.length === 0){
-      filteredRepData.value.forEach(rep => reps.push(rep.user_position_id))
-    }
-    else {
-      repModel.value.forEach(rep => reps.push(rep.user_position_id))
-    }
-    requestBody.users = reps
+    requestBody.users = selectedRepData.value
     requestBody.isCheckedInColumn = isCheckedInColumn
     requestBody.appointmentTypeIds = appointmentTypeIds
   }

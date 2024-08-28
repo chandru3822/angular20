@@ -106,18 +106,23 @@ public class SetterDashboardQuery {
 
   //language=PostgreSQL
   public final static String loadFunnel = """
-    select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCohort::boolean)
+    select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :trendStart::date, :trendEnd::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :hideInactive::boolean)
   """;
+
+  public final static String loadUpcomingAppointments = """
+    select brs.rpt_get_upcoming_appointments(array[ :userIds ]::bigint[],
+    array[ :orgIds ]::bigint[])
+   """;
 
   //language=PostgreSQL
   public final static String loadFunnelDrilldown = """
-    select brs.rpt_setter_funnel_standard_and_cohort_drilldown(
+    select brs.rpt_setter_funnel_standard_drilldown(
     :startDate::date,
     :endDate::date,
-    :funnelId,
+    :funnelId::bigint,
     array[ :userIds ]::bigint[],
     array[ :orgIds ]::bigint[],
-    :isCohort::boolean )
+     :hideInactive::boolean)
   """;
 
   //language=PostgreSQL
@@ -147,7 +152,7 @@ public class SetterDashboardQuery {
 
   //language=PostgreSQL
   public final static String topReps = """
-    SELECT * FROM brs.get_top_setter_reps(:limit, :interval, :days, :currentUserId)
+    SELECT * FROM brs.get_top_setter_reps(:startDate::date, :endDate::date, :limit::bigInt)
   """;
 
   //language=PostgreSQL
@@ -157,7 +162,7 @@ public class SetterDashboardQuery {
 
   //language=PostgreSQL
   public final static String officeRanking = """
-    SELECT * FROM brs.get_setter_office_ranking(:limit, :interval, :days, :currentUserId)
+    SELECT * FROM brs.get_setter_office_ranking(:startDate::date, :endDate::date, :limit::bigInt)
   """;
 
   //language=PostgreSQL

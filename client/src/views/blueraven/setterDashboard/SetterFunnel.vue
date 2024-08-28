@@ -1333,6 +1333,7 @@ const toggleSelectAllReps = () => {
   })
 }
 const funnelDrilldown = async (funnelIdClicked, dateRange, funnelName) => {
+  console.log("Drilldown Called")
   funnelId.value = funnelIdClicked
   let reps = []
   let orgs = []
