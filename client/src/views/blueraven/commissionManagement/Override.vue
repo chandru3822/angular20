@@ -162,6 +162,9 @@
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             v-model="override.description"></a-text-field>
+              <a-text-field v-if="override.id"
+                            label="Template Organization"
+                            v-model="override.orgName"></a-text-field>
               <a-select attach v-model="override.positionId"
                         :items="positions"
                         :readonly="!userCanEdit"
@@ -171,11 +174,6 @@
                         item-title="label"
                         item-value="id"
               ></a-select>
-              <a-text-field v-if="override.id && override.orgId"
-                            label="Template Organization"
-                            readonly
-                            disabled
-                            v-model="override.orgName"></a-text-field>
               <a-autocomplete attach v-model="override.orgId" v-else-if="!override.id"
                         :items="orgs"
                         :readonly="!userCanEdit"
