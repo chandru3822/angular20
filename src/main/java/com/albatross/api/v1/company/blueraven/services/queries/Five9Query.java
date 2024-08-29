@@ -28,7 +28,7 @@ public class Five9Query {
       AND (pd.closer_appointment_outcome_name not in
               ('Pitched - Proposal Shown', 'Pitched - Proposal Not Shown') or
               pd.closer_appointment_outcome_name IS NULL)
-        AND pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Setter Gen')
+        AND pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Sold - Paid Advertising', 'Sold - Paid Lead Gen', 'Sold - Organic')
       AND ((select ccfv.int_value
             from flow.contact_custom_field_value ccfv
             where ccfv.custom_field_group_assignment_id = 399
@@ -38,7 +38,7 @@ public class Five9Query {
                        from flow.contact_custom_field_value ccfv
                        where ccfv.custom_field_group_assignment_id = 20977
                        and ccfv.contact_id = pd.contact_id), 0) in
-                       (0, 1, 2, 40)) -- contacts with certain lead level
+                       (0, 1, 2, 3, 7, 40)) -- contacts with certain lead level
     AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 30 -- Closer appointment within past 30 days
       and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 2 -- Closer appointment at least 2 days old
       and (select ppscfv.int_value
@@ -102,11 +102,11 @@ public class Five9Query {
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
                              'US/Mountain') :: date between current_date - 180 and current_date - 10)
                        and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
-                       AND (COALESCE((select ccfv.int_value
+                       AND ((select ccfv.int_value
                                from flow.contact_custom_field_value ccfv
                                where ccfv.custom_field_group_assignment_id = 20977
-                               and ccfv.contact_id = pd.contact_id), 0) in
-                               (0, 1, 2, 40)) -- contacts with certain lead level
+                               and ccfv.contact_id = pd.contact_id) in
+                               (1, 2, 3, 7, 40)) -- contacts with certain lead level
                        AND pd.complete_date_booking is null
                        AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
                                                          from flow.company_configuration_value
@@ -137,12 +137,12 @@ public class Five9Query {
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
                              'US/Mountain') :: date between current_date - 180 and current_date - 10)
-                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
+                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Setter Gen')
                        AND (COALESCE((select ccfv.int_value
                                from flow.contact_custom_field_value ccfv
                                where ccfv.custom_field_group_assignment_id = 20977
                                and ccfv.contact_id = pd.contact_id), 0) in
-                               (0, 1, 2, 40)) -- contacts with certain lead level
+                               (0, 1, 2, 3, 7, 40)) -- contacts with certain lead level
                        AND pd.complete_date_booking is null
                        AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
                                                          from flow.company_configuration_value
