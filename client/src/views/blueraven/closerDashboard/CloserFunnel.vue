@@ -1146,10 +1146,10 @@
                   class="neutral-trendline">trending_flat</v-icon></span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (filteredFdcColumn2Values[index].trend_count ===null || filteredFdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (filteredFdcColumn2Values[index].trend_count ===null || filteredFdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
             </v-tooltip>
               <span v-if="filteredFdcColumn2Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn2Values[index].show_checked_in_column" class="checked_in_container body-small" @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true, fdcSecondCustom)">
                 <v-icon size="20" class="checked_in_icon">
@@ -1179,10 +1179,10 @@
                   class="neutral-trendline">trending_flat</v-icon></span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (filteredFdcColumn3Values[index].trend_count ===null || filteredFdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (filteredFdcColumn3Values[index].trend_count ===null || filteredFdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
             </v-tooltip>
               <span v-if="filteredFdcColumn3Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn3Values[index].show_checked_in_column" class="checked_in_container body-small" @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true, fdcThirdCustom)">
                 <v-icon size="20" class="checked_in_icon">
