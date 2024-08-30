@@ -2784,8 +2784,8 @@ const parseFunnelDate = (date) => {
 }
 
 const loadFunnels = async() => {
-  if (apptsCreatedPipelineData.value?.length === 0) {
-    loadSources()
+  if (leadsCreatedSourceData.value?.length === 0) {
+    await loadSources()
   }
 
   if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
