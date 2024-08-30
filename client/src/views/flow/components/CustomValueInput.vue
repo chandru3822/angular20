@@ -272,7 +272,7 @@
           @input="handleInput"
           autocomplete="off"
         >
-          <template v-slot:prepend v-if="field.allowSelectSelf">
+          <template v-slot:prepend v-if="field.allowSelectSelf && !field.ancillaryCustomFieldGroupAssignmentId">
             <v-tooltip top small>
               <template v-slot:activator="{ on, attrs }">
                 <v-icon
