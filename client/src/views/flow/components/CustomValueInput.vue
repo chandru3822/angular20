@@ -673,7 +673,7 @@ const selectSelf = () => {
             //the first in the list of positions that also appears in the listOfValues is the newest position,
             // so select it and get out of the loop
             field.value.intValue = currentUserValues[0].id
-            return
+            break
           }
         }
       }
