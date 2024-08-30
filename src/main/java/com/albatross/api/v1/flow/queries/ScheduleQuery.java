@@ -138,7 +138,8 @@ public class ScheduleQuery {
           and ppse.resource_id is not null
           and case when :startTime::timestamp is not null and :endTime::timestamp is not null
                      then ppse.start_time between :startTime::timestamp and :endTime::timestamp OR
-                          ppse.end_time between :startTime::timestamp and :endTime::timestamp else 1=1 end
+                          ppse.end_time between :startTime::timestamp and :endTime::timestamp OR 
+                          :startTime::timestamp between ppse.start_time and ppse.end_time else 1=1 end
           and case when :isParent
                      then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                    else ps.company_id = :companyId end

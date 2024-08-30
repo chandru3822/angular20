@@ -1105,7 +1105,6 @@ const getAvailability = async (info) => {
         })
       }
     })
-    console.log(data)
     return data;
   } catch (e) {
     console.error('*** ERROR ***', e)
