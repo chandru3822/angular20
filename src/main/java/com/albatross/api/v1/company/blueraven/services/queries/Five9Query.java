@@ -67,8 +67,9 @@ public class Five9Query {
             where ccfv.custom_field_group_assignment_id = 399
               and ccfv.contact_id = pd.contact_id) in
            (700, 19205, 697)) -- contacts that are new, scheduled, or attempted contact
-    AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 7 -- Closer appointment within past 7 days
-      and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 1 -- Closer appointment at least 1 day old
+    AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 30 -- Closer appointment within past 30 days
+      and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 2 -- Closer appointment at least 2 day old
+      AND pd.lead_source_detail_name not in ('Sunset')
       and (select ppscfv.int_value
             from flow.project_process_step_custom_field_value ppscfv
             where ppscfv.custom_field_group_assignment_id = 26698 -- Appointment Type
