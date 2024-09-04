@@ -1787,8 +1787,10 @@ const showTotalSystemSize = computed(() => {
 })
 
 onMounted(async() => {
-  tomorrow.value.setDate(tomorrow.value.getDate()+1);
-  await getDropdownValues();
+  tomorrow.value.setDate(tomorrow.value.getDate()+1)
+  tomorrow.value = (tomorrow.value.getMonth()+1).toString().concat("/").concat(tomorrow.value.getDate()).concat("/").concat(tomorrow.value.getFullYear())
+  console.log(tomorrow.value)
+  await getDropdownValues()
   if (userStore.details.userPositions?.length > 0) {
     let positionId = null
 
