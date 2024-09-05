@@ -1077,13 +1077,14 @@ div#setter-dash-container {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 16px!important;
+  padding: 12px!important;
   gap: 10px;
   background-color: #fff;
   border-radius: 12px;
   margin: 5px 0;
   width: 100%;
   height: 130px;
+  overflow-y: auto;
 }
 
 .ranking-tables-card{
