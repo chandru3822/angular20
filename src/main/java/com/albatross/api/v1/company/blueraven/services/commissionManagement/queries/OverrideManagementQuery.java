@@ -239,12 +239,6 @@ public class OverrideManagementQuery {
     where o.org_type_id = 3
     and o.archived is false
     and o.active_flag is true
-    and not exists (
-        select id
-        from brs.override_plan op
-        where op.org_id = o.id
-        and op.status_id != 3
-    )
     order by o.org_name
   """;
 
