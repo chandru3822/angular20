@@ -674,7 +674,7 @@ const getDropdownValues = async()=>
       today: moment().format('YYYY-MM-DD')
     }
 
-    const {data, status} = await getRequestWithParams('/closerDashboard/dropdownValues', {params}, 'blueraven', [])
+    const {data, status} = await getRequestWithParams('/setterDashboard/dropdownValues', {params}, 'blueraven', [])
     dropdownValues.value = data
     isLoading.value = false
     handleHidingGlobalLoader(this, status)
