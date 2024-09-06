@@ -112,6 +112,15 @@ public class Five9Query {
                        AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
                                                          from flow.company_configuration_value
                                                       where code = 'PNB_EXCLUDED_USER_IDS')
+                       AND (select ppscfv.int_value
+                            from flow.project_process_step_custom_field_value ppscfv
+                            where ppscfv.custom_field_group_assignment_id = 26698 -- Appointment Type
+                              and ppscfv.project_process_step_id =
+                                  (select id from flow.project_process_step pps where pps.project_id = pd.project_id
+                                                                                  and pps.process_step_id = 1
+                                                                                  and pps.archived is false
+                                                                                  and pps.main is true)
+                            ) is null -- Appointment Type is null
                        )
     select id
     from results
@@ -148,6 +157,15 @@ public class Five9Query {
                        AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
                                                          from flow.company_configuration_value
                                                       where code = 'PNB_EXCLUDED_USER_IDS')
+                       AND (select ppscfv.int_value
+                            from flow.project_process_step_custom_field_value ppscfv
+                            where ppscfv.custom_field_group_assignment_id = 26698 -- Appointment Type
+                              and ppscfv.project_process_step_id =
+                                  (select id from flow.project_process_step pps where pps.project_id = pd.project_id
+                                                                                  and pps.process_step_id = 1
+                                                                                  and pps.archived is false
+                                                                                  and pps.main is true)
+                            ) is null -- Appointment Type is null
                        )
     select id
     from results
@@ -184,6 +202,15 @@ public class Five9Query {
                        AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
                                                          from flow.company_configuration_value
                                                       where code = 'PNB_EXCLUDED_USER_IDS')
+                       AND (select ppscfv.int_value
+                            from flow.project_process_step_custom_field_value ppscfv
+                            where ppscfv.custom_field_group_assignment_id = 26698 -- Appointment Type
+                              and ppscfv.project_process_step_id =
+                                  (select id from flow.project_process_step pps where pps.project_id = pd.project_id
+                                                                                  and pps.process_step_id = 1
+                                                                                  and pps.archived is false
+                                                                                  and pps.main is true)
+                            ) is null -- Appointment Type is null
                        )
     select id
     from results
