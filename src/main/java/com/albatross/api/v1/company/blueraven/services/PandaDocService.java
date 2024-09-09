@@ -478,7 +478,7 @@ public class PandaDocService {
        template = loadEmailTemplate();
     }
 
-    HashMap<String, Object> ctx = new HashMap<>();
+    Map<String, Object> ctx = new HashMap<>();
     ctx.put("customerFirstName", tokens.getString("Deal.Name").split(" ")[0]);
 
     return templateService.renderFreemarkerTemplate(template, ctx);
@@ -493,8 +493,10 @@ public class PandaDocService {
   private String loadEmailTemplate() throws IOException {
     try (InputStream in =
         PandaDocService.class.getResourceAsStream(
-            "/communication/templates/pandadoc-email.ftl.txt")) {
-      return new Scanner(in, StandardCharsets.UTF_8).useDelimiter("\\A").next();
+            "/communication/templates/pandadoc-email.ftl.txt");
+         Scanner scanner = new Scanner(in, StandardCharsets.UTF_8)
+    ) {
+      return scanner.useDelimiter("\\A").next();
     }
   }
 
@@ -507,8 +509,10 @@ public class PandaDocService {
   private String loadBreezeEmailTemplate() throws IOException {
     try (InputStream in =
            PandaDocService.class.getResourceAsStream(
-             "/communication/templates/pandadoc-breeze-email.ftl.txt")) {
-      return new Scanner(in, StandardCharsets.UTF_8).useDelimiter("\\A").next();
+             "/communication/templates/pandadoc-breeze-email.ftl.txt");
+         Scanner scanner = new Scanner(in, StandardCharsets.UTF_8)
+    ) {
+      return scanner.useDelimiter("\\A").next();
     }
   }
 
