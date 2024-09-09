@@ -569,7 +569,7 @@ const exportCsv = async (tableName) => {
       let filename = 'Setter Dashboard - Top Reps.csv'
       let csvData = ' , '
       if (dropdownValues.value.find(x => x.id === repDateRange.value).name === 'PERIOD') {
-        csvData += dropdownValues.value.find(x => x.id === repDateRange.value).periodList[repPeriod.value].shortLabel;
+        csvData += dropdownValues.value.find(x => x.id === repDateRange.value).periodList[topRepsPeriod.value].shortLabel;
       } else {
         csvData += ((dropdownValues.value.find(x => x.id === repDateRange.value).name === 'CUSTOM') ? repCustom.value.name : dropdownValues.value.find(x => x.id === repDateRange.value).friendlyName);
       }
@@ -591,7 +591,7 @@ const exportCsv = async (tableName) => {
       let filename = 'Setter Dashboard - Office Rank.csv'
       let csvData = ' , '
       if (dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).name === 'PERIOD') {
-        csvData += dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).periodList[officeFdcPeriod.value].shortLabel;
+        csvData += dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).periodList[officePeriod.value].shortLabel;
       } else {
         csvData += ((dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).name === 'CUSTOM') ? officeFdcCustom.value.name : dropdownValues.value.find(x => x.id === closerOfficeDateRange.value).friendlyName);
       }
