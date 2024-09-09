@@ -17,11 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
-
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/attachmentType", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -42,7 +37,11 @@ public class AttachmentTypeController {
 
   @DeleteMapping(value = "/delete/{typeId}")
   public ResponseEntity<List<FieldInUse>> deleteType(@PathVariable Long typeId) {
-    return attachmentTypeService.deleteType(typeId);
+    List<FieldInUse> fieldInUses = attachmentTypeService.deleteType(typeId);
+    if (fieldInUses.isEmpty()) {
+      return ResponseEntity.ok().build();
+    }
+    return ResponseEntity.badRequest().body(fieldInUses);
   }
 
   @PutMapping(value = "/type")
