@@ -3,12 +3,13 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ProjectStatusTypeController;
-import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.project.*;
+import com.albatross.api.v1.flow.model.CompanyProjectStatusType;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.project.CompanyProjectStatusFieldAssignment;
+import com.albatross.api.v1.flow.model.project.ProjectStatusType;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.queries.ProjectStatusQuery;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,28 +23,21 @@ import java.util.*;
 public class ProjectStatusService {
 
   private final SqlCache sqlCache;
-
   private final SecurityService securityService;
-
-  private final AttachmentService attachmentService;
-
-
-  private final ObjectMapper om;
-
 
   public CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
     return sqlCache
-        .getBySql(
-          ProjectStatusQuery.getDefaultProjectStatusTypeByCompanyId,
-            Map.of("companyId", companyId),
-            CompanyProjectStatusType.class)
-        .orElse(null);
+      .getBySql(
+        ProjectStatusQuery.getDefaultProjectStatusTypeByCompanyId,
+        Map.of("companyId", companyId),
+        CompanyProjectStatusType.class)
+      .orElse(null);
   }
 
   public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     return sqlCache.queryBySql(ProjectStatusQuery.getStatusesForWqt, params, WorkQueueTypeProjectStatus.class);
   }
@@ -54,33 +48,27 @@ public class ProjectStatusService {
 
     if (null != projectId) {
       // had to change this so that a parent looking at a child project could still see project statuses
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
     }
 
     // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
-    List<ProjectStatusType> results =
-        sqlCache.queryBySql(
-          ProjectStatusQuery.getCompanyStatuses,
-            Map.of("companyId", companyId),
-            ProjectStatusType.class);
-
-    return results;
+    return sqlCache.queryBySql(
+      ProjectStatusQuery.getCompanyStatuses,
+      Map.of("companyId", companyId),
+      ProjectStatusType.class);
   }
 
   public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
-    Optional<ProjectStatusType> result =
-        sqlCache.getBySql(
-          ProjectStatusQuery.getOneCompanyStatus, Map.of("id", id), ProjectStatusType.class);
-
-    return result;
+    return sqlCache.getBySql(
+      ProjectStatusQuery.getOneCompanyStatus, Map.of("id", id), ProjectStatusType.class);
   }
 
   public void saveInitialProjectStatusType(Long companyProjectStatusTypeId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", companyProjectStatusTypeId);
     params.put("companyId", currentUser.getCompanyId());
     params.put("modifiedById", currentUser.trueUserId());
@@ -90,7 +78,7 @@ public class ProjectStatusService {
 
   public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
     User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
     params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
     params.put("projectStatusType", status.getProjectStatusType());
@@ -126,7 +114,7 @@ public class ProjectStatusService {
 
   public ResponseEntity<ProjectStatusTypeController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
     params.put("companyProjectStatusTypeId", id);
@@ -139,8 +127,7 @@ public class ProjectStatusService {
     if (!statusInUseByProjects && !statusInUseByActions && !statusInUseByEventRequirements && !statusInUseByProcessStepRequirements) {
       sqlCache.updateBySql(ProjectStatusQuery.deleteCompanyStatus, params);
       return ResponseEntity.ok().build();
-    }
-    else {
+    } else {
       ProjectStatusTypeController.CannotDeleteProjectStatus cannotDelete = new ProjectStatusTypeController.CannotDeleteProjectStatus();
       cannotDelete.setStatusInUseByProjects(statusInUseByProjects);
       cannotDelete.setStatusInUseByActions(statusInUseByActions);
