@@ -100,7 +100,9 @@ const getNextRelease = async () => {
   appStore.loading = true
   try {
     const {data, status} = await getRequest(`/release/next`)
-    nextRelease.value = data
+    if(data != null && data.releaseDate != null) {
+      nextRelease.value = data
+    }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
