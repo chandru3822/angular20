@@ -52,7 +52,7 @@ public class Five9Service {
 
   private Boolean referralValueSet = false;
 
-  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, String five9ContactListName, Long leadLevel) {
+  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, String five9ContactListName, Long leadLevel, String leadSource) {
     if (ObjectUtils.isEmpty(basicToken) || ObjectUtils.isEmpty(basicToken == null)) {
       return;
     }
@@ -84,8 +84,7 @@ public class Five9Service {
       b.addParameter("email", contact.getEmail() != null ? contact.getEmail() : "");
 
       boolean isRetarget = five9ContactListName != null ? five9ContactListName.contains("retarget") : false;
-      StringBuilder leadSourceHolder = new StringBuilder();
-      getCfvValues(b, values, leadSourceHolder);
+      getCfvValues(b, values);
       getAppointmentValues(contactId, b, isRetarget);
 
       // Only set the date/time created fields when Contact is created
@@ -107,7 +106,7 @@ public class Five9Service {
         contactListName = five9ContactListName;
       }
       else {
-        if (DIGITAL_LEAD_LEVELS.contains(leadLevel) && isValidDigitalLeadSource(leadSourceHolder)) {
+        if (DIGITAL_LEAD_LEVELS.contains(leadLevel) && DIGITAL_LEAD_SOURCES.contains(leadSource)) {
           contactListName = "digitalleads";
         }
         else if (leadLevel == 50L) {
@@ -207,7 +206,7 @@ public class Five9Service {
     }
   }
 
-  private void getCfvValues(URIBuilder b, List<CustomFieldValue> values, StringBuilder leadSourceHolder) {
+  private void getCfvValues(URIBuilder b, List<CustomFieldValue> values) {
     for (CustomFieldValue cfv : values) {
       String value = "";
       if (cfv.getIntValue() != null) {
@@ -240,8 +239,6 @@ public class Five9Service {
       if (cfv.getFieldName() != null) {
         if (cfv.getFieldName().equals("Lead Source")) {
           b.addParameter("lead_source", value);
-          leadSourceHolder.setLength(0);
-          leadSourceHolder.append(value);
         } else if (cfv.getFieldName().equals("Lead Source Detail")) {
           b.addParameter("lead_source_detail", value);
         } else if (cfv.getFieldName().equals("Lead Status")) {
@@ -264,15 +261,6 @@ public class Five9Service {
         }
       }
     }
-  }
-
-  private boolean isValidDigitalLeadSource(StringBuilder leadSourceHolder) {
-    if (leadSourceHolder == null || leadSourceHolder.length() == 0) {
-      return false;
-    }
-    String leadSource = leadSourceHolder.toString().trim();
-
-    return !leadSource.isEmpty() && DIGITAL_LEAD_SOURCES.contains(leadSource);
   }
 
   public void processFive9Contacts() {
@@ -305,7 +293,29 @@ public class Five9Service {
           .findFirst()
           .orElse(null);
 
-        handleContact(contact.getId(), values, false, five9ContactListName, leadLevel);
+        String leadSource = "";
+        CustomFieldValue leadSourceCfv = values.stream()
+          .filter(cfv -> cfv != null && cfv.getFieldName() != null)
+          .filter(cfv -> cfv.getFieldName().equals("Lead Source"))
+          .filter(Objects::nonNull)
+          .findFirst()
+          .orElse(null);
+
+        Long leadSourceListOfValueId = leadSourceCfv.getIntValue();
+        if (leadSourceListOfValueId != null) {
+          ListOfValue selectedValue =
+            leadSourceCfv.getListOfValues()
+              .stream()
+              .filter(l -> l.getId().equals(leadSourceListOfValueId))
+              .findFirst()
+              .orElse(null);
+
+          if (selectedValue != null) {
+            leadSource = selectedValue.getName();
+          }
+        }
+
+        handleContact(contact.getId(), values, false, five9ContactListName, leadLevel, leadSource);
       } catch (Exception e) {
         log.error("FIVE9: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
       }
