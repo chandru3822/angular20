@@ -272,7 +272,13 @@
           @input="handleInput"
           autocomplete="off"
         >
-          <template v-slot:prepend v-if="field.allowSelectSelf && !field.ancillaryCustomFieldGroupAssignmentId">
+          <template
+            v-slot:prepend
+            v-if="
+              field.allowSelectSelf &&
+              !field.ancillaryCustomFieldGroupAssignmentId
+            "
+          >
             <v-tooltip top small>
               <template v-slot:activator="{ on, attrs }">
                 <v-icon
@@ -554,6 +560,7 @@ const rules = computed(() => {
         `Value must be greater than or equal to ${field.value.minValue}`
     )
   }
+
   if (field.value.maxValue) {
     rules.push(
       (v) =>

@@ -11,7 +11,10 @@ import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.Lo
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalDesignMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalResource;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalToolQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
@@ -58,6 +61,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -169,21 +173,21 @@ public class BlueravenProposalService {
     try {
       //get the design object for a design id we know of
       AuroraProxy.DesignSummary designSummary = auroraProxy.getDesignSummary(designId);
-      if(designSummary.getProjectId().isPresent()) {
+      if (designSummary.getProjectId().isPresent()) {
         //update the owner in aurora to the person creating the new design
         auroraProxy.updateAuroraProjectOwner(designSummary.getProjectId().get(), auroraUserId);
 
         //if not using the exact design id passed in then, using the project id of ^^ that design, get all designs for that project in aurora
         AuroraDesignListDTO designsForProject = new AuroraDesignListDTO();
-        if(!useExactDesign) {
+        if (!useExactDesign) {
           designsForProject = auroraProxy.getDesignsForProject(designSummary.getProjectId().get());
         }
 
-        if(useExactDesign || (null != designsForProject && null != designsForProject.getDesigns() && !designsForProject.getDesigns().isEmpty())) {
+        if (useExactDesign || (null != designsForProject && null != designsForProject.getDesigns() && !designsForProject.getDesigns().isEmpty())) {
 
           //get the oldest one which is the last one in this array.
           AuroraDesignNotWrappedDTO firstDesign;
-          if(useExactDesign) {
+          if (useExactDesign) {
             firstDesign = new AuroraDesignNotWrappedDTO();
             //this is the only field we use and the first if check ensures this id is valid
             firstDesign.setId(designId);
@@ -197,7 +201,7 @@ public class BlueravenProposalService {
           //duplicate that first design with the design name passed in
           AuroraDesignWrappedDTO auroraDesignWrappedDTO = auroraProxy.duplicateDesign(firstDesign.getId(), designName);
 
-          if(null != auroraDesignWrappedDTO.getId()) {
+          if (null != auroraDesignWrappedDTO.getId()) {
             //find the design on our side that is using the firstDesignId...check the designedByAuroraField
             Boolean designedByAurora = useExactDesign ? false : getDesignedByAuroraValue(projectId, firstDesign.getId());
 
@@ -223,7 +227,7 @@ public class BlueravenProposalService {
     }
   }
 
-  public Boolean getDesignedByAuroraValue (Long projectId, String firstDesignId) {
+  public Boolean getDesignedByAuroraValue(Long projectId, String firstDesignId) {
     //using the first created aurora design id, find our pps using that design and find the designed by aurora value
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
@@ -241,15 +245,15 @@ public class BlueravenProposalService {
     //first check to see if they are an existing aurora user
     Optional<String> auroraUserId = getAuroraUserId();
 
-    if(auroraUserId.isPresent()) {
+    if (auroraUserId.isPresent()) {
       //then check for any existing design id on a Create Proposal Design step, if found use the oldest, then do duplicateExistingProposalAi
       Optional<String> oldestDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getOldestDesignIdForProject, params, String.class);
-      if(oldestDesignId.isPresent()) {
+      if (oldestDesignId.isPresent()) {
         return duplicateExistingProposalAi(auroraUserId.get(), projectId, oldestDesignId.get(), values, false);
       } else {
         //then check for any existing design id on a Create Predesign step, if found use the oldest then do new function to be made
         Optional<String> createPredesignDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getDesignIdForCreatePredesignStep, params, String.class);
-        if(createPredesignDesignId.isPresent()) {
+        if (createPredesignDesignId.isPresent()) {
           return duplicateExistingProposalAi(auroraUserId.get(), projectId, createPredesignDesignId.get(), values, true);
         } else {
           //if none of those then createNewAuroraProjectAndDesign
@@ -272,11 +276,11 @@ public class BlueravenProposalService {
     Optional<String> auroraUserId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getAuroraUserId, params, String.class);
 
     //if we dont have it stored locally try to find it from aurora then save it locally
-    if(auroraUserId.isEmpty()) {
+    if (auroraUserId.isEmpty()) {
       try {
         AuroraUserListDTO users = auroraProxy.getUserList();
         Optional<AuroraUser> matchingUser = users.getUsers().stream().filter(u -> u.getEmail().equalsIgnoreCase(currentUser.getEmail())).findFirst();
-        if(matchingUser.isPresent()) {
+        if (matchingUser.isPresent()) {
           //if an aurora user id was found, save it locally
           params.put("auroraUserId", matchingUser.get().getId());
           sqlCache.queryBySql(ProposalQuery.saveAuroraUserId, params, String.class);
@@ -377,11 +381,11 @@ public class BlueravenProposalService {
   public Optional<ProposalDesign> getActiveDesign(@NonNull Long projectId) {
     Optional<ProposalDesign> activeDesign = sqlCache.getBySql(ProposalQuery.getActiveDesign, Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
 
-    if(activeDesign.isPresent() && activeDesign.get().getCompanyProcessStepStatusTypeId().equals(1649L)) {
+    if (activeDesign.isPresent() && activeDesign.get().getCompanyProcessStepStatusTypeId().equals(1649L)) {
       //need to get the aurora project id if this was created by aurora stuff
       try {
         AuroraProxy.DesignSummary designSummary = auroraProxy.getDesignSummary(activeDesign.get().getDesignId());
-        if(designSummary.getProjectId().isPresent()) {
+        if (designSummary.getProjectId().isPresent()) {
           activeDesign.get().setAuroraProjectId(designSummary.getProjectId().get());
         }
       } catch (IOException e) {
@@ -561,20 +565,20 @@ public class BlueravenProposalService {
 
     //filter out any custom fields that _should_ have a list of values but don't (previously filtered)
     proposal.getCustomFieldGroups()
-      .forEach(cfg -> {
-        List<CustomFieldValue> list = cfg.getCustomFieldValues().stream()
-          .filter(cfv -> {
-            if (!cfv.getHasListValues()) {
-              return true;
-            }
-            return cfv.getListOfValues() != null && !cfv.getListOfValues().isEmpty();
-          })
-          .toList();
-
-        cfg.setCustomFieldValues(list);
-      });
+      .forEach(cfg -> cfg.setCustomFieldValues(cfg.getCustomFieldValues().stream()
+        .filter(getCustomFieldValuePredicate())
+        .toList()));
 
     return Optional.of(proposal);
+  }
+
+  private Predicate<CustomFieldValue> getCustomFieldValuePredicate() {
+    return cfv -> {
+      if (!cfv.getHasListValues()) {
+        return true;
+      }
+      return cfv.getListOfValues() != null && !cfv.getListOfValues().isEmpty();
+    };
   }
 
   private void filterCustomFieldValues(CustomFieldValue cfv, List<Long> filter, boolean skipIfEmpty) {

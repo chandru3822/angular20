@@ -360,6 +360,8 @@ public class ProposalQuery {
                                                          cfga.hidden                                                        as "customFieldGroupAssignmentHidden",
                                                          cfga.use_parent_data                                               as "useParentData",
                                                          cfga.conditional_on_cfga_id                                        as "conditionalOnId",
+                                                         cfga.min_value                                                     as "minValue",
+                                                         cfga.max_value                                                     as "maxValue",
                                                          cfga.visibility                                                    as "visibility",
                                                          coalesce(cf.list_of_value_id, flowCf.list_of_value_id)             as "listOfValueId",
                                                          coalesce(cf.field_name, flowCf.field_name)                         as "fieldName",
