@@ -51,9 +51,9 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Short Window"
-                                  :disabled="!editType"
-                                  v-model.number="workQueueType.shortWindow"></a-text-field>
+                      label="Short Window"
+                      :disabled="!editType"
+                      v-model.number="workQueueType.shortWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <a-autocomplete
@@ -70,9 +70,9 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Long Window"
-                                  :disabled="!editType"
-                                  v-model.number="workQueueType.longWindow"></a-text-field>
+                      label="Long Window"
+                      :disabled="!editType"
+                      v-model.number="workQueueType.longWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <a-autocomplete
@@ -89,9 +89,9 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Expected Cycle"
-                                  :disabled="!editType"
-                                  v-model.number="workQueueType.expectedCycle"></a-text-field>
+                      label="Expected Cycle"
+                      :disabled="!editType"
+                      v-model.number="workQueueType.expectedCycle"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <a-autocomplete
@@ -109,10 +109,10 @@
                 <tr>
                   <td class="wqt-row pr-2">
                     <a-text-field
-                                  label="Expected Target % (between 0 and 1)"
-                                  :disabled="!editType"
-                                  :rules="expectedTargetRule"
-                                  v-model.number="workQueueType.expectedTarget"></a-text-field>
+                      label="Expected Target % (between 0 and 1)"
+                      :disabled="!editType"
+                      :rules="expectedTargetRule"
+                      v-model.number="workQueueType.expectedTarget"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <label>Inverse Expectation: </label>
@@ -165,9 +165,9 @@
           @selected-changed="workQueueTypeHiddenSelectedEventListener"
           @allow-changed="workQueueTypeHiddenAllowEventListener"
           @checkbox-changed="workQueueTypeHiddenCheckboxEventListener"></multi-select-group>
-            <br/>
-            <a-btn v-if="userCanEdit" color="primary" class="d-inline-block white--text"
-                   @click="saveHiddenAndWhiteList()" prepend-icon="save" text="Save"/>
+        <br/>
+        <a-btn v-if="userCanEdit" color="primary" class="d-inline-block white--text"
+               @click="saveHiddenAndWhiteList()" prepend-icon="save" text="Save"/>
       </v-col>
     </v-row>
     <v-row v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
@@ -178,11 +178,11 @@
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
               <a-btn variant="text" color="primary" v-if="!editSchedule" class=""
-                               @click="[editSchedule = !editSchedule, savePrevSchedule()]" prepend-icon="edit"/>
+                     @click="[editSchedule = !editSchedule, savePrevSchedule()]" prepend-icon="edit"/>
               <a-btn variant="text" color="primary" class="" v-else
-                               @click="saveType()" prepend-icon="save"/>
+                     @click="saveType()" prepend-icon="save"/>
               <a-btn variant="text" color="primary" v-if="editSchedule" class=""
-                               @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="Cancel" :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''" hide-text-on-mobile/>
+                     @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="Cancel" :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''" hide-text-on-mobile/>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -230,27 +230,27 @@
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
               <a-btn
-                  v-if="!editDefaultFields"
-                  variant="text"
-                  color="primary"
-                  @click="editDefaultFields = !editDefaultFields"
-                  prepend-icon="edit"
+                v-if="!editDefaultFields"
+                variant="text"
+                color="primary"
+                @click="editDefaultFields = !editDefaultFields"
+                prepend-icon="edit"
               ></a-btn>
               <a-btn
-                  v-else
-                  variant="text"
-                  color="primary"
-                  @click="saveType()"
-                  prepend-icon="save"
+                v-else
+                variant="text"
+                color="primary"
+                @click="saveType()"
+                prepend-icon="save"
               ></a-btn>
               <a-btn
-                  variant="text"
-                  color="primary"
-                  v-if="editDefaultFields"
-                  @click="editDefaultFields = false"
-                  text="Cancel"
-                  hide-text-on-mobile
-                  :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
+                variant="text"
+                color="primary"
+                v-if="editDefaultFields"
+                @click="editDefaultFields = false"
+                text="Cancel"
+                hide-text-on-mobile
+                :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
               ></a-btn>
             </div>
           </v-toolbar-items>
@@ -283,6 +283,7 @@
         :can-edit="userIsAdmin"
         :smartlist-id="workQueueType.smartlistId"
         :company-object-types="filteredCompanyObjectTypes"
+        @customColumns="setCustomColumns"
       />
 
       <a-btn color="primary" class="white--text build-sql" @click="buildSql"
@@ -290,6 +291,70 @@
       <div>
         {{ sql }}
       </div>
+    </v-row>
+
+    <v-row>
+      <v-toolbar flat>
+        <v-toolbar-title class="title-large">Default Sorting Options</v-toolbar-title>
+        <v-spacer/>
+        <v-toolbar-items>
+          <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
+            <a-btn
+              v-if="!editSortColumns"
+              variant="text"
+              color="primary"
+              @click="editSortColumns = !editSortColumns"
+              prepend-icon="edit"
+            ></a-btn>
+            <a-btn
+              v-else
+              variant="text"
+              color="primary"
+              @click="saveType()"
+              prepend-icon="save"
+            ></a-btn>
+            <a-btn
+              variant="text"
+              color="primary"
+              v-if="editSortColumns"
+              @click="editSortColumns = false"
+              text="Cancel"
+              hide-text-on-mobile
+              :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
+            ></a-btn>
+          </div>
+        </v-toolbar-items>
+      </v-toolbar>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
+        <v-data-table
+          :headers="sortColumnHeaders"
+          :items="sortColumns"
+          disable-sort
+        >
+          <template #item.column=" { item }">
+            <a-autocomplete
+              v-model="item.value"
+              :items="sortColumnOptions"
+              :disabled="!editSortColumns"
+              clearable
+              @change="updateSortOrder"
+            >
+            </a-autocomplete>
+          </template>
+          <template #item.sortDesc="{ item }">
+            <a-btn
+              v-model="item.sortDesc"
+              @click="item.sortDesc = !item.sortDesc"
+              :disabled="!editSortColumns"
+              variant="text"
+              :prepend-icon="item.sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up'"
+            ></a-btn>
+          </template>
+
+        </v-data-table>
+      </v-col>
     </v-row>
 
   </v-container>
@@ -387,6 +452,17 @@ const filteredCompanyObjectTypes = computed(() =>{
   return companyObjectTypes.value.filter(t => objectTypeIds.includes(t.objectTypeId))
 })
 
+const setCustomColumns = (customColumnData) => {
+  customColumns.value = customColumnData
+  customColumns.value.forEach(cc => {
+    sortColumnOptions.value.push(
+      { text: cc.name,
+        value: cc.name
+      }
+    )
+  })
+}
+
 const workQueueTypeId = computed(() => {
   return route.params.id
 })
@@ -411,6 +487,51 @@ const userId = computed(() => {
 const is7oaksAdmin = computed(() => {
   return userStore.isSystemAdmin
 })
+
+
+const editSortColumns = ref(false)
+const customColumns = ref(null)
+
+const sortColumns = ref([])
+
+const updateSortOrder = () => {
+  let columnValues = sortColumns.value.filter(sc => {
+    if (sc.value !== null) {
+      return sc
+    }
+  })
+  let nullValues = sortColumns.value.filter (sc => {
+    if (sc.value === null) {
+      return sc
+    }
+  })
+  nullValues?.forEach(nv => {
+    columnValues = columnValues.concat(nv)
+  })
+  columnValues = cloneDeep(columnValues)
+  let i = 0
+  sortColumns.value.forEach((sc) => {
+    if (columnValues[i]) {
+      if (columnValues[i].value === null) {
+        sc.value = null
+        sc.sortDesc = false
+      } else {
+        sc.value = columnValues[i].value
+        sc.sortDesc = columnValues[i].sortDesc
+      }
+    }
+    i++
+  })
+
+}
+
+const sortColumnHeaders = ref([
+  {text: 'Sorting', value: 'columnSortingOrder'},
+  {text: 'Column', value: 'column'},
+  {text: 'Sort Direction', value: 'sortDesc'},
+])
+
+const sortColumnOptions = ref([])
 
 onMounted( async () => {
   appStore.loading = true
@@ -488,7 +609,7 @@ const saveHiddenAndWhiteList = async () => {
 const buildSql = async () => {
   try {
     const {data} = await getRequestWithParams(`/workQueue/smartlist/${workQueueType.value.smartlistId}/buildSql`, {params: {
-      useEventData: workQueueType.value.useEventData
+        useEventData: workQueueType.value.useEventData
       }})
     sql.value = data
     navigator.clipboard.writeText(sql.value);
@@ -545,6 +666,14 @@ const getWorkQueueType = async () => {
 
     appStore.loading = false
   }
+  defaultFields.value.forEach(df => {
+    sortColumnOptions.value.push(
+      {text: df.text, value: df.value}
+    )
+  })
+
+  sortColumns.value = workQueueType.value?.columnSortingOrder
+
 }
 const getAllWorkQueueCategories = async () => {
   try {
@@ -558,12 +687,16 @@ const getAllWorkQueueCategories = async () => {
   }
 }
 const saveType = async () => {
+
   if (wqtForm.value.validate() && validateSchedule()) {
+    workQueueType.value.columnSortingOrder = sortColumns.value
+
     appStore.loading = true
     try {
       const {data, status} = await putRequest(`/workQueueType/type`, workQueueType.value)
       workQueueType.value = data
       editType.value = false
+      editSortColumns.value = false
       editSchedule.value = false
       appStore.showSnack('SUCCESS', 'Work Queue Type Saved')
       handleHidingGlobalLoader(status)
@@ -646,7 +779,6 @@ const  updateDefaultFields = (fieldName) => {
   workQueueType.value?.defaultColumnDisplay.forEach((c) => {
     if (fName === c.text) {
       c.show = !fShow
-      console.log(`Updated ${c.text} field from ${fShow} to ${c.show}`)
     }
   })
   defaultFields.value = workQueueType.value?.defaultColumnDisplay

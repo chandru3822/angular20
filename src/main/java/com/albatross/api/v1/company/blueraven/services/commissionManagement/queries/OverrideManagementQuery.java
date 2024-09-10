@@ -5,8 +5,8 @@ public class OverrideManagementQuery {
   //language=PostgreSQL
   public final static String create = """
     INSERT INTO brs.override_plan
-    (name, description, position_id, total, created_by, created, updated_by, updated)
-    VALUES (:name, :description, :positionId, :total, :createdBy, now(), :createdBy, now())
+    (name, description, position_id, total, created_by, created, updated_by, updated, org_id)
+    VALUES (:name, :description, :positionId, :total, :createdBy, now(), :createdBy, now(), :orgId)
     RETURNING id
     """;
 
@@ -53,6 +53,7 @@ public class OverrideManagementQuery {
     description = :description,
     position_id = :positionId,
     total       = :total,
+    org_id      = :orgId,
     updated_by  = :updatedBy,
     updated     = now()
     WHERE id = :id
@@ -213,7 +214,7 @@ public class OverrideManagementQuery {
     """;
 
   //language=PostgreSQL
-  public final static String inactivate = """
+  public final static String saveStatus = """
     UPDATE brs.override_plan
     SET updated     = now(),
       updated_by  = :updatedBy,
@@ -232,6 +233,16 @@ public class OverrideManagementQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getSalesOrgs = """
+    select o.id, o.org_name
+    from flow.org o
+    where o.org_type_id = 3
+    and o.archived is false
+    and o.active_flag is true
+    order by o.org_name
+  """;
+
+  //language=PostgreSQL
   public final static String listAll = """
     SELECT array_to_json(array_agg(row_to_json(t)))
     FROM (
@@ -241,7 +252,9 @@ public class OverrideManagementQuery {
           op.description,
           op.position_id as "positionId",
           op.total,
+          op.org_id as "orgId",
           ops.status_type AS status,
+          op.status_id as "statusId",
           count(au.*)
             FILTER (WHERE au.start_date <= now() AND (end_date IS NULL OR au.end_date > now()))
              as "activeAssignedUsers",
@@ -311,6 +324,8 @@ FROM (SELECT op.id,
              op.name,
              op.description,
              op.total,
+             op.org_id as "orgId",
+             o.org_name as "orgName",
              ops.status_type                                                           AS status,
              op.position_id                                                             AS "positionId",
              (SELECT row_to_json(u)
@@ -372,6 +387,7 @@ FROM (SELECT op.id,
                              GROUP BY 1, 2, 3, 4, 5) u), '[]')                    AS "assignedUsers"
       FROM brs.override_plan op
                INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
+               left join flow.org o on o.id = op.org_id
       WHERE op.id = :id) t;
     """;
 

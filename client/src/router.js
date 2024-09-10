@@ -402,13 +402,13 @@ const router = new Router({
               path: 'dashboard',
               name: 'setterDashboard',
               meta: {title: 'Albatross - Setter Dashboard'},
-              component: () => import ( './views/blueraven/setterDashboard/SetterDashboard.vue')
+              component: () => import ( './views/blueraven/setterDashboard/SetterPerformance.vue')
             }, {
               path: 'funnel',
               alias: '/setterDashboard',
               name: 'setterFunnel',
               meta: {title: 'Albatross - Setter Dashboard'},
-              component: () => import ( './views/blueraven/setterDashboard/SetterFunnel.vue')
+              component: () => import ( './views/blueraven/setterDashboard/SetterFunnelRework.vue')
             }, {
               path: 'incentive',
               name: 'setterIncentive',
@@ -718,7 +718,19 @@ const router = new Router({
                   return accessDenied()
                 }
               },
-            }, {
+            },
+            {
+              path: 'releases',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (userStore.userHasFeatureAccessLevel('RELEASES', 'VIEW')) {
+                  return import ( './views/flow/settings/releases/Releases.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },
+            {
                   path: 'tournaments',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
@@ -1382,6 +1394,18 @@ const router = new Router({
                       return accessDenied()
                     }
                   },
+                },
+                {
+                  path: 'holidays',
+                  props: true,
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                    if (userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')) {
+                      return import ("./views/flow/settings/availability/Holidays.vue")
+                    } else {
+                      return accessDenied()
+                    }
+                  }
                 }
               ]
             }, {

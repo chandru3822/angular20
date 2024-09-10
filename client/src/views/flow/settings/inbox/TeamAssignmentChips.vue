@@ -1,5 +1,5 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <v-chip-group column class="team-chips">
+  <v-chip-group :column="!miniDialog" class="team-chips" show-arrows="always" :class="{'mini': miniDialog}">
     <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap" :key="index">
         <v-chip v-if="team.users.length === 0"
                 label
@@ -368,5 +368,11 @@ const getSmsAccess = async () => {
 
 .remove-dialog-option-info {
   color: var(--v-grey-darken1);
+}
+
+#schedule-resource-message-dialog > div.d-flex.flex-column.one-hunned.px-0.sticky-header.srmd-header > div.one-hunned > div.mini {
+  //margin-left: -60px !important;
+  padding-left: 0 !important;
+  margin-left: -4px !important;
 }
 </style>

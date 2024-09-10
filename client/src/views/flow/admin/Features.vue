@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <a-btn :hide-text-on-mobile="true" prepend-icon="add"
                              variant="text"
-                             text="Blah"
+                             text="Add"
                              @click="[addNew = !addNew, selectedFeature = {}]">
             </a-btn>
           </v-toolbar-items>

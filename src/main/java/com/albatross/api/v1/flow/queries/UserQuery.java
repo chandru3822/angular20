@@ -282,7 +282,17 @@ public class UserQuery {
                                                 inner join flow.org o on o.id = up.org_id
                                                 left join flow.company_state cs on cs.id = o.company_state_id
                                        WHERE up.user_id = t1.id
-                                         and up.archived is not true) positions), '[]') AS "userPositions"
+                                         and up.archived is not true) positions), '[]') AS "userPositions",
+                coalesce((select p.sms_enabled
+                        from flow.user_position up
+                        inner join flow.position p on p.id = up.position_id
+                        inner join flow.company_user_status cus on cus.user_id = up.user_id
+                        inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+                        where up.user_id = t1.id
+                        and up.primary_flag is true
+                        and up.archived is not true
+                        and ust.has_access is true
+                        and p.company_id = :companyId), false) as "hasSMSAccess"
           from t1
             order by full_name
     """;

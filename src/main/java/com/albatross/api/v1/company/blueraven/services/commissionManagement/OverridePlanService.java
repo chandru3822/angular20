@@ -10,6 +10,7 @@ import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUs
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.OverrideManagementQuery;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -55,7 +56,7 @@ public class OverridePlanService {
 
     @Data
     public static class OverridePlan {
-        private Long id, positionId;
+        private Long id, positionId, orgId;
         private Integer statusId;
         private Double total = 0.0;
         private String name, description;
@@ -90,6 +91,7 @@ public class OverridePlanService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("name", overridePlan.getName());
         params.put("description", overridePlan.getDescription());
+        params.put("orgId", overridePlan.getOrgId());
         params.put("positionId", overridePlan.getPositionId());
         params.put("total", overridePlan.getTotal());
 
@@ -114,6 +116,11 @@ public class OverridePlanService {
         params.put("positionId", positionId);
         List<String> query = sqlCache.queryBySql(OverrideManagementQuery.listAll, params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? "[]" : query.get(0);
+    }
+
+    public List<Org> getAvailableSalesOffices() {
+        List<Org> results = sqlCache.queryBySql(OverrideManagementQuery.getSalesOrgs, Collections.emptyMap(), Org.class);
+        return results;
     }
 
   public void saveProjectToPlan(Long planId, Long projectId) {
@@ -355,13 +362,13 @@ public class OverridePlanService {
         sqlCache.updateBySql(OverrideManagementQuery.approve, params);
     }
 
-    public void inactivatePlan(Long planId) {
+    public void setStatus(Long planId, Long statusId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("updatedBy", securityService.getCurrentUser().trueUserId());
-        params.put("statusId", OverridePlanStatus.INACTIVE.getId());
+        params.put("statusId", statusId);
 
-        sqlCache.updateBySql(OverrideManagementQuery.inactivate, params);
+        sqlCache.updateBySql(OverrideManagementQuery.saveStatus, params);
     }
 
     //    TODO: we need some checks around this

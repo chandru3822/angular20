@@ -67,6 +67,7 @@ const syncSearchBar = () => {
   // update search bar based on filter input
   if (filterSelection.value) {
     searchString.value = props.filterOptions.find(f => filterSelection.value === f.value).text.concat(': ')
+    stickyStore.projectSearchString = searchString.value
   } else {
     searchString.value = ''
     filterSelection.value = ''
@@ -97,10 +98,11 @@ const syncFilter = () => {
   if (data) {
     const searchForFilter = data[1].replace(':', '').trim().toLowerCase()
     filterSelection.value = props.filterOptions.find((p) => p.text.toLowerCase() === searchForFilter).value
+    stickyStore.projectFilter = filterSelection.value
   } else {
     filterSelection.value = ""
   }
-  stickyStore.projectSearchString = searchString.value
+
 }
 
 const createSearchRegex = () => {
@@ -124,6 +126,7 @@ onMounted(() => {
   if (stickyStore.projectSearchString !== '') {
     searchString.value = stickyStore.projectSearchString
   }
+  debouncedSyncFilter()
 })
 
 onBeforeRouteLeave(async (to, from, next) => {

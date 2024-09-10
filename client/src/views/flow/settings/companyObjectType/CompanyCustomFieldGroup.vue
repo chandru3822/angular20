@@ -2,9 +2,13 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12" id="columnTables">
-        <v-container v-for="n in numberOfCols" >
-          <span v-if="objectType && objectType.customColumns"
-                class="albatross-header-4 mb-2">Column {{ numberValues[n] }}</span>
+        <v-container v-for="n in numberOfCols">
+          <span
+            v-if="objectType && objectType.customColumns"
+            class="albatross-header-4 mb-2"
+          >
+            Column {{ numberValues[n] }}
+          </span>
           <v-data-table
             :id="`column${n}Table`"
             :headers="headers"
@@ -16,7 +20,7 @@
             :expanded.sync="expanded[n]"
             hide-default-footer
             hide-default-header
-            :class="{'fix-column-width-bug': !isMobile}"
+            :class="{ 'fix-column-width-bug': !isMobile }"
             class="elevation-1 mb-5 draggable-table table-striped"
           >
             <template #no-data>
@@ -31,12 +35,18 @@
             <template #item="{ item, index }">
               <tr>
                 <td style="width: 50px">
-                  <a-btn variant="text" color="primary" icon size="small" class="handle" v-if="userCanEdit" prepend-icon="drag_handle"/>
+                  <a-btn
+                    variant="text"
+                    color="primary"
+                    icon
+                    size="small"
+                    class="handle"
+                    v-if="userCanEdit"
+                    prepend-icon="drag_handle"
+                  />
                 </td>
                 <td class="text-left group-name-col">
-                  <a-text-field
-                                v-if="item.edit"
-                                v-model="item.groupName">
+                  <a-text-field v-if="item.edit" v-model="item.groupName">
                   </a-text-field>
                   <span v-else>{{ item.groupName }}</span>
                 </td>
@@ -44,26 +54,42 @@
                   <div class="item-icons" v-if="!isMobile">
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <a-btn variant="text" icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                               :activation-handler="on" prepend-icon="mdi-information"/>
+                        <a-btn
+                          variant="text"
+                          icon
+                          color="primary"
+                          @click="copyToClipBoard(item.id)"
+                          v-bind="attrs"
+                          :activation-handler="on"
+                          prepend-icon="mdi-information"
+                        />
                       </template>
                       <span>Custom Field Group Id: {{ item.id }}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
-                      <a-btn size="small" variant="text" color="primary"
-                             @click="item.edit = !item.edit"
-                             :prepend-icon="item.edit ? 'remove' : 'edit'"
+                      <a-btn
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        @click="item.edit = !item.edit"
+                        :prepend-icon="item.edit ? 'remove' : 'edit'"
                       />
-                      <a-btn size="small" variant="text" color="primary"
-                             v-if="item.edit"
-                             @click="[saveGroup(item), item.edit = false]"
-                             prepend-icon="save"
+                      <a-btn
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="item.edit"
+                        @click=";[saveGroup(item), (item.edit = false)]"
+                        prepend-icon="save"
                       />
-
                     </div>
-                    <v-menu offset-y
-                            v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                    <v-menu
+                      offset-y
+                      v-if="
+                        userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+                      "
+                    >
                       <template v-slot:activator="{ on: menu }">
                         <v-tooltip bottom>
                           <template v-slot:activator="{ on: tooltip }">
@@ -71,7 +97,7 @@
                               variant="text"
                               size="small"
                               color="primary"
-                              :activation-handler="{...tooltip, ...menu}"
+                              :activation-handler="{ ...tooltip, ...menu }"
                               v-if="objectType && objectType.customColumns"
                               prepend-icon="mdi-cursor-move"
                             />
@@ -80,9 +106,14 @@
                         </v-tooltip>
                       </template>
                       <v-list>
-                        <v-list-item v-for="num in numberOfCols" v-if="n !== num"
-                                     @click="moveCustomFieldGroupToColumn(item, num)">
-                          <v-list-item-title>{{ `Column ${numberValues[num]}` }}</v-list-item-title>
+                        <v-list-item
+                          v-for="num in numberOfCols"
+                          v-if="n !== num"
+                          @click="moveCustomFieldGroupToColumn(item, num)"
+                        >
+                          <v-list-item-title>{{
+                            `Column ${numberValues[num]}`
+                          }}</v-list-item-title>
                         </v-list-item>
                       </v-list>
                     </v-menu>
@@ -91,76 +122,158 @@
                       variant="text"
                       color="primary"
                       v-if="userCanAdd"
-                      @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]"
-                      :prepend-icon="addField && expanded[n].includes(item) ? 'remove' : 'add'"
+                      @click="
+                        ;[
+                          (addField = !addField),
+                          fetchAvailableCustomFields(item.id),
+                          (expanded[n] = [item]),
+                          (selectedIndex = index)
+                        ]
+                      "
+                      :prepend-icon="
+                        addField && expanded[n].includes(item)
+                          ? 'remove'
+                          : 'add'
+                      "
                     />
-                    <a-btn size="small" variant="text" color="primary"
-                           @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]"
-                           :prepend-icon="expanded[n].includes(item) ? 'expand_less' : 'expand_more'"
+                    <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="
+                        ;[
+                          expanded[n].includes(item)
+                            ? (expanded[n] = [])
+                            : (expanded[n] = [item]),
+                          (selectedIndex = index)
+                        ]
+                      "
+                      :prepend-icon="
+                        expanded[n].includes(item)
+                          ? 'expand_less'
+                          : 'expand_more'
+                      "
                     />
-                    <a-btn v-if="userCanEdit"
-                                     size="small" variant="text" color="primary" @click="cfgToDelete=item"
-                                     prepend-icon="delete"
+                    <a-btn
+                      v-if="userCanEdit"
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="cfgToDelete = item"
+                      prepend-icon="delete"
                     />
                   </div>
                   <!--div below reorders the buttons to make more sense when columns wrap-->
                   <div class="item-icons" v-else>
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <a-btn variant="text" icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                               :activation-handler="on"
-                               prepend-icon="mdi-information"
+                        <a-btn
+                          variant="text"
+                          icon
+                          color="primary"
+                          @click="copyToClipBoard(item.id)"
+                          v-bind="attrs"
+                          :activation-handler="on"
+                          prepend-icon="mdi-information"
                         />
                       </template>
-                      <span>Custom Field Group Id: {{item.id}}</span>
+                      <span>Custom Field Group Id: {{ item.id }}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
-                    <a-btn size="small" variant="text" icon color="primary"
-                           @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]"
-                           :prepend-icon="expanded[n].includes(item) ? 'expand_less' : 'expand_more'"
+                    <a-btn
+                      size="small"
+                      variant="text"
+                      icon
+                      color="primary"
+                      @click="
+                        ;[
+                          expanded[n].includes(item)
+                            ? (expanded[n] = [])
+                            : (expanded[n] = [item]),
+                          (selectedIndex = index)
+                        ]
+                      "
+                      :prepend-icon="
+                        expanded[n].includes(item)
+                          ? 'expand_less'
+                          : 'expand_more'
+                      "
                     />
-                    <a-btn size="small" variant="text" color="primary"
-                                     v-if="userCanAdd"
-                                     @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]"
-                                     :prepend-icon="addField && expanded[n].includes(item) ? 'remove' : 'add'"
+                    <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="userCanAdd"
+                      @click="
+                        ;[
+                          (addField = !addField),
+                          fetchAvailableCustomFields(item.id),
+                          (expanded[n] = [item]),
+                          (selectedIndex = index)
+                        ]
+                      "
+                      :prepend-icon="
+                        addField && expanded[n].includes(item)
+                          ? 'remove'
+                          : 'add'
+                      "
                     />
-                      <div v-if="userCanEdit" class="flex-display">
-                        <a-btn size="small" variant="text" color="primary"
-                                         @click="item.edit = !item.edit"
-                                         :prepend-icon="item.edit ? 'remove' : 'edit'"
-                        />
-                        <a-btn size="small" variant="text" color="primary"
-                               v-if="item.edit"
-                               @click="[saveGroup(item), item.edit = false]"
-                               prepend-icon="save"
-                        />
-                      </div>
-                      <v-menu offset-y
-                              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                        <template v-slot:activator="{ on: menu }">
-                          <v-tooltip bottom>
-                            <template v-slot:activator="{ on: tooltip }">
-                              <a-btn variant="text" size="small" color="primary" :activation-handler="{...tooltip, ...menu}"
-                                               v-if="objectType && objectType.customColumns"
-                                               prepend-icon="mdi-cursor-move"
-                              />
-                            </template>
-                            <span>Change Column</span>
-                          </v-tooltip>
-                        </template>
-                        <v-list>
-                          <v-list-item v-for="num in numberOfCols" v-if="n !== num"
-                                       @click="moveCustomFieldGroupToColumn(item, num)">
-                            <v-list-item-title>{{ `Column ${numberValues[num]}` }}</v-list-item-title>
-                          </v-list-item>
-                        </v-list>
-                      </v-menu>
+                    <div v-if="userCanEdit" class="flex-display">
+                      <a-btn
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        @click="item.edit = !item.edit"
+                        :prepend-icon="item.edit ? 'remove' : 'edit'"
+                      />
+                      <a-btn
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="item.edit"
+                        @click=";[saveGroup(item), (item.edit = false)]"
+                        prepend-icon="save"
+                      />
+                    </div>
+                    <v-menu
+                      offset-y
+                      v-if="
+                        userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+                      "
+                    >
+                      <template v-slot:activator="{ on: menu }">
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on: tooltip }">
+                            <a-btn
+                              variant="text"
+                              size="small"
+                              color="primary"
+                              :activation-handler="{ ...tooltip, ...menu }"
+                              v-if="objectType && objectType.customColumns"
+                              prepend-icon="mdi-cursor-move"
+                            />
+                          </template>
+                          <span>Change Column</span>
+                        </v-tooltip>
+                      </template>
+                      <v-list>
+                        <v-list-item
+                          v-for="num in numberOfCols"
+                          v-if="n !== num"
+                          @click="moveCustomFieldGroupToColumn(item, num)"
+                        >
+                          <v-list-item-title>{{
+                            `Column ${numberValues[num]}`
+                          }}</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
                     <a-btn
                       v-if="userCanEdit"
                       size="small"
                       variant="text"
                       color="primary"
-                      @click="cfgToDelete=item"
+                      @click="cfgToDelete = item"
                       prepend-icon="delete"
                     />
                   </div>
@@ -169,57 +282,83 @@
             </template>
 
             <template #expanded-item="{ headers, item, index }">
-              <td :colspan="headers.length" class="pb-2" :class="{'shaded-row': selectedIndex % 2}">
+              <td
+                :colspan="headers.length"
+                class="pb-2"
+                :class="{ 'shaded-row': selectedIndex % 2 }"
+              >
                 <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
-                  <v-radio-group v-if="objectType.allowAncillary"
-                                 v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
-                    <v-radio label="Native Custom Field"
-                             value="native"/>
-                    <v-radio label="Reference Field: viewed only from other process steps or objects"
-                             value="ancillary"/>
+                  <v-radio-group
+                    v-if="objectType.allowAncillary"
+                    v-model="newFieldType"
+                    @change="fetchAvailableCustomFields(item.id)"
+                  >
+                    <v-radio label="Native Custom Field" value="native" />
+                    <v-radio
+                      label="Reference Field: viewed only from other process steps or objects"
+                      value="ancillary"
+                    />
                   </v-radio-group>
-                  <a-autocomplete v-if="newFieldType === 'native'"
-                                  v-model="newField"
-                                  :items="availableCustomFields"
-                                  label="New Custom Field"
-                                  item-title="fieldName"
-                                  return-object
-                                  autocomplete="off"
-                                  @input="assignCustomField(item)">
+                  <a-autocomplete
+                    v-if="newFieldType === 'native'"
+                    v-model="newField"
+                    :items="availableCustomFields"
+                    label="New Custom Field"
+                    item-title="fieldName"
+                    return-object
+                    autocomplete="off"
+                    @input="assignCustomField(item)"
+                  >
                   </a-autocomplete>
-                  <a-autocomplete v-if="newFieldType === 'ancillary'"
-                                  v-model="parent"
-                                  :items="parentObjects"
-                                  label="Parent Object"
-                                  item-title="name"
-                                  return-object
-                                  autocomplete="off"
-                                  @input="loadFieldsByParent">
+                  <a-autocomplete
+                    v-if="newFieldType === 'ancillary'"
+                    v-model="parent"
+                    :items="parentObjects"
+                    label="Parent Object"
+                    item-title="name"
+                    return-object
+                    autocomplete="off"
+                    @input="loadFieldsByParent"
+                  >
                   </a-autocomplete>
-                  <a-autocomplete v-if="newFieldType === 'ancillary'"
-                                  v-model="selectedAncillaryField"
-                                  :items="ancillaryCustomFields"
-                                  label="Custom Field"
-                                  item-title="fieldName"
-                                  return-object
-                                  autocomplete="off"
-                                  @input="assignCustomField(item, true)">
+                  <a-autocomplete
+                    v-if="newFieldType === 'ancillary'"
+                    v-model="selectedAncillaryField"
+                    :items="ancillaryCustomFields"
+                    label="Custom Field"
+                    item-title="fieldName"
+                    return-object
+                    autocomplete="off"
+                    @input="assignCustomField(item, true)"
+                  >
                   </a-autocomplete>
                 </v-col>
-                <v-col cols="12" class="pl-3 pr-3 justify" v-if="!item.customFields || item.customFields.length === 0">
+                <v-col
+                  cols="12"
+                  class="pl-3 pr-3 justify"
+                  v-if="!item.customFields || item.customFields.length === 0"
+                >
                   No fields assigned to this group
                 </v-col>
                 <v-col cols="12" class="px-3 py-0 justify" v-else>
-                  <draggable v-model="item.customFields"
-                             v-if="item.customFields && item.customFields.length > 0"
-                             :disabled="!userCanEdit"
-                             group="customFields"
-                             @start="drag=true"
-                             @end="drag=false"
-                             @change="saveFieldChanges(item.customFields)">
-                    <v-list v-for="(cf, index) in filteredCustomFields (item.customFields)"
-                            :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
+                  <draggable
+                    v-model="item.customFields"
+                    v-if="item.customFields && item.customFields.length > 0"
+                    :disabled="!userCanEdit"
+                    group="customFields"
+                    @start="drag = true"
+                    @end="drag = false"
+                    @change="saveFieldChanges(item.customFields)"
+                  >
+                    <v-list
+                      v-for="(cf, index) in filteredCustomFields(
+                        item.customFields
+                      )"
+                      :key="index"
+                      class="pa-0"
+                      :class="{ 'shaded-row': selectedIndex % 2 }"
+                    >
                       <v-list-item class="grab pr-1">
                         <v-list-item-action v-if="userCanEdit">
                           <v-icon color="primary">drag_handle</v-icon>
@@ -229,50 +368,72 @@
                             {{ cf.fieldName }}
                           </div>
                           <div v-else>
-                            {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{ cf.fieldName }}
-                            (Ancillary)<br/>
+                            {{ cf.processStepName || cf.objectType }}:
+                            {{ cf.groupName }} -
+                            {{ cf.fieldName }} (Ancillary)<br />
                             <div v-if="cf.processStepName">
                               <label>Use Parent Data: </label>
-                              <input type="checkbox"
-                                     class="ml-3 mb-4"
-                                     v-model="cf.useParentData"
-                                     @change="saveUseParentData(cf)"
-                                     :readonly="!userCanEdit"
-                                     :disabled="!userCanEdit">
+                              <input
+                                type="checkbox"
+                                class="ml-3 mb-4"
+                                v-model="cf.useParentData"
+                                @change="saveUseParentData(cf)"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
+                              />
                             </div>
                           </div>
                           <div v-if="objectType.allowRequired">
                             <label>
-                              <input type="checkbox" v-model="cf.required" :readonly="!userCanEdit"
-                                     :disabled="!userCanEdit" @change="updateRequired(cf)">
+                              <input
+                                type="checkbox"
+                                v-model="cf.required"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
+                                @change="updateRequired(cf)"
+                              />
                               Required
                             </label>
                           </div>
 
                           <div v-if="objectType.allowConditional">
                             <label>
-                              <input type="checkbox" v-model="cf.hasConditionalOnId"
-                                     :disabled="!userCanEdit" @change="saveConditionalField(cf)"/>
+                              <input
+                                type="checkbox"
+                                v-model="cf.hasConditionalOnId"
+                                :disabled="!userCanEdit"
+                                @change="saveConditionalField(cf)"
+                              />
                               Conditional On
                             </label>
-                            <a-select v-model="cf.conditionalOnId"
-                                      v-if="cf.hasConditionalOnId"
-                                      :items="filterAvailableCustomFields(cf)"
-                                      item-value="customFieldGroupAssignmentId"
-                                      item-title="fieldName"
-                                      placeholder="Choose a field"
-                                      @change="saveConditionalField(cf)"
+                            <a-select
+                              v-model="cf.conditionalOnId"
+                              v-if="cf.hasConditionalOnId"
+                              :items="filterAvailableCustomFields(cf)"
+                              item-value="customFieldGroupAssignmentId"
+                              item-title="fieldName"
+                              placeholder="Choose a field"
+                              @change="saveConditionalField(cf)"
                             />
                           </div>
 
                           <div>
                             <div v-if="objectType.allowReadonly">
                               <label>
-                                <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly"
-                                       :disabled="!userCanEdit" @change="saveReadOnlyAndWhiteList(cf)"/>
+                                <input
+                                  type="checkbox"
+                                  v-model="
+                                    cf.customFieldGroupAssignmentReadOnly
+                                  "
+                                  :disabled="!userCanEdit"
+                                  @change="saveReadOnlyAndWhiteList(cf)"
+                                />
                                 Read Only
                               </label>
-                              <div v-if="cf.customFieldGroupAssignmentReadOnly" class="d-flex align-center">
+                              <div
+                                v-if="cf.customFieldGroupAssignmentReadOnly"
+                                class="d-flex align-center"
+                              >
                                 <a-autocomplete
                                   v-if="cf.customFieldGroupAssignmentReadOnly"
                                   v-model="cf.whiteListedPositions"
@@ -286,30 +447,50 @@
                                   return-object
                                   height="35px"
                                   class="d-inline-block mr-3"
-                                  @change="cf.positionsChanged = true">
-                                  <template  v-slot:prepend-item>
+                                  @change="cf.positionsChanged = true"
+                                >
+                                  <template v-slot:prepend-item>
                                     <v-list-item
                                       ripple
-                                      @click="toggleSelectAllPositions(cf, 'whiteListedPositions')"
+                                      @click="
+                                        toggleSelectAllPositions(
+                                          cf,
+                                          'whiteListedPositions'
+                                        )
+                                      "
                                     >
                                       <v-list-item-action>
                                         <v-icon>{{ icon(cf) }}</v-icon>
                                       </v-list-item-action>
-                                      <v-list-item-title>Select All</v-list-item-title>
+                                      <v-list-item-title
+                                        >Select All</v-list-item-title
+                                      >
                                     </v-list-item>
-                                    <v-divider
-                                      class="mt-2"
-                                    ></v-divider>
+                                    <v-divider class="mt-2"></v-divider>
                                   </template>
-                                  <template  v-slot:selection="{item, index}">
-                                    <v-chip small
-                                            v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
+                                  <template v-slot:selection="{ item, index }">
+                                    <v-chip
+                                      small
+                                      v-if="
+                                        index === 0 &&
+                                        cf.whiteListedPositions &&
+                                        cf.whiteListedPositions.length < 2
+                                      "
+                                    >
                                       <span>{{ item.position }}</span>
                                     </v-chip>
                                     <span
-                                      v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
+                                      v-if="
+                                        index === 1 &&
+                                        cf.whiteListedPositions &&
+                                        cf.whiteListedPositions.length >= 2
+                                      "
                                       class="primary--text text-caption"
-                                    >{{ cf.whiteListedPositions.length }} selected</span>
+                                      >{{
+                                        cf.whiteListedPositions.length
+                                      }}
+                                      selected</span
+                                    >
                                   </template>
                                 </a-autocomplete>
 
@@ -328,11 +509,18 @@
                           <div>
                             <div v-if="objectType.allowHidden">
                               <label>
-                                <input type="checkbox" v-model="cf.customFieldGroupAssignmentHidden"
-                                       :disabled="!userCanEdit" @change="saveHiddenAndWhiteList(cf)"/>
-                                Hidden {{cf.customFieldGroupAssignmentHidden}}
+                                <input
+                                  type="checkbox"
+                                  v-model="cf.customFieldGroupAssignmentHidden"
+                                  :disabled="!userCanEdit"
+                                  @change="saveHiddenAndWhiteList(cf)"
+                                />
+                                Hidden
                               </label>
-                              <div v-if="cf.customFieldGroupAssignmentHidden" class="d-flex align-center">
+                              <div
+                                v-if="cf.customFieldGroupAssignmentHidden"
+                                class="d-flex align-center"
+                              >
                                 <a-autocomplete
                                   v-model="cf.hiddenWhiteListedPositions"
                                   :items="positions"
@@ -347,29 +535,51 @@
                                   class="d-inline-block mr-3"
                                   @change="cf.hiddenPositionsChanged = true"
                                 >
-                                  <template  v-slot:prepend-item>
+                                  <template v-slot:prepend-item>
                                     <v-list-item
                                       ripple
-                                      @click="toggleSelectAllPositions(cf, 'hiddenWhiteListedPositions')"
+                                      @click="
+                                        toggleSelectAllPositions(
+                                          cf,
+                                          'hiddenWhiteListedPositions'
+                                        )
+                                      "
                                     >
                                       <v-list-item-action>
-                                        <v-icon>{{ icon(cf, 'hiddenWhiteListedPositions') }}</v-icon>
+                                        <v-icon>{{
+                                          icon(cf, 'hiddenWhiteListedPositions')
+                                        }}</v-icon>
                                       </v-list-item-action>
-                                      <v-list-item-title>Select All</v-list-item-title>
+                                      <v-list-item-title
+                                        >Select All</v-list-item-title
+                                      >
                                     </v-list-item>
-                                    <v-divider
-                                      class="mt-2"
-                                    ></v-divider>
+                                    <v-divider class="mt-2"></v-divider>
                                   </template>
-                                  <template  v-slot:selection="{item, index}">
-                                    <v-chip small
-                                            v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">
+                                  <template v-slot:selection="{ item, index }">
+                                    <v-chip
+                                      small
+                                      v-if="
+                                        index === 0 &&
+                                        cf.hiddenWhiteListedPositions &&
+                                        cf.hiddenWhiteListedPositions.length < 2
+                                      "
+                                    >
                                       <span>{{ item.position }}</span>
                                     </v-chip>
                                     <span
-                                      v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"
+                                      v-if="
+                                        index === 1 &&
+                                        cf.hiddenWhiteListedPositions &&
+                                        cf.hiddenWhiteListedPositions.length >=
+                                          2
+                                      "
                                       class="primary--text text-caption"
-                                    >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
+                                      >{{
+                                        cf.hiddenWhiteListedPositions.length
+                                      }}
+                                      selected</span
+                                    >
                                   </template>
                                 </a-autocomplete>
 
@@ -385,21 +595,29 @@
                             </div>
                           </div>
 
-                          <div class="flex-display"
-                               v-if="objectType.allowMinMax && [4,6].includes(cf.dataTypeId) && !cf.hasListValues">
+                          <div
+                            class="flex-display"
+                            v-if="
+                              objectType.allowMinMax &&
+                              [4, 6].includes(cf.dataTypeId) &&
+                              !cf.hasListValues
+                            "
+                          >
                             <a-text-field
-                                          type="number"
-                                          label="Minimum Value"
-                                          @change="changedMinMax(cf)"
-                                          :disabled="!userCanEdit"
-                                          v-model.number="cf.minValue"/>
-                            <v-spacer/>
+                              type="number"
+                              label="Minimum Value"
+                              @change="changedMinMax(cf)"
+                              :disabled="!userCanEdit"
+                              v-model.number="cf.minValue"
+                            />
+                            <v-spacer />
                             <a-text-field
-                                          type="number"
-                                          label="Maximum Value"
-                                          @change="changedMinMax(cf)"
-                                          :disabled="!userCanEdit"
-                                          v-model.number="cf.maxValue"/>
+                              type="number"
+                              label="Maximum Value"
+                              @change="changedMinMax(cf)"
+                              :disabled="!userCanEdit"
+                              v-model.number="cf.maxValue"
+                            />
                             <a-btn
                               variant="text"
                               color="primary"
@@ -414,21 +632,33 @@
                             <a-btn
                               variant="text"
                               color="primary"
-                              @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
+                              @click="
+                                copyToClipBoard(cf.customFieldGroupAssignmentId)
+                              "
                               v-bind="attrs"
                               :activation-handler="on"
                               prepend-icon="mdi-information"
                             />
                           </template>
-                          <span>Custom Field Group Assignment Id: {{ cf.customFieldGroupAssignmentId }}</span>
+                          <span
+                            >Custom Field Group Assignment Id:
+                            {{ cf.customFieldGroupAssignmentId }}</span
+                          >
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
                         <a-btn
-                          v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                          v-if="
+                            userStore.userHasFeatureAccessLevel(
+                              'SETTINGS',
+                              'DELETE'
+                            )
+                          "
                           size="small"
                           variant="text"
                           color="primary"
-                          @click="[cfgToDelete=item, cFieldToDelete = cf]"
+                          @click="
+                            ;[(cfgToDelete = item), (cFieldToDelete = cf)]
+                          "
                           prepend-icon="delete"
                         />
                       </v-list-item>
@@ -444,34 +674,39 @@
     <ConfirmationDialog
       :open-dialog="cfgToDelete && !cFieldToDelete"
       @confirm="deleteGroup"
-      @close-dialog="cfgToDelete=null">
-      Are you sure you want to delete this Custom Field Group: <strong>{{ cfgToDeleteName }}</strong>?
+      @close-dialog="cfgToDelete = null"
+    >
+      Are you sure you want to delete this Custom Field Group:
+      <strong>{{ cfgToDeleteName }}</strong
+      >?
     </ConfirmationDialog>
     <ConfirmationDialog
       :open-dialog="!!cFieldToDelete"
       @confirm="deleteFieldFromGroup"
-      @close-dialog="[cfgToDelete = null, cFieldToDelete = null]">
+      @close-dialog=";[(cfgToDelete = null), (cFieldToDelete = null)]"
+    >
       <span class="error--text">WARNING:</span>
-      By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another
-      group please cancel and move the field. <br/><br/>
-      Are you sure you want to delete this field from {{ cfgToDeleteName }}: <strong>{{ cFieldToDeleteName }}</strong>?
+      By deleting a field you will lose all data associated with the field. If
+      you meant to "move" the field to another group please cancel and move the
+      field. <br /><br />
+      Are you sure you want to delete this field from {{ cfgToDeleteName }}:
+      <strong>{{ cFieldToDeleteName }}</strong>
+      ?
     </ConfirmationDialog>
   </v-container>
 </template>
 
 <script setup>
-
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 
-
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import {useRoute} from "vue-router/composables"
+import { getCurrentInstance, onMounted, ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
- const vuetify = vueInstance.$vuetify
+const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
@@ -508,9 +743,9 @@ const availableCustomFields = ref([])
 //if you set this to a value it doesn't update when the route param changes
 // objectTypeId: route.params.id
 const headers = ref([
-  {text: null, value: 'draggable', width: '50px', show: true},
-  {text: 'Name', value: 'groupName', show: true},
-  {text: null, value: 'icons', show: true}
+  { text: null, value: 'draggable', width: '50px', show: true },
+  { text: 'Name', value: 'groupName', show: true },
+  { text: null, value: 'icons', show: true }
 ])
 const expanded = ref({
   1: [],
@@ -525,9 +760,7 @@ const cFieldToDelete = ref(null)
 const groupsByColumn = ref([])
 const columnChangeCount = ref(0)
 const count = ref(0)
-const numberValues = ref([
-  undefined, 'One', 'Two', 'Three', 'Four'
-])
+const numberValues = ref([undefined, 'One', 'Two', 'Three', 'Four'])
 const positions = ref([])
 const positionsLoading = ref(false)
 
@@ -564,33 +797,36 @@ const numberOfCols = computed(() => {
   }
   return 1
 })
-const isMobile = computed(()=> {
+const isMobile = computed(() => {
   return vuetify.breakpoint.xsOnly
 })
 
-
-const changedMinMax = (cf) =>{
+const changedMinMax = (cf) => {
   vueInstance.$set(cf, 'minMaxValueChanged', true)
 }
 const fetchAvailableCustomFields = async (groupId) => {
   try {
     if (addField.value && newFieldType.value === 'native') {
       appStore.loading = true
-      const {data, status} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
-        params: {
-          objectTypeId: parseInt(route.params.id),
-          groupId
-        }
-      }, 'blueraven')
+      const { data, status } = await getRequestWithParams(
+        `/customFieldGroup/getAvailableCustomFields`,
+        {
+          params: {
+            objectTypeId: parseInt(route.params.id),
+            groupId
+          }
+        },
+        'blueraven'
+      )
       availableCustomFields.value = data
       handleHidingGlobalLoader(status)
     } else if (addField.value && newFieldType.value === 'ancillary') {
       appStore.loading = true
       availableCustomFields.value = []
-      const {
-        data,
-        status
-      } = await getRequest(`/objectType/${route.params.id}/getParentObjectsWithTypes`, 'blueraven')
+      const { data, status } = await getRequest(
+        `/objectType/${route.params.id}/getParentObjectsWithTypes`,
+        'blueraven'
+      )
       selectedAncillaryField.value = {}
       parentObjects.value = data
       handleHidingGlobalLoader(status)
@@ -607,7 +843,11 @@ const updateRequired = async (cf) => {
       customFieldGroupAssignmentId: cf.customFieldGroupAssignmentId,
       required: cf.required || false
     }
-    const {status} = await putRequest(`/customFieldGroup/updateRequired`, field, 'blueraven')
+    const { status } = await putRequest(
+      `/customFieldGroup/updateRequired`,
+      field,
+      'blueraven'
+    )
     appStore.showSnack('SUCCESS', 'Updated Field')
 
     handleHidingGlobalLoader(status)
@@ -620,7 +860,11 @@ const updateRequired = async (cf) => {
 }
 const saveMinMax = async (cf) => {
   try {
-    const {status} = await putRequest(`/customFieldGroup/saveMinMax`, cf, 'blueraven')
+    const { status } = await putRequest(
+      `/customFieldGroup/saveMinMax`,
+      cf,
+      'blueraven'
+    )
     cf.minMaxValueChanged = false
     appStore.showSnack('SUCCESS', 'Updated Field')
 
@@ -643,12 +887,16 @@ const saveConditionalField = async (cf) => {
       cf.conditionalOnId = undefined
     }
 
-    const {status} = await putRequest(`/customFieldGroup/updateConditionalId`, cf, 'blueraven')
-	appStore.showSnack('SUCCESS', 'Updated Field')
+    const { status } = await putRequest(
+      `/customFieldGroup/updateConditionalId`,
+      cf,
+      'blueraven'
+    )
+    appStore.showSnack('SUCCESS', 'Updated Field')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-	appStore.showSnack('ERROR', 'Error Saving Data')
+    appStore.showSnack('ERROR', 'Error Saving Data')
     appStore.loading = false
   }
 }
@@ -657,13 +905,20 @@ const assignCustomField = async (cfg, isAncillary) => {
   try {
     addField.value = false
     newField.value.customFieldGroupId = cfg.id
-    let params = !isAncillary ? newField.value : {
-      customFieldGroupId: cfg.id,
-      id: null,
-      ancillaryCustomFieldGroupAssignmentId: selectedAncillaryField.value.customFieldGroupAssignmentId,
-      fieldOrder: 0
-    }
-    const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params, 'blueraven')
+    let params = !isAncillary
+      ? newField.value
+      : {
+          customFieldGroupId: cfg.id,
+          id: null,
+          ancillaryCustomFieldGroupAssignmentId:
+            selectedAncillaryField.value.customFieldGroupAssignmentId,
+          fieldOrder: 0
+        }
+    const { data, status } = await postRequest(
+      `/customFieldGroup/addFieldToGroup`,
+      params,
+      'blueraven'
+    )
     cfg.customFields.push(data)
     newField.value = {}
     selectedAncillaryField.value = {}
@@ -683,7 +938,11 @@ const assignCustomField = async (cfg, isAncillary) => {
 const saveGroupChanges = async (groups) => {
   appStore.loading = true
   try {
-    const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
+    const { status } = await putRequest(
+      `/customFieldGroup/updateCustomFieldGroups`,
+      groups,
+      'blueraven'
+    )
     appStore.showSnack('SUCCESS', 'Groups Updated')
 
     handleHidingGlobalLoader(status)
@@ -699,8 +958,14 @@ const moveCustomFieldGroupToColumn = async (group, columnNumber) => {
   try {
     let fromColumn = group.columnNumber
     group.columnNumber = columnNumber
-    const {data, status} = await putRequest(`/customFieldGroup/moveGroupToColumn`, group, 'blueraven')
-    groupsByColumn.value[fromColumn] = groupsByColumn.value[fromColumn].filter(f => f.id !== group.id)
+    const { data, status } = await putRequest(
+      `/customFieldGroup/moveGroupToColumn`,
+      group,
+      'blueraven'
+    )
+    groupsByColumn.value[fromColumn] = groupsByColumn.value[fromColumn].filter(
+      (f) => f.id !== group.id
+    )
     groupsByColumn.value[columnNumber].push(data)
     appStore.showSnack('SUCCESS', 'Group Updated')
 
@@ -715,9 +980,14 @@ const moveCustomFieldGroupToColumn = async (group, columnNumber) => {
 const saveGroup = async (group) => {
   appStore.loading = true
   try {
-    const {data, status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group, 'blueraven')
+    const { data, status } = await putRequest(
+      `/customFieldGroup/updateCustomFieldGroup`,
+      group,
+      'blueraven'
+    )
     group.tabName = data.tabName
-    group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
+    group.companyObjectTypeTabDisplayOrder =
+      data.companyObjectTypeTabDisplayOrder
     appStore.showSnack('SUCCESS', 'Custom Field Group Updated')
 
     handleHidingGlobalLoader(status)
@@ -732,7 +1002,10 @@ const deleteGroup = async () => {
   const item = cfgToDelete.value
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
+    const { status } = await deleteRequest(
+      `/customFieldGroup/${item.id}`,
+      'blueraven'
+    )
     item.archived = true
     appStore.showSnack('SUCCESS', 'Group Deleted')
 
@@ -750,7 +1023,10 @@ const deleteFieldFromGroup = async () => {
   const item = cFieldToDelete.value
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
+    const { status } = await deleteRequest(
+      `/customFieldGroup/assignment/${item.id}`,
+      'blueraven'
+    )
     fieldsInUse.value = []
     item.archived = true
     appStore.showSnack('SUCCESS', 'Item Deleted')
@@ -768,7 +1044,10 @@ const deleteFieldFromGroup = async () => {
 const deleteField = async (item, customFieldGroupId) => {
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
+    const { status } = await deleteRequest(
+      `/customFieldGroup/${customFieldGroupId}`,
+      'blueraven'
+    )
     fieldsInUse.value = []
     item.archived = true
     appStore.showSnack('SUCCESS', 'Item Deleted')
@@ -796,7 +1075,11 @@ const saveFieldChanges = async (fields) => {
     // save them here
     if (fieldsToSave.length > 0) {
       appStore.loading = true
-      const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave, 'blueraven')
+      const { status } = await putRequest(
+        `/customFieldGroup/updateFieldsInGroup`,
+        fieldsToSave,
+        'blueraven'
+      )
       appStore.showSnack('SUCCESS', 'Fields Updated')
 
       handleHidingGlobalLoader(status)
@@ -807,19 +1090,18 @@ const saveFieldChanges = async (fields) => {
 
     appStore.loading = false
   }
-
 }
 const filteredCustomFields = (customFields) => {
   return customFields.filter((cfgt) => cfgt.archived === false)
 }
 
 const filterCustomFieldGroups = computed(() => {
-  return props.customFieldGroups.filter(cfgt => !cfgt.archived)
+  return props.customFieldGroups.filter((cfgt) => !cfgt.archived)
 })
 const getGroupsByCol = (colNumber) => {
   if (props.objectType && props.objectType.customColumns) {
     return filterCustomFieldGroups.value
-      .filter(cfg => cfg.columnNumber === colNumber)
+      .filter((cfg) => cfg.columnNumber === colNumber)
       .sort((cfg1, cfg2) => {
         if (cfg1.groupOrder < cfg2.groupOrder) {
           return -1
@@ -836,11 +1118,15 @@ const loadFieldsByParent = async () => {
   appStore.loading = true
   try {
     if (parent.value.isProcessStep) {
-      const {data, status} = await getRequest(`/customField/getByParentProcessStep/${parent.value.id}`)
+      const { data, status } = await getRequest(
+        `/customField/getByParentProcessStep/${parent.value.id}`
+      )
       ancillaryCustomFields.value = data
       handleHidingGlobalLoader(status)
     } else {
-      const {data, status} = await getRequest(`/customField/getByParentType/${parent.value.id}`)
+      const { data, status } = await getRequest(
+        `/customField/getByParentType/${parent.value.id}`
+      )
       ancillaryCustomFields.value = data
       handleHidingGlobalLoader(status)
     }
@@ -854,7 +1140,11 @@ const loadFieldsByParent = async () => {
 const saveUseParentData = async (field) => {
   appStore.loading = true
   try {
-    const {status} = await putRequest(`/customFieldGroup/saveUseParentData`, field, 'blueraven')
+    const { status } = await putRequest(
+      `/customFieldGroup/saveUseParentData`,
+      field,
+      'blueraven'
+    )
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -863,14 +1153,19 @@ const saveUseParentData = async (field) => {
   }
 }
 const filterAvailableCustomFields = (current) => {
-  return props.customFieldGroups.flatMap(g => g.customFields)
-    .filter(cf => !cf.archived)
-    .filter(cf => cf.id !== current.id)
+  return props.customFieldGroups
+    .flatMap((g) => g.customFields)
+    .filter((cf) => !cf.archived)
+    .filter((cf) => cf.id !== current.id)
 }
 const saveReadOnlyAndWhiteList = async (field) => {
   appStore.loading = true
   try {
-    const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList`, field, 'blueraven')
+    const { status } = await putRequest(
+      `/customFieldGroup/saveReadOnlyAndWhiteList`,
+      field,
+      'blueraven'
+    )
     field.positionsChanged = false
     if (!field.customFieldGroupAssignmentReadOnly) {
       vueInstance.$set(field, 'whiteListedPositions', [])
@@ -886,14 +1181,17 @@ const saveReadOnlyAndWhiteList = async (field) => {
 const saveHiddenAndWhiteList = async (field) => {
   appStore.loading = true
   try {
-    const {status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList`, field, 'blueraven')
+    const { status } = await putRequest(
+      `/customFieldGroup/saveHiddenAndWhiteList`,
+      field,
+      'blueraven'
+    )
     field.hiddenPositionsChanged = false
     if (!field.customFieldGroupAssignmentHidden) {
       vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
     }
     handleHidingGlobalLoader(status)
     appStore.showSnack('SUCCESS', 'Field Updated')
-
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Field')
@@ -920,7 +1218,7 @@ const getPositions = async () => {
   if (positions.value?.length === 0) {
     try {
       positionsLoading.value = true
-      const {data, status} = await getRequest(`/position/withParent`)
+      const { data, status } = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
       handleHidingGlobalLoader(status)
@@ -940,10 +1238,9 @@ const toggleSelectAllPositions = (field, attr = 'whiteListedPositions') => {
     vueInstance.$set(field, attr, cloneDeep(positions.value))
   }
   vueInstance.$set(field, 'positionsChanged', true) //todo change to use the 'attr'
-
 }
 const copyToClipBoard = (textValue) => {
-  navigator.clipboard.writeText(textValue);
+  navigator.clipboard.writeText(textValue)
   appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 }
 
@@ -953,10 +1250,15 @@ onMounted(() => {
   for (let i = 1; i <= numberOfCols.value; i++) {
     let selectorString = `#column${i}Table tbody`
 
-    defineSortableTable(selectorString, groupsByColumn, 'groupOrder', saveGroupChanges, i)
+    defineSortableTable(
+      selectorString,
+      groupsByColumn,
+      'groupOrder',
+      saveGroupChanges,
+      i
+    )
   }
 })
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -984,10 +1286,9 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   float: right;
-  @media(max-width: 465px) {
+  @media (max-width: 465px) {
     flex-direction: row;
     div.row {
-
       flex-direction: column;
     }
   }

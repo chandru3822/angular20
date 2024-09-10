@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -23,6 +24,7 @@ import java.util.Optional;
 public class AvailabilityController {
 
   private final AvailabilityService availabilityService;
+  private Long userId;
 
   @GetMapping(value = "")
   public List<ResourceSchedule> getResourceAvailability(
@@ -152,5 +154,30 @@ public class AvailabilityController {
   @DeleteMapping(value = "/slotSchedule/{id}")
   public void saveSlotSchedule(@PathVariable Long id) {
     availabilityService.deleteSlotSchedule(id);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('AVAILABILITY_ADMIN')")
+  @GetMapping(value="/companyHolidays")
+  public List<CompanyHoliday> getCompanyHolidays() {
+    return availabilityService.getAllCompanyHolidays();
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('AVAILABILITY_ADMIN')")
+  @GetMapping(value="/companyHolidays/{id}")
+  public Optional<CompanyHoliday> getCompanyHolidays(@RequestParam Long userId) {
+    this.userId = userId;
+    return availabilityService.getCompanyHoliday(userId);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('AVAILABILITY_ADMIN')")
+  @PutMapping(value="/companyHolidays")
+  public Optional<CompanyHoliday> updateCompanyHoliday(@RequestBody CompanyHoliday companyHoliday) {
+    return availabilityService.updateCompanyHoliday(companyHoliday);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('AVAILABILITY_ADMIN')")
+  @DeleteMapping(value="/companyHolidays/{id}")
+  public void archiveCompanyHoliday(@PathVariable Long id) {
+    availabilityService.archiveCompanyHoliday(id);
   }
 }

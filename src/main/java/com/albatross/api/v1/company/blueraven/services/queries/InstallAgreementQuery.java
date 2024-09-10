@@ -102,7 +102,8 @@ public class InstallAgreementQuery {
            p.street2 as projectStreet2,
            p.city as projectCity,
            s.abbreviation as projectState,
-           p.postal_code as projectZipCode
+           p.postal_code as projectZipCode,
+           plh.mosaic_application_id
     from brs.proposal_log_history plh
          left join flow.project p on plh.project_id = p.id
          left outer join flow.company_state cs on p.company_state_id = cs.id

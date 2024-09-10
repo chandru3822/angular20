@@ -70,7 +70,6 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             panel_model                             text,
             qualifies_for_swr                       boolean,
             rete_incentive_applied                  boolean,
-            rete_itc_incentive_amount               numeric,
             rete_depreciation_incentive_amount      numeric
           )
 
@@ -152,7 +151,6 @@ BEGIN
            (ppscfv47.json_value -> 'arrays' -> 0 -> 'module' ->> 'name')::text as panel_model,
            pcfv_48.boolean_value,
            pcfv26.boolean_value,
-           pcfv27.numeric_value,
            pcfv28.numeric_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
@@ -208,8 +206,6 @@ BEGIN
                                                                pcfv25.custom_field_group_assignment_id = 581
            left join brs.proposal_custom_field_value pcfv26 on prop.id = pcfv26.proposal_id and
                                                                pcfv26.custom_field_group_assignment_id = 864
-           left join brs.proposal_custom_field_value pcfv27 on prop.id = pcfv27.proposal_id and
-                                                               pcfv27.custom_field_group_assignment_id = 865
            left join brs.proposal_custom_field_value pcfv28 on prop.id = pcfv28.proposal_id and
                                                                pcfv28.custom_field_group_assignment_id = 866
            left join flow.project_process_step_custom_field_value ppscfv30

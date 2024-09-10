@@ -14,6 +14,6 @@ public class RoundRobinUser {
 
   private Long id, roundRobinId, userId, roundRobinUserTypeId, companyTimezoneId;
   private String firstName, lastName, fullName, position, timezone, title, roundRobinName;
-  private Boolean archived, schedulable, scheduler;
+  private Boolean archived, schedulable, scheduler, hasSMSAccess;
   private List<UserPosition> userPositions;
 }

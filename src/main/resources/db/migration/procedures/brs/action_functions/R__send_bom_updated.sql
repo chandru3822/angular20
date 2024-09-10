@@ -50,11 +50,11 @@ BEGIN
 --     and ocfv.custom_field_group_assignment_id = 484
 --   into v_org_email;
 
-  select lov.name from flow.custom_field_group_assignment cfga
-  join flow.project_process_step_event_custom_field_value cfv on cfga.id = cfv.custom_field_group_assignment_id
-  join flow.list_of_value lov on lov.id = cfv.int_value
-  where cfga.id = 27294 and cfv.project_process_step_event_id = p_ppse_id
-  into v_panel_name;
+--   select lov.name from flow.custom_field_group_assignment cfga
+--   join flow.project_process_step_event_custom_field_value cfv on cfga.id = cfv.custom_field_group_assignment_id
+--   join flow.list_of_value lov on lov.id = cfv.int_value
+--   where cfga.id = 27294 and cfv.project_process_step_event_id = p_ppse_id
+--   into v_panel_name;
 
 
   select org.org_name from flow.project_process_step_event ppse
@@ -172,7 +172,7 @@ BEGIN
          </html>'
   into v_email_default_footer;
 
-  select CONCAT(v_org_name, ' PO# ',  p_project_id, ' - ', v_project_name, ' - ', v_panel_name)
+  select CONCAT(v_org_name, ' PO# ',  p_project_id, ' - ', v_project_name)
   into v_email_subject;
 
   select 'supplychain@blueravensolar.com, installation.operations@blueravensolar.com'

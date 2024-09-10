@@ -23,7 +23,9 @@ BEGIN
         from (select
             (select count(1)::bigint
              from brs.project_details pd
-                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4 and up.archived is not true)
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                            from flow.company_configuration_value
+                            where code = 'SETTER_POSITION_IDS') and up.archived is not true)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and (((case when pd.first_appointment_pitched is not null
                                  then pd.first_appointment_pitched

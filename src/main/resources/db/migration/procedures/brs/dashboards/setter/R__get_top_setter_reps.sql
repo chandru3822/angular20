@@ -1,10 +1,19 @@
--- SELECT * FROM brs.get_top_setter_reps(10, 30);
 drop function if exists brs.get_top_setter_reps(p_limit bigint, p_time_interval character varying, p_days bigint, p_run_by_id bigint);
-  CREATE OR REPLACE FUNCTION brs.get_top_setter_reps(p_limit bigint, p_time_interval character varying, p_days bigint DEFAULT 3, p_run_by_id bigint default 99999999)
+drop function if exists brs.get_top_setter_reps(p_start_date date, p_end_date date,p_limit bigint);
+  CREATE OR REPLACE FUNCTION brs.get_top_setter_reps(p_start_date date, p_end_date date,p_limit bigint)
   RETURNS SETOF json
   LANGUAGE plpgsql
 AS $function$
+declare
+  v_days bigint;
+  v_time_interval character varying;
 BEGIN
+
+  select p_end_date - p_start_date
+    into v_days;
+  if v_days = 1 then
+    v_time_interval = 'Yesterday';
+  end if;
 
   RETURN QUERY
     with top_reps as (
@@ -25,7 +34,7 @@ BEGIN
                     else pd.closer_appointment_start
 --                     end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
                                                                                                                                     --this is weird but it says "If they want to see counts from YESTERDAY (aka p_days = 1) then dont include today/now)
-                       end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days::integer and (case when p_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - p_days::integer else (now() at time zone 'US/Mountain')::date end)
+                       end) at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - v_days::integer and (case when v_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - v_days::integer else (now() at time zone 'US/Mountain')::date end)
         and (case when pd.first_appointment_pitched is not null
                       then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                   when pd.first_appointment_pitched is null

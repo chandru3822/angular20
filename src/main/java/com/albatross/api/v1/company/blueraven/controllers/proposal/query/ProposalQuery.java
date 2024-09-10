@@ -28,7 +28,7 @@ public class ProposalQuery {
            pd.project_postal_code as postal_code,
            pd.contact_mobile_phone as mobile,
            case when pd.closer_appointment_start is not null then
-                      pd.closer_appointment_start - interval '90 minutes' end as closer_appointment_start,
+                      pd.closer_appointment_start - interval '450 minutes' end as closer_appointment_start,
            pd.closer_appointment_end
     from brs.project_details pd
     where pd.archived is false
@@ -297,6 +297,7 @@ public class ProposalQuery {
            p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
            p.installation_agreement_sent_tsz is not null          as installation_agreement_sent,
            brs.get_max_proposal_discount_amount(p.id)             as max_discount_amount,
+          brs.get_minimum_price_per_watt(p.id)                    as min_price_per_watt,
            util_ppscfv.int_value                                  as utility_company_id,
            coalesce((SELECT array_to_json(array_agg(row_to_json(cfgs)))
                      FROM (select cfg.id,

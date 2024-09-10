@@ -177,9 +177,11 @@ public class UserController {
   @PostMapping(value = "/forgotPassword")
   public ResponseEntity<?> forgotPassword(@RequestBody PasswordResetRequest passwordResetRequest)
     throws Exception {
-    if (!ObjectUtils.isEmpty(passwordResetRequest.getUsernameOrEmail())) {
+    String usernameOrEmail = passwordResetRequest.getUsernameOrEmail();
+
+    if (!ObjectUtils.isEmpty(usernameOrEmail)) {
       User user =
-        userService.findByUsernameOrEmailIgnoreCase(passwordResetRequest.getUsernameOrEmail());
+        userService.findByUsernameOrEmailIgnoreCase(usernameOrEmail.trim());
       if (user != null) {
         Calendar calendar = Calendar.getInstance();
         java.util.Date now = calendar.getTime();
@@ -204,7 +206,7 @@ public class UserController {
 
           communicationService.sendEmail(
             "Click on link to reset your password",
-            StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()),
+            usernameOrEmail.trim(),
             template,
             context,
             "SalesOps@blueravensolar.com",
@@ -213,12 +215,12 @@ public class UserController {
             null);
           log.debug(
             "AUTH: Password reset email has been sent to {}",
-            passwordResetRequest.getUsernameOrEmail());
+            usernameOrEmail.trim());
         }
       } else {
         log.debug(
           "AUTH: Password reset attempted for unknown user email {}.",
-          passwordResetRequest.getUsernameOrEmail());
+          usernameOrEmail.trim());
         return ResponseEntity.badRequest()
           .body(Map.of("message", "No user found for that email or username"));
       }

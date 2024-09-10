@@ -60,7 +60,7 @@ public class User {
   private List<Company> companies;
   private List<FeatureAccessControl> featureAccess;
   private List<UserPosition> userPositions;
-  private Boolean hasAccess, selected;
+  private Boolean hasAccess, selected, hasSMSAccess;
   private UUID uuid;
   private Timestamp expiryDate;
   private List<UserOrgHierarchy> hierarchy;

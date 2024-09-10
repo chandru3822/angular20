@@ -408,6 +408,16 @@ const getFormattedDate = (date) => {
   return filters.formatDate(date, 'timestamp', 'h:mm a')
 }
 
+const closeResource = (resource) => {
+  let index = selectedUsers.value.findIndex(r =>
+      r.userId === resource.extendedProps.userId
+  )
+  if(index >= 0){
+   selectedUsers.value.splice(index, 1)
+  }
+  calendarOptions.value.resources = [...selectedUsers.value]
+}
+
 onMounted (async () => {
   calendarApi.value = eventCalendar.value.getApi()
   await getRoundRobins()
@@ -419,7 +429,7 @@ onMounted (async () => {
 
 <template>
   <div id="closer-availability-calendar-container">
-    <MessagingDialog v-if="currentUserId && userCanSms" :current-user-id="currentUserId" :user-id-to-message="userToMessage?.userId" :title="userToMessage?.title" :adjust-vertical="false" @close="[showMessagingDialog = false, userToMessage = null]"/>
+    <MessagingDialog v-if="currentUserId && userCanSms" :current-user-id="currentUserId" :user-id-to-message="userToMessage?.userId" :title="userToMessage?.title" @close="[showMessagingDialog = false, userToMessage = null]"/>
     <div id="calendar-filter-container" class="pa-6 pt-4">
   <v-row class="py-0 d-flex align-baseline">
     <v-col class="py-0" >
@@ -506,12 +516,13 @@ onMounted (async () => {
       </div>
     <FullCalendar ref="eventCalendar" id="closer-availability-calendar" :options="calendarOptions">
       <template v-slot:resourceLabelContent="{resource, index}">
-        <div class="d-flex justify-space-between align-baseline">
-          <a :href="`${getHostUrl()}/user/${resource.extendedProps.userId}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
-          <div>
+        <div class="d-flex justify-space-between align-baseline flex-wrap">
+          <a v-if="userStore.userHasFeature('USERS')" :href="`${getHostUrl()}/user/${resource.extendedProps.userId}/details`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
+          <span v-else class="body-large overflow-hidden resource-title">{{resource.title}}</span>
+          <div class="text-right flex-grow-1">
             <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
               <template v-slot:activator="{on}">
-                <a-btn v-if="userCanSms" icon size="small" @click="[showMessagingDialog = true, userToMessage = {userId:Number(resource.extendedProps.userId), title: resource.extendedProps.fullName}]" :activation-handler="on" class="mx-1">
+                <a-btn v-if="userCanSms && resource.extendedProps.hasSMSAccess" icon size="small" @click="[showMessagingDialog = true, userToMessage = {userId:Number(resource.extendedProps.userId), title: resource.extendedProps.fullName}]" :activation-handler="on" class="mx-1">
                   <v-icon color="grey darken-1">mdi-forum</v-icon>
                 </a-btn>
               </template>
@@ -654,11 +665,7 @@ onMounted (async () => {
 
 <style lang="scss" scoped>
 .resource-title {
-  max-width: 60%;
   white-space: break-spaces;
-  @media(max-width: 960px) {
-    max-width: 30%;
-  }
 }
 .v-tooltip__content {
   background-color: white;

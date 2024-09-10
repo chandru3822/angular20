@@ -226,7 +226,7 @@ const props = defineProps({
 const { canEdit, isProjectDetails, companyObjectTypes,
   projectDetailsColumns, smartlistId, refresh } = toRefs(props)
 
-const emit = defineEmits(['refreshed'])
+const emit = defineEmits(['refreshed', 'customColumns'])
 
 const showNewFieldForm = ref(false)
 const newField = ref({})
@@ -259,6 +259,7 @@ const getAssignedFields = async () => {
     let timezone = userStore.timezone.value
     const {data} = await getRequest(`/smartlistv1/${smartlistId.value}/field?timezone=${timezone}`)
     assignedFields.value = data
+    emit('customColumns', data)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error fetching assigned fields')
@@ -320,6 +321,7 @@ const addNewField = async () => {
     assignedFields.value.push(data)
     resetNewFieldForm()
     handleHidingGlobalLoader( status)
+    emit('refreshed')
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error adding field to smartlist')

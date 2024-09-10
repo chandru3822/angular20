@@ -43,6 +43,8 @@ public class CustomFieldValue {
   private List<Long> systemListOptionIds;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
 
+  private Double minValue, maxValue;
+
   /**
    * Used in {@link com.albatross.api.v1.company.blueraven.controllers.proposal.BlueravenProposalService}
    * Allows dynamic visibility based on a provided "context" of values from a process step custom field values

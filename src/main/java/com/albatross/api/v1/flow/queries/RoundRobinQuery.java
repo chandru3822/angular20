@@ -247,6 +247,15 @@ public class RoundRobinQuery {
     """;
 
   //language=PostgreSQL
+  public final static String deletePostalCodesFromRoundRobin = """
+    update flow.postal_code
+        set round_robin_id = null,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where round_robin_id = :id
+    """;
+
+  //language=PostgreSQL
   public final static String insertRoundRobinUser = """
     insert into flow.round_robin_user(round_robin_id, user_id, round_robin_user_type_id, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified)
         values (:roundRobinId, :userId, :roundRobinUserTypeId, :companyTimezoneId, :createdById, now(), :createdById, now())
@@ -440,6 +449,16 @@ public class RoundRobinQuery {
                pczu.round_robin_user_type_id,
                concat(u.first_name, ' ', u.last_name) AS full_name,
                concat(u.first_name, ' ', u.last_name, ' - ', pcz.round_robin_name) AS title,
+               coalesce((select p.sms_enabled
+                                                                from flow.user_position up
+                                                                         inner join flow.position p on p.id = up.position_id
+                                                                         inner join flow.company_user_status cus on cus.user_id = up.user_id
+                                                                         inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+                                                                where up.user_id = pczu.user_id
+                                                                  and up.primary_flag is true
+                                                                  and up.archived is not true
+                                                                  and ust.has_access is true
+                                                                  and p.company_id = :companyId), false) as "hasSMSAccess",
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(positions)))
                           FROM (

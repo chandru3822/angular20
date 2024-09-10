@@ -9,10 +9,6 @@
 *   currentUserId: Number,
     userIdToMessage: Number, -- dialog displays when this prop has a value
     title: String,
-    adjustVertical: {
-      type:Boolean,
-      default: true
-    }
 *
 *
 */
@@ -27,11 +23,7 @@ import TeamAssignmentChips from "@/views/flow/settings/inbox/TeamAssignmentChips
 const props = defineProps({
   currentUserId: Number,
   userIdToMessage: Number,
-  title: String,
-  adjustVertical: {
-    type:Boolean,
-    default: true
-  }
+  title: String
 })
 const {currentUserId, userIdToMessage, adjustVertical} = toRefs(props)
 const emit = defineEmits(['close'])
@@ -94,8 +86,9 @@ const fetchTeamsForUser = async () => {
 
 const loadConversation = async () => {
   userAssigned.value = false
+  if(userIdToMessage.value) {
     try {
-      const { data, status } = await getRequest(
+      const {data, status} = await getRequest(
           '/messaging/user/' + userIdToMessage.value
       )
       messageProperties.value = data
@@ -116,6 +109,7 @@ const loadConversation = async () => {
 
       conversationIsLoading.value = false
     }
+  }
 }
 
 const startJoinConversation = () => {
@@ -144,11 +138,9 @@ const joinConversation = async (selectedTeam) => {
 }
 
 const getContentClass = () => {
-  if(adjustVertical.value) {
     return 'messaging-dialog'
   }
-  return ''
-}
+
 
 const minimize = () => {
   minimized.value = !minimized.value
@@ -158,7 +150,7 @@ const minimize = () => {
 <template>
   <v-dialog :value="userIdToMessage"  @click:outside="emit('close')" custom-classes="px-0" width="500" hide-overlay :content-class="getContentClass()">
     <div v-if="userIdToMessage"  id="schedule-resource-message-dialog" :class="{'joined': userAssigned, 'minimized': minimized}"><!--the v-if is to make sure the messages reset when you close the dialog-->
-      <div class="d-flex flex-column one-hunned px-0 sticky-header srmd-header" :class="{'srmd-header-dense': messageProperties.smsTeamOwners?.length <= 0}">
+      <div class="d-flex flex-column one-hunned px-0 sticky-header srmd-header" :class="{'srmd-header-dense': messageProperties.smsTeamOwners?.length <= 0 || minimized}">
         <div class="d-flex px-4 py-2 align-start">
           <v-tooltip right>
             <template v-slot:activator="{on, attrs}">
@@ -213,6 +205,7 @@ const minimize = () => {
   border-bottom: var(--v-grey-lighten2) solid 1px;
 
   &.srmd-header-dense {
+    min-height: unset;
     height: 64px;
   }
 }
@@ -228,7 +221,7 @@ const minimize = () => {
 }
 
 </style>
-<style lang="scss">
+<style lang="scss" scoped>
 #app > div.v-dialog__content.v-dialog__content--active > div{
   max-height:500px;
 }

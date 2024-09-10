@@ -401,6 +401,11 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
+              <td class="text-left">{{item.statusType}}</td>
+              <td class="text-left">{{item.m1Allocation}}</td>
+              <td class="text-left">{{item.m2Allocation}}</td>
+              <td class="text-left">{{item.redLineM1Allocation}}</td>
+              <td class="text-left">{{item.redLineM2Allocation}}</td>
               <td class="text-left">
                 <pre class="app-pre-wrapper">
                   {{item.note}}
@@ -500,6 +505,11 @@ const planHeaders = ref([
 ])
 const receivingHeaders = ref([
   {text: 'Plan Name', value: 'name', show: true},
+  {text: 'Status', value: 'statusType', show: true},
+  {text: 'M1 Allocation', value: 'm1Allocation', show: true},
+  {text: 'M2 Allocation', value: 'm2Allocation', show: true},
+  {text: 'Red Line M1 Allocation', value: 'redLineM1Allocation', show: true},
+  {text: 'Red Line M1 Allocation', value: 'redLineM2Allocation', show: true},
   {text: 'Notes', value: 'note', show: true},
   {text: '', value: 'icons', show: true},
 ])

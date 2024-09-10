@@ -563,6 +563,7 @@
                             <div v-else>
                               <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.fieldName }} </a>
                               <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
+                              <span v-if="cf.customFieldGroupAssignmentHidden || cf.hidden">(Hidden)</span>
                             </div>
                             <div>
                               Detail View:

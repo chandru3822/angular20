@@ -1146,10 +1146,10 @@
                   class="neutral-trendline">trending_flat</v-icon></span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn2Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (filteredFdcColumn2Values[index].trend_count ===null || filteredFdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (filteredFdcColumn2Values[index].trend_count ===null || filteredFdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
             </v-tooltip>
               <span v-if="filteredFdcColumn2Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn2Values[index].show_checked_in_column" class="checked_in_container body-small" @click="funnelDrilldown(filteredFdcColumn2Values[index], getDropdownById(fdcSecondDateRange), 'standard', true, fdcSecondCustom)">
                 <v-icon size="20" class="checked_in_icon">
@@ -1179,10 +1179,10 @@
                   class="neutral-trendline">trending_flat</v-icon></span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count>0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && filteredFdcColumn3Values[index].trend_count<0"> {{ Math.abs(filteredFdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (filteredFdcColumn3Values[index].trend_count ===null || filteredFdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (filteredFdcColumn3Values[index].trend_count ===null || filteredFdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
             </v-tooltip>
               <span v-if="filteredFdcColumn3Values[index].checked_in_custom_date_range_count != null && filteredFdcColumn3Values[index].show_checked_in_column" class="checked_in_container body-small" @click="funnelDrilldown(filteredFdcColumn3Values[index], getDropdownById(fdcThirdDateRange), 'standard', true, fdcThirdCustom)">
                 <v-icon size="20" class="checked_in_icon">
@@ -1695,6 +1695,7 @@ const officeModel = ref([])
 const officeData = ref([])
 const repModel = ref([])
 const repData = ref([])
+const selectedRepData = ref([])
 const repDataMaster = ref([])
 const appointmentTypesSelectAll = ref(false)
 const viewAllFilteredReps = ref(false)
@@ -2783,8 +2784,8 @@ const parseFunnelDate = (date) => {
 }
 
 const loadFunnels = async() => {
-  if (apptsCreatedPipelineData.value?.length === 0) {
-    loadSources()
+  if (leadsCreatedSourceData.value?.length === 0) {
+    await loadSources()
   }
 
   if (isCloser.value || isCloserMgr.value || isCloserRegional.value) {
@@ -3040,7 +3041,6 @@ const applyCustomDates = async()=> {
 const apptsToFdcPipelineLoad = async(column) => {
   apptsToFdcPipelineLoaded.value = false
   apptsToFdcPipelineDataLoading.value = true
-  let reps = []
   let orgs = []
   let leadsCreatedSources = []
   let dateSelected = null
@@ -3053,11 +3053,12 @@ const apptsToFdcPipelineLoad = async(column) => {
 
   officeModel.value.forEach(org => orgs.push(org.org_id))
 
+  selectedRepData.value = []
   if(viewAllFilteredReps.value && repModel.value.length === 0){
-    filteredRepData.value.forEach(rep => reps.push(rep.user_position_id))
+    filteredRepData.value.forEach(rep => selectedRepData.value.push(rep.user_position_id))
   }
   else {
-    repModel.value.forEach(rep => reps.push(rep.user_position_id))
+    repModel.value.forEach(rep => selectedRepData.value.push(rep.user_position_id))
   }
 
   fdcSourceModel.value.forEach(leadsCreatedSource => {
@@ -3115,7 +3116,7 @@ const apptsToFdcPipelineLoad = async(column) => {
   }
 
   const requestBody = {
-    users: reps,
+    users: selectedRepData.value,
     start: dateSelected.startDate,
     end: dateSelected.endDate,
     trendStart: dateSelected.trendStart,
@@ -3579,14 +3580,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
   if (pipelineName === 'apptsCreatedPipeline') {
     requestBody.sources = sourceIds
   } else {
-    let reps = []
-    if(viewAllFilteredReps.value && repModel.value.length === 0){
-      filteredRepData.value.forEach(rep => reps.push(rep.user_position_id))
-    }
-    else {
-      repModel.value.forEach(rep => reps.push(rep.user_position_id))
-    }
-    requestBody.users = reps
+    requestBody.users = selectedRepData.value
     requestBody.isCheckedInColumn = isCheckedInColumn
     requestBody.appointmentTypeIds = appointmentTypeIds
   }

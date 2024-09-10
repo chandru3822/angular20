@@ -916,3 +916,23 @@ CREATE TRIGGER concrete_postal_code_zone_audit_trg
     ON flow.postal_code_zone
     FOR EACH ROW
 EXECUTE PROCEDURE flow.concrete_postal_code_zone_audit();
+
+drop function if exists flow.company_holiday_audit() cascade;
+CREATE OR REPLACE FUNCTION flow.company_holiday_audit()
+  RETURNS TRIGGER AS
+$$
+BEGIN
+
+  INSERT INTO flow.company_holiday_audit(name, date, date_created, date_modified, created_by_id, modified_by_id,company_id, archived)
+    VALUES (new.name, new.date, new.date_created, now(), new.created_by_id, new.modified_by_id, new.company_id, new.archived);
+  RETURN NULL;
+END
+$$
+  LANGUAGE plpgsql;
+
+drop trigger if exists company_holiday_audit_trg ON flow.company_holiday;
+CREATE TRIGGER company_holiday_audit_trg
+  after INSERT or update
+  ON flow.company_holiday
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.company_holiday_audit();

@@ -33,7 +33,7 @@ BEGIN
                           from flow.company_configuration_value
                           where code = 'CLOSER_POSITION_IDS'),
         current_closers as (
-      SELECT u.id,up.id as user_position_id,u.first_name,u.last_name,
+      SELECT distinct on (u.id) u.id,up.id as user_position_id,u.first_name,u.last_name,
              o.org_name                             as office_name,
              o2.org_name                            as region,
              coalesce(lov.name, '--')               as metro_area
@@ -44,17 +44,16 @@ BEGIN
              INNER JOIN flow.company_user_status cus on cus.user_id = u.id
              INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
              INNER JOIN flow.org o ON o.id = up.org_id
-             INNER JOIN flow.org o2 ON (o2.id = o.parent_org_id and o2.org_type_id = 117)
+             INNER JOIN flow.org o2 ON (o2.id = o.parent_org_id)
              LEFT JOIN flow.organization_custom_field_value ocfv --for now this needs to be the user's metro area, not the project one
                        ON ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
              LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
-      WHERE case when p_org_id is not null then up.org_id = p_org_id else true end
+      WHERE case when p_org_id is not null then (up.org_id = p_org_id or up.sales_org_id = p_org_id) else true end
         AND ust.has_access is true
         and up.archived is false
         AND pd.company_id = 3
         and (up.end_date is null or
              up.end_date >= (now() at time zone 'US/Mountain')::date - (v_time_interval || 'day')::interval)
-      GROUP BY u.id,up.id,u.first_name,u.last_name, o.org_name, o2.org_name, lov.name
     ), results as (select foo.id                                                                           as user_id,
                           foo.name,
                           foo.metro_area,
@@ -84,7 +83,8 @@ BEGIN
                                                                        v_closer_gen_source_ids,
                                                                        v_time_interval) fdc_counts on true
                          GROUP BY u.id, u.user_position_id, u.first_name, u.last_name,
-                                  u.metro_area, u.region, u.office_name,
+                                  u.metro_area, u.region,
+                                  u.office_name,
                                   fdc_counts.lead_gen_fdc_count,
                                   fdc_counts.lead_gen_appointment_count,
                                   fdc_counts.self_gen_fdc_count,

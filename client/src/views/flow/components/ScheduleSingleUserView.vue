@@ -17,6 +17,7 @@ import cloneDeep from "lodash.clonedeep";
 import moment from "moment/moment.js";
 import {useUserStore} from "@/stores/UserStore.js";
 import {useAppStore} from "@/stores/AppStore.js";
+import {useRouter} from "vue-router/composables";
 
 const props = defineProps({
   userId: Number
@@ -27,6 +28,7 @@ const store = vueInstance.$store
 const filters = vueInstance.$filters
 const userStore = useUserStore()
 const appStore = useAppStore()
+const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userScheduleCalendar = ref(null)
 
@@ -53,6 +55,22 @@ const calendarOptions = ref({
     weekday: vuetify.breakpoint.smAndDown ? 'short' : 'long'
   },
   nowIndicator:true,
+  views:{
+    timeGridDay:{
+      titleFormat:{ month: 'short',
+        year: 'numeric',
+        day: 'numeric',
+        weekday: 'short'
+      }
+    },
+    timeGridWeek:{
+      titleFormat:{ month: 'short',
+        year: 'numeric',
+        day: 'numeric'
+      },
+      slotMinWidth:76,
+    }
+  },
   customButtons: {
     customToday: {
       text: 'Today',

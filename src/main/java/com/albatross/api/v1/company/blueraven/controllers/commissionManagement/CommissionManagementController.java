@@ -141,8 +141,8 @@ public class CommissionManagementController {
   }
 
   @GetMapping(value = "/closers")
-  public List<ClosersPlan> getClosers() {
-    return commissionManagementService.getClosers();
+  public List<ClosersPlan> getClosers(@RequestParam Boolean includeInactive) {
+    return commissionManagementService.getClosers(includeInactive);
   }
 
   @GetMapping(value = "/setters")

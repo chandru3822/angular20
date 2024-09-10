@@ -35,6 +35,11 @@ const tabs = ref([
     label: 'Slot Schedules',
     path: `/settings/availability/slots`,
     display: userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
+  },
+  {
+    label: 'Holidays',
+    path: `/settings/availability/holidays`,
+    display: userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
   }
 ])
 

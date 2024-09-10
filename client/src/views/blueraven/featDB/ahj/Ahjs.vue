@@ -133,6 +133,8 @@
                             v-model="editedItem.name"
                             required
                             filled
+                            maxlength="100"
+                            counter
               ></a-text-field>
               <a-autocomplete label="Metro Area"
                               :items="metroAreas"

@@ -124,11 +124,17 @@ const items = computed(() => {
       pathMatch: '/settings/callGroup',
       show: userStore.userHasFeature('CALL_GROUPS')
     }, {
+      path: '/settings/releases',
+      title: 'Releases',
+      pathMatch: '/settings/releases',
+      show: userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
+    },
+    {
       path: '/settings/tournaments',
       title: 'Tournaments',
       pathMatch: '/settings/tournaments',
       show: userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
-    }, {
+    },{
       path: '/settings/companyCustomFields',
       title: 'Company Custom Fields',
       pathMatch: '/settings/companyCustomField',

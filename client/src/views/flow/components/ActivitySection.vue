@@ -99,19 +99,14 @@
                           @click.native.stop="changeSortDirectionForTopic(h)"
                           :prepend-icon="h.sortDirection === 'desc' ? 'mdi-arrow-up' : 'mdi-arrow-down'"
                       ></a-btn>
-                      <v-tooltip>
-                        <template v-slot:activator="{ props }">
-                          <a-btn
-                              v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0) && null == editedActivity.id"
-                              variant="text"
-                              color="primary"
-                              class="text-capitalize pa-2"
-                              @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ];"
-                              text="+ Add note"
-                              v-bind="props"
-                          ></a-btn>
-                        </template>
-                      </v-tooltip>
+                      <a-btn
+                          v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0) && null == editedActivity.id"
+                          variant="text"
+                          color="primary"
+                          class="text-capitalize pa-2"
+                          @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ];"
+                          text="+ Add note"
+                      ></a-btn>
                     </v-row>
                   </template>
                 </v-expansion-panel-header>
@@ -119,7 +114,7 @@
                   <ActivityList v-if="!savingActivity"
                                 :activities="sortAndFilterActivities(h.activities, h.sortDirection)"
                                 :project-id="projectId"
-                                ref="activityList"
+                                ref="activityListTopic"
                                 :contact-id="contactId"
                                 :user-id="userId"
                                 :current-user-id="currentUserId"
@@ -151,8 +146,9 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
-                    ref="activityListTopic"
+                    ref="activityList"
                     :use-infinite-loader="true"
+                    :state-loaded="stateLoadedStatus"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
@@ -293,6 +289,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
+const stateLoadedStatus = ref(false)
 const props = defineProps({
   contactId: Number,
   orgId: Number,
@@ -391,8 +388,6 @@ watch(searchText, () => {
   if(!search.value.userId && !search.value.position && !search.value.teamId && search.value.categoryId !== -1) {
     let cleanQueryText = searchText.value?.replace('[','\\[')
     queryText.value = cleanQueryText?.replace(']','\\]')
-  } else if (searchText.value === null || searchText.value === '') {
-    clearSearch()
   }
 })
 
@@ -441,14 +436,10 @@ const sortedFilteredActivities = computed(() => {
 
   getPinnedActivitiesOnly(activities.value)
   if(sortedList.length > (activitiesToShow.value * bottomHitCount.value) ) {
-    if(activityList.value) {
-      activityList.value[0].infiniteStateLoaded(false)
-    }
+    stateLoadedStatus.value = false
     return sortedList.slice(0, (activitiesToShow.value * bottomHitCount.value))
   } else {
-    if(activityListTopic.value) {
-      activityListTopic.value.infiniteStateLoaded(true)
-    }
+    stateLoadedStatus.value = true
     return sortedList
   }
   // return []
@@ -492,6 +483,7 @@ onMounted(() => {
 
 const bottomHitCallback = () => {
   bottomHitCount.value = bottomHitCount.value + 1
+
 }
 const getLinkLabel = () => {
   return editedActivity.value.linked && null != editedActivity.value.linkLabel ? `Link ${editedActivity.value.linkLabel}` : `Link ${projectStore.linkLabel}`
@@ -504,7 +496,7 @@ const sortAndFilterActivities = (activities, sortDirection)=> {
     let shownActivityTypes = activityTypes.value.filter(at => at.show).map(at => at.id)
 
     return !a.archived
-        && (((search.value == null) && (searchText.value == null || searchText.value === '')) || activityContainsSearch(a))
+        && (((searchText.value == null || searchText.value === '')) || activityContainsSearch(a))
         && shownActivityTypes.includes(a.activityTypeId)
 
   }), ['dateCreated'], [ sortDirection])
@@ -520,9 +512,9 @@ const searchfilteredActivityTypeHashtags = (activityTypeHashtags)=> {
   })
 }
 const getPinnedActivitiesOnly = (activities) => {
-  const sortedFilteredPinnedActivities = activities.filter(a => a.pinned)
+  const sortedFilteredPinnedActivities = cloneDeep(activities.filter(a => a.pinned))
   if(pinnedActivitiesOnly.value.length === 0 || sortedFilteredPinnedActivities.length !== pinnedActivitiesOnly.value.length){
-    //if-statement needed so we don't open the menu on the pinned note when we open the menu on the non-pinned copy of the note
+    //cloneDeep and if-statement needed so we don't open the menu on the pinned note when we open the menu on the non-pinned copy of the note
     // but we still get the update when we pin/unpin a note
     pinnedActivitiesOnly.value = sortedFilteredPinnedActivities
   }
@@ -534,7 +526,7 @@ const countedCategoryLabel = (activities, activityTypeId)=> {
 }
 const activityContainsSearch = (activity) => {
   if(search.value.userId){
-    return activity.createdById === search.value.userId
+    return activity.createdById === search.value.userId || activity.modifiedById === search.value.userId
   }
   else if(search.value.position){
     return activity.createdByPosition === search.value.position
@@ -651,29 +643,55 @@ const searchByClick = (text, id, searchType, clearSearchData = true) => {
   // if (clearSearchData) {
   //   clearSearch()
   // }
-
   switch (searchType){
     case SearchTypeEnum.USER:
-      searchText.value= `User: ${text}`
-      search.value.userId = id
+      if (search.value !== null && search.value?.userId !== id) {
+        searchText.value= `User: ${text}`
+        search.value.userId = id
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
       break;
     case SearchTypeEnum.POSITION:
-      searchText.value = `Position: ${text}`
-      search.value.position = text
+      if (search.value !== null && search.value?.position !== text) {
+        searchText.value = `Position: ${text}`
+        search.value.position = text
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
+
       break;
     case SearchTypeEnum.TEAM:
-      searchText.value = `Team: ${text}`
-      search.value.teamId = id
+      if (search.value !== null && search.value?.teamId !== id) {
+        searchText.value = `Team: ${text}`
+        search.value.teamId = id
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
       break;
     case SearchTypeEnum.TAG:
       if(id === -1){
         searchText.value = `[${text}]`
       } else {
-        searchText.value = text
+        if (searchText.value !== text) {
+          searchText.value = text
+        } else {
+          clearSearch()
+          searchText.value = ""
+        }
       }
       break;
     default:
-      searchText.value = text
+      if (searchText.value !== text) {
+        searchText.value = text
+      } else {
+        clearSearch()
+        searchText.value = ""
+      }
+
   }
   queryText.value = text
   showMentionables.value = false

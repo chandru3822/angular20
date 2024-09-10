@@ -315,8 +315,8 @@ const availableCustomFields = ref([])
 const usesForField = ref([])
 
 const selectedSystemListTypeIsUsers = computed(() => {
-  let selectedSystemList = systemLists.value.find(sl => sl.id === customField.value.companySystemListId)
-  return selectedSystemList.systemListTypeId === 2; //user type id
+  let selectedSystemList = systemLists.value.find(sl => sl.companySystemListId === customField.value.companySystemListId)
+  return selectedSystemList?.systemListTypeId === 2; //user type id
 })
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
@@ -479,7 +479,6 @@ const debounceFindCustomFields = debounce((query) => {
         });
 
         object.companyDataTypeId = object.companyDataType.id
-
         object.fieldName = object.fieldName
         const {data, status} = await postRequest(`/customField`, object, props.apiPath);
         data.companyDataType = companyDataTypes.value.find(dt => dt.id === data.companyDataTypeId);

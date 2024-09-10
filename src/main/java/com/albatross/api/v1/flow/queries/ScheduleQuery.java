@@ -138,15 +138,18 @@ public class ScheduleQuery {
           and ppse.resource_id is not null
           and case when :startTime::timestamp is not null and :endTime::timestamp is not null
                      then ppse.start_time between :startTime::timestamp and :endTime::timestamp OR
-                          ppse.end_time between :startTime::timestamp and :endTime::timestamp else 1=1 end
+                          ppse.end_time between :startTime::timestamp and :endTime::timestamp OR 
+                          :startTime::timestamp between ppse.start_time and ppse.end_time else 1=1 end
           and case when :isParent
                      then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                    else ps.company_id = :companyId end
           and ps.archived is not true
-          and case when :includeCancelled::boolean is false
+          and case when :includeCancelledEvents::boolean is false
             then cest.event_status_type_id != 3
              else true end -- dont include cancelled events unless they told us to, we include active events on cancelled PS cuz BR told us to
-          and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
+            and case when :includeCancelledProjects::boolean is false
+           then cpst.project_status_type_id != 2 
+           else true end --dont include process steps for cancelled projects unless they told us to
           and ppse.resource_id is not null
           and ppse.resource_id = any(array[ :combined ]::bigint[])
     """;
@@ -224,10 +227,12 @@ public class ScheduleQuery {
                      then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
                    else ps.company_id = :companyId end
           and ps.archived is not true
-          and case when :includeCancelled::boolean is false
+          and case when :includeCancelledEvents::boolean is false
             then cest.event_status_type_id != 3
              else true end -- dont include cancelled events unless they told us to, we include active events on cancelled PS cuz BR told us to
-          and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
+          and case when :includeCancelledProjects::boolean is false
+           then cpst.project_status_type_id != 2 
+           else true end --dont include process steps for cancelled projects unless they told us to
           and ppse.resource_id is not null
           and ppse.resource_id = any(array[ :combined ]::bigint[])
     """;
