@@ -522,8 +522,8 @@ const toolbarOptions = ref({
     ]
   }
 })
-const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
-const arrayRequiredRules = ref(constants.BASIC_ARRAY_REQUIRED_RULE)
+const requiredRules = constants.BASIC_REQUIRED_RULE
+const arrayRequiredRules = constants.BASIC_ARRAY_REQUIRED_RULE
 const locked = ref(true)
 
 const filled = computed(() => {
@@ -538,40 +538,39 @@ const currentUserId = computed(() => {
 const timezone = computed(() => {
   return userStore.timezone.value
 })
-//before this was a computed value it wasn't updating the ui for all field types when they were required
+
 const rules = computed(() => {
-  let rules = []
+  let fieldRules = []
   //handle required rule
-  if (required.value && [7, 10].includes(field.value.dataTypeId)) {
+  if (props.required && [7, 10].includes(props.field.dataTypeId)) {
     //dont do push here cuz arrayRequiredRules is already an array
-    rules = arrayRequiredRules.value
+    fieldRules = [...arrayRequiredRules]
   } else if (required.value) {
     //dont do push here cuz requiredRules is already an array
-    rules = requiredRules.value
+    fieldRules = [...requiredRules]
   }
 
   //handle min/max validation (currently only used in brs - proposal design fields
-  if (field.value.minValue) {
-    // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-    rules.push(
+  if (props.field.minValue) {
+    fieldRules.push(
       (v) =>
         (!v && v !== 0) ||
-        v >= field.value.minValue ||
-        `Value must be greater than or equal to ${field.value.minValue}`
+        v >= props.field.minValue ||
+        `Value must be greater than or equal to ${props.field.minValue}`
     )
   }
 
-  if (field.value.maxValue) {
-    rules.push(
+  if (props.field.maxValue) {
+    fieldRules.push(
       (v) =>
         (!v && v !== 0) ||
-        v <= field.value.maxValue ||
-        `Value must be less than or equal to ${field.value.maxValue}`
+        v <= props.field.maxValue ||
+        `Value must be less than or equal to ${props.field.maxValue}`
     )
   }
-  // rules.value = rules
-  return rules
+  return fieldRules
 })
+
 const fieldAncillaryName = computed(() => {
   if (field.value.ancillaryCustomFieldHint) {
     return field.value.fieldName + ' ' + field.value.ancillaryCustomFieldHint
