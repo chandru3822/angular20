@@ -512,9 +512,9 @@ const searchfilteredActivityTypeHashtags = (activityTypeHashtags)=> {
   })
 }
 const getPinnedActivitiesOnly = (activities) => {
-  const sortedFilteredPinnedActivities = activities.filter(a => a.pinned)
+  const sortedFilteredPinnedActivities = cloneDeep(activities.filter(a => a.pinned))
   if(pinnedActivitiesOnly.value.length === 0 || sortedFilteredPinnedActivities.length !== pinnedActivitiesOnly.value.length){
-    //if-statement needed so we don't open the menu on the pinned note when we open the menu on the non-pinned copy of the note
+    //cloneDeep and if-statement needed so we don't open the menu on the pinned note when we open the menu on the non-pinned copy of the note
     // but we still get the update when we pin/unpin a note
     pinnedActivitiesOnly.value = sortedFilteredPinnedActivities
   }

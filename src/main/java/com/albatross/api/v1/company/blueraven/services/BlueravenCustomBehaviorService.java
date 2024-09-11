@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.CustomBehaviorQuery;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.User;
 import com.mypurecloud.sdk.v2.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +31,11 @@ public class BlueravenCustomBehaviorService {
   private final GenesysService genesysService;
   private final Five9Service five9Service;
 
-  private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 40L, 50L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
+  private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 3L, 7L, 40L, 50L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
 
   public void handleCustomContactCreation(Long contactId, Boolean isNew, List<CustomFieldValue> cfvs, List<CustomFieldGroup> cfgs) {
     Long leadLevel = getContactLeadLevel(cfgs);
+    String leadSource = getContactLeadSource(cfgs);
 
     if(isNew) {
       User user = securityService.getCurrentUser();
@@ -56,7 +58,7 @@ public class BlueravenCustomBehaviorService {
       }
 
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
-        five9Service.handleContact(contactId, cfvs, false, null, leadLevel);
+        five9Service.handleContact(contactId, cfvs, false, null, leadLevel, leadSource);
       }
       else {
         genesysService.handleAddContact(contactId, cfvs);
@@ -64,7 +66,7 @@ public class BlueravenCustomBehaviorService {
     }
     else {
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
-        five9Service.handleContact(contactId, cfvs, true, null, leadLevel);
+        five9Service.handleContact(contactId, cfvs, true, null, leadLevel, leadSource);
       }
       else {
         try {
@@ -100,5 +102,38 @@ public class BlueravenCustomBehaviorService {
       }
     }
     return null;
+  }
+
+  private String getContactLeadSource(List<CustomFieldGroup> cfgs) {
+    CustomFieldGroup contactDetails = cfgs.stream()
+      .filter(cfv -> cfv.getGroupName().equals("Contact Details"))
+      .findFirst()
+      .orElse(null);
+
+    if (contactDetails != null) {
+      Optional<CustomFieldValue> leadSource = contactDetails.getCustomFieldValues().stream()
+        .filter(cfv -> cfv.getFieldName().equals("Lead Source"))
+        .filter(Objects::nonNull)
+        .findFirst();
+
+      if (leadSource.isPresent()) {
+        CustomFieldValue leadSourceCfv = leadSource.get();
+        Long listOfValueId = leadSourceCfv.getIntValue();
+        if (listOfValueId != null) {
+          ListOfValue selectedValue =
+            leadSourceCfv.getListOfValues()
+              .stream()
+              .filter(l -> l.getId().equals(listOfValueId))
+              .findFirst()
+              .orElse(null);
+
+          if (selectedValue != null) {
+            return selectedValue.getName();
+          }
+        }
+
+      }
+    }
+    return "";
   }
 }

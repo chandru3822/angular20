@@ -37,7 +37,7 @@ public class ContactLeadService {
   private final UserPositionService userPositionService;
   private final ContactService contactService;
 
-  private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 40L, 50L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
+  private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 3L, 7L, 40L, 50L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
 
   public Contact saveContactLead(ContactLead cl) {
     HubspotLead hubspotLead = new HubspotLead();
@@ -80,6 +80,7 @@ public class ContactLeadService {
     }
 
     Long contactId;
+    String leadSoruce = "";
 
     String state = cl.getState();
     String stateValue =
@@ -138,6 +139,7 @@ public class ContactLeadService {
         leadSource.setIntValue(Long.parseLong(leadSourceId));
         leadSource.setFieldValue(cl.getLeadSource());
         cfvList.add(leadSource);
+        leadSoruce = cl.getLeadSource();
       }
     }
 
@@ -371,7 +373,7 @@ public class ContactLeadService {
 
     if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
       try {
-        five9Service.handleContact(contactId, cfvList, false, null, leadLevel);
+        five9Service.handleContact(contactId, cfvList, false, null, leadLevel, leadSoruce);
       } catch (Exception e) {
         String msg = "FIVE9: Error adding contact: {}";
         log.error(msg, e.getMessage());

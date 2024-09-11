@@ -10,6 +10,7 @@ DECLARE
     v_org_ids bigint[];
     v_office_orgs          bigint[];
     v_setter_orgs          bigint[];
+    v_sales_office_org_ids bigint[];
 BEGIN
   select array_agg(position_id)
   into v_current_position_ids
@@ -39,6 +40,7 @@ BEGIN
            SELECT (elem ->> 'office_id') :: bigint as elem
 
            FROM json_array_elements(p_office_ids::JSON) elem)as elem;
+    v_sales_office_org_ids = v_org_ids;
   elsif p_district_ids::text != '[]'::text then
     --raise notice '2';
     select array_agg(elem)
@@ -46,6 +48,11 @@ BEGIN
     from (
            SELECT (elem ->> 'district_id') :: bigint as elem
            FROM json_array_elements(p_district_ids::JSON) elem)as elem;
+
+    select array_agg(id)
+    into v_sales_office_org_ids
+    from flow.org_hierarchy_filter_down(v_org_ids)
+    where org_type_id=5;
   elsif p_region_ids::text != '[]'::text then
     --raise notice '3';
     select array_agg(elem)
@@ -53,6 +60,10 @@ BEGIN
     from (
            SELECT (elem ->> 'region_id') :: bigint as elem
            FROM json_array_elements(p_region_ids::JSON) elem)as elem;
+    select array_agg(id)
+    into v_sales_office_org_ids
+    from flow.org_hierarchy_filter_down(v_org_ids)
+    where org_type_id=5;
   elsif p_area_ids::text != '[]'::text then
     --raise notice '4';
     select array_agg(elem)
@@ -60,6 +71,10 @@ BEGIN
            SELECT (elem ->> 'area_id') :: bigint as elem
            into v_org_ids
            FROM json_array_elements(p_area_ids::JSON) elem)as elem;
+    select array_agg(id)
+    into v_sales_office_org_ids
+    from flow.org_hierarchy_filter_down(v_org_ids)
+    where org_type_id=5;
   end if;
 
   case when p_area_ids::text = '[]'::text and p_region_ids::text = '[]'::text and
@@ -92,6 +107,7 @@ BEGIN
     else
     -- org_level_id of 7 = Office
     case when (v_org_level_id < 7) OR (5 = any (v_current_position_ids)) then ---- Corporate and Regional
+
     select array_agg(up.org_id)
     into v_office_orgs
     from flow.user_position up
@@ -105,6 +121,10 @@ BEGIN
     where user_id = p_platform_user_id
       and org_id = any (v_org_ids)
       and position_id = 4;
+--     raise notice 'v_org_ids 55555555%',v_org_ids;
+--     raise notice 'v_current_position_ids 111111%',v_current_position_ids;
+--     raise notice 'v_office_orgs 22222%',v_org_ids;
+--     raise notice 'v_org_level_id 33333%',v_org_level_id;
         RETURN QUERY
             select array_to_json(array_agg(row_to_json(sub_rows)))
             from (
@@ -127,8 +147,8 @@ BEGIN
                                      inner join flow.org o on o.id = up.org_id
                               where upv.org_id is not null and
                                     case when v_org_level_id = 7 and (5 = any (v_current_position_ids)) then
-                                       upv.org_id = any (v_office_orgs)
-                                    else upv.org_id = any (v_org_ids)end
+                                       (upv.org_id = any (v_office_orgs) or upv.sales_org_id = any (v_sales_office_org_ids))
+                                    else (upv.org_id = any (v_org_ids) or upv.sales_org_id = any (v_sales_office_org_ids))end
                                 and upv.archived is not true
                                 and upv.user_status_type_id in (9, 11, 14) -- (Active, Terminated, Pending Termination)
                           ) as users

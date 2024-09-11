@@ -367,8 +367,9 @@ public class CommunicationService {
 
   public String getDefaultEmailTemplate() throws IOException {
     try (InputStream input =
-           CommunicationService.class.getResourceAsStream("/communication/templates/email.ftl.txt")) {
-      return new Scanner(input, StandardCharsets.UTF_8).useDelimiter("\\A").next();
+           CommunicationService.class.getResourceAsStream("/communication/templates/email.ftl.txt");
+         Scanner scanner = new Scanner(input, StandardCharsets.UTF_8)) {
+      return scanner.useDelimiter("\\A").next();
     }
   }
 

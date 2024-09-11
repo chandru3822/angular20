@@ -47,9 +47,12 @@ public class Five9Service {
   private final SimpleDateFormat formatterCreatedDate = new SimpleDateFormat("MM/dd/yyyy");
   private final SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
 
+  private final Set<Long> DIGITAL_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 3L, 7L, 40L));
+  private final Set<String> DIGITAL_LEAD_SOURCES = new HashSet<>(Arrays.asList ("Paid Lead Gen", "Paid Advertising", "Organic", "Organic with Referral"));
+
   private Boolean referralValueSet = false;
 
-  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, String five9ContactListName, Long leadLevel) {
+  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, String five9ContactListName, Long leadLevel, String leadSource) {
     if (ObjectUtils.isEmpty(basicToken) || ObjectUtils.isEmpty(basicToken == null)) {
       return;
     }
@@ -103,7 +106,7 @@ public class Five9Service {
         contactListName = five9ContactListName;
       }
       else {
-        if (leadLevel == 1L || leadLevel == 2L || leadLevel == 40L) {
+        if (DIGITAL_LEAD_LEVELS.contains(leadLevel) && DIGITAL_LEAD_SOURCES.contains(leadSource)) {
           contactListName = "digitalleads";
         }
         else if (leadLevel == 50L) {
@@ -290,7 +293,29 @@ public class Five9Service {
           .findFirst()
           .orElse(null);
 
-        handleContact(contact.getId(), values, false, five9ContactListName, leadLevel);
+        String leadSource = "";
+        CustomFieldValue leadSourceCfv = values.stream()
+          .filter(cfv -> cfv != null && cfv.getFieldName() != null)
+          .filter(cfv -> cfv.getFieldName().equals("Lead Source"))
+          .filter(Objects::nonNull)
+          .findFirst()
+          .orElse(null);
+
+        Long leadSourceListOfValueId = leadSourceCfv.getIntValue();
+        if (leadSourceListOfValueId != null) {
+          ListOfValue selectedValue =
+            leadSourceCfv.getListOfValues()
+              .stream()
+              .filter(l -> l.getId().equals(leadSourceListOfValueId))
+              .findFirst()
+              .orElse(null);
+
+          if (selectedValue != null) {
+            leadSource = selectedValue.getName();
+          }
+        }
+
+        handleContact(contact.getId(), values, false, five9ContactListName, leadLevel, leadSource);
       } catch (Exception e) {
         log.error("FIVE9: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
       }

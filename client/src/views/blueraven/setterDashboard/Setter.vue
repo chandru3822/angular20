@@ -1,26 +1,17 @@
 <template>
   <v-container id="setter-dash-container">
-    <v-row id="setter-dash-toolbar-container">
-      <v-col cols="12" id="setter-dash-toolbar" class="pt-0 pb-2">
+    <v-row id="setter-dash-toolbar-container" v-if="!hideHeader">
+      <v-col cols="12" id="setter-dash-toolbar">
         <v-toolbar id="setter-dash-title-container" class="elevation-1">
-          <v-toolbar-title>Setter Dashboard</v-toolbar-title>
+          <v-toolbar-title class="title-large">Setter Dashboard</v-toolbar-title>
         </v-toolbar>
-      </v-col>
-    </v-row>
-
-    <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters>
-      <v-col cols="12">
-        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('funnel')}" @click="goToRoute('setterFunnel')">
-          Funnel
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('dashboard')}" @click="goToRoute('setterDashboard')">
-          Dashboard
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('incentive')}" @click="goToRoute('setterIncentive')">
-          Incentive
-        </span>
+        <v-tabs class="tabs-bar">
+          <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
+                 class="text-capitalize body-medium tab-bar text-center"
+                 :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+            {{ tab.label }}
+          </v-tab>
+        </v-tabs>
       </v-col>
     </v-row>
     <router-view></router-view>
@@ -29,13 +20,31 @@
 
 <script setup>
 import {useRouter, useRoute} from "vue-router/composables";
+import {ref} from "vue";
+import { useUserStore } from '@/stores/UserStore.js'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
+const hideHeader = ref(userStore.hideHeader || false)
 
-const goToRoute = (name) => {
-  router.push({name})
-}
+const tabs = [
+  {
+    id: 1,
+    label: 'FUNNEL',
+    path: `/setter/funnel`,
+  },
+  {
+    id: 2,
+    label: 'PERFORMANCE',
+    path: `/setter/dashboard`,
+  },
+  {
+    id: 3,
+    label: 'INCENTIVE',
+    path: `/setter/incentive`,
+  }
+]
 </script>
 
 <style lang="scss" scoped>

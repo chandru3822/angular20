@@ -149,8 +149,8 @@
             <div class="ml-4 mr-2 mt-2">
               <v-expansion-panels multiple v-model="expansionPanelsStatus">
                 <v-expansion-panel
-                  v-for="(cfg, index) in sortedCustomFieldGroups"
-                  :key="index"
+                  v-for="cfg in sortedCustomFieldGroups"
+                  :key="cfg.id"
                   class="my-2 pr-4"
                 >
                   <v-expansion-panel-header>
@@ -161,10 +161,8 @@
                     </v-toolbar>
                   </v-expansion-panel-header>
                   <v-expansion-panel-content
-                    v-for="(field, idx) in filteredCustomFields(
-                      cfg.customFieldValues
-                    )"
-                    :key="idx"
+                    v-for="field in filteredCustomFields(cfg.customFieldValues)"
+                    :key="field.id"
                   >
                     <CustomValueInput
                       v-if="isFieldVisible(field)"

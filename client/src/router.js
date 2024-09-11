@@ -401,13 +401,13 @@ const router = new Router({
               path: 'dashboard',
               name: 'setterDashboard',
               meta: {title: 'Albatross - Setter Dashboard'},
-              component: () => import ( './views/blueraven/setterDashboard/SetterDashboard.vue')
+              component: () => import ( './views/blueraven/setterDashboard/SetterPerformance.vue')
             }, {
               path: 'funnel',
               alias: '/setterDashboard',
               name: 'setterFunnel',
               meta: {title: 'Albatross - Setter Dashboard'},
-              component: () => import ( './views/blueraven/setterDashboard/SetterFunnel.vue')
+              component: () => import ( './views/blueraven/setterDashboard/SetterFunnelRework.vue')
             }, {
               path: 'incentive',
               name: 'setterIncentive',

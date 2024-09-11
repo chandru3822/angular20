@@ -7,7 +7,6 @@ import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.Subscriber;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.queries.NotificationQuery;
-import com.albatross.api.v1.flow.services.PushNotification;
 import com.albatross.api.v1.flow.services.SqlArrayService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -72,10 +74,10 @@ public class NotificationService {
    */
   @Transactional
   public Notification createNotification(
-      CreateNotificationDto notification, @NonNull Long userId, @NonNull Long createdById) {
+    CreateNotificationDto notification, @NonNull Long userId, @NonNull Long createdById) {
 
     final List<Notification> notifications =
-        createNotification(notification, Set.of(userId), createdById);
+      createNotification(notification, Set.of(userId), createdById);
     return notifications.isEmpty() ? null : notifications.get(0);
   }
 
@@ -103,19 +105,19 @@ public class NotificationService {
    */
   @Transactional
   public List<Notification> createNotification(
-      CreateNotificationDto notification, Set<Long> userIds, @NonNull Long createdById) {
+    CreateNotificationDto notification, Set<Long> userIds, @NonNull Long createdById) {
 
     // note: keeping sql here because we are using a prepared statement directly which requires ?
     // placeholders
     final String sql =
-        "insert into flow.notification (user_id, notification_topic_id, title, body, priority, metadata, created_by_id, modified_by_id) values (?, ?, ?, ?, ?, ?, ?, ?)";
+      "insert into flow.notification (user_id, notification_topic_id, title, body, priority, metadata, created_by_id, modified_by_id) values (?, ?, ?, ?, ?, ?, ?, ?)";
 
     final DataSource dataSource = jdbcTemplate.getJdbcTemplate().getDataSource();
 
     if (dataSource != null) {
       try (Connection connection = dataSource.getConnection();
-          PreparedStatement ps =
-              connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+           PreparedStatement ps =
+             connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
         for (Long userId : userIds) {
           ps.setLong(1, userId);
@@ -140,12 +142,13 @@ public class NotificationService {
 
         ps.executeBatch();
 
-        final ResultSet generatedKeys = ps.getGeneratedKeys();
-        final ArrayList<Long> insertedIds = new ArrayList<>();
+        final List<Long> insertedIds = new ArrayList<>();
 
-        while (generatedKeys.next()) {
-          final long id = generatedKeys.getInt("id");
-          insertedIds.add(id);
+        try (final ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          while (generatedKeys.next()) {
+            final long id = generatedKeys.getLong("id");
+            insertedIds.add(id);
+          }
         }
 
         if (!insertedIds.isEmpty()) {
@@ -157,14 +160,14 @@ public class NotificationService {
 
           final Array idsSqlArray = sqlArrayService.createSqlArrayOfType("bigint", insertedIds);
           final List<Notification> notifications =
-              sqlCache.queryBySql(
-                NotificationQuery.findByIds,
-                  Map.of("ids", idsSqlArray),
-                  new NotificationMapper(this.objectMapper));
+            sqlCache.queryBySql(
+              NotificationQuery.findByIds,
+              Map.of("ids", idsSqlArray),
+              new NotificationMapper(this.objectMapper));
 
           notifications.stream()
-              .map(NotificationEventMessage::from)
-              .forEach(notify -> pubSubService.publish(EventChannel.NOTIFICATION, notify));
+            .map(NotificationEventMessage::from)
+            .forEach(notify -> pubSubService.publish(EventChannel.NOTIFICATION, notify));
 
           return notifications;
         }
@@ -179,32 +182,31 @@ public class NotificationService {
 
   public Page<Notification> getUserNotifications(@NonNull Long userId, Pageable pageable) {
     final Map<String, Object> params =
-        Map.of("userId", userId, "limit", pageable.getPageSize(), "offset", pageable.getOffset());
+      Map.of("userId", userId, "limit", pageable.getPageSize(), "offset", pageable.getOffset());
 
     final List<Notification> notifications =
-        sqlCache.queryBySql(
-          NotificationQuery.getUnreadByUserPageable,
-            params,
-            new NotificationMapper(this.objectMapper));
+      sqlCache.queryBySql(
+        NotificationQuery.getUnreadByUserPageable,
+        params,
+        new NotificationMapper(this.objectMapper));
 
     final Long count =
-        sqlCache
-            .getBySql(
-              NotificationQuery.getUnreadByUserCount,
-                params,
-                new SingleColumnRowMapper<>(Long.class))
-            .orElse((long) notifications.size());
+      sqlCache
+        .getBySql(
+          NotificationQuery.getUnreadByUserCount,
+          params,
+          new SingleColumnRowMapper<>(Long.class))
+        .orElse((long) notifications.size());
 
     return new PageImpl<>(
-        notifications, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+      notifications, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   @Cacheable(key = "#userId")
   public List<Notification> getUserNotifications(@NonNull Long userId) {
     final Map<String, Object> params = Map.of("userId", userId);
-    List<Notification> results = sqlCache.queryBySql(
+    return sqlCache.queryBySql(
       NotificationQuery.getUnreadByUser, params, new NotificationMapper(this.objectMapper));
-    return results;
   }
 
   public List<Notification> getThreadNotificationsForUser(@NonNull Long userId) {
@@ -221,46 +223,46 @@ public class NotificationService {
 
   @Async
   public void sendUserCatchupNotifications(
-      Subscriber subscriber, @NonNull Long userId, @NonNull Long afterId) {
+    Subscriber subscriber, @NonNull Long userId, @NonNull Long afterId) {
     final List<Notification> catchupNotifications =
-        sqlCache.queryBySql(
-          NotificationQuery.getUnreadByUserAfterId,
-            Map.of("userId", userId, "afterId", afterId),
-            new NotificationMapper(this.objectMapper));
+      sqlCache.queryBySql(
+        NotificationQuery.getUnreadByUserAfterId,
+        Map.of("userId", userId, "afterId", afterId),
+        new NotificationMapper(this.objectMapper));
 
     log.debug("[Notifications] User is behind {} Notifications", catchupNotifications.size());
 
     catchupNotifications.stream()
-        .map(NotificationEventMessage::from)
-        .filter(subscriber::acceptsEventMessage)
-        .forEach(notification -> pubSubService.notify(subscriber, notification));
+      .map(NotificationEventMessage::from)
+      .filter(subscriber::acceptsEventMessage)
+      .forEach(notification -> pubSubService.notify(subscriber, notification));
   }
 
   @Transactional
   @CacheEvict(
-      key = "#userId",
-      condition = "#notificationIds != null and !#notificationIds.isEmpty()")
+    key = "#userId",
+    condition = "#notificationIds != null and !#notificationIds.isEmpty()")
   public void markUserNotificationsAsRead(@NonNull Long userId, List<Long> notificationIds)
-      throws SQLException {
+    throws SQLException {
     if (notificationIds == null || notificationIds.isEmpty()) {
       return;
     }
 
     Notification notification =
-        new Notification()
-            .setTopic(NotificationTopic.SMS_REPLY)
-            .setTitle("Notification read")
-            .setBody("")
-            .setPriority(1)
-            .setMetadata(null)
-            .setUserId(userId);
+      new Notification()
+        .setTopic(NotificationTopic.SMS_REPLY)
+        .setTitle("Notification read")
+        .setBody("")
+        .setPriority(1)
+        .setMetadata(null)
+        .setUserId(userId);
     pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
 
     final Array ids = sqlArrayService.createSqlArrayOfType("bigint", notificationIds);
     final int updatedRecords =
-        sqlCache.updateBySql(
-          NotificationQuery.markAsRead,
-            Map.of("userId", userId, "modifiedById", userId, "ids", ids));
+      sqlCache.updateBySql(
+        NotificationQuery.markAsRead,
+        Map.of("userId", userId, "modifiedById", userId, "ids", ids));
     log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
   }
 }
