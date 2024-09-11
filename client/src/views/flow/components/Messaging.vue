@@ -15,7 +15,9 @@
         ></a-btn>
       </div>
 
-      <div v-if="messageList.length <= 0" class="pt-4">No messages to show</div>
+      <div v-if="messageList.length <= 0" class="pt-4">
+        No messages to show
+      </div>
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
@@ -550,6 +552,7 @@ a.chatLink {
 
 .message-container {
   height: 90%;
+  position: relative;
   margin-top: 5px;
   @media (min-width: 960px) {
     min-height: 400px;
@@ -689,6 +692,8 @@ a.chatLink {
 .mock-reply {
   width: 100%;
   margin: 5px 30px 5px 0;
+  position: absolute;
   text-align: right;
+  bottom: 20px;
 }
 </style>

@@ -526,14 +526,21 @@ const joinConversation = async (selectedTeam) => {
     await postRequest(addTeamUrl, selectedTeam)
     appStore.showSnack('SUCCESS', 'Successfully joined conversation')
 
-    if (!route.path.includes('conversation')) {
-      let inboxUrl = assignToMe.value.externalConversationId ? `${routePrefix.value}/conversation/${assignToMe.value.externalConversationId}` : `${routePrefix.value}/conversation/${assignToMe.value.internalConversationId}`
-      //avoids redundant navigation console error
-      router.push({ path: inboxUrl })
+    selectedConversation.value = assignToMe.value
+
+    clearThreadNotification(assignToMe.value.parentId)
+    if(assignToMe.value.external) {
+      projectStore.selectedTab = 0
     }
+
+    // if (!route.path.includes('conversation')) {
+    //   let inboxUrl = `${routePrefix.value}/conversation/sms/${assignToMe.value.parentId}`
+    //   avoids redundant navigation console error
+      // await router.replace({ path: inboxUrl })
+    // }
     showLoading(false)
     showAssignToMeDialog.value = false
-    await fetchConversations()
+    // await fetchConversations()
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error joining conversation')
