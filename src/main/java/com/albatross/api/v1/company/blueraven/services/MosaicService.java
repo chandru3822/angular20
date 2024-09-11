@@ -280,13 +280,14 @@ public class MosaicService {
       int totalPeriods = financeProduct.getInt("totalPeriods");
       String financingProductType = financeProduct.getString("financingProductType");
       if (financingProductType.equals("Choice") && rate == proposalRate && totalPeriods == termMonths) {
-        if (!isEnsembleProposal) {
+        String name = financeProduct.getString("name");
+        boolean isEnsembleProduct = name.contains("Blue Raven Ensemble");
+        if (!isEnsembleProposal && !isEnsembleProduct) {
           return financeProduct.getString("id");
         }
         else {
           // If this is an Ensemble proposal, only return an Ensemble product (based on the product name)
-          String name = financeProduct.getString("name");
-          if (name.contains("Blue Raven Ensemble")) {
+          if (isEnsembleProposal && isEnsembleProduct) {
             return financeProduct.getString("id");
           }
         }
@@ -297,13 +298,16 @@ public class MosaicService {
   }
 
   private Boolean isEnsembleProposal(String state) {
-    final HashSet<String> nonEnsembleStates = new HashSet<>(Arrays.asList("VA", "NC", "KY", "OH", "CO", "SC", "NV"));
-    if (nonEnsembleStates.contains(state)) {
-      return false;
-    }
-    else {
-      return true;
-    }
+    final HashSet<String> NON_ENSEMBLE_STATES = new HashSet<>(Arrays.asList(
+      "VA", "VIRGINIA",
+      "NC", "NORTH CAROLINA",
+      "KY", "KENTUCKY",
+      "OH", "OHIO",
+      "CO", "COLORADO",
+      "SC", "SOUTH CAROLINA",
+      "NV", "NEVADA"
+    ));
+    return !NON_ENSEMBLE_STATES.contains(state.trim().toUpperCase());
   }
 
   private String createOffer(String loanAmount, String applicationId, String financeProductId) throws Exception {
