@@ -90,10 +90,7 @@
       </div>
       <div class="personal-performance-box elevation-2">
         <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-poll</v-icon><span class="performance-card-header">Company Rank</span></span>
-        <span v-if="isSetterMgr" class="headline-large performance-card-contents">
-            {{ rankingData.currentOfficeRank }}
-          </span>
-        <span v-if="!isSetterMgr" class="headline-large performance-card-contents">
+        <span class="headline-large performance-card-contents">
             {{ rankingData.currentRank }}
           </span>
       </div>
@@ -105,7 +102,7 @@
             </span>
         <br>
         </div>
-        <span v-if="rankingData.currentRank !== '1'"
+        <span v-if="!['1', 'T1'].includes(rankingData.currentRank)"
               class="body-small performance-card-contents">
               {{ rankingData.pitchesToGo }} {{ rankingData.pitchesToGo === 1 ? 'Pitch' : 'Pitches' }} to beat rep
             </span>
@@ -141,7 +138,7 @@
         </template>
         <div>
           <v-list style="height: 400px; overflow-y:auto">
-            <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+            <v-list-item v-for="(item, index) in dropdownValues" class="pa-0">
               <v-list-item-title v-if="item.name === 'PERIOD'">
                 <v-menu open-on-hover offset-x>
                   <template v-slot:activator="{ on }">
@@ -202,12 +199,9 @@
       </div>
       <div class="personal-performance-box elevation-2">
         <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-poll</v-icon><span class="performance-card-header">Company Rank</span></span>
-        <span v-if="isSetterMgr" class="headline-large performance-card-contents">
-            {{ officePerformanceData.currentOfficeRank }}
-          </span>
-        <span v-if="!isSetterMgr" class="headline-large performance-card-contents">
+        <span class="headline-large performance-card-contents">
             {{ officePerformanceData.currentRank }}
-          </span>
+        </span>
       </div>
       <div class="personal-performance-box elevation-2">
         <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-account</v-icon><span class="performance-card-header">Office to Beat</span></span>
@@ -217,7 +211,7 @@
             </span>
           <br>
         </div>
-        <span v-if="officePerformanceData.currentRank !== '1'"
+        <span v-if="!['1', 'T1'].includes(officePerformanceData.currentRank)"
               class="body-small performance-card-contents">
               {{ officePerformanceData.pitchesToGo }} {{ officePerformanceData.pitchesToGo === 1 ? 'Pitch' : 'Pitches' }} to beat office
             </span>
