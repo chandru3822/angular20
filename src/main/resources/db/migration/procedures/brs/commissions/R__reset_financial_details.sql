@@ -47,6 +47,12 @@ BEGIN
 
     end loop;
 
+  update brs.financial_details fd
+  set total_commissions_paid_to_date = 0,
+      total_commissions_adjustments_paid_to_date = 0,
+      total_overrides_paid_to_date = 0,
+      total_commissions_forfeited_paid_to_date = 0
+  where project_id = p_project_id;
 
   for x in select project_id, coalesce(sum(amount), 0) amount1
            from brs.project_commission_ledger pcl

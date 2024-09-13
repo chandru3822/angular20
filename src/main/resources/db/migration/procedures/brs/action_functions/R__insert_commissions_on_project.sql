@@ -174,7 +174,7 @@ BEGIN
               and cp.position_id = 1
           end;
 
-  if v_commission_strategy_id = 24102 and v_cp_commission_strategy_id != 1 then
+  if v_commission_strategy_id in (24102,24871) and v_cp_commission_strategy_id != 1 then
     select cp.id, cp.name, cps.status_type
     into v_commission_plan_id,v_commission_plan,v_commission_status
     from brs.commission_plan cp

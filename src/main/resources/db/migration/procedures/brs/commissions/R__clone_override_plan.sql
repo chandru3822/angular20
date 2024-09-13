@@ -18,12 +18,25 @@ AS $$
 DECLARE
   _cloned  RECORD;
   _cloneId bigint;
+  v_commission_strategy_id bigint;
+  v_base_price_per_watt numeric;
 BEGIN
   SELECT *
   INTO _cloned
   FROM brs.override_plan
   WHERE id = p_override_plan;
 
+  select int_value
+  into v_commission_strategy_id
+    from brs.commission_override_custom_field_value cocfv
+  where cocfv.custom_field_group_assignment_id = 870
+  and cocfv.override_plan_id = p_override_plan;
+
+  select numeric_value
+  into v_base_price_per_watt
+  from brs.commission_override_custom_field_value cocfv
+  where cocfv.custom_field_group_assignment_id = 871
+    and cocfv.override_plan_id = p_override_plan;
 
   -- create a new override plan with defaults from the copied plan
   INSERT INTO brs.override_plan (
@@ -43,6 +56,18 @@ BEGIN
   RETURNING id
     INTO _cloneId;
 
+  if _cloneId is not null  then
+    if v_commission_strategy_id is not null then
+      insert into brs.commission_override_custom_field_value(override_plan_id,custom_field_group_assignment_id,int_value,
+                                                             date_created, date_modified, created_by_id, modified_by_id)
+      values(_cloneId,870,v_commission_strategy_id,now(),now(),99999999,99999999);
+    end if;
+    if v_base_price_per_watt is not null then
+      insert into brs.commission_override_custom_field_value(override_plan_id,custom_field_group_assignment_id,numeric_value,
+                                                             date_created, date_modified, created_by_id, modified_by_id)
+      values(_cloneId,871,v_base_price_per_watt,now(),now(),99999999,99999999);
+    end if;
+  end if;
 
   -- set the end_date for selected users on the original_plan, this has to be done first before creating new records
   IF p_assigned_users IS NOT NULL THEN

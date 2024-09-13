@@ -2,22 +2,21 @@
 
 -- SELECT * FROM brs.get_setter_office_to_beat(723, '2020-06-01', '2020-06-07');
 drop function if exists brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date, p_run_by_id bigint);
-  CREATE OR REPLACE FUNCTION brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date, p_run_by_id bigint)
-    RETURNS JSON AS
+drop function if exists brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date);
+  CREATE OR REPLACE FUNCTION brs.get_setter_office_to_beat(p_office_id bigint, p_start_date date, p_end_date date)
+    RETURNS table (
+                    setter_office_to_beat_id bigint,
+                    setter_office_to_beat_name text,
+                    pitches_to_go bigint,
+                    current_office_rank text
+                  ) AS
 $BODY$
-DECLARE
-    v_rank_box_data json;
-
 BEGIN
-
-
-    SELECT row_to_json(sub_rows)
-    INTO v_rank_box_data
-    FROM (
-        select setter_office_to_beat_id,
-               setter_office_to_beat_name,
-               (setter_office_to_beat_pitches - pitches + 1) as pitches_to_go,
-               rank as current_office_rank
+return query
+        select office_to_beat.setter_office_to_beat_id,
+               office_to_beat.setter_office_to_beat_name,
+               (coalesce(office_to_beat.setter_office_to_beat_pitches,0) - coalesce(office_to_beat.pitches,0) + 1) as pitches_to_go,
+               office_to_beat.rank as current_office_rank
         from (
             select org_id,
                    pitches,
@@ -37,32 +36,13 @@ BEGIN
                        count(1)::bigint as pitches,
                        rank() over (order by count(1) desc) as rank
                 from brs.project_details pd
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
-                                                                                                        from flow.company_configuration_value
-                                                                                                        where code = 'SETTER_POSITION_IDS') and up.archived is not true)
-                    inner join flow.user u on u.id = pd.setter_user_id
-                    inner join flow.org o on (o.id = up.org_id and o.active_flag is true)
+                    inner join flow.user_position up on up.id = pd.setter_user_position_id
+                    inner join flow.org o on (o.id = up.org_id or o.id = coalesce( up.sales_org_id,0::bigint))
                     left join flow.organization_custom_field_value ocfv on ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
                     left join flow.list_of_value lov on ocfv.int_value = lov.id
                 where pd.source in (525, 526) --(Setter Gen, Retargeted)
-                    and case when up.end_date is not null
-                        then ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
-                        else ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
-                        end
-                    and (((case when pd.first_appointment_pitched is not null
-                                    then pd.first_appointment_pitched
-                                when pd.first_appointment_pitched is null
-                                    and pd.first_appointment_missed is not null
-                                    then pd.first_appointment_missed
-                                else pd.closer_appointment_start
-                                end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                    and (case when pd.first_appointment_pitched is not null
-                                  then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                              when pd.first_appointment_pitched is null
-                                  and pd.first_appointment_missed is not null
-                                  then pd.first_appointment_missed_id in (2,3,1139,1140)
-                              else pd.closer_appointment_outcome in (2,3,1139,1140)
-                              end)
+                    and ((prioritized_closer_appointment_outcome_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                  and pd.prioritized_closer_appointment_outcome in (2,3,1139,1140)
                     and o.id != 171 --Setter Call Center
                     and pd.company_id = 3
                 group by o.id, concat(o.org_name, ' (', lov.name, ')')
@@ -70,8 +50,7 @@ BEGIN
         ) as office_to_beat
         where org_id = p_office_id
         order by pitches desc, org_id
-    ) as sub_rows;
-RETURN v_rank_box_data;
+        limit 1;
 
 END
 $BODY$

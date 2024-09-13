@@ -63,6 +63,8 @@ declare
     v_count bigint;
     v_position_ids bigint[];
     v_cfga_id bigint;
+v_override_plan_id bigint;
+v_sum_allocation numeric;
 BEGIN
 
 --   if (TG_OP = 'INSERT') and new.end_date is null then
@@ -113,6 +115,20 @@ BEGIN
 
         v_user_id = new.user_id;
         v_count = 1;
+
+      select id
+      into v_override_plan_id
+      from brs.override_plan_assigned_user opau
+      where opau.user_id = new.user_id and
+            new.position_id = any(v_position_ids) and
+            opau.end_date is null;
+
+      if v_override_plan_id is null then
+        select *
+        into v_sum_allocation
+        from brs.insert_override_plan_from_template(new.org_id,new.user_id);
+      end if;
+
     end if;
     if v_count > 0 then
         select array_agg(v_user_id)
@@ -166,10 +182,11 @@ BEGIN
 
     end if;
 
-    select array_agg(user_id)
+    select array_agg(distinct user_id)
     into v_user_ids
     from flow.user_position
-        where org_id in (select id from flow.org_hierarchy_filter_down(array[new.id]));
+        where org_id in (select id from flow.org_hierarchy_filter_down(array[new.id]))
+    or org_id = new.id;
     perform flow.update_user_org_user_position(v_user_ids);
 
 
