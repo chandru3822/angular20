@@ -504,7 +504,7 @@ const currentUserId = computed(() => {
 
 const repRankingHeaders = computed(() => {
   return [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '80px' },
     { text: 'Rep', value: 'name', sortable: false, class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
     { text: 'Total Pitched Appointments', value: 'pitches', sortable: false, align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
   ]
@@ -512,7 +512,7 @@ const repRankingHeaders = computed(() => {
 
 const officeRankingHeaders = computed(() => {
   return [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '80px' },
     { text: 'Office', value: 'org', sortable: false, class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
     { text: 'Total Appointments', value: 'totalAppointments', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
     { text: 'Total Pitched Appointments', value: 'totalPitches', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
