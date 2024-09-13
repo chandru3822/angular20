@@ -11,13 +11,19 @@
         <span class="default-text-color">{{ noDataText }}</span>
       </template>
 
-      <template #item.setterName="{item, index}">
+      <template #item.name="{item, index}">
         <div class="body-medium">
-          <img v-if="item.userImageUrl" class="ranking-table-img"
-                 :src="item.userImageUrl" :alt="item.userImageAltText">
-          <img v-else class="placeholder-img"
-               src="../../../assets/flow/user_img_placeholder.png" :alt="item.userImageAltText">
-         {{item.setterName}}
+<!--          <img v-if="item.userImageUrl" class="ranking-table-img"-->
+<!--                 :src="item.userImageUrl" :alt="item.userImageAltText">-->
+<!--          <img v-else class="placeholder-img"-->
+<!--               src="../../../assets/flow/user_img_placeholder.png" :alt="item.userImageAltText">-->
+          <v-avatar :tile="false" :size="35" color="grey lighten-4"
+                    class="account-img mr-3" :class="{'mx-0 mr-n5':constants.IS_MOBILE}">
+            <v-img name="accountImg" v-if="item.userImageUrl"
+                   :src="item.userImageUrl"></v-img>
+            <img :alt="item.userImageAltText" v-else src="../../../assets/flow/user_img_placeholder.png">
+          </v-avatar>
+         {{item.name}}
         </div>
       </template>
 

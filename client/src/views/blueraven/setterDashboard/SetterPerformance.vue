@@ -8,7 +8,7 @@
               offset-y
               :max-height="`calc(100vh - 20px)`"
               class="dropdown-header body-small"
-              v-model="openRoundRobinMenu"
+              v-model="openPersonalPerformanceDatesMenu"
               :close-on-content-click="true">
         <template v-slot:activator="{ on }">
           <a-btn class="dropdown-header body-small"
@@ -16,7 +16,7 @@
                     <span v-if="getDropdownById(personalPerformanceDateRange)?.name === 'CUSTOM' && performanceCustom.name != null" class="selected-option body-small">
                             {{performanceCustom.name}}</span>
             <span v-else-if="getDropdownById(personalPerformanceDateRange)?.name === 'PERIOD'" class="selected-option body-small">
-                    {{ getDropdownById(personalPerformanceDateRange).periodList[performancePeriod].shortLabel}}
+                    {{ getDropdownById(personalPerformanceDateRange).periodList[personalPerformancePeriod].shortLabel}}
                     </span>
             <span v-else class="selected-option body-small">
                     {{ getDropdownById(personalPerformanceDateRange)?.friendlyName}}
@@ -40,7 +40,7 @@
                   <div>
                     <v-list style="height: 300px; overflow-y:auto">
                       <v-list-item v-for="(period, index) in item.periodList"
-                                   @click="personalPerformanceDateRange = item.id; performancePeriod = index; loadPersonalPerformance(); openRoundRobinMenu = false">
+                                   @click="personalPerformanceDateRange = item.id; personalPerformancePeriod = index; loadPersonalPerformance(); openPersonalPerformanceDatesMenu = false">
                         <v-list-item-title>
                           {{ period.label }}
                         </v-list-item-title>
@@ -65,11 +65,12 @@
         </div>
       </v-menu>
     </div>
-    <div class="d-flex personal-performance-boxes-container show-large">
+
+    <v-row class="performance-row">
       <div class="personal-performance-box elevation-2">
         <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-month</v-icon><span class="performance-card-header">Total Appointments</span></span>
         <span class="headline-large performance-card-contents">
-          {{ rankingData.total_appointments ? rankingData.total_appointments : 0 }}
+          {{ rankingData.totalAppointments }}
         </span>
         <span class="body-small performance-card-contents">
           (not cancelled)
@@ -78,150 +79,152 @@
       <div class="personal-performance-box elevation-2">
         <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-check</v-icon><span class="performance-card-header">Total Pitches</span></span>
         <span class="headline-large performance-card-contents">
-          {{ rankingData.total_pitches ? rankingData.total_pitches : 0 }}
+          {{ rankingData.totalPitches }}
         </span>
       </div>
       <div class="personal-performance-box elevation-2">
         <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-circle-slice-1</v-icon><span class="performance-card-header">Pitch Percentage</span></span>
         <span class="headline-large performance-card-contents">
-          {{ rankingData.pitch_percentage ? rankingData.pitch_percentage : 0 }}%
+          {{ rankingData.pitchPercentage }}%
         </span>
       </div>
       <div class="personal-performance-box elevation-2">
         <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-poll</v-icon><span class="performance-card-header">Company Rank</span></span>
         <span v-if="isSetterMgr" class="headline-large performance-card-contents">
-            {{ rankBoxData.current_office_rank ? rankBoxData.current_office_rank : 'TBD' }}
+            {{ rankingData.currentOfficeRank }}
           </span>
         <span v-if="!isSetterMgr" class="headline-large performance-card-contents">
-            {{ rankBoxData.current_user_rank ? rankBoxData.current_user_rank : 'TBD' }}
+            {{ rankingData.currentRank }}
           </span>
       </div>
       <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-account</v-icon><span class="performance-card-header">{{ isSetterMgr ? 'Office' : 'Rep' }} to Beat</span></span>
+        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-account</v-icon><span class="performance-card-header">Rep to Beat</span></span>
         <div class="headline-large">
-            <span v-if="isSetterMgr" class="performance-card-contents">
-              {{ rankBoxData.setter_office_to_beat_name ? rankBoxData.setter_office_to_beat_name : 'TBD' }}
-            </span>
-          <span v-if="!isSetterMgr" id="rep-to-beat-name" class="performance-card-contents">
-              {{ rankBoxData.setter_to_beat_name ? rankBoxData.setter_to_beat_name : 'TBD' }}
+          <span id="rep-to-beat-name" class="performance-card-contents">
+              {{ rankingData.toBeatName }}
             </span>
         <br>
         </div>
-        <span v-if="rankBoxData.current_office_rank !== '1' && rankBoxData.current_user_rank !== '1'"
+        <span v-if="rankingData.currentRank !== '1'"
               class="body-small performance-card-contents">
-              {{ rankBoxData.pitches_to_go ? rankBoxData.pitches_to_go : 0 }} {{ rankBoxData.pitches_to_go === 1 ? 'Pitch' : 'Pitches' }} to beat {{ isSetterMgr ? 'office' : 'rep' }}
+              {{ rankingData.pitchesToGo }} {{ rankingData.pitchesToGo === 1 ? 'Pitch' : 'Pitches' }} to beat rep
             </span>
       </div>
-    </div>
-    <div class="d-flex personal-performance-boxes-container show-medium">
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-month</v-icon><span class="performance-card-header">Total Appointments</span></span>
-        <span class="headline-large performance-card-contents">
-          {{ rankingData.total_appointments ? rankingData.total_appointments : 0 }}
-        </span>
-        <span class="body-small performance-card-contents">
-          (not cancelled)
-        </span>
-      </div>
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-check</v-icon><span class="performance-card-header">Total Pitches</span></span>
-        <span class="headline-large performance-card-contents">
-          {{ rankingData.total_pitches ? rankingData.total_pitches : 0 }}
-        </span>
-      </div>
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-circle-slice-1</v-icon><span class="performance-card-header">Pitch Percentage</span></span>
-        <span class="headline-large performance-card-contents">
-          {{ rankingData.pitch_percentage ? rankingData.pitch_percentage : 0 }}%
-        </span>
-      </div>
-    </div>
-    <div class="d-flex personal-performance-boxes-container show-medium">
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-poll</v-icon><span class="performance-card-header">Company Rank</span></span>
-        <span v-if="isSetterMgr" class="headline-large performance-card-contents">
-            {{ rankBoxData.current_office_rank ? rankBoxData.current_office_rank : 'TBD' }}
-          </span>
-        <span v-if="!isSetterMgr" class="headline-large performance-card-contents">
-            {{ rankBoxData.current_user_rank ? rankBoxData.current_user_rank : 'TBD' }}
-          </span>
-      </div>
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-account</v-icon><span class="performance-card-header">{{ isSetterMgr ? 'Office' : 'Rep' }} to Beat</span></span>
-        <div class="headline-large">
-            <span v-if="isSetterMgr" class="performance-card-contents">
-              {{ rankBoxData.setter_office_to_beat_name ? rankBoxData.setter_office_to_beat_name : 'TBD' }}
-            </span>
-          <span v-if="!isSetterMgr" id="rep-to-beat-name" class="performance-card-contents">
-              {{ rankBoxData.setter_to_beat_name ? rankBoxData.setter_to_beat_name : 'TBD' }}
-            </span>
-          <br>
-        </div>
-        <span v-if="rankBoxData.current_office_rank !== '1' && rankBoxData.current_user_rank !== '1'"
-              class="body-small performance-card-contents">
-              {{ rankBoxData.pitches_to_go ? rankBoxData.pitches_to_go : 0 }} {{ rankBoxData.pitches_to_go === 1 ? 'Pitch' : 'Pitches' }} to beat {{ isSetterMgr ? 'office' : 'rep' }}
-            </span>
-      </div>
-      <div class="personal-performance-box elevation-2 hidden-box">
-
-      </div>
-    </div>
-    <div class="d-flex personal-performance-boxes-container show-small">
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-month</v-icon><span class="performance-card-header">Total Appointments</span></span>
-        <span class="headline-large performance-card-contents">
-          {{ rankingData.total_appointments ? rankingData.total_appointments : 0 }}
-        </span>
-        <span class="body-small performance-card-contents">
-          (not cancelled)
-        </span>
-      </div>
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-check</v-icon><span class="performance-card-header">Total Pitches</span></span>
-        <span class="headline-large performance-card-contents">
-          {{ rankingData.total_pitches ? rankingData.total_pitches : 0 }}
-        </span>
-      </div>
-    </div>
-    <div class="d-flex personal-performance-boxes-container show-small">
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-circle-slice-1</v-icon><span class="performance-card-header">Pitch Percentage</span></span>
-        <span class="headline-large performance-card-contents">
-          {{ rankingData.pitch_percentage ? rankingData.pitch_percentage : 0 }}%
-        </span>
-      </div>
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-poll</v-icon><span class="performance-card-header">Company Rank</span></span>
-        <span v-if="isSetterMgr" class="headline-large performance-card-contents">
-            {{ rankBoxData.current_office_rank ? rankBoxData.current_office_rank : 'TBD' }}
-          </span>
-        <span v-if="!isSetterMgr" class="headline-large performance-card-contents">
-            {{ rankBoxData.current_user_rank ? rankBoxData.current_user_rank : 'TBD' }}
-          </span>
-      </div>
-    </div>
-    <div class="d-flex personal-performance-boxes-container show-small">
-      <div class="personal-performance-box elevation-2">
-        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-account</v-icon><span class="performance-card-header">{{ isSetterMgr ? 'Office' : 'Rep' }} to Beat</span></span>
-        <div class="headline-large">
-            <span v-if="isSetterMgr" class="performance-card-contents">
-              {{ rankBoxData.setter_office_to_beat_name ? rankBoxData.setter_office_to_beat_name : 'TBD' }}
-            </span>
-          <span v-if="!isSetterMgr" id="rep-to-beat-name" class="performance-card-contents">
-              {{ rankBoxData.setter_to_beat_name ? rankBoxData.setter_to_beat_name : 'TBD' }}
-            </span>
-          <br>
-        </div>
-        <span v-if="rankBoxData.current_office_rank !== '1' && rankBoxData.current_user_rank !== '1'"
-              class="body-small performance-card-contents">
-              {{ rankBoxData.pitches_to_go ? rankBoxData.pitches_to_go : 0 }} {{ rankBoxData.pitches_to_go === 1 ? 'Pitch' : 'Pitches' }} to beat {{ isSetterMgr ? 'office' : 'rep' }}
-            </span>
-      </div>
-      <div class="personal-performance-box elevation-2 hidden-box">
-
-      </div>
-    </div>
+    </v-row>
     <!-- PERSONAL PERFORMANCE SECTION END -->
+
+
+    <!-- OFFICE PERFORMANCE SECTION START -->
+    <div class="headline-large performance-header mt-5">
+      Office Performance
+      <v-menu data-app left
+              offset-y
+              :max-height="`calc(100vh - 20px)`"
+              class="dropdown-header body-small"
+              v-model="openOfficePerformanceDatesMenu"
+              :close-on-content-click="true">
+        <template v-slot:activator="{ on }">
+          <a-btn class="dropdown-header body-small"
+                 :activation-handler="on">
+                    <span v-if="getDropdownById(officePerformanceDateRange)?.name === 'CUSTOM' && performanceCustom.name != null" class="selected-option body-small">
+                            {{performanceCustom.name}}</span>
+            <span v-else-if="getDropdownById(officePerformanceDateRange)?.name === 'PERIOD'" class="selected-option body-small">
+                    {{ getDropdownById(officePerformanceDateRange).periodList[officePerformancePeriod].shortLabel}}
+                    </span>
+            <span v-else class="selected-option body-small">
+                    {{ getDropdownById(officePerformanceDateRange)?.friendlyName}}
+                    </span>
+            <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
+            <v-icon color="primary">mdi-menu-down</v-icon>
+          </a-btn>
+        </template>
+        <div>
+          <v-list style="height: 400px; overflow-y:auto">
+            <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+              <v-list-item-title v-if="item.name === 'PERIOD'">
+                <v-menu open-on-hover offset-x>
+                  <template v-slot:activator="{ on }">
+                        <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                          {{ item.friendlyName }}
+                          <v-icon style="display: flex">mdi-chevron-right</v-icon>
+                        </span>
+                  </template>
+                  <div>
+                    <v-list style="height: 300px; overflow-y:auto">
+                      <v-list-item v-for="(period, index) in item.periodList"
+                                   @click="officePerformanceDateRange = item.id; officePerformancePeriod = index; loadOfficePerformance(); openOfficePerformanceDatesMenu = false">
+                        <v-list-item-title>
+                          {{ period.label }}
+                        </v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </div>
+                </v-menu>
+
+              </v-list-item-title>
+              <v-list-item-title v-else-if="item.name === 'CUSTOM'"
+                                 @click="selectingCustomDates = true; officePerformanceDateRange = item.id; customTable = 'Performance'"
+                                 class="dashboard-menu-option body-large">
+                {{ item.friendlyName }}
+              </v-list-item-title>
+              <v-list-item-title v-else
+                                 @click="officePerformanceDateRange = item.id; loadOfficePerformance();"
+                                 class="dashboard-menu-option body-large">
+                {{ item.friendlyName }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </div>
+      </v-menu>
+    </div>
+    <v-row class="performance-row">
+      <div class="personal-performance-box elevation-2">
+        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-month</v-icon><span class="performance-card-header">Total Appointments</span></span>
+        <span class="headline-large performance-card-contents">
+          {{ officePerformanceData.totalAppointments }}
+        </span>
+        <span class="body-small performance-card-contents">
+          (not cancelled)
+        </span>
+      </div>
+      <div class="personal-performance-box elevation-2">
+        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-calendar-check</v-icon><span class="performance-card-header">Total Pitches</span></span>
+        <span class="headline-large performance-card-contents">
+          {{ officePerformanceData.totalPitches }}
+        </span>
+      </div>
+      <div class="personal-performance-box elevation-2">
+        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-circle-slice-1</v-icon><span class="performance-card-header">Pitch Percentage</span></span>
+        <span class="headline-large performance-card-contents">
+          {{ officePerformanceData.pitchPercentage }}%
+        </span>
+      </div>
+      <div class="personal-performance-box elevation-2">
+        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-poll</v-icon><span class="performance-card-header">Company Rank</span></span>
+        <span v-if="isSetterMgr" class="headline-large performance-card-contents">
+            {{ officePerformanceData.currentOfficeRank }}
+          </span>
+        <span v-if="!isSetterMgr" class="headline-large performance-card-contents">
+            {{ officePerformanceData.currentRank }}
+          </span>
+      </div>
+      <div class="personal-performance-box elevation-2">
+        <span class="label-small"><v-icon size="16" class="performance-card-icon">mdi-account</v-icon><span class="performance-card-header">Office to Beat</span></span>
+        <div class="headline-large">
+          <span id="rep-to-beat-name" class="performance-card-contents">
+              {{ officePerformanceData.toBeatName }}
+            </span>
+          <br>
+        </div>
+        <span v-if="officePerformanceData.currentRank !== '1'"
+              class="body-small performance-card-contents">
+              {{ officePerformanceData.pitchesToGo }} {{ officePerformanceData.pitchesToGo === 1 ? 'Pitch' : 'Pitches' }} to beat office
+            </span>
+      </div>
+    </v-row>
+    <!-- OFFICE PERFORMANCE SECTION END -->
+
 
     <!-- RANKING TABLES HEADER START -->
     <div class="headline-large company-header">
@@ -263,7 +266,7 @@
                 </template>
                 <div>
                   <v-list style="height: 400px; overflow-y:auto">
-                    <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                    <v-list-item v-for="(item, index) in dropdownValues" class="pa-0">
                       <v-list-item-title v-if="item.name === 'PERIOD'">
                         <v-menu open-on-hover offset-x>
                           <template v-slot:activator="{ on }">
@@ -308,6 +311,7 @@
                 Export
               </div>          </v-row>
             <SetterRankingTable
+              v-if="!topRepsLoading"
               title="Top Reps Table"
               id="top-reps-table"
               :tableData=repsData
@@ -461,7 +465,8 @@ const snackbar = vueInstance.$snackbar
 const isBrCorporateUser = ref(userStore.details.companyId === 2)
 const customTable = ref(null)
 const timezone = ref('US/Mountain')
-const performancePeriod = ref(null)
+const personalPerformancePeriod = ref(null)
+const officePerformancePeriod = ref(null)
 const topRepsPeriod = ref(null)
 const officePeriod = ref(null)
 const openRepMenu = ref(false)
@@ -474,12 +479,14 @@ const officeCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",
 const repRankingHeaders = ref([])
 const officeRankingHeaders = ref([])
 const repDateRange = ref(null)
-const openRoundRobinMenu = ref(false)
+const openPersonalPerformanceDatesMenu = ref(false)
+const openOfficePerformanceDatesMenu = ref(false)
 const roundRobins = ref([])
 const dropdownValues = ref([])
 const topRepsDataLoaded = ref(false)
 const officeRankDataLoaded = ref(false)
 const personalPerformanceDateRange = ref(6)
+const officePerformanceDateRange = ref(6)
 const closerOfficeDateRange = ref(null)
 const isLoading = ref(false)
 const isSetter = ref(false)
@@ -501,6 +508,7 @@ const rankBoxData = ref({})
 const offices = ref([])
 const reps = ref([])
 const officeRankingData = ref([])
+const officePerformanceData = ref({})
 const repsData = ref([])
 const userOffice = ref('')
 const userOfficeId = ref(null)
@@ -544,15 +552,14 @@ onMounted(async() => {
   officeRankingHeaders.value = [
     { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
     { text: 'Office', value: 'org', sortable: false, class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
-    { text: 'Total Appointments', value: 'total_appointments', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
-    { text: 'Total Pitched Appointments', value: 'total_pitches', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+    { text: 'Total Appointments', value: 'totalAppointments', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+    { text: 'Total Pitched Appointments', value: 'totalPitches', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
   ]
-  // setTimeInterval('MTD') // MTD is the default
 
   let requests = [
     loadPersonalPerformance(),
+    loadOfficePerformance(),
     // getTopReps(),
-    // getTopOffices(),
     // getOfficeRanking(),
   ]
 
@@ -692,113 +699,19 @@ const loadPersonalPerformance = async () => {
     let startDate = moment(getDropdownById(personalPerformanceDateRange.value).startDate).format('YYYY-MM-DD')
     let endDate = moment(getDropdownById(personalPerformanceDateRange.value).endDate).format('YYYY-MM-DD')
     if(getDropdownById(personalPerformanceDateRange.value).name === 'PERIOD'){
-      startDate = getDropdownById(personalPerformanceDateRange.value).periodList[performancePeriod.value].startDate
-      endDate = getDropdownById(personalPerformanceDateRange.value).periodList[performancePeriod.value].endDate
+      startDate = getDropdownById(personalPerformanceDateRange.value).periodList[personalPerformancePeriod.value].startDate
+      endDate = getDropdownById(personalPerformanceDateRange.value).periodList[personalPerformancePeriod.value].endDate
     }
     else if(getDropdownById(personalPerformanceDateRange.value).name === 'CUSTOM'){
       startDate = performanceCustom.value.startDate.format('MM/DD/YY')
       endDate = performanceCustom.value.endDate.format('MM/DD/YY')
     }
 
-    if (isSetterMgr.value) {
-      let performanceData = await getRequestWithParams('/setterDashboard/getMgrPerformanceReport',
-          {
-            params: {
-              officeId: userOfficeId.value,
-              startDate,
-              endDate
-            }
-          }, 'blueraven')
-      rankingData.value = performanceData.data
 
-      let officeToBeatData = await getRequestWithParams('/setterDashboard/officeToBeat',
-          {
-            params: {
-              officeId: userOfficeId.value,
-              startDate,
-              endDate
-            }
-          }, 'blueraven')
-      rankBoxData.value = officeToBeatData.data
+    const { data } = await getRequestWithParams('/setterDashboard/getPerformanceReport', {params: {startDate, endDate}}, 'blueraven')
+    rankingData.value = data
 
-      if (rankBoxData.value.setter_office_to_beat_name && rankBoxData.value.current_office_rank) {
-        if (rankBoxData.value.current_office_rank === "1") {
-          rankBoxData.value.setter_office_to_beat_name = 'Your office is #1!'
-        } else if (rankBoxData.value.current_office_rank === 'T1') {
-          let tiedOffices = offices.value.filter(office => office.rank === 'T1' && office.org_id !== userOfficeId.value)
-
-          if (tiedOffices.length > 0) {
-            let officeToBeat
-
-            if (tiedOffices.length === 1) {
-              officeToBeat = tiedOffices[0]
-            } else {
-              // randomly selects an office that's tied for 1st with current manager's office
-              officeToBeat = tiedOffices[Math.floor(Math.random() * tiedOffices.length)]
-            }
-
-            if (officeToBeat.name.includes(' ()')) {
-              officeToBeat.name = officeToBeat.name.substr(0, officeToBeat.name.length - 3)
-            }
-
-            rankBoxData.value.setter_office_to_beat_name = officeToBeat.name
-            rankBoxData.value.pitches_to_go = 1
-          }
-        } else {
-          if (rankBoxData.value.setter_office_to_beat_name.includes(' ()')) {
-            rankBoxData.value.setter_office_to_beat_name = rankBoxData.value.setter_office_to_beat_name.substr(0, rankBoxData.value.setter_office_to_beat_name.length - 3)
-          }
-        }
-      }
-
-      appStore.loading = false
-    } else {
-      let performanceData = await getRequestWithParams('/setterDashboard/getPerformanceReport', {params: {startDate, endDate}}, 'blueraven')
-      rankingData.value = performanceData.data
-
-      let repToBeatData = await getRequestWithParams('/setterDashboard/repToBeat',
-          {
-            params: {
-              userId: currentUserId.value,
-              startDate,
-              endDate
-            }
-          }, 'blueraven')
-      rankBoxData.value = repToBeatData.data
-
-      if (rankBoxData.value) {
-        if (rankBoxData.value.setter_to_beat_id) {
-          await getRepToBeatImage(rankBoxData.value.setter_to_beat_id)
-        } else if (!rankBoxData.value.setter_to_beat_name && rankBoxData.value.current_user_rank) {
-          if (rankBoxData.value.current_user_rank === "1") {
-            rankBoxData.value.setter_to_beat_name = 'You’re #1!'
-            await getRepToBeatImage(currentUserId.value) // gets current user's picture
-          } else if (rankBoxData.value.current_user_rank === 'T1' && reps.value.length > 0) {
-            let tiedReps = reps.value.filter(rep => rep.rank === 'T1' && rep.user_id !== currentUserId.value)
-
-            if (tiedReps.length > 0) {
-              let repToBeat
-
-              if (tiedReps.length === 1) {
-                repToBeat = tiedReps[0]
-              } else {
-                // randomly selects one of the reps who is tied for 1st with the current rep
-                repToBeat = tiedReps[Math.floor(Math.random() * tiedReps.length)]
-              }
-
-              await getRepToBeatImage(repToBeat.user_id)
-              rankBoxData.value.setter_to_beat_name = repToBeat.name
-              rankBoxData.value.pitches_to_go = 1
-            } else {
-              rankBoxData.value.imageUrl = null
-              rankBoxData.value.imageAltText = 'User photo placeholder'
-            }
-          }
-        }
-      }
-
-      appStore.loading = false
-    }
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error retrieving personal performance data')
@@ -806,30 +719,39 @@ const loadPersonalPerformance = async () => {
   }
 }
 
-const getRepToBeatImage = async (repToBeatId) => {
+const loadOfficePerformance = async () => {
   appStore.loading = true
+
   try {
-    const params = {sourceId: repToBeatId, attachmentTypeId: 9}
-    const {data, status} = await getRequestWithParams('/attachment/getOne', {params})
-
-    if (data?.presignedUrl) {
-      rankBoxData.value.imageUrl = data.presignedUrl
-
-      if (rankBoxData.value.setter_to_beat_name) {
-        rankBoxData.value.imageAltText = 'Photo of ' + rankBoxData.value.setter_to_beat_name + ', a Blue Raven Solar employee'
-      } else {
-        rankBoxData.value.imageAltText = 'User photo placeholder'
-      }
-
-      handleHidingGlobalLoader( status)
+    let startDate = moment(getDropdownById(officePerformanceDateRange.value).startDate).format('YYYY-MM-DD')
+    let endDate = moment(getDropdownById(officePerformanceDateRange.value).endDate).format('YYYY-MM-DD')
+    if(getDropdownById(officePerformanceDateRange.value).name === 'PERIOD'){
+      startDate = getDropdownById(officePerformanceDateRange.value).periodList[officePerformancePeriod.value].startDate
+      endDate = getDropdownById(officePerformanceDateRange.value).periodList[officePerformancePeriod.value].endDate
     }
+    else if(getDropdownById(officePerformanceDateRange.value).name === 'CUSTOM'){
+      startDate = performanceCustom.value.startDate.format('MM/DD/YY')
+      endDate = performanceCustom.value.endDate.format('MM/DD/YY')
+    }
+
+      const {data} = await getRequestWithParams('/setterDashboard/getOfficePerformanceReport',
+          {
+            params: {
+              officeId: userOfficeId.value,
+              startDate,
+              endDate
+            }
+          }, 'blueraven')
+    officePerformanceData.value = data
+
+      appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving rep to beat image')
+    appStore.showSnack('ERROR', 'Error retrieving personal performance data')
 
-    appStore.loading = false
   }
 }
+
 /* PERSONAL PERFORMANCE-RELATED CODE END */
 
 /* RANKING TABLES-RELATED CODE START */
@@ -850,83 +772,15 @@ const getTopReps = async () => {
     }
     const params = {limit: 15, startDate: startDate, endDate: endDate}
     const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
-    topRepsDataLoaded.value = true
-    if(data === ""){
-      repsData.value = [];
-      appStore.loading = false
-      return;
-    }
     repsData.value = data
 
-    if (repsData.value.length > 0) {
-      let userIds = []
-
-      repsData.value.forEach(rep => {
-        if (rep.user_id) {
-          userIds.push(rep.user_id)
-        }
-      })
-
-      if (userIds.length > 0) {
-        userIds = encodeURI(userIds)
-
-        let params = {
-          sourceIds: userIds,
-          attachmentTypeId: 9
-        }
-
-        const {data} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})
-
-        if (data) {
-          repsData.value.forEach(rep => {
-            if (rep.user_id && data[rep.user_id]) {
-              rep.userImageUrl = data[rep.user_id]
-            }
-
-            if (rep.userImageUrl && rep.name) {
-              rep.userImageAltText = 'Photo of ' + rep.name + ', a Blue Raven Solar employee'
-            } else {
-              rep.userImageAltText = 'User photo placeholder'
-            }
-          })
-        }
-      }
-    }
-
+    topRepsDataLoaded.value = true
     topRepsLoading.value = false
     appStore.loading = false
   } catch (e) {
     appStore.loading = false
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error retrieving top reps data')
-
-  }
-}
-
-const getTopOffices = async () => {
-  try {
-    topOfficesLoading.value = true
-    const {data} = await getRequestWithParams('/setterDashboard/topOffices',
-        {
-          params: {
-            limit: 5,
-            days: timeInterval.value,
-            interval: timeIntervalString.value
-          }
-        }, 'blueraven', [])
-    offices.value = data || []
-
-    // removes empty parentheses from missing metro areas
-    offices.value?.forEach(office => {
-      if (office.name.includes(' ()')) {
-        office.name = office.name.substr(0, office.name.length - 3)
-      }
-    })
-    topOfficesLoading.value = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving top offices data')
-
   }
 }
 
@@ -951,13 +805,9 @@ const getOfficeRanking = async () => {  try {
         limit: 500,
       }
     }, 'blueraven', [])
-  officeRankingData.value = data || []
+  officeRankingData.value = data
   officeRankDataLoaded.value = true
-  officeRankingData.value?.forEach(office => {
-    if (office.org.includes(' ()')) {
-      office.org = office.org.substr(0, office.org.length - 3)
-    }
-  })
+
   officeRankingLoading.value = false
   appStore.loading = false
 } catch (e) {
@@ -967,49 +817,7 @@ const getOfficeRanking = async () => {  try {
 
   }
 }
-const getTimeIntervalText =() => {
-  return timeInterval.value === 0 ? 'Today' : timeInterval.value === 1 ? 'Since yesterday' : 'Last ' + timeInterval.value + ' days'
-}
-const setTimeInterval = (tis) => {
-  try {
-    rankingTablesLoaded.value = false
-    timeIntervalString.value = tis
-    rankingData.value = {}
 
-    switch (tis) {
-      case 'Today':
-        timeInterval.value = 0 // TODAY
-        break
-      case 'Yesterday':
-        timeInterval.value = 1 // YESTERDAY
-        break
-      case 'WTD':
-        //gets # day of week. -1 because BR week starts on monday
-        timeInterval.value = moment().day() - 1 // WTD
-        break
-      case 'MTD':
-        //gets current # day of month (-1 so that we dont go down to 0)
-        timeInterval.value = moment().format('DD') - 1 // MTD
-        break
-      case 'QTD':
-        timeInterval.value =  moment().diff(moment().startOf('quarter'), 'days')// QTD
-        break
-      case 'YTD':
-        //gets current # day of year (-1 so that we dont go down to 0)
-        timeInterval.value = moment().dayOfYear() - 1 // YTD
-        break
-    }
-
-    //i dont think there is any reason to wait for the previous requests to finish
-    appStore.loading = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving ranking table data')
-
-    rankingTablesLoaded.value = true
-    appStore.loading = false
-  }
-}
 /* RANKING TABLES-RELATED CODE END */
 
 </script>
@@ -1032,9 +840,9 @@ div#setter-dash-container {
   }
 }
 @media (min-width: 601px) and (max-width: 959px) {
-  .show-large{
-    display: none!important;
-  }
+  //.show-large{
+  //  display: none!important;
+  //}
   .show-small{
     display: none!important;
   }
@@ -1069,10 +877,14 @@ div#setter-dash-container {
 .performance-card-contents{
   padding-left: 42px;
 }
-.personal-performance-boxes-container{
+
+.performance-row {
+  flex-direction: row;
+  display: flex;
   gap: 16px;
-  padding: 0px!important;
+  padding-left: 16px;
 }
+
 .personal-performance-box {
   display: flex;
   flex-direction: column;
@@ -1082,7 +894,7 @@ div#setter-dash-container {
   background-color: #fff;
   border-radius: 12px;
   margin: 5px 0;
-  width: 100%;
+  width: 326px;
   height: 130px;
   overflow-y: auto;
 }

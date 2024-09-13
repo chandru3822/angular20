@@ -1,9 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.models.CloserDashboardDateRange;
-import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
-import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
-import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
+import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.SetterDashboardService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
@@ -37,44 +34,25 @@ public class SetterDashboardController {
   }
 
   @GetMapping(value = "/getPerformanceReport")
-  public String getPerformanceReport(@RequestParam String startDate,
-                                     @RequestParam String endDate) {
+  public SetterPerformance getPerformanceReport(@RequestParam String startDate,
+                                                @RequestParam String endDate) {
     return setterDashboardService.getPerformanceReport(startDate, endDate);
   }
 
-  @GetMapping(value = "/repToBeat")
-  public String repToBeat(@RequestParam int userId,
-                          @RequestParam String startDate,
-                          @RequestParam String endDate) {
-    return setterDashboardService.repToBeat(userId, startDate, endDate);
-  }
-
-  @GetMapping(value = "/getMgrPerformanceReport")
-  public String getMgrPerformanceReport(@RequestParam Integer officeId,
-                                        @RequestParam String startDate,
+  @GetMapping(value = "/getOfficePerformanceReport")
+  public SetterPerformance getOfficePerformanceReport(@RequestParam String startDate,
                                         @RequestParam String endDate) {
-    return setterDashboardService.getMgrPerformanceReport(officeId, startDate, endDate);
-  }
-
-  @GetMapping(value = "/officeToBeat")
-  public String officeToBeat(@RequestParam int officeId,
-                             @RequestParam String startDate,
-                             @RequestParam String endDate) {
-    return setterDashboardService.officeToBeat(officeId, startDate, endDate);
+    return setterDashboardService.getOfficePerformanceReport(startDate, endDate);
   }
 
   @GetMapping(value = "/topReps")
-  public String topReps(@RequestParam String startDate,@RequestParam String endDate,@RequestParam int limit) {
+  public List<TopRep> topReps(@RequestParam String startDate,@RequestParam String endDate,@RequestParam int limit) {
     return setterDashboardService.topReps(startDate, endDate, limit);
   }
 
-  @GetMapping(value = "/topOffices")
-  public String topOffices(@RequestParam int limit, @RequestParam int days, @RequestParam String interval) {
-    return setterDashboardService.topOffices(limit, days, interval);
-  }
 
   @GetMapping(value = "/officeRanking")
-  public String officeRanking(@RequestParam String startDate,@RequestParam String endDate,@RequestParam int limit) {
+  public List<OfficeRank> officeRanking(@RequestParam String startDate,@RequestParam String endDate,@RequestParam int limit) {
     return setterDashboardService.officeRanking(startDate, endDate, limit);
   }
 
