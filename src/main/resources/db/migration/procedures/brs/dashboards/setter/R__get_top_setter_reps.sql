@@ -15,36 +15,6 @@ CREATE OR REPLACE FUNCTION brs.get_top_setter_reps(p_user_id bigint, p_start_dat
 AS
 $function$
 BEGIN
-  RETURN QUERY
-    with top_reps as (select pd.setter_user_id                      as user_id,
-                             concat(u.first_name, ' ', u.last_name) AS name,
-                             count(1)                                  pitches,
-                             rank() over (order by count(1) desc)   as rank
-                      from brs.project_details pd
-                             inner join flow.user u on u.id = pd.setter_user_id
-                      where pd.source in (525, 526)
-                        and ((prioritized_closer_appointment_outcome_date at time zone 'UTC') at time zone
-                             'US/Mountain') :: date between p_start_date and p_end_date
-                        and pd.prioritized_closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                        and pd.setter_user_id not in (2354810, 2390159)                     --Trizon and Central Solar
-                        and pd.company_id = 3
-                      group by 1, 2)
-    select top_reps.user_id,
-           top_reps.name,
-           coalesce(top_reps.pitches, 0) as pitches,
-           (case
-              when (
-                top_reps.rank = lag(top_reps.rank, 1, -1::bigint) over (order by top_reps.rank) or
-                top_reps.rank = lead(top_reps.rank, 1, -1::bigint) over (order by top_reps.rank)
-                )
-                then 'T' || top_reps.rank
-              else top_reps.rank::text
-             end
-             )                           as rank,
-           false
-    from top_reps
-    order by pitches desc, user_id
-    limit p_limit;
 
   return query
     with top_reps as (select pd.setter_user_id                      as user_id,
@@ -77,6 +47,38 @@ BEGIN
           from top_reps
           order by pitches desc, user_id) as foo
     where foo.user_id = p_user_id;
+
+  RETURN QUERY
+    with top_reps as (select pd.setter_user_id                      as user_id,
+                             concat(u.first_name, ' ', u.last_name) AS name,
+                             count(1)                                  pitches,
+                             rank() over (order by count(1) desc)   as rank
+                      from brs.project_details pd
+                             inner join flow.user u on u.id = pd.setter_user_id
+                      where pd.source in (525, 526)
+                        and ((prioritized_closer_appointment_outcome_date at time zone 'UTC') at time zone
+                             'US/Mountain') :: date between p_start_date and p_end_date
+                        and pd.prioritized_closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                        and pd.setter_user_id not in (2354810, 2390159)                     --Trizon and Central Solar
+                        and pd.company_id = 3
+                      group by 1, 2)
+    select top_reps.user_id,
+           top_reps.name,
+           coalesce(top_reps.pitches, 0) as pitches,
+           (case
+              when (
+                top_reps.rank = lag(top_reps.rank, 1, -1::bigint) over (order by top_reps.rank) or
+                top_reps.rank = lead(top_reps.rank, 1, -1::bigint) over (order by top_reps.rank)
+                )
+                then 'T' || top_reps.rank
+              else top_reps.rank::text
+             end
+             )                           as rank,
+           false
+    from top_reps
+    order by pitches desc, user_id
+    limit p_limit;
+
 
 END
 $function$
