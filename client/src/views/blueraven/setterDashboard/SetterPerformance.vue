@@ -104,7 +104,7 @@
         </div>
         <span v-if="!['1', 'T1'].includes(rankingData.currentRank)"
               class="body-small performance-card-contents">
-              {{ rankingData.pitchesToGo }} {{ rankingData.pitchesToGo === 1 ? 'Pitch' : 'Pitches' }} to beat rep
+              {{ rankingData.pitchesToGo }} {{ rankingData.pitchesToGo | pluralize('Pitch', 'Pitches') }} to beat rep
             </span>
       </div>
     </v-row>
@@ -213,7 +213,7 @@
         </div>
         <span v-if="!['1', 'T1'].includes(officePerformanceData.currentRank)"
               class="body-small performance-card-contents">
-              {{ officePerformanceData.pitchesToGo }} {{ officePerformanceData.pitchesToGo === 1 ? 'Pitch' : 'Pitches' }} to beat office
+              {{ officePerformanceData.pitchesToGo }} {{ officePerformanceData.pitchesToGo | pluralize('Pitch', 'Pitches') }} to beat office
             </span>
       </div>
     </v-row>
