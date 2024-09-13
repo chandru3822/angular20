@@ -97,6 +97,7 @@ public class SetterDashboardService {
   public List<TopRep> topReps(String startDate, String endDate, int limit) {
     Map<String, Object> params = new HashMap<>();
     params.put("limit", limit);
+    params.put("userId", securityService.getCurrentUser().getId());
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 

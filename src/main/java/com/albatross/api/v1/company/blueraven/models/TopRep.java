@@ -9,4 +9,5 @@ import lombok.Data;
 public class TopRep {
     private Long userId, pitches;
     private String name, rank, userImageUrl, userImageAltText;
+    private Boolean showFirst;
 }

@@ -126,8 +126,8 @@
         <template v-slot:activator="{ on }">
           <a-btn class="dropdown-header body-small"
                  :activation-handler="on">
-                    <span v-if="getDropdownById(officePerformanceDateRange)?.name === 'CUSTOM' && performanceCustom.name != null" class="selected-option body-small">
-                            {{performanceCustom.name}}</span>
+                    <span v-if="getDropdownById(officePerformanceDateRange)?.name === 'CUSTOM' && officePerformanceCustom.name != null" class="selected-option body-small">
+                            {{officePerformanceCustom.name}}</span>
             <span v-else-if="getDropdownById(officePerformanceDateRange)?.name === 'PERIOD'" class="selected-option body-small">
                     {{ getDropdownById(officePerformanceDateRange).periodList[officePerformancePeriod].shortLabel}}
                     </span>
@@ -164,7 +164,7 @@
 
               </v-list-item-title>
               <v-list-item-title v-else-if="item.name === 'CUSTOM'"
-                                 @click="selectingCustomDates = true; officePerformanceDateRange = item.id; customTable = 'Performance'"
+                                 @click="selectingCustomDates = true; officePerformanceDateRange = item.id; customTable = 'Office Performance'"
                                  class="dashboard-menu-option body-large">
                 {{ item.friendlyName }}
               </v-list-item-title>
@@ -302,14 +302,11 @@
                   </v-list>
                 </div>
               </v-menu>
-              <a v-if="repsData?.length > 0" class="export-button" @click="exportCsv('reps')">
-                <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+              <a-btn variant="text" :disabled="repsData?.length === 0" class="export-button" @click="exportCsv('reps')">
+                <v-icon class="mr-2">mdi-tray-arrow-down</v-icon>
                 Export
-              </a>
-              <div v-else class="export-button" :class="{'disabled-export': true}">
-                <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
-                Export
-              </div>          </v-row>
+              </a-btn>
+            </v-row>
             <SetterRankingTable
               v-if="!topRepsLoading"
               title="Top Reps Table"
@@ -384,7 +381,7 @@
                                          class="dashboard-menu-option body-large">
                         {{ item.friendlyName }}
                       </v-list-item-title>
-                      <v-list-item-title v-else
+                      <v-list-item-title v-el2se
                                          @click="closerOfficeDateRange = item.id; getOfficeRanking();"
                                          class="dashboard-menu-option body-large">
                         {{ item.friendlyName }}
@@ -393,14 +390,11 @@
                   </v-list>
                 </div>
               </v-menu>
-              <a v-if="officeRankingData?.length > 0" class="export-button" @click="exportCsv('office')">
-                <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
+              <a-btn variant="text" :disabled="officeRankingData?.length === 0" class="export-button" @click="exportCsv('office')">
+                <v-icon class="mr-2">mdi-tray-arrow-down</v-icon>
                 Export
-              </a>
-              <div v-else class="export-button" :class="{'disabled-export': true}">
-                <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
-                Export
-              </div>          </v-row>
+              </a-btn>
+            </v-row>
             <SetterRankingTable
               :tableData=officeRankingData
               :tableHeaders=officeRankingHeaders
@@ -474,10 +468,9 @@ const openCloserOfficeMenu = ref(false)
 const selectingCustomDates = ref(false)
 const customDate = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
 const performanceCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
+const officePerformanceCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
 const repCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
 const officeCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
-const repRankingHeaders = ref([])
-const officeRankingHeaders = ref([])
 const repDateRange = ref(null)
 const openPersonalPerformanceDatesMenu = ref(false)
 const openOfficePerformanceDatesMenu = ref(false)
@@ -493,18 +486,10 @@ const isSetter = ref(false)
 const isSetterMgr = ref(false)
 const isSetterRegional = ref(false)
 const officeRankingLoading = ref(false)
-const performanceDataLoading = ref(false)
 const topRepsLoading = ref(false)
-const officeRankLoaded = ref(false)
-const timeIntervalBtnGroup = ref(3)
-const timeIntervalString = ref('MTD')
-const timeInterval = ref(moment().format('DD') - 1)
-const tabNum = ref(1)
 const setterDashContainer = ref(null)
-const performanceDataLoaded = ref(false)
 const rankingTablesLoaded = ref(false)
 const rankingData = ref({})
-const rankBoxData = ref({})
 const offices = ref([])
 const reps = ref([])
 const officeRankingData = ref([])
@@ -512,23 +497,26 @@ const officePerformanceData = ref({})
 const repsData = ref([])
 const userOffice = ref('')
 const userOfficeId = ref(null)
-const userRow = ref([])
-const userRowIndex = ref(-1)
-const numOffices = ref(0)
-const timeIntervalBtns = ref([
-  { name: 'Today', timeInterval: 'Today'},
-  { name: 'Yesterday', timeInterval: 'Yesterday'},
-  { name: 'WTD', timeInterval: 'WTD'},
-  { name: 'MTD', timeInterval: 'MTD'},
-  { name: 'QTD', timeInterval: 'QTD'},
-  { name: 'YTD', timeInterval: 'YTD'},
-])
 
 const currentUserId = computed(() => {
   return userStore.details.id
 })
-const windowInnerWidth = computed(() => {
-  return window.innerWidth
+
+const repRankingHeaders = computed(() => {
+  return [
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
+    { text: 'Rep', value: 'name', sortable: false, class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
+    { text: 'Total Pitched Appointments', value: 'pitches', sortable: false, align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+  ]
+})
+
+const officeRankingHeaders = computed(() => {
+  return [
+    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
+    { text: 'Office', value: 'org', sortable: false, class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
+    { text: 'Total Appointments', value: 'totalAppointments', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+    { text: 'Total Pitched Appointments', value: 'totalPitches', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
+  ]
 })
 
 onMounted(async() => {
@@ -544,17 +532,6 @@ onMounted(async() => {
   }
 
   await getDropdownValues()
-  repRankingHeaders.value = [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
-    { text: 'Rep', value: 'name', sortable: false, class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
-    { text: 'Total Pitched Appointments', value: 'pitches', sortable: false, align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
-  ]
-  officeRankingHeaders.value = [
-    { text: 'Rank', value: 'rank', sortable: false, class: 'milestone-col-th', show: true, width: '69px' },
-    { text: 'Office', value: 'org', sortable: false, class: 'total-col-th milestone-col-th data-width', show: !isBrCorporateUser.value },
-    { text: 'Total Appointments', value: 'totalAppointments', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
-    { text: 'Total Pitched Appointments', value: 'totalPitches', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value },
-  ]
 
   let requests = [
     loadPersonalPerformance(),
@@ -632,8 +609,12 @@ const applyCustomDates = async()=> {
     performanceCustom.value.endDate = moment(customDate.value.endDate);
     performanceCustom.value.name=moment(performanceCustom.value.startDate).format('MM/DD/YY') + '-' + moment(performanceCustom.value.endDate).format('MM/DD/YY');
     await loadPersonalPerformance()
-  }
-  else if(customTable.value === 'Rep') {
+  } else if(customTable.value === 'Office Performance') {
+    officePerformanceCustom.value.startDate = moment(customDate.value.startDate);
+    officePerformanceCustom.value.endDate = moment(customDate.value.endDate);
+    officePerformanceCustom.value.name=moment(officePerformanceCustom.value.startDate).format('MM/DD/YY') + '-' + moment(officePerformanceCustom.value.endDate).format('MM/DD/YY');
+    await loadPersonalPerformance()
+  } else if(customTable.value === 'Rep') {
     repCustom.value.startDate = moment(customDate.value.startDate);
     repCustom.value.endDate = moment(customDate.value.endDate);
     repCustom.value.name=moment(repCustom.value.startDate).format('MM/DD/YY') + '-' + moment(repCustom.value.endDate).format('MM/DD/YY');
@@ -645,15 +626,6 @@ const applyCustomDates = async()=> {
     officeCustom.value.name=moment(officeCustom.value.startDate).format('MM/DD/YY') + '-' + moment(officeCustom.value.endDate).format('MM/DD/YY');
     await getOfficeRanking()
   }
-}
-
-const resetScrollBarPosition = () => {
-  // reset scroll bar positioning to top
-  setterDashContainer.value.scrollTop = 0
-}
-
-const getDropdownById = (id) => {
-  return dropdownValues.value.find(x => x.id === id)
 }
 
 const topRepsText = computed(() => {
@@ -692,23 +664,36 @@ const getDropdownValues = async()=>
   }
 }
 
+const getDropdownById = (id) => {
+  return dropdownValues.value.find(x => x.id === id)
+}
+
+const getFormattedStartAndEndParams = (dateRangeId, period, custom) => {
+  let dropdown = getDropdownById(dateRangeId)
+  let startDate, endDate
+  if(dropdown && dropdown.id) {
+
+      if(dropdown.name === 'PERIOD'){
+        let periodList = dropdown.periodList[period.value]
+        startDate = periodList.startDate
+        endDate = periodList.endDate
+      } else if(dropdown?.name === 'CUSTOM'){
+        startDate = custom.startDate.format('MM/DD/YY')
+        endDate = custom.endDate.format('MM/DD/YY')
+      } else {
+        startDate = moment(dropdown.startDate).format('YYYY-MM-DD')
+        endDate = moment(dropdown.endDate).format('YYYY-MM-DD')
+      }
+  }
+  return { startDate, endDate }
+}
+
 const loadPersonalPerformance = async () => {
   appStore.loading = true
-
   try {
-    let startDate = moment(getDropdownById(personalPerformanceDateRange.value).startDate).format('YYYY-MM-DD')
-    let endDate = moment(getDropdownById(personalPerformanceDateRange.value).endDate).format('YYYY-MM-DD')
-    if(getDropdownById(personalPerformanceDateRange.value).name === 'PERIOD'){
-      startDate = getDropdownById(personalPerformanceDateRange.value).periodList[personalPerformancePeriod.value].startDate
-      endDate = getDropdownById(personalPerformanceDateRange.value).periodList[personalPerformancePeriod.value].endDate
-    }
-    else if(getDropdownById(personalPerformanceDateRange.value).name === 'CUSTOM'){
-      startDate = performanceCustom.value.startDate.format('MM/DD/YY')
-      endDate = performanceCustom.value.endDate.format('MM/DD/YY')
-    }
+    let params = getFormattedStartAndEndParams(personalPerformanceDateRange.value, personalPerformancePeriod.value, performanceCustom.value)
 
-
-    const { data } = await getRequestWithParams('/setterDashboard/getPerformanceReport', {params: {startDate, endDate}}, 'blueraven')
+    const { data } = await getRequestWithParams('/setterDashboard/getPerformanceReport', { params }, 'blueraven')
     rankingData.value = data
 
     appStore.loading = false
@@ -723,24 +708,12 @@ const loadOfficePerformance = async () => {
   appStore.loading = true
 
   try {
-    let startDate = moment(getDropdownById(officePerformanceDateRange.value).startDate).format('YYYY-MM-DD')
-    let endDate = moment(getDropdownById(officePerformanceDateRange.value).endDate).format('YYYY-MM-DD')
-    if(getDropdownById(officePerformanceDateRange.value).name === 'PERIOD'){
-      startDate = getDropdownById(officePerformanceDateRange.value).periodList[officePerformancePeriod.value].startDate
-      endDate = getDropdownById(officePerformanceDateRange.value).periodList[officePerformancePeriod.value].endDate
-    }
-    else if(getDropdownById(officePerformanceDateRange.value).name === 'CUSTOM'){
-      startDate = performanceCustom.value.startDate.format('MM/DD/YY')
-      endDate = performanceCustom.value.endDate.format('MM/DD/YY')
-    }
+    let params = getFormattedStartAndEndParams(officePerformanceDateRange.value, officePerformancePeriod.value, officePerformanceCustom.value)
+
 
       const {data} = await getRequestWithParams('/setterDashboard/getOfficePerformanceReport',
           {
-            params: {
-              officeId: userOfficeId.value,
-              startDate,
-              endDate
-            }
+            params
           }, 'blueraven')
     officePerformanceData.value = data
 
@@ -760,17 +733,9 @@ const getTopReps = async () => {
     appStore.loading = true
     topRepsLoading.value = true
     officeRankingLoading.value = true
-    let startDate = moment(getDropdownById(repDateRange.value).startDate).format('YYYY-MM-DD')
-    let endDate = moment(getDropdownById(repDateRange.value).endDate).format('YYYY-MM-DD')
-    if(getDropdownById(repDateRange.value).name === 'PERIOD'){
-      startDate = getDropdownById(repDateRange.value).periodList[topRepsPeriod.value].startDate
-      endDate = getDropdownById(repDateRange.value).periodList[topRepsPeriod.value].endDate
-    }
-    else if(getDropdownById(repDateRange.value).name === 'CUSTOM'){
-      startDate = repCustom.value.startDate.format('MM/DD/YY')
-      endDate = repCustom.value.endDate.format('MM/DD/YY')
-    }
-    const params = {limit: 15, startDate: startDate, endDate: endDate}
+    let params = getFormattedStartAndEndParams(repDateRange.value, topRepsPeriod.value, repCustom.value)
+
+    params = { ...params, limit: 15}
     const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
     repsData.value = data
 
@@ -787,24 +752,12 @@ const getTopReps = async () => {
 const getOfficeRanking = async () => {  try {
   appStore.loading = true
   officeRankingLoading.value = true
-  let startDate = moment(getDropdownById(closerOfficeDateRange.value).startDate).format('YYYY-MM-DD')
-  let endDate = moment(getDropdownById(closerOfficeDateRange.value).endDate).format('YYYY-MM-DD')
-  if(getDropdownById(closerOfficeDateRange.value).name === 'PERIOD'){
-    startDate = getDropdownById(closerOfficeDateRange.value).periodList[officePeriod.value].startDate
-    endDate = getDropdownById(closerOfficeDateRange.value).periodList[officePeriod.value].endDate
-  }
-  else if(getDropdownById(closerOfficeDateRange.value).name === 'CUSTOM'){
-    startDate = officeCustom.value.startDate.format('MM/DD/YY')
-    endDate = officeCustom.value.endDate.format('MM/DD/YY')
-  }
+  let params = getFormattedStartAndEndParams(closerOfficeDateRange.value, officePeriod.value, officeCustom.value)
+  params = { ...params, limit: 500}
+
   const {data} = await getRequestWithParams('/setterDashboard/officeRanking',
-    {
-      params: {
-        startDate: startDate,
-        endDate: endDate,
-        limit: 500,
-      }
-    }, 'blueraven', [])
+    {params},
+      'blueraven', [])
   officeRankingData.value = data
   officeRankDataLoaded.value = true
 
@@ -913,7 +866,6 @@ div#setter-dash-container {
 .export-button{
   display: flex;
   margin: auto 30px auto auto;
-  color: #1F3C73;
 }
 
 .export-icon{

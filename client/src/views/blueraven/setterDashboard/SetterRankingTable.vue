@@ -5,6 +5,7 @@
       :headers="tableHeaders"
       :footer-props="footerProps"
       :hide-default-footer="true"
+      :item-class="itemRowBackground"
     >
 
       <template #no-data>
@@ -73,6 +74,10 @@
     'items-per-page-options': [25, 50, 100, 500, 1000],
     'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
   })
+
+  const itemRowBackground = (item) => {
+    return item.showFirst ? 'shaded-row' : ''
+  }
 </script>
 
 <style lang="scss" scoped>

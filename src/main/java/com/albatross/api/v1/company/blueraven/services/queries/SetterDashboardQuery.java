@@ -142,7 +142,7 @@ public class SetterDashboardQuery {
 
   //language=PostgreSQL
   public final static String topReps = """
-    SELECT * FROM brs.get_top_setter_reps(:startDate::date, :endDate::date, :limit::bigInt)
+    SELECT * FROM brs.get_top_setter_reps(:userId::bigint, :startDate::date, :endDate::date, :limit::bigInt)
   """;
 
   //language=PostgreSQL
