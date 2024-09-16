@@ -293,28 +293,8 @@ public class Five9Service {
           .findFirst()
           .orElse(null);
 
+        // Lead Source is not used for the cron contact lists logic, empty string is sufficient
         String leadSource = "";
-        CustomFieldValue leadSourceCfv = values.stream()
-          .filter(cfv -> cfv != null && cfv.getFieldName() != null)
-          .filter(cfv -> cfv.getFieldName().equals("Lead Source"))
-          .filter(Objects::nonNull)
-          .findFirst()
-          .orElse(null);
-
-        Long leadSourceListOfValueId = leadSourceCfv.getIntValue();
-        if (leadSourceListOfValueId != null) {
-          ListOfValue selectedValue =
-            leadSourceCfv.getListOfValues()
-              .stream()
-              .filter(l -> l.getId().equals(leadSourceListOfValueId))
-              .findFirst()
-              .orElse(null);
-
-          if (selectedValue != null) {
-            leadSource = selectedValue.getName();
-          }
-        }
-
         handleContact(contact.getId(), values, false, five9ContactListName, leadLevel, leadSource);
       } catch (Exception e) {
         log.error("FIVE9: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
