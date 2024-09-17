@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-/** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +23,6 @@ import java.util.Optional;
 public class AvailabilityController {
 
   private final AvailabilityService availabilityService;
-  private Long userId;
 
   @GetMapping(value = "")
   public List<ResourceSchedule> getResourceAvailability(
@@ -156,17 +154,14 @@ public class AvailabilityController {
     availabilityService.deleteSlotSchedule(id);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('AVAILABILITY_ADMIN')")
   @GetMapping(value="/companyHolidays")
   public List<CompanyHoliday> getCompanyHolidays() {
     return availabilityService.getAllCompanyHolidays();
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('AVAILABILITY_ADMIN')")
   @GetMapping(value="/companyHolidays/{id}")
-  public Optional<CompanyHoliday> getCompanyHolidays(@RequestParam Long userId) {
-    this.userId = userId;
-    return availabilityService.getCompanyHoliday(userId);
+  public Optional<CompanyHoliday> getCompanyHolidays(@PathVariable Long id) {
+    return availabilityService.getCompanyHoliday(id);
   }
 
   @PreAuthorize("hasFeatureAccessLevel('AVAILABILITY_ADMIN')")

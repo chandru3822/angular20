@@ -1014,11 +1014,9 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
-    Optional<CompanyHoliday> result =
-      sqlCache.getBySql(AvailabilityQuery.getCompanyHolidayById,
-        params,
-        new CompanyHolidayMapper<>(CompanyHoliday.class, om));
-    return result;
+    return sqlCache.getBySql(AvailabilityQuery.getCompanyHolidayById,
+      params,
+      new CompanyHolidayMapper<>(CompanyHoliday.class, om));
   }
 
   public Optional<CompanyHoliday> updateCompanyHoliday(CompanyHoliday companyHoliday) {
