@@ -27,19 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
-/**
- * Created by Randa Nunn on 2019-10-22.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-//@PreAuthorize("hasFeatureAccess('SCHEDULE')")
 @RequiredArgsConstructor
 public class ScheduleService {
 
@@ -49,7 +41,6 @@ public class ScheduleService {
 
   private final UserPositionService userPositionService;
 
-
   private final ObjectMapper om;
 
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
@@ -57,7 +48,7 @@ public class ScheduleService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     List<Long> combined;
 
-    if(null != esp.getUserPositionIds()) {
+    if (null != esp.getUserPositionIds()) {
       //this part can be taken out as soon as the new mobile version has been adopted - check with kory
       //BACKWARDS: 2/16/21
       combined = esp.getUserPositionIds();
@@ -67,31 +58,29 @@ public class ScheduleService {
       combined = sqlCache.queryBySql(ScheduleQuery.getUserPositionIdsForUsers, p2, new SingleColumnRowMapper<>(Long.class));
     }
 
-    if(null != esp.getOrgIds()) {
+    if (null != esp.getOrgIds()) {
       combined.addAll(esp.getOrgIds());
     }
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-//    params.put("userIds", esp.getUserIds());
-//    params.put("orgIds", esp.getOrgIds());
-    params.put("combined", combined );
-    params.put("includeCancelledEvents", esp.getIncludeCancelledEvents() != null ? esp.getIncludeCancelledEvents() : false );
-    params.put("includeCancelledProjects", esp.getIncludeCancelledProjects() != null ? esp.getIncludeCancelledProjects() : false );
+    params.put("combined", combined);
+    params.put("includeCancelledEvents", esp.getIncludeCancelledEvents() != null ? esp.getIncludeCancelledEvents() : false);
+    params.put("includeCancelledProjects", esp.getIncludeCancelledProjects() != null ? esp.getIncludeCancelledProjects() : false);
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getEvents, params, ScheduleEvent.class);
-    for(ScheduleEvent event : results) {
-        if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
-            HashMap<String, Object> moreParams = new HashMap<>();
-            moreParams.put("objectTypeId", 6); //6 is the event object type
-            moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
-            moreParams.put("primaryId", event.getProjectProcessStepEventId());
-            List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
-            event.setCustomFieldDisplayValue(cfvs.get(0));
-        }
+    for (ScheduleEvent event : results) {
+      if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+        HashMap<String, Object> moreParams = new HashMap<>();
+        moreParams.put("objectTypeId", 6); //6 is the event object type
+        moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+        moreParams.put("primaryId", event.getProjectProcessStepEventId());
+        List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
+        event.setCustomFieldDisplayValue(cfvs.get(0));
+      }
     }
     return results;
   }
@@ -101,29 +90,27 @@ public class ScheduleService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     List<Long> combined;
 
-    if(null != esp.getUserPositionIds()) {
+    if (null != esp.getUserPositionIds()) {
       combined = esp.getUserPositionIds();
     } else {
-      HashMap<String, Object> p2 = new HashMap<>();
-      p2.put("userIds", esp.getUserIds());
-      combined = sqlCache.queryBySql(ScheduleQuery.getUserPositionIdsForUsers, p2, new SingleColumnRowMapper<>(Long.class));
+      combined = sqlCache.queryBySql(ScheduleQuery.getUserPositionIdsForUsers, Map.of("userIds", esp.getUserIds()), new SingleColumnRowMapper<>(Long.class));
     }
 
-    if(null != esp.getOrgIds()) {
+    if (null != esp.getOrgIds()) {
       combined.addAll(esp.getOrgIds());
     }
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("combined", combined );
-    params.put("includeCancelled", esp.getIncludeCancelledEvents() != null ? esp.getIncludeCancelledEvents() : false );
+    params.put("combined", combined);
+    params.put("includeCancelledEvents", esp.getIncludeCancelledEvents() != null ? esp.getIncludeCancelledEvents() : false);
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getConflictingEvents, params, ScheduleEvent.class);
-    for(ScheduleEvent event : results) {
-      if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+    for (ScheduleEvent event : results) {
+      if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
         HashMap<String, Object> moreParams = new HashMap<>();
         moreParams.put("objectTypeId", 6); //6 is the event object type
         moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
@@ -136,20 +123,19 @@ public class ScheduleService {
   }
 
   public Optional<ProjectWithEvents> getEventsByProject(Long projectId) {
-      User user = securityService.getCurrentUser();
-      Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-      List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      params.put("systemAdmin", systemAdmin);
-      params.put("userPositions", userPositionIds);
+    User user = securityService.getCurrentUser();
+    Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("systemAdmin", systemAdmin);
+    params.put("userPositions", userPositionIds);
 
-    Optional<ProjectWithEvents> result = sqlCache.getBySql(ScheduleQuery.getEventsByProject, params, new ProjectWithEventsMapper<>(ProjectWithEvents.class, om));
-    return result;
+    return sqlCache.getBySql(ScheduleQuery.getEventsByProject, params, new ProjectWithEventsMapper<>(ProjectWithEvents.class, om));
   }
 
   public String getAvailabilityForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
 
     params.put("userIds", esp.getUserIds());
     params.put("orgIds", esp.getOrgIds());
@@ -159,13 +145,13 @@ public class ScheduleService {
 
     String results = sqlCache.queryForObjectBySql(ScheduleQuery.getAvailability, params, String.class);
 
-    return null == results ? "[]": results;
+    return null == results ? "[]" : results;
   }
 
   public Page<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("companyStateId", esp.getCompanyStateId());
     params.put("eventIds", esp.getEventIds());
@@ -184,20 +170,19 @@ public class ScheduleService {
   }
 
   public List<ListOfValue> getAvailableProjectResource(ScheduleController.ResourceRequest req) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", req.getCompanyId());
     params.put("systemListId", req.getSystemListId());
     params.put("resourceId", req.getResourceId());
     params.put("systemListOptionIds", req.getSystemListOptionIds());
-    List<ListOfValue> results = sqlCache.queryBySql(ScheduleQuery.getAvailableProjectResources, params, ListOfValue.class);
-    return results;
+    return sqlCache.queryBySql(ScheduleQuery.getAvailableProjectResources, params, ListOfValue.class);
   }
 
   public List<ScheduleEvent> getProject(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("projectId", esp.getProjectId());
     params.put("eventId", esp.getEventId());
@@ -206,29 +191,27 @@ public class ScheduleService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("projectProcessStepEventId", esp.getProjectProcessStepEventId());
-    List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getProject, params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
-    return results;
+    return sqlCache.queryBySql(ScheduleQuery.getProject, params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
   }
 
   public List<ScheduleEvent> searchProjectsByName(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("search", esp.getSearch());
     params.put("isParent", isParent);
 
-    List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.searchProjectsByName, params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
-    return results;
+    return sqlCache.queryBySql(ScheduleQuery.searchProjectsByName, params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
   }
 
   public void saveEvent(ScheduleEvent ev) {
     // i dont love this but if we try to do it how the other screens do it we would have to restructure all the fields back into individual CustomFieldValue objects and i dont like that option either _rn
-    if(null != ev.getStart() && null != ev.getEnd() && null != ev.getResourceId()) {
+    if (null != ev.getStart() && null != ev.getEnd() && null != ev.getResourceId()) {
       User user = securityService.getCurrentUser();
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
 
       params.put("id", ev.getProjectProcessStepEventId());
       params.put("startTime", ev.getStart());
@@ -244,18 +227,17 @@ public class ScheduleService {
           HttpStatus.BAD_REQUEST, "Save Version Mismatch", new Exception());
       }
     }
-
   }
 
-  public List<ScheduleEvent> checkForSchedulingConflict(ScheduleEvent saveEvent, Long eventId){
-    if(saveEvent.getStart() == null || saveEvent.getEnd() == null){
+  public List<ScheduleEvent> checkForSchedulingConflict(ScheduleEvent saveEvent, Long eventId) {
+    if (saveEvent.getStart() == null || saveEvent.getEnd() == null) {
       return null;
     }
     List<ScheduleEvent> eventList = new ArrayList<>();
 
     List<ResourceAppointment> appointments = getResourceAppointmentsInRange(saveEvent.getResourceId(), null, saveEvent.getStart().toString(), saveEvent.getEnd().toString());
 
-    for(ResourceAppointment appointment : appointments){
+    for (ResourceAppointment appointment : appointments) {
       ScheduleEvent appointmentEvent = new ScheduleEvent();
       appointmentEvent.setResourceName(saveEvent.getResourceName());
       appointmentEvent.setStart(new Timestamp(appointment.getStartTime().getTime()));
@@ -266,18 +248,17 @@ public class ScheduleService {
       eventList.add(appointmentEvent);
     }
 
-    ArrayList<Long> resourceIds = new ArrayList<>();
+    List<Long> resourceIds = new ArrayList<>();
     resourceIds.add(saveEvent.getResourceId());
     ScheduleController.EventSearchParams params = new ScheduleController.EventSearchParams();
     params.setUserPositionIds(resourceIds);
     params.setStartTime(saveEvent.getStart().toString());
     params.setEndTime(saveEvent.getEnd().toString());
     List<ScheduleEvent> events = getConflictingEventsForCompanyByOrgAndUser(params);
-    for(ScheduleEvent event : events){
-      if(event.getProjectProcessStepEventId().equals(saveEvent.getProjectProcessStepEventId()) || event.getStart().equals(saveEvent.getEnd()) || event.getEnd().equals(saveEvent.getStart())){
+    for (ScheduleEvent event : events) {
+      if (event.getProjectProcessStepEventId().equals(saveEvent.getProjectProcessStepEventId()) || event.getStart().equals(saveEvent.getEnd()) || event.getEnd().equals(saveEvent.getStart())) {
         continue;
-      }
-      else{
+      } else {
         eventList.add(event);
       }
     }
@@ -288,24 +269,22 @@ public class ScheduleService {
     Long userId, List<Long> orgIds, String startTime, String endTime) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("orgIds", orgIds);
     params.put("startTime", startTime);
     params.put("endTime", endTime);
     params.put("companyId", user.getCompanyId());
-    List<ResourceAppointment> results =
-      sqlCache.queryBySql(
-        AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
 
-    return results;
+    return sqlCache.queryBySql(
+      AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
   }
 
   public Page<ResourceAppointment> getResourceAppointments(
     Long userId, Long orgId, Pageable pageable) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
@@ -333,11 +312,13 @@ public class ScheduleService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ListOfValue>> resourcesRef = new TypeReference<>() {};
+      TypeReference<List<ListOfValue>> resourcesRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "resources",
-          new JsonCollectionDeserializer(resourcesRef, objectMapper));
+        new JsonCollectionDeserializer(resourcesRef, objectMapper));
 
-      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "systemListOptionIds",
         new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
     }
@@ -353,11 +334,10 @@ public class ScheduleService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProjectProcessStepEvent>> eventsRef = new TypeReference<>() {};
+      TypeReference<List<ProjectProcessStepEvent>> eventsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "events",
-          new JsonCollectionDeserializer(eventsRef, objectMapper));
+        new JsonCollectionDeserializer(eventsRef, objectMapper));
     }
   }
-
-
 }
