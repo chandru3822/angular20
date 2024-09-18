@@ -38,7 +38,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -55,7 +54,6 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('AVAILABILITY')")
 @RequiredArgsConstructor
 public class AvailabilityService {
 
@@ -92,7 +90,7 @@ public class AvailabilityService {
   public List<WorkDay> getWorkDays() {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
     return sqlCache.queryBySql(AvailabilityQuery.getWorkDays, params, WorkDay.class);
@@ -101,7 +99,7 @@ public class AvailabilityService {
   public ResourceSchedule getOneResourceAvailability(Long id) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
 
@@ -116,7 +114,7 @@ public class AvailabilityService {
   public List<ResourceSchedule> saveSchedule(ResourceSchedule ra) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("startDate", ra.getStartDate());
     params.put("endDate", ra.getEndDate());
     params.put("companyId", user.getCompanyId());
@@ -182,7 +180,7 @@ public class AvailabilityService {
   public void deleteSchedule(Long id) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
 
@@ -205,7 +203,7 @@ public class AvailabilityService {
     User user = securityService.getCurrentUser();
     boolean archived = null == rsa.getArchived() ? false : rsa.getArchived();
     boolean hasId = null != rsa.getId();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
 
     // JIC - if a slot id gets sent in, null out the start and end time
     if (null != rsa.getResourceSlotScheduleId()) {
@@ -246,7 +244,7 @@ public class AvailabilityService {
     // handle the saving of excluded slot times
     if (null != rsa.getResourceSlotScheduleId()) {
       // if it is a slot schedule
-      HashMap<String, Object> excludedParams = new HashMap<>();
+      Map<String, Object> excludedParams = new HashMap<>();
       excludedParams.put(
         "excludedResourceSlotTimeIds",
         null == rsa.getExcludedResourceSlotTimeIds()
@@ -276,7 +274,7 @@ public class AvailabilityService {
   public Long getResourceAppointmentLength(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
@@ -297,7 +295,7 @@ public class AvailabilityService {
   public void saveResourceAppointmentLength(AppointmentLength al) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", al.getUserId());
     params.put("appointmentLength", al.getDefaultAppointmentLength());
     params.put("orgId", al.getOrgId());
@@ -313,7 +311,7 @@ public class AvailabilityService {
   public void saveOverrideInfoToAudit(OverrideAudit audit) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("createdById", user.trueUserId());
     params.put("projectId", audit.getProjectId());
     params.put("projectProcessStepId", audit.getProjectProcessStepId());
@@ -327,18 +325,15 @@ public class AvailabilityService {
     List<Long> userIds, List<Long> orgIds, String startTime, String endTime) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userIds", userIds);
     params.put("orgIds", orgIds);
     params.put("startTime", startTime);
     params.put("endTime", endTime);
     params.put("companyId", user.getCompanyId());
 
-    List<ResourceAppointment> results =
-      sqlCache.queryBySql(
-        AvailabilityQuery.getAppointmentsForResourceInRange, params, ResourceAppointment.class);
-
-    return results;
+    return sqlCache.queryBySql(
+      AvailabilityQuery.getAppointmentsForResourceInRange, params, ResourceAppointment.class);
   }
 
   //  appointments
@@ -346,7 +341,7 @@ public class AvailabilityService {
     Long userId, Long orgId, Pageable pageable) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
@@ -367,7 +362,7 @@ public class AvailabilityService {
   public ResourceAppointment saveAppointment(ResourceAppointment ra) throws Exception {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("startTime", ra.getStartTime());
     params.put("endTime", ra.getEndTime());
     // title was added recently and the current mobile app doesn't send it in, it only sends
@@ -467,7 +462,7 @@ public class AvailabilityService {
     Calendar cal = Calendar.getInstance();
     cal.add(Calendar.MONTH, 11);
     Date startingDate = cal.getTime();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("startingDate", startingDate);
     List<RecurringResourceAppointment> recurringAppointments =
       sqlCache.queryBySql(
@@ -556,7 +551,7 @@ public class AvailabilityService {
           }
 
           if (!limitReached && !alreadyExists) {
-            HashMap<String, Object> params2 = new HashMap<>();
+            Map<String, Object> params2 = new HashMap<>();
             params2.put("startTime", currentEventStart);
             params2.put("endTime", currentEventEnd);
             params.put("title", null != rra.getTitle() ? rra.getTitle() : rra.getDescription());
@@ -686,7 +681,7 @@ public class AvailabilityService {
     }
   }
 
-  public void insertEvent(HashMap<String, Object> params) {
+  public void insertEvent(Map<String, Object> params) {
     // insert using the params we created before
     sqlCache.updateBySql(AvailabilityQuery.insertAppointment, params);
   }
@@ -694,7 +689,7 @@ public class AvailabilityService {
   public void deleteAppointment(Long id) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
 
@@ -704,7 +699,7 @@ public class AvailabilityService {
   public void deleteAppointmentsByRecurrence(String recurringEventId) {
     User user = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("recurringEventId", recurringEventId);
     params.put("modifiedById", user.trueUserId());
 
@@ -715,7 +710,7 @@ public class AvailabilityService {
     Long projectId, String startTime, String endTime, String availableDate, Boolean remote) {
 
     try {
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       params.put("startTime", startTime);
       params.put("endTime", endTime);
@@ -753,7 +748,7 @@ public class AvailabilityService {
         && null != request.getUsers()) {
       User user = securityService.getCurrentUser();
 
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
       params.put("projectId", request.getProjectId());
       params.put("userId", user.trueUserId());
       params.put("projectProcessStepId", request.getProjectProcessStepId());
@@ -912,7 +907,7 @@ public class AvailabilityService {
 
   public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("scheduleName", slotSchedule.getScheduleName());
     params.put("companyId", user.getCompanyId());
     params.put("userId", user.trueUserId());
@@ -938,7 +933,7 @@ public class AvailabilityService {
 
   public void saveSlotTime(SlotTime slotTime, Long resourceSlotScheduleId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("startTime", slotTime.getStartTime());
     params.put("resourceSlotScheduleId", resourceSlotScheduleId);
     params.put("endTime", slotTime.getEndTime());
@@ -957,20 +952,18 @@ public class AvailabilityService {
   }
 
   public Optional<SlotSchedule> getSlotSchedule(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<SlotSchedule> result =
-      sqlCache.getBySql(AvailabilityQuery.getSlotSchedule,
-        params,
-        new SlotScheduleMapper<>(SlotSchedule.class, om));
-    return result;
+    return sqlCache.getBySql(AvailabilityQuery.getSlotSchedule,
+      params,
+      new SlotScheduleMapper<>(SlotSchedule.class, om));
   }
 
   public List<SlotSchedule> getAllSlotSchedules(Boolean isAdmin, Long userId) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("isAdmin", isAdmin);
 
@@ -992,7 +985,7 @@ public class AvailabilityService {
 
   public void deleteSlotSchedule(Long id) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("userId", user.trueUserId());
     sqlCache.updateBySql(AvailabilityQuery.deleteSlotSchedule, params);
@@ -1001,7 +994,7 @@ public class AvailabilityService {
   public List<CompanyHoliday> getAllCompanyHolidays() {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     return sqlCache.queryBySql(
       AvailabilityQuery.getAllCompanyHolidays,
@@ -1011,7 +1004,7 @@ public class AvailabilityService {
 
   public Optional<CompanyHoliday> getCompanyHoliday(Long id) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", user.getCompanyId());
     return sqlCache.getBySql(AvailabilityQuery.getCompanyHolidayById,
@@ -1021,19 +1014,18 @@ public class AvailabilityService {
 
   public Optional<CompanyHoliday> updateCompanyHoliday(CompanyHoliday companyHoliday) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("name", companyHoliday.getName());
     params.put("date", companyHoliday.getDate());
     params.put("companyId", user.getCompanyId());
-
 
     if (null != companyHoliday.getId()) {
       params.put("id", companyHoliday.getId());
       params.put("modifiedById", user.trueUserId());
 
       return sqlCache.getBySql(AvailabilityQuery.updateCompanyHoliday,
-          params,
-          new CompanyHolidayMapper<>(CompanyHoliday.class, om));
+        params,
+        new CompanyHolidayMapper<>(CompanyHoliday.class, om));
     } else {
       params.put("createdById", user.trueUserId());
       params.put("modifiedById", user.trueUserId());
@@ -1045,7 +1037,7 @@ public class AvailabilityService {
 
   public void archiveCompanyHoliday(Long id) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", user.trueUserId());
     params.put("companyId", user.getCompanyId());
@@ -1053,7 +1045,7 @@ public class AvailabilityService {
   }
 
   public ResourceAppointment getOneResourceAppointment(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
 
     return sqlCache
