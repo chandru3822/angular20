@@ -45,7 +45,7 @@ BEGIN
       v_panel_count = (x::jsonb -> 'module' -> 'count')::bigint;
       v_face = x::jsonb -> 'face';
       insert into calculations(panel_count, total_solar_resource_fraction, face, size)
-      values (v_panel_count, round(v_total_solar_resource_fraction,1), v_face, v_size);
+      values (v_panel_count, round(v_total_solar_resource_fraction,0), v_face, v_size);
     end loop;
 
   if p_unit_type_id = 459 then

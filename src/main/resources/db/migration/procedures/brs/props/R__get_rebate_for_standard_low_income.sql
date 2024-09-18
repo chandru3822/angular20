@@ -73,7 +73,7 @@ BEGIN
         v_panel_count = (x::jsonb -> 'module' -> 'count')::bigint;
         -- raise notice 'v_count = %',x::jsonb -> 'module' -> 'count';
         insert into calculations(panel_count, total_solar_resource_fraction, face)
-        values (v_panel_count,round(v_total_solar_resource_fraction,1), v_face);
+        values (v_panel_count,round(v_total_solar_resource_fraction,0), v_face);
       end loop;
 
     with multiple_faces as (select face
