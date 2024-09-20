@@ -10,14 +10,16 @@ on:
         description: "Enter lane to deploy"
         required: true
         default: 'stage'
-
-#    push:
-#        branches:
-#            - "release"
+        type: choice
+        options:
+          - dev
+          - flux
+          - stage
+          - uat
 
 jobs:
   build:
-    name: Package & Deploy
+    name: Manual Package & Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:
@@ -25,8 +27,18 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v3
-      #
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'zulu'
+          cache: 'maven'
+
+      - name: Maven Package
+        run: mvn -B package -DskipTests
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -43,56 +55,74 @@ jobs:
         run: |
           echo github_short_sha=$(echo ${GITHUB_SHA:0:7}) >> $GITHUB_OUTPUT
 
+      - name: Build & Push Image
+        id: build-image
+        env:
+          DOCKER_BUILDKIT: 1
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: albatross-repo
+          IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
+          LANE_TAG: $${{ inputs.lane }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_$LANE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_$LANE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_$LANE_TAG" >> $GITHUB_OUTPUT
+
       - name: Fill in the new image ID for App Fargate task definition
         id: app-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: .aws/${{ github.event.inputs.lane}}-definition.json
-          container-name: albatross-${{ github.event.inputs.lane}}-container
-          image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
+          task-definition: .aws/${{inputs.lane}}-definition.json
+          container-name: albatross-${{inputs.lane}}-container
+          image: ${{ steps.build-image.outputs.image }}
 
-      - name: Fill in the new image ID for Cron Fargate task definition
-        id: cron-task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: .aws/cron-${{ github.event.inputs.lane}}-definition.json
-          container-name: albatross-cron-${{ github.event.inputs.lane}}-container
-          image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
+#      - name: Fill in the new image ID for Cron Fargate task definition
+#        id: cron-task-def
+#        uses: aws-actions/amazon-ecs-render-task-definition@v1
+#        with:
+#          task-definition: .aws/cron-${{ inputs.lane}}-definition.json
+#          container-name: albatross-cron-${{ inputs.lane}}-container
+#          image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
 
       - name: Deploy App Fargate Task
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.app-task-def.outputs.task-definition }}
-          service: albatross-${{ github.event.inputs.lane}}-service
-          cluster: albatross-${{ github.event.inputs.lane}}-cluster
+          service: albatross-${{inputs.lane}}-service
+          cluster: albatross-${{inputs.lane}}-cluster
 
-      - name: Deploy Cron Fargate Task
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.cron-task-def.outputs.task-definition }}
-          service: albatross-${{ github.event.inputs.lane}}-cron-service
-          cluster: albatross-${{ github.event.inputs.lane}}-cluster
+#      - name: Deploy Cron Fargate Task
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#        with:
+#          task-definition: ${{ steps.cron-task-def.outputs.task-definition }}
+#          service: albatross-${{inputs.lane}}-cron-service
+#          cluster: albatross-${{inputs.lane}}-cluster
 
   frontend-build:
-    needs: build
+    name: Build Front End
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         name: Setup Node
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
           always-auth: true
           registry-url: https://npm.pkg.github.com
           scope: '@7oaksgroup'
 
-      # Deploy the site with netlify-cli
+      - name: set env
+        id: vars
+        run: |
+          echo github_short_sha=$(echo ${GITHUB_SHA:0:7}) >> $GITHUB_OUTPUT
+
       - name: Deploy Site
         env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
-          NETLIFY_SITE_ID: ${{ secrets[format('{0}_NETLIFY_SITE_ID', github.event.inputs.lane)] }}
+          NETLIFY_SITE_ID: ${{ secrets[format('{0}_NETLIFY_SITE_ID', inputs.lane)] }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
