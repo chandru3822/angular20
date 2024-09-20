@@ -289,9 +289,6 @@ CREATE TABLE if NOT EXISTS flow.company_function
     db_function_id integer not null,
     archived boolean not null default false,
     company_id integer not null,
-    CONSTRAINT cf_company_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION
     CONSTRAINT company_function_pk PRIMARY KEY (id),
     CONSTRAINT cf_db_function_id_fk FOREIGN KEY (db_function_id)
         REFERENCES flow.db_function (id) MATCH SIMPLE
