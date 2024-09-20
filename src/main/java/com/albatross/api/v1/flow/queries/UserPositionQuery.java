@@ -148,6 +148,24 @@ public class UserPositionQuery {
     where primary_flag = true and user_id = :userId and archived = false
     """;
 
+  public final static String getSmartlistUsers= """
+          select distinct upv.user_id::bigint as user_id,
+                       upv.user_position_id as id,
+                       concat(upv.first_name,' ',upv.last_name::text) as full_name,
+                       upv.position,
+                       upv.position_id,
+                       upv.primary_flag
+          from flow.user_positions_vw upv
+          	     inner join flow.position_feature_access_control pac on upv.position_id = pac.position_id and upv.company_id = :companyId
+          	     inner join flow.company_feature cf on cf.id = pac.company_feature_id and cf.id = 19
+          where
+          		upv.company_id = :companyId and
+          	upv.has_access is true and
+          	(upv.start_date <= now() and (upv.end_date IS NULL OR upv.end_date > now())) and
+          	upv.primary_flag is true
+          order by full_name
+          """;
+
   //language=PostgreSQL
   public final static String getPrimaryUserPositions = """
     select

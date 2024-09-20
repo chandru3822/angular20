@@ -86,6 +86,10 @@ public class UserPositionService {
             new UserPositionMapper<>(UserPosition.class, om))
         .orElse(null);
   }
+    public List<UserPosition> getUsersWithSmartlistAccess(){
+        Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId());
+        return sqlCache.queryBySql(UserPositionQuery.getSmartlistUsers, params, new UserPositionService.UserPositionMapper<>(UserPosition.class, om));
+    }
 
   public List<UserPosition> getPrimaryUserPositions() {
     Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId());
