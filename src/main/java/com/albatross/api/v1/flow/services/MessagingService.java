@@ -541,23 +541,23 @@ public class MessagingService {
         // Get the list of the Users who are set to be notified for this project
         List<SmsTeamUser> ownerUsers =
           sqlCache.queryBySql(
-            MessagingQuery.getOwnersForThread, Map.of("threadId", threadId), SmsTeamUser.class);
+            MessagingQuery.getOwnerUsersForThread, Map.of("threadId", threadId), SmsTeamUser.class);
 
         // If there are no owners, add unassigned notifications if applicable
         if (ownerUsers.isEmpty()) {
           SmsConversation cmp = getThread(threadId, null, null, SystemSettings.BR_SYSTEM_USER.getId());
           //      todo sms solve this
-//          final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
-//          final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(teamIds);
-//          for (SmsTeam smsTeam : smsTeams) {
-//            List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
-//            for (User user : usersToNotify) {
-//              addSmsProjectReplyNotification(
-//                projectId, smsTeam.getId(), new HashSet<>(List.of(user.getId())), SystemSettings.SYSTEM_USER.getId());
+          final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
+          final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(teamIds);
+          for (SmsTeam smsTeam : smsTeams) {
+            List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
+            for (User user : usersToNotify) {
+              addSmsThreadReplyNotification(
+                threadId, smsTeam.getId(), new HashSet<>(List.of(user.getId())), SystemSettings.SYSTEM_USER.getId());
 
-//              addSmsProjectOwnershipNotification(projectId, SystemSettings.SYSTEM_USER.getId());
-//            }
-//          }
+              addSmsThreadOwnershipNotification(threadId, null, null, SystemSettings.SYSTEM_USER.getId());
+            }
+          }
         } else {
           for (SmsTeamUser smsTeamUser : ownerUsers) {
             addSmsThreadReplyNotification(

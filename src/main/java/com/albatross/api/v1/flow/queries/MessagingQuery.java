@@ -359,10 +359,11 @@ select u.user_id, outbound_message from users u
     """;
 
   //language=PostgreSQL
-  public final static String getOwnersForThread = """
+  public final static String getOwnerUsersForThread = """
     select distinct user_id, sms_team_id
     from flow.sms_thread_owner
      where sms_thread_id = :threadId
+      and user_id is not null
      and archived is false
     """;
 
