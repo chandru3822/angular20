@@ -404,41 +404,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog width="500" persistent v-model="showAIDesignRequestForm">
-      <v-card>
-        <v-card-title>Create New AI Design</v-card-title>
-        <v-card-text class="default-text-color">
-          <v-form ref="aiForm">
-            <CustomValueInput
-              v-for="(cf, idx) in aiRequestFields"
-              :key="idx"
-              :show-field-name="false"
-              :required="true"
-              custom-class="albatross-body-2"
-              :field="cf"
-            ></CustomValueInput>
-          </v-form>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <a-btn
-            variant="text"
-            color="primary"
-            @click="showAIDesignRequestForm = false"
-            text="Cancel"
-          ></a-btn>
-          <a-btn
-            color="primary"
-            :loading="savingNewAiDesign"
-            class="font-weight-bold"
-            @click="validateAIRequest()"
-            text="Save"
-          ></a-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
+<AuroraProposalDialog :show="showAIDesignRequestForm" :ai-request-fields="aiRequestFields" :saving-new-ai-design="savingNewAiDesign" @save="validateAIRequest()" @close="showAIDesignRequestForm = false"/>
     <v-dialog width="500" v-model="showNewPostalCodeRequestForm">
       <v-card>
         <v-card-title class="text-capitalize">
@@ -502,6 +468,8 @@ import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
+import AuroraProposalDialog from "@/views/blueraven/proposals/AuroraProposalDialog.vue";
+import {ProposalCFGAIDs} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -543,6 +511,7 @@ const showAIDesignRequestForm = ref(false)
 const savingNewAiDesign = ref(false)
 const pendingAuroraAdjustmentsStatusId = ref(1649)
 const aiForm = ref(null)
+
 
 onMounted(async () => {
   defaultProjectPage.value = getProjectPath(vueInstance).pathSuffix
@@ -586,6 +555,8 @@ const firstDesignId = computed(() => {
   return designs.value?.find((d) => d.designId != null)?.designId
 })
 
+
+
 const pageLoadOrRefresh = async () => {
   const requests = [getCompletedProposalDesigns(), getActiveDesign()]
   await Promise.all(requests)
@@ -601,7 +572,7 @@ const validateAIRequest = async () => {
 const handleAIRequest = async (useExisting) => {
   //utility company (23802), estimated annual consumption (22573), design name (26300)
   useExistingDesign.value = useExisting
-  const encodedIds = encodeURI([23802, 22573, 26300])
+  const encodedIds = encodeURI([ProposalCFGAIDs.UTILITY_CO, ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION, ProposalCFGAIDs.DESIGN_NAME])
   const params = { cfgaIds: encodedIds }
   const { data } = await getRequestWithParams(
     `/customFieldGroup/getCustomFieldsByCfgaIds`,
