@@ -10,6 +10,7 @@
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
 import {computed, defineEmits, ref} from "vue";
 import {ProposalCFGAIDs} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
+import constants from "@/helpers/constants.js";
 
 const props = defineProps({
   show: {
@@ -25,27 +26,44 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save'])
 const calcEnergyBySqFtg = ref(true)
 const squareFootage = ref(null)
+const aiForm = ref(null)
+const requiredRules = constants.BASIC_REQUIRED_RULE
+
+
+const validateAIRequest = async () => {
+  debugger
+  const valid = aiForm.value.validate()
+  if (valid) {
+    //all checks for how to create the design are handled by backend now
+    emit('save', aiForm.value)
+  }
+}
+
 
 
 const calcMethodText = computed(() => {
   if(calcEnergyBySqFtg.value){
     return 'Calculate Energy by Square Footage'
   } else {
-    return 'Calculate Energy by Utility Bill'
+    return 'Enter usage from utility bill into Aurora Sales Mode'
   }
 })
 
-const toggleCalcMethod = () => {
+const toggleCalcMethod = (field) => {
   if(!calcEnergyBySqFtg.value) {
+    squareFootage.value = null
+
     //
   } else {
 
   }
+  field.intValue = null
   calcEnergyBySqFtg.value = !calcEnergyBySqFtg.value
 }
 
 const utilityCoId = computed(() => {
   const utilityCoField = props.aiRequestFields.find(f => f.customFieldGroupAssignmentId === ProposalCFGAIDs.UTILITY_CO)
+  return utilityCoField?.intValue
   //todo: recalculate usage when utility changes if calcEnergyBySqFtg
 })
 
@@ -131,29 +149,40 @@ const xcelEnergyMNValues = Object.freeze({
           <div v-for="(cf, idx) in aiRequestFields" :key="idx">
             <!--              <div>{{cf}}</div>-->
             <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION">
-              <div class="label-large">{{ calcMethodText }}
-                <a-btn
-                    color="primary"
-                    class="mb-4 text-capitalize"
-                    @click="toggleCalcMethod"
-                    size="small"
-                    text="Change Energy Calculation Method"
-                ></a-btn>
-                <a-text-field v-if="calcEnergyBySqFtg"
-                    class="mt-0"
+              <div class="d-flex align-center title-medium">Estimated Energy Consumption
+                <a-btn v-if="!calcEnergyBySqFtg" prepend-icon="mdi-import" variant="text" text="Import Usage"></a-btn>
+              </div>
+
+              <div class="label-large mb-3">{{ calcMethodText }}</div>
+
+
+
+              <a-text-field v-if="calcEnergyBySqFtg"
                               type="number"
+                              density="compact"
                               label="Enter Square Footage"
                               :value="squareFootage"
+                              :rules="calcEnergyBySqFtg ? [...requiredRules] : null"
                               @change="calculateUsage($event, cf)"
                 >
-
                 </a-text-field>
+              <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
+              <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{cf.intValue / 12}} kWh</span></div>
+              <div class="pt-1">
+                <a-btn
+                    color="primary"
+                    class="text-capitalize mb-1"
+                    @click="toggleCalcMethod(cf)"
+
+                    text="Change Usage Source"
+                ></a-btn>
               </div>
             </div>
             <CustomValueInput
+                v-else
                 :show-field-name="false"
                 :required="true"
-                :readonly="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION"
+                @change=""
                 custom-class="albatross-body-2"
                 :field="cf"
             ></CustomValueInput>
@@ -173,7 +202,7 @@ const xcelEnergyMNValues = Object.freeze({
             color="primary"
             :loading="savingNewAiDesign"
             class="font-weight-bold"
-            @click="emit('save')"
+            @click="validateAIRequest"
             text="Save"
         ></a-btn>
       </v-card-actions>

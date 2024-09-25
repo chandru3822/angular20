@@ -404,7 +404,7 @@
       </v-card>
     </v-dialog>
 
-<AuroraProposalDialog :show="showAIDesignRequestForm" :ai-request-fields="aiRequestFields" :saving-new-ai-design="savingNewAiDesign" @save="validateAIRequest()" @close="showAIDesignRequestForm = false"/>
+<AuroraProposalDialog :show="showAIDesignRequestForm" :ai-request-fields="aiRequestFields" :saving-new-ai-design="savingNewAiDesign" @save="requestAIDesign" @close="showAIDesignRequestForm = false"/>
     <v-dialog width="500" v-model="showNewPostalCodeRequestForm">
       <v-card>
         <v-card-title class="text-capitalize">
@@ -510,7 +510,6 @@ const useExistingDesign = ref(false)
 const showAIDesignRequestForm = ref(false)
 const savingNewAiDesign = ref(false)
 const pendingAuroraAdjustmentsStatusId = ref(1649)
-const aiForm = ref(null)
 
 
 onMounted(async () => {
@@ -561,8 +560,9 @@ const pageLoadOrRefresh = async () => {
   const requests = [getCompletedProposalDesigns(), getActiveDesign()]
   await Promise.all(requests)
 }
-const validateAIRequest = async () => {
-  const valid = aiForm.value.validate()
+const validateAIRequest = async (aiForm) => {
+  debugger
+  const valid = aiForm.validate()
   if (valid) {
     //all checks for how to create the design are handled by backend now
     await requestAIDesign()
@@ -572,7 +572,7 @@ const validateAIRequest = async () => {
 const handleAIRequest = async (useExisting) => {
   //utility company (23802), estimated annual consumption (22573), design name (26300)
   useExistingDesign.value = useExisting
-  const encodedIds = encodeURI([ProposalCFGAIDs.UTILITY_CO, ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION, ProposalCFGAIDs.DESIGN_NAME])
+  const encodedIds = encodeURI([ ProposalCFGAIDs.DESIGN_NAME, ProposalCFGAIDs.UTILITY_CO, ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION])
   const params = { cfgaIds: encodedIds }
   const { data } = await getRequestWithParams(
     `/customFieldGroup/getCustomFieldsByCfgaIds`,
@@ -601,6 +601,7 @@ const handleNewRequest = async () => {
 }
 
 const requestAIDesign = async () => {
+  debugger
   try {
     savingNewAiDesign.value = true
     const { data } = await postRequest(
