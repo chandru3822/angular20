@@ -11,6 +11,7 @@ import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
 import {computed, defineEmits, ref} from "vue";
 import {ProposalCFGAIDs} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
 import constants from "@/helpers/constants.js";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const props = defineProps({
   show: {
@@ -141,10 +142,9 @@ const xcelEnergyMNValues = Object.freeze({
 </script>
 
 <template>
-  <v-dialog width="500" persistent v-model="show">
-    <v-card>
-      <v-card-title>Create New AI Design</v-card-title>
-      <v-card-text class="default-text-color">
+  <ConfirmationDialog :width="500" persistent :open-dialog="show" parent-close @confirm="validateAIRequest" @close-dialog="emit('close')">
+      <template v-slot:title>Create New AI Design</template>
+    <template v-slot:yes>Save</template>
         <v-form ref="aiForm">
           <div v-for="(cf, idx) in aiRequestFields" :key="idx">
             <!--              <div>{{cf}}</div>-->
@@ -188,26 +188,7 @@ const xcelEnergyMNValues = Object.freeze({
             ></CustomValueInput>
           </div>
         </v-form>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer />
-        <a-btn
-            variant="text"
-            color="primary"
-            @click="emit('close')"
-            text="Cancel"
-        ></a-btn>
-        <a-btn
-            color="primary"
-            :loading="savingNewAiDesign"
-            class="font-weight-bold"
-            @click="validateAIRequest"
-            text="Save"
-        ></a-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  </ConfirmationDialog>
 
 </template>
 

@@ -626,6 +626,7 @@ const requestAIDesign = async () => {
   } finally {
     showAIDesignRequestForm.value = false
     savingNewAiDesign.value = false
+    appStore.showSnack('Success', 'A new design has been requested')
   }
 }
 
