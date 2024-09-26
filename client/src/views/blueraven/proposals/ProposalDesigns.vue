@@ -572,7 +572,7 @@ const validateAIRequest = async (aiForm) => {
 const handleAIRequest = async (useExisting) => {
   //utility company (23802), estimated annual consumption (22573), design name (26300)
   useExistingDesign.value = useExisting
-  const encodedIds = encodeURI([ ProposalCFGAIDs.DESIGN_NAME, ProposalCFGAIDs.UTILITY_CO, ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION])
+  const encodedIds = encodeURI([ProposalCFGAIDs.UTILITY_CO, ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION, ProposalCFGAIDs.DESIGN_NAME])
   const params = { cfgaIds: encodedIds }
   const { data } = await getRequestWithParams(
     `/customFieldGroup/getCustomFieldsByCfgaIds`,

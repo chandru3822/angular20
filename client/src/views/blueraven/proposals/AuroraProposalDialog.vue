@@ -29,7 +29,7 @@ const calcEnergyBySqFtg = ref(true)
 const squareFootage = ref(null)
 const aiForm = ref(null)
 const requiredRules = constants.BASIC_REQUIRED_RULE
-
+const months = constants.MONTHS
 
 const validateAIRequest = async () => {
   debugger
@@ -149,16 +149,12 @@ const xcelEnergyMNValues = Object.freeze({
           <div v-for="(cf, idx) in aiRequestFields" :key="idx">
             <!--              <div>{{cf}}</div>-->
             <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION">
-              <div class="d-flex align-center title-medium">Estimated Energy Consumption
-                <a-btn v-if="!calcEnergyBySqFtg" prepend-icon="mdi-import" variant="text" text="Import Usage"></a-btn>
-              </div>
-
-              <div class="label-large mb-3">{{ calcMethodText }}</div>
-
-
-
-              <a-text-field v-if="calcEnergyBySqFtg"
-                              type="number"
+                <v-radio-group label="Energy Usage" v-model="calcEnergyBySqFtg">
+                <v-radio :value="true" label="Calculate Energy by Square Footage"></v-radio>
+                <v-radio :value="false" label="Utility Bill"></v-radio>
+              </v-radio-group>
+              <div v-if="calcEnergyBySqFtg">
+                <a-text-field type="number"
                               density="compact"
                               label="Enter Square Footage"
                               :value="squareFootage"
@@ -166,17 +162,29 @@ const xcelEnergyMNValues = Object.freeze({
                               @change="calculateUsage($event, cf)"
                 >
                 </a-text-field>
-              <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
-              <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{cf.intValue / 12}} kWh</span></div>
-              <div class="pt-1">
-                <a-btn
-                    color="primary"
-                    class="text-capitalize mb-1"
-                    @click="toggleCalcMethod(cf)"
-
-                    text="Change Usage Source"
-                ></a-btn>
+                <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
+                <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{cf.intValue / 12}} kWh</span></div>
               </div>
+              <div v-else>
+                <v-card class="label-medium pa-0" flat>
+                  <v-card-title class="pa-0">Enter usage from utility bill
+                    <a-btn size="small" icon class="ml-1"><v-icon small>mdi-plus-circle-outline</v-icon></a-btn>
+                  </v-card-title>
+                <v-row class="pt-0">
+                  <v-col cols="3" class="pt-0">
+                  <a-select label="Month" :items="months" item-title="name" item-value="id"></a-select>
+<!--                    todo: object array [{monthId, usage}], add a select for each object in this array and add another object every time you press the + button
+                        filter the months available in the select to remove any months that have already been used
+-->
+                  </v-col>
+                  <v-col cols="3" class="pt-0">
+                    <a-text-field label="Usage"></a-text-field>
+                  </v-col>
+                </v-row>
+                </v-card>
+
+              </div>
+
             </div>
             <CustomValueInput
                 v-else
