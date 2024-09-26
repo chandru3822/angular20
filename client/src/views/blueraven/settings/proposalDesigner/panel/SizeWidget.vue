@@ -1,13 +1,18 @@
 <template>
   <div>
     <div class="pl-0 label-large">{{ label }} - {{ size }}</div>
-    <v-btn-toggle v-if="showUnitOptions" v-model="unitToggle" mandatory @change="onChange">
+    <v-btn-toggle
+      v-if="showUnitOptions"
+      v-model="unitToggle"
+      mandatory
+      @change="onChange"
+    >
       <a-btn
-          v-for="u in units"
-          variant="text"
-          size="small"
-          :value="u"
-          :text="u"
+        v-for="u in units"
+        variant="text"
+        size="small"
+        :value="u"
+        :text="u"
       />
     </v-btn-toggle>
     <div class="d-flex flex-row align-start">
@@ -20,13 +25,17 @@
         :max="unit === '%' ? 100 : max"
         :min="min"
       />
-      <a-btn icon prepend-icon="mdi-arrow-expand-horizontal" @click="setToMax"/>
-      <a-btn icon prepend-icon="mdi-close" @click="clear"/>
+      <a-btn
+        icon
+        prepend-icon="mdi-arrow-expand-horizontal"
+        @click="setToMax"
+      />
+      <a-btn icon prepend-icon="mdi-close" @click="clear" />
     </div>
   </div>
 </template>
 <script setup>
-import {computed, ref, toRefs, watch} from 'vue'
+import { computed, ref, toRefs, watch } from 'vue'
 
 const emit = defineEmits(['input'])
 const props = defineProps({
@@ -50,7 +59,7 @@ const props = defineProps({
     type: Number,
     default: 50
   },
-  showUnitOptions:{
+  showUnitOptions: {
     type: Boolean,
     default: false
   }
@@ -59,7 +68,7 @@ const props = defineProps({
 const unitToggle = ref(null)
 const size = ref(0)
 const units = ref(['px', '%', 'rem'])
-const unit = computed(() => props.showUnitOptions ? unitToggle.value : 'px')
+const unit = computed(() => (props.showUnitOptions ? unitToggle.value : 'px'))
 
 const { value } = toRefs(props)
 
@@ -74,7 +83,6 @@ watch(
   { immediate: true }
 )
 
-
 const onChange = () => {
   emit('input', { [props.attr]: `${size.value}${unit.value}` })
 }
@@ -85,7 +93,6 @@ const setToMax = () => {
 }
 
 const clear = () => {
-  emit('input', {[props.attr]: undefined})
+  emit('input', { [props.attr]: undefined })
 }
-
 </script>

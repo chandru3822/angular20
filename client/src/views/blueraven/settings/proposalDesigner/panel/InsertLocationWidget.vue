@@ -33,23 +33,26 @@
       ></a-btn>
     </v-btn-toggle>
 
-    <v-card flat color="transparent" v-if="toggle === 'before' || toggle === 'after'">
-        <a-select
-            density="compact"
-            variant="outlined"
-            v-model="relativeBlock"
-            :items="existingBlocks"
-            item-title="displayName"
-            item-value="id"
-            return-object
-            label="Select an existing block"
-        />
-      </v-card>
+    <v-card
+      flat
+      color="transparent"
+      v-if="toggle === 'before' || toggle === 'after'"
+    >
+      <a-select
+        density="compact"
+        variant="outlined"
+        v-model="relativeBlock"
+        :items="existingBlocks"
+        item-title="displayName"
+        item-value="id"
+        return-object
+        label="Select an existing block"
+      />
+    </v-card>
   </div>
 </template>
 <script setup>
-import SizeWidget from './SizeWidget.vue'
-import { ref, toRefs, watch } from 'vue'
+import { ref } from 'vue'
 
 const emit = defineEmits(['input'])
 const props = defineProps({
@@ -62,12 +65,13 @@ const props = defineProps({
 const toggle = ref(null)
 const relativeBlock = ref(null)
 
-
 const onChange = (updated) => {
   Object.keys(updated).forEach((key) => {
     this[key] = updated[key]
   })
 
-  emit('input', { [props.attr]: {location: toggle, relativeBlock: relativeBlock.value } })
+  emit('input', {
+    [props.attr]: { location: toggle, relativeBlock: relativeBlock.value }
+  })
 }
 </script>

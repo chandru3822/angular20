@@ -31,23 +31,26 @@
       ></a-btn>
     </v-btn-toggle>
 
-    <v-card flat color="transparent" v-if="toggle === 'before' || toggle === 'after'">
-        <a-select
-            density="compact"
-            variant="outlined"
-            v-model="relativeBlock"
-            :items="existingBlocks"
-            item-title="displayName"
-            item-value="id"
-            return-object
-            label="Select an existing block"
-        />
-      </v-card>
+    <v-card
+      flat
+      color="transparent"
+      v-if="toggle === 'before' || toggle === 'after'"
+    >
+      <a-select
+        density="compact"
+        variant="outlined"
+        v-model="relativeBlock"
+        :items="existingBlocks"
+        item-title="displayName"
+        item-value="id"
+        return-object
+        label="Select an existing block"
+      />
+    </v-card>
   </div>
 </template>
 <script setup>
-import SizeWidget from './SizeWidget.vue'
-import { ref, toRefs, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 const emit = defineEmits(['input'])
 const props = defineProps({
@@ -60,14 +63,13 @@ const props = defineProps({
 const toggle = ref(null)
 const relativeBlock = ref(null)
 
-watch(toggle, () =>{
-  if(toggle.value === 'first' || toggle.value === 'last'){
-    emit('input', {location: toggle.value, parentId: undefined})
+watch(toggle, () => {
+  if (toggle.value === 'first' || toggle.value === 'last') {
+    emit('input', { location: toggle.value, parentId: undefined })
   }
 })
 
-watch(relativeBlock, () =>{
-  emit('input', {location: toggle.value, relativeBlock: relativeBlock.value })
+watch(relativeBlock, () => {
+  emit('input', { location: toggle.value, relativeBlock: relativeBlock.value })
 })
-
 </script>

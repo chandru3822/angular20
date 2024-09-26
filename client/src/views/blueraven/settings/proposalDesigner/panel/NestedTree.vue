@@ -1,38 +1,49 @@
 <template>
-  <draggable
-    class="node-container"
-    :class="{ 'is-dragging': dragging }"
-    :list="sortedChildren"
-    :move="checkMove"
-    :disabled="true"
-    @start="dragging = true"
-    @end="dragging = false"
-  >
-    <div class="node-group" :key="child.id" v-for="child in children">
+  <div>
+    <div
+      class="node-group transparent"
+      :key="child.id"
+      v-for="child in sortedChildren"
+    >
       <div
-        class="node"
+        class="node d-flex justify-space-between body-large align-center"
         :class="{ selected: selected && selected.id === child.id }"
         @click="handleClick(child)"
       >
-<!--        #{{ child.id }} - {{ child.blockType }}-->
-        {{ child.displayName }}
-        <span v-if="child.modified">*</span>
+        <div>
+          {{ child.displayName }}
+          <span v-if="child.modified">*</span>
+        </div>
+        <a-btn
+          v-if="hasChildren(child.id)"
+          :variant="selected && selected.id === child.id ? '' : 'text'"
+          :prepend-icon="child.expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+          :custom-classes="
+            selected && selected.id === child.id ? 'white--text' : ''
+          "
+          @click.native.stop="expandCollapseNode(child)"
+        />
       </div>
-      <nested-tree
-        class="node-sub"
-        v-on="$listeners"
-        :children="filterByParentId(child.id)"
-      />
+      <v-expand-transition>
+        <div v-show="isExpanded(child)" class="pa-0 node-container">
+          <nested-tree
+            class="node-sub"
+            v-on="$listeners"
+            :children="filterByParentId(child.id)"
+            :sort-by-id="sortById"
+          />
+        </div>
+      </v-expand-transition>
     </div>
-  </draggable>
+  </div>
 </template>
 <script setup>
-import debounce from 'lodash.debounce'
-import draggable from 'vuedraggable'
-import { toRefs, computed, ref } from 'vue'
+import { toRefs, computed, ref, watch, onMounted } from 'vue'
 import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
 const store = useProposalStore()
+const { selectedId } = storeToRefs(store)
 
 const props = defineProps({
   children: {
@@ -40,9 +51,18 @@ const props = defineProps({
     default: function () {
       return []
     }
+  },
+  sortById: {
+    type: Boolean,
+    default: true
+  },
+  expandAll: {
+    type: Boolean,
+    default: true
   }
 })
-const { children } = toRefs(props)
+const { children, sortById, expandAll } = toRefs(props)
+const expanded = ref([])
 
 const blockOrderSorter = (a, b) => {
   if (a.blockOrder > b.blockOrder) {
@@ -54,88 +74,74 @@ const blockOrderSorter = (a, b) => {
   return 0
 }
 
+onMounted(() => {
+  for (let i = 0; i < sortedChildren.value.length; i++) {
+    expanded.value.push(i)
+    sortedChildren.value[i].expanded = true
+  }
+})
+
 const emit = defineEmits(['select'])
 const dragging = ref(false)
 
 const selected = computed(() => {
   return store.selectedBlock
 })
+watch(selectedId, async () => {})
 const sortedChildren = computed(() => {
-  return children.value?.slice().sort(blockOrderSorter)
+  if (props.sortById) {
+    return children.value
+  } else {
+    return children.value?.slice().sort(blockOrderSorter)
+  }
 })
 
 const filterByParentId = (parent) => {
   return store.filterByParentId(parent)
 }
+const hasChildren = (parent) => {
+  const children = filterByParentId(parent)
+  return children.length > 0
+}
 const handleClick = (node) => {
   store.setSelected(node.id)
   emit('select', node.id)
 }
-//todo; this should register in the undo history
-const checkMove = debounce((evt) => {
-  const { draggedContext: active, relatedContext: target } = evt ?? {}
 
-  if (!active || !active.element) {
-    return false
+const isExpanded = (node) => {
+  const itemIndex = sortedChildren.value.indexOf(node) //index of the item in the children prop
+  const index = expanded.value.indexOf(itemIndex) //index of the itemIndex in the expanded ref which determines which elements in the list are expanded/collapsed
+  return index >= 0
+}
+
+const expandCollapseNode = (node) => {
+  const itemIndex = sortedChildren.value.indexOf(node) //index of the item in the children prop
+  const index = expanded.value.indexOf(itemIndex) //index of the itemIndex in the expanded ref which determines which elements in the list are expanded/collapsed
+  if (node?.expanded) {
+    // if it's expanded, we want to collapse it by removing it from the expanded array
+    expanded.value.splice(index, 1)
+    node.expanded = false
+  } else {
+    // if it's not expanded, we want to expand it by adding it to the expanded array
+    expanded.value.push(itemIndex)
+    node.expanded = true
   }
+}
 
-  const isSameParent = active?.element?.parentId === target?.element?.parentId
-  if (!isSameParent) {
-    return false
+const collapseExpandAllNodes = (expand) => {
+  expanded.value = []
+  for (let i = 0; i < sortedChildren.value.length; i++) {
+    const node = sortedChildren.value[i]
+    node.expanded = expand
+    if (expand === true) {
+      expanded.value.push(i)
+    }
   }
+}
 
-  const prev = target.list[target.index - 1]
-
-  const pos = prev
-    ? (prev?.blockOrder - target?.element?.blockOrder) / 2 +
-      target?.element?.blockOrder
-    : target?.element?.blockOrder + 1
-
-  // console.log({active, target, pos})
-
-  //
-  // const draggedItem = draggedContext?.element
-  // const targetItem = relatedContext?.element
-  //
-  // if (!targetItem) {
-  //   return
-  // }
-  //
-  // const isPage = draggedItem?.blockType === 'PageBlock'
-  // if (!isPage && targetItem?.parentId === undefined || isPage && targetItem?.parentId !== undefined) {
-  //   return false
-  // }
-  //
-  // const canDrop = false
-  //
-  // const isTextBlock = draggedItem?.blockType === 'TextBlock' && targetItem?.blockType === 'TextBlock'
-  //
-  // const isRoot = targetItem?.parentId === undefined
-  //
-  // const isSameParent = draggedItem?.parentId === targetItem?.parentId
-  //
-  // const targetChildren = this.$store.getters.filterByParentId(targetItem?.parentId)
-  //   .slice()
-  //   .sort(blockOrderSorter)
-  //
-  // const indexOf = targetChildren.indexOf(targetItem)
-  // const next =  targetChildren[indexOf + 1]
-  //
-  //
-  // console.log({ indexOf, targetItem, next })
-  //
-  // let newOrder = targetChildren?.blockOrder + 1
-  // if (next){
-  //   newOrder = Math.abs(((targetItem?.blockOrder - next?.blockOrder) / 2)) + next?.blockOrder
-  // }
-  //
-  // // console.log({ draggedItem, targetItem })
-  store.updatePosition({
-    blockId: active?.element.id,
-    pos,
-    parentId: target?.element?.parentId
-  })
-}, 250)
+watch(expandAll, () => {
+  collapseExpandAllNodes(expandAll.value)
+})
 </script>
 <style lang="scss" scoped>
 .node-container {
@@ -146,16 +152,16 @@ const checkMove = debounce((evt) => {
 
 .node {
   cursor: pointer;
-  display: block;
   padding: 0.2rem 0.4rem;
   //background-color: white;
+  min-height: 24px;
 
   &:hover {
     background-color: #e0e0e069;
   }
 
   &.selected {
-    background-color: var(--v-primary-base);
+    background-color: var(--v-primary-base) !important;
     color: white;
 
     ~ .node-container {
@@ -176,5 +182,18 @@ const checkMove = debounce((evt) => {
 
 .node-sub {
   padding: 0 0 0 1rem;
+}
+
+.transparent {
+  background-color: transparent;
+}
+</style>
+<style lang="scss">
+#props-designer-tree .v-expansion-panel-content__wrap {
+  padding: 0;
+}
+#props-designer-tree .v-expansion-panel--active:not(:first-child),
+.v-expansion-panel--active + .v-expansion-panel {
+  margin-top: 0;
 }
 </style>
