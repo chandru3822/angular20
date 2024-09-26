@@ -281,7 +281,7 @@ public class MosaicService {
       String financingProductType = financeProduct.getString("financingProductType");
       if (financingProductType.equals("Choice") && rate == proposalRate && totalPeriods == termMonths) {
         String name = financeProduct.getString("name");
-        boolean isEnsembleProduct = name.contains("Blue Raven Ensemble");
+        boolean isEnsembleProduct = name.contains("Ensemble");
         if (!isEnsembleProposal && !isEnsembleProduct) {
           return financeProduct.getString("id");
         }
