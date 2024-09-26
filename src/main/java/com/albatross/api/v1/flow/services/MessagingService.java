@@ -377,7 +377,8 @@ public class MessagingService {
     //don't give a notification if the user added themselves to the group
     userIdsToNotify.remove(modifiedByUserId);
 
-    addSmsThreadReplyNotification(threadId, teamId, userIdsToNotify, modifiedByUserId);
+    //dont add thread notifications when a user joins a thread. we treat all current messages as "Read" and only anything that comes in after the user is already on the team will affect the red notification badge count
+//    addSmsThreadReplyNotification(threadId, teamId, userIdsToNotify, modifiedByUserId);
 
     addSmsThreadOwnershipNotificationForUserList(threadId, teamId, userIdsToNotify, modifiedByUserId);
 
@@ -575,6 +576,8 @@ public class MessagingService {
     if (userIds.isEmpty()) {
       return;
     }
+
+
 
     notificationService.createNotification(
       new CreateNotificationDto()

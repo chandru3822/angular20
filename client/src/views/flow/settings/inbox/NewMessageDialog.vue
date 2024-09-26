@@ -467,7 +467,6 @@ const getProjects = async (val) => {
 }
 const getUsers = async () => {
   try {
-    console.log('hitme')
     const { data } = await getRequest(`/messaging/availableUsers`)
     availableUsers.value = data
 
