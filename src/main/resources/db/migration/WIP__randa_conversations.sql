@@ -538,3 +538,6 @@ update flow.sms_thread
 set recipient_type_id = 2
 where sent_to_project_id is not null
   and recipient_type_id != 2;
+
+ALTER TABLE flow.sms_thread
+    RENAME COLUMN sms_team_id TO sms_team_id_deprecated;
