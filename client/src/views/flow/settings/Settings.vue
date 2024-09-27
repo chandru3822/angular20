@@ -100,6 +100,10 @@ const items = computed(() => {
       path: '/settings/proposals',
       title: 'Proposals',
       show: userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+    },{
+      path: '/settings/partsMaster',
+      title: 'Parts Master',
+      show: userStore.userHasFeatureAccessLevel('PARTS_MASTER', 'ADMIN')
     }, {
       path: '/settings/states',
       title: 'States',
