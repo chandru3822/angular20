@@ -432,7 +432,7 @@ public class SMSService {
     Map<String, Object> params = new HashMap<>();
     params.put("messageSid", sid);
     params.put("messageStatus", status);
-    params.put("fromPhone", fromPhone);
+    params.put("internalPhone", fromPhone);
     params.put("errorMessage", errorMessage);
     params.put("dateReceived", dateReceived);
 
