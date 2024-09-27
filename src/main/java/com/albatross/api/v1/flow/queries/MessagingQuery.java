@@ -11,12 +11,15 @@ public class MessagingQuery {
                           and (sto.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
                             and
                                (case
-                                    when :unassigned is true then sto.user_id is null
+                                    when :unassigned is true then
+                                    sto.user_id = any (array [ :ownerIds ]::bigint[])
+                                    OR
+                                    (sto.user_id is null
                                         and (select count(1)
                                              from flow.sms_thread_owner sto2
                                              where sto2.sms_thread_id = sto.sms_thread_id
                                                and sto2.archived is false
-                                               and sto2.user_id is not null) = 0
+                                               and sto2.user_id is not null) = 0)
                                     else sto.user_id = any (array [ :ownerIds ]::bigint[]) end))
                     ), results as (select st.id,
                                          st.date_created,
