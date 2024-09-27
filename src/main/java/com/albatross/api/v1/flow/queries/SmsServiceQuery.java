@@ -24,14 +24,14 @@ public class SmsServiceQuery {
   //language=PostgreSQL
   public final static String insert = """
     WITH sq AS (INSERT INTO flow.sms_thread (
-                           message_group,sent_to_user_id, sent_to_project_id, message,media_urls,external_phone,recipient_type_id,message_sent_by_user_id,sms_team_id, priority_level, parent_id
+                           message_group,sent_to_user_id, sent_to_project_id, message,media_urls,external_phone,recipient_type_id,message_sent_by_user_id, priority_level, parent_id
                 ) VALUES (
-                           :messageGroup,:userId,:projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId, :priorityLevel, :threadId
+                           :messageGroup,:userId,:projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId, :priorityLevel, :threadId
                          )
                 RETURNING id,sent_to_user_id, sent_to_project_id,message,media_urls,
                   message_group,message_sid,message_status,error_message,
                   internal_phone,external_phone,twilio_created,twilio_sent,twilio_delivered,
-                  date_modified,date_created,recipient_type_id, message_sent_by_user_id, sms_team_id)
+                  date_modified,date_created,recipient_type_id, message_sent_by_user_id)
               SELECT sq.id,
                      sq.sent_to_user_id,
                      sq.sent_to_project_id,
@@ -49,8 +49,7 @@ public class SmsServiceQuery {
                      sq.date_modified,
                      sq.date_created,
                      sq.recipient_type_id,
-                     sq.message_sent_by_user_id,
-                     sq.sms_team_id
+                     sq.message_sent_by_user_id
               FROM sq
     """;
 
