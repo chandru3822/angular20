@@ -33,9 +33,9 @@ BEGIN
   from flow.contact_activity ca
   where contact_id = p_contact_id;
 
-  delete
-  from flow.sms_queue sq
-  where contact_id = p_contact_id;
+--   delete
+--   from flow.sms_queue sq
+--   where contact_id = p_contact_id;
 
   delete
   from flow.trigger_error te
@@ -383,13 +383,12 @@ BEGIN
   where project_id = any (v_project_ids);
 
   delete
-  from flow.sms_cache
-  where project_id = any (v_project_ids);
-
+  from flow.sms_thread
+  where search_external_phone = (select search_phones from flow.contact c where c.id = p_contact_id);
 
   delete
-  from flow.sms_queue
-  where project_id = any (v_project_ids);
+  from flow.sms_thread
+  where sent_to_project_id = any (v_project_ids);
 
   delete
   from flow.trigger_error

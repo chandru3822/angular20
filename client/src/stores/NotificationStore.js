@@ -89,7 +89,7 @@ export const useNotificationStore = defineStore('notification', {
 
         //only trigger a notification refresh on this topic
         if (message?.topic === 'sms_reply'){
-          debounce(this.fetchNotifications, 500)
+          debounce(this.fetchNotifications, 500)()
         }
       }
     }

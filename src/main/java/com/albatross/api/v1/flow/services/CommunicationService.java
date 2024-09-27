@@ -242,13 +242,14 @@ public class CommunicationService {
         // sent to
         smsService.queueMessage(
           messageGroupId,
+          null,
           user.getId(),
           null,
           null,
           user.getPhoneNumber(),
           template,
           mediaURLs,
-          RecipientType.USER,
+          RecipientType.USER.ordinal(),
           loggedInUserId,
           null,
           priorityLevel);
@@ -278,6 +279,28 @@ public class CommunicationService {
   }
 
   @Async
+  public void queueTextMessagesForThread(
+    String messageGroupId,
+    Long smsThreadId,
+    String template,
+    List<URI> mediaURLs,
+    Long sentByUserId,
+    Long sentBySmsTeamId) {
+    try {
+
+      smsService.queueMessageForThread(
+        messageGroupId,
+        smsThreadId,
+        template,
+        mediaURLs,
+        sentByUserId,
+        sentBySmsTeamId);
+    } catch (Exception ex) {
+      log.error("MESSAGING: Error queueing SMS ", ex);
+    }
+  }
+
+  @Async
   public void queueTextMessagesForProject(
     String messageGroupId,
     Contact contact,
@@ -291,12 +314,13 @@ public class CommunicationService {
       smsService.queueMessage(
         messageGroupId,
         null,
+        null,
         contact.getId(),
         projectId,
         toPhone,
         template,
         mediaURLs,
-        RecipientType.PROJECT,
+        RecipientType.PROJECT.ordinal(),
         sentByUserId,
         sentBySmsTeamId,
         SmsPriority.PROJECT.level);
@@ -317,13 +341,14 @@ public class CommunicationService {
     try {
       smsService.queueMessage(
         messageGroupId,
+        null,
         recipientUserId,
         null,
         null,
         toPhone,
         template,
         mediaURLs,
-        RecipientType.USER,
+        RecipientType.USER.ordinal(),
         sentByUserId,
         sentBySmsTeamId,
         SmsPriority.USER.level);
@@ -348,6 +373,19 @@ public class CommunicationService {
     }
   }
 
+  public Map<String, Object> sendTextsForThread(Long smsThreadId, User user, String message, List<URI> mediaURLs, Long smsTeamId) {
+    String groupId = UUID.randomUUID().toString();
+
+    queueTextMessagesForThread(
+      groupId,
+      smsThreadId,
+      message,
+      mediaURLs,
+      user.getId(),
+      smsTeamId);
+
+    return Map.of("messageGroup", groupId);
+  }
   public Map<String, Object> sendTextsForProject(Long projectId, Contact contact, User user, String message, List<URI> mediaURLs, Long smsTeamId) {
     String groupId = UUID.randomUUID().toString();
     String phoneNumber = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();
@@ -360,7 +398,13 @@ public class CommunicationService {
       }
       Project project = projectIn.get();
 
+
       CommunicationController.ProjectDetails projectDetails = getProjectTemplateFields(projectId, project.getTimeZone());
+
+      //this code will only ever get hit locally if you dont have an updated project details table
+      if(projectDetails == null) {
+        projectDetails = new CommunicationController.ProjectDetails();
+      }
 
       Map<String, Object> contextMap =
         Map.of(
@@ -470,7 +514,7 @@ public class CommunicationService {
       LocalDateTime timestampFunctionResult;
       ZonedDateTime zoneTimestampFunctionResult;
 
-      if (projectDetails.getLocalCloserAppointmentStartTime() != null) {
+      if (null != projectDetails && projectDetails.getLocalCloserAppointmentStartTime() != null) {
         timestampFunctionResult = LocalDateTime.parse(projectDetails.getLocalCloserAppointmentStartTime(), dateTimeFormatter);
         zoneTimestampFunctionResult =
           timestampFunctionResult
@@ -484,7 +528,7 @@ public class CommunicationService {
         projectDetails.setLocalCloserAppointmentStartDate(closerAppointmentDate);
       }
 
-      if (projectDetails.getAhjInspectionWorkStartTime() != null) {
+      if (null != projectDetails && projectDetails.getAhjInspectionWorkStartTime() != null) {
         timestampFunctionResult = LocalDateTime.parse(projectDetails.getAhjInspectionWorkStartTime(), dateTimeFormatter);
         zoneTimestampFunctionResult =
           timestampFunctionResult
@@ -498,7 +542,7 @@ public class CommunicationService {
         projectDetails.setAhjInspectionWorkStartTime(ahjInspectionTime);
       }
 
-      if (projectDetails.getInstallationStartTime() != null) {
+      if (null != projectDetails && projectDetails.getInstallationStartTime() != null) {
         LocalDateTime timestampFunctionStartTimeResult = LocalDateTime.parse(projectDetails.getInstallationStartTime(), dateTimeFormatter);
         ZonedDateTime zoneStartTimestampFunctionResult =
           timestampFunctionStartTimeResult
@@ -517,7 +561,7 @@ public class CommunicationService {
       }
 
 
-      if (projectDetails.getInstallationEndTime() != null) {
+      if (null != projectDetails && projectDetails.getInstallationEndTime() != null) {
         LocalDateTime timestampFunctionEndTimeResult =
           LocalDateTime.parse(projectDetails.getInstallationEndTime(), dateTimeFormatter);
         ZonedDateTime zoneEndTimestampFunctionResult =
@@ -533,7 +577,9 @@ public class CommunicationService {
 
     Optional<String> scopeOfWork = projectService.getInstallationScopeOfWork(projectId);
 
-    scopeOfWork.ifPresent(projectDetails::setInstallationScopeOfWork);
+    if(null != projectDetails) {
+      scopeOfWork.ifPresent(projectDetails::setInstallationScopeOfWork);
+    }
 
     return projectDetails;
   }

@@ -1,4 +1,5 @@
 <template>
+
   <CollapsableRightPanel
     :view-options="viewOptions"
     :selected-option="viewId"
@@ -7,59 +8,82 @@
     :allowSidebarCollapse="!!allowSidebarCollapse"
     @collapseClicked="$emit('collapseCallback')"
   >
-    <template v-slot:title>
+    <template v-slot:title v-if="showSmsTab && route.path.includes('conversation') && messageProperties.sources?.length > 1">
+      <div
+          v-if="!isSidebarCollapsed"
+          class="d-inline-block conversation-name-link"
+      >
+        {{ messageProperties.fullName }}
+        <v-chip class="customer-chip" style="margin-left: 4px" small>
+          <span>{{messageProperties.external ? 'Customer' : 'Internal'}}</span>
+        </v-chip>
+
+        <v-menu data-app left
+                offset-y
+                :max-height="`calc(100vh - 20px)`"
+                v-model="sourceListOpen"
+                :close-on-content-click="true">
+          <template v-slot:activator="{ on }">
+            <v-chip v-on="on" class="source-list-chip" style="margin-left: 4px" small>
+              <span>{{messageProperties.external ? 'Multiple projects' : 'Multiple users'}}</span>
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-chip>
+          </template>
+            <v-card class="square-card">
+              <div class="clickable source-list-item" v-for="(source, index) in messageProperties.sources" :key="index"
+                           @click="goToSource(source, messageProperties.external)">
+                <div class="px-5 py-4 ">
+                  <div class="source-list-title">{{source.fullName}} ({{source.id}})</div>
+                  <div class="source-list-title" v-if="source.projectStatusType">Current Stage: {{source.projectStatusType}}</div>
+                  <div class="source-list-subtitle" v-if="source.dateModified">Last Updated: {{ source.dateModified | formatDate('timestamp', 'MM/DD/YYYY')}}</div>
+                </div>
+                <v-divider class="hr-non-transparent"></v-divider>
+
+              </div>
+            </v-card>
+        </v-menu>
+
+      </div>
+    </template>
+    <template v-slot:title v-else>
       <v-tooltip
-        bottom
-        small
-        v-if="showSmsTab && route.path.includes('inboxConversation') && viewId !== 2"
+          bottom
+          small
+          v-if="showSmsTab && route.path.includes('conversation') && viewId !== 2"
       >
         <template v-slot:activator="{ on, attrs }">
           <a
-            v-if="!isSidebarCollapsed && messageProperties.projectName"
-            v-bind="attrs"
-            v-on="on"
-            class="d-inline-block clickable conversation-name-link"
-            :href="`/project/${projectId}/${defaultProjectPage}`"
-          >
-            {{ messageProperties.projectName }}
-            <v-chip class="customer-chip" style="margin-left: 4px" small>
-              <span>Customer</span>
-            </v-chip>
-          </a>
-
-          <a
-            v-else
-            v-bind="attrs"
-            v-on="on"
-            class="d-inline-block clickable conversation-name-link"
-            :href="`/user/${userId}/details`"
+              v-bind="attrs"
+              v-on="on"
+              class="d-inline-block clickable conversation-name-link"
+              @click="goToSource(messageProperties.sources[0], messageProperties.external)"
           >
             {{ messageProperties.fullName }}
-            <v-chip class="internal-chip" style="margin-left: 4px" small>
-              <span>Internal</span>
+            <v-chip :class="{'customer-chip': messageProperties.external,
+                             'internal-chip': !messageProperties.external}" style="margin-left: 4px" small>
+              <span>{{ messageProperties.external ? 'Customer' : 'Internal'}}</span>
             </v-chip>
           </a>
         </template>
-        <span v-if="messageProperties.projectName" class="albatross-body-3"
-          >Go to project</span
-        >
-        <span v-else class="albatross-body-3">Go to user</span>
+        <span class="albatross-body-3">
+          {{messageProperties.external ? 'Go to Project' : 'Go to User'}}
+        </span>
       </v-tooltip>
-      <span v-else>{{ sidebarTitle }}</span>
+      <span v-else>
+        {{ sidebarTitle }}
+      </span>
+
       <div
-        v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox')"
-        style="display: inline-flex"
+          v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox') && !route.path.includes('outbox')"
+          style="display: inline-flex"
       >
         <v-chip
-          v-if="messageProperties.projectName"
-          class="customer-chip"
-          style="margin-left: 4px"
-          small
+            :class="{'customer-chip': messageProperties.external,
+                     'internal-chip': !messageProperties.external}"
+            style="margin-left: 4px"
+            small
         >
-          <span>Customer</span>
-        </v-chip>
-        <v-chip v-else class="internal-chip" style="margin-left: 4px" small>
-          <span>Internal</span>
+          <span>{{messageProperties.external ? 'Customer' : 'Internal'}}</span>
         </v-chip>
       </div>
     </template>
@@ -172,6 +196,7 @@
         :show-assign-to-me-button="!userAssigned && userHasTeam"
         :user-id="userId"
         :project-id="projectId"
+        :sms-thread-id="smsThreadId"
         class="px-6 pb-1 mt-n1"
         @updateOwner="loadConversation"
         @joinConversation="startJoinConversation"
@@ -179,21 +204,20 @@
     </template>
     <Messaging
       v-if="showSmsTab && viewId === 0"
-      :primaryId="projectId"
-      :userIdIn="userId"
+      :sms-thread-id="smsThreadId"
+      :user-id-in="userId"
       :user-assigned="userAssigned"
       :teams-associated-to-user="teamsAssociatedToUser"
     />
 
     <ActivitySection
-        v-if="projectId || contactId || userId || orgId"
+        v-if="viewId === 1 && (projectId || contactId || userId || orgId)"
       :contact-id="contactId"
       :user-id="userId"
       :timeline-view="toggleTimelineView === 0"
       :object-type-id="objectTypeId"
       :project-id="projectId"
       :org-id="orgId"
-      v-show="viewId === 1"
       @scrollToTop="scrollToTop"
     />
     <AttachmentsFolderList
@@ -251,11 +275,12 @@ import {
   watch
 } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useRoute } from 'vue-router/composables'
+import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import { storeToRefs } from 'pinia'
 import Schedule from "@/views/flow/schedule/Schedule.vue";
 import ScheduleSingleUserView from "@/views/flow/components/ScheduleSingleUserView.vue";
+import constants from "@/helpers/constants.js";
 
 const appStore = useAppStore()
 const notificationStore = useNotificationStore()
@@ -263,12 +288,21 @@ const projectStore = useProjectStore()
 const { selectedTab } = storeToRefs(projectStore)
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
   showSmsTab: {
+    type: Boolean,
+    default: true
+  },
+  showNotesTab: {
+    type: Boolean,
+    default: true
+  },
+  showAttachmentsTab: {
     type: Boolean,
     default: true
   },
@@ -300,7 +334,7 @@ const isMobile = computed(() => {
 const viewOptions = computed(() => {
   let vo = [
     { icon: 'mdi-forum-outline', visible: props.showSmsTab },
-    { icon: 'mdi-text-long', visible: true }
+    { icon: 'mdi-text-long', visible: props.showNotesTab }
   ]
 
   //show the schedule tab if displaying data for a user; otherwise, show the docs tab
@@ -308,10 +342,11 @@ const viewOptions = computed(() => {
     vo.push({id:'schedule', icon: 'mdi-calendar', visible: true})
   }
   else {
-    vo.push({ id:'docs', icon: 'mdi-folder-outline', visible: true })
+    vo.push({ id:'docs', icon: 'mdi-folder-outline', visible: props.showAttachmentsTab })
   }
   return vo
 })
+
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const userHasTeam = ref(false)
 const userAssigned = ref(false)
@@ -325,6 +360,7 @@ const teamsMenuOpen = ref(false)
 const myOwner = ref([])
 const conversationHistory = ref([])
 const conversationIsLoading = ref(true)
+const sourceListOpen = ref(false)
 const toggleFocused = ref(isMobile.value ? 1 : 0)
 const hideEmptyFolderStatus = ref(false)
 
@@ -341,9 +377,11 @@ const projectProcessStepEventId = computed(() => {
   return parseInt(route.params.ppsEventId) || null
 })
 const viewId = computed(() => {
-  return null == selectedTab.value ||
-    (selectedTab.value === 0 && !props.showSmsTab)
-    ? 1
+  //if selected tab is null or it is sms but showSmsTab is false, set it to notes
+  return null == selectedTab.value || (selectedTab.value === 0 && !props.showSmsTab)
+    ? 1 :
+      //if selected tab is not sms, but there is an smsThreadId then set it to sms as that is the only one available here
+    (selectedTab.value !== 0 && null != smsThreadId.value && !Number.isNaN(smsThreadId.value)) ? 0
     : selectedTab.value
 })
 const currentUserId = computed(() => {
@@ -361,25 +399,26 @@ const showScheduleTab = computed(() => {
   return !!userId.value;
 }) //yes, we could just use this check for the userId value inline, but I'm putting this here in case other logic becomes necessary in the future
 const sidebarTitle = computed(() => {
+  let inbox = route.path.includes('conversation')
   switch (viewId.value) {
     case 0:
       if (userCanViewSms.value) {
         if (projectId.value) {
-          return route.path.includes('inboxConversation')
-            ? messageProperties.value.projectName
+          return inbox
+            ? messageProperties.value.fullName
             : 'Communication'
         } else {
-          return route.path.includes('inboxConversation')
+          return inbox
             ? messageProperties.value.fullName
             : 'Communication'
         }
       } else {
         if (projectId.value) {
-          return route.path.includes('inboxConversation')
-            ? messageProperties.value.projectName
+          return inbox
+            ? messageProperties.value.fullName
             : 'Communication (Read-only)'
         } else {
-          return route.path.includes('inboxConversation')
+          return inbox
             ? messageProperties.value.fullName
             : 'Communication (Read-only)'
         }
@@ -408,6 +447,10 @@ const projectId = computed(() => {
   return parseInt(route.params.projectId)
 })
 
+const smsThreadId = computed(() => {
+  return parseInt(route.params.smsThreadId)
+})
+
 onMounted(() => {
   const projectActivityParam = parseInt(route.query.activityView | '-1')
   if (projectActivityParam >= 0) {
@@ -416,7 +459,7 @@ onMounted(() => {
   handlePageLoad()
 })
 
-watch(projectId, async () => {
+watch(smsThreadId, async () => {
   if (viewId.value === 0) {
     await fetchTeamsForUser()
   }
@@ -458,6 +501,13 @@ const handlePageLoad = () => {
     handleSmsLoad()
   }
 }
+
+const goToSource = (source, external) => {
+  let path = external ? `/project/${source.id}/${defaultProjectPage.value}` : `/user/${source.id}/details`
+  let routerData = router.resolve({path})
+  window.open(routerData.href, '_blank')
+}
+
 const handleSmsLoad = () => {
   //i dont think we should show the global spinner when the side section is loading
   // appStore.loading = true
@@ -501,7 +551,12 @@ const openMenu = () => {
 }
 const joinConversation = async (selectedTeam) => {
   try {
-    if (projectId.value) {
+    if (smsThreadId.value) {
+      await postRequest(
+          `/messaging/addTeam/thread/${smsThreadId.value}`,
+          selectedTeam
+      )
+    } else if (projectId.value) {
       await postRequest(
         `/messaging/addTeam/project/${projectId.value}`,
         selectedTeam
@@ -524,6 +579,7 @@ const fetchTeamsForUser = async () => {
   if (props.showSmsTab) {
     try {
       conversationIsLoading.value = true
+      //todo - randa not hit anymore
       const { data, status } = await getRequest(
         `/smsTeam/getTeamsForUser`,
         null,
@@ -550,9 +606,20 @@ const fetchTeamsForUser = async () => {
 }
 const loadConversation = async () => {
   userAssigned.value = false
-  if (projectId.value) {
+
+  let threadUrl = ''
+  if (smsThreadId.value) {
+    threadUrl = `/messaging/thread/${smsThreadId.value}`
+  } else if (projectId.value) {
+    threadUrl = `/messaging/thread/project/${projectId.value}`
+  } else if (userId.value) {
+    threadUrl = `/messaging/thread/user/${userId.value}`
+  } else {
+    return
+  }
+
     try {
-      const { data } = await getRequest('/messaging/project/' + projectId.value)
+      const { data } = await getRequest(threadUrl)
       messageProperties.value = data
       messageProperties.value.smsTeamOwners?.forEach((team) => {
         if (teamNamesAssociatedToUser.value.includes(team.teamName)) {
@@ -568,35 +635,11 @@ const loadConversation = async () => {
       conversationIsLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error fetching project messaging details')
+      appStore.showSnack('ERROR', 'Error fetching messaging details')
 
       conversationIsLoading.value = false
     }
-  } else if (userId.value) {
-    try {
-      const { data, status } = await getRequest(
-        '/messaging/user/' + userId.value
-      )
-      messageProperties.value = data
-      messageProperties.value.smsTeamOwners?.forEach((team) => {
-        if (teamNamesAssociatedToUser.value.includes(team.teamName)) {
-          team.users?.forEach((owner) => {
-            if (owner.userId === currentUserId.value) {
-              userAssigned.value = true
-              myOwner.value.push(owner)
-            }
-          })
-        }
-      })
-      handleHidingGlobalLoader(status)
-      conversationIsLoading.value = false
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error fetching user messaging details')
 
-      conversationIsLoading.value = false
-    }
-  }
 }
 const getAvailableTeams = async () => {
   // appStore.loading = true
@@ -616,7 +659,9 @@ const getAvailableTeams = async () => {
 const openHistoryDrilldown = async () => {
   try {
     let historyUrl = ''
-    if (projectId.value) {
+    if (smsThreadId.value) {
+      historyUrl = `/messaging/history/thread/${smsThreadId.value}`
+    } else if (projectId.value) {
       historyUrl = `/messaging/history/project/${projectId.value}`
     } else {
       historyUrl = `/messaging/history/user/${userId.value}`
@@ -747,5 +792,28 @@ const openHistoryDrilldown = async () => {
 .customer-chip {
   background-color: #fecdd2 !important;
   height: 22px;
+}
+
+.source-list-chip {
+  background-color: #E0E0E0 !important;
+  height: 22px;
+}
+
+.source-list-item {
+  &:hover {
+    background-color: var(--v-primary-lighten9) !important;
+  }
+}
+
+.source-list-title {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.source-list-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 5px;
+  color: gray;
 }
 </style>

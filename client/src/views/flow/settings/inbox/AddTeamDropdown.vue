@@ -59,6 +59,7 @@ const userStore = useUserStore()
 const props = defineProps({
   smsTeamOwners:[],
   defaultTeamId: Number,
+  smsThreadId: Number,
   projectId: Number,
   ownerUserId: Number
 })
@@ -116,7 +117,10 @@ const addTeamDetails = async () => {
       id: teamToSave.value.id,
       users: ownersToSave.value
     }
-    if (props.projectId) {
+    if (props.smsThreadId) {
+      await postRequest(`/messaging/addTeam/thread/${props.smsThreadId}`, params)
+    }
+    else if (props.projectId) {
       await postRequest(`/messaging/addTeam/project/${props.projectId}`, params)
     }
     else if (props.ownerUserId) {
@@ -141,7 +145,7 @@ const addTeamDetails = async () => {
 const cancel = () => {
   teamToSave.value = ''
   ownersToSave.value = []
-  emit('closeTeamAdded')
+  emit('closeTeamAdded', true)
 }
 const isTeamAlreadyAdded = (team) => {
   let teamAlreadyAdded = false
