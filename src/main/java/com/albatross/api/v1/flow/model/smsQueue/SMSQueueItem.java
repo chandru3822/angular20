@@ -20,8 +20,6 @@ public class SMSQueueItem {
   private String messageGroup,
       messageSid,
       messageStatus,
-      fromPhone,
-      toPhone,
       errorMessage,
       projectStatus,
       sentByName;

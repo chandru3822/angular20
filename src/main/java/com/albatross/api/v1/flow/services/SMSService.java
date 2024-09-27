@@ -254,7 +254,7 @@ public class SMSService {
           messageText = "";
         }
 
-        Message message = sendMessage(sms.getRecipientType(), sms.getToPhone(), messageText, uris);
+        Message message = sendMessage(sms.getRecipientType(), sms.getSearchExternalPhone(), messageText, uris);
 
         String status = (message.getStatus() != null) ? message.getStatus().toString() : null;
         String fromPhone = (message.getFrom() != null) ? message.getFrom().toString() : null;
