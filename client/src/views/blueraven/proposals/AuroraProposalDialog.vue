@@ -30,31 +30,40 @@ const squareFootage = ref(null)
 const aiForm = ref(null)
 const requiredRules = constants.BASIC_REQUIRED_RULE
 const months = constants.MONTHS
+const monthlyUsage = ref([])
 
 const validateAIRequest = async () => {
   debugger
-  const valid = aiForm.value.validate()
+  const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0
   if (valid) {
     //all checks for how to create the design are handled by backend now
-    emit('save', aiForm.value)
+    emit('save', calcEnergyBySqFtg ? [] : monthlyUsageFlattened.value)
   }
 }
 
-
-
-const calcMethodText = computed(() => {
-  if(calcEnergyBySqFtg.value){
-    return 'Calculate Energy by Square Footage'
-  } else {
-    return 'Enter usage from utility bill into Aurora Sales Mode'
+const monthlyUsageFlattened = computed(() =>{
+  /* if we're calculating the energy by the square footage, we still need a monthly array with 12 values
+  the monthly array will currently have one value equal to the yearly divided by 12, we just need to use that
+  same value twelve times
+   */
+  if(calcEnergyBySqFtg){
+    const populated = []
+    for(let i = 0; i < 12; i++){
+      populated.push(monthlyUsage.value[0].usage)
+    }
+    return populated
   }
+  /* If we're inputing monthly values from the utility bill, we need to flatten them to an array of numbers (they're currently an object)
+    in order January-December.  Since they could have been added in any order, we need to sort them before we flatten them.
+   */
+  return monthlyUsage.value.sort((a,b) => a.monthId - b.monthId).map(mu => mu.usage)
+
 })
 
 const toggleCalcMethod = (field) => {
+  //todo: call this when we switch between the two radio buttons
   if(!calcEnergyBySqFtg.value) {
     squareFootage.value = null
-
-    //
   } else {
 
   }
@@ -68,8 +77,28 @@ const utilityCoId = computed(() => {
   //todo: recalculate usage when utility changes if calcEnergyBySqFtg
 })
 
+//Utility Bill Option
+const addMonthUsage = (usage, monthId) =>{
+debugger
+  //make sure we don't add a duplicate if they change a value or clear a value
+  const existingUsageIndex = monthlyUsage.value.indexOf(mu => mu.monthId === monthId)
+  if(existingUsageIndex >= 0){
+    monthlyUsage.value.splice(existingUsageIndex,1)
+  }
+  //if the usage is "", they cleared the field
+  if(usage !== "") {
+    monthlyUsage.value.push({
+      monthId: monthId,
+      usage: Number(usage)
+    })
+  }
+}
+
+
+// Square Footage Option
 const calculateUsage = (sqft, field) => {
   const squareFootage = Number(sqft)
+  //pass in the correct enum to the energyUsage function; this works because they all use the same names
   switch (utilityCoId.value) {
     case 232: //Xcel Energy
       field.intValue = energyUsage(squareFootage, xcelEnergyValues)
@@ -81,6 +110,9 @@ const calculateUsage = (sqft, field) => {
       field.intValue = energyUsage(squareFootage, defaultEnergyValues)
           break;
   }
+  monthlyUsage.value = [{
+    usage: Math.round(field.intValue / 12)
+  }]
 }
 
 const energyUsage = (sqft, energyEstimates) =>{
@@ -106,6 +138,11 @@ const energyUsage = (sqft, energyEstimates) =>{
       return energyEstimates.MAX20000
   }
 }
+
+/*
+The values below came from charts provided by Blue Raven
+* If we need to support another company, we will probably need to put these in the database
+*/
 const defaultEnergyValues = Object.freeze({
   MAX500:3999,
   MAX1000: 5685,
@@ -163,22 +200,15 @@ const xcelEnergyMNValues = Object.freeze({
                 >
                 </a-text-field>
                 <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
-                <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{cf.intValue / 12}} kWh</span></div>
+                <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{monthlyUsage[0]?.usage}} kWh</span></div>
               </div>
               <div v-else>
                 <v-card class="label-medium pa-0" flat>
                   <v-card-title class="pa-0">Enter usage from utility bill
-                    <a-btn size="small" icon class="ml-1"><v-icon small>mdi-plus-circle-outline</v-icon></a-btn>
                   </v-card-title>
                 <v-row class="pt-0">
-                  <v-col cols="3" class="pt-0">
-                  <a-select label="Month" :items="months" item-title="name" item-value="id"></a-select>
-<!--                    todo: object array [{monthId, usage}], add a select for each object in this array and add another object every time you press the + button
-                        filter the months available in the select to remove any months that have already been used
--->
-                  </v-col>
-                  <v-col cols="3" class="pt-0">
-                    <a-text-field label="Usage"></a-text-field>
+                  <v-col v-for="(month, index) in months" cols="3" class="pt-0">
+                    <a-text-field density="dense" type="number" :label="`${month.name}`" @change="addMonthUsage($event, month.id)"></a-text-field>
                   </v-col>
                 </v-row>
                 </v-card>

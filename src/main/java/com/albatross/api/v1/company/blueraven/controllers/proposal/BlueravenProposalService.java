@@ -238,7 +238,7 @@ public class BlueravenProposalService {
     return result.orElse(false);
   }
 
-  public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+  public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, ArrayList<Integer> monthlyInputs) {
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
