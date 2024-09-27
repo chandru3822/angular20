@@ -269,7 +269,7 @@ public class SMSService {
         params.put("id", sms.getId());
         params.put("messageSid", message.getSid());
         params.put("messageStatus", status);
-        params.put("fromPhone", fromPhone);
+        params.put("internalPhone", fromPhone);
         params.put("errorMessage", message.getErrorMessage());
         params.put("created", twilioCreated);
 
