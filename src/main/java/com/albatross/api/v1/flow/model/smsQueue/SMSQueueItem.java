@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.model.smsQueue;
 
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.services.SMSService;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,20 +16,18 @@ import java.util.List;
 public class SMSQueueItem {
 
   private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId, priorityLevel;
-  private String firstName, lastName, fullName, email, message;
+  private String firstName, lastName, fullName, email, message, searchExternalPhone, searchInternalPhone;
   private String messageGroup,
       messageSid,
       messageStatus,
-      fromPhone,
-      toPhone,
       errorMessage,
       projectStatus,
       sentByName;
   private List<String> mediaUrls;
-  private boolean messageRead;
+  private boolean messageRead, inbound, external;
   private Owner owner;
 
-  private Date created,
+  private Date dateCreated,
       updated,
       twilioCreated,
       twilioSent,

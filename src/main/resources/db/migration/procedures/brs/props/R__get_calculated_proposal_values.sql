@@ -455,7 +455,8 @@ declare
   v_system_size_cutoff                                   numeric;
   v_commission_strategy_id                               bigint;
   v_closer_gen_discount                                  numeric;
-  v_red_line_funding_amount                              numeric;
+  v_high_commission_funding_amount_per_watt              numeric;
+  v_redline_utility_adder                                numeric;
   v_desired_commission_amount                            numeric;
   v_source_id                                            bigint;
   v_adjusted_price_per_watt                              numeric;
@@ -538,10 +539,19 @@ declare
   v_denver_care_rebate_battery_amount                    numeric;
   v_denver_care_rebate_mpu_amount                        numeric;
   v_rete_incentive_applied                               boolean;
-  v_rete_depreciation_incentive_amount                             numeric;
+  v_rete_depreciation_incentive_amount                   numeric;
   v_rete_reamortized_monthly_payment_all_credits_to_loan numeric;
-v_rete_adder numeric;
-  BEGIN
+  v_rete_adder                                           numeric;
+  v_base_price_per_watt                                  numeric;
+  v_minimum_price_per_watt numeric;
+v_closer_gen_source_ids bigint[];
+BEGIN
+
+  select (select string_to_array(value, ',')
+          from flow.company_configuration_value
+          where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
+  into v_closer_gen_source_ids;
+
   select proposal_id,
          version_id,
          project_process_step_id,
@@ -610,7 +620,8 @@ v_rete_adder numeric;
          panel_model,
          qualifies_for_swr,
          rete_incentive_applied,
-         rete_depreciation_incentive_amount
+         rete_depreciation_incentive_amount,
+         base_price_per_watt
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -679,7 +690,8 @@ v_rete_adder numeric;
     v_panel_model,
     v_proposal_qualifies_for_swr,
     v_rete_incentive_applied,
-    v_rete_depreciation_incentive_amount
+    v_rete_depreciation_incentive_amount,
+    v_base_price_per_watt
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -853,14 +865,15 @@ v_rete_adder numeric;
          minimum_funding_amount_per_watt,
          current_estimated_cost_per_kwh,
          utility_cost_escalator,
-         red_line_funding_amount,
+         high_commission_funding_amount_per_watt,
          closer_gen_discount,
          virtual_sales_base_price,
-         max_base_price_per_watt
+         max_base_price_per_watt,
+         redline_utility_adder
   into v_instant_use_assumption,v_net_metring_rate,v_production_factor_east_west,
     v_production_factor_south,v_maximum_funding_amount_per_watt,v_minimum_funding_amount_per_watt,
-    v_current_estimated_cost_per_kwh,v_utility_cost_escalator,v_red_line_funding_amount,v_closer_gen_discount,
-    v_virtual_sales_base_price,v_max_base_price_per_watt
+    v_current_estimated_cost_per_kwh,v_utility_cost_escalator,v_high_commission_funding_amount_per_watt,v_closer_gen_discount,
+    v_virtual_sales_base_price,v_max_base_price_per_watt,v_redline_utility_adder
   from brs.get_proposal_pricing(v_version_id, v_utility_company_id);
 
   select kwh_rate_discount,
@@ -1047,8 +1060,24 @@ v_rete_adder numeric;
                              else 0::numeric
                              end;
   --raise notice 'v_max_price_adjustment = %',v_max_price_adjustment;
+  if v_commission_strategy_id = 24871 then
+    if v_source_id is null or not v_source_id = any (v_closer_gen_source_ids) then
+      raise exception 'The Redline strategy can only be used on self-gen projects';
+    else
+      v_minimum_price_per_watt = (select * from brs.get_minimum_price_per_watt(v_proposal_id));
+      if v_minimum_price_per_watt is null then
+        raise exception 'The Redline funding amount can not be found, please contact Rep Pay';
+      end if;
+    end if;
+    if v_base_price_per_watt is null or v_base_price_per_watt < 0 or v_base_price_per_watt < v_minimum_price_per_watt then
+     -- raise exception 'Price Per Watt is below minimum allowed value = %',v_minimum_price_per_watt;
 
-  if v_commission_strategy_id = 24443 and v_dealer is not null then
+    else
+      v_adjusted_price_per_watt = v_base_price_per_watt;
+      v_desired_commission_amount = v_base_price_per_watt - v_minimum_price_per_watt;
+      --the value from proposal_pricing or user or proposal pricing that may trump user + override amount < v_base_price_per_watt
+    end if;
+  elsif v_commission_strategy_id = 24443 and v_dealer is not null then
     v_adjusted_price_per_watt = coalesce(v_dealer_redline_price, 0) + coalesce(v_dealer_markup, 0);
   elsif v_commission_strategy_id = 24102 then
     v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
@@ -1067,16 +1096,17 @@ v_rete_adder numeric;
           case when  v_commission_strategy_id = 24102 and v_dealer = 2291 and v_version_id > 137 then
                  coalesce(v_dealer_redline_price, 0)
           else
-            case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true and v_proposal_qualifies_for_swr is not null and v_proposal_qualifies_for_swr is true then coalesce(v_red_line_funding_amount, 0) - coalesce(v_redline_funding_amount_discount, 0) else coalesce(v_red_line_funding_amount, 0) end end + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
+            case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true and v_proposal_qualifies_for_swr is not null and v_proposal_qualifies_for_swr is true then
+              coalesce(v_high_commission_funding_amount_per_watt, 0) - coalesce(v_redline_funding_amount_discount, 0) else coalesce(v_high_commission_funding_amount_per_watt, 0) end end + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
     --raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
     --raise notice 'v_redline_markup = %',v_redline_markup;
     --raise notice 'v_lead_source_discount = %',v_lead_source_discount;
     --raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
-    --raise notice 'v_red_line_funding_amount = %',v_red_line_funding_amount;
+    --raise notice 'v_high_commission_funding_amount_per_watt = %',v_high_commission_funding_amount_per_watt;
   elsif v_virtual_sales_price_adjustment is not null and v_virtual_sales_base_price is not null and
         v_commission_strategy_id = 24103 then
     v_adjusted_price_per_watt  = v_virtual_sales_base_price + case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true and v_proposal_qualifies_for_swr is not null and v_proposal_qualifies_for_swr is true then (v_virtual_sales_price_adjustment - coalesce(v_virtual_sales_price_amount_discount,0)) else v_virtual_sales_price_adjustment end;
-  elsif v_commission_strategy_id is not null and v_commission_strategy_id not in (24103,24102,24443)  then
+  elsif v_commission_strategy_id is not null and v_commission_strategy_id not in (24103,24102,24443,24871)  then
     v_adjusted_price_per_watt =
       case when v_qualifies_for_swr is not null and v_qualifies_for_swr is true and v_proposal_qualifies_for_swr is not null and v_proposal_qualifies_for_swr is true then (v_maximum_funding_amount_per_watt - coalesce(v_maximum_funding_amount_discount,0)) else v_maximum_funding_amount_per_watt end +
         v_max_price_adjustment;
@@ -1089,7 +1119,7 @@ v_rete_adder numeric;
 
   if coalesce(v_max_base_price_per_watt,0) > 0 and v_adjusted_price_per_watt > v_max_base_price_per_watt and
      v_commission_strategy_id = 24102  then
-    raise exception 'The desired commission is too high.  Please enter a value at or below % ',(v_max_base_price_per_watt-v_red_line_funding_amount)*.68*1000;
+    raise exception 'The desired commission is too high.  Please enter a value at or below % ',(v_max_base_price_per_watt-v_high_commission_funding_amount_per_watt)*.68*1000;
   end if;
 
   v_initial_system_cost = v_system_size::numeric * 1000::numeric * v_adjusted_price_per_watt::numeric;
@@ -1170,6 +1200,7 @@ v_rete_adder numeric;
                                                  coalesce(v_equipment_inverter_adder, 0) +
                                                  coalesce(v_zone_adder, 0) +
                                                  coalesce(v_misc_adders, 0) +
+                                                 coalesce(v_redline_utility_adder, 0) +
                                                  coalesce(v_small_system_size_adder_amount, 0) +
                                                  coalesce(v_smart_thermostat_adder, 0) +
                                                  coalesce(v_led_light_bulbs_adder, 0)
@@ -1257,6 +1288,7 @@ v_rete_adder numeric;
                                                               coalesce(v_equipment_inverter_adder, 0) +
                                                               coalesce(v_zone_adder, 0) +
                                                               coalesce(v_misc_adders, 0) +
+                                                              coalesce(v_redline_utility_adder, 0) +
                                                               coalesce(v_promotion_cost, 0) +
                                                               coalesce(v_small_system_size_adder_amount, 0)
                                                           else 0::numeric end +
@@ -1281,6 +1313,7 @@ v_rete_adder numeric;
                                              coalesce(v_smart_thermostat_adder, 0) +
                                              coalesce(v_led_light_bulbs_adder, 0) +
                                              coalesce(v_misc_adders, 0) +
+                                             coalesce(v_redline_utility_adder, 0) +
                                              coalesce(v_small_system_size_adder_amount, 0) +
                                              coalesce(v_promotion_cost, 0) +
                                              coalesce(v_zone_adder, 0)
@@ -1297,6 +1330,7 @@ v_rete_adder numeric;
                                             coalesce(v_unapproved_zip_code_adder, 0) +
                                             coalesce(v_smart_thermostat_adder, 0) +
                                             coalesce(v_led_light_bulbs_adder, 0) +
+                                            coalesce(v_redline_utility_adder, 0) +
                                             coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) +
                                             coalesce(v_promotion_cost, 0) +
                                             coalesce(v_zone_adder, 0)
@@ -2360,7 +2394,7 @@ v_rete_adder numeric;
               when v_dealer is null then
                   coalesce(v_unapproved_zip_code_adder, 0) +
                   coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-                  coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) +
+                  coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) + coalesce(v_redline_utility_adder, 0) +
                   coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0)
               else 0::numeric end +
             v_total_ancillary_costs::numeric +
@@ -2619,7 +2653,7 @@ v_rete_adder numeric;
 --                                                                    v_source_id ,
 --                                                                    v_system_size ,
 --                                                                    v_unapproved_zip_code_adder ,
---                                                                    v_red_line_funding_amount ,
+--                                                                    v_high_commission_funding_amount_per_watt ,
 --                                                                    v_closer_gen_discount ,
 --                                                                    v_equipment_panel_adder ,
 --                                                                    v_equipment_inverter_adder ,
@@ -2648,7 +2682,7 @@ v_rete_adder numeric;
            v_battery_manufacturers_warranty,
            v_battery_workmanship_warranty,
            v_virtual_sales_price_adjustment,
-           v_red_line_funding_amount,
+           v_high_commission_funding_amount_per_watt,
            v_closer_gen_discount,
            v_small_system_size_adder_amount,
            to_char(v_denver_care_rebate_amount, '$FM9,999,999')::varchar,

@@ -18,7 +18,7 @@ jobs:
           cancel-in-progress: true
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
 #
             -   name: Configure AWS credentials
                 uses: aws-actions/configure-aws-credentials@v2
@@ -74,7 +74,7 @@ jobs:
       - uses: actions/setup-node@v4
         name: Setup Node
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
           always-auth: true

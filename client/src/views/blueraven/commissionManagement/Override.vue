@@ -84,7 +84,7 @@
           </MultiOptionDialog>
           <a-btn
               color="primary"
-              v-if="overrideId && override && userCanAdd && !override.orgId"
+              v-if="overrideId && override && userCanAdd"
               @click="showCloneDialog=true"
               text="Clone"
           ></a-btn>

@@ -2,98 +2,103 @@
   <div id="designer">
     <div class="toolbar">
       <div id="props-designer-toolbar-left">
-      <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <a-btn
-            v-bind="attrs"
-            :activation-handler="on"
-            @click="save"
-            :disabled="!isSaveable"
-            variant="text"
-            icon
-            color="unset"
-            :prepend-icon="isSaveable ? 'cloud' : 'mdi-cloud-outline'"
-          ></a-btn>
-        </template>
-        <span>Save</span>
-      </v-tooltip>
-      <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <a-btn
-            v-bind="attrs"
-            :activation-handler="on"
-            @click="store.undo"
-            :disabled="!store.canUndo"
-            variant="text"
-            icon
-            color="unset"
-            prepend-icon="undo"
-          ></a-btn>
-        </template>
-        <span>Undo</span>
-      </v-tooltip>
-      <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <a-btn
-            v-bind="attrs"
-            :activation-handler="on"
-            @click="store.redo"
-            :disabled="!store.canRedo"
-            variant="text"
-            icon
-            color="unset"
-            prepend-icon="redo"
-          ></a-btn>
-        </template>
-        <span>Redo</span>
-      </v-tooltip>
-      <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <a-btn
-            v-bind="attrs"
-            :activation-handler="on"
-            @click="store.reset"
-            :disabled="!(store.canRedo || store.canUndo)"
-            icon
-            variant="text"
-            color="unset"
-            prepend-icon="mdi-nuke"
-          ></a-btn>
-        </template>
-        <span>Reset</span>
-      </v-tooltip>
-      <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <a-btn
-            v-bind="attrs"
-            :activation-handler="on"
-            @click="downloadPreview"
-            :disabled="isSaveable"
-            icon
-            variant="text"
-            color="unset"
-            prepend-icon="mdi-file-pdf-box"
-          ></a-btn>
-        </template>
-        <span>Generate PDF Preview</span>
-      </v-tooltip>
+        <v-tooltip bottom>
+          <template #activator="{ on, attrs }">
+            <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="save"
+              :disabled="!isSaveable"
+              variant="text"
+              icon
+              color="unset"
+              :prepend-icon="isSaveable ? 'cloud' : 'mdi-cloud-outline'"
+            ></a-btn>
+          </template>
+          <span>Save</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template #activator="{ on, attrs }">
+            <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="store.undo"
+              :disabled="!store.canUndo"
+              variant="text"
+              icon
+              color="unset"
+              prepend-icon="undo"
+            ></a-btn>
+          </template>
+          <span>Undo</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template #activator="{ on, attrs }">
+            <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="store.redo"
+              :disabled="!store.canRedo"
+              variant="text"
+              icon
+              color="unset"
+              prepend-icon="redo"
+            ></a-btn>
+          </template>
+          <span>Redo</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template #activator="{ on, attrs }">
+            <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="store.reset"
+              :disabled="!(store.canRedo || store.canUndo)"
+              icon
+              variant="text"
+              color="unset"
+              prepend-icon="mdi-nuke"
+            ></a-btn>
+          </template>
+          <span>Reset</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template #activator="{ on, attrs }">
+            <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="downloadPreview"
+              :disabled="isSaveable"
+              icon
+              variant="text"
+              color="unset"
+              prepend-icon="mdi-file-pdf-box"
+            ></a-btn>
+          </template>
+          <span>Generate PDF Preview</span>
+        </v-tooltip>
       </div>
       <div id="props-designer-toolbar-right">
         <v-tooltip bottom>
           <template #activator="{ on, attrs }">
             <a-btn
-                v-bind="attrs"
-                :activation-handler="on"
-                @click="[ addBlock = !addBlock, tabs = addBlock ? 0 : tabs, selectNode(undefined)]"
-                variant="text"
-                icon
-                color="primary"
-                :prepend-icon="addBlock ? 'close' : 'mdi-toy-brick-plus'"
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="
+                ;[
+                  (addBlock = !addBlock),
+                  (tabs = addBlock ? 0 : tabs),
+                  selectNode(undefined)
+                ]
+              "
+              variant="text"
+              icon
+              color="primary"
+              :prepend-icon="addBlock ? 'close' : 'mdi-toy-brick-plus'"
             ></a-btn>
           </template>
           <span>Add Block</span>
         </v-tooltip>
-
       </div>
     </div>
 
@@ -121,7 +126,11 @@
         <v-tabs-items v-model="tabs" class="tabs-scrollable">
           <v-tab-item>
             <div v-if="addBlock">
-              <AddComponentWidget :existing-blocks="template" @cancel="addBlock = false" @input="updateAddValue"></AddComponentWidget>
+              <AddComponentWidget
+                :existing-blocks="template"
+                @cancel="addBlock = false"
+                @input="updateAddValue"
+              ></AddComponentWidget>
             </div>
             <v-card v-else-if="selected">
               <div class="sticky-header">
@@ -141,80 +150,95 @@
                     </template>
                     <span>Focus</span>
                   </v-tooltip>
-                  <span v-if="!editBlockName">{{selected?.displayName}}</span>
-                  <a-text-field v-else
-                                type="string"
-                                color="primary"
-                                v-model="editedBlockName"
-                                label="Block Name"
+                  <span v-if="!editBlockName">{{ selected?.displayName }}</span>
+                  <a-text-field
+                    v-else
+                    type="string"
+                    color="primary"
+                    v-model="editedBlockName"
+                    label="Block Name"
                   ></a-text-field>
                   <span v-if="selected.modified">*</span>
-                  <v-spacer/>
-                  <v-tooltip left  v-if="!editBlockName">
+                  <v-spacer />
+                  <v-tooltip left v-if="!editBlockName">
                     <template #activator="{ on, attrs }">
                       <a-btn
-                          v-bind="attrs"
-                          :activation-handler="on"
-                          @click="editBlockName = true"
-                          :disabled="!selected"
-                      icon
-                      variant="text"
-                      prepend-icon="edit"/>
+                        v-bind="attrs"
+                        :activation-handler="on"
+                        @click="editBlockName = true"
+                        :disabled="!selected"
+                        icon
+                        variant="text"
+                        prepend-icon="edit"
+                      />
                     </template>
                     Edit Block Name
                   </v-tooltip>
                   <a-btn
-                      v-if="editBlockName"
-                      v-bind="attrs"
-                      :activation-handler="on"
-                      @click="updateName(editedBlockName)"
-                      :disabled="!selected"
-                      icon
-                      variant="text"
-                      prepend-icon="check"/>
+                    v-if="editBlockName"
+                    @click="updateName(editedBlockName)"
+                    :disabled="!selected"
+                    icon
+                    variant="text"
+                    prepend-icon="check"
+                  />
                   <a-btn
-                      v-if="editBlockName"
-                      v-bind="attrs"
-                      :activation-handler="on"
-                      @click="editBlockName = false"
-                      :disabled="!selected"
-                      icon
-                      variant="text"
-                      prepend-icon="close"/>
-                  <v-tooltip top  v-if="!editBlockName">
+                    v-if="editBlockName"
+                    @click="editBlockName = false"
+                    :disabled="!selected"
+                    icon
+                    variant="text"
+                    prepend-icon="close"
+                  />
+                  <v-tooltip top v-if="!editBlockName">
                     <template #activator="{ on, attrs }">
                       <a-btn
-                          v-bind="attrs"
-                          :activation-handler="on"
-                          @click="showDeleteDialog = true"
-                          :disabled="!selected"
-                          icon
-                          variant="text"
-                          prepend-icon="delete"/>
+                        v-bind="attrs"
+                        :activation-handler="on"
+                        @click="showDeleteDialog = true"
+                        :disabled="!selected"
+                        icon
+                        variant="text"
+                        prepend-icon="delete"
+                      />
                     </template>
                     Delete Block
                   </v-tooltip>
                 </v-card-title>
-                <v-card-subtitle v-if="parent" class="px-6 pb-0 d-flex align-baseline">
-                  <span class="grey--text text--darken-1 label-small pr-1">Parent: </span>
+                <v-card-subtitle
+                  v-if="parent"
+                  class="px-6 pb-0 d-flex align-baseline"
+                >
+                  <span class="grey--text text--darken-1 label-small pr-1">
+                    Parent:
+                  </span>
                   <v-tooltip right>
                     <template #activator="{ on, attrs }">
-                  <span
-                  class="clickable primary--text d-flex"
-                  @click="selectNode(parent.id)"
-                  v-bind="attrs"
-                  v-on="on"
-                  >{{ parent?.displayName }}
-                </span>
+                      <span
+                        class="clickable primary--text d-flex"
+                        @click="selectNode(parent.id)"
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        {{ parent?.displayName }}
+                      </span>
                     </template>
                     <span>Go to Parent</span>
                   </v-tooltip>
                 </v-card-subtitle>
               </div>
               <div class="px-4">
-                <v-card v-if="selected && selected.blockType === 'PageBlock'" flat class="text-left px-3" color="transparent">
+                <v-card
+                  v-if="selected && selected.blockType === 'PageBlock'"
+                  flat
+                  class="text-left px-3"
+                  color="transparent"
+                >
                   <v-card-title class="px-0 pt-0">Location</v-card-title>
-                  <LocationSelectorWidget attr="pageLocation" :existing-blocks="pages"/>
+                  <LocationSelectorWidget
+                    attr="pageLocation"
+                    :existing-blocks="pages"
+                  />
                 </v-card>
                 <image-panel
                   v-if="selected && selected.blockType === 'ImageBlock'"
@@ -240,26 +264,49 @@
             </v-card>
           </v-tab-item>
           <v-tab-item>
-            <div class="d-flex justify-space-between align-center px-4" >
-            <v-chip label outlined color="primary--text" class="mt-4 mb-0 sort-chip align-self-center albatross-body-2 flex-shrink-0"
-                    @click="[sortbyId = !sortbyId, expandAll = true]">
-              {{ sortbyId ? 'Sort by doc order' :'Sort by Id'}}
-            </v-chip>
-              <a-btn variant="text"
-                     color="primary"
-                     @click="expandAll = !expandAll"
-              >{{expandAll ? 'Collapse All' : 'Expand All'}}</a-btn>
+            <div class="d-flex justify-space-between align-center px-4">
+              <v-chip
+                label
+                outlined
+                color="primary--text"
+                class="mt-4 mb-0 sort-chip align-self-center albatross-body-2 flex-shrink-0"
+                @click=";[(sortbyId = !sortbyId), (expandAll = true)]"
+              >
+                {{ sortbyId ? 'Sort by doc order' : 'Sort by Id' }}
+              </v-chip>
+              <a-btn
+                variant="text"
+                color="primary"
+                @click="expandAll = !expandAll"
+              >
+                {{ expandAll ? 'Collapse All' : 'Expand All' }}
+              </a-btn>
             </div>
             <v-card class="mx-auto pa-4" flat>
-              <nested-tree2 :children="pages" :sort-by-id="sortbyId" :expandAll="expandAll" @select="focusNode" id="props-designer-tree"/>
+              <nested-tree
+                :children="pages"
+                :sort-by-id="sortbyId"
+                :expandAll="expandAll"
+                @select="focusNode"
+                id="props-designer-tree"
+              />
             </v-card>
           </v-tab-item>
         </v-tabs-items>
       </div>
     </div>
-    <ConfirmationDialog :open-dialog="showDeleteDialog" @cancel="showDeleteDialog = false" @confirm="deleteBlock" @close-dialog="showDeleteDialog = false">
+    <ConfirmationDialog
+      :open-dialog="showDeleteDialog"
+      @cancel="showDeleteDialog = false"
+      @confirm="deleteBlock"
+      @close-dialog="showDeleteDialog = false"
+    >
       <span class="bold error-text">WARNING: This cannot be undone.</span>
-      <div>Are you sure you want to delete this block: <b>{{selected?.displayName}}</b>? All children will also be deleted.</div>
+      <div>
+        Are you sure you want to delete this block:
+        <b>{{ selected?.displayName }}</b>
+        ? All children will also be deleted.
+      </div>
     </ConfirmationDialog>
   </div>
 </template>
@@ -269,7 +316,6 @@ import Viewport from './viewport/Viewport'
 import StylePanel from './panel/Style'
 import ImagePanel from './panel/Image'
 import NestedTree from './panel/NestedTree'
-import NestedTree2 from "./panel/NestedTree2.vue";
 import TextMenuWidget from './panel/TextMenuWidget'
 import AdvancedPanel from './panel/Advanced.vue'
 import ProposalTemplate from './ProposalTemplate'
@@ -281,13 +327,11 @@ import { computed, ref, onMounted, watch, onBeforeUnmount, provide } from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from './store.js'
 import { storeToRefs } from 'pinia'
-import AddComponentWidget from "@/views/blueraven/settings/proposalDesigner/panel/AddComponentWidget.vue";
-import {sort} from "rrule/dist/esm/dateutil.js";
-import LocationSelectorWidget from "@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import AddComponentWidget from '@/views/blueraven/settings/proposalDesigner/panel/AddComponentWidget.vue'
+import LocationSelectorWidget from '@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 
 const appStore = useAppStore()
-
 const store = useProposalStore()
 const { selectedId, template } = storeToRefs(store)
 
@@ -353,7 +397,9 @@ provide('editor', editor)
 
 const selected = computed(() => store.selectedBlock)
 const parent = computed(() => store.findById(store.selectedBlock?.parentId))
-const pages = computed(() => template.value?.filter((x) => x.parentId === undefined), {cache: false})
+const pages = computed(() =>
+  template.value?.filter((x) => x.parentId === undefined)
+)
 const isSaveable = computed(() => store.modifiedBlocks?.length > 0)
 const tags = computed(() => store.tags?.map((t) => t.tagName))
 
@@ -364,17 +410,9 @@ const updateValue = (value) => {
   })
 }
 
-watch(template, ()=>{
-  console.log(template.value.length)
-},{deep:true})
-
-const updateAddValue = ({newBlock, blockLocation}) => {
-  store.addBlock(
-      { ...newBlock},
-      blockLocation
-  )
+const updateAddValue = ({ newBlock, blockLocation }) => {
+  store.addBlock({ ...newBlock }, blockLocation)
   addBlock.value = false
-
 }
 const updateName = (name) => {
   store.setName({
@@ -441,10 +479,6 @@ const deleteBlock = async () => {
   appStore.loading = false
 }
 
-const showAddBlock = () => {
-  addBlock.value = true
-}
-
 const selectNode = (id) => {
   store.setSelected(id)
 }
@@ -456,6 +490,7 @@ const focusViewport = () => {
 
   focusNode(selected.value.id)
 }
+
 const focusNode = (id) => {
   const vp = viewportEl.value.$el
   const nodes = vp.querySelectorAll(`[data-id="${id}"]`)

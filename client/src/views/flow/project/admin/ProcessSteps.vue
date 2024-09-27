@@ -1,21 +1,18 @@
 <template>
   <div>
-
     <v-row v-if="userIsAdmin" class="admin-body">
-
       <v-col cols="12" class="px-6 pt-6 headline-small">
-
         <v-toolbar flat class="project-header">
           <v-toolbar-title>Assigned Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AddProcessStep
-                v-if="processId"
-                :admin="true"
-                title="Add Process Step"
-                :project-id="projectId"
-                :process-id="processId"
-                @step-added="getProjectProcessSteps"
+              v-if="processId"
+              :admin="true"
+              title="Add Process Step"
+              :project-id="projectId"
+              :process-id="processId"
+              @step-added="getProjectProcessSteps"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -23,19 +20,18 @@
 
       <v-col cols="12" class="px-6">
         <v-data-table
-            class="elevation-1 table-striped"
-            :headers="displayedHeaders"
-            :items="projectProcessSteps"
-            fixed-header
-            multi-sort
-            dense
-            :sort-by="['processStepName', 'lastUpdated']"
-            :sort-desc="[false, true]"
-            hide-default-footer
-            :loading="isProjectProcessStepsLoading"
-            disable-pagination
+          class="elevation-1 table-striped"
+          :headers="displayedHeaders"
+          :items="projectProcessSteps"
+          fixed-header
+          multi-sort
+          dense
+          :sort-by="['processStepName', 'lastUpdated']"
+          :sort-desc="[false, true]"
+          hide-default-footer
+          :loading="isProjectProcessStepsLoading"
+          disable-pagination
         >
-
           <template #no-data>
             <span class="default-text-color">No available process steps</span>
           </template>
@@ -44,49 +40,79 @@
             <span class="default-text-color">No available process steps</span>
           </template>
 
-          <template #item.projectProcessStepId="{item: projectProcessStep}" class="text-left">
+          <template
+            #item.projectProcessStepId="{ item: projectProcessStep }"
+            class="text-left"
+          >
             <router-link
-                :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}`">
+              :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}`"
+            >
               {{ projectProcessStep.projectProcessStepId }}
             </router-link>
           </template>
-          <template #item.processStepName="{item: projectProcessStep}" class="text-left">{{ projectProcessStep.processStepName }}</template>
-          <template #item.owner.fullName="{item: projectProcessStep}" class="text-left">{{ getOwnerName(projectProcessStep) }}</template>
-          <template #item.lastUpdated="{item: projectProcessStep}" class="text-left">{{ projectProcessStep.lastUpdated }}</template>
-          <template #item.processStepStatusType="{item: projectProcessStep}" class="text-left">
+          <template
+            #item.processStepName="{ item: projectProcessStep }"
+            class="text-left"
+            >{{ projectProcessStep.processStepName }}</template
+          >
+          <template
+            #item.owner.fullName="{ item: projectProcessStep }"
+            class="text-left"
+            >{{ getOwnerName(projectProcessStep) }}</template
+          >
+          <template
+            #item.lastUpdated="{ item: projectProcessStep }"
+            class="text-left"
+            >{{ projectProcessStep.lastUpdated }}</template
+          >
+          <template
+            #item.processStepStatusType="{ item: projectProcessStep }"
+            class="text-left"
+          >
             <div>
               {{ projectProcessStep.processStepStatusType }}
               <a-btn
-                  variant="text"
-                  color="primary"
-                  @click="[showStatusDialog = true, showMainDialog = false, alteringPrimaryFlag = false, selectedPps = projectProcessStep, getAvailableStatuses(projectProcessStep)]"
-                  prepend-icon="edit"
+                variant="text"
+                color="primary"
+                @click="
+                  ;[
+                    (showStatusDialog = true),
+                    (showMainDialog = false),
+                    (alteringPrimaryFlag = false),
+                    (selectedPps = projectProcessStep),
+                    getAvailableStatuses(projectProcessStep)
+                  ]
+                "
+                prepend-icon="edit"
               ></a-btn>
             </div>
           </template>
-          <template #item.main="{item: projectProcessStep}" class="text-left">
+          <template #item.main="{ item: projectProcessStep }" class="text-left">
             <v-dialog
-                v-model="projectProcessStep.changeActiveConfirm"
-                width="500">
+              v-model="projectProcessStep.changeActiveConfirm"
+              width="500"
+            >
               <template #activator="{ on }">
                 <v-checkbox
-                    v-on="on"
-                    v-model="projectProcessStep.main"
-                    :disabled="projectProcessStep.main"
+                  v-on="on"
+                  v-model="projectProcessStep.main"
+                  :disabled="projectProcessStep.main"
                 />
               </template>
               <v-card>
-                <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title>
+                <v-card-title class="text-h5 grey lighten-2" primary-title>
                   Confirm
                 </v-card-title>
 
                 <v-card-text class="pt-4">
-                  Modifying the primary flag will run any automatic actions that have not yet been run where the
-                  criteria is met using values from the new active process step.
-                  Are you sure you want to set <strong>{{ projectProcessStep.processStepName }} -
-                  {{ projectProcessStep.projectProcessStepId }}</strong> to Primary?
+                  Modifying the primary flag will run any automatic actions that
+                  have not yet been run where the criteria is met using values
+                  from the new active process step. Are you sure you want to set
+                  <strong
+                    >{{ projectProcessStep.processStepName }} -
+                    {{ projectProcessStep.projectProcessStepId }}</strong
+                  >
+                  to Primary?
                 </v-card-text>
 
                 <v-divider></v-divider>
@@ -94,85 +120,127 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <a-btn
-                      @click="[projectProcessStep.changeActiveConfirm = false, alteringPrimaryFlag = false, projectProcessStep.main = false]"
-                      color="unset"
-                      text="No"
+                    @click="
+                      ;[
+                        (projectProcessStep.changeActiveConfirm = false),
+                        (alteringPrimaryFlag = false),
+                        (projectProcessStep.main = false)
+                      ]
+                    "
+                    color="unset"
+                    text="No"
                   ></a-btn>
                   <a-btn
-                      color="primary"
-                      variant="text"
-                      @click="[showSelectedPps = false, showMainDialog = true, alteringPrimaryFlag = true, projectProcessStep.changeActiveConfirm = false, showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(selectedPps)]"
-                      text="Yes"
+                    color="primary"
+                    variant="text"
+                    @click="
+                      ;[
+                        (showSelectedPps = false),
+                        (showMainDialog = true),
+                        (alteringPrimaryFlag = true),
+                        (projectProcessStep.changeActiveConfirm = false),
+                        (showStatusDialog = true),
+                        (selectedPps = projectProcessStep),
+                        getAvailableStatuses(selectedPps)
+                      ]
+                    "
+                    text="Yes"
                   ></a-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
           </template>
-          <template #item.historyHere="{item: projectProcessStep}" class="text-left">
+          <template
+            #item.historyHere="{ item: projectProcessStep }"
+            class="text-left"
+          >
             <a-btn
-                size="small"
-                variant="text"
-                color="primary"
-                @click="getPpsHistory(projectProcessStep)"
-                prepend-icon="mdi-chart-timeline"
+              size="small"
+              variant="text"
+              color="primary"
+              @click="getPpsHistory(projectProcessStep)"
+              prepend-icon="mdi-chart-timeline"
             ></a-btn>
           </template>
-
         </v-data-table>
-        <ConfirmationDialog :open-dialog="showPpsHistory" hide-confirm :width="1000" @close-dialog="[showPpsHistory = false, selectedPpsHistory = []]">
-          <template v-slot:title><span class="pb-1">Project Process Step History</span></template>
-          <PpsHistoryTable :selected-pps-history="selectedPpsHistory"></PpsHistoryTable>
+        <ConfirmationDialog
+          :open-dialog="showPpsHistory"
+          hide-confirm
+          :width="1000"
+          @close-dialog=";[(showPpsHistory = false), (selectedPpsHistory = [])]"
+        >
+          <template v-slot:title
+            ><span class="pb-1">Project Process Step History</span></template
+          >
+          <PpsHistoryTable
+            :selected-pps-history="selectedPpsHistory"
+          ></PpsHistoryTable>
           <template v-slot:no>Close</template>
         </ConfirmationDialog>
       </v-col>
     </v-row>
 
     <ProjectProcessStepStatus
-        v-if="selectedPps && !alteringPrimaryFlag"
-        :show-dialog="showStatusDialog"
-        :project-id="projectId"
-        :project-process-step="selectedPps"
-        :available-process-step-statuses="availableProcessStepStatuses"
-        @updateStatus="updateStatus"
-        @dialogClosed="showStatusDialog = false"
+      v-if="selectedPps && !alteringPrimaryFlag"
+      :show-dialog="showStatusDialog"
+      :project-id="projectId"
+      :project-process-step="selectedPps"
+      :available-process-step-statuses="availableProcessStepStatuses"
+      @updateStatus="updateStatus"
+      @dialogClosed="showStatusDialog = false"
     />
 
     <ProjectProcessStepStatus
-        v-if="showSelectedPps && alteringPrimaryFlag"
-        :show-dialog="showMainDialog"
-        :project-id="projectId"
-        :project-process-step="selectedPps"
-        :available-process-step-statuses="availableProcessStepStatuses"
-        :limit-to-active="false"
-        :limit-to-non-cancelled="true"
-        :new-status-optional="selectedPps.selectedProcessStepStatusType.processStepStatusTypeId !== 3"
-        @updateStatus="updateMain"
-        @dialogClosed="[showMainDialog = false, selectedPps.main = false, selectedPps.newStatusToUse = {NEW_STATUS_TO_USE}]"
+      v-if="showSelectedPps && alteringPrimaryFlag"
+      :show-dialog="showMainDialog"
+      :project-id="projectId"
+      :project-process-step="selectedPps"
+      :available-process-step-statuses="availableProcessStepStatuses"
+      :limit-to-active="false"
+      :limit-to-non-cancelled="true"
+      :new-status-optional="
+        selectedPps.selectedProcessStepStatusType.processStepStatusTypeId !== 3
+      "
+      @updateStatus="updateMain"
+      @dialogClosed="
+        ;[
+          (showMainDialog = false),
+          (selectedPps.main = false),
+          (selectedPps.newStatusToUse = { NEW_STATUS_TO_USE })
+        ]
+      "
     />
   </div>
 </template>
 
 <script setup>
-
 import {
   handleHidingGlobalLoader,
   getRequest,
   getRequestWithParams,
   postRequest,
   deleteRequest,
-
   logError
 } from '@/helpers/helpers'
-import {getCompanyAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
-import {v4 as uuid} from 'uuid'
+import {
+  getCompanyAssignedToProcessStep,
+  getCancelledCompanyStatusTypes
+} from '@/services/processStepStatusTypeService'
 import AddProcessStep from '@/views/flow/components/AddProcessStep.vue'
 import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus.vue'
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 
-import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import {
+  getCurrentInstance,
+  computed,
+  toRefs,
+  ref,
+  onMounted,
+  watch
+} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
@@ -181,9 +249,9 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
- const vuetify = vueInstance.$vuetify
+const vuetify = vueInstance.$vuetify
 
-const NEW_STATUS_TO_USE = {id: null}
+const NEW_STATUS_TO_USE = { id: null }
 
 const props = defineProps({
   processId: Number
@@ -203,13 +271,13 @@ const availableProcessStepStatuses = ref([])
 const isProjectProcessStepsLoading = ref(false)
 const selectedNewProjectProcessStep = ref(null)
 const headers = ref([
-  {text: 'ID', value: 'projectProcessStepId', show: true},
-  {text: 'Type', value: 'processStepName', show: true},
-  {text: 'Owner', value: 'owner.fullName', show: true},
-  {text: 'Last Activity', value: 'lastUpdated', show: true},
-  {text: 'Status', value: 'processStepStatusType', show: true},
-  {text: 'Primary', value: 'main', show: true},
-  {text: 'History', value: 'historyHere', show: true},
+  { text: 'ID', value: 'projectProcessStepId', show: true },
+  { text: 'Type', value: 'processStepName', show: true },
+  { text: 'Owner', value: 'owner.fullName', show: true },
+  { text: 'Last Activity', value: 'lastUpdated', show: true },
+  { text: 'Status', value: 'processStepStatusType', show: true },
+  { text: 'Primary', value: 'main', show: true },
+  { text: 'History', value: 'historyHere', show: true }
 ])
 const showStatusDialog = ref(false)
 const showMainDialog = ref(false)
@@ -223,7 +291,7 @@ const userIsAdmin = computed(() => {
   return userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
 })
 const displayedHeaders = computed(() => {
-  return headers.value.filter(header => header.show)
+  return headers.value.filter((header) => header.show)
 })
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
@@ -239,48 +307,55 @@ onMounted(() => {
 const getProjectProcessSteps = async () => {
   try {
     isProjectProcessStepsLoading.value = true
-    const {data, status} = await getRequest(`/project/${projectId.value}/processSteps`, null, [])
-    projectProcessSteps.value = data.map(step => {
+    const { data, status } = await getRequest(
+      `/project/${projectId.value}/processSteps`,
+      null,
+      []
+    )
+    projectProcessSteps.value = data.map((step) => {
       // step.selectedProcessStepStatusType = availableProcessStepStatuses.value.find(status => status.id === step.companyProcessStepStatusTypeId)
-      step.newStatusToUse = {NEW_STATUS_TO_USE}
+      step.newStatusToUse = { NEW_STATUS_TO_USE }
       return step
     })
-    return {status}
+    return { status }
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error fetching process steps')
-
   } finally {
     isProjectProcessStepsLoading.value = false
   }
 }
-const getAvailableStatuses = async(pps) => {
+const getAvailableStatuses = async (pps) => {
   showSelectedPps.value = false
   try {
-    const {data} = await getCompanyAssignedToProcessStep(pps.processStepId)
+    const { data } = await getCompanyAssignedToProcessStep(pps.processStepId)
     availableProcessStepStatuses.value = data
     if (availableProcessStepStatuses.value?.length > 0) {
-      let match = availableProcessStepStatuses.value.find(status => status.id === pps.companyProcessStepStatusTypeId)
+      let match = availableProcessStepStatuses.value.find(
+        (status) => status.id === pps.companyProcessStepStatusTypeId
+      )
       if (match) {
         selectedPps.value.selectedProcessStepStatusType = match
         showSelectedPps.value = true
       }
     }
   } catch (e) {
-    appStore.showSnack('ERROR', 'Error fetching available process step statuses')
+    appStore.showSnack(
+      'ERROR',
+      'Error fetching available process step statuses'
+    )
 
     logError(e)
   }
 }
-const getCancelledStatuses = async() => {
+const getCancelledStatuses = async () => {
   if (cancelledCompanyStatuses.value?.length === 0) {
     try {
-      const {data} = await getCancelledCompanyStatusTypes(projectId.value)
+      const { data } = await getCancelledCompanyStatusTypes(projectId.value)
       cancelledCompanyStatuses.value = data
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error fetching process step statuses')
-
     }
   }
 }
@@ -291,8 +366,11 @@ const updateOwner = async () => {
   displayChangeOwner.value = false
   appStore.loading = true
   try {
-    const {status} = await postRequest(`/project/${projectId.value}/owner`, project.value.owner)
-    handleHidingGlobalLoader( status)
+    const { status } = await postRequest(
+      `/project/${projectId.value}/owner`,
+      project.value.owner
+    )
+    handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Owner')
@@ -302,21 +380,30 @@ const updateOwner = async () => {
 }
 const updateStatus = async (pps) => {
   showStatusDialog.value = false
-  const selectedStep = projectProcessSteps.value.find(step => step.projectProcessStepId === pps.projectProcessStepId)
+  const selectedStep = projectProcessSteps.value.find(
+    (step) => step.projectProcessStepId === pps.projectProcessStepId
+  )
   try {
     appStore.loading = true
-    await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/status`, selectedStep.newStatusToUse)
-    const {status} = await getProjectProcessSteps()
-    handleHidingGlobalLoader( status)
+    await postRequest(
+      `/projectProcessStep/${pps.projectProcessStepId}/status`,
+      selectedStep.newStatusToUse
+    )
+    const { status } = await getProjectProcessSteps()
+    handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error updating process step status')
 
+    const previousStatus = availableProcessStepStatuses.value.find(
+      (status) => status.id === selectedStep.companyProcessStepStatusTypeId
+    )
 
-    const previousStatus = availableProcessStepStatuses.value.find(status => status.id === selectedStep.companyProcessStepStatusTypeId)
-
-    projectProcessSteps.value = projectProcessSteps.value.map(step => {
-      if (step.companyProcessStepStatusTypeId === selectedStep.companyProcessStepStatusTypeId) {
+    projectProcessSteps.value = projectProcessSteps.value.map((step) => {
+      if (
+        step.companyProcessStepStatusTypeId ===
+        selectedStep.companyProcessStepStatusTypeId
+      ) {
         step.selectedProcessStepStatusType = previousStatus
       }
       return step
@@ -327,9 +414,13 @@ const updateStatus = async (pps) => {
 const deleteProjectProcessStep = async (projectProcessStepId) => {
   try {
     appStore.loading = true
-    const {status} = await deleteRequest(`/projectProcessStep/${projectProcessStepId}`)
-    projectProcessSteps.value = projectProcessSteps.value.filter(step => step.projectProcessStepId !== projectProcessStepId)
-    handleHidingGlobalLoader( status)
+    const { status } = await deleteRequest(
+      `/projectProcessStep/${projectProcessStepId}`
+    )
+    projectProcessSteps.value = projectProcessSteps.value.filter(
+      (step) => step.projectProcessStepId !== projectProcessStepId
+    )
+    handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error deleting process step')
@@ -339,12 +430,17 @@ const deleteProjectProcessStep = async (projectProcessStepId) => {
 }
 const updateMain = async (pps) => {
   showMainDialog.value = false
-  const selectedStep = projectProcessSteps.value.find(step => step.projectProcessStepId === pps.projectProcessStepId)
+  const selectedStep = projectProcessSteps.value.find(
+    (step) => step.projectProcessStepId === pps.projectProcessStepId
+  )
   try {
     appStore.loading = true
-    await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, selectedStep.newStatusToUse)
-    const {status} = await getProjectProcessSteps()
-    handleHidingGlobalLoader( status)
+    await postRequest(
+      `/projectProcessStep/${pps.projectProcessStepId}/main`,
+      selectedStep.newStatusToUse
+    )
+    const { status } = await getProjectProcessSteps()
+    handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Unable to update the primary process step')
@@ -355,17 +451,18 @@ const updateMain = async (pps) => {
     appStore.loading = false
   }
 }
-const getPpsHistory = async(pps) => {
+const getPpsHistory = async (pps) => {
   try {
     showPpsHistory.value = false
     appStore.loading = true
-    const {data} = await getRequest(`/projectProcessStep/${pps.projectProcessStepId}/history`)
+    const { data } = await getRequest(
+      `/projectProcessStep/${pps.projectProcessStepId}/history`
+    )
     showPpsHistory.value = true
     selectedPpsHistory.value = data
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error getting project process step history')
-
   } finally {
     appStore.loading = false
   }
@@ -373,8 +470,7 @@ const getPpsHistory = async(pps) => {
 </script>
 
 <style scoped lang="scss">
-
-@import "@/styles/main";
+@import '@/styles/main';
 
 #project-admin-container {
   width: 100vw;
@@ -385,12 +481,12 @@ const getPpsHistory = async(pps) => {
 }
 
 .project-header {
-  border-bottom: solid 1px #EAEAF4;
+  border-bottom: solid 1px #eaeaf4;
   height: 64px;
 }
 
 .page-title {
-  padding-top:16px;
+  padding-top: 16px;
   height: 20px;
 }
 

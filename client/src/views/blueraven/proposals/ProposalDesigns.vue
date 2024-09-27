@@ -555,14 +555,9 @@ const projectId = computed(() => {
 })
 const closerApptRequirementsMet = computed(() => {
   return (
-      //note: closerAppointmentStart was hacked/manually adjusted via backend to return closerAppointmentStart - 450 mins
-      // so that both mobile and web, who were both already subtracting 30 mins,
-      // would change to 8 hours without requiring a mobile release
-    project.value.closerAppointmentStart != null &&
-    moment().isBetween(
-      moment(project.value.closerAppointmentStart).subtract(30, 'm'),
-      moment(project.value.closerAppointmentEnd)
-    )
+    //all time constraints were removed beside checking if we are before the end time
+    project.value.closerAppointmentEnd != null &&
+    moment().isBefore(moment(project.value.closerAppointmentEnd))
   )
 })
 const canAuroraAI = computed(() => {

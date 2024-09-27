@@ -79,7 +79,7 @@ BEGIN
 
   --raise notice 'v_commission_strategy_id %',v_commission_strategy_id;
 
-  if v_commission_strategy_id = 24102 and v_commission_strategy_type_id = 1 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
+  if v_commission_strategy_id in (24102,24871) and v_commission_strategy_type_id = 1 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
@@ -92,7 +92,7 @@ BEGIN
     elsif v_fee_type_id = 3 then
       v_total = v_total_commission_amount * v_allocation_m1;
     end if;
-  elsif v_commission_strategy_id = 24102 and v_commission_strategy_type_id = 1 and p_code = 'M2' and v_milestone_2 is not null then
+  elsif v_commission_strategy_id in (24102,24871) and v_commission_strategy_type_id = 1 and p_code = 'M2' and v_milestone_2 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;

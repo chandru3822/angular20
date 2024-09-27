@@ -5,17 +5,25 @@
         Add User
         <v-spacer></v-spacer>
         <a-btn
-            variant="text"
-            color="primary"
-            class="mr-3"
-            to="/users"
-            text="Cancel"
+          variant="text"
+          color="primary"
+          class="mr-3"
+          to="/users"
+          text="Cancel"
         ></a-btn>
         <a-btn
-            color="primary "
-            @click="validate"
-            :disabled="disableSave || loadingUserInsertFields || (newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)"
-            text="Save"
+          color="primary "
+          @click="validate"
+          :disabled="
+            disableSave ||
+            loadingUserInsertFields ||
+            (newPosition.positionId != null &&
+              newPosition.endDate &&
+              !newPosition.startDate) ||
+            ((newPosition.startDate != null || newPosition.endDate != null) &&
+              !newPosition.positionId)
+          "
+          text="Save"
         ></a-btn>
       </v-card-title>
 
@@ -24,140 +32,191 @@
           <v-row>
             <v-col cols="12" sm="6">
               <a-text-field
-                            label="First Name"
-                            :rules="requiredRules"
-                            v-model="user.firstName"></a-text-field>
+                label="First Name"
+                :rules="requiredRules"
+                v-model="user.firstName"
+              ></a-text-field>
               <a-text-field
-                            label="Last Name"
-                            :rules="requiredRules"
-                            v-model="user.lastName"></a-text-field>
+                label="Last Name"
+                :rules="requiredRules"
+                v-model="user.lastName"
+              ></a-text-field>
             </v-col>
             <v-col cols="12" sm="6">
-              <a-select attach v-model="user.userStatusTypeId"
-                        :items="userStatusTypes"
-                        label="User Status"
-                        :rules="requiredRules"
-                        item-title="userStatusType"
-                        item-value="id"
+              <a-select
+                attach
+                v-model="user.userStatusTypeId"
+                :items="userStatusTypes"
+                label="User Status"
+                :rules="requiredRules"
+                item-title="userStatusType"
+                item-value="id"
               ></a-select>
               <a-text-field
-                            label="Phone"
-                            :rules="userPhoneRule"
-                            v-model="user.phoneNumber"></a-text-field>
+                label="Phone"
+                :rules="userPhoneRule"
+                v-model="user.phoneNumber"
+              ></a-text-field>
               <a-text-field
-                            label="E-Mail"
-                            :rules="emailRules"
-                            v-model="user.email"></a-text-field>
+                label="E-Mail"
+                :rules="emailRules"
+                v-model="user.email"
+              ></a-text-field>
             </v-col>
           </v-row>
         </v-container>
-        <SpinnerInline v-if="loadingUserInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
-        <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-          <h3>{{cfg.groupName}}</h3>
-          <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
-                            :key="idx"
-                            :callback="populateDirtyCfvs"
-                            :required="cf.required"
-                            :readonly="getReadOnly(cf)"
-                            :field="cf"></CustomValueInput>
+        <SpinnerInline
+          v-if="loadingUserInsertFields"
+          :text="'Checking For Additional Fields...'"
+          :size="20"
+          color="primary"
+        />
+        <v-container
+          class="text-left"
+          v-for="cfg in customFieldGroups"
+          :key="cfg.id"
+          v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0"
+        >
+          <h3>{{ cfg.groupName }}</h3>
+          <CustomValueInput
+            v-for="cf in cfg.customFieldValues"
+            :key="cf.customFieldId"
+            :callback="populateDirtyCfvs"
+            :required="cf.required"
+            :readonly="getReadOnly(cf)"
+            :field="cf"
+          ></CustomValueInput>
         </v-container>
 
         <v-expansion-panels class="mt-4 mb-6" v-model="userPositionPanel">
           <v-expansion-panel>
-            <v-expansion-panel-header :style="{'color': 'var(--v-primaryText-base)', 'font-size': '1.25rem'}">
+            <v-expansion-panel-header
+              :style="{
+                color: 'var(--v-primaryText-base)',
+                'font-size': '1.25rem'
+              }"
+            >
               Add User Position
             </v-expansion-panel-header>
             <v-expansion-panel-content>
               <DatetimePickerInput
-                  v-model="newPosition.startDate"
-                  :timezone="timezone"
-                  :type="'date'"
-                  :format="'MM/DD/YYYY'"
-                  label="Start Date"
-                  :max-date="newPosition.endDate"
-                  :required="newPosition.positionId !== null && newPosition.positionId !== undefined"
+                v-model="newPosition.startDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MM/DD/YYYY'"
+                label="Start Date"
+                :max-date="newPosition.endDate"
+                :required="
+                  newPosition.positionId !== null &&
+                  newPosition.positionId !== undefined
+                "
               />
               <DatetimePickerInput
-                  v-model="newPosition.endDate"
-                  :timezone="timezone"
-                  :type="'date'"
-                  :format="'MM/DD/YYYY'"
-                  label="End Date"
-                  :min-date="newPosition.startDate"
+                v-model="newPosition.endDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MM/DD/YYYY'"
+                label="End Date"
+                :min-date="newPosition.startDate"
               />
-              <a-autocomplete v-model="newPosition.positionId"
-                              :items="positions"
-                              :rules="requiredRules"
-                              label="Position"
-                              item-title="position"
-                              item-value="id"
-                              attach
-                              @input="[newPosition.orgId = null, populateHierarchy(newPosition, true), getSalesOrgs(true)]"/>
-              <div v-if="newPositionHierarchyPopulated"  :key="keyGarbageAgain">
+              <a-autocomplete
+                v-model="newPosition.positionId"
+                :items="positions"
+                :rules="requiredRules"
+                label="Position"
+                item-title="position"
+                item-value="id"
+                attach
+                @input="
+                  ;[
+                    (newPosition.orgId = null),
+                    populateHierarchy(newPosition, true),
+                    getSalesOrgs(true)
+                  ]
+                "
+              />
+              <div v-if="newPositionHierarchyPopulated" :key="keyGarbageAgain">
                 <div v-for="(f, index) in filters" :key="index">
                   <a-autocomplete
-                      v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
-                      v-model="newPosition.orgId"
-                      :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
-                      :label="f.levelName"
-                      :rules="requiredRules"
-                      item-value="id"
-                      item-title="orgName"
-                      autocomplete="off"
-                      @change="[keyGarbageAgain++, getSalesOrgs(true)]"
-                      type="search"
-                      attach
+                    v-if="
+                      newPosition.keyedHierarchy &&
+                      newPosition.keyedHierarchy[f.orgLevelId] &&
+                      isSameLevelAsPosition(f, newPosition)
+                    "
+                    v-model="newPosition.orgId"
+                    :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
+                    :label="f.levelName"
+                    :rules="requiredRules"
+                    item-value="id"
+                    item-title="orgName"
+                    autocomplete="off"
+                    @change=";[keyGarbageAgain++, getSalesOrgs(true)]"
+                    type="search"
+                    attach
                   >
-                    <template  v-slot:selection="{item, index}">
-                      {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
+                    <template v-slot:selection="{ item, index }">
+                      {{ item.orgName
+                      }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
                     <template v-slot:item="{ props, item }">
-                      {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
+                      {{ item.orgName
+                      }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
                   </a-autocomplete>
                 </div>
               </div>
-              <a-autocomplete v-if="salesOrgs?.length > 0"
-                              v-model="newPosition.salesOrgId"
-                              :items="salesOrgs"
-                              :rules="requiredRules"
-                              label="Sales Org"
-                              item-value="id"
-                              item-title="orgName"
+              <a-autocomplete
+                v-if="salesOrgs?.length > 0"
+                v-model="newPosition.salesOrgId"
+                :items="salesOrgs"
+                :rules="requiredRules"
+                label="Sales Org"
+                item-value="id"
+                item-title="orgName"
               >
               </a-autocomplete>
               <a-btn
-                  color="primary"
-                  class="mr-2"
-                  @click="[userPositionPanel = undefined, newPosition = {}]"
-                  text="Clear"
+                color="primary"
+                class="mr-2"
+                @click=";[(userPositionPanel = undefined), (newPosition = {})]"
+                text="Clear"
               ></a-btn>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
       </v-form>
-
     </v-card>
   </v-container>
 </template>
 
 <script setup>
-
 import SpinnerInline from '@/components/SpinnerInline'
-import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, } from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  putRequest,
+  postRequest
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import {getCountries} from '@/services/countryService'
-import {getCompanyStates} from '@/services/stateService'
+import { getCountries } from '@/services/countryService'
+import { getCompanyStates } from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import {getCustomFieldReadOnly} from '@/services/customFieldService'
-import {getUserStatusTypes} from '@/services/userService'
+import { getCustomFieldReadOnly } from '@/services/customFieldService'
+import { getUserStatusTypes } from '@/services/userService'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
 import keyBy from 'lodash.keyby'
-import {getOrgFilters, getAvailableSalesOrgs} from '@/services/orgService'
+import { getOrgFilters, getAvailableSalesOrgs } from '@/services/orgService'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import {
+  getCurrentInstance,
+  toRefs,
+  computed,
+  ref,
+  onMounted,
+  watch
+} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
@@ -166,7 +225,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-
 
 const user = ref({})
 const states = ref([])
@@ -185,7 +243,18 @@ const positions = ref([])
 const filters = ref([])
 const newPositionHierarchyPopulated = ref(false)
 const newPosition = ref({})
-const userPhoneRule = ref([() => ((user.value.phoneNumber != null && user.value.phoneNumber !== '')) || "Field is required",v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",])
+const userPhoneRule = ref([
+  () =>
+    (user.value.phoneNumber != null && user.value.phoneNumber !== '') ||
+    'Field is required',
+  (v) => !v || (v && v.length <= 20) || 'Must be 20 characters or less',
+  (v) =>
+    !v ||
+    /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(
+      v
+    ) ||
+    'Please reformat the Phone field with a valid phone number'
+])
 const userForm = ref(null)
 
 onMounted(() => {
@@ -219,16 +288,17 @@ const getSalesOrgs = async (isNew) => {
   salesOrgs.value = []
   newPosition.value.salesOrgId = null
 
-  if(isNew && newPosition.value.positionId && newPosition.value.orgId) {
+  if (isNew && newPosition.value.positionId && newPosition.value.orgId) {
     try {
-      console.log('positionId', newPosition.value.positionId)
-      console.log('orgId', newPosition.value.orgId)
       let params = {
         positionId: newPosition.value.positionId,
         orgId: newPosition.value.orgId
       }
-      const { data, status } = await getAvailableSalesOrgs(newPosition.value.positionId, newPosition.value.orgId)
-      if( data?.length > 0) {
+      const { data, status } = await getAvailableSalesOrgs(
+        newPosition.value.positionId,
+        newPosition.value.orgId
+      )
+      if (data?.length > 0) {
         salesOrgs.value = data
       }
     } catch (e) {
@@ -243,14 +313,16 @@ const getSalesOrgs = async (isNew) => {
   }
 }
 
-const getCustomFieldGroups = async() => {
+const getCustomFieldGroups = async () => {
   loadingUserInsertFields.value = true
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/customFieldGroup/getUserInsertFields`)
+    const { data, status } = await getRequest(
+      `/customFieldGroup/getUserInsertFields`
+    )
     customFieldGroups.value = data
     loadingUserInsertFields.value = false
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
@@ -259,16 +331,18 @@ const getCustomFieldGroups = async() => {
     appStore.loading = false
   }
 }
-const getAllUserStatusTypes = async() => {
+const getAllUserStatusTypes = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getUserStatusTypes()
+    const { data, status } = await getUserStatusTypes()
     userStatusTypes.value = data
 
     //set the user status to the default if there is one
-    user.value.userStatusTypeId = userStatusTypes.value?.find(ust => ust.newUserDefault)?.id
+    user.value.userStatusTypeId = userStatusTypes.value?.find(
+      (ust) => ust.newUserDefault
+    )?.id
 
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving User Statuses')
@@ -276,12 +350,12 @@ const getAllUserStatusTypes = async() => {
     appStore.loading = false
   }
 }
-const getAllCompanyStates = async() => {
+const getAllCompanyStates = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getCompanyStates()
+    const { data, status } = await getCompanyStates()
     states.value = data
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving States')
@@ -289,12 +363,12 @@ const getAllCompanyStates = async() => {
     appStore.loading = false
   }
 }
-const getAllCountries = async() => {
+const getAllCountries = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getCountries()
+    const { data, status } = await getCountries()
     countries.value = data
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Countries')
@@ -302,12 +376,12 @@ const getAllCountries = async() => {
     appStore.loading = false
   }
 }
-const getPositions = async() => {
+const getPositions = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/position`)
+    const { data, status } = await getRequest(`/position`)
     positions.value = data
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Positions')
@@ -315,12 +389,12 @@ const getPositions = async() => {
     appStore.loading = false
   }
 }
-const getFilters = async() => {
+const getFilters = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getOrgFilters()
+    const { data, status } = await getOrgFilters()
     filters.value = data
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error retrieving org levels')
@@ -330,11 +404,11 @@ const getFilters = async() => {
 }
 const populateHierarchy = (item, isNew) => {
   newPositionHierarchyPopulated.value = false
-  let selectedPosition = positions.value.find(p => p.id === item.positionId)
+  let selectedPosition = positions.value.find((p) => p.id === item.positionId)
   item.hierarchy = []
 
   // push a hierarchy item in for the selected level
-  filters.value.forEach(f => {
+  filters.value.forEach((f) => {
     if (f.level === selectedPosition.level) {
       let obj = {
         level: f.level,
@@ -356,20 +430,29 @@ const populateHierarchy = (item, isNew) => {
 }
 const isSameLevelAsPosition = (f, item) => {
   // get hierarchy level to show on screen
-  let selectedPosition = positions.value.find(p => p.id === item.positionId)
+  let selectedPosition = positions.value.find((p) => p.id === item.positionId)
   return f.level === selectedPosition.level
 }
 const getOrgsMatchingPositionOrgType = (orgs, newPosition) => {
   // get orgs that match the org type selected in the position (admin screen)
-  let selectedPosition = positions.value.find(p => p.id === newPosition.positionId)
-  return orgs.filter(o => o.orgTypeId === selectedPosition.orgTypeId)
+  let selectedPosition = positions.value.find(
+    (p) => p.id === newPosition.positionId
+  )
+  return orgs.filter((o) => o.orgTypeId === selectedPosition.orgTypeId)
 }
-const saveUser = async() => {
-  let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
-  if (!user.value?.phoneNumber?.match(phoneRegex) || user.value?.phoneNumber?.length > 20) {
-    appStore.showSnack('ERROR', 'Error saving user: Please enter a valid phone number')
+const saveUser = async () => {
+  let phoneRegex =
+    '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+  if (
+    !user.value?.phoneNumber?.match(phoneRegex) ||
+    user.value?.phoneNumber?.length > 20
+  ) {
+    appStore.showSnack(
+      'ERROR',
+      'Error saving user: Please enter a valid phone number'
+    )
 
-    return;
+    return
   }
 
   appStore.loading = true
@@ -377,7 +460,7 @@ const saveUser = async() => {
   user.value.username = user.value.email
   try {
     // save user
-    const {data} = await putRequest(`/user`, user.value)
+    const { data } = await putRequest(`/user`, user.value)
 
     // save dirty custom field values
     if (data?.id) {
@@ -385,12 +468,19 @@ const saveUser = async() => {
     }
 
     // save new user position
-    if (userPositionPanel.value === 0 && newPosition.value.positionId && data?.id) {
+    if (
+      userPositionPanel.value === 0 &&
+      newPosition.value.positionId &&
+      data?.id
+    ) {
       await savePosition(data.id)
     }
 
-    const {status} = await router.push({name: 'userDetails', params: {id: data.id}})
-    handleHidingGlobalLoader( status)
+    const { status } = await router.push({
+      name: 'userDetails',
+      params: { id: data.id }
+    })
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMsg = 'Error Adding User'
@@ -402,7 +492,7 @@ const saveUser = async() => {
     appStore.loading = false
   }
 }
-const savePosition = async(userId) => {
+const savePosition = async (userId) => {
   try {
     let params = {
       ...newPosition.value,
@@ -436,14 +526,16 @@ const getReadOnly = (field) => {
   return getCustomFieldReadOnly(field)
 }
 const populateDirtyCfvs = (field) => {
-  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  let match = dirtyCfvs.value.find(
+    (f) =>
+      (null !== f.id && f.id === field.id) ||
+      f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId
+  )
 
   if (!match) {
     dirtyCfvs.value.push(field)
   }
-
 }
-
 </script>
 
 <style lang="scss" scoped>
@@ -451,4 +543,3 @@ const populateDirtyCfvs = (field) => {
   color: var(--v-primaryText-base);
 }
 </style>
-

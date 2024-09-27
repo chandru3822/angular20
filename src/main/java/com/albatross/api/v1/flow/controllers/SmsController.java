@@ -3,9 +3,11 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
 import com.albatross.api.v1.flow.model.smsQueue.SmsQueueRow;
 import com.albatross.api.v1.flow.services.SMSService;
+import com.twilio.twiml.TwiMLException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/flow/sms", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-public class SmsQueueController {
+public class SmsController {
 
   private final SMSService smsService;
 
@@ -35,8 +37,40 @@ public class SmsQueueController {
     return smsService.getSmsByUserId(userId);
   }
 
+  @GetMapping(value = "/messages/thread/{smsThreadId}")
+  public List<SMSQueueItem> getThreadMessages(@PathVariable Long smsThreadId) {
+    return smsService.getSmsByThreadId(smsThreadId);
+  }
+
   @PostMapping(value = "/updateSms")
   public void updateSms(@RequestBody SMSQueueItem smsQueueItem) {
     smsService.updateSms(smsQueueItem);
+  }
+
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @PostMapping(
+    value = "/mock/inbound/project/{projectId}",
+    consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+    produces = MediaType.APPLICATION_XML_VALUE)
+  public String processMockInboundMessageProject(@PathVariable Long projectId) throws TwiMLException {
+    return smsService.processMockInboundMessage(projectId, null, null);
+  }
+
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @PostMapping(
+    value = "/mock/inbound/user/{userId}",
+    consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+    produces = MediaType.APPLICATION_XML_VALUE)
+  public String processMockInboundMessageUser(@PathVariable Long userId) throws TwiMLException {
+    return smsService.processMockInboundMessage(null, userId, null);
+  }
+
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @PostMapping(
+    value = "/mock/inbound/thread/{smsThreadId}",
+    consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+    produces = MediaType.APPLICATION_XML_VALUE)
+  public String processMockInboundMessageThread(@PathVariable Long smsThreadId) throws TwiMLException {
+    return smsService.processMockInboundMessage(null, null, smsThreadId);
   }
 }

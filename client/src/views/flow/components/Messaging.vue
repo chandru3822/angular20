@@ -6,7 +6,18 @@
       justify="center"
       no-gutters
     >
-      <div v-if="messageList.length <= 0" class="pt-4">No messages to show</div>
+      <div class="mock-reply">
+        <a-btn
+            v-if="constants.VUE_APP_ENV !== 'prod'"
+            color="primary"
+            @click="mockReply()"
+            text="Mock Reply"
+        ></a-btn>
+      </div>
+
+      <div v-if="messageList.length <= 0" class="pt-4">
+        No messages to show
+      </div>
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
@@ -19,7 +30,7 @@
           :close="closeChat"
           :open="openChat"
           :showEmoji="true"
-          :showFile="true"
+          :showFile="!smsThreadId"
           :showEdition="false"
           :showDeletion="false"
           :showCloseButton="false"
@@ -41,6 +52,7 @@
     </v-row>
 
     <v-menu
+        v-if="!smsThreadId"
       top
       left
       offset-y
@@ -111,6 +123,7 @@ import {
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
+import constants from "@/helpers/constants.js";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -122,21 +135,23 @@ const filters = vueInstance.$filters
 const props = defineProps({
   userAssigned: Boolean,
   userIdIn: Number,
+  smsThreadId: Number,
   teamsAssociatedToUser: Array,
   hideTemplateBtn: {
     type: Boolean,
     default: false
   }
 })
-const { userAssigned, userIdIn, teamsAssociatedToUser } = toRefs(props)
+const { userAssigned, userIdIn, smsThreadId, teamsAssociatedToUser } = toRefs(props)
 
 onMounted(() => {
   if (projectId.value) {
     fetchProjectData()
+  } else if (smsThreadId.value) {
+    fetchSmsData()
   } else if (userId.value) {
     fetchUserData()
   }
-  fetchSmsData()
   toggleChatBox()
 })
 
@@ -207,6 +222,12 @@ watch([projectId, userId], async () => {
   }
 })
 
+watch(smsThreadId, async () => {
+  if (smsThreadId.value) {
+    await fetchSmsData()
+  }
+})
+
 watch(teamsAssociatedToUser, async (value, oldValue, onCleanup) => {
   templateTeams.value = []
   if (teamsAssociatedToUser.value.length > 0) {
@@ -253,6 +274,37 @@ const sendMessage = (text) => {
   }
 }
 
+const mockReply = async () => {
+  try {
+    const url = smsThreadId.value ? `/sms/mock/inbound/thread/${smsThreadId.value}` : projectId.value ? `/sms/mock/inbound/project/${projectId.value}` :
+      `/sms/mock/inbound/user/${userId.value}`
+
+    await postRequest(url, null)
+
+    //add to the chat without refresh:
+    let reply = {
+      author: undefined,
+      data: {
+        meta: new Intl.DateTimeFormat('default', {
+          dateStyle: 'short',
+          timeStyle: 'short'
+        }).format(new Date()),
+        text: 'MOCK REPLY: Auto Generated Test Reply'
+      },
+      type: 'text'
+    }
+
+    messageList.value = [...messageList.value, reply]
+    newMessagesCount.value = isChatOpen.value
+        ? newMessagesCount.value
+        : newMessagesCount.value + 1
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Creating Mock Reply')
+  }
+}
+
 const onMessageWasSent = async (message) => {
   if (message.data.text && message.data.text.length > 1599) {
     const textOverflowLength = message.data.text.length - 1599
@@ -271,14 +323,13 @@ const onMessageWasSent = async (message) => {
     const attachmentUrl = projectId.value
       ? `/project/${projectId.value}/attachment`
       : `/user/${userId.value}/attachment`
-    const sendTextUrl = projectId.value
-      ? `/communication/sendTextsForProject/${projectId.value}`
-      : `/communication/sendTextsForUser/${userId.value}`
-    const lastSentUrl = projectId.value
-      ? `/messaging/setLastSent/project/` + projectId.value
-      : `/messaging/setLastSent/user/` + userId.value
-    const createNotificationUrl = projectId.value
-      ? `/messaging/createNotification/project/${projectId.value}`
+    const sendTextUrl = smsThreadId.value ? `/communication/sendTextsForThread/${smsThreadId.value}`
+        : projectId.value ? `/communication/sendTextsForProject/${projectId.value}`
+        : `/communication/sendTextsForUser/${userId.value}`
+
+    const createNotificationUrl =
+        smsThreadId.value ? `/messaging/createNotification/thread/${smsThreadId.value}`
+        : projectId.value ? `/messaging/createNotification/project/${projectId.value}`
       : `/messaging/createNotification/user/${userId.value}`
 
     try {
@@ -323,7 +374,6 @@ const onMessageWasSent = async (message) => {
         await postRequest(sendTextUrl, params)
       }
 
-      await putRequest(lastSentUrl)
       await postRequest(createNotificationUrl)
 
       //dont add to the ui unless the message goes thru successfully
@@ -381,7 +431,9 @@ const fetchContact = async () => {
 const fetchSmsData = async () => {
   try {
     let fetchSmsDataUrl = ''
-    if (projectId.value) {
+    if (smsThreadId.value) {
+      fetchSmsDataUrl = `/sms/messages/thread/${smsThreadId.value}`
+    } else if (projectId.value) {
       fetchSmsDataUrl = `/sms/messages/project/${projectId.value}`
     } else if (userId.value) {
       fetchSmsDataUrl = `/sms/messages/user/${userId.value}`
@@ -393,12 +445,8 @@ const fetchSmsData = async () => {
 
     messageList.value = data.map((u) => {
       let msgFrom = 'me'
-      if (
-        u.fromPhone != null &&
-        u.fromPhone !== '+18014480212' &&
-        u.fromPhone !== '+18014480029'
-      ) {
-        msgFrom = u.contactId
+      if ( u.inbound ) {
+        msgFrom = u.searchExternalPhone
       }
 
       if (u.mediaUrls.length > 0) {
@@ -410,20 +458,21 @@ const fetchSmsData = async () => {
               name: u.message,
               url: u.mediaUrls[0],
               meta: u.fullName
-                ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp')
-                : filters.formatDate(u.created, 'timestamp')
+                ? u.fullName + ' ' + filters.formatDate(u.dateCreated, 'timestamp')
+                : filters.formatDate(u.dateCreated, 'timestamp')
             }
           }
         }
-      }
-      return {
-        type: 'text',
-        author: msgFrom,
-        data: {
-          text: u.message,
-          meta: u.fullName
-            ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp')
-            : filters.formatDate(u.created, 'timestamp')
+      } else {
+        return {
+          type: 'text',
+          author: msgFrom,
+          data: {
+            text: u.message,
+            meta: u.fullName
+              ? u.fullName + ' ' + filters.formatDate(u.dateCreated, 'timestamp')
+              : filters.formatDate(u.dateCreated, 'timestamp')
+          }
         }
       }
     })
@@ -471,7 +520,6 @@ const sendTemplateMessage = async () => {
   showTemplateDialog.value = false
 }
 const fetchProjectData = async () => {
-  await fetchContact()
   await fetchSmsData()
   templateTeams.value = []
   if (teamsAssociatedToUser.value?.length > 0) {
@@ -479,7 +527,7 @@ const fetchProjectData = async () => {
       templateTeams.value.push(team.id)
     }
   }
-  await getTemplates()
+  // await getTemplates()
 }
 const fetchUserData = async () => {
   await fetchSmsData()
@@ -489,7 +537,7 @@ const fetchUserData = async () => {
       templateTeams.value.push(team.id)
     }
   }
-  await getTemplates()
+  // await getTemplates()
 }
 </script>
 
@@ -504,6 +552,7 @@ a.chatLink {
 
 .message-container {
   height: 90%;
+  position: relative;
   margin-top: 5px;
   @media (min-width: 960px) {
     min-height: 400px;
@@ -638,5 +687,13 @@ a.chatLink {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 450px;
+}
+
+.mock-reply {
+  width: 100%;
+  margin: 5px 30px 5px 0;
+  position: absolute;
+  text-align: right;
+  bottom: 20px;
 }
 </style>

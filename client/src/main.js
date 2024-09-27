@@ -52,6 +52,10 @@ Vue.filter('formatDateZoneless', function (value) {
   }
 })
 
+Vue.filter('pluralize', function (amount, singularText, pluralText) {
+    return amount === 1 ? singularText : pluralText
+})
+
 Vue.filter('searchHighlight', function (value, query, ignoreWhiteSpace = false) {
   if (value) {
     if (ignoreWhiteSpace === true) {

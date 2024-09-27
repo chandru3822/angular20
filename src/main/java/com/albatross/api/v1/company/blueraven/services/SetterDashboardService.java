@@ -5,7 +5,9 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.SetterDashboardQuery;
+import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
+import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +33,7 @@ public class SetterDashboardService {
 
   private final SecurityService securityService;
   private final SqlCache sqlCache;
+  private final AttachmentService attachmentService;
 
   public IncentiveCounts getIncentivePitchCounts(Boolean isSetterMgr, Integer setterMgrOfficeId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -53,77 +56,72 @@ public class SetterDashboardService {
     return result;
   }
 
-  public String getPerformanceReport(String startDate, String endDate) {
+  public SetterPerformance getPerformanceReport(String startDate, String endDate) {
+    Long currentUserId = securityService.getCurrentUser().getId();
     Map<String, Object> params = new HashMap<>();
-    params.put("currentUserId", securityService.getCurrentUser().getId());
+    params.put("currentUserId", currentUserId);
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.getPerformanceReport, params, String.class);
-    return result;
+    Optional<SetterPerformance> optionalResult = sqlCache.getBySql(SetterDashboardQuery.getPerformanceReport, params, SetterPerformance.class);
+
+//    if there is a setter to beat, get the image - this image stuff is currently only used by mobile
+    if(optionalResult.isPresent()) {
+      SetterPerformance result = optionalResult.get();
+      if(null != result.getToBeatId()) {
+        result.setImageUrl(attachmentService.getAttachmentPresignedUrl(result.getToBeatId(), 9L));
+        result.setImageAltText("Photo of " + result.getToBeatName() + ", a Blue Raven Solar employee");
+      } else if (Objects.equals(result.getCurrentRank(), "1")) {
+        result.setToBeatName("You're #1!");
+        result.setImageUrl(attachmentService.getAttachmentPresignedUrl(currentUserId, 9L));
+      } else {
+        result.setImageAltText("User photo placeholder");
+      }
+      return result;
+    }
+
+    return optionalResult.orElse(null);
   }
 
-  public String getMgrPerformanceReport(Integer officeId, String startDate, String endDate) {
+  public SetterPerformance getOfficePerformanceReport(String startDate, String endDate) {
     Map<String, Object> params = new HashMap<>();
-    params.put("officeId", officeId);
+    //dont use true id here
+    params.put("userId", securityService.getCurrentUser().getId());
     params.put("startDate", startDate);
     params.put("endDate", endDate);
-    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.getMgrPerformanceReport, params, String.class);
-    return result;
+    Optional<SetterPerformance> result = sqlCache.getBySql(SetterDashboardQuery.getOfficePerformanceReport, params, SetterPerformance.class);
+    return result.orElse(null);
   }
 
-  public String repToBeat(int userId, String startDate, String endDate) {
+  public List<TopRep> topReps(String startDate, String endDate, int limit) {
     Map<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
+    params.put("limit", limit);
+    params.put("userId", securityService.getCurrentUser().getId());
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.repToBeat, params, String.class);
-    return result;
+    List<TopRep> topReps = sqlCache.queryBySql(SetterDashboardQuery.topReps, params, TopRep.class);
+
+    for(TopRep rep : topReps) {
+      rep.setUserImageUrl(attachmentService.getAttachmentPresignedUrl(rep.getUserId(), 9L));
+      if(null != rep.getUserImageUrl()) {
+        rep.setUserImageAltText("Photo of " + rep.getName() + ", a Blue Raven Solar Employee");
+      } else {
+        rep.setUserImageAltText("User photo placeholder");
+      }
+    }
+
+    return topReps;
   }
 
-  public String officeToBeat(int officeId, String startDate, String endDate) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("officeId", officeId);
-    params.put("startDate", startDate);
-    params.put("endDate", endDate);
-    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
-
-    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.officeToBeat, params, String.class);
-    return result;
-  }
-
-  public String topReps(String startDate, String endDate, int limit) {
+  public List<OfficeRank> officeRanking(String startDate, String endDate, int limit) {
     Map<String, Object> params = new HashMap<>();
     params.put("limit", limit);
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.topReps, params, String.class);
-    return result;
-  }
-
-  public String topOffices(int limit, int days, String interval) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("limit", limit);
-    params.put("days", days);
-    params.put("interval", interval);
-    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
-
-    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.topOffices, params, String.class);
-    return result;
-  }
-
-  public String officeRanking(String startDate, String endDate, int limit) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("limit", limit);
-    params.put("startDate", startDate);
-    params.put("endDate", endDate);
-
-    System.out.println(params);
-    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.officeRanking, params, String.class);
+    List<OfficeRank> result = sqlCache.queryBySql(SetterDashboardQuery.officeRanking, params, OfficeRank.class);
     return result;
   }
 

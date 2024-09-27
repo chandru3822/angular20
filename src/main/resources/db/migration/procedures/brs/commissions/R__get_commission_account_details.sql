@@ -145,7 +145,7 @@ BEGIN
                                 coalesce(
                                   round(case
                                           when pd.cancelled_date is not null then 0::numeric
-                                          when f.commission_strategy =24102 and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1)  then
+                                          when f.commission_strategy in (24102) and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1)  then
                                               (opru.red_line_m1_allocation) * f.total_commissions
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
@@ -176,7 +176,7 @@ BEGIN
                                 u.last_name,
                                 coalesce(
                                   round(case when pd.cancelled_date is not null then 0::numeric
-                                             when d.commission_strategy =24102 and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1)  then
+                                             when d.commission_strategy in (24102) and (cp.commission_strategy_type_id is null or cp.commission_strategy_type_id = 1)  then
                                                  (opru.red_line_m2_allocation) * d.total_commissions
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0

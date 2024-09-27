@@ -6,11 +6,13 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.JodaDateTimeEditor;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RecipientType;
+import com.albatross.api.v1.flow.enums.SmsPriority;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
 import com.albatross.api.v1.flow.model.smsQueue.SmsQueueRow;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioMessageRequest;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioSMSResponse;
+import com.albatross.api.v1.flow.model.smsTeam.SmsConversation;
 import com.albatross.api.v1.flow.queries.SmsServiceQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,11 +24,14 @@ import com.twilio.Twilio;
 import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
+import com.twilio.twiml.MessagingResponse;
 import com.twilio.type.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +60,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SMSService {
 
+  @Value(value = "${app.env}")
+  private String appEnv;
+
   private final PropertiesConfiguration properties;
   private final SqlCache sqlCache;
   private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -65,6 +73,8 @@ public class SMSService {
   private final String webhookPayloadErrorsKey = "twilio-webhook-payload:errors";
   private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
   private final SecurityService securityService;
+  private final MessagingService messagingService;
+  private final ObjectMapper objectMapper;
 
   public Page<SmsQueueRow> getSmsQueue(Pageable pageable, Long objectTypeId, Boolean messageRead) {
     Map<String, Object> params = new HashMap<>();
@@ -80,32 +90,98 @@ public class SMSService {
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
+
+
+  public SMSQueueItem getThreadInfo(Long smsThreadId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("smsThreadId", smsThreadId);
+
+    Optional<SMSQueueItem> result = sqlCache.getBySql(SmsServiceQuery.getThreadInfo, params, SMSQueueItem.class);
+    return result.orElse(null);
+  }
+
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
-    Map<String, Object> params = Map.of("projectId", projectId);
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    Long smsThreadId = messagingService.getThreadId(projectId, null);
+
+    params.put("smsThreadId", smsThreadId);
     return sqlCache.queryBySql(
-      SmsServiceQuery.fetchByProjectId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      SmsServiceQuery.fetchByThreadId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public List<SMSQueueItem> getSmsByUserId(Long userId) {
-    Map<String, Object> params = Map.of("userId", userId);
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+
+    Long smsThreadId = messagingService.getThreadId(null, userId);
+
+    params.put("smsThreadId", smsThreadId);
+
     return sqlCache.queryBySql(
-      SmsServiceQuery.fetchByUserId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      SmsServiceQuery.fetchByThreadId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+  }
+
+  public List<SMSQueueItem> getSmsByThreadId(Long smsThreadId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("smsThreadId", smsThreadId);
+
+    return sqlCache.queryBySql(
+      SmsServiceQuery.fetchByThreadId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+  }
+
+  public SMSQueueItem queueMessageForThread(String messageGroup,
+                                            Long smsThreadId,
+                                            String message,
+                                            List<URI> mediaURLs,
+                                            Long sentByUserId,
+                                            Long sentBySmsTeamId) {
+
+    SmsConversation thread = messagingService.getThread(smsThreadId, null, null, sentByUserId);
+
+    Integer priorityLevel = SmsPriority.PROJECT.level;
+
+    if(!thread.isExternal()) {
+      //if intenal set that priority level
+      priorityLevel = SmsPriority.USER.level;
+    }
+
+    return queueMessage(messageGroup,
+      smsThreadId,
+      null,
+      null,
+      null,
+      thread.getSearchExternalPhone(),
+      message,
+      mediaURLs,
+      thread.getRecipientTypeId().intValue(),
+      sentByUserId,
+      sentBySmsTeamId,
+      priorityLevel);
   }
 
   public SMSQueueItem queueMessage(
     String messageGroup,
+    Long smsThreadId,
     Long userId,
     Long contactId,
     Long projectId,
     String toPhone,
     String message,
     List<URI> mediaURLs,
-    RecipientType recipientType,
+    Integer recipientTypeId,
     Long sentByUserId,
     Long sentBySmsTeamId,
     Integer priorityLevel) {
 
     if (null != toPhone && !toPhone.isBlank()) {
+      Long threadId = smsThreadId;
+
+      if(threadId == null) {
+        threadId = messagingService.getThreadId(projectId, userId);
+      }
+
       String queueInsert = SmsServiceQuery.insert;
 
       MapSqlParameterSource source = new MapSqlParameterSource();
@@ -113,10 +189,11 @@ public class SMSService {
       source.addValue("userId", userId);
       source.addValue("contactId", contactId);
       source.addValue("projectId", projectId);
+      source.addValue("threadId", threadId);
       source.addValue("message", message);
       source.addValue("toPhone", toPhone);
       source.addValue("mediaUrls", null);
-      source.addValue("recipientTypeId", recipientType.ordinal());
+      source.addValue("recipientTypeId", recipientTypeId);
       source.addValue("messageSentByUserId", sentByUserId);
       source.addValue("sentBySmsTeamId", sentBySmsTeamId);
       source.addValue("priorityLevel", priorityLevel);
@@ -177,7 +254,7 @@ public class SMSService {
           messageText = "";
         }
 
-        Message message = sendMessage(sms.getRecipientType(), sms.getToPhone(), messageText, uris);
+        Message message = sendMessage(sms.getRecipientType(), sms.getSearchExternalPhone(), messageText, uris);
 
         String status = (message.getStatus() != null) ? message.getStatus().toString() : null;
         String fromPhone = (message.getFrom() != null) ? message.getFrom().toString() : null;
@@ -192,7 +269,7 @@ public class SMSService {
         params.put("id", sms.getId());
         params.put("messageSid", message.getSid());
         params.put("messageStatus", status);
-        params.put("fromPhone", fromPhone);
+        params.put("internalPhone", fromPhone);
         params.put("errorMessage", message.getErrorMessage());
         params.put("created", twilioCreated);
 
@@ -207,7 +284,7 @@ public class SMSService {
         params.put("id", sms.getId());
         params.put("messageSid", null);
         params.put("messageStatus", "error");
-        params.put("fromPhone", null);
+        params.put("internalPhone", null);
         params.put("errorMessage", e.getMessage());
         params.put("created", null);
 
@@ -236,6 +313,73 @@ public class SMSService {
       msg.getMessageStatus());
 
     updateOrQueueSMSStatusUpdate(msg);
+  }
+
+  /**
+   * Mock twilio reply, inserts "reply" into flow sms_reply table and processes notifications
+   */
+  public String processMockInboundMessage(Long projectId, Long userId, Long smsThreadId) {
+    //todo: this
+    if(null != appEnv && appEnv.equals("prod")) {
+      return "Cannot mock replies in production environment";
+    } else if(null != projectId || null != userId || null != smsThreadId) {
+
+      //if the thread is null (meaning it came from project or user screen) get a thread id (it will create one if needed)
+      if(smsThreadId == null) {
+        smsThreadId = messagingService.getThreadId(projectId, userId);
+      }
+
+      SMSQueueItem threadInfo = getThreadInfo(smsThreadId);
+
+      String toPhone = threadInfo.getRecipientType() == RecipientType.PROJECT
+        ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
+
+      if(!threadInfo.getSearchExternalPhone().isBlank()) {
+
+        //maybe we can make a prop for this down the road, but I don't see a reason they need the ability to reply with specific text
+        String mockInboundMessage = "MOCK REPLY: Auto Generated Test Reply";
+
+        //(db limit 35 chars) does this value matter? starting with MOCK to easily dif
+        String mockMessageSid = "MOCK" + RandomStringUtils.randomAlphanumeric(28);
+
+        TwilioMessageRequest twilioMsg = TwilioMessageRequest.builder()
+          .messageSid(mockMessageSid)
+          //.smsSid(not sure which prop this is or if it matters)
+          .accountSid(properties.getTwilioAccountSID())
+          .messagingServiceSid(properties.getTwilioMessageServiceSID())
+          .from(threadInfo.getSearchExternalPhone())
+          .to(toPhone)
+          .body(mockInboundMessage)
+          .numMedia(0)
+          .mediaUrls(null)
+          .build();
+
+        return receiveInboundMessage(twilioMsg);
+      } else {
+        return "Missing Valid From Phone Number";
+      }
+
+    } else {
+      return "Project ID or User ID is required.";
+    }
+
+  }
+
+  /**
+   * Receive an inbound message from twilio as json, map to Java object, process message
+   */
+  public String receiveInboundMessage(Map<String, Object> req) {
+    final TwilioMessageRequest twilioSMS = objectMapper.convertValue(req, TwilioMessageRequest.class);
+    return receiveInboundMessage(twilioSMS);
+  }
+
+  /**
+   * Process a mapped twilio inbound message
+   */
+  public String receiveInboundMessage(TwilioMessageRequest twilioSMS) {
+    saveReply(twilioSMS);
+    messagingService.addNotifications(twilioSMS);
+    return new MessagingResponse.Builder().build().toXml();
   }
 
   /**
@@ -288,7 +432,7 @@ public class SMSService {
     Map<String, Object> params = new HashMap<>();
     params.put("messageSid", sid);
     params.put("messageStatus", status);
-    params.put("fromPhone", fromPhone);
+    params.put("internalPhone", fromPhone);
     params.put("errorMessage", errorMessage);
     params.put("dateReceived", dateReceived);
 
@@ -410,7 +554,14 @@ public class SMSService {
 
   public void saveReply(TwilioMessageRequest sms) {
     log.debug("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
-    sqlCache.updateBySql(SmsServiceQuery.saveReply, sms.toHashMap());
+
+//    todo this now needs to check for an existing sms thread and add one if there isn't one
+    Map<String, Object> params = new HashMap<>();
+    params = sms.toHashMap();
+    params.put("recipientTypeId",
+      Objects.equals(sms.getTo(), properties.getTwilioPhoneNumber()) ? RecipientType.PROJECT.ordinal() : RecipientType.USER.ordinal());
+
+    sqlCache.queryBySql(SmsServiceQuery.saveReply, params, String.class);
   }
 
   public String cleanPhoneNumber(String input, String region) throws NumberParseException {

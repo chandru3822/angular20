@@ -408,7 +408,7 @@ const router = new Router({
               alias: '/setterDashboard',
               name: 'setterFunnel',
               meta: {title: 'Albatross - Setter Dashboard'},
-              component: () => import ( './views/blueraven/setterDashboard/SetterFunnelRework.vue')
+              component: () => import ( './views/blueraven/setterDashboard/SetterFunnel.vue')
             }, {
               path: 'incentive',
               name: 'setterIncentive',
@@ -2085,6 +2085,7 @@ const router = new Router({
         {
           path: 'inbox',
           name: 'inbox',
+          alias: '/outbox',
           meta: {title: 'Albatross - Inbox'},
           component: () => {
             if (userStore.userHasFeature('SMS_INBOX')) {
@@ -2095,7 +2096,7 @@ const router = new Router({
           },
           children: [
             {
-              path: 'inboxConversation/project/:projectId',
+              path: 'conversation/sms/:smsThreadId',
               meta: {title: 'Albatross - Inbox Conversation'},
               component: () => {
                 if (userStore.userHasFeature('SMS_INBOX')) {
@@ -2105,17 +2106,6 @@ const router = new Router({
                 }
               }
             },
-            {
-              path: 'inboxConversation/user/:userId',
-              meta: {title: 'Albatross - Inbox Conversation'},
-              component: () => {
-                if (userStore.userHasFeature('SMS_INBOX')) {
-                  return import ( './views/flow/settings/inbox/MainInbox')
-                } else {
-                  return accessDenied()
-                }
-              }
-            }
           ]
         },
       ]

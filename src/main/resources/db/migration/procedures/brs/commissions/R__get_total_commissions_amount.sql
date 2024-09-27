@@ -38,7 +38,7 @@ BEGIN
   inner join brs.commission_plan c on c.id = fd.commission_plan_id
   where fd.project_id = p_project_id;
 
-  if v_commission_strategy_id = 24102 and v_commission_strategy_type_id = 1 then
+  if v_commission_strategy_id in (24102,24871) and v_commission_strategy_type_id = 1 then
 
     v_total = v_desired_commission_amount * v_system_size * 1000;
   else

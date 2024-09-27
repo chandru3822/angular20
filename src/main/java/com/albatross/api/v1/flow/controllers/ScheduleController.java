@@ -17,11 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by Randa Nunn on 2019-10-22
- * !Describe Purpose!
- */
-
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/schedule", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -71,12 +66,12 @@ public class ScheduleController {
   public ResponseEntity<Object> saveEvent(@RequestBody ScheduleEvent ev) {
     if (ev.getForceSave() != null && !ev.getForceSave()) {
       List<ScheduleEvent> conflictList = scheduleService.checkForSchedulingConflict(ev, ev.getProjectProcessStepId());
-      if (conflictList != null && conflictList.size() > 0) {
-        return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+      if (conflictList != null && !conflictList.isEmpty()) {
+        return new ResponseEntity<>(conflictList, HttpStatus.CONFLICT);
       }
     }
     scheduleService.saveEvent(ev);
-    return new ResponseEntity("Save Successful", HttpStatus.OK);
+    return new ResponseEntity<>("Save Successful", HttpStatus.OK);
   }
 
 

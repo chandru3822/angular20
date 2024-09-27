@@ -73,7 +73,7 @@ BEGIN
         v_panel_count = (x::jsonb -> 'module' -> 'count')::bigint;
         -- raise notice 'v_count = %',x::jsonb -> 'module' -> 'count';
         insert into calculations(panel_count, total_solar_resource_fraction, face)
-        values (v_panel_count,round(v_total_solar_resource_fraction,1), v_face);
+        values (v_panel_count,round(v_total_solar_resource_fraction,0), v_face);
       end loop;
 
     with multiple_faces as (select face
@@ -86,7 +86,7 @@ BEGIN
           from (select sum(panel_count * total_solar_resource_fraction) fraction, sum(panel_count) count
                 from calculations mc
                        inner join multiple_faces mf on mf.face = mc.face group by mc.face) as foo) as foo1
-    where foo1.total_solar_resource_fraction > p_minimum_tsrf;
+    where foo1.total_solar_resource_fraction >= p_minimum_tsrf;
 
     with single_faces as (select face
                           from calculations
@@ -97,10 +97,10 @@ BEGIN
     from (select sum(panel_count) as panel_count
           from calculations mc
                  inner join single_faces mf on mf.face = mc.face
-          where total_solar_resource_fraction > p_minimum_tsrf group by mc.face) as foo;
+          where total_solar_resource_fraction >= p_minimum_tsrf group by mc.face) as foo;
     v_plane_rebate_amount = coalesce(v_multiple_plane_rebate_amount, 0) + coalesce(v_single_plane_rebate_amount, 0);
 
-    raise notice 'v_plane_rebate_amount %',v_plane_rebate_amount;
+   -- raise notice 'v_plane_rebate_amount %',v_plane_rebate_amount;
 
     if v_plane_rebate_amount is not null then
       v_value = least(p_rebate_cap_dollar_amount,

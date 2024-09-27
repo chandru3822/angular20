@@ -419,7 +419,7 @@ const props = defineProps({
   companyHolidays: {type: Array}
 })
 
-const isSidebarView = computed(() => route.path.includes('inboxConversation'))
+const isSidebarView = computed(() => route.path.includes('conversation'))
 
 const timezone = ref(scheduleStore.getTimezone)
 const scheduleTimezone = computed(() => scheduleStore.getTimezone)

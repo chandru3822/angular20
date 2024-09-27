@@ -10,8 +10,8 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.*;
-import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
+import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.services.OrgService;
 import com.albatross.api.v1.flow.services.UserPositionService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
@@ -34,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -516,8 +516,10 @@ public class SmartlistService {
     return sqlCache.queryBySql(SmartlistQuery.getAll, params, Smartlist.class);
   }
 
+
+
   public List<SmartlistAccessControl> getSharableEntities() {
-    List<UserPosition> userPositions = userPositionService.getPrimaryUserPositions();
+    List<UserPosition> userPositions = userPositionService.getUsersWithSmartlistAccess();
     List<Org> orgs = orgService.getAllActive();
 
     //combine lists

@@ -136,28 +136,13 @@ public class SetterDashboardQuery {
   """;
 
   //language=PostgreSQL
-  public final static String getMgrPerformanceReport = """
-    SELECT * FROM brs.get_setter_mgr_performance_report(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)
-  """;
-
-  //language=PostgreSQL
-  public final static String repToBeat = """
-    SELECT * FROM brs.get_setter_to_beat(:userId::bigint, :startDate::date, :endDate::date)
-  """;
-
-  //language=PostgreSQL
-  public final static String officeToBeat = """
-    SELECT * FROM brs.get_setter_office_to_beat(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)
+  public final static String getOfficePerformanceReport = """
+    SELECT * FROM brs.get_setter_office_performance_report(:userId::bigint, :startDate::date, :endDate::date)
   """;
 
   //language=PostgreSQL
   public final static String topReps = """
-    SELECT * FROM brs.get_top_setter_reps(:startDate::date, :endDate::date, :limit::bigInt)
-  """;
-
-  //language=PostgreSQL
-  public final static String topOffices = """
-    SELECT * FROM brs.get_top_setter_offices(:limit, :interval, :days, :currentUserId)
+    SELECT * FROM brs.get_top_setter_reps(:userId::bigint, :startDate::date, :endDate::date, :limit::bigInt)
   """;
 
   //language=PostgreSQL
