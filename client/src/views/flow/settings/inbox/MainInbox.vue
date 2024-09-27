@@ -18,7 +18,7 @@
           <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4" :value="showInbox ? 0 : 1">
             <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''"
                    text @click="routeToInbox('/inbox'); fetchConversations()">
-              New
+              Inbox
               <v-badge
                 class="inbox-badge"
                 color="#D03331"
