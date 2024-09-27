@@ -68,6 +68,7 @@ public class SmsServiceQuery {
                   sms.message_status,
                   sms.internal_phone,
                   sms.external_phone,
+                  sms.search_external_phone,
                   sms.twilio_created,
                   sms.twilio_sent,
                   sms.twilio_delivered,
