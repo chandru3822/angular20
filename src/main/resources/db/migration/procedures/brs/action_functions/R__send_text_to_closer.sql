@@ -150,20 +150,23 @@ BEGIN
       if (v_message_type_content is not null) then
         --insert the sms queue record for the closer's message
         insert into flow.sms_thread(sent_to_user_id, message, message_group, external_phone, date_created, recipient_type_id,
-                                   message_sent_by_user_id, priority_level)
+                                   message_sent_by_user_id, priority_level, parent_id)
         values (v_closer_user_id,
                 v_message_type_content,
                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1,
-                p_current_user_id, 2);
+                p_current_user_id, 2,
+                (select * from flow.get_thread_id(null::bigint, v_closer_user_id::bigint, '+18014480029')));
 
         --insert the sms queue record for the manager's message
         if (v_do_manager_send is true) then
           insert into flow.sms_thread(sent_to_user_id, message, message_group, external_phone, date_created, recipient_type_id,
-                                     message_sent_by_user_id, priority_level)
+                                     message_sent_by_user_id, priority_level, parent_id)
           values (v_manager_user_id,
                   v_message_type_content,
-                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_manager_phone_number, now(), 1,
-                  p_current_user_id, 2);
+                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
+                  v_manager_phone_number, now(), 1,
+                  p_current_user_id, 2,
+                  (select * from flow.get_thread_id(null::bigint, v_manager_phone_number::bigint, '+18014480029')));
         end if;
       end if;
     end if;

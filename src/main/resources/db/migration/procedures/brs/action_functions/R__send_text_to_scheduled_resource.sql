@@ -100,19 +100,20 @@ BEGIN
     where array[id] <@ array[v_users_to_message]
     LOOP
       if r.phone_number is not null and trim(r.phone_number) != '' and v_message is not null then
-        insert into flow.sms_thread(sent_to_user_id, message, message_group, external_phone, date_created, recipient_type_id, message_sent_by_user_id)
+        insert into flow.sms_thread(sent_to_user_id, message, message_group, external_phone, date_created, recipient_type_id, message_sent_by_user_id, parent_id)
         values(r.user_id,
                v_message,
                (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
-               r.phone_number, now(), 1, p_current_user_id);
+               r.phone_number, now(), 1, p_current_user_id,
+               (select * from flow.get_thread_id(null::bigint, r.user_id::bigint, '+18014480029')));
       end if;
     END LOOP;
 
-    insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
-    values ('Send Text to Resource', 54, 'p_pps_event_id: ' || p_pps_event_id ||
-                                         ' p_current_user_id: '|| p_current_user_id ||
-                                         ' p_message_type_id: ' || p_message_type_id,
-            p_current_user_id);
+--     insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
+--     values ('Send Text to Resource', 54, 'p_pps_event_id: ' || p_pps_event_id ||
+--                                          ' p_current_user_id: '|| p_current_user_id ||
+--                                          ' p_message_type_id: ' || p_message_type_id,
+--             p_current_user_id);
 
 END
 $function$
