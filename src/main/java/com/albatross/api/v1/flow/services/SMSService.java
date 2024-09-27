@@ -284,7 +284,7 @@ public class SMSService {
         params.put("id", sms.getId());
         params.put("messageSid", null);
         params.put("messageStatus", "error");
-        params.put("fromPhone", null);
+        params.put("internalPhone", null);
         params.put("errorMessage", e.getMessage());
         params.put("created", null);
 
