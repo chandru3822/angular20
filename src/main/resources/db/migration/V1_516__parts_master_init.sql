@@ -106,7 +106,7 @@ create table if not exists brs.primary_company_parts_master_version
 
 drop index if exists pcpmv_active_parts_master_version_id_ix;
 create index pcpmv_active_parts_master_version_id_ix
-  on primary_company_parts_master_version (parts_master_version_id);
+  on brs.primary_company_parts_master_version (parts_master_version_id);
 
 drop view if exists brs.parts_master_version_custom_field_value_vw;
 create or replace view brs.parts_master_version_custom_field_value_vw as
