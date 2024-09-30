@@ -32,8 +32,8 @@ begin
         and st.recipient_type_id = v_recipient_type_id;
 
     if(v_thread_id is null) then
-        insert into flow.sms_thread(message, internal_phone, external_phone, recipient_type_id, message_sent_by_user_id, sent_to_user_id, sent_to_project_id, archived)
-        select 'THREAD INITIALIZATION', p_from_phone_number, v_phone_number, v_recipient_type_id, 99999999, p_user_id, p_project_id, true
+        insert into flow.sms_thread(message, internal_phone, external_phone, recipient_type_id, message_sent_by_user_id, sent_to_user_id, sent_to_project_id, archived, parent_id)
+        select 'THREAD INITIALIZATION', p_from_phone_number, v_phone_number, v_recipient_type_id, 99999999, p_user_id, p_project_id, true, -1
         returning id
         into v_thread_id;
 
