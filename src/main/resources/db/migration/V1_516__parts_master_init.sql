@@ -28,9 +28,11 @@ create table if not exists brs.parts_master_version
     references flow."user"
 );
 
+drop index if exists parts_master_version_company_id_ix;
 create index if not exists parts_master_version_company_id_ix
   on brs.parts_master_version (company_id);
 
+drop index if exists parts_master_version_parts_master_version_status_id_ix;
 create index if not exists parts_master_version_parts_master_version_status_id_ix
   on brs.parts_master_version (parts_master_version_status_id);
 
@@ -50,9 +52,11 @@ create table if not exists brs.parts_master_version_custom_field_group
 
 -- alter table brs.parts_master_version_custom_field_group
 -- alter column archived drop not null;
+drop index if exists pmcfg_parts_master_group_uuid_ix;
 create index if not exists pmcfg_parts_master_group_uuid_ix
   on brs.parts_master_version_custom_field_group (parts_master_group_uuid);
 
+drop index if exists pmcfg_parts_master_version_id_ix;
 create index if not exists pmcfg_parts_master_version_id_ix
   on brs.parts_master_version_custom_field_group (parts_master_version_id);
 
@@ -76,10 +80,11 @@ create table if not exists brs.parts_master_version_custom_field_value
     unique (parts_master_version_custom_field_group_id, custom_field_group_assignment_id)
 );
 
+drop index if exists pmvcfv_custom_field_group_assignment_id_ix;
 create index if not exists pmvcfv_custom_field_group_assignment_id_ix
   on brs.parts_master_version_custom_field_value (custom_field_group_assignment_id);
 
-create table if not exists primary_company_parts_master_version
+create table if not exists brs.primary_company_parts_master_version
 (
   company_id bigint not null primary key
     constraint pcpmv_payroll_id_fk
@@ -99,6 +104,7 @@ create table if not exists primary_company_parts_master_version
       references flow."user"
 );
 
+drop index if exists pcpmv_active_parts_master_version_id_ix;
 create index pcpmv_active_parts_master_version_id_ix
   on primary_company_parts_master_version (parts_master_version_id);
 
