@@ -6,6 +6,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomBehaviorService;
+import com.albatross.api.v1.company.blueraven.services.KlaviyoService;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemActivity;
@@ -41,6 +42,8 @@ public class ContactService {
 
   private final SqlCache sqlCache;
   private final SqlCacheRO sqlCacheRO;
+
+  private final KlaviyoService klaviyoService;
 
   private final SecurityService securityService;
 
@@ -464,6 +467,9 @@ public class ContactService {
           step.getCompanyProcessStepStatusTypeId(),
           null);
       }
+
+      // Set the project ID for the contact in Klaviyo
+      klaviyoService.updateProjectId(contactId, project.get().getId());
     }
 
     // return project data so the frontend can navigate to project/{id}
