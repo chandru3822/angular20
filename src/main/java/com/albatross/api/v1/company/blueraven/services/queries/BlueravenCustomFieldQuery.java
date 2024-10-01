@@ -143,6 +143,36 @@ public class BlueravenCustomFieldQuery {
     """;
 
   //language=PostgreSQL
+  public final static String upsertListOfValue = """
+    insert into brs.list_of_value(
+      name,
+      parent_id,
+      display_order,
+      date_created,
+      created_by_id,
+      date_modified,
+      modified_by_id
+    )
+    values (
+      trim(:name),
+      :parentId,
+      (
+        select coalesce(max(display_order) + 1, 0)
+        from brs.list_of_value
+        where
+          parent_id = :parentId and
+          archived is not true
+      ),
+      now(),
+      :createdById,
+      now(),
+      :createdById
+    )
+    on conflict do nothing
+    returning id
+    """;
+
+  //language=PostgreSQL
   public final static String insertManagementCompany = """
      insert into brs.list_of_value(name, parent_id,  display_order, date_created, created_by_id, date_modified, modified_by_id)
      values (trim(:name), (select list_of_value_id from brs.custom_field cf where cf.field_name = 'Management Company'), (select coalesce(max(display_order) + 1, 0) from brs.list_of_value where parent_id = (select list_of_value_id from brs.custom_field cf where cf.field_name = 'Management Company') and archived is not true), now(), :createdById, now(), :createdById);
