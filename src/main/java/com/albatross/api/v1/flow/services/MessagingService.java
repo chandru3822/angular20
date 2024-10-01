@@ -1,7 +1,9 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.CachingConfig;
+import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.convert.JsonObjectDeserializer;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.notification.NotificationService;
 import com.albatross.api.notification.model.CreateNotificationDto;
@@ -13,12 +15,11 @@ import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
-import com.albatross.api.v1.flow.model.ConversationMessageProperties;
-import com.albatross.api.v1.flow.model.ProjectMessageOwner;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserMessageOwner;
-import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
+import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.smsTeam.SmsConversation;
 import com.albatross.api.v1.flow.model.smsQueue.TwilioMessageRequest;
+import com.albatross.api.v1.flow.model.smsTeam.SmsOwner;
+import com.albatross.api.v1.flow.model.smsTeam.SmsSource;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeamUser;
 import com.albatross.api.v1.flow.queries.MessagingQuery;
@@ -65,57 +66,55 @@ public class MessagingService {
   private final SecurityService securityService;
   private final NamedParameterJdbcTemplate jdbc;
   private final CacheManager cacheManager;
+  private final PropertiesConfiguration properties;
+  private final SqlArrayService sqlArrayService;
 
-  public ConversationMessageProperties getProject(Long projectId, Long modifiedByUserId) {
-    Optional<ConversationMessageProperties> conversationMessageProps =
-      sqlCache.getBySql(
-        MessagingQuery.getProject,
-        Map.of("projectId", projectId),
-        new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+  public Long getThreadId(Long projectId, Long userId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("userId", userId);
 
-    // The project conversation hasn't started yet, insert it
-    if (conversationMessageProps.isEmpty()) {
-      sqlCache.updateBySql(
-        MessagingQuery.insertProject,
-        Map.of("projectId", projectId, "createdById", modifiedByUserId));
+    String fromPhone = projectId != null
+      ? properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
+    params.put("fromPhoneNumber", fromPhone);
 
-      conversationMessageProps =
-        sqlCache.getBySql(
-          MessagingQuery.getProject,
-          Map.of("projectId", projectId),
-          new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
-    }
-
-    return conversationMessageProps.orElseThrow(() -> new NotFoundException("Project conversation not found"));
+    Long threadId = sqlCache.queryForObjectBySql(SmsServiceQuery.getThreadId, params, Long.class);
+    return threadId;
   }
 
-  public ConversationMessageProperties getUser(Long userId, Long modifiedByUserId) {
-    Optional<ConversationMessageProperties> userMessageProps =
-      sqlCache.getBySql(
-        MessagingQuery.getUser,
-        Map.of("userId", userId),
-        new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+  public SmsConversation getThread(Long smsThreadId, Long projectId, Long userId, Long modifiedByUserId) {
+    Long threadId = smsThreadId;
 
-    // The project conversation hasn't started yet, insert it
-    if (userMessageProps.isEmpty()) {
-      sqlCache.updateBySql(
-        MessagingQuery.insertUser,
-        Map.of("userId", userId, "createdById", modifiedByUserId));
-
-      userMessageProps =
-        sqlCache.getBySql(
-          MessagingQuery.getUser,
-          Map.of("userId", userId),
-          new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
     }
 
-    return userMessageProps.orElseThrow(() -> new NotFoundException("User conversation not found"));
+    Optional<SmsConversation> conversationMessageProps =
+      sqlCache.getBySql(
+        MessagingQuery.getThread,
+        Map.of("smsThreadId", threadId),
+        new MessagePropertiesMapper<>(SmsConversation.class, om));
+
+    // The project conversation hasn't started yet, insert it
+//    todo: figure this out from the project screen
+//    if (conversationMessageProps.isEmpty()) {
+//      sqlCache.updateBySql(
+//        MessagingQuery.insertProject,
+//        Map.of("projectId", projectId, "createdById", modifiedByUserId));
+//
+//      conversationMessageProps =
+//        sqlCache.getBySql(
+//          MessagingQuery.getProject,
+//          Map.of("projectId", projectId),
+//          new MessagePropertiesMapper<>(SmsConversation.class, om));
+//    }
+
+    return conversationMessageProps.orElseThrow(() -> new NotFoundException("Thread conversation not found"));
   }
 
-  public Page<ConversationMessageProperties> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifProjectIds,
-                                                              Set<Long> notifUserIds, Boolean getProjects, Boolean getUsers, Boolean showInbox, Pageable pageable) {
-
-
+  public Page<SmsConversation> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifThreadIds,
+                                                Boolean showExternal, Boolean showInternal, Boolean showInbox, Boolean sortAscending, Pageable pageable) {
     String cleanedQuery = query;
     if (cleanedQuery != null) {
       cleanedQuery = cleanedQuery.replaceAll("[*,.&]", "")
@@ -123,50 +122,6 @@ public class MessagingService {
         .trim();
     }
 
-    List<ConversationMessageProperties> conversations = new ArrayList<>();
-    int count = 0;
-    if (getProjects) {
-      List<ConversationMessageProperties> projects =
-        getProjects(
-          cleanedQuery,
-          ownerUserIds,
-          smsTeamIds,
-          notifProjectIds,
-          showInbox,
-          pageable);
-
-      if (!projects.isEmpty()) {
-        count = projects.getFirst().getProjectIdsForFilter().size();
-        conversations.addAll(projects);
-      }
-    }
-
-    if (getUsers) {
-      List<ConversationMessageProperties> users =
-        getUsers(
-          cleanedQuery,
-          ownerUserIds,
-          smsTeamIds,
-          notifUserIds,
-          showInbox,
-          pageable);
-
-      if (!users.isEmpty()) {
-        count += users.getFirst().getUserIdsForFilter().size();
-        conversations.addAll(users);
-        if (getProjects) {
-          conversations.getFirst().setUserIdsForFilter(users.getFirst().getUserIdsForFilter());
-          conversations.getFirst().setUserIdsInbox(users.getFirst().getUserIdsInbox());
-          conversations.getFirst().setUserIdsSent(users.getFirst().getUserIdsSent());
-        }
-      }
-    }
-
-    return new PageImpl<>(
-      conversations, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-  }
-
-  public List<ConversationMessageProperties> getProjects(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifProjectIds, Boolean showInbox, Pageable pageable) {
     boolean containsUnassigned = false;
     if (ownerUserIds.contains(-1L)) {
       containsUnassigned = true;
@@ -174,49 +129,55 @@ public class MessagingService {
     }
 
     final HashMap<String, Object> params = new HashMap<>();
-    params.put("query", StringUtils.hasText(query) ? query : null);
+    params.put("query", StringUtils.hasText(cleanedQuery) ? cleanedQuery : null);
     params.put("smsTeamIds", smsTeamIds);
     params.put("ownerIds", ownerUserIds);
-    params.put("notifProjectIds", notifProjectIds);
+    params.put("notifThreadIds", notifThreadIds);
     params.put("unassigned", containsUnassigned);
     params.put("showInbox", showInbox);
+    params.put("showInternal", showInternal);
+    params.put("showExternal", showExternal);
+    params.put("sortAscending", sortAscending);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    List<ConversationMessageProperties> projects = sqlCache.queryBySql(
-      MessagingQuery.getProjects,
+    List<SmsConversation> conversations = sqlCache.queryBySql(
+      MessagingQuery.getConversations,
       params,
-      new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+      new MessagePropertiesMapper<>(SmsConversation.class, om));
 
-    if (!projects.isEmpty()) {
-      List<Long> projectIds = getProjectsCount(params);
-      ConversationMessageProperties first = projects.getFirst();
+//      todo: figure this out
+//    if (!projectConversations.isEmpty()) {
+//      List<Long> projectIds = getProjectsCount(params);
+//      ConversationMessageProperties first = projectConversations.getFirst();
+//
+//      User user = securityService.getCurrentUser();
+//      List<SmsTeam> userSmsTeams = getTeamsForUser(user);
+//      List<Long> userSmsTeamIds =
+//        userSmsTeams.stream().map(SmsTeam::getId).toList();
+//
+//      Map<String, Object> combinedProps = new HashMap<>();
+//      combinedProps.put("smsTeamIds", userSmsTeamIds);
+//      combinedProps.put("ownerIds", List.of(user.getId()));
+//      combinedProps.put("notifConversationIds", notifConversationIds);
+//
+//      Map<Boolean, List<ProjectCounter>> counters = getProjectsCombinedCount(combinedProps).stream()
+//        .collect(Collectors.partitioningBy(ProjectCounter::isOutboundMessage));
+//
+////      params.put("showInbox", true);
+//      List<Long> projectIdsInbox = counters.get(false).stream().map(ProjectCounter::getProjectId).toList();
+////      params.put("showInbox", false);
+//      List<Long> projectIdsSent = counters.get(true).stream().map(ProjectCounter::getProjectId).toList();
+//
+//      // Used for displaying the New and Sent notification badges on the SMS Inbox
+//      first.setProjectIdsForFilter(projectIds);
+//      first.setProjectIdsInbox(projectIdsInbox);
+//      first.setProjectIdsSent(projectIdsSent);
+//    }
 
-      User user = securityService.getCurrentUser();
-      List<SmsTeam> userSmsTeams = getTeamsForUser(user);
-      List<Long> userSmsTeamIds =
-        userSmsTeams.stream().map(SmsTeam::getId).toList();
-
-      Map<String, Object> combinedProps = new HashMap<>();
-      combinedProps.put("smsTeamIds", userSmsTeamIds);
-      combinedProps.put("ownerIds", List.of(user.getId()));
-      combinedProps.put("notifProjectIds", notifProjectIds);
-
-      Map<Boolean, List<ProjectCounter>> counters = getProjectsCombinedCount(combinedProps).stream()
-        .collect(Collectors.partitioningBy(ProjectCounter::isOutboundMessage));
-
-//      params.put("showInbox", true);
-      List<Long> projectIdsInbox = counters.get(false).stream().map(ProjectCounter::getProjectId).toList();
-//      params.put("showInbox", false);
-      List<Long> projectIdsSent = counters.get(true).stream().map(ProjectCounter::getProjectId).toList();
-
-      // Used for displaying the New and Sent notification badges on the SMS Inbox
-      first.setProjectIdsForFilter(projectIds);
-      first.setProjectIdsInbox(projectIdsInbox);
-      first.setProjectIdsSent(projectIdsSent);
-    }
-
-    return projects;
+    int count = 0;
+    return new PageImpl<>(
+      conversations, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   @Data
@@ -225,21 +186,7 @@ public class MessagingService {
     private boolean outboundMessage;
   }
 
-  private List<ProjectCounter> getProjectsCombinedCount(Map<String, Object> params) {
-    return sqlCache.queryBySql(
-      MessagingQuery.getProjectCountCombined,
-      params,
-      new BeanPropertyRowMapper<>(ProjectCounter.class));
-  }
-
-  private List<Long> getProjectsCount(Map<String, Object> params) {
-    return sqlCache.queryBySql(
-      MessagingQuery.getProjectsCount,
-      params,
-      new SingleColumnRowMapper<>(Long.class));
-  }
-
-  public List<ConversationMessageProperties> getUsers(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
+  public List<SmsConversation> getUsers(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
     boolean containsUnassigned = false;
     if (ownerUserIds.contains(-1L)) {
       containsUnassigned = true;
@@ -256,14 +203,14 @@ public class MessagingService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    List<ConversationMessageProperties> users = sqlCache.queryBySql(
+    List<SmsConversation> users = sqlCache.queryBySql(
       MessagingQuery.getUsers,
       params,
-      new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+      new MessagePropertiesMapper<>(SmsConversation.class, om));
 
     if (!users.isEmpty()) {
       List<Long> userIds = getUsersCount(params);
-      ConversationMessageProperties first = users.getFirst();
+      SmsConversation first = users.getFirst();
 
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
@@ -312,90 +259,64 @@ public class MessagingService {
       new SingleColumnRowMapper<>(Long.class));
   }
 
-  private void updateProjectStatus(Long projectId, Boolean closed, @NonNull Long modifiedByUserId) {
+  private void updateThreadClosedValue(Long threadId, Boolean closed, @NonNull Long modifiedByUserId) {
     Map<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    params.put("modifiedById", modifiedByUserId);
+    params.put("smsThreadId", threadId);
+    params.put("closed", closed);
 
-    String sql = closed ? MessagingQuery.saveProjectStatusClosed : MessagingQuery.saveProjectStatusOpen;
-    sqlCache.updateBySql(sql, params);
+    sqlCache.updateBySql(MessagingQuery.updateThreadClosedValue, params);
   }
 
-  private void updateUserStatus(Long userId, Boolean closed, @NonNull Long modifiedByUserId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
-    params.put("modifiedById", modifiedByUserId);
-
-    String sql = closed ? MessagingQuery.saveUserStatusClosed : MessagingQuery.saveUserStatusOpen;
-    sqlCache.updateBySql(sql, params);
+  @Data
+  public static class TeamCreationData {
+    private Boolean clearUnassigned;
+    private List<Integer> newlySelectedUserIds;
   }
 
-  public void addTeamForProject(
-    Long projectId, Long teamId, List<SmsTeamUser> ownersSelected, boolean defaultTeamAdded, Long modifiedByUserId) {
+  public void addSmsTeam(
+    Long smsThreadId, Long projectId, Long userId, Long teamId, List<SmsTeamUser> ownersSelected, boolean defaultTeamAdded, Long modifiedByUserId){
 
-    boolean clearUnassignedNotifications = false;
-
-    Optional<Long> existingTeamId =
-      sqlCache.queryForObjectOptionalBySql(
-        MessagingQuery.getProjectTeamId, Map.of("projectId", projectId, "teamId", teamId), Long.class);
-
-    SmsTeam teamBeingAdded;
-    if (existingTeamId.isEmpty()) {
-      // Insert the SMS team to associate it with the project
-      sqlCache.updateBySql(
-        MessagingQuery.insertProjectTeam,
-        Map.of("projectId", projectId, "teamId", teamId, "createdById", modifiedByUserId));
+    Long threadId;
+    if(smsThreadId == null) {
+      threadId = getThreadId(projectId, userId);
     } else {
-      // Team has already been added and we are adding Owner(s)
-      if (!ownersSelected.isEmpty()) {
-        List<SmsTeam> existingSmsTeams = getTeamsForProject(projectId);
-        teamBeingAdded = existingSmsTeams.stream()
-          .filter(st -> st.getId().equals(teamId))
-          .findFirst()
-          .orElse(null);
-
-        // Team exists and previously was unassigned
-        if (teamBeingAdded != null && teamBeingAdded.getUsers().isEmpty()) {
-          clearUnassignedNotifications = true;
-        } else if (teamBeingAdded != null) {
-          // Find any Owners that are attempting to be added but already are owners
-          List<SmsTeamUser> ownersToSkipAdding = new ArrayList<>();
-          for (SmsTeamUser userBeingAdded : ownersSelected) {
-            SmsTeamUser userAlreadyExists = teamBeingAdded.getUsers().stream()
-              .filter(u -> u.getUserId().equals(userBeingAdded.getUserId()))
-              .findFirst()
-              .orElse(null);
-
-            if (userAlreadyExists != null) {
-              ownersToSkipAdding.add(userBeingAdded);
-            }
-          }
-
-          // Remove all selected users that are already owners
-          ownersSelected.removeAll(ownersToSkipAdding);
-          // If there are no new owners, return
-          if (ownersSelected.isEmpty()) {
-            return;
-          }
-        }
-      }
+      threadId = smsThreadId;
     }
 
+    List<Long> selectedUserIds = new ArrayList<>();
+    if(null != ownersSelected && !ownersSelected.isEmpty()) {
+      selectedUserIds = ownersSelected.stream()
+        .map(SmsTeamUser::getUserId)
+        .collect(Collectors.toList());
+    }
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("threadId", threadId);
+    params.put("teamId", teamId);
+    params.put("currentUserId", modifiedByUserId);
+    try {
+      params.put("selectedUserIds", sqlArrayService.createSqlArrayOfType("bigint", selectedUserIds));
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    //try and do all the stuff this java function used to do for team creation but in a db function
+    TeamCreationData teamCreationData = sqlCache.getBySql(MessagingQuery.handleSmsTeamCreation, params,  new TeamCreationDataMapper<>(TeamCreationData.class, om)).get();
 
     List<Long> ownerUserIds = new ArrayList<>();
     List<Long> unassignedUserIds = new ArrayList<>();
 
-    if (ownersSelected != null && !ownersSelected.isEmpty()) {
+    if (teamCreationData.newlySelectedUserIds != null && !teamCreationData.newlySelectedUserIds.isEmpty()) {
       // If a User joined via a previously Unassigned team - clear notifications for any user(s)
       // that receive unassigned notifications
-      if (clearUnassignedNotifications) {
+      if (teamCreationData.clearUnassigned) {
         final List<SmsTeam> unassignedSmsTeams = getTeamsUnassignedNotificationUsers(List.of(teamId));
         for (SmsTeam smsTeam : unassignedSmsTeams) {
           List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
           for (User user : usersToNotify) {
-            List<Notification> notifications = notificationService.getProjectNotificationsForUser(user.getId());
+            List<Notification> notifications = notificationService.getThreadNotificationsForUser(user.getId());
             List<Long> notificationIds = notifications.stream()
-              .filter(n -> (Long.valueOf((Integer) n.getMetadata().get("projectId"))).equals(projectId))
+              .filter(n -> (Long.valueOf((Integer) n.getMetadata().get("threadId"))).equals(threadId))
               .map(Notification::getId).toList();
             if (!notificationIds.isEmpty()) {
               try {
@@ -409,8 +330,8 @@ public class MessagingService {
       }
 
       final String insertOwnerSql = """
-             insert into flow.project_message_owner
-              (project_id, sms_team_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
+             insert into flow.sms_thread_owner
+              (sms_thread_id, sms_team_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
               values (?, ?, ?, ?, now(), ?, now())
         """;
 
@@ -419,17 +340,18 @@ public class MessagingService {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(insertOwnerSql)) {
 
-          // Insert each of the SMS Team's Users so they are associated with the project
-          for (SmsTeamUser owner : ownersSelected) {
-            if (ownerUserIds.contains(owner.getUserId())) {
+          // Insert each of the SMS Team's Users so they are associated with the thread
+          for (Integer ownerUserId : teamCreationData.newlySelectedUserIds) {
+            if (ownerUserIds.contains(ownerUserId.longValue())) {
+              //prevent double add
               continue;
             }
 
-            ownerUserIds.add(owner.getUserId());
+            ownerUserIds.add(ownerUserId.longValue());
 
-            ps.setLong(1, projectId);
+            ps.setLong(1, threadId);
             ps.setLong(2, teamId);
-            ps.setLong(3, owner.getUserId());
+            ps.setLong(3, ownerUserId.longValue());
             ps.setLong(4, modifiedByUserId);
             ps.setLong(5, modifiedByUserId);
 
@@ -455,332 +377,114 @@ public class MessagingService {
     //don't give a notification if the user added themselves to the group
     userIdsToNotify.remove(modifiedByUserId);
 
-    addSmsProjectReplyNotification(projectId, teamId, userIdsToNotify, modifiedByUserId);
+    //dont add thread notifications when a user joins a thread. we treat all current messages as "Read" and only anything that comes in after the user is already on the team will affect the red notification badge count
+//    addSmsThreadReplyNotification(threadId, teamId, userIdsToNotify, modifiedByUserId);
 
-    addSmsProjectOwnershipNotification(projectId, modifiedByUserId);
+    addSmsThreadOwnershipNotificationForUserList(threadId, teamId, userIdsToNotify, modifiedByUserId);
 
-    updateProjectOwnerHistory(
-      projectId, teamId, ownerUserIds.isEmpty() ? null : ownerUserIds, true, false, modifiedByUserId);
-
-    Optional<ConversationMessageProperties> conversationMessageProps =
-      sqlCache.getBySql(
-        MessagingQuery.getProject,
-        Map.of("projectId", projectId),
-        new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+    SmsConversation conversationMessageProps = getThread(threadId, null,null, modifiedByUserId);
 
     // Check if Project is closed, if so open it - unless the default team is being added
     // automatically
     if (!defaultTeamAdded
-        && conversationMessageProps.isPresent()
-        && conversationMessageProps.get().isClosed()) {
-      updateProjectStatus(projectId, false, modifiedByUserId);
+        && conversationMessageProps.isClosed()) {
+      updateThreadClosedValue(threadId, false, modifiedByUserId);
     }
   }
 
-  public void addTeamForUser(
-    Long userId, Long teamId, List<SmsTeamUser> ownersSelected, boolean defaultTeamAdded, Long modifiedByUserId) {
+  public void removeThreadTeam(Long smsThreadId, Long projectId, Long userId, Long smsTeamId, Long modifiedByUserId) {
+    Long threadId = smsThreadId;
 
-    boolean clearUnassignedNotifications = false;
-
-    Optional<Long> existingTeamId =
-      sqlCache.queryForObjectOptionalBySql(
-        MessagingQuery.getUserTeamId, Map.of("userId", userId, "teamId", teamId), Long.class);
-
-    // If team is already associated with project, do not insert again
-    if (existingTeamId.isEmpty()) {
-      // Insert the SMS team to associate it with the User
-      sqlCache.updateBySql(
-        MessagingQuery.insertUserTeam,
-        Map.of("userId", userId, "teamId", teamId, "createdById", modifiedByUserId));
-    } else {
-      // Team has already been added and we are adding Owner(s)
-      if (!ownersSelected.isEmpty()) {
-        List<SmsTeam> smsTeams = getTeamsForUserConversation(userId);
-        SmsTeam teamBeingAdded = smsTeams.stream()
-          .filter(st -> st.getId().equals(teamId))
-          .findFirst()
-          .orElse(null);
-
-        // Team exists and previously was unassigned
-        if (teamBeingAdded != null && teamBeingAdded.getUsers().isEmpty()) {
-          clearUnassignedNotifications = true;
-        } else if (teamBeingAdded != null) {
-          // Find any Owners that are attempting to be added but already are owners
-          List<SmsTeamUser> ownersToSkipAdding = new ArrayList<>();
-          for (SmsTeamUser userBeingAdded : ownersSelected) {
-            SmsTeamUser userAlreadyExists = teamBeingAdded.getUsers().stream()
-              .filter(u -> u.getUserId().equals(userBeingAdded.getUserId()))
-              .findFirst()
-              .orElse(null);
-
-            if (userAlreadyExists != null) {
-              ownersToSkipAdding.add(userBeingAdded);
-            }
-          }
-
-          // Remove all selected users that are already owners
-          ownersSelected.removeAll(ownersToSkipAdding);
-          // If there are no new owners, return
-          if (ownersSelected.isEmpty()) {
-            return;
-          }
-        }
-      }
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
     }
 
-    List<Long> ownerUserIds = new ArrayList<>();
-    List<Long> unassignedUserIds = new ArrayList<>();
-
-    if (ownersSelected != null && !ownersSelected.isEmpty()) {
-      // If a User joined via a previously Unassigned team - clear notifications for any user(s)
-      // that receive unassigned notifications
-      if (clearUnassignedNotifications) {
-        final List<SmsTeam> unassignedSmsTeams = getTeamsUnassignedNotificationUsers(List.of(teamId));
-        for (SmsTeam smsTeam : unassignedSmsTeams) {
-          List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
-          for (User user : usersToNotify) {
-            List<Notification> notifications = notificationService.getUserNotificationsForUser(user.getId());
-            List<Long> notificationIds = notifications.stream()
-              .filter(n -> (Long.valueOf((Integer) n.getMetadata().get("userId"))).equals(userId))
-              .map(Notification::getId).toList();
-            if (!notificationIds.isEmpty()) {
-              try {
-                notificationService.markUserNotificationsAsRead(user.getId(), notificationIds);
-              } catch (SQLException e) {
-                log.error("MESSAGE: sql exception when marking unassigned notifications as read: ", e);
-              }
-            }
-          }
-        }
-      }
-
-      final String insertOwnerSql = """
-             insert into flow.user_message_owner
-              (owner_user_id, sms_team_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
-              values (?, ?, ?, ?, now(), ?, now())
-        """;
-
-      final DataSource dataSource = jdbc.getJdbcTemplate().getDataSource();
-      if (dataSource != null) {
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(insertOwnerSql)) {
-
-          // Insert each of the SMS Team's Users so they are associated with the project
-          for (SmsTeamUser owner : ownersSelected) {
-            if (ownerUserIds.contains(owner.getUserId())) {
-              continue;
-            }
-
-            ownerUserIds.add(owner.getUserId());
-
-            ps.setLong(1, userId);
-            ps.setLong(2, teamId);
-            ps.setLong(3, owner.getUserId());
-            ps.setLong(4, modifiedByUserId);
-            ps.setLong(5, modifiedByUserId);
-
-            ps.addBatch();
-          }
-
-          ps.executeBatch();
-
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    } else {
-      final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(List.of(teamId));
-      for (SmsTeam smsTeam : smsTeams) {
-        List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
-        unassignedUserIds.addAll(usersToNotify.stream().map(User::getId).collect(Collectors.toSet()));
-      }
-    }
-
-    final HashSet<Long> userIdsToNotify = new HashSet<>(ownerUserIds);
-    userIdsToNotify.addAll(unassignedUserIds);
-    //don't give a notification if the user added themselves to the group
-    userIdsToNotify.remove(modifiedByUserId);
-
-    addSmsUserReplyNotification(userId, teamId, userIdsToNotify, modifiedByUserId);
-
-    addSmsUserOwnershipNotification(userId, modifiedByUserId);
-
-    updateUserOwnerHistory(
-      userId, teamId, ownerUserIds.isEmpty() ? null : ownerUserIds, true, false, modifiedByUserId);
-
-    Optional<ConversationMessageProperties> userMessageProps =
-      sqlCache.getBySql(
-        MessagingQuery.getUser,
-        Map.of("userId", userId),
-        new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
-
-    // Check if Project is closed, if so open it - unless the default team is being added
-    // automatically
-    if (!defaultTeamAdded
-        && userMessageProps.isPresent()
-        && userMessageProps.get().isClosed()) {
-      updateUserStatus(userId, false, modifiedByUserId);
-    }
-  }
-
-  public void removeProjectTeam(Long projectId, Long smsTeamId, Long modifiedByUserId) {
-
-    ConversationMessageProperties cmp = getProject(projectId, modifiedByUserId);
     // Insert the SMS team to associate it with the project
-    sqlCache.updateBySql(MessagingQuery.removeProjectTeam, Map.of("projectId", projectId, "smsTeamId", smsTeamId));
-    sqlCache.updateBySql(MessagingQuery.removeProjectTeamOwners, Map.of("projectId", projectId, "smsTeamId", smsTeamId));
+    Map<String, Object> params = new HashMap<>();
+    params.put("threadId", threadId);
+    params.put("smsTeamId", smsTeamId);
+    params.put("modifiedById", modifiedByUserId);
 
-    updateProjectOwnerHistory(projectId, smsTeamId, null, false, true, modifiedByUserId);
-
-    Optional<ConversationMessageProperties> conversationMessageProps =
-      sqlCache.getBySql(
-        MessagingQuery.getProject,
-        Map.of("projectId", projectId),
-        new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+    sqlCache.updateBySql(MessagingQuery.removeEntireThreadTeam, params);
 
     try {
-      markSmsProjectNotificationsAsRead(null, projectId, smsTeamId, modifiedByUserId);
+      markSmsThreadNotificationsAsRead(threadId, null, projectId, smsTeamId, modifiedByUserId);
     } catch (SQLException e) {
       log.error("MESSAGE: Error marking SMS notifications as read {}", e.getMessage());
     }
 
-    // Check if Project is open and the final team was removed, if so close the project
-    if (conversationMessageProps.isPresent()) {
-      ConversationMessageProperties projectMessage = conversationMessageProps.get();
-      if (projectMessage.getSmsTeamOwners().isEmpty() && !projectMessage.isClosed()) {
-        updateProjectStatus(projectId, true, modifiedByUserId);
-      }
+    SmsConversation cmp = getThread(threadId, null, null, modifiedByUserId);
+    // Check if Thread is open and the final team was removed, if so close the project
+    if (cmp.getSmsTeamOwners().isEmpty() && !cmp.isClosed()) {
+      updateThreadClosedValue(threadId, true, modifiedByUserId);
     }
 
-    addSmsProjectOwnershipNotification(cmp, modifiedByUserId);
+    addSmsThreadOwnershipNotification(cmp, modifiedByUserId);
   }
 
-  public void removeUserTeam(Long userId, Long smsTeamId, Long modifiedByUserId) {
+  public String getThreadHistory(Long smsThreadId, Long projectId, Long userId) {
+    Long threadId = smsThreadId;
 
-    ConversationMessageProperties cmp = getUser(userId, modifiedByUserId);
-    sqlCache.updateBySql(MessagingQuery.removeUserTeam, Map.of("userId", userId, "smsTeamId", smsTeamId));
-    sqlCache.updateBySql(MessagingQuery.removeUserTeamOwners, Map.of("ownerUserId", userId, "smsTeamId", smsTeamId));
-
-    updateUserOwnerHistory(userId, smsTeamId, null, false, true, modifiedByUserId);
-
-    Optional<ConversationMessageProperties> convMessageProps =
-      sqlCache.getBySql(
-        MessagingQuery.getUser,
-        Map.of("userId", userId),
-        new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
-
-    try {
-      markSmsUserNotificationsAsRead(null, userId, smsTeamId, modifiedByUserId);
-    } catch (SQLException e) {
-      log.error("MESSAGE: Error marking SMS User notifications as read {}", e.getMessage());
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
     }
 
-    // Check if the conversation is open and the final team was removed, if so close it
-    if (convMessageProps.isPresent()) {
-      ConversationMessageProperties userMessage = convMessageProps.get();
-      if (userMessage.getSmsTeamOwners().isEmpty() && !userMessage.isClosed()) {
-        updateUserStatus(userId, true, modifiedByUserId);
-      }
-    }
-
-    addSmsUserOwnershipNotification(cmp, modifiedByUserId);
+    return jdbc.queryForObject(MessagingQuery.getThreadHistory, Map.of("threadId", threadId), String.class);
   }
 
-  public String getProjectHistory(Long projectId) {
-    return jdbc.queryForObject(MessagingQuery.getProjectHistory, Map.of("projectId", projectId), String.class);
-  }
+  public void closeStaleThreads(Long modifiedByUserId) {
+    List<Long> parentThreadIds =
+      sqlCache.queryBySql(MessagingQuery.getStaleThreads, null, new SingleColumnRowMapper<>(Long.class));
 
-  public String getUserHistory(Long userId) {
-    return jdbc.queryForObject(MessagingQuery.getUserHistory, Map.of("userId", userId), String.class);
-  }
-
-  public void setLastSentForProject(Long projectId, Long modifiedByUserId) {
-    sqlCache.updateBySql(
-      MessagingQuery.setLastSentForProject, Map.of("projectId", projectId, "modifiedById", modifiedByUserId));
-  }
-
-  public void setLastSentForUser(Long userId, Long modifiedByUserId) {
-    sqlCache.updateBySql(
-      MessagingQuery.setLastSentForUser, Map.of("userId", userId, "modifiedById", modifiedByUserId));
-  }
-
-  public void closeStaleProjectConversations(Long modifiedByUserId) {
-    List<Long> projectIds =
-      sqlCache.queryBySql(MessagingQuery.getStaleProjects, null, new SingleColumnRowMapper<>(Long.class));
-    for (Long projectId : projectIds) {
-      ConversationMessageProperties cmp = getProject(projectId, modifiedByUserId);
-      List<SmsTeam> smsTeams = cmp.getSmsTeamOwners();
-      for (SmsTeam smsTeam : smsTeams) {
-        removeProjectTeam(projectId, smsTeam.getId(), modifiedByUserId);
-      }
+    for (Long threadId : parentThreadIds) {
+      removeAllTeamsFromThread(threadId, null, null, modifiedByUserId);
     }
   }
 
-  public void closeStaleUserConversations(Long modifiedByUserId) {
-    List<Long> userIds =
-      sqlCache.queryBySql(MessagingQuery.getStaleUsers, null, new SingleColumnRowMapper<>(Long.class));
-    for (Long userId : userIds) {
-      removeTeamsFromUserConversation(userId, modifiedByUserId);
-    }
-  }
+  public void removeAllTeamsFromThread(Long smsThreadId, Long projectId, Long userId, Long modifiedByUserId) {
+    Long threadId = smsThreadId;
 
-  public void removeTeamsFromUserConversation(Long userId, Long modifiedByUserId) {
-    ConversationMessageProperties cmp = getUser(userId, modifiedByUserId);
-    List<SmsTeam> smsTeams = cmp.getSmsTeamOwners();
-    for (SmsTeam smsTeam : smsTeams) {
-      removeUserTeam(userId, smsTeam.getId(), modifiedByUserId);
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
     }
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("modifiedById", modifiedByUserId);
+    params.put("threadId", threadId);
+    sqlCache.updateBySql(MessagingQuery.removeAllThreadTeams, params);
   }
 
   @Transactional
-  public void removeProjectOwner(Long projectId, ProjectMessageOwner owner, Long modifiedByUserId) {
-    sqlCache.updateBySql(
-      MessagingQuery.removeProjectOwner,
-      Map.of(
-        "projectId",
-        projectId,
-        "userId",
-        owner.getUserId(),
-        "smsTeamId",
-        owner.getSmsTeamId(),
-        "modifiedById",
-        modifiedByUserId));
-    updateProjectOwnerHistory(projectId, owner.getSmsTeamId(), List.of(owner.getUserId()), false, false, modifiedByUserId);
+  public void removeThreadOwner(Long smsThreadId, Long projectId, Long userId, SmsThreadOwner owner, Long modifiedByUserId) {
+    Long threadId = smsThreadId;
+
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
+    }
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("threadId", threadId);
+    params.put("userId", owner.getUserId());
+    params.put("smsTeamId", owner.getSmsTeamId());
+    params.put("modifiedById", modifiedByUserId);
+
+
+    sqlCache.updateBySql(MessagingQuery.removeThreadOwner, params);
 
     try {
-      markSmsProjectNotificationsAsRead(owner.getUserId(), projectId, owner.getSmsTeamId(), modifiedByUserId);
+      markSmsThreadNotificationsAsRead(threadId, owner.getUserId(), projectId, owner.getSmsTeamId(), modifiedByUserId);
     } catch (SQLException e) {
       log.error("MESSAGE: Error marking SMS notifications as read {}", e.getMessage());
     }
 
-    addSmsProjectOwnershipNotification(projectId, modifiedByUserId);
+    addSmsThreadOwnershipNotification(threadId, null, null, modifiedByUserId);
   }
 
-  @Transactional
-  public void removeUserOwner(Long userId, UserMessageOwner owner, Long modifiedByUserId) {
-    sqlCache.updateBySql(
-      MessagingQuery.removeUserOwner,
-      Map.of(
-        "ownerUserId",
-        userId,
-        "userId",
-        owner.getUserId(),
-        "smsTeamId",
-        owner.getSmsTeamId(),
-        "modifiedById",
-        modifiedByUserId));
-    updateUserOwnerHistory(userId, owner.getSmsTeamId(), List.of(owner.getUserId()), false, false, modifiedByUserId);
-
-    try {
-      markSmsUserNotificationsAsRead(owner.getUserId(), userId, owner.getSmsTeamId(), modifiedByUserId);
-    } catch (SQLException e) {
-      log.error("MESSAGE: Error marking SMS notifications as read {}", e.getMessage());
-    }
-
-    addSmsUserOwnershipNotification(userId, modifiedByUserId);
-  }
-
-  private void updateProjectOwnerHistory(
+  private void updateThreadOwnerHistory(
     Long projectId, Long smsTeamId, List<Long> userIds, boolean isAdd, boolean removeTeam, Long modifiedByUserId) {
     String sqlQuery =
       "SELECT * FROM flow.set_sms_project_owner_history(:projectId::bigint, :smsTeamId::bigint, array[ :userIds ]::bigint[], :modifiedById::bigint, :isAdd::boolean, :removeTeam::boolean)";
@@ -816,102 +520,51 @@ public class MessagingService {
   @Async
   public void addNotifications(TwilioMessageRequest sms) {
     // database search col is looking for everything after the +1
-    String cleanPhoneNumber = sms.getFrom().replaceAll("[^0-9]", "").substring(1);
-    List<Long> projectIds =
+    String cleanPhoneNumber = sms.getFrom().replaceAll("[^0-9]", "");
+    if(cleanPhoneNumber.startsWith("1")) {
+      cleanPhoneNumber = cleanPhoneNumber.substring(1);
+    }
+
+    List<Long> threadIds =
       sqlCache.queryBySql(
-        SmsServiceQuery.getProjects,
-        Map.of("from", cleanPhoneNumber),
+        SmsServiceQuery.getThreads,
+        Map.of("phoneNumber", cleanPhoneNumber),
         new SingleColumnRowMapper<>(Long.class));
 
-    if (!projectIds.isEmpty()) {
+    if (!threadIds.isEmpty()) {
       // For any Project that is closed and has no teams assigned, open the project and assign the
       // default team
-      addProjectDefaultTeam(projectIds, SystemSettings.SYSTEM_USER.getId());
+      addThreadDefaultTeam(threadIds, SystemSettings.SYSTEM_USER.getId());
 
-      // Reset the last sent message date, which is used to mark the conversation as stale after 3
-      // days of no contact
-      sqlCache.updateBySql(
-        MessagingQuery.clearProjectLastSent,
-        Map.of("projectIds", projectIds, "modifiedById", SystemSettings.SYSTEM_USER.getId()));
-
-      for (Long projectId : projectIds) {
+      for (Long threadId : threadIds) {
 
 //      TODO: can we batch this call?
         // Get the list of the Users who are set to be notified for this project
         List<SmsTeamUser> ownerUsers =
           sqlCache.queryBySql(
-            MessagingQuery.getOwnersForProject, Map.of("projectId", projectId), SmsTeamUser.class);
+            MessagingQuery.getOwnerUsersForThread, Map.of("threadId", threadId), SmsTeamUser.class);
 
         // If there are no owners, add unassigned notifications if applicable
         if (ownerUsers.isEmpty()) {
-          ConversationMessageProperties cmp = getProject(projectId, SystemSettings.BR_SYSTEM_USER.getId());
+          SmsConversation cmp = getThread(threadId, null, null, SystemSettings.BR_SYSTEM_USER.getId());
+          //      todo sms solve this
           final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
           final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(teamIds);
           for (SmsTeam smsTeam : smsTeams) {
             List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
             for (User user : usersToNotify) {
-              addSmsProjectReplyNotification(
-                projectId, smsTeam.getId(), new HashSet<>(List.of(user.getId())), SystemSettings.SYSTEM_USER.getId());
+              addSmsThreadReplyNotification(
+                threadId, smsTeam.getId(), new HashSet<>(List.of(user.getId())), SystemSettings.SYSTEM_USER.getId());
 
-              addSmsProjectOwnershipNotification(projectId, SystemSettings.SYSTEM_USER.getId());
+              addSmsThreadOwnershipNotification(threadId, null, null, SystemSettings.SYSTEM_USER.getId());
             }
           }
         } else {
           for (SmsTeamUser smsTeamUser : ownerUsers) {
-            addSmsProjectReplyNotification(
-              projectId, smsTeamUser.getSmsTeamId(), new HashSet<>(List.of(smsTeamUser.getUserId())), SystemSettings.SYSTEM_USER.getId());
+            addSmsThreadReplyNotification(
+              threadId, smsTeamUser.getSmsTeamId(), null != smsTeamUser.getUserId() ? new HashSet<>(List.of(smsTeamUser.getUserId())) : new HashSet<>(), SystemSettings.SYSTEM_USER.getId());
 
-            addSmsProjectOwnershipNotification(projectId, SystemSettings.SYSTEM_USER.getId());
-          }
-        }
-      }
-    }
-
-    // Find User(s) that this phone number belongs to
-    List<Long> userIds =
-      sqlCache.queryBySql(
-        SmsServiceQuery.getUsers,
-        Map.of("from", cleanPhoneNumber),
-        new SingleColumnRowMapper<>(Long.class));
-
-    if (!userIds.isEmpty()) {
-      // For any User conversation that is closed and has no teams assigned, open the User conversation and assign the
-      // default team
-      addUserDefaultTeam(userIds, SystemSettings.SYSTEM_USER.getId());
-
-      // Reset the last sent message date, which is used to mark the conversation as stale after 3
-      // days of no contact
-      sqlCache.updateBySql(
-        MessagingQuery.clearUserLastSent,
-        Map.of("userIds", userIds, "modifiedById", SystemSettings.SYSTEM_USER.getId()));
-
-      for (Long userId : userIds) {
-//      TODO: can we batch this call?
-        // Get the list of the Users who are set to be notified for this user conversation
-        List<SmsTeamUser> ownerUsers =
-          sqlCache.queryBySql(
-            MessagingQuery.getOwnersForUser, Map.of("userId", userId), SmsTeamUser.class);
-
-        // If there are no owners, add unassigned notifications if applicable
-        if (ownerUsers.isEmpty()) {
-          ConversationMessageProperties cmp = getUser(userId, SystemSettings.BR_SYSTEM_USER.getId());
-          final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
-          final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(teamIds);
-          for (SmsTeam smsTeam : smsTeams) {
-            List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
-            for (User user : usersToNotify) {
-              addSmsUserReplyNotification(
-                userId, smsTeam.getId(), new HashSet<>(List.of(user.getId())), SystemSettings.SYSTEM_USER.getId());
-
-              addSmsUserOwnershipNotification(userId, SystemSettings.SYSTEM_USER.getId());
-            }
-          }
-        } else {
-          for (SmsTeamUser smsTeamUser : ownerUsers) {
-            addSmsUserReplyNotification(
-              userId, smsTeamUser.getSmsTeamId(), new HashSet<>(List.of(smsTeamUser.getUserId())), SystemSettings.SYSTEM_USER.getId());
-
-            addSmsUserOwnershipNotification(userId, SystemSettings.SYSTEM_USER.getId());
+            addSmsThreadOwnershipNotification(threadId, null, null, SystemSettings.SYSTEM_USER.getId());
           }
         }
       }
@@ -919,10 +572,12 @@ public class MessagingService {
   }
 
   // Used for displaying a red dot notification on the SMS Inbox
-  private void addSmsProjectReplyNotification(Long projectId, Long smsTeamId, Set<Long> userIds, Long modifiedByUserId) {
+  private void addSmsThreadReplyNotification(Long threadId, Long smsTeamId, Set<Long> userIds, Long modifiedByUserId) {
     if (userIds.isEmpty()) {
       return;
     }
+
+
 
     notificationService.createNotification(
       new CreateNotificationDto()
@@ -930,46 +585,54 @@ public class MessagingService {
         .setTitle("New SMS message from customer")
         .setBody("")
         .setPriority(1)
-        .setMetadata(Map.of("projectId", projectId, "smsTeamId", smsTeamId)),
+        .setMetadata(Map.of("threadId", threadId, "smsTeamId", smsTeamId)),
       userIds,
       modifiedByUserId);
   }
 
-  // Used for triggering a data refresh on the SMS Inbox screen for all owners of a Project
-  public void addSmsProjectOwnershipNotification(Long projectId, Long modifiedByUserId) {
-    ConversationMessageProperties cmp = getProject(projectId, modifiedByUserId);
-    addSmsProjectOwnershipNotification(cmp, modifiedByUserId);
-  }
+  // Used for triggering a data refresh on the SMS Inbox screen for all owners of a Thread
+  public void addSmsThreadOwnershipNotification(Long smsThreadId, Long projectId, Long userId, Long modifiedByUserId) {
+    Long threadId = smsThreadId;
 
-  // Used for triggering a data refresh on the SMS Inbox screen for all owners of a Project
-  private void addSmsProjectOwnershipNotification(ConversationMessageProperties cmp, Long modifiedByUserId) {
-    final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
-    final List<SmsTeam> teamUsers = getTeamUsers(cmp.getCompanyId(), teamIds);
-
-    for (SmsTeam smsTeamDetails : teamUsers) {
-
-      List<Long> smsTeamUserIds =
-        smsTeamDetails.getUsers().stream().map(SmsTeamUser::getUserId).toList();
-
-      if (!smsTeamUserIds.isEmpty()) {
-        addSmsProjectOwnershipNotification(
-          cmp.getProjectId(), smsTeamDetails.getId(), new HashSet<>(smsTeamUserIds), modifiedByUserId);
-      }
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
     }
+
+    SmsConversation cmp = getThread(threadId, null, null, modifiedByUserId);
+    addSmsThreadOwnershipNotification(cmp, modifiedByUserId);
   }
 
-  private void addSmsProjectOwnershipNotification(Long projectId, Long smsTeamId, Set<Long> userIds, Long modifiedByUserId) {
+  // Used for triggering a data refresh on the SMS Inbox screen for all owners of a Thread
+  private void addSmsThreadOwnershipNotification(SmsConversation cmp, Long modifiedByUserId) {
+    //      todo solve this
+//    final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
+//    final List<SmsTeam> teamUsers = getTeamUsers(cmp.getCompanyId(), teamIds);
+//
+//    for (SmsTeam smsTeamDetails : teamUsers) {
+//
+//      List<Long> smsTeamUserIds =
+//        smsTeamDetails.getUsers().stream().map(SmsTeamUser::getUserId).toList();
+//
+//      if (!smsTeamUserIds.isEmpty()) {
+//        addSmsProjectOwnershipNotification(
+//          cmp.getProjectId(), smsTeamDetails.getId(), new HashSet<>(smsTeamUserIds), modifiedByUserId);
+//      }
+//    }
+  }
+
+  private void addSmsThreadOwnershipNotificationForUserList(Long threadId, Long smsTeamId, Set<Long> userIds, Long modifiedByUserId) {
     // Add notification for the current user so their data gets refreshed
     userIds.add(modifiedByUserId);
 
     for (Long userId : userIds) {
       pubSubService.publish(EventChannel.NOTIFICATION, new NotificationEventMessage()
         .setUserId(userId)
-        .setTitle("Ownership has changed for this project")
+        .setTitle("Ownership has changed for this thread")
         .setNotificationTopic(NotificationTopic.SMS_OWNERSHIP)
         .setBody("")
         .setPriority(1)
-        .setMetadata(Map.of("projectId", projectId, "smsTeamId", smsTeamId))
+        .setMetadata(Map.of("threadId", threadId, "smsTeamId", smsTeamId))
       );
     }
   }
@@ -993,24 +656,25 @@ public class MessagingService {
 
   // Used for triggering a data refresh on the SMS Inbox screen for all owners of a User conversation
   public void addSmsUserOwnershipNotification(Long userId, Long modifiedByUserId) {
-    ConversationMessageProperties ump = getUser(userId, modifiedByUserId);
+    SmsConversation ump = getThread(null, null, userId, modifiedByUserId);
     addSmsUserOwnershipNotification(ump, modifiedByUserId);
   }
 
   // Used for triggering a data refresh on the SMS Inbox screen for all owners of a User conversation
-  private void addSmsUserOwnershipNotification(ConversationMessageProperties ump, Long modifiedByUserId) {
-    final List<Long> teamIds = ump.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
-    final List<SmsTeam> teamUsers = getTeamUsers(ump.getCompanyId(), teamIds);
-
-    for (SmsTeam smsTeamDetails : teamUsers) {
-      List<Long> smsTeamUserIds =
-        smsTeamDetails.getUsers().stream().map(SmsTeamUser::getUserId).toList();
-
-      if (!smsTeamUserIds.isEmpty()) {
-        addSmsUserOwnershipNotification(
-          ump.getUserId(), smsTeamDetails.getId(), new HashSet<>(smsTeamUserIds), modifiedByUserId);
-      }
-    }
+  private void addSmsUserOwnershipNotification(SmsConversation ump, Long modifiedByUserId) {
+    //      todo solve this
+//    final List<Long> teamIds = ump.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
+//    final List<SmsTeam> teamUsers = getTeamUsers(ump.getCompanyId(), teamIds);
+//
+//    for (SmsTeam smsTeamDetails : teamUsers) {
+//      List<Long> smsTeamUserIds =
+//        smsTeamDetails.getUsers().stream().map(SmsTeamUser::getUserId).toList();
+//
+//      if (!smsTeamUserIds.isEmpty()) {
+//        addSmsUserOwnershipNotification(
+//          ump.getUserId(), smsTeamDetails.getId(), new HashSet<>(smsTeamUserIds), modifiedByUserId);
+//      }
+//    }
   }
 
   private void addSmsUserOwnershipNotification(Long userId, Long smsTeamId, Set<Long> userIdsToNotify, Long modifiedByUserId) {
@@ -1029,68 +693,27 @@ public class MessagingService {
     }
   }
 
-  public void addProjectDefaultTeam(List<Long> projectIds, Long modifiedByUserId) {
-    for (Long projectId : projectIds) {
-      Optional<ConversationMessageProperties> conversationMessageProps =
+  public void addThreadDefaultTeam(List<Long> threadIds, Long modifiedByUserId) {
+    for (Long threadId : threadIds) {
+      Optional<SmsConversation> conversationMessageProps =
         sqlCache.getBySql(
-          MessagingQuery.getProject,
-          Map.of("projectId", projectId),
-          new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
+          MessagingQuery.getThread,
+          Map.of("smsThreadId", threadId),
+          new MessagePropertiesMapper<>(SmsConversation.class, om));
 
-      // Check if Project exists
+      // Check if Thread exists
       if (conversationMessageProps.isPresent()) {
-        ConversationMessageProperties projectMessage = conversationMessageProps.get();
-        // Check is the project has any sms owners
-        if (projectMessage.getSmsTeamOwners().isEmpty()) {
-          updateProjectStatus(projectId, false, modifiedByUserId);
-          Optional<Long> teamId = getDefaultTeamId(projectMessage.getCompanyId());
-          teamId.ifPresent(aLong -> addTeamForProject(projectId, aLong, null, true, modifiedByUserId));
+        SmsConversation thread = conversationMessageProps.get();
+        // Check is the thread has any sms owners
+        if (thread.getSmsTeamOwners().isEmpty()) {
+          updateThreadClosedValue(threadId, false, modifiedByUserId);
+          //todo sms figure out if sms can even work for multiple companies, then un-hardcode this
+          Long companyId = 3L;
+          Optional<Long> teamId = getDefaultTeamId(companyId);
+          teamId.ifPresent(aLong -> addSmsTeam(threadId, null, null, aLong, null, true, modifiedByUserId));
         }
-      } else {
-        // If the project has not had a conversation, start it
-        sqlCache.updateBySql(
-          MessagingQuery.insertProject,
-          Map.of("projectId", projectId, "createdById", modifiedByUserId));
-//        TODO: how do i know which company to use?
-//        TODO: don't hardcode this to BR
-        Optional<Long> teamId = getDefaultTeamId(SystemSettings.BR_SYSTEM_USER.getCompanyId());
-        teamId.ifPresent(aLong -> addTeamForProject(projectId, aLong, null, true, modifiedByUserId));
       }
     }
-  }
-
-  public void addUserDefaultTeam(List<Long> userIds, Long modifiedByUserId) {
-    for (Long userId : userIds) {
-      Optional<ConversationMessageProperties> userMessageProps =
-        sqlCache.getBySql(
-          MessagingQuery.getUser,
-          Map.of("userId", userId),
-          new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
-
-      // Check if Project exists
-      if (userMessageProps.isPresent()) {
-        ConversationMessageProperties userMessage = userMessageProps.get();
-        // Check is the project has any sms owners
-        if (userMessage.getSmsTeamOwners().isEmpty()) {
-          updateUserStatus(userId, false, modifiedByUserId);
-          Optional<Long> teamId = getDefaultTeamId(userMessage.getCompanyId());
-          teamId.ifPresent(aLong -> addTeamForUser(userId, aLong, null, true, modifiedByUserId));
-        }
-      } else {
-        // If the User has not had a conversation, start it
-        sqlCache.updateBySql(
-          MessagingQuery.insertUser,
-          Map.of("userId", userId, "createdById", modifiedByUserId));
-
-        Long companyId = getUserCompanyId(userId);
-        Optional<Long> teamId = getDefaultTeamId(companyId);
-        teamId.ifPresent(aLong -> addTeamForUser(userId, aLong, null, true, modifiedByUserId));
-      }
-    }
-  }
-
-  private Long getUserCompanyId(Long userId) {
-    return sqlCache.queryForObjectBySql(SmsTeamQuery.getUserCompany, Map.of("id", userId), Long.class);
   }
 
   private Optional<Long> getDefaultTeamId(Long companyId) {
@@ -1118,32 +741,24 @@ public class MessagingService {
       .toList();
   }
 
-  public List<SmsTeam> getTeamsForProject(Long projectId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-
-    return sqlCache.queryBySql(MessagingQuery.getSmsTeamsForProject, params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
-  }
-
-  public List<SmsTeam> getTeamsForUserConversation(Long userId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
-
-    return sqlCache.queryBySql(MessagingQuery.getSmsTeamsForUserConversation, params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
-  }
-
   @Transactional
-  public void deleteProjectConversation(Long projectId, Long modifiedByUserId) {
+  public void closeThreadConversation(Long smsThreadId, Long projectId, Long userId, Long modifiedByUserId) {
+    Long threadId = smsThreadId;
+
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
+    }
+
     Map<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
+    params.put("threadId", threadId);
     params.put("modifiedById", modifiedByUserId);
 
-    sqlCache.updateBySql(MessagingQuery.removeAllProjectTeamOwners, params);
-    sqlCache.updateBySql(MessagingQuery.removeAllProjectTeams, params);
-    sqlCache.updateBySql(MessagingQuery.deleteProjectConversation, params);
+    removeAllTeamsFromThread(threadId, null, null, modifiedByUserId);
+    sqlCache.updateBySql(MessagingQuery.closeThread, params);
 
     try {
-      markSmsProjectNotificationsAsRead(null, projectId, null, modifiedByUserId);
+      markSmsThreadNotificationsAsRead(threadId, null, null, null, modifiedByUserId);
     } catch (SQLException e) {
       log.error("MESSAGE: Error marking SMS notifications as read {}", e.getMessage());
     }
@@ -1174,7 +789,7 @@ public class MessagingService {
       .queryBySql(SmsTeamQuery.getTeamNotificationUsers, params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
   }
 
-  private void markSmsProjectNotificationsAsRead(Long userId, Long projectId, Long smsTeamId, @NonNull Long modifiedByUserId)
+  public void markSmsThreadNotificationsAsRead(Long threadId, Long userId, Long projectId, Long smsTeamId, @NonNull Long modifiedByUserId)
     throws SQLException {
 
     int updatedRecords;
@@ -1182,7 +797,7 @@ public class MessagingService {
 
     final Map<String, Object> params = new HashMap<>();
     params.put("modifiedById", modifiedByUserId);
-    params.put("projectId", projectId);
+    params.put("threadId", threadId);
     params.put("notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID);
     params.put("userId", userId);
     params.put("smsTeamId", smsTeamId);
@@ -1190,7 +805,7 @@ public class MessagingService {
     List<Long> userIds;
 
     if (userId != null) {
-      updatedRecords = sqlCache.updateBySql(MessagingQuery.markProjectSmsAsReadForUser, params);
+      updatedRecords = sqlCache.updateBySql(MessagingQuery.markThreadSmsAsReadForUser, params);
       userIds = List.of(userId);
 
       Notification notification =
@@ -1205,11 +820,11 @@ public class MessagingService {
 
       log.debug("[Messaging] Marked {} records as read for user={}", updatedRecords, userId);
     } else if (smsTeamId != null) {
-      updatedRecords = sqlCache.updateBySql(MessagingQuery.markProjectSmsAsReadForTeam, params);
+      updatedRecords = sqlCache.updateBySql(MessagingQuery.markThreadSmsAsReadForTeam, params);
 
       userIds =
         sqlCache.queryBySql(
-          MessagingQuery.findUserByForProjectTeam, params, new SingleColumnRowMapper<>(Long.class));
+          MessagingQuery.findUserByForThreadTeam, params, new SingleColumnRowMapper<>(Long.class));
 
       Notification notification =
         new Notification()
@@ -1224,80 +839,14 @@ public class MessagingService {
       log.debug(
         "[Messaging] Marked {} records as read for smsTeamId={}", updatedRecords, smsTeamId);
     } else {
-      updatedRecords = sqlCache.updateBySql(MessagingQuery.markSmsAsReadForProject, params);
+      updatedRecords = sqlCache.updateBySql(MessagingQuery.markSmsAsReadForThread, params);
 
       userIds =
         sqlCache.queryBySql(
-          MessagingQuery.findUserByForProject, params, new SingleColumnRowMapper<>(Long.class));
+          MessagingQuery.findUserByForThread, params, new SingleColumnRowMapper<>(Long.class));
 
       log.debug(
-        "[Messaging] Marked {} records as read for projectId={}", updatedRecords, projectId);
-    }
-
-    // make sure user notification cache is up-to-date
-    clearUserCache(userIds);
-  }
-
-  private void markSmsUserNotificationsAsRead(Long ownerUserId, Long userId, Long smsTeamId, @NonNull Long modifiedByUserId)
-    throws SQLException {
-
-    int updatedRecords;
-    final Long SMS_REPLY_NOTIFICATION_TOPIC_ID = 2L;
-
-    final Map<String, Object> params = new HashMap<>();
-    params.put("modifiedById", modifiedByUserId);
-    params.put("userId", userId);
-    params.put("notificationTopicId", SMS_REPLY_NOTIFICATION_TOPIC_ID);
-    params.put("ownerUserId", ownerUserId);
-    params.put("smsTeamId", smsTeamId);
-
-    List<Long> userIds;
-
-    if (ownerUserId != null) {
-      updatedRecords = sqlCache.updateBySql(MessagingQuery.markUserSmsAsReadForUser, params);
-      userIds = List.of(ownerUserId);
-
-      Notification notification =
-        new Notification()
-          .setTopic(NotificationTopic.SMS_REPLY)
-          .setTitle("Notification read")
-          .setBody("")
-          .setPriority(1)
-          .setUserId(ownerUserId);
-
-      pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
-
-      log.debug("[Messaging] Marked {} records as read for user={}", updatedRecords, ownerUserId);
-    } else if (smsTeamId != null) {
-      userIds =
-        sqlCache.queryBySql(
-          MessagingQuery.findUserByForUserTeam, params, new SingleColumnRowMapper<>(Long.class));
-
-      updatedRecords = sqlCache.updateBySql(MessagingQuery.markUserSmsAsReadForTeam, params);
-
-      for (Long removedUserId : userIds) {
-        Notification notification =
-          new Notification()
-            .setTopic(NotificationTopic.SMS_REPLY)
-            .setTitle("Notification read")
-            .setBody("")
-            .setPriority(1)
-            .setUserId(removedUserId);
-
-        pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
-      }
-
-      log.debug(
-        "[Messaging] Marked {} records as read for smsTeamId={}", updatedRecords, smsTeamId);
-    } else {
-      updatedRecords = sqlCache.updateBySql(MessagingQuery.markSmsAsReadForUser, params);
-
-      userIds =
-        sqlCache.queryBySql(
-          MessagingQuery.findUserByForUser, params, new SingleColumnRowMapper<>(Long.class));
-
-      log.debug(
-        "[Messaging] Marked {} records as read for userId={}", updatedRecords, userId);
+        "[Messaging] Marked {} records as read for threadId={}", updatedRecords, threadId);
     }
 
     // make sure user notification cache is up-to-date
@@ -1311,6 +860,23 @@ public class MessagingService {
     }
   }
 
+  public static class TeamCreationDataMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public TeamCreationDataMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Integer>> newlySelectedUserIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "newlySelectedUserIds",
+        new JsonObjectDeserializer<>(newlySelectedUserIdsRef, objectMapper));
+    }
+  }
+
   public static class MessagePropertiesMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -1321,20 +887,19 @@ public class MessagingService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<SMSQueueItem>> messageHistoryRef = new TypeReference<>() {
-      };
+      TypeReference<List<SmsSource>> sourcesRef = new TypeReference<>() {};
       bw.registerCustomEditor(
         List.class,
-        "messageHistory",
-        new JsonCollectionDeserializer(messageHistoryRef, objectMapper));
-      TypeReference<List<SmsTeam>> teamsRef = new TypeReference<>() {
-      };
+        "sources",
+        new JsonCollectionDeserializer(sourcesRef, objectMapper));
+
+      TypeReference<List<SmsOwner>> ownerRef = new TypeReference<>() {};
       bw.registerCustomEditor(
-        List.class, "smsTeamOwners", new JsonCollectionDeserializer(teamsRef, objectMapper));
-      TypeReference<List<SmsTeamUser>> usersRef = new TypeReference<>() {
-      };
+        List.class, "conversationOwners", new JsonCollectionDeserializer(ownerRef, objectMapper));
+
+      TypeReference<List<SmsTeam>> teamRef = new TypeReference<>() {};
       bw.registerCustomEditor(
-        List.class, "users", new JsonCollectionDeserializer(usersRef, objectMapper));
+        List.class, "smsTeamOwners", new JsonCollectionDeserializer(teamRef, objectMapper));
     }
   }
 }

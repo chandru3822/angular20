@@ -30,8 +30,11 @@ public class BlueravenCustomBehaviorService {
   private final SecurityService securityService;
   private final GenesysService genesysService;
   private final Five9Service five9Service;
+  private final KlaviyoService klaviyoService;
 
   private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 3L, 7L, 40L, 50L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
+
+  private final Set<String> DIGITAL_LEAD_SOURCES = new HashSet<>(Arrays.asList ("Paid Lead Gen", "Paid Advertising", "Organic", "Organic with Referral"));
 
   public void handleCustomContactCreation(Long contactId, Boolean isNew, List<CustomFieldValue> cfvs, List<CustomFieldGroup> cfgs) {
     Long leadLevel = getContactLeadLevel(cfgs);
@@ -57,6 +60,10 @@ public class BlueravenCustomBehaviorService {
         sqlCache.queryBySql(CustomBehaviorQuery.saveValueFromOrg, params, String.class);
       }
 
+      if (DIGITAL_LEAD_SOURCES.contains(leadSource)) {
+        klaviyoService.handleContact(contactId, cfvs, false);
+      }
+
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
         five9Service.handleContact(contactId, cfvs, false, null, leadLevel, leadSource);
       }
@@ -65,6 +72,10 @@ public class BlueravenCustomBehaviorService {
       }
     }
     else {
+      if (DIGITAL_LEAD_SOURCES.contains(leadSource)) {
+        klaviyoService.handleContact(contactId, cfvs, true);
+      }
+
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
         five9Service.handleContact(contactId, cfvs, true, null, leadLevel, leadSource);
       }

@@ -2101,7 +2101,7 @@ public class ProjectProcessStepService {
               smsTeamId = smsTemplate.getTeamIds().getFirst();
             }
             communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, smsTeamId);
-            smsTemplate.getTeamIds().forEach(teamId -> messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId()));
+            smsTemplate.getTeamIds().forEach(teamId -> messagingService.addSmsTeam(null, projectId, null, teamId, Collections.emptyList(), false, user.trueUserId()));
           } else {
             throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,

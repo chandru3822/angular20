@@ -4,6 +4,7 @@ import Login from './views/Login.vue'
 import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
 import {getRequest} from '@/helpers/helpers'
 import ProposalVersionSettingsRoutes from '@/views/blueraven/settings/proposals/routes'
+import PartsMasterVersionSettingsRoutes from '@/views/blueraven/settings/partsMaster/routes';
 import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/routes'
 import pinia from '@/store'
 import { useUserStore } from '@/stores/UserStore.js'
@@ -631,6 +632,7 @@ const router = new Router({
           component: () => import( './views/flow/settings/Settings.vue'),
           children: [
             ProposalVersionSettingsRoutes,
+            PartsMasterVersionSettingsRoutes,
             {
               path: 'pushNotifications',
               component: () => import('./views/flow/pushNotifications/Admin.vue')
@@ -2083,6 +2085,7 @@ const router = new Router({
         {
           path: 'inbox',
           name: 'inbox',
+          alias: '/outbox',
           meta: {title: 'Albatross - Inbox'},
           component: () => {
             if (userStore.userHasFeature('SMS_INBOX')) {
@@ -2093,7 +2096,7 @@ const router = new Router({
           },
           children: [
             {
-              path: 'inboxConversation/project/:projectId',
+              path: 'conversation/sms/:smsThreadId',
               meta: {title: 'Albatross - Inbox Conversation'},
               component: () => {
                 if (userStore.userHasFeature('SMS_INBOX')) {
@@ -2103,17 +2106,6 @@ const router = new Router({
                 }
               }
             },
-            {
-              path: 'inboxConversation/user/:userId',
-              meta: {title: 'Albatross - Inbox Conversation'},
-              component: () => {
-                if (userStore.userHasFeature('SMS_INBOX')) {
-                  return import ( './views/flow/settings/inbox/MainInbox')
-                } else {
-                  return accessDenied()
-                }
-              }
-            }
           ]
         },
       ]

@@ -21,9 +21,7 @@ public class TwilioWebhookController {
 
   private final SMSService smsService;
 
-  private final MessagingService messagingService;
 
-  private final ObjectMapper objectMapper;
 
   @ResponseStatus(HttpStatus.OK)
   @PostMapping(
@@ -41,10 +39,7 @@ public class TwilioWebhookController {
     consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
     produces = MediaType.APPLICATION_XML_VALUE)
   public String receiveInboundMessage(@RequestParam Map<String, Object> req) throws TwiMLException {
-    final TwilioMessageRequest twilioSMS = objectMapper.convertValue(req, TwilioMessageRequest.class);
-    smsService.saveReply(twilioSMS);
-    messagingService.addNotifications(twilioSMS);
-    return new MessagingResponse.Builder().build().toXml();
+    return smsService.receiveInboundMessage(req);
   }
 
   @ResponseStatus(HttpStatus.ACCEPTED)

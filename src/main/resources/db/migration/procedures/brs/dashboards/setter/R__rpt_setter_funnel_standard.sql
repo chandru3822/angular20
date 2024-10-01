@@ -320,7 +320,7 @@ BEGIN
                                                 select f2.id,
                                                        case
                                                          when
-                                                             (select count_count::numeric from funnel_data f1 where f1.id = 27)::numeric <
+                                                             (select count_count::numeric from funnel_data f1 where f1.id = 33)::numeric <
                                                              1 then
                                                            0
                                                          else

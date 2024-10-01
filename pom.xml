@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.3.3</version>
+    <version>3.3.4</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
@@ -20,7 +20,7 @@
     <feign.version>13.3</feign.version>
     <spring-cloud.version>2020.0.3</spring-cloud.version>
     <aws-springcloud.version>2.4.4</aws-springcloud.version>
-    <aws-sdk.version>1.12.771</aws-sdk.version>
+    <aws-sdk.version>1.12.772</aws-sdk.version>
     <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
     <spring-cloud-starter.version>4.1.4</spring-cloud-starter.version>
   </properties>

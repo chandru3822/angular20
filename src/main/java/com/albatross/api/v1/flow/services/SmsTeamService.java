@@ -111,30 +111,17 @@ public class SmsTeamService {
     final Long modifiedByUserId = user.trueUserId();
 
     // Get a list of Projects that have this team assigned to them
-    List<Long> projectIds =
+    List<Long> threadIds =
         sqlCache.queryBySql(
-          MessagingQuery.getProjectsBySmsTeam,
+          MessagingQuery.getThreadsBySmsTeam,
             Map.of("smsTeamId", smsTeamId),
             new SingleColumnRowMapper<>(Long.class));
 
-    // Remove the team and team owners from any associated projects
-    deleteTeamsAndOwnersFromProjects(smsTeamId, null, null, null);
+    // Remove the team and team owners from any associated threads
+    deleteTeamsAndOwnersFromThreads(smsTeamId, null, null, null);
 
-    // For any Project that has no teams assigned, assign the default team
-    messagingService.addProjectDefaultTeam(projectIds, modifiedByUserId);
-
-    // Get a list of userIds that have this team assigned to them
-    List<Long> userIds =
-      sqlCache.queryBySql(
-        MessagingQuery.getUsersBySmsTeam,
-        Map.of("smsTeamId", smsTeamId),
-        new SingleColumnRowMapper<>(Long.class));
-
-    // Remove the team and team owners from any associated users
-    deleteTeamsAndOwnersFromUsers(smsTeamId, null, null, null);
-
-    // For any User that has no teams assigned, assign the default team
-    messagingService.addUserDefaultTeam(userIds, modifiedByUserId);
+    // For any Thread that has no teams assigned, assign the default team
+    messagingService.addThreadDefaultTeam(threadIds, modifiedByUserId);
 
     SmsTeam smsTeam = getTeamDetails(smsTeamId);
     for (SmsTeamUser smsTeamUser : smsTeam.getUsers()) {
@@ -172,8 +159,7 @@ public class SmsTeamService {
   }
 
   public void deletePosition(Long smsTeamId, Long positionId) {
-    deleteTeamsAndOwnersFromProjects(smsTeamId, null, positionId, null);
-    deleteTeamsAndOwnersFromUsers(smsTeamId, null, positionId, null);
+    deleteTeamsAndOwnersFromThreads(smsTeamId, null, positionId, null);
 
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -202,10 +188,7 @@ public class SmsTeamService {
   public void deleteUser(Long smsTeamId, Long teamUserId) {
     Optional<SmsTeamUser> smsTeamUser = getUser(teamUserId);
     smsTeamUser.ifPresent(
-        teamUser -> deleteTeamsAndOwnersFromProjects(smsTeamId, null, null, teamUser.getUserId()));
-
-    smsTeamUser.ifPresent(
-      teamUser -> deleteTeamsAndOwnersFromUsers(smsTeamId, null, null, teamUser.getUserId()));
+        teamUser -> deleteTeamsAndOwnersFromThreads(smsTeamId, null, null, teamUser.getUserId()));
 
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -218,8 +201,7 @@ public class SmsTeamService {
   public void deleteUserByUserId(Long userId, Long orgId, Long positionId) {
     List<SmsTeam> smsTeams = getTeamsForUser(userId);
     for (SmsTeam smsTeam : smsTeams) {
-      deleteTeamsAndOwnersFromProjects(smsTeam.getId(), orgId, positionId, userId);
-      deleteTeamsAndOwnersFromUsers(smsTeam.getId(), orgId, positionId, userId);
+      deleteTeamsAndOwnersFromThreads(smsTeam.getId(), orgId, positionId, userId);
     }
 
     User user = securityService.getCurrentUser();
@@ -246,8 +228,7 @@ public class SmsTeamService {
   }
 
   public void deleteOrg(Long smsTeamId, Long orgId) {
-    deleteTeamsAndOwnersFromProjects(smsTeamId, orgId, null, null);
-    deleteTeamsAndOwnersFromUsers(smsTeamId, orgId, null, null);
+    deleteTeamsAndOwnersFromThreads(smsTeamId, orgId, null, null);
 
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -281,26 +262,11 @@ public class SmsTeamService {
         .collect(Collectors.toList());
   }
 
-  private void deleteTeamsAndOwnersFromProjects(
+  private void deleteTeamsAndOwnersFromThreads(
       Long smsTeamId, Long orgId, Long positionId, Long userId) {
     User user = securityService.getCurrentUser();
     String sqlQuery =
-        "SELECT * FROM flow.remove_sms_team_project_owners(:smsTeamId::bigint, :orgId::bigint, :positionId::bigint, :userId::bigint, :modifiedById::bigint)";
-
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("smsTeamId", smsTeamId);
-    parameters.addValue("orgId", orgId);
-    parameters.addValue("positionId", positionId);
-    parameters.addValue("userId", userId);
-    parameters.addValue("modifiedById", user.trueUserId());
-    jdbc.queryForObject(sqlQuery, parameters, String.class);
-  }
-
-  private void deleteTeamsAndOwnersFromUsers(
-    Long smsTeamId, Long orgId, Long positionId, Long userId) {
-    User user = securityService.getCurrentUser();
-    String sqlQuery =
-      "SELECT * FROM flow.remove_sms_team_user_owners(:smsTeamId::bigint, :orgId::bigint, :positionId::bigint, :userId::bigint, :modifiedById::bigint)";
+        "SELECT * FROM flow.remove_sms_team_thread_owners(:smsTeamId::bigint, :orgId::bigint, :positionId::bigint, :userId::bigint, :modifiedById::bigint)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("smsTeamId", smsTeamId);

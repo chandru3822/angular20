@@ -1,7 +1,7 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <v-chip-group :column="!miniDialog" class="team-chips" show-arrows="always" :class="{'mini': miniDialog}">
+  <v-chip-group :column="!miniDialog" class="team-chips" :class="{'mini': miniDialog}">
     <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap" :key="index">
-        <v-chip v-if="team.users.length === 0"
+        <v-chip v-if="team.users && team.users.length === 0"
                 label
                 :close="teamNamesAssociatedToUser.includes(team.teamName) && userCanView"
                 close-icon="mdi-close"
@@ -14,8 +14,7 @@
         >
           <span >{{team.teamName}} - Unassigned</span>
         </v-chip>
-        <v-chip v-else v-for="(user, index) in team.users"
-				:key="index"
+        <v-chip v-else v-for="(user, index) in team.users" :key="index"
                 label
                 :close="(user.userId === loggedInUserId && userCanView) || (teamNamesAssociatedToUser.includes(team.teamName) && userCanManage)"
                 close-icon="mdi-close"
@@ -44,10 +43,10 @@
           <v-radio-group v-model="removeOption">
             <v-radio :key="0" :value="0" class="albatross-body-1 remove-dialog-option mb-4">
               <template v-slot:label><div class="default-text-color"> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</div></template></v-radio>
-            <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
-              <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</div></template>
+            <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove?.teamName} team members on the conversation`]">
+              <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove?.teamName}}&nbsp;</strong> team from the conversation</div></template>
             </v-radio>
-            <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove.teamName}} team members on the conversation</span>
+            <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove?.teamName}} team members on the conversation</span>
           </v-radio-group>
           <v-card-actions class="pb-4">
             <v-spacer/>
@@ -77,7 +76,7 @@
           </v-card-title>
           <v-card-text class="default-text-color albatross-body-1 px-6">
            <div>Because no other team is on the conversation, this action will remove the team and close the conversation.</div>
-            <div>Are you sure you want to remove {{teamToRemove.teamName}} team and close conversation?</div>
+            <div>Are you sure you want to remove {{teamToRemove?.teamName}} team and close conversation?</div>
           </v-card-text>
           <v-card-actions class="pb-4">
             <v-spacer/>
@@ -104,7 +103,7 @@
           </v-card-title>
           <v-card-text class="albatross-body-1 pb-2 default-text-color">
             <div>This action will remove the team from the conversation. </div>
-            <div>Are you sure you want to remove <b>{{teamToRemove.teamName}}</b> team?</div>
+            <div>Are you sure you want to remove <b>{{teamToRemove?.teamName}}</b> team?</div>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -141,7 +140,9 @@
             <span class="albatross-body-3">Add Member</span>
           </v-tooltip>
         </template>
-        <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
+        <AddTeamDropdown :sms-team-owners="smsTeamOwners"
+                         :sms-thread-id="smsThreadId"
+                         :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded"></AddTeamDropdown>
       </v-menu>
   </v-chip-group>
 </template>
@@ -150,7 +151,7 @@
 import {getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 
-import {ref, computed, onMounted} from "vue";
+import {ref, computed, onMounted, toRefs} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
@@ -165,6 +166,7 @@ const props = defineProps({
   smsTeamOwners: Array,
   teamNamesAssociatedToUser: Array,
   projectId: Number,
+  smsThreadId: Number,
   conversation: Object,
   showSelectedStyles: Boolean,
   showAssignToMeButton: Boolean,
@@ -172,6 +174,8 @@ const props = defineProps({
   userId: Number,
   miniDialog: Boolean
 })
+
+const { teamNamesAssociatedToUser, smsThreadId } = toRefs(props)
 
 const showRemoveDialog = ref(false)
 const showRemoveLastTeamDialog = ref(false)
@@ -210,10 +214,13 @@ onMounted(() => {
   }
 })
 
-const teamAdded = () => {
+const teamAdded = (cancel) => {
   teamsMenuOpen.value = false
   unassignedTeamMenuOpen.value = false
-  emit('updateOwner')
+  // don't update anything if they hit cancel
+  if(!cancel) {
+    emit('updateOwner')
+  }
 }
 const close =  (user) => {
   userToRemove.value = user
@@ -246,7 +253,10 @@ const removeTeam = async (teamId) => {
   showRemoveLastTeamDialog.value = false
   try {
     let removeTeamUrl = ''
-    if (props.projectId) {
+    if (smsThreadId.value) {
+      removeTeamUrl = `/messaging/removeTeam/thread/`+ props.smsThreadId + '/' + teamId
+    }
+    else if (props.projectId) {
       removeTeamUrl = `/messaging/removeTeam/project/`+ props.projectId + '/' + teamId
     }
     else if (props.userId) {
@@ -255,8 +265,9 @@ const removeTeam = async (teamId) => {
 
     await putRequest(removeTeamUrl)
     // If the project/user is currently opened on the right panel, navigate back to main inbox to close it
-    if (route.path.includes('inboxConversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId))) {
-      await router.push({path: `/inbox`})
+    if (route.path.includes('conversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId) || route.path.includes(props.smsThreadId))) {
+      let path = route.path.includes('outbox') ? '/outbox' : '/inbox'
+      await router.push({ path })
     }
     appStore.showSnack('SUCCESS', 'Team removed')
   } catch (e) {
@@ -268,7 +279,17 @@ const removeTeam = async (teamId) => {
 }
 const removeUser = async () => {
   try {
-    if (props.projectId) {
+    if (props.smsThreadId) {
+      const bodyData = {
+        projectId: props.projectId,
+        smsTeamId: userToRemove.value.smsTeamId,
+        userId: userToRemove.value.userId,
+        name: userToRemove.value.name,
+        archived: userToRemove.value.archived
+      }
+      await putRequest(`/messaging/removeOwner/thread/`+ props.smsThreadId, bodyData)
+    }
+    else if (props.projectId) {
       const bodyData = {
         projectId: props.projectId,
         smsTeamId: userToRemove.value.smsTeamId,
@@ -299,7 +320,7 @@ const removeUser = async () => {
 const unassignedTeamExits = () => {
   let unassignedExists = false;
   props.smsTeamOwners.forEach(team => {
-    if (team.users.length === 0 && props.teamNamesAssociatedToUser.includes(team.teamName)) {
+    if (team.users.length === 0 && teamNamesAssociatedToUser.value.includes(team.teamName)) {
       unassignedExists = true;
     }
   });

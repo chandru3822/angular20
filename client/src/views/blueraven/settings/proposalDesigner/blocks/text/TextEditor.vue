@@ -27,10 +27,9 @@ const { editor } = toRefs(props)
   &:hover {
     outline: 1px solid rgb(128 128 128 / 70%);
   }
-
 }
 
-.replacement[data-type="mention"] {
+.replacement[data-type='mention'] {
   text-decoration: underline var(--v-grey-lighten1) dotted;
 }
 

@@ -57,7 +57,7 @@ public class CommunicationController {
   }
 
   @Data
-  public static class SendTextProjectRequest {
+  public static class SendTextRequest {
     List<Long> userIDs;
     @Size(max = 1600, message = "Message must be less than 1600 characters")
     String message = "";
@@ -65,20 +65,40 @@ public class CommunicationController {
     Long smsTeamId;
   }
 
+  @PostMapping(value = "/sendTextsForThread/{smsThreadId}")
+  public Map<String, Object> sendTextsForThread(
+    @PathVariable Long smsThreadId, @RequestBody @Valid SendTextRequest sendTexts) {
+    User user = securityService.getCurrentUser();
+
+    log.debug("TWILIO: attempting text for thread ID: {}", smsThreadId);
+    if (null != smsThreadId) {
+      return communicationService.sendTextsForThread(smsThreadId, user, sendTexts.getMessage(), sendTexts.getMediaURLs(), sendTexts.getSmsTeamId());
+    } else {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Could not find thread for contact id: " + smsThreadId,
+        new Exception());
+    }
+  }
+
   @PostMapping(value = "/sendTextsForProject/{projectId}")
   public Map<String, Object> sendTextsForProject(
-    @PathVariable Long projectId, @RequestBody @Valid SendTextProjectRequest sendTexts) {
+    @PathVariable Long projectId, @RequestBody @Valid SendTextRequest sendTexts) {
     User user = securityService.getCurrentUser();
 
     Long contactId = 0L;
-    if (sendTexts.getUserIDs() == null || sendTexts.getUserIDs().isEmpty()) {
-      Optional<Project> project = projectService.getProject(projectId);
-      if (project.isPresent()) {
-        contactId = project.get().getContactId();
-      }
-    } else {
-      contactId = sendTexts.getUserIDs().get(0);
+    Optional<Project> project = projectService.getProject(projectId);
+    if(project.isPresent()) {
+      contactId = project.get().getContactId();
     }
+//    if (sendTexts.getUserIDs() == null || sendTexts.getUserIDs().isEmpty()) {
+//      if (project.isPresent()) {
+//        contactId = project.get().getContactId();
+//      }
+//    }
+//    else {
+//      contactId = sendTexts.getUserIDs().get(0);
+//    }
 
     Contact contact = contactService.getContact(contactId);
     log.debug("TWILIO: attempting text for contact ID: {}", contactId);
@@ -92,17 +112,9 @@ public class CommunicationController {
     }
   }
 
-  @Data
-  public static class SendTextUserRequest {
-    @Size(max = 1600, message = "Message must be less than 1600 characters")
-    String message = "";
-    List<URI> mediaURLs = new ArrayList<>();
-    Long smsTeamId;
-  }
-
   @PostMapping(value = "/sendTextsForUser/{userId}")
   public Map<String, Object> sendTextsForUser(
-    @PathVariable Long userId, @RequestBody @Valid SendTextUserRequest sendTexts) {
+    @PathVariable Long userId, @RequestBody @Valid SendTextRequest sendTexts) {
     Optional<User> recipientUser = userService.getUser(userId, false);
     log.debug("TWILIO: attempting text for user ID: {}", userId);
 

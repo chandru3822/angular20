@@ -2,22 +2,23 @@
   <component :is="activeComp"
     id="main-inbox-container"
     :header-hidden="true"
-    :right-hidden="!route.params.projectId && !route.params.userId"
+    :right-hidden="!route.params.smsThreadId"
     :left-hidden="true"
     :half-n-half="true"
     :auto-overflow-left="true"
     :show-right-collapse-btn="false"
-             :show-right-col="route.params.projectId"
-    @closeRight="router.push({path: `/inbox`})"
+    :show-right-col="route.params.smsThreadId"
+    @closeRight="router.push({path: routePrefix.value})"
   >
     <template v-slot:main-column>
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
                                @joinConversation="joinConversation" />
       <div id="inbox-header" class="px-6 pt-1">
-          <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4">
-            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; reloadConversations()">
-              New
+          <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4" :value="showInbox ? 0 : 1">
+            <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''"
+                   text @click="routeToInbox('/inbox'); fetchConversations()">
+              Inbox
               <v-badge
                 class="inbox-badge"
                 color="#D03331"
@@ -25,14 +26,8 @@
                 v-if="inboxNotificationCount > 0"
               ></v-badge>
             </v-tab>
-            <v-tab text @click="showInbox = false; reloadConversations()">
+            <v-tab text @click="showUnreadOnly = false; routeToInbox('/outbox'); fetchConversations()">
               Sent
-              <v-badge
-                class="inbox-badge"
-                color="#D03331"
-                :content="sentNotificationCount"
-                v-if="sentNotificationCount > 0"
-              ></v-badge>
             </v-tab>
             <v-spacer></v-spacer>
             <a-btn v-if="teamsAssociatedToUser.length > 0" color="primary"
@@ -46,7 +41,7 @@
             <v-col cols="12" md="4" lg="3" class="pa-0 pr-6">
             <a-text-field
               prepend-inner-icon="search"
-              label="Search by project or owner"
+              label="Search by project, user or phone number"
               v-model="searchQuery"
               @input="searchConversations"
               :class="teamFilterOptions.length > 0 ? 'conversation-search' : 'conversation-search-no-teams'"
@@ -58,7 +53,7 @@
             <a-select v-model="messageTypeFilter"
                       :items="messageTypes"
                       single-line
-                      @change="reloadConversations"
+                      @change="fetchConversations"
                       custom-classes="message-type-selector albatross-body-2 mb-n4 mt-2 pr-6"
                       prepend-icon="filter_alt"
             >
@@ -74,7 +69,7 @@
             </v-col>
             <v-col class="pa-0" cols="2" sm="4">
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 flex-shrink-0"
-                    @click="sortOldToNew = !sortOldToNew">
+                    @click="[sortOldToNew = !sortOldToNew, fetchConversations()]">
               <span v-if="vuetify.breakpoint.smAndUp">{{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}</span>
               <v-icon v-else>{{sortOldToNew ? 'mdi-sort-calendar-ascending' : 'mdi-sort-calendar-descending'}}</v-icon>
             </v-chip>
@@ -82,9 +77,9 @@
           </v-row>
           <v-row class="px-2 toolbar-row-2 align-center flex-wrap flex-nowrap-m">
             <v-col class="pa-0" cols="12" sm="4" >
-            <v-checkbox
+            <v-checkbox v-if="showInbox"
               v-model="showUnreadOnly"
-              @change="reloadConversations"
+              @change="fetchConversations"
               label="Show unread only"
               class="read-filter albatross-body-2 align-self-end default-text-color pl-1"
             >
@@ -138,7 +133,7 @@
                             class="filter-control albatross-body-2"
                             placeholder="Owners"
                             :menu-props="{offsetY:true}"
-                            @input="reloadConversations"
+                            @input="fetchConversations"
                             multiple
                             clearable>
               <template  v-slot:prepend-item>
@@ -170,7 +165,7 @@
           </v-row>
       </div>
       <v-data-table
-        :items="conversationsFiltered"
+        :items="conversations"
         :options.sync="options"
         disable-sort
         ref="pageableTable"
@@ -192,7 +187,7 @@
 
         <template #item="{ item, index }">
           <v-col class="inbox-row pa-6 clickable"
-                 :class="{'selected': (item.projectId && route.params.projectId == item.projectId) || (item.userId && route.params.userId == item.userId)}"
+                 :class="{'selected': (item.parentId && route.params.smsThreadId === item.parentId)}"
                  @click="openConversation(item)">
             <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
               <v-col cols="11" class="pa-0">
@@ -206,20 +201,18 @@
                       v-if="getNotificationCount(item) > 0"
                     >
                     </v-badge>
-                    <b>{{ item.projectName ? item.projectName : item.fullName }}</b>
+                    <b>{{ item.fullName }}</b>
                   </div>
-                  <span v-if="item.messageHistory.length > 0"
-                        class="albatross-body-2 px-2">{{ getTime(item.messageHistory[0].lastMessageSent)
-                    }}</span>
-                  <span class="albatross-body-2 px-1 grey--text text--darken-2" v-if="item.projectName">{{ item.state }}</span>
-                  <v-chip class="customer-chip ml-1" small  v-if="item.projectId">
+                  <span class="albatross-body-2 px-2">{{ getTime(item.dateCreated) }}</span>
+                  <span class="albatross-body-2 px-1 grey--text text--darken-2" v-if="item.recipientTypeId === 2">{{ item.stateAbbreviation }}</span>
+                  <v-chip class="customer-chip ml-1" small  v-if="item.recipientTypeId === 2">
                     <span >Customer</span>
                   </v-chip>
                   <v-chip class="internal-chip" small v-else>
                     <span >Internal</span>
                   </v-chip>
                 </div>
-                <div v-if="item.messageHistory.length > 0" class="text-ellipses mt-1">{{ item.messageHistory[0].message }}
+                <div class="text-ellipses mt-1">{{ item.message }}
                 </div>
               </v-col>
             </v-row>
@@ -229,6 +222,7 @@
               :reloading="reloadInProgress"
               :show-assign-to-me-button="false"
               :project-id="item.projectId"
+              :sms-thread-id="item.parentId"
               :user-id="item.userId"
               :conversation="item"
               show-selected-styles
@@ -238,16 +232,23 @@
           </v-col>
         </template>
       </v-data-table>
-      <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog" :is-inbox="true" class="pa-0"/>
+      <NewMessageDialog v-if="showNewMessageDialog"
+                        :show-new-message-dialog.sync="showNewMessageDialog"
+                        :is-inbox="true" class="pa-0"/>
     </template>
     <template v-slot:collapse-button>
       <a-btn class="d-inline-block align-self-center" size="small" variant="text" color="primary"
-                       @click="router.push({path: `/inbox`})"
+                       @click="router.push({path: `${routePrefix.value}`})"
                        prepend-icon="close"
       />
     </template>
     <template v-slot:right-column>
-      <ProjectActivity v-if="!thingsLoading" collapseBtnIcon="close" :allowSidebarCollapse="false" @collapseCallback="closeConversation"></ProjectActivity>
+      <ProjectActivity v-if="!thingsLoading && null != selectedConversation" collapseBtnIcon="close"
+                       :show-attachments-tab="false"
+                       :show-notes-tab="false"
+                       :show-sms-tab="true"
+                       :allowSidebarCollapse="false"
+                       @collapseCallback="closeConversation"></ProjectActivity>
     </template>
   </component>
 </template>
@@ -269,7 +270,9 @@ import {useUserStore} from "@/stores/UserStore.js";
 import { useNotificationStore } from '@/stores/NotificationStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
-import {useProjectStore} from "@/stores/ProjectStore.js";
+import {useProjectStore} from "@/stores/ProjectStore.js"
+import { storeToRefs } from 'pinia'
+
 const appStore = useAppStore()
 const projectStore = useProjectStore()
 
@@ -285,6 +288,14 @@ const activeComp = computed(() => {
   return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
 })
 
+const showInbox = computed(() => {
+  return !route.path.includes('outbox')
+})
+
+const routePrefix = computed(() => {
+  return showInbox.value ? `/inbox` : `/outbox`
+})
+
 const conversations = ref([])
 const options = ref({
   itemsPerPage: 25
@@ -296,12 +307,13 @@ const footerProps = ref({
 const searchQuery = ref('')
 const userId = ref(userStore.details.id)
 const sortOldToNew = ref(false)
+const isInitialLoad = ref(true)
 const ownerFilterOptions = ref([])
+const selectedConversation = ref(null)
 const selectedOwnerFilters = ref([])
 const teamFilterOptions = ref([])
 const selectedTeamFilters = ref([])
 const showUnreadOnly = ref(false)
-const showInbox = ref(true)
 const pageableTable = ref(null)
 const showAssignToMeDialog = ref(false)
 const showNewMessageDialog = ref(false)
@@ -316,12 +328,7 @@ const reloadInProgress = ref(false)
 const totalConversations = ref(0)
 const page = ref(1)
 const initialLoad = ref(true)
-const projectIdsForCurrentFilter = ref([])
-const projectIdsInbox = ref([])
-const projectIdsSent = ref([])
-const userIdsForCurrentFilter = ref([])
-const userIdsInbox = ref([])
-const userIdsSent = ref([])
+const threadIdsInbox = ref([])
 const messageTypeFilter = ref('All')
 const messageTypes = ref(['All', 'Internal', 'Customer'])
 const isSmsOwnershipEventsRunning = ref(false)
@@ -331,66 +338,16 @@ const userCanViewAll = computed(() => {
 })
 
 const inboxNotificationCount = computed(() => {
-  let count = 0;
-
-  // Get Project notifications
-  let notifProjectIds = smsNotification.value?.map(n => n.metadata?.projectId)
-  notifProjectIds.forEach(npi => {
-    if (projectIdsInbox.value && projectIdsInbox.value.includes(npi)) {
-      count++;
-    }
-  })
-
-  // Get User notifications
-  let notifUserIds = smsNotification.value?.map(n => n.metadata?.userId)
-  notifUserIds.forEach(nui => {
-    if (userIdsInbox.value && userIdsInbox.value.includes(nui)) {
-      count++;
-    }
-  })
-
-  return count;
+  return smsNotification.value?.map(n => n.metadata?.threadId)?.length || 0
 })
-const sentNotificationCount = computed(() => {
-  let count = 0;
-  // Get Project notifications
-  let notifProjectIds = smsNotification.value?.map(n => n.metadata?.projectId)
-  notifProjectIds.forEach(npi => {
-    if (projectIdsSent.value && projectIdsSent.value.includes(npi)) {
-      count++;
-    }
-  })
 
-  // Get User notifications
-  let notifUserIds = smsNotification.value?.map(n => n.metadata?.userId)
-  notifUserIds.forEach(nui => {
-    if (userIdsSent.value && userIdsSent.value.includes(nui)) {
-      count++;
-    }
-  })
-
-  return count;
-})
 const smsOwnershipEvents = computed(() => {
   return notificationStore.getEventsByTopic('sms_ownership').length
 })
 const smsNotification = computed(() => {
   return notificationStore.getNotificationsByTopic('sms_reply')
 })
-const conversationsFiltered = computed(() => {
-  let conversationList = conversations.value
-  if (conversations.value) {
-    return conversationList.sort((a, b) => {
-      return sortOldToNew.value ?
-        (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0) - (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) :
-        (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) - (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0)
-    })
-  }
-  else {
-    return [];
-  }
 
-})
 const allTeamsSelected = computed(() => {
   return selectedTeamFilters.value.length === teamFilterOptions.value.length
 })
@@ -418,7 +375,7 @@ const ownersIcon = computed(() => {
 const teamFilterChipLimit = computed(() => {
   if (viewWidth.value < 1264) {
     //smaller screen
-    if (route.path.includes('inboxConversation')) {
+    if (route.path.includes('conversation')) {
       //right panel open
       return 0
     }
@@ -426,7 +383,7 @@ const teamFilterChipLimit = computed(() => {
     return 2
   }
   //larger screen
-  if (route.path.includes('inboxConversation')) {
+  if (route.path.includes('conversation')) {
     //right panel open
     return 1
   }
@@ -436,7 +393,7 @@ const teamFilterChipLimit = computed(() => {
 const ownerFilterChipLimit = computed(() => {
   if (viewWidth.value < 1264) {
     //smaller screen
-    if (route.path.includes('inboxConversation')) {
+    if (route.path.includes('conversation')) {
       //right panel open
       return 0
     }
@@ -444,7 +401,7 @@ const ownerFilterChipLimit = computed(() => {
     return 3
   }
   //larger screen
-  if (route.path.includes('inboxConversation')) {
+  if (route.path.includes('conversation')) {
     //right panel open
     return 2
   }
@@ -468,13 +425,13 @@ const hasUnassignedNotifications = computed(() => {
 })
 const showLoading = (isLoading) => {
   if (isLoading) {
-    if (thingsLoading.value == 0) {
+    if (thingsLoading.value === 0) {
       appStore.loading = true
     }
     thingsLoading.value++
   } else {
     thingsLoading.value--
-    if (thingsLoading.value == 0) {
+    if (thingsLoading.value === 0) {
       appStore.loading = false
     }
   }
@@ -486,43 +443,35 @@ const fetchConversations = async () => {
     let filterData = {
       ownerUserIds: selectedOwnerFilters.value,
       smsTeamIds: selectedTeamFilters.value,
-      notifProjectIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.projectId) : [-1]) : [],
-      notifUserIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.userId) : [-1]) : [],
-      showProjects: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') ? true : false,
-      showUsers: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') ? true : false,
-      showInbox: showInbox.value
+      notifThreadIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.threadId) : [-1]) : [],
+      showExternal: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All'),
+      showInternal: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All'),
+      showInbox: showInbox.value,
+      sortAscending: sortOldToNew.value
     }
-    const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
+    const { data, status } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
       filterData
     )
 
     if (data) {
       conversations.value = data.content
-      if (conversations.value && conversations.value.length > 0) {
-        projectIdsInbox.value = conversations.value[0].projectIdsInbox
-        projectIdsSent.value = conversations.value[0].projectIdsSent
-        projectIdsForCurrentFilter.value = conversations.value[0].projectIdsForFilter
-        userIdsInbox.value = conversations.value[0].userIdsInbox
-        userIdsSent.value = conversations.value[0].userIdsSent
-        userIdsForCurrentFilter.value = conversations.value[0].userIdsForFilter
-      }
+      totalConversations.value = conversations.value?.length > 0 ? conversations.value[0].totalRows : 0
 
-      // If Projects are being displayed
-      if (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') {
-        totalConversations.value = projectIdsForCurrentFilter.value?.length || 0
-      }
-      // If Users are being displayed
-      if (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') {
-        totalConversations.value += userIdsForCurrentFilter.value?.length || 0
+      if(isInitialLoad.value && route.params.smsThreadId) {
+        selectedConversation.value = conversations.value.find((x) => x.parentId === parseInt(route.params.smsThreadId))
+        if(!selectedConversation.value) {
+          router.push({path: routePrefix.value});
+        }
       }
 
       conversations.value?.forEach(p => {
         p.showAssignToMeButton = teamsAssociatedToUser.value.length > 0
-        p.smsTeamOwners.forEach(team => {
-          team.users.forEach(owner => {
-            if (owner.userId === userId.value) {
+        p.smsTeamOwners?.forEach(owner => {
+          owner.users?.forEach(user => {
+            if (user.userId === userId.value) {
               p.showAssignToMeButton = false
             }
+
           })
         })
       })
@@ -534,80 +483,11 @@ const fetchConversations = async () => {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error fetching conversations')
     showLoading(false)
+  } finally {
+    isInitialLoad.value = false
   }
 }
-const reloadConversations = async () => {
-  try {
-    showLoading(true)
-    const {page, itemsPerPage} = options.value
 
-    let filterData = {
-      ownerUserIds: selectedOwnerFilters.value,
-      smsTeamIds: selectedTeamFilters.value,
-      notifProjectIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.projectId) : [-1]) : [],
-      notifUserIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.userId) : [-1]) : [],
-      showProjects: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All'),
-      showUsers: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All'),
-      showInbox: showInbox.value
-    }
-
-    const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
-      filterData
-    )
-
-    if (data) {
-      conversations.value = data.content
-      if (conversations.value && conversations.value.length > 0) {
-        projectIdsForCurrentFilter.value = conversations.value[0].projectIdsForFilter
-        userIdsForCurrentFilter.value = conversations.value[0].userIdsForFilter
-        // If New/Sent notification badges weren't loaded yet (No conversations under New), get values now
-        if ((!projectIdsInbox.value || projectIdsInbox.value.length === 0) && (!projectIdsSent.value || projectIdsSent.value.length === 0)) {
-          projectIdsInbox.value = conversations.value[0].projectIdsInbox
-          projectIdsSent.value = conversations.value[0].projectIdsSent
-        }
-
-        if ((!userIdsInbox.value || userIdsInbox.value.length === 0) && (!userIdsSent.value || userIdsSent.value.length === 0)) {
-          userIdsInbox.value = conversations.value[0].userIdsInbox
-          userIdsSent.value = conversations.value[0].userIdsSent
-        }
-      }
-      else {
-        projectIdsForCurrentFilter.value = []
-        userIdsForCurrentFilter.value = []
-      }
-
-      // If Projects are being displayed
-      if (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') {
-        totalConversations.value = projectIdsForCurrentFilter.value?.length || 0
-      }
-      // If Users are being displayed
-      if (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') {
-        totalConversations.value += userIdsForCurrentFilter.value?.length || 0
-      }
-
-      conversations.value?.forEach(p => {
-        p.showAssignToMeButton = teamsAssociatedToUser.value.length > 0
-        p.smsTeamOwners.forEach(team => {
-          team.users.forEach(owner => {
-            if (owner.userId === userId.value) {
-              p.showAssignToMeButton = false
-            }
-          })
-        })
-      })
-    }
-
-    handleHidingGlobalLoader(status)
-    showLoading(false)
-    reloadInProgress.value = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error fetching conversations')
-
-    showLoading(false)
-    reloadInProgress.value = false
-  }
-}
 const getTime = (lastMessageSent) => {
   const now = moment()
   const lastMessage = moment(lastMessageSent)
@@ -624,36 +504,50 @@ const getTime = (lastMessageSent) => {
     return moment(lastMessageSent).fromNow()
   }
 }
+const routeToInbox = (path) => {
+  // avoids redundant navigation error
+  if (route.path !== path) {
+    router.push({ path })
+  }
+}
 const joinConversation = async (selectedTeam) => {
   try {
-    if (teamsAssociatedToUser.value && teamsAssociatedToUser.value.length === 1) {
+    if (teamsAssociatedToUser.value && teamsAssociatedToUser.value?.length === 1) {
       selectedTeam = teamsAssociatedToUser.value[0]
     }
     // If the User has multiple teams available, have them select a team to join with first
-    else if (teamsAssociatedToUser.value.length > 1 && !selectedTeam) {
+    else if (teamsAssociatedToUser.value?.length > 1 && !selectedTeam) {
       showAssignToMeDialog.value = true
       return
     }
     showLoading(true)
 
-    let addTeamUrl = assignToMe.value.projectId ? `/messaging/addTeam/project/${assignToMe.value.projectId}` : `/messaging/addTeam/user/${assignToMe.value.userId}`
+    let addTeamUrl = `/messaging/addTeam/thread/${assignToMe.value.parentId}`
     await postRequest(addTeamUrl, selectedTeam)
     appStore.showSnack('SUCCESS', 'Successfully joined conversation')
 
-    if (!route.path.includes('inboxConversation')) {
-      let inboxUrl = assignToMe.value.projectId ? `/inbox/inboxConversation/project/${assignToMe.value.projectId}` : `/inbox/inboxConversation/user/${assignToMe.value.userId}`
-      //avoids redundant navigation console error
-      router.push({ path: inboxUrl })
+    selectedConversation.value = assignToMe.value
+
+    clearThreadNotification(assignToMe.value.parentId)
+    if(assignToMe.value.external) {
+      projectStore.selectedTab = 0
     }
+
+    // if (!route.path.includes('conversation')) {
+    //   let inboxUrl = `${routePrefix.value}/conversation/sms/${assignToMe.value.parentId}`
+    //   avoids redundant navigation console error
+      // await router.replace({ path: inboxUrl })
+    // }
     showLoading(false)
     showAssignToMeDialog.value = false
-    await fetchConversations()
+    // await fetchConversations()
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error joining conversation')
     showLoading(false)
   }
 }
+
 const fetchTeamsForUser = async () => {
   showLoading(true)
   try {
@@ -671,34 +565,22 @@ const fetchTeamsForUser = async () => {
     showLoading(false)
   }
 }
-const projectNotificationCount = (projectId) => {
-  return smsNotification.value?.filter(n => n.metadata?.projectId === projectId)?.length
+
+const threadNotificationCount = (threadId) => {
+  return smsNotification.value?.filter(n => n.metadata?.threadId === threadId)?.length
 }
-const userNotificationCount = (userId) => {
-  return smsNotification.value?.filter(n => n.metadata?.userId === userId)?.length
-}
+
 const getNotificationCount = (item) => {
-  if (item.projectId) {
-    return projectNotificationCount(item.projectId)
-  }
-  else if (item.userId) {
-    return userNotificationCount(item.userId)
-  }
+  return threadNotificationCount(item.parentId)
 }
-const clearProjectNotification = (projectId) => {
+const clearThreadNotification = (threadId) => {
   const notificationIds = smsNotification.value
-    ?.filter(n => n.metadata.projectId === projectId)
+    ?.filter(n => n.metadata.threadId === threadId)
     ?.map(notif => notif.id)
 
   notificationStore.markAsRead(notificationIds)
 }
-const clearUserNotification = (userId) => {
-  const notificationIds = smsNotification.value
-    ?.filter(n => n.metadata.userId === userId)
-    ?.map(notif => notif.id)
 
-  notificationStore.markAsRead(notificationIds)
-}
 const toggleSelectAllTeams = () => {
   if (allTeamsSelected.value) {
     selectedTeamFilters.value = []
@@ -713,7 +595,7 @@ const toggleSelectAllOwners = () => {
   } else {
     selectedOwnerFilters.value = ownerFilterOptions.value?.map(o => o.userId)
   }
-  reloadConversations()
+  fetchConversations()
 }
 const onResize = () => {
   viewWidth.value = window.innerWidth
@@ -816,27 +698,25 @@ const teamSelectionChanged = () => {
   ownerFilterOptions.value.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
 
   options.value.page = 1
-  reloadConversations()
+  fetchConversations()
 }
 const openConversation = (item) => {
-  if (item.projectId) {
-    clearProjectNotification(item.projectId)
-    projectStore.selectedTab = 0
-    router.push({path: `/inbox/inboxConversation/project/${item.projectId}`});
-  }
+  selectedConversation.value = item
 
-  if (item.userId) {
-    clearUserNotification(item.userId)
-    router.push({path: `/inbox/inboxConversation/user/${item.userId}`});
+  clearThreadNotification(item.parentId)
+  if(item.external) {
+    projectStore.selectedTab = 0
   }
+  router.push({path: `${routePrefix.value}/conversation/sms/${item.parentId}`});
 }
 const closeConversation = () => {
-  router.push({path: `/inbox`})
+  selectedConversation.value = null
+  router.push({path: `${routePrefix.value}`})
 }
 const searchConversations = debounce(() => {
   //don't allow searchQuery to be null - causes issues
   searchQuery.value = searchQuery.value || ''
-  reloadConversations()
+  fetchConversations()
 }, 500)
 
 watch(smsOwnershipEvents, debounce(async function() {
@@ -849,7 +729,7 @@ watch(smsOwnershipEvents, debounce(async function() {
 
   try {
     await fetchTeamsForUser();
-    await reloadConversations();
+    await fetchConversations();
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.loading = false
@@ -861,7 +741,7 @@ watch(smsOwnershipEvents, debounce(async function() {
 }, 1000))
 watch(options, () => {
   if (!initialLoad.value) {
-    reloadConversations()
+    fetchConversations()
   }
 })
 watch(page, () => {

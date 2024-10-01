@@ -28,6 +28,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ContactLeadService {
   private final SqlCache sqlCache;
+  private final KlaviyoService klaviyoService;
   private final Five9Service five9Service;
   private final GenesysService genesysService;
   private final MapboxApiService mapboxApiService;
@@ -38,6 +39,8 @@ public class ContactLeadService {
   private final ContactService contactService;
 
   private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 3L, 7L, 40L, 50L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
+
+  private final Set<String> DIGITAL_LEAD_SOURCES = new HashSet<>(Arrays.asList ("Paid Lead Gen", "Paid Advertising", "Organic", "Organic with Referral"));
 
   public Contact saveContactLead(ContactLead cl) {
     HubspotLead hubspotLead = new HubspotLead();
@@ -80,7 +83,7 @@ public class ContactLeadService {
     }
 
     Long contactId;
-    String leadSoruce = "";
+    String leadSourceVal = "";
 
     String state = cl.getState();
     String stateValue =
@@ -139,7 +142,7 @@ public class ContactLeadService {
         leadSource.setIntValue(Long.parseLong(leadSourceId));
         leadSource.setFieldValue(cl.getLeadSource());
         cfvList.add(leadSource);
-        leadSoruce = cl.getLeadSource();
+        leadSourceVal = cl.getLeadSource();
       }
     }
 
@@ -371,9 +374,18 @@ public class ContactLeadService {
       .findFirst()
       .orElse(null);
 
+    if (DIGITAL_LEAD_SOURCES.contains(leadSourceVal)) {
+      try {
+        klaviyoService.handleContact(contactId, cfvList, false);
+      } catch (Exception e) {
+        String msg = "KLAVIYO: Error adding contact: {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+
     if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
       try {
-        five9Service.handleContact(contactId, cfvList, false, null, leadLevel, leadSoruce);
+        five9Service.handleContact(contactId, cfvList, false, null, leadLevel, leadSourceVal);
       } catch (Exception e) {
         String msg = "FIVE9: Error adding contact: {}";
         log.error(msg, e.getMessage());

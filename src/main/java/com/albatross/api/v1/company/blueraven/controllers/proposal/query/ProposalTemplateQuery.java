@@ -82,8 +82,13 @@ public class ProposalTemplateQuery {
 """;
 
   public final static String insertBlock = """
-          insert into brs.proposal_template_block(proposal_template_id, proposal_template_block_type_id, block_order, date_modified, modified_by_id)
-            values (:templateId, :blockTypeId, :blockOrder, now(), :modifiedById);
+insert into brs.proposal_template_block(proposal_template_id, proposal_template_block_type_id, proposal_theme_value_id,
+                                        proposal_template_block_kind_id, block_style, block_name, block_value,
+                                        visibility, version, block_order, parent_id, block_uuid,
+                                        date_created, created_by_id,
+                                        date_modified, modified_by_id)
+values (:templateId, :blockTypeId, :themeValueId, :blockKindId, :blockStyle, :blockName, :blockValue, :visibility,
+        :version, :blockOrder, :parentId, :blockUuid, now(), :modifiedById, now(), :modifiedById)
             """;
 
   public final static String archiveBlock = """
@@ -101,7 +106,7 @@ set proposal_theme_value_id         = :themeValueId,
     proposal_template_block_type_id = :blockTypeId,
     proposal_template_block_kind_id = :blockKindId,
     block_style                     = :blockStyle,
-    block_name                     = :blockName,
+    block_name                      = :blockName,
     block_value                     = :blockValue,
     block_order                     = :blockOrder,
     parent_id                       = :parentId,

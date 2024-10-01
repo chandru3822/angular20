@@ -74,11 +74,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.fillProjectGeoCoords.enabled:false}")
   private boolean fillProjectGeoCoords;
 
-  @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
-  private boolean closeProjectConversations;
-
-  @Value(value = "${app.cron.closeUserConversations.enabled:false}")
-  private boolean closeUserConversations;
+  @Value(value = "${app.cron.closeStaleThreads.enabled:false}")
+  private boolean closeStaleThreads;
 
   @Value(value = "${app.cron.runDataViewMaintenance.enabled:false}")
   private boolean doViewMaintenance;
@@ -143,23 +140,12 @@ public class ScheduledConfig implements SchedulingConfigurer {
   //    every  day at 1 am
   @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
   // zone = "UTC")
-  public void closeProjectConversations() {
-    if (closeProjectConversations) {
+  public void closeThreads() {
+    if (closeStaleThreads) {
       setCronUser();
-      log.info("*** CRON: start close SMS project conversations ***");
-      messagingService.closeStaleProjectConversations(SystemSettings.CRON_USER.getId());
-      log.info("*** CRON: end close SMS project conversations ***");
-    }
-  }
-
-  //    every  day at 1 am - needs to be in utc to avoid DST issues
-  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
-  public void closeUserConversations() {
-    if (closeUserConversations) {
-      setCronUser();
-      log.info("*** CRON: start close SMS user conversations ***");
-      messagingService.closeStaleUserConversations(SystemSettings.CRON_USER.getId());
-      log.info("*** CRON: end close SMS user conversations ***");
+      log.info("*** CRON: start close SMS conversations ***");
+      messagingService.closeStaleThreads(SystemSettings.CRON_USER.getId());
+      log.info("*** CRON: end close SMS conversations ***");
     }
   }
 

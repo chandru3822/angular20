@@ -36,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
@@ -378,12 +379,12 @@ public class UserService {
           smsTeamService.deleteUserByUserId(userId, null, null);
         }
         // Remove all teams from this User's conversation
-        messagingService.removeTeamsFromUserConversation(userId, user.trueUserId());
-        final int updatedRecords =
-          sqlCache.updateBySql(
-            MessagingQuery.markAllUserNotificationAsReadForUser,
-            Map.of("userId", userId, "modifiedById", userId));
-        log.debug("[Notifications] Marked {} records as read for user={}", updatedRecords, userId);
+        messagingService.removeAllTeamsFromThread(null, null, userId, user.trueUserId());
+        try {
+          messagingService.markSmsThreadNotificationsAsRead(null, null, userId, null, user.trueUserId());
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
       }
       //this tells the jwt to reload the user details (ensuring that an inactive user cannot hit the api)
       jwtAuthProvider.forceReload(userId);

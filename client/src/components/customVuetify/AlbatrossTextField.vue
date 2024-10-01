@@ -50,8 +50,6 @@ import constants from '@/helpers/constants'
 import { vMaska } from 'maska/vue'
 
 // reminder that v-model is sugar syntax for :value="value" @input="v => $emit('input', v)"
-const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
-
 const props = defineProps({
   value: [String, Number],
   placeholder: String, //fields without a defined default will default to null
@@ -101,12 +99,11 @@ const props = defineProps({
 const albatrossTextField = ref(null)
 
 const combinedRules = computed(() => {
-  let tempRules = []
   //set the rules to any rules that were passed in
-  tempRules = props.rules
+  let tempRules = props.rules
   // if the field is marked as "required" also add the basic required rule
   if (props.required) {
-    tempRules = tempRules.concat(basicRequiredRule.value)
+    tempRules = tempRules.concat(constants.BASIC_REQUIRED_RULE)
   }
   return tempRules
 })
@@ -119,5 +116,3 @@ defineExpose({
   focus: newFocus
 })
 </script>
-
-<style lang="scss" scoped></style>
