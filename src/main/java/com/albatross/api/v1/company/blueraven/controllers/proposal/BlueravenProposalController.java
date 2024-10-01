@@ -17,6 +17,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,10 +64,15 @@ public class BlueravenProposalController {
   @PostMapping(value = "/projects/{projectId}/ai")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public AuroraDesignWrappedDTO doProposalAiRequest(@PathVariable Long projectId,
-                                                    @RequestParam ArrayList<Integer> monthlyInputs,
-                                                    @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+                                                    @RequestBody ProposalAiRequestBody bodyObject) {
     //this is called to generate an initial aurora design
-    return proposalService.doProposalAiRequest(projectId, values, monthlyInputs);
+    return proposalService.doProposalAiRequest(projectId, bodyObject.getCustomFieldValues(), bodyObject.getMonthlyEnergyInputs());
+  }
+
+  @Data
+  public static class ProposalAiRequestBody {
+      private List<com.albatross.api.v1.flow.model.CustomFieldValue> customFieldValues;
+      private List<Double> monthlyEnergyInputs;
   }
 
   @PostMapping(value = "/projects/{projectId}/ai/design/{designId}")

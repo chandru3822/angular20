@@ -253,6 +253,25 @@ public class AuroraProxy {
     }
   }
 
+    public void updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, Long projectId, List<Double> monthlyInputs){
+        AuroraConsumptionProfile acp = new AuroraConsumptionProfile();
+        acp.setMonthlyEnergy(monthlyInputs);
+
+        RestClient client2 = RestClient.builder().baseUrl(host).build();
+        ResponseEntity<AuroraConsumptionProfile> res = client2
+                .put()
+                .uri("/tenants/%s/projects/%s".formatted(tenantId, projectId))
+                .header("Authorization", "Bearer " + tokenV2022)
+                .body(acp)
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toEntity(AuroraConsumptionProfile.class);
+
+        if (res != null && res.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
+        }
+    }
+
     public DesignSummary getDesignSummary(@NotBlank String designId) throws IOException {
         try {
             ResponseEntity<String> res = client

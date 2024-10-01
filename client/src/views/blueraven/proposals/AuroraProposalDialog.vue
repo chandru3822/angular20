@@ -37,7 +37,7 @@ const validateAIRequest = async () => {
   const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0
   if (valid) {
     //all checks for how to create the design are handled by backend now
-    emit('save', calcEnergyBySqFtg ? [] : monthlyUsageFlattened.value)
+    emit('save', monthlyUsageFlattened.value)
   }
 }
 
@@ -46,18 +46,22 @@ const monthlyUsageFlattened = computed(() =>{
   the monthly array will currently have one value equal to the yearly divided by 12, we just need to use that
   same value twelve times
    */
-  if(calcEnergyBySqFtg){
-    const populated = []
+  const populated = []
+  if(calcEnergyBySqFtg.value){
     for(let i = 0; i < 12; i++){
       populated.push(monthlyUsage.value[0].usage)
     }
-    return populated
   }
-  /* If we're inputing monthly values from the utility bill, we need to flatten them to an array of numbers (they're currently an object)
+  /* If we're inputting monthly values from the utility bill, we need to flatten them to an array of numbers (they're currently an object)
     in order January-December.  Since they could have been added in any order, we need to sort them before we flatten them.
    */
-  return monthlyUsage.value.sort((a,b) => a.monthId - b.monthId).map(mu => mu.usage)
-
+  else {
+    for(let i = 0; i < 12; i++){
+      const usageForMonth = monthlyUsage.value.find( mu => mu.monthId === i + 1)
+      populated.push(usageForMonth ? usageForMonth.usage : null)
+    }
+  }
+return populated
 })
 
 const toggleCalcMethod = (field) => {
@@ -79,7 +83,6 @@ const utilityCoId = computed(() => {
 
 //Utility Bill Option
 const addMonthUsage = (usage, monthId) =>{
-debugger
   //make sure we don't add a duplicate if they change a value or clear a value
   const existingUsageIndex = monthlyUsage.value.indexOf(mu => mu.monthId === monthId)
   if(existingUsageIndex >= 0){

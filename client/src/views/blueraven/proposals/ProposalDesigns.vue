@@ -604,14 +604,13 @@ const requestAIDesign = async (monthlyInputs) => {
   debugger
   try {
     savingNewAiDesign.value = true
-    const { data } = await postRequestWithRequestParams(
+    const { data } = await postRequest(
       `/proposal/projects/${projectId.value}/ai`,
-      aiRequestFields.value,
-        {monthlyInputs: monthlyInputs},
+        {customFieldValues: aiRequestFields.value, monthlyEnergyInputs: monthlyInputs},
       'blueraven'
     )
     if (data?.design?.id && data?.design?.project_id) {
-
+      debugger
       const url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
       window.open(url, '_blank')
     }
