@@ -585,10 +585,9 @@ const currentUserId = computed(() => {
   return userStore.details.id
 })
 const filteredTopics = computed(() => {
-  let shownActivityTypes = activityTypes.value
-    .filter((at) => at.show)
-    .map((at) => at.id)
-  let result = activityTopics.value.filter((a) => {
+  const shownActivityTypes =
+    activityTypes?.value?.filter((at) => at.show)?.map((at) => at.id) ?? []
+  const result = activityTopics?.value?.filter((a) => {
     for (let h of a.activityTypeHashtags) {
       if (h.sortDirection === undefined) {
         h.sortDirection = 'desc'
@@ -604,9 +603,8 @@ const sortedFilteredActivities = computed(() => {
       //filter out archived
       //if search is not empty then filter that stuff here too
       //and ensure the activityTypeId is selected in the filter
-      let shownActivityTypes = activityTypes.value
-        .filter((at) => at.show)
-        .map((at) => at.id)
+      const shownActivityTypes =
+        activityTypes?.value?.filter((at) => at.show)?.map((at) => at.id) ?? []
 
       return (
         !a.archived &&
@@ -628,7 +626,6 @@ const sortedFilteredActivities = computed(() => {
     stateLoadedStatus.value = true
     return sortedList
   }
-  // return []
 })
 const filterAltered = computed(() => {
   return !!activityTypes.value.find((at) => !at.show)
@@ -681,9 +678,8 @@ const sortAndFilterActivities = (activities, sortDirection) => {
       //filter out archived
       //if search is not empty then filter that stuff here too
       //and ensure the activityTypeId is selected in the filter
-      let shownActivityTypes = activityTypes.value
-        .filter((at) => at.show)
-        .map((at) => at.id)
+      const shownActivityTypes =
+        activityTypes?.value?.filter((at) => at.show)?.map((at) => at.id) ?? []
 
       return (
         !a.archived &&

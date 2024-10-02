@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import moment from 'moment-timezone'
 import { postRequest } from '@/helpers/helpers.js'
+import { setUserContext } from '@/logger.js'
 
 const defaultState = {
   authorized: false,
@@ -16,8 +17,16 @@ const defaultState = {
 }
 
 export const useUserStore = defineStore('user', {
-  persist: true,
-  state: () => ({...defaultState}),
+  persist: {
+    afterHydrate: function (ctx) {
+      if (ctx?.store?.details) {
+        setUserContext({ email: ctx.store.details.email })
+      } else {
+        setUserContext(null)
+      }
+    }
+  },
+  state: () => ({ ...defaultState }),
   getters: {
     isSystemAdmin() {
       return this.details?.highestCompanyId === 1
@@ -47,7 +56,7 @@ export const useUserStore = defineStore('user', {
     guessTimeZone() {
       //pls fix the undefined timezone issue!
       //also trying to fix a "Cannot set properties of null (setting 'timezone')" error
-      if(this.details && !this.details?.timezone) {
+      if (this.details && !this.details?.timezone) {
         this.details.timezone = {
           friendlyValue: moment.tz.guess(),
           value: moment.tz.guess()
@@ -56,10 +65,9 @@ export const useUserStore = defineStore('user', {
     },
     async login(details) {
       this.loginError = ''
-
       this.details = details
 
-      if(!this.details?.timezone) {
+      if (!this.details?.timezone) {
         this.guessTimeZone()
       }
 
@@ -68,17 +76,22 @@ export const useUserStore = defineStore('user', {
       } else {
         this.loginError = 'You do not have permission to access this app.'
       }
+
+      setUserContext({ email: details.email })
     },
     logout() {
+      setUserContext(null)
       this.$patch(defaultState)
     },
     async changeContext(params) {
-      const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
+      const { data } = await postRequest(
+        `/user/changeContext/${params.companyId}`
+      )
 
       this.details = data
 
       //refresh entire app and go to users home page if they have one
-      if(data.homePagePath) {
+      if (data.homePagePath) {
         window.location.href = data.homePagePath
       } else {
         window.location.href = '/'
@@ -90,7 +103,12 @@ export const useUserStore = defineStore('user', {
     userHasFeature(featureCode) {
       // this function returns true if the user has any access level (edit, view, etc)
       // or if the user is a system admin (send 'SYSTEM' as the feature code if you only care it is a system admin)
-      return this.isSystemAdmin || this.details?.featureAccess?.some(fa => fa.featureCode === featureCode)
+      return (
+        this.isSystemAdmin ||
+        this.details?.featureAccess?.some(
+          (fa) => fa.featureCode === featureCode
+        )
+      )
     },
     userHasFeatureAccessLevel(featureCode, accessCode) {
       // this function only returns true if the user a specific access level to a specific feature (or is a system admin)
@@ -99,18 +117,23 @@ export const useUserStore = defineStore('user', {
       }
 
       let hasFeatureAccessLevel = false
-      if(this.details?.featureAccess?.length > 0 ) {
-        let featureMatch = this.details.featureAccess.find(fa => fa.featureCode === featureCode && fa.accessCode === accessCode)
-        hasFeatureAccessLevel = featureMatch !== null && featureMatch !== undefined
+      if (this.details?.featureAccess?.length > 0) {
+        let featureMatch = this.details.featureAccess.find(
+          (fa) => fa.featureCode === featureCode && fa.accessCode === accessCode
+        )
+        hasFeatureAccessLevel =
+          featureMatch !== null && featureMatch !== undefined
       }
       return hasFeatureAccessLevel
     },
     userHasAnyPosition(positionIds) {
       // this function returns true if the any of the user's positions match any of the ids sent in
-      return this.isSystemAdmin || this.details?.userPositions?.some(p => {
-        return positionIds.includes(p.positionId)
-      })
+      return (
+        this.isSystemAdmin ||
+        this.details?.userPositions?.some((p) => {
+          return positionIds.includes(p.positionId)
+        })
+      )
     }
   }
 })
-
