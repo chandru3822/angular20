@@ -226,7 +226,7 @@ public class PartsMasterVersionService {
 
           Map<String, Object> lovParams = Map.of("name", brsID, "parentId", 2608, "createdById", currentUser.getId());
 
-          final var lovID = sqlCache.updateBySqlReturningId(BlueravenCustomFieldQuery.upsertListOfValue, lovParams, "id").longValue();
+          final var lovID = sqlCache.queryForObjectBySql(BlueravenCustomFieldQuery.upsertListOfValue, lovParams, Long.class);
 
           HashMap<String, Object> values = new HashMap<>();
           values.put("partsMasterVersionId", versionId);

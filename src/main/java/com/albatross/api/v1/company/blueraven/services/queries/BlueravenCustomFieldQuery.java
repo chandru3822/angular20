@@ -144,32 +144,7 @@ public class BlueravenCustomFieldQuery {
 
   //language=PostgreSQL
   public final static String upsertListOfValue = """
-    insert into brs.list_of_value(
-      name,
-      parent_id,
-      display_order,
-      date_created,
-      created_by_id,
-      date_modified,
-      modified_by_id
-    )
-    values (
-      trim(:name),
-      :parentId,
-      (
-        select coalesce(max(display_order) + 1, 0)
-        from brs.list_of_value
-        where
-          parent_id = :parentId and
-          archived is not true
-      ),
-      now(),
-      :createdById,
-      now(),
-      :createdById
-    )
-    on conflict do nothing
-    returning id
+    select brs.upsert_list_of_value(:name, :parentId, :createdById) as id
     """;
 
   //language=PostgreSQL
