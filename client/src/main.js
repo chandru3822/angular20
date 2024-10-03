@@ -59,6 +59,10 @@ Vue.filter('pluralize', function (amount, singularText, pluralText) {
 Vue.filter(
   'searchHighlight',
   function highlight(value, query, ignoreWhiteSpace = false) {
+    if (!value || !query) {
+      return
+    }
+
     const reserved = '( ) * + [ ] | ?'.split(' ')
 
     reserved.forEach((char) => {
