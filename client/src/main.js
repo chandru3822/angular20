@@ -53,27 +53,30 @@ Vue.filter('formatDateZoneless', function (value) {
 })
 
 Vue.filter('pluralize', function (amount, singularText, pluralText) {
-    return amount === 1 ? singularText : pluralText
+  return amount === 1 ? singularText : pluralText
 })
 
-Vue.filter('searchHighlight', function (value, query, ignoreWhiteSpace = false) {
-  if (value) {
-    if (ignoreWhiteSpace === true) {
-      const queryLength = query.length
-      query = query.replace(/\s/g, '')
-      let newQuery = ''
-      for (const char of query) {
-        newQuery = newQuery.concat(char, '\\s*')
+Vue.filter(
+  'searchHighlight',
+  function highlight(value, query, ignoreWhiteSpace = false) {
+    const reserved = '( ) * + [ ] | ?'.split(' ')
+
+    reserved.forEach((char) => {
+      query = query.replaceAll(char, '\\' + char)
+    })
+
+    if (value) {
+      if (ignoreWhiteSpace === true) {
+        query = query.replace(/\s+/g, '\\s*')
       }
 
-      query = "(".concat(newQuery, ")")
+      return value.replace(
+        new RegExp(`(${query})`, 'ig'),
+        (v) => `<span class="highlight">${v}</span>`
+      )
     }
-    return value.replace(
-      new RegExp(query, 'ig'),
-      (v) => `<span class="highlight">${v}</span>`
-    )
   }
-})
+)
 
 Vue.filter('fieldValues', function (field) {
   if (Array.isArray(field.values)) {
