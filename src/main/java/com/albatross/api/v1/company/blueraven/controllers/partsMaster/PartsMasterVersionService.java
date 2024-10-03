@@ -221,7 +221,7 @@ public class PartsMasterVersionService {
           var manufacturer = objectMapper.convertValue(fields.get("729"), JsonNode.class);
           var partNumber = objectMapper.convertValue(fields.get("730"), JsonNode.class);
 
-          final var code = objectCode.substring(6).toLowerCase();
+          final var code = objectCode.substring(6).toUpperCase();
           final var brsID = String.format("%s-%s-%s", code, manufacturer.get("value").asText(), partNumber.get("value").asText());
 
           Map<String, Object> lovParams = Map.of("name", brsID, "parentId", 2608, "createdById", currentUser.getId());

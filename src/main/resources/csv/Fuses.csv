@@ -1,0 +1,62 @@
+Description,Manufacturer,Part Number,Fuse Ampacity,Fuse Class,Fuse Voltage,Fuse Type,BRSID
+"Mersen Fuse Reducer, 30-60A, Class H, 250V",Mersen,632,,H,250,Fuse Reducer,FUSE-Mersen-632
+"Littelfuse Fuse Reducer, 100A Fuse Clip, 30A Fuse Case Size, Class H/K5, 600V",Littelfuse,LRU 216,,H,600,Fuse Reducer,FUSE-Littelfuse-LRU-216
+"Littelfuse Fuse Reducer, 100A Fuse Clip, 60A Fuse Case Size, Class H/K5, 250V",Littelfuse,LRU 263,,H,250,Fuse Reducer,FUSE-Littelfuse-LRU-263
+"Littelfuse Fuse Reducer, 100A Fuse Clip, 60A Fuse Case Size, Class R, 250V",Littelfuse,LRU 263 R,,R,250,Fuse Reducer,FUSE-Littelfuse-LRU-263-R
+"Bussmann Fuse Reducer, Up to 30 A Fuse Size, Class R, 250V",Bussmann,NO.213-R,,R,250,Fuse Reducer,FUSE-Bussmann-NO.213-R
+"Bussmann Fuse Reducer, 35 to 60 A Fuse Size, Class R, 250V",Bussmann,NO.216-R,,R,250,Fuse Reducer,FUSE-Bussmann-NO.216-R
+"Bussmann Fuse Reducer, 65 to 100 A Fuse Size, Class R, 250V",Bussmann,NO.2621-R,,R,250,Fuse Reducer,FUSE-Bussmann-NO.2621-R
+"Bussmann Fuse Reducer, Up to 30 A Fuse Size, Class H, 250V",Bussmann,NO.263,,H,250,Fuse Reducer,FUSE-Bussmann-NO.263
+"Bussmann Fuse Reducer, 35 to 60 A Fuse Size, Class R, 250V",Bussmann,NO.263-R,,R,250,Fuse Reducer,FUSE-Bussmann-NO.263-R
+"Bussmann Fuse Reducer, Up to 30 A Fuse Size, Class R, 600V ",Bussmann,NO.663-R,,R,600,Fuse Reducer,FUSE-Bussmann-NO.663-R
+"Bussmann One Time Fuse, 30A, Class K5, 250V",Bussmann,NON-30,30,K5,250,One Time,FUSE-Bussmann-NON-30
+"Edison 30A Fuse, Class RK5, 250V, Time Delay",Edison,ECNR30,30,RK5,250,Time Delay,FUSE-Edison-ECNR30
+"Edison 35A Fuse, Class RK5, 250V, Time Delay",Edison,ECNR35,35,RK5,250,Time Delay,FUSE-Edison-ECNR35
+"Edison 40A Fuse, Class RK5, 250V, Time Delay",Edison,ECNR40,40,RK5,250,Time Delay,FUSE-Edison-ECNR40
+"Edison 60A Fuse, Class RK5, 250V, Time Delay",Edison,ECNR60,60,RK5,250,Time Delay,FUSE-Edison-ECNR60
+"Littelfuse 80A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLN080,80,RK5,250,Time Delay,FUSE-Littelfuse-FLN080
+"Littelfuse 20A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR020,20,RK5,250,Time Delay,FUSE-Littelfuse-FLNR020
+"Littelfuse 25A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR025,25,RK5,250,Time Delay,FUSE-Littelfuse-FLNR025
+"Littelfuse 30A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR030,30,RK5,250,Time Delay,FUSE-Littelfuse-FLNR030
+"Littelfuse 35A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR035,35,RK5,250,Time Delay,FUSE-Littelfuse-FLNR035
+"Littlefuse 45A Fuse, Class RK5, 250V, Time Delay",Littlefuse,FLNR045,45,RK5,250,Time Delay,FUSE-Littlefuse-FLNR045
+"Littelfuse 50A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR050,50,RK5,250,Time Delay,FUSE-Littelfuse-FLNR050
+"Littelfuse 60A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR060,60,RK5,250,Time Delay,FUSE-Littelfuse-FLNR060
+"Littelfuse 70A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR070,70,RK5,250,Time Delay,FUSE-Littelfuse-FLNR070
+"Littelfuse 80A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR080,80,RK5,250,Time Delay,FUSE-Littelfuse-FLNR080
+"Littelfuse 90A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR090,90,RK5,250,Time Delay,FUSE-Littelfuse-FLNR090
+"Littelfuse 100A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR100,100,RK5,250,Time Delay,FUSE-Littelfuse-FLNR100
+"Littelfuse 125A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR125,125,RK5,250,Time Delay,FUSE-Littelfuse-FLNR125
+"Littelfuse 20A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR20,20,RK5,250,Time Delay,FUSE-Littelfuse-FLNR20
+"Littelfuse 200A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR200,200,RK5,250,Time Delay,FUSE-Littelfuse-FLNR200
+"Littelfuse 40A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR40,40,RK5,250,Time Delay,FUSE-Littelfuse-FLNR40
+"Littelfuse 50A Fuse, Class RK5, 250V, Time Delay",Littelfuse,FLNR50,50,RK5,250,Time Delay,FUSE-Littelfuse-FLNR50
+"Bussmann 100A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-100,100,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-100
+"Bussmann 125A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-125,125,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-125
+"Bussmann 150A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-150,150,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-150
+"Bussmann 20A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-20,20,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-20
+"Bussmann 25A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-25,25,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-25
+"Bussmann 30A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-30,30,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-30
+"Bussmann 40A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-35,40,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-35
+"Bussmann 40A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-40,40,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-40
+"Bussmann 45A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-45,45,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-45
+"Bussmann 50A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-50,50,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-50
+"Bussmann 60A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-60,60,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-60
+"Bussmann 70A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-70,70,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-70
+"Bussmann 80A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-80,80,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-80
+"Bussmann 90A Fuse, Class RK5, 250V, Time Delay",Bussmann,FRN-R-90,90,RK5,250,Time Delay,FUSE-Bussmann-FRN-R-90
+"Eaton 200A Fuse, Class J, 600V, Time Delay",Eaton,LPJ-200SP,200,J,600,Time Delay,FUSE-Eaton-LPJ-200SP
+"Mersen 100A Fuse, Class R, 250V, Time Delay",Mersen,TR100R,100,R,250,Time Delay,FUSE-Mersen-TR100R
+"Mersen 200A Fuse, Class R, 250V, Time Delay",Mersen,TR200R,200,R,250,Time Delay,FUSE-Mersen-TR200R
+"Mersen 20A Fuse, Class R, 250V, Time Delay",Mersen,TR20R,20,R,250,Time Delay,FUSE-Mersen-TR20R
+"Mersen 25A Fuse, Class R, 250V, Time Delay",Mersen,TR25R,25,R,250,Time Delay,FUSE-Mersen-TR25R
+"Mersen 30A Fuse, Class R, 250V, Time Delay",Mersen,TR30R,30,R,250,Time Delay,FUSE-Mersen-TR30R
+"Mersen 35A Fuse, Class R, 250V, Time Delay",Mersen,TR35R,35,R,250,Time Delay,FUSE-Mersen-TR35R
+"Mersen 40A Fuse, Class R, 250V, Time Delay",Mersen,TR40R,40,R,250,Time Delay,FUSE-Mersen-TR40R
+"Mersen 45A Fuse, Class R, 250V, Time Delay",Mersen,TR45R,45,R,250,Time Delay,FUSE-Mersen-TR45R
+"Mersen 50A Fuse, Class R, 250V, Time Delay",Mersen,TR50R,50,R,250,Time Delay,FUSE-Mersen-TR50R
+"Mersen 60A Fuse, Class R, 250V, Time Delay",Mersen,TR60R,60,R,250,Time Delay,FUSE-Mersen-TR60R
+"Mersen 70A Fuse, Class R, 250V, Time Delay",Mersen,TR70R,70,R,250,Time Delay,FUSE-Mersen-TR70R
+"Mersen 80A Fuse, Class R, 250V, Time Delay",Mersen,TR80R,80,R,250,Time Delay,FUSE-Mersen-TR80R
+"Mersen 90A Fuse, Class R, 250V, Time Delay",Mersen,TR90R,90,R,250,Time Delay,FUSE-Mersen-TR90R
+"Mersen 225A Fuse, Class R, 250V, Time Delay",Mersen,TRS225R,225,R,250,Time Delay,FUSE-Mersen-TRS225R

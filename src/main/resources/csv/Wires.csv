@@ -1,0 +1,151 @@
+Description,Conductor,Wire Gauge,Sequence,Wire Type,Wire Color,Wire Stranding,Conductor Quantity,BRSID
+"10 AWG Copper THHN/THWN-2, Black",Copper,10,10,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-10-THHN-THWN-2-Black-Stranded
+"10 AWG Copper THHN/THWN-2, Red",Copper,10,10,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-10-THHN-THWN-2-Red-Stranded
+"10 AWG Copper THHN/THWN-2, White",Copper,10,10,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-10-THHN-THWN-2-White-Stranded
+"10 AWG Copper THHN/THWN-2, Green",Copper,10,10,"THHN, THWN-2",Green,Stranded,1,WIRE-Copper-10-THHN-THWN-2-Green-Stranded
+"8 AWG Copper THHN/THWN-2, Black",Copper,8,8,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-8-THHN-THWN-2-Black-Stranded
+"8 AWG Copper THHN/THWN-2, Red",Copper,8,8,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-8-THHN-THWN-2-Red-Stranded
+"8 AWG Copper THHN/THWN-2, White",Copper,8,8,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-8-THHN-THWN-2-White-Stranded
+"8 AWG Copper THHN/THWN-2, Green",Copper,8,8,"THHN, THWN-2",Green,Stranded,1,WIRE-Copper-8-THHN-THWN-2-Green-Stranded
+"6 AWG Copper THHN/THWN-2, Black",Copper,6,6,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-6-THHN-THWN-2-Black-Stranded
+"6 AWG Copper THHN/THWN-2, Red",Copper,6,6,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-6-THHN-THWN-2-Red-Stranded
+"6 AWG Copper THHN/THWN-2, White",Copper,6,6,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-6-THHN-THWN-2-White-Stranded
+"6 AWG Copper THHN/THWN-2, Green",Copper,6,6,"THHN, THWN-2",Green,Stranded,1,WIRE-Copper-6-THHN-THWN-2-Green-Stranded
+"4 AWG Copper THHN/THWN-2, Black",Copper,4,4,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-4-THHN-THWN-2-Black-Stranded
+"4 AWG Copper THHN/THWN-2, Red",Copper,4,4,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-4-THHN-THWN-2-Red-Stranded
+"4 AWG Copper THHN/THWN-2, White",Copper,4,4,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-4-THHN-THWN-2-White-Stranded
+"4 AWG Copper THHN/THWN-2, Green",Copper,4,4,"THHN, THWN-2",Green,Stranded,1,WIRE-Copper-4-THHN-THWN-2-Green-Stranded
+"3 AWG Copper THHN/THWN-2, Black",Copper,3,3,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-3-THHN-THWN-2-Black-Stranded
+"3 AWG Copper THHN/THWN-2, Red",Copper,3,3,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-3-THHN-THWN-2-Red-Stranded
+"3 AWG Copper THHN/THWN-2, White",Copper,3,3,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-3-THHN-THWN-2-White-Stranded
+"2 AWG Copper THHN/THWN-2, Black",Copper,2,2,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-2-THHN-THWN-2-Black-Stranded
+"2 AWG Copper THHN/THWN-2, Red",Copper,2,2,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-2-THHN-THWN-2-Red-Stranded
+"2 AWG Copper THHN/THWN-2, White",Copper,2,2,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-2-THHN-THWN-2-White-Stranded
+"1 AWG Copper THHN/THWN-2, Black",Copper,1,1,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-1-THHN-THWN-2-Black-Stranded
+"1 AWG Copper THHN/THWN-2, Red",Copper,1,1,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-1-THHN-THWN-2-Red-Stranded
+"1 AWG Copper THHN/THWN-2, White",Copper,1,1,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-1-THHN-THWN-2-White-Stranded
+"1/0 AWG Copper THHN/THWN-2, Black",Copper,Jan-00,Jan-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-1/0-THHN-THWN-2-Black-Stranded
+"1/0 AWG Copper THHN/THWN-2, Red",Copper,Jan-00,Jan-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-1/0-THHN-THWN-2-Red-Stranded
+"1/0 AWG Copper THHN/THWN-2, White",Copper,Jan-00,Jan-00,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-1/0-THHN-THWN-2-White-Stranded
+"2/0 AWG Copper THHN/THWN-2, Black",Copper,Feb-00,Feb-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-2/0-THHN-THWN-2-Black-Stranded
+"2/0 AWG Copper THHN/THWN-2, Red",Copper,Feb-00,Feb-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-2/0-THHN-THWN-2-Red-Stranded
+"2/0 AWG Copper THHN/THWN-2, White",Copper,Feb-00,Feb-00,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-2/0-THHN-THWN-2-White-Stranded
+"3/0 AWG Copper THHN/THWN-2, Black",Copper,Mar-00,Mar-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-3/0-THHN-THWN-2-Black-Stranded
+"3/0 AWG Copper THHN/THWN-2, Red",Copper,Mar-00,Mar-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-3/0-THHN-THWN-2-Red-Stranded
+"3/0 AWG Copper THHN/THWN-2, White",Copper,Mar-00,Mar-00,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-3/0-THHN-THWN-2-White-Stranded
+"4/0 AWG Copper THHN/THWN-2, Black",Copper,Apr-00,Apr-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Copper-4/0-THHN-THWN-2-Black-Stranded
+"4/0 AWG Copper THHN/THWN-2, Red",Copper,Apr-00,Apr-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Copper-4/0-THHN-THWN-2-Red-Stranded
+"4/0 AWG Copper THHN/THWN-2, White",Copper,Apr-00,Apr-00,"THHN, THWN-2",White,Stranded,1,WIRE-Copper-4/0-THHN-THWN-2-White-Stranded
+"6 AWG Copper XHHW-2, Black",Copper,6,6,XHHW-2,Black,Stranded,1,WIRE-Copper-6-XHHW-2-Black-Stranded
+"6 AWG Copper XHHW-2, Red",Copper,6,6,XHHW-2,Red,Stranded,1,WIRE-Copper-6-XHHW-2-Red-Stranded
+"6 AWG Copper XHHW-2, White",Copper,6,6,XHHW-2,White,Stranded,1,WIRE-Copper-6-XHHW-2-White-Stranded
+"6 AWG Copper XHHW-2, Green",Copper,6,6,XHHW-2,Green,Stranded,1,WIRE-Copper-6-XHHW-2-Green-Stranded
+"10 AWG Copper PV Wire, Black",Copper,10,10,PV WIRE,Black,Stranded,1,WIRE-Copper-10-PV WIRE-Black-Stranded
+"6 AWG Bare Copper, Solid",Copper,6,6,Bare,,Solid,1,WIRE-Copper-6-Bare-Solid
+"6 AWG Bare Copper, Stranded",Copper,6,6,Bare,,Stranded,1,WIRE-Copper-6-Bare-Stranded
+"4 AWG Bare Copper, Solid",Copper,4,4,Bare,,Solid,1,WIRE-Copper-4-Bare-Solid
+"4 AWG Bare Copper, Stranded",Copper,4,4,Bare,,Stranded,1,WIRE-Copper-4-Bare-Stranded
+"14-2 NM-B W/G, Copper",Copper,14,14/2,NM-B,White,Solid,3,WIRE-Copper-14/2-NM-B-White-Solid
+"12-2 NM-B W/G, Copper",Copper,12,2-Dec,NM-B,Yellow,Solid,3,WIRE-Copper-12/2-NM-B-Yellow-Solid
+"10-2 NM-B W/G, Copper",Copper,10,2-Oct,NM-B,Orange,Solid,3,WIRE-Copper-10/2-NM-B-Orange-Solid
+"8-2 NM-B W/G, Copper",Copper,8,2-Aug,NM-B,Black,Stranded,3,WIRE-Copper-8/2-NM-B-Black-Stranded
+"6-2 NM-B W/G, Copper",Copper,6,2-Jun,NM-B,Black,Stranded,3,WIRE-Copper-6/2-NM-B-Black-Stranded
+"14-3 NM-B W/G, Copper",Copper,14,14/3,NM-B,White,Solid,4,WIRE-Copper-14/3-NM-B-White-Solid
+"12-3 NM-B W/G, Copper",Copper,12,3-Dec,NM-B,Yellow,Solid,4,WIRE-Copper-12/3-NM-B-Yellow-Solid
+"10-3 NM-B W/G, Copper",Copper,10,3-Oct,NM-B,Orange,Solid,4,WIRE-Copper-10/3-NM-B-Orange-Solid
+"8-3 NM-B W/G, Copper",Copper,8,3-Aug,NM-B,Black,Stranded,4,WIRE-Copper-8/3-NM-B-Black-Stranded
+"6-3 NM-B W/G, Copper",Copper,6,3-Jun,NM-B,Black,Stranded,4,WIRE-Copper-6/3-NM-B-Black-Stranded
+"14-2 UF-B W/G, Copper",Copper,14,14/2,UF-B,Gray,Solid,3,WIRE-Copper-14/2-UF-B-Gray-Solid
+"12-2 UF-B W/G, Copper",Copper,12,2-Dec,UF-B,Gray,Solid,3,WIRE-Copper-12/2-UF-B-Gray-Solid
+"10-2 UF-B W/G, Copper",Copper,10,2-Oct,UF-B,Gray,Solid,3,WIRE-Copper-10/2-UF-B-Gray-Solid
+"8-2 UF-B W/G, Copper",Copper,8,2-Aug,UF-B,Gray,Stranded,3,WIRE-Copper-8/2-UF-B-Gray-Stranded
+"6-2 UF-B W/G, Copper",Copper,6,2-Jun,UF-B,Gray,Stranded,3,WIRE-Copper-6/2-UF-B-Gray-Stranded
+"14-3 UF-B W/G, Copper",Copper,14,14/3,UF-B,Gray,Solid,4,WIRE-Copper-14/3-UF-B-Gray-Solid
+"12-3 UF-B W/G, Copper",Copper,12,3-Dec,UF-B,Gray,Solid,4,WIRE-Copper-12/3-UF-B-Gray-Solid
+"10-3 UF-B W/G, Copper",Copper,10,3-Oct,UF-B,Gray,Solid,4,WIRE-Copper-10/3-UF-B-Gray-Solid
+"8-3 UF-B W/G, Copper",Copper,8,3-Aug,UF-B,Gray,Stranded,4,WIRE-Copper-8/3-UF-B-Gray-Stranded
+"6-3 UF-B W/G, Copper",Copper,6,3-Jun,UF-B,Gray,Stranded,4,WIRE-Copper-6/3-UF-B-Gray-Stranded
+"10-2 MC Cable W/G, Copper",Copper,10,2-Oct,MC,Metallic,Solid,3,WIRE-Copper-10/2-MC-Metallic-Solid
+"10-3 MC Cable W/G, Copper",Copper,10,3-Oct,MC,Metallic,Solid,4,WIRE-Copper-10/3-MC-Metallic-Solid
+6-6-6-6 Copper SER Cable,Copper,6,6-6-6-6,SER,Gray,Stranded,4,WIRE-Copper-6-6-6-6-SER-Gray-Stranded
+4-4-4-6 Copper SER Cable,Copper,4,4-4-4-6,SER,Gray,Stranded,4,WIRE-Copper-4-4-4-6-SER-Gray-Stranded
+3-3-3-5 Copper SER Cable,Copper,3,3-3-3-5,SER,Gray,Stranded,4,WIRE-Copper-3-3-3-5-SER-Gray-Stranded
+2-2-2-4 Copper SER Cable,Copper,2,2-2-2-4,SER,Gray,Stranded,4,WIRE-Copper-2-2-2-4-SER-Gray-Stranded
+1-1-1-3 Copper SER Cable,Copper,1,1-1-1-3,SER,Gray,Stranded,4,WIRE-Copper-1-1-1-3-SER-Gray-Stranded
+1/0-1/0-1/0-2 Copper SER Cable,Copper,Jan-00,1/0-1/0-1/0-2,SER,Gray,Stranded,4,WIRE-Copper-1/0-1/0-1/0-2-SER-Gray-Stranded
+2/0-2/0-2/0-1 Copper SER Cable,Copper,Feb-00,2/0-2/0-2/0-1,SER,Gray,Stranded,4,WIRE-Copper-2/0-2/0-2/0-1-SER-Gray-Stranded
+3/0-3/0-3/0-1/0 Copper SER Cable,Copper,Mar-00,3/0-3/0-3/0-1/0,SER,Gray,Stranded,4,WIRE-Copper-3/0-3/0-3/0-1/0-SER-Gray-Stranded
+4/0-4/0-4/0-2/0 Copper SER Cable,Copper,Apr-00,4/0-4/0-4/0-2/0,SER,Gray,Stranded,4,WIRE-Copper-4/0-4/0-4/0-2/0-SER-Gray-Stranded
+"6 AWG Aluminum THHN/THWN-2, Black",Aluminum,6,6,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-6-THHN-THWN-2-Black-Stranded
+"6 AWG Aluminum THHN/THWN-2, Red",Aluminum,6,6,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-6-THHN-THWN-2-Red-Stranded
+"6 AWG Aluminum THHN/THWN-2, White",Aluminum,6,6,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-6-THHN-THWN-2-White-Stranded
+"6 AWG Aluminum THHN/THWN-2, Green",Aluminum,6,6,"THHN, THWN-2",Green,Stranded,1,WIRE-Aluminum-6-THHN-THWN-2-Green-Stranded
+"4 AWG Aluminum THHN/THWN-2, Black",Aluminum,4,4,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-4-THHN-THWN-2-Black-Stranded
+"4 AWG Aluminum THHN/THWN-2, Red",Aluminum,4,4,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-4-THHN-THWN-2-Red-Stranded
+"4 AWG Aluminum THHN/THWN-2, White",Aluminum,4,4,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-4-THHN-THWN-2-White-Stranded
+"4 AWG Aluminum THHN/THWN-2, Green",Aluminum,4,4,"THHN, THWN-2",Green,Stranded,1,WIRE-Aluminum-4-THHN-THWN-2-Green-Stranded
+"3 AWG Aluminum THHN/THWN-2, Black",Aluminum,3,3,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-3-THHN-THWN-2-Black-Stranded
+"3 AWG Aluminum THHN/THWN-2, Red",Aluminum,3,3,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-3-THHN-THWN-2-Red-Stranded
+"3 AWG Aluminum THHN/THWN-2, White",Aluminum,3,3,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-3-THHN-THWN-2-White-Stranded
+"2 AWG Aluminum THHN/THWN-2, Black",Aluminum,2,2,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-2-THHN-THWN-2-Black-Stranded
+"2 AWG Aluminum THHN/THWN-2, Red",Aluminum,2,2,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-2-THHN-THWN-2-Red-Stranded
+"2 AWG Aluminum THHN/THWN-2, White",Aluminum,2,2,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-2-THHN-THWN-2-White-Stranded
+"1 AWG Aluminum THHN/THWN-2, Black",Aluminum,1,1,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-1-THHN-THWN-2-Black-Stranded
+"1 AWG Aluminum THHN/THWN-2, Red",Aluminum,1,1,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-1-THHN-THWN-2-Red-Stranded
+"1 AWG Aluminum THHN/THWN-2, White",Aluminum,1,1,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-1-THHN-THWN-2-White-Stranded
+"1/0 AWG Aluminum THHN/THWN-2, Black",Aluminum,Jan-00,Jan-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-1/0-THHN-THWN-2-Black-Stranded
+"1/0 AWG Aluminum THHN/THWN-2, Red",Aluminum,Jan-00,Jan-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-1/0-THHN-THWN-2-Red-Stranded
+"1/0 AWG Aluminum THHN/THWN-2, White",Aluminum,Jan-00,Jan-00,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-1/0-THHN-THWN-2-White-Stranded
+"2/0 AWG Aluminum THHN/THWN-2, Black",Aluminum,Feb-00,Feb-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-2/0-THHN-THWN-2-Black-Stranded
+"2/0 AWG Aluminum THHN/THWN-2, Red",Aluminum,Feb-00,Feb-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-2/0-THHN-THWN-2-Red-Stranded
+"2/0 AWG Aluminum THHN/THWN-2, White",Aluminum,Feb-00,Feb-00,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-2/0-THHN-THWN-2-White-Stranded
+"3/0 AWG Aluminum THHN/THWN-2, Black",Aluminum,Mar-00,Mar-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-3/0-THHN-THWN-2-Black-Stranded
+"3/0 AWG Aluminum THHN/THWN-2, Red",Aluminum,Mar-00,Mar-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-3/0-THHN-THWN-2-Red-Stranded
+"3/0 AWG Aluminum THHN/THWN-2, White",Aluminum,Mar-00,Mar-00,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-3/0-THHN-THWN-2-White-Stranded
+"4/0 AWG Aluminum THHN/THWN-2, Black",Aluminum,Apr-00,Apr-00,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-4/0-THHN-THWN-2-Black-Stranded
+"4/0 AWG Aluminum THHN/THWN-2, Red",Aluminum,Apr-00,Apr-00,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-4/0-THHN-THWN-2-Red-Stranded
+"4/0 AWG Aluminum THHN/THWN-2, White",Aluminum,Apr-00,Apr-00,"THHN, THWN-2",White,Stranded,1,WIRE-Aluminum-4/0-THHN-THWN-2-White-Stranded
+"250 kcmil Aluminum THHN/THWN-2, Black",Aluminum,250,250,"THHN, THWN-2",Black,Stranded,1,WIRE-Aluminum-250-THHN-THWN-2-Black-Stranded
+"250 kcmil Aluminum THHN/THWN-2, Red",Aluminum,250,250,"THHN, THWN-2",Red,Stranded,1,WIRE-Aluminum-250-THHN-THWN-2-Red-Stranded
+"6 AWG Aluminum USE-2, Black",Aluminum,6,6,USE-2,Black,Stranded,1,WIRE-Aluminum-6-USE-2-Black-Stranded
+"4 AWG Aluminum USE-2, Black",Aluminum,7,7,USE-2,Black,Stranded,1,WIRE-Aluminum-7-USE-2-Black-Stranded
+"3 AWG Aluminum USE-2, Black",Aluminum,8,8,USE-2,Black,Stranded,1,WIRE-Aluminum-8-USE-2-Black-Stranded
+"2 AWG Aluminum USE-2, Black",Aluminum,9,9,USE-2,Black,Stranded,1,WIRE-Aluminum-9-USE-2-Black-Stranded
+"1 AWG Aluminum USE-2, Black",Aluminum,10,10,USE-2,Black,Stranded,1,WIRE-Aluminum-10-USE-2-Black-Stranded
+"1/0 AWG Aluminum USE-2, Black",Aluminum,Jan-00,Jan-00,USE-2,Black,Stranded,1,WIRE-Aluminum-1/0-USE-2-Black-Stranded
+"2/0 AWG Aluminum USE-2, Black",Aluminum,Feb-00,Feb-00,USE-2,Black,Stranded,1,WIRE-Aluminum-2/0-USE-2-Black-Stranded
+"3/0 AWG Aluminum USE-2, Black",Aluminum,Mar-00,Mar-00,USE-2,Black,Stranded,1,WIRE-Aluminum-3/0-USE-2-Black-Stranded
+"4/0 AWG Aluminum USE-2, Black",Aluminum,Apr-00,Apr-00,USE-2,Black,Stranded,1,WIRE-Aluminum-4/0-USE-2-Black-Stranded
+"250 kcmil Aluminum USE-2, Black",Aluminum,250,250,USE-2,Black,Stranded,1,WIRE-Aluminum-250-USE-2-Black-Stranded
+"6 AWG Aluminum XHHW-2, Black",Aluminum,6,6,XHHW-2,Black,Stranded,1,WIRE-Aluminum-6-XHHW-2-Black-Stranded
+"6 AWG Aluminum XHHW-2, Red",Aluminum,6,6,XHHW-2,Red,Stranded,1,WIRE-Aluminum-6-XHHW-2-Red-Stranded
+"6 AWG Aluminum XHHW-2, White",Aluminum,6,6,XHHW-2,White,Stranded,1,WIRE-Aluminum-6-XHHW-2-White-Stranded
+"6 AWG Aluminum XHHW-2, Green",Aluminum,6,6,XHHW-2,Green,Stranded,1,WIRE-Aluminum-6-XHHW-2-Green-Stranded
+2-2-2 Aluminum SEU Cable,Aluminum,2,2-2-2-4,SEU,Gray,Stranded,3,WIRE-Aluminum-2-2-2-4-SEU-Gray-Stranded
+1/0-1/0-1/0 Aluminum SEU Cable,Aluminum,Jan-00,1/0-1/0-1/0,SEU,Gray,Stranded,3,WIRE-Aluminum-1/0-1/0-1/0-SEU-Gray-Stranded
+2/0-2/0-2/0 Aluminum SEU Cable,Aluminum,Feb-00,2/0-2/0-2/0,SEU,Gray,Stranded,3,WIRE-Aluminum-2/0-2/0-2/0-SEU-Gray-Stranded
+4/0-4/0-4/0 Aluminum SEU Cable,Aluminum,Apr-00,4/0-4/0-4/0,SEU,Gray,Stranded,3,WIRE-Aluminum-4/0-4/0-4/0-SEU-Gray-Stranded
+4-4-4-6 Aluminum SER Cable,Aluminum,4,4-4-4-6,SER,Gray,Stranded,4,WIRE-Aluminum-4-4-4-6-SER-Gray-Stranded
+2-2-2-4 Aluminum SER Cable,Aluminum,2,2-2-2-4,SER,Gray,Stranded,4,WIRE-Aluminum-2-2-2-4-SER-Gray-Stranded
+1-1-1-3 Aluminum SER Cable,Aluminum,1,1-1-1-3,SER,Gray,Stranded,4,WIRE-Aluminum-1-1-1-3-SER-Gray-Stranded
+1/0-1/0-1/0-2 Aluminum SER Cable,Aluminum,Jan-00,1/0-1/0-1/0-2,SER,Gray,Stranded,4,WIRE-Aluminum-1/0-1/0-1/0-2-SER-Gray-Stranded
+2/0-2/0-2/0-1 Aluminum SER Cable,Aluminum,Feb-00,2/0-2/0-2/0-1,SER,Gray,Stranded,4,WIRE-Aluminum-2/0-2/0-2/0-1-SER-Gray-Stranded
+3/0-3/0-3/0-1/0 Aluminum SER Cable,Aluminum,Mar-00,3/0-3/0-3/0-1/0,SER,Gray,Stranded,4,WIRE-Aluminum-3/0-3/0-3/0-1/0-SER-Gray-Stranded
+4/0-4/0-4/0-2/0 Aluminum SER Cable,Aluminum,Apr-00,4/0-4/0-4/0-2/0,SER,Gray,Stranded,4,WIRE-Aluminum-4/0-4/0-4/0-2/0-SER-Gray-Stranded
+250-250-250-3/0 Aluminum SER Cable,Aluminum,250,250-250-250-3/0,SER,Gray,Stranded,4,WIRE-Aluminum-250-250-250-3/0-SER-Gray-Stranded
+2-2-2 Aluminum URD Cable,Aluminum,2,2-2-2-2,URD,Gray,Stranded,3,WIRE-Aluminum-2-2-2-2-URD-Gray-Stranded
+1-1-1 Aluminum URD Cable,Aluminum,1,1-1-1-1,URD,Gray,Stranded,3,WIRE-Aluminum-1-1-1-1-URD-Gray-Stranded
+1/0-1/0-1/0 Aluminum URD Cable,Aluminum,Jan-00,1/0-1/0-1/0-1/0,URD,Gray,Stranded,3,WIRE-Aluminum-1/0-1/0-1/0-1/0-URD-Gray-Stranded
+2/0-2/0-2/0 Aluminum URD Cable,Aluminum,Feb-00,2/0-2/0-2/0-2/0,URD,Gray,Stranded,3,WIRE-Aluminum-2/0-2/0-2/0-2/0-URD-Gray-Stranded
+3/0-3/0-3/0 Aluminum URD Cable,Aluminum,Mar-00,3/0-3/0-3/0-3/0,URD,Gray,Stranded,3,WIRE-Aluminum-3/0-3/0-3/0-3/0-URD-Gray-Stranded
+4/0-4/0-4/0 Aluminum URD Cable,Aluminum,Apr-00,4/0-4/0-4/0-4/0,URD,Gray,Stranded,3,WIRE-Aluminum-4/0-4/0-4/0-4/0-URD-Gray-Stranded
+250-250-250 Aluminum URD Cable,Aluminum,250,250-250-250-250,URD,Gray,Stranded,3,WIRE-Aluminum-250-250-250-250-URD-Gray-Stranded
+2-2-2-4 Aluminum URD Cable,Aluminum,2,2-2-2-4,URD,Gray,Stranded,4,WIRE-Aluminum-2-2-2-4-URD-Gray-Stranded
+1-1-1-3 Aluminum URD Cable,Aluminum,1,1-1-1-3,URD,Gray,Stranded,4,WIRE-Aluminum-1-1-1-3-URD-Gray-Stranded
+1/0-1/0-1/0-2 Aluminum URD Cable,Aluminum,Jan-00,1/0-1/0-1/0-2,URD,Gray,Stranded,4,WIRE-Aluminum-1/0-1/0-1/0-2-URD-Gray-Stranded
+2/0-2/0-2/0-1 Aluminum URD Cable,Aluminum,Feb-00,2/0-2/0-2/0-1,URD,Gray,Stranded,4,WIRE-Aluminum-2/0-2/0-2/0-1-URD-Gray-Stranded
+3/0-3/0-3/0-1/0 Aluminum URD Cable,Aluminum,Mar-00,3/0-3/0-3/0-1/0,URD,Gray,Stranded,4,WIRE-Aluminum-3/0-3/0-3/0-1/0-URD-Gray-Stranded
+4/0-4/0-4/0-2/0 Aluminum URD Cable,Aluminum,Apr-00,4/0-4/0-4/0-2/0,URD,Gray,Stranded,4,WIRE-Aluminum-4/0-4/0-4/0-2/0-URD-Gray-Stranded
+250-250-250-3/0 Aluminum URD Cable,Aluminum,250,250-250-250-3/0,URD,Gray,Stranded,4,WIRE-Aluminum-250-250-250-3/0-URD-Gray-Stranded
+6-6-6 Aluminum ACSR Service Drop Cable,Aluminum,6,6/6/2006,ACSR,Black,Stranded,3,WIRE-Aluminum-6-6-6-ACSR-Black-Stranded
+6-6-6-6 Aluminum ACSR Service Drop Cable,Aluminum,6,6-6-6-6,ACSR,Black,Stranded,4,WIRE-Aluminum-6-6-6-6-ACSR-Black-Stranded

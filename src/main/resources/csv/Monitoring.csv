@@ -1,0 +1,55 @@
+Description,Manufacturer,Part Number,Monitoring Type,BRSID
+Tigo Cloud Connect Advanced Cell Modem,Tigo,348-00000-52,Cell Modem,MONITORING-Tigo-348-00000-52
+Newark Ferrite Core Powerline Filter,Newark,90B5610,Power Line Filter,MONITORING-Newark-90B5610
+SolarEdge Replacement Modem,SolarEdge,CELL-A-R05-US-P-S2,Cell Modem,MONITORING-SolarEdge-CELL-A-R05-US-P-S2
+SolarEdge Replacement Modem,SolarEdge,CELL-A-R05-US-S-S2,Cell Modem,MONITORING-SolarEdge-CELL-A-R05-US-S-S2
+SolarEdge Replacement Modem for SetApp Inverters,SolarEdge,CELL-B-R05-US-P-S2,Cell Modem,MONITORING-SolarEdge-CELL-B-R05-US-P-S2
+SolarEdge Replacement Modem for SetApp Inverters,SolarEdge,CELL-B-R05-US-S-S2-J,Cell Modem,MONITORING-SolarEdge-CELL-B-R05-US-S-S2-J
+Enphase Communcations Kit,Enphase,CELLMODEM-01,Cell Modem,MONITORING-Enphase-CELLMODEM-01
+Enphase Communcations Kit,Enphase,CELLMODEM-01 M,Cell Modem,MONITORING-Enphase-CELLMODEM-01-M
+Enphase Communcations Kit,Enphase,CELLMODEM-03 M,Cell Modem,MONITORING-Enphase-CELLMODEM-03-M
+Enphase Communcations Kit,Enphase,CELLMODEM-M1,Cell Modem,MONITORING-Enphase-CELLMODEM-M1
+Enphase Communcations Kit,Enphase,CELLMODEM-M1 M,Cell Modem,MONITORING-Enphase-CELLMODEM-M1-M
+Enphase Communcations Kit,Enphase,CELLMODEM-M1-06-AT-05,Cell Modem,MONITORING-Enphase-CELLMODEM-M1-06-AT-05
+Enphase Communcations Kit,Enphase,CELLMODEM-M1-06-SP-05,Cell Modem,MONITORING-Enphase-CELLMODEM-M1-06-SP-05
+Enphase Energy System Communications Kit,Enphase,COMMS-KIT-01,Communications Kit,MONITORING-Enphase-COMMS-KIT-01
+Enphase Energy System Communications Kit with Cell Modem,Enphase,COMMS-CELLMODEM-M1-06,Communications Kit,MONITORING-Enphase-COMMS-CELLMODEM-M1-06
+SMA Cellular LTE Modem w/ 5yr Data Plan,SMA,CELLMODKIT-US-10,Cell Modem,MONITORING-SMA-CELLMODKIT-US-10
+Enphase Consumption Clamp Current Transformer,Enphase,CT-200-CLAMP,CT Clamp,MONITORING-Enphase-CT-200-CLAMP
+Enphase Production Current Transformer,Enphase,CT-200-SOLID,CT Clamp,MONITORING-Enphase-CT-200-SOLID
+Enphase Consumption Current Transformers (pair),Enphase,CT-200-SPLIT,CT Clamp,MONITORING-Enphase-CT-200-SPLIT
+"Enphase Envoy, IEEE Certified",Enphase,ENV2-IQ-AM1-240,Communications Kit,MONITORING-Enphase-ENV2-IQ-AM1-240
+Enphase Envoy,Enphase,ENV-IQ-AM1-240,Communications Kit,MONITORING-Enphase-ENV-IQ-AM1-240
+"Enphase Envoy, with Mobile Connect Modem",Enphase,ENV-IQ-AM1-240 M,Communications Kit,MONITORING-Enphase-ENV-IQ-AM1-240-M
+"Enphase Envoy S Standard, with Mobile Connect Modem",Enphase,ENV-S-AB-120-A M,Communications Kit,MONITORING-Enphase-ENV-S-AB-120-A-M
+Enphase Envoy S Standard,Enphase,ENV-S-AM1-120,Communications Kit,MONITORING-Enphase-ENV-S-AM1-120
+Enphase Envoy,Enphase,ENV-S-AM1-120 M,Communications Kit,MONITORING-Enphase-ENV-S-AM1-120-M
+Enphase Power Line Filter,Enphase,Q-LCF-064-1P,Power Line Filter,MONITORING-Enphase-Q-LCF-064-1P
+Enphase ZigBee Repeater,Enphase,RGM-ZGB-01,Wireless Communication Gateway,MONITORING-Enphase-RGM-ZGB-01
+"Astrodyne TDI 1-Phase Two-Stage Filter, 30A",Astrodyne TDI,RP230-30-10-S,Power Line Filter,MONITORING-Astrodyne-TDI-RP230-30-10-S
+"Astrodyne TDI 1-Phase Two-Stage Filter, 80A",Astrodyne TDI,RP240-80-10-S,Power Line Filter,MONITORING-Astrodyne-TDI-RP240-80-10-S
+SolarEdge ZigBee Additional Slave Unit,SolarEdge,SE1000-ZB05-SLV-NA,Wireless Communication Gateway,MONITORING-SolarEdge-SE1000-ZB05-SLV-NA
+SolarEdge ZigBee with Additional Slave Unit,SolarEdge,SE1000-ZBGW-K5-NA,Wireless Communication Gateway,MONITORING-SolarEdge-SE1000-ZBGW-K5-NA
+SolarEdge ZigBee with Additional Slave Unit,SolarEdge,SE1000-ZBGW-K-NA,Wireless Communication Gateway,MONITORING-SolarEdge-SE1000-ZBGW-K-NA
+SolarEdge Residential Cellular Plug-In,SolarEdge,SE-CELL-B-R05-S-S2,Cell Modem,MONITORING-SolarEdge-SE-CELL-B-R05-S-S2
+SolarEdge Residential Cellular Plug-In,SolarEdge,SE-CELL-R05-S-2,Cell Modem,MONITORING-SolarEdge-SE-CELL-R05-S-2
+SolarEdge Residential Cellular Plug-In,SolarEdge,SE-CELL-R05-S-S2,Cell Modem,MONITORING-SolarEdge-SE-CELL-R05-S-S2
+SolarEdge GSM Modem,SolarEdge,SE-GSM-R05-US-S1,Cell Modem,MONITORING-SolarEdge-SE-GSM-R05-US-S1
+SolarEdge GSM Modem,SolarEdge,SE-GSM-R5-US-S1,Cell Modem,MONITORING-SolarEdge-SE-GSM-R5-US-S1
+SolarEdge Wireless Gatweway and Repeater,SolarEdge,SE-WFGW-B-S1-NA,Wireless Communication Gateway,MONITORING-SolarEdge-SE-WFGW-B-S1-NA
+SolarEdge ZigBee,SolarEdge,SE-ZBGW-B-S1-NA,Wireless Communication Gateway,MONITORING-SolarEdge-SE-ZBGW-B-S1-NA
+SMA SpeedWire Web-Connect Data Interface Module,SMA,SWDM-US-10,Wireless Communication Gateway,MONITORING-SMA-SWDM-US-10
+Klein Tools Pass-Thru Modular Data Plug,Klein Tools,VDV826-728,Data Plug,MONITORING-Klein-Tools-VDV826-728
+"Enphase IQ Combiner 4, IEEE Certified",Enphase,X2-IQ-AM1-240-4,Combiner Box,MONITORING-Enphase-X2-IQ-AM1-240-4
+"Enphase IQ Combiner 4, IEEE Certified, Integrated LTE-M1 Cell Modem",Enphase,X2-IQ-AM1-240-4C,Combiner Box,MONITORING-Enphase-X2-IQ-AM1-240-4C
+Enphase IQ Combiner 2,Enphase,X-IQ-AM1-240-2,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-2
+Enphase IQ Combiner 3,Enphase,X-IQ-AM1-240-3,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-3
+"Enphase IQ Combiner 3, with Mobile Connect Modem",Enphase,X-IQ-AM1-240-3 M,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-3-M
+"Enphase IQ Combiner 3, integrated LTE-M1 cell modem",Enphase,X-IQ-AM1-240-3C,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-3C
+"Enphase IQ Combiner 3, integrated LTE-M1 cell modem, Energy Storage Ready",Enphase,X-IQ-AM1-240-3C-ES,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-3C-ES
+"Enphase IQ Combiner 3, Energy Storage Ready",Enphase,X-IQ-AM1-240-3-ES,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-3-ES
+Enphase IQ Combiner 4,Enphase,X-IQ-AM1-240-4,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-4
+"Enphase IQ Combiner 4, Integrated LTE-M1 Cell Modem",Enphase,X-IQ-AM1-240-4C,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-4C
+Enphase IQ Combiner 5,Enphase,X-IQ-AM1-240-5,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-5
+"Enphase IQ Combiner 5, Integrated LTE-M1 Cell Modem",Enphase,X-IQ-AM1-240-5C,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-5C
+Enphase IQ Combiner,Enphase,X-IQ-AM1-240-B,Combiner Box,MONITORING-Enphase-X-IQ-AM1-240-B
