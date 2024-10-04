@@ -26,7 +26,10 @@ import java.net.http.HttpClient;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -45,6 +48,8 @@ public class KlaviyoService {
 
   private final Set<String> DIGITAL_LEAD_SOURCES = new HashSet<>(Arrays.asList ("Paid Lead Gen", "Paid Advertising", "Organic", "Organic with Referral"));
 
+  private final LocalDate KLAVIYO_START_DATE = LocalDate.of(2024, 9, 28);
+
   // Used to handle contact create/updates
   public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate) {
     // Return if token is not set
@@ -53,17 +58,24 @@ public class KlaviyoService {
     }
 
     String url = apiUrl + "/profiles";
-    JSONObject contactJson = new JSONObject();
-    JSONObject attributes = new JSONObject();
-    JSONObject properties = new JSONObject();
-    JSONObject data = new JSONObject();
-    JSONObject location = new JSONObject();
-
-    data.put("type", "profile");
-
     try {
       GenesysService.CustomContact contact = genesysService.getContact(contactId, true);
 
+      if (isUpdate) {
+        ZonedDateTime contactCreatedDate = contact.getDateCreated().toInstant().atZone(ZoneId.of("US/Mountain"));
+        // Check to see if this contact was create before the Klaviyo integration was deployed
+        // if so, do not attempt an update as it will not be in Klaviyo
+        if (contactCreatedDate.toLocalDate().isBefore(KLAVIYO_START_DATE)) {
+          return;
+        }
+      }
+
+      JSONObject contactJson = new JSONObject();
+      JSONObject attributes = new JSONObject();
+      JSONObject properties = new JSONObject();
+      JSONObject data = new JSONObject();
+      JSONObject location = new JSONObject();
+      data.put("type", "profile");
       attributes.put("email", contact.getEmail());
       attributes.put("external_id", contact.getId());
       attributes.put("first_name", contact.getFirstName());
@@ -97,7 +109,7 @@ public class KlaviyoService {
       if (isUpdate) {
         String klaviyoProfileId = getKlaviyoProfileId(contact.getEmail());
         data.put("id", klaviyoProfileId);
-        ResponseEntity<String> resp = PATCH(url + "/" + klaviyoProfileId, contactJson.toString()); //TODO: Change this to work with new approach
+        ResponseEntity<String> resp = PATCH(url + "/" + klaviyoProfileId, contactJson.toString());
         if (resp.getStatusCode().value() != 200) {
           JSONObject errorResp = new JSONObject(resp.getBody());
           JSONArray errors = errorResp.getJSONArray("errors");

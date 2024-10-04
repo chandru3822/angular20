@@ -51,7 +51,8 @@ public class KlaviyoQuery {
                  LEFT JOIN flow.contact_custom_field_value ccfv6 ON ccfv6.contact_id = c.id AND ccfv6.custom_field_group_assignment_id = 26083
                  LEFT JOIN flow.contact_custom_field_value ccfv7 ON ccfv7.contact_id = c.id AND ccfv7.custom_field_group_assignment_id = 26084
                  LEFT JOIN flow.contact_custom_field_value ccfv8 ON ccfv8.contact_id = c.id AND ccfv8.custom_field_group_assignment_id = 26085
-        WHERE c.date_modified >= (NOW() - INTERVAL '24 hours')
+        WHERE c.date_created > '2024-09-28'
+          AND c.date_modified >= (NOW() - INTERVAL '24 hours')
           AND ccfv.custom_field_group_assignment_id = 395
           AND lov.name IN ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
     ),
@@ -93,7 +94,8 @@ public class KlaviyoQuery {
                       LEFT JOIN flow.contact_custom_field_value ccfv6 ON ccfv6.contact_id = pd.contact_id AND ccfv6.custom_field_group_assignment_id = 26083
                       LEFT JOIN flow.contact_custom_field_value ccfv7 ON ccfv7.contact_id = pd.contact_id AND ccfv7.custom_field_group_assignment_id = 26084
                       LEFT JOIN flow.contact_custom_field_value ccfv8 ON ccfv8.contact_id = pd.contact_id AND ccfv8.custom_field_group_assignment_id = 26085
-             WHERE pd.date_modified >= (NOW() - INTERVAL '24 hours')
+             WHERE pd.project_created_date >  '2024-09-28'
+               AND pd.date_modified >= (NOW() - INTERVAL '24 hours')
                AND pd.cancelled_date IS NULL
                AND ccfv.custom_field_group_assignment_id = 395
                AND lov.name IN ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
