@@ -1,5 +1,0 @@
-Description,Manufacturer,Part Number,Max Input Power,Max Input Voltage,Max Input Current,Max Output Voltage,Max Output Current,Min String Length,Max String Length,Weight,BRSID
-SolarEdge P401 DC Optimizer,SolarEdge,P401,430,60,12.5,60,15,8,25,1.5,OPTIMIZER-SolarEdge-P401
-SolarEdge P400 DC Optimizer,SolarEdge,P400,400,80,10.1,60,15,8,25,1.7,OPTIMIZER-SolarEdge-P400
-SolarEdge P320 DC Optimizer,SolarEdge,P320,320,48,11.0,60,15,8,25,1.4,OPTIMIZER-SolarEdge-P320
-SolarEdge P300 DC Optimizer,SolarEdge,P300,300,48,10.0,60,15,8,25,1.7,OPTIMIZER-SolarEdge-P300

@@ -21,10 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStreamReader;
 import java.util.*;
 
 
@@ -134,11 +133,12 @@ public class BlueravenPartsMasterVersionController {
   @PostMapping(value = "/intake")
   @Transactional
   @PreAuthorize("hasRootLevelAccess()")
-  public Void doCSVIntake(@RequestBody Map<String, String> body) {
-
-    Path path = Paths.get(ClassLoader.getSystemResource("csv/" + body.get("file")).toURI());
-
-    try (CSVReader reader = new CSVReaderBuilder(Files.newBufferedReader(path)).withSkipLines(0).build()) {
+  public Void doCSVIntake(
+    @RequestParam MultipartFile file,
+    @RequestParam Long versionId,
+    @RequestParam String objectCode
+  ) {
+    try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(file.getInputStream())).withSkipLines(0).build()) {
 
       List<Map<String, Object>> data = new ArrayList<>();
       String[] headers = reader.readNext();
@@ -153,9 +153,6 @@ public class BlueravenPartsMasterVersionController {
       }
 
       var fields = getFields(headers);
-
-      var versionID = Long.parseLong(body.get("versionId"));
-      var objectCode = body.get("objectCode");
 
       for (int i = 0; i < data.size(); i++) {
         Map<String, Object> row = data.get(i);
@@ -238,7 +235,7 @@ public class BlueravenPartsMasterVersionController {
         }
 
         var group = new PartsMasterCustomGroup(formattedVals, null);
-        partsMasterVersionService.updateCustomFieldValue(versionID, objectCode, group);
+        partsMasterVersionService.updateCustomFieldValue(versionId, objectCode, group);
       }
     }
     return null;
