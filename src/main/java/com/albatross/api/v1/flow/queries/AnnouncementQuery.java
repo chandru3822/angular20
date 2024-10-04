@@ -120,9 +120,7 @@ public class AnnouncementQuery {
            a.archived
     from flow.announcement a
     where a.archived is false
-    and case when :mobile::boolean is true then a.show_on_mobile is true
-      else a.show_on_web is true
-    end
+     and a.show_on_web is true
     and a.published is false
     and a.start_time <= now()
     and (a.end_time is null or a.end_time >= now())

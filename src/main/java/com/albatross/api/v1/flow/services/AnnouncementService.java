@@ -162,6 +162,7 @@ public class AnnouncementService {
   }
 
   public void publishActiveAnnouncements() {
+    //for now only show_on_web notifications work. will need to adjust the query when that changes
     List<Announcement> announcements = sqlCache.queryBySql(AnnouncementQuery.getUnpublishedActive, Collections.emptyMap(), Announcement.class);
     for(Announcement a : announcements) {
       publishOneAnnouncement(a);
