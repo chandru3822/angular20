@@ -261,7 +261,7 @@ public class AuroraProxy {
         String bodyJson;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            bodyJson = objectMapper.writeValueAsString(acp);
+            bodyJson = objectMapper.writeValueAsString(acp).replace("null", "\"null\"");
         } catch (Exception e){
             log.error("AURORA: {}", e.getMessage());
             throw new ResponseStatusException(

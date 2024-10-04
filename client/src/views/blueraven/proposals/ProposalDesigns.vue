@@ -608,7 +608,6 @@ const requestAIDesign = async (monthlyInputs) => {
         'blueraven'
     )
     if (data?.design?.id && data?.design?.project_id) {
-    debugger
     const {monthData} = await postRequest(
         `/proposal/projects/${data.design.project_id}/ai/design/updateMonthlyUsage`,
         monthlyInputs,
