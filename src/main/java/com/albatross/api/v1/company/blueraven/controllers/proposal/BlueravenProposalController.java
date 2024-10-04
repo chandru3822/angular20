@@ -17,7 +17,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,19 +60,14 @@ public class BlueravenProposalController {
     return proposalService.getProposalProjects(query, pageable);
   }
 
-  @PostMapping(value = "/projects/{projectId}/ai")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public AuroraDesignWrappedDTO doProposalAiRequest(@PathVariable Long projectId,
-                                                    @RequestBody ProposalAiRequestBody bodyObject) {
-    //this is called to generate an initial aurora design
-    return proposalService.doProposalAiRequest(projectId, bodyObject.getCustomFieldValues(), bodyObject.getMonthlyEnergyInputs());
-  }
 
-  @Data
-  public static class ProposalAiRequestBody {
-      private List<com.albatross.api.v1.flow.model.CustomFieldValue> customFieldValues;
-      private List<Double> monthlyEnergyInputs;
-  }
+    @PostMapping(value = "/projects/{projectId}/ai")
+    @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+    public AuroraDesignWrappedDTO doProposalAiRequest(@PathVariable Long projectId,
+                                                      @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+        //this is called to generate an initial aurora design
+        return proposalService.doProposalAiRequest(projectId, values);
+    }
 
   @PostMapping(value = "/projects/{projectId}/ai/design/{designId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
@@ -84,6 +78,14 @@ public class BlueravenProposalController {
     //this is only called after duplicating an aurora design
     proposalService.handleNewPpsForAuroraDesign(projectId, designId, values, null != designByAuroraValue ? designByAuroraValue : false);
   }
+
+  @PostMapping(value="/projects/{projectId}/ai/design/updateMonthlyUsage")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public void updateMonthlyUsage(@PathVariable String projectId,
+                                 @RequestBody List<Double> monthlyValues) {
+      proposalService.doUpdateMonthlyUsage(projectId, monthlyValues);
+  }
+
 
   @PostMapping(value = "/pps/{ppsId}/design/{designId}/sync")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")

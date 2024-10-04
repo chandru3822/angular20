@@ -218,7 +218,7 @@ export async function getRequestWithParams(path, params, companyAbbreviation = n
 
 export async function postRequest(path, body, companyAbbreviation = null, returnType = {}, extraParams = {}) {
   //"extraParams" can be used to cancel post requests and send in the token and/or the source
-  const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
+    const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, extraParams) ?? {
     data: returnType,
     status: null

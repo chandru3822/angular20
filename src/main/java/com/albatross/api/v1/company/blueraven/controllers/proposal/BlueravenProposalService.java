@@ -238,10 +238,10 @@ public class BlueravenProposalService {
     return result.orElse(false);
   }
 
-  public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, List<Double> monthlyInputs) {
+  public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    AuroraDesignWrappedDTO auroraDesign;
+
     //first check to see if they are an existing aurora user
     Optional<String> auroraUserId = getAuroraUserId();
 
@@ -249,19 +249,17 @@ public class BlueravenProposalService {
       //then check for any existing design id on a Create Proposal Design step, if found use the oldest, then do duplicateExistingProposalAi
       Optional<String> oldestDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getOldestDesignIdForProject, params, String.class);
       if (oldestDesignId.isPresent()) {
-        auroraDesign = duplicateExistingProposalAi(auroraUserId.get(), projectId, oldestDesignId.get(), values, false);
+        return duplicateExistingProposalAi(auroraUserId.get(), projectId, oldestDesignId.get(), values, false);
       } else {
         //then check for any existing design id on a Create Predesign step, if found use the oldest then do new function to be made
         Optional<String> createPredesignDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getDesignIdForCreatePredesignStep, params, String.class);
         if (createPredesignDesignId.isPresent()) {
-          auroraDesign = duplicateExistingProposalAi(auroraUserId.get(), projectId, createPredesignDesignId.get(), values, true);
+          return duplicateExistingProposalAi(auroraUserId.get(), projectId, createPredesignDesignId.get(), values, true);
         } else {
           //if none of those then createNewAuroraProjectAndDesign
-          auroraDesign = createNewAuroraProjectAndDesign(auroraUserId.get(), projectId, values);
+          return createNewAuroraProjectAndDesign(auroraUserId.get(), projectId, values);
         }
       }
-      auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), projectId, monthlyInputs);
-      return auroraDesign;
     } else {
       throw new ResponseStatusException(
         HttpStatus.BAD_REQUEST,
@@ -297,6 +295,19 @@ public class BlueravenProposalService {
     return auroraUserId;
   }
 
+  public void doUpdateMonthlyUsage(String projectId, List<Double> monthlyInputs){
+      Optional<String> auroraUserId = getAuroraUserId();
+
+      if (auroraUserId.isPresent()) {
+          auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), projectId, monthlyInputs);
+      } else {
+          throw new ResponseStatusException(
+                  HttpStatus.BAD_REQUEST,
+                  "You can't create an Aurora design without an Aurora account. Contact SalesHR to get an Aurora account created.",
+                  new Exception());
+      }
+
+  }
   public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(String auroraUserId, Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
     //this function needs to:
     //try/catch creating an aurora project

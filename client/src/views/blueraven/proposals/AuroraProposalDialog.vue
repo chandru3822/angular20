@@ -33,7 +33,6 @@ const months = constants.MONTHS
 const monthlyUsage = ref([])
 
 const validateAIRequest = async () => {
-  debugger
   const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0
   if (valid) {
     //all checks for how to create the design are handled by backend now
@@ -182,7 +181,13 @@ const xcelEnergyMNValues = Object.freeze({
 </script>
 
 <template>
-  <ConfirmationDialog :width="500" persistent :open-dialog="show" parent-close @confirm="validateAIRequest" @close-dialog="emit('close')">
+  <ConfirmationDialog :width="500"
+                      persistent
+                      :open-dialog="show"
+                      parent-close
+                      :confirm-loading="savingNewAiDesign"
+                      @confirm="validateAIRequest"
+                      @close-dialog="emit('close')" >
       <template v-slot:title>Create New AI Design</template>
     <template v-slot:yes>Save</template>
         <v-form ref="aiForm">

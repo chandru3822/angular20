@@ -561,7 +561,6 @@ const pageLoadOrRefresh = async () => {
   await Promise.all(requests)
 }
 const validateAIRequest = async (aiForm) => {
-  debugger
   const valid = aiForm.validate()
   if (valid) {
     //all checks for how to create the design are handled by backend now
@@ -601,15 +600,20 @@ const handleNewRequest = async () => {
 }
 
 const requestAIDesign = async (monthlyInputs) => {
-
   try {
     savingNewAiDesign.value = true
     const { data } = await postRequest(
-      `/proposal/projects/${projectId.value}/ai`,
-        {customFieldValues: aiRequestFields.value, monthlyEnergyInputs: monthlyInputs},
-      'blueraven'
+        `/proposal/projects/${projectId.value}/ai`,
+        aiRequestFields.value,
+        'blueraven'
     )
     if (data?.design?.id && data?.design?.project_id) {
+    debugger
+    const {monthData} = await postRequest(
+        `/proposal/projects/${data.design.project_id}/ai/design/updateMonthlyUsage`,
+        monthlyInputs,
+        'blueraven'
+    )
 
       const url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
       window.open(url, '_blank')

@@ -40,6 +40,7 @@
             :disabled="disableConfirm"
             id="qa-confirmation-dialog-yes"
             :class="confirmClass"
+            :loading="confirmLoading"
             @click="yes"
         >
           <template #default>
@@ -76,6 +77,7 @@ const props = defineProps({
   itemToDelete: Object, // @deprecated
   disableConfirm: Boolean, //allows parent to perform validation before allowing user to confirm
   hideConfirm: Boolean, // hides confirmation btn when only 'close' or 'cancel' is needed
+  confirmLoading:Boolean,
   confirmClass: String, //allows parent to control appearance of confirmation btn
   width: Number, //width of the dialog
   parentClose: Boolean, //set to true when validation needed before closing a dialog on confirm

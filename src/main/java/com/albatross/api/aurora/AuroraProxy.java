@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +19,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import jakarta.validation.constraints.NotBlank;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -253,19 +255,30 @@ public class AuroraProxy {
     }
   }
 
-    public void updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, Long projectId, List<Double> monthlyInputs){
-        AuroraConsumptionProfile acp = new AuroraConsumptionProfile();
+    public void updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, String projectId, List<Double> monthlyInputs)  {
+        AuroraUpdateConsumptionProfileDTO acp = new AuroraUpdateConsumptionProfileDTO();
         acp.setMonthlyEnergy(monthlyInputs);
+        String bodyJson;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            bodyJson = objectMapper.writeValueAsString(acp);
+        } catch (Exception e){
+            log.error("AURORA: {}", e.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage(),
+                    new Exception());
+        }
 
         RestClient client2 = RestClient.builder().baseUrl(host).build();
-        ResponseEntity<AuroraConsumptionProfile> res = client2
+        ResponseEntity<AuroraConsumptionProfileDTO> res = client2
                 .put()
-                .uri("/tenants/%s/projects/%s".formatted(tenantId, projectId))
+                .uri("/tenants/%s/projects/%s/consumption_profile".formatted(tenantId, projectId))
                 .header("Authorization", "Bearer " + tokenV2022)
-                .body(acp)
+                .body(bodyJson)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .toEntity(AuroraConsumptionProfile.class);
+                .toEntity(AuroraConsumptionProfileDTO.class);
 
         if (res != null && res.getStatusCode() != HttpStatus.OK) {
             throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
