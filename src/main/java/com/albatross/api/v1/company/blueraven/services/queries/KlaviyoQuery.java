@@ -29,6 +29,8 @@ public class KlaviyoQuery {
             pd.company_project_status_type,
             pd.utility_company_name,
             pd.first_appointment_pitched,
+            pd.complete_date_booking,
+            pd.final_design_signed_date,
             (
                 ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 30
                     AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 2
@@ -38,7 +40,12 @@ public class KlaviyoQuery {
              WHERE pa.project_id = pd.project_id
                AND pa.archived IS FALSE
              ORDER BY pa.date_modified DESC
-             LIMIT 1) AS latest_activity_note_date
+             LIMIT 1) AS latest_activity_note_date,
+            (SELECT ((ppse.start_time AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE
+              FROM flow.project_process_step pps
+                       INNER JOIN flow.project_process_step_event ppse ON ppse.project_process_step_id = pps.id
+                  AND ppse.process_step_event_id = 14 -- Closer Appointment
+              WHERE pps.project_id = pd.project_id) AS primary_appointment_date
         FROM flow.contact c
                  INNER JOIN flow.contact_custom_field_value ccfv ON ccfv.contact_id = c.id
                  INNER JOIN flow.list_of_value lov ON lov.id = ccfv.int_value
@@ -73,6 +80,8 @@ public class KlaviyoQuery {
                  pd.company_project_status_type,
                  pd.utility_company_name,
                  pd.first_appointment_pitched,
+                 pd.complete_date_booking,
+                 pd.final_design_signed_date,
                  (
                      ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 30
                          AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 2
@@ -82,7 +91,12 @@ public class KlaviyoQuery {
                   WHERE pa.project_id = pd.project_id
                     AND pa.archived IS FALSE
                   ORDER BY pa.date_modified DESC
-                  LIMIT 1) AS latest_activity_note_date
+                  LIMIT 1) AS latest_activity_note_date,
+                  (SELECT ((ppse.start_time AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE
+                  FROM flow.project_process_step pps
+                           INNER JOIN flow.project_process_step_event ppse ON ppse.project_process_step_id = pps.id
+                      AND ppse.process_step_event_id = 14 -- Closer Appointment
+                  WHERE pps.project_id = pd.project_id) AS primary_appointment_date
              FROM brs.project_details pd
                       INNER JOIN flow.contact_custom_field_value ccfv ON ccfv.contact_id = pd.contact_id
                       INNER JOIN flow.list_of_value lov ON lov.id = ccfv.int_value

@@ -50,6 +50,9 @@ public class KlaviyoService {
 
   private final LocalDate KLAVIYO_START_DATE = LocalDate.of(2024, 9, 28);
 
+  private final String KLAVIYO_EMAIL_LIST_ID = "RdueKz";
+  private final String KLAVIYO_SMS_LIST_ID = "SnT5Dr";
+
   // Used to handle contact create/updates
   public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate) {
     // Return if token is not set
@@ -200,7 +203,7 @@ public class KlaviyoService {
     data.put("type", "profile");
 
     try {
-      properties.put("project_id", projectId);
+      properties.put("Project ID", projectId);
       attributes.put("properties", properties);
       data.put("attributes", attributes);
 
@@ -276,7 +279,8 @@ public class KlaviyoService {
     JSONObject emailList = new JSONObject();
 
     emailList.put("type", "list");
-    emailList.put("id", "RdueKz");
+
+    emailList.put("id", KLAVIYO_EMAIL_LIST_ID);
 
     list.put("data", emailList);
 
@@ -333,7 +337,7 @@ public class KlaviyoService {
     JSONObject smsList = new JSONObject();
 
     smsList.put("type", "list");
-    smsList.put("id", "SnT5Dr");
+    smsList.put("id", KLAVIYO_SMS_LIST_ID);
 
     list.put("data", smsList);
 
@@ -376,19 +380,22 @@ public class KlaviyoService {
       properties.put("fbclid", klaviyoContactProperties.getFbclid() != null ? klaviyoContactProperties.getFbclid() : "");
       properties.put("twclid", klaviyoContactProperties.getTwclid() != null ? klaviyoContactProperties.getTwclid() : "");
       properties.put("msclid", klaviyoContactProperties.getMsclid() != null ? klaviyoContactProperties.getMsclid() : "");
-      properties.put("utm_source", klaviyoContactProperties.getUtmSource() != null ? klaviyoContactProperties.getUtmSource() : "");
-      properties.put("utm_medium", klaviyoContactProperties.getUtmMedium() != null ? klaviyoContactProperties.getUtmMedium() : "");
-      properties.put("utm_content", klaviyoContactProperties.getUtmContent() != null ? klaviyoContactProperties.getUtmContent() : "");
-      properties.put("utm_campaign", klaviyoContactProperties.getUtmCampaign() != null ? klaviyoContactProperties.getUtmCampaign() : "");
+      properties.put("UTM Source", klaviyoContactProperties.getUtmSource() != null ? klaviyoContactProperties.getUtmSource() : "");
+      properties.put("UTM Medium", klaviyoContactProperties.getUtmMedium() != null ? klaviyoContactProperties.getUtmMedium() : "");
+      properties.put("UTM Content", klaviyoContactProperties.getUtmContent() != null ? klaviyoContactProperties.getUtmContent() : "");
+      properties.put("UTM Campaign", klaviyoContactProperties.getUtmCampaign() != null ? klaviyoContactProperties.getUtmCampaign() : "");
 
       // If a project has been created, update the project related values
       if (klaviyoContactProperties.getProjectId() != null) {
-        properties.put("is_retargeted", klaviyoContactProperties.isRetargeted());
-        properties.put("closer_appointment_outcome_name", klaviyoContactProperties.getCloserAppointmentOutcomeName() != null ? klaviyoContactProperties.getCloserAppointmentOutcomeName() : "");
-        properties.put("company_project_status_type", klaviyoContactProperties.getCompanyProjectStatusType() != null ? klaviyoContactProperties.getCompanyProjectStatusType() : "");
-        properties.put("utility_company_name", klaviyoContactProperties.getUtilityCompanyName() != null ? klaviyoContactProperties.getUtilityCompanyName() : "");
-        properties.put("first_appointment_pitched", klaviyoContactProperties.getFirstAppointmentPitched() != null ? klaviyoContactProperties.getFirstAppointmentPitched() : "");
-        properties.put("latest_activity_note_date", klaviyoContactProperties.getLatestActivityNoteDate() != null ? klaviyoContactProperties.getLatestActivityNoteDate() : "");
+        properties.put("Is Retargeted", klaviyoContactProperties.isRetargeted());
+        properties.put("Primary Appointment Outcome", klaviyoContactProperties.getCloserAppointmentOutcomeName() != null ? klaviyoContactProperties.getCloserAppointmentOutcomeName() : "");
+        properties.put("Project Status", klaviyoContactProperties.getCompanyProjectStatusType() != null ? klaviyoContactProperties.getCompanyProjectStatusType() : "");
+        properties.put("Utility Provider", klaviyoContactProperties.getUtilityCompanyName() != null ? klaviyoContactProperties.getUtilityCompanyName() : "");
+        properties.put("Pitch Date", klaviyoContactProperties.getFirstAppointmentPitched() != null ? klaviyoContactProperties.getFirstAppointmentPitched() : "");
+        properties.put("Most Recent Note Date", klaviyoContactProperties.getLatestActivityNoteDate() != null ? klaviyoContactProperties.getLatestActivityNoteDate() : "");
+        properties.put("Book Date", klaviyoContactProperties.getCompleteDateBooking() != null ? klaviyoContactProperties.getCompleteDateBooking() : "");
+        properties.put("Primary Appointment Date", klaviyoContactProperties.getPrimaryAppointmentDate() != null ? klaviyoContactProperties.getPrimaryAppointmentDate() : "");
+        properties.put("Sold Date (FDA)", klaviyoContactProperties.getFinalDesignSignedDate() != null ? klaviyoContactProperties.getFinalDesignSignedDate() : "");
       }
 
       attributes.put("properties", properties);
@@ -450,13 +457,13 @@ public class KlaviyoService {
 
       if (cfv.getFieldName() != null) {
         if (cfv.getFieldName().equals("Lead Source")) {
-          properties.put("lead_source", value);
+          properties.put("Lead Source", value);
         } else if (cfv.getFieldName().equals("Lead Source Detail")) {
-          properties.put("lead_source_detail", value);
+          properties.put("Lead Source Detail", value);
         } else if (cfv.getFieldName().equals("Lead Status")) {
-          properties.put("lead_status", value);
+          properties.put("Lead Status", value);
         } else if (cfv.getFieldName().equals("Lead Level")) {
-          properties.put("lead_level", cfv.getIntValue() == null ? "" : cfv.getIntValue().toString());
+          properties.put("Lead Level", cfv.getIntValue() == null ? "" : cfv.getIntValue().toString());
         }
       }
     }
@@ -552,6 +559,6 @@ public class KlaviyoService {
     private boolean isRetargeted;
     private String closerAppointmentOutcomeName, companyProjectStatusType, utilityCompanyName, firstAppointmentPitched,
       latestActivityNoteDate, gclid, fbclid, twclid, msclid, utmSource, utmMedium, utmContent, utmCampaign,
-      email;
+      email, completeDateBooking, primaryAppointmentDate, finalDesignSignedDate;
   }
 }
