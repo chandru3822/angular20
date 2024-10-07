@@ -194,7 +194,7 @@ const xcelEnergyMNValues = Object.freeze({
           <div v-for="(cf, idx) in aiRequestFields" :key="idx">
             <!--              <div>{{cf}}</div>-->
             <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION">
-                <v-radio-group label="Energy Usage" v-model="calcEnergyBySqFtg">
+                <v-radio-group label="Energy Usage" v-model="calcEnergyBySqFtg" :disabled="savingNewAiDesign">
                 <v-radio :value="true" label="Calculate Energy by Square Footage"></v-radio>
                 <v-radio :value="false" label="Utility Bill"></v-radio>
               </v-radio-group>
@@ -204,6 +204,7 @@ const xcelEnergyMNValues = Object.freeze({
                               label="Enter Square Footage"
                               :value="squareFootage"
                               :rules="calcEnergyBySqFtg ? [...requiredRules] : null"
+                              :disabled="savingNewAiDesign"
                               @change="calculateUsage($event, cf)"
                 >
                 </a-text-field>
@@ -216,7 +217,7 @@ const xcelEnergyMNValues = Object.freeze({
                   </v-card-title>
                 <v-row class="pt-0">
                   <v-col v-for="(month, index) in months" cols="3" class="pt-0">
-                    <a-text-field density="dense" type="number" :label="`${month.name}`" @change="addMonthUsage($event, month.id)"></a-text-field>
+                    <a-text-field density="dense" type="number" :label="`${month.name}`" @change="addMonthUsage($event, month.id)" :disabled="savingNewAiDesign"></a-text-field>
                   </v-col>
                 </v-row>
                 </v-card>
@@ -231,6 +232,7 @@ const xcelEnergyMNValues = Object.freeze({
                 @change=""
                 custom-class="albatross-body-2"
                 :field="cf"
+                :readonly="savingNewAiDesign"
             ></CustomValueInput>
           </div>
         </v-form>
