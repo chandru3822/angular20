@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.KlaviyoQuery;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -25,7 +26,10 @@ import java.net.http.HttpClient;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -44,6 +48,11 @@ public class KlaviyoService {
 
   private final Set<String> DIGITAL_LEAD_SOURCES = new HashSet<>(Arrays.asList ("Paid Lead Gen", "Paid Advertising", "Organic", "Organic with Referral"));
 
+  private final LocalDate KLAVIYO_START_DATE = LocalDate.of(2024, 9, 28);
+
+  private final String KLAVIYO_EMAIL_LIST_ID = "RdueKz";
+  private final String KLAVIYO_SMS_LIST_ID = "SnT5Dr";
+
   // Used to handle contact create/updates
   public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate) {
     // Return if token is not set
@@ -52,17 +61,24 @@ public class KlaviyoService {
     }
 
     String url = apiUrl + "/profiles";
-    JSONObject contactJson = new JSONObject();
-    JSONObject attributes = new JSONObject();
-    JSONObject properties = new JSONObject();
-    JSONObject data = new JSONObject();
-    JSONObject location = new JSONObject();
-
-    data.put("type", "profile");
-
     try {
       GenesysService.CustomContact contact = genesysService.getContact(contactId, true);
 
+      if (isUpdate) {
+        ZonedDateTime contactCreatedDate = contact.getDateCreated().toInstant().atZone(ZoneId.of("US/Mountain"));
+        // Check to see if this contact was create before the Klaviyo integration was deployed
+        // if so, do not attempt an update as it will not be in Klaviyo
+        if (contactCreatedDate.toLocalDate().isBefore(KLAVIYO_START_DATE)) {
+          return;
+        }
+      }
+
+      JSONObject contactJson = new JSONObject();
+      JSONObject attributes = new JSONObject();
+      JSONObject properties = new JSONObject();
+      JSONObject data = new JSONObject();
+      JSONObject location = new JSONObject();
+      data.put("type", "profile");
       attributes.put("email", contact.getEmail());
       attributes.put("external_id", contact.getId());
       attributes.put("first_name", contact.getFirstName());
@@ -96,7 +112,7 @@ public class KlaviyoService {
       if (isUpdate) {
         String klaviyoProfileId = getKlaviyoProfileId(contact.getEmail());
         data.put("id", klaviyoProfileId);
-        ResponseEntity<String> resp = PATCH(url + "/" + klaviyoProfileId, contactJson.toString()); //TODO: Change this to work with new approach
+        ResponseEntity<String> resp = PATCH(url + "/" + klaviyoProfileId, contactJson.toString());
         if (resp.getStatusCode().value() != 200) {
           JSONObject errorResp = new JSONObject(resp.getBody());
           JSONArray errors = errorResp.getJSONArray("errors");
@@ -187,7 +203,7 @@ public class KlaviyoService {
     data.put("type", "profile");
 
     try {
-      properties.put("project_id", projectId);
+      properties.put("Project ID", projectId);
       attributes.put("properties", properties);
       data.put("attributes", attributes);
 
@@ -263,7 +279,8 @@ public class KlaviyoService {
     JSONObject emailList = new JSONObject();
 
     emailList.put("type", "list");
-    emailList.put("id", "RdueKz");
+
+    emailList.put("id", KLAVIYO_EMAIL_LIST_ID);
 
     list.put("data", emailList);
 
@@ -320,12 +337,92 @@ public class KlaviyoService {
     JSONObject smsList = new JSONObject();
 
     smsList.put("type", "list");
-    smsList.put("id", "SnT5Dr");
+    smsList.put("id", KLAVIYO_SMS_LIST_ID);
 
     list.put("data", smsList);
 
     subscriberProfile.put("data", data);
     return subscriberProfile;
+  }
+
+  public void processKlaviyoContacts() {
+    populateCronContactLists(KlaviyoQuery.getDigitalCronContacts);
+  }
+
+  private void populateCronContactLists(String contactListQuery) {
+    // Get list of Contacts that need to be updated in Klaviyo
+    List<KlaviyoContactProperties> contacts = sqlCache.queryBySql(contactListQuery, null, KlaviyoContactProperties.class);
+    for (KlaviyoContactProperties contact : contacts) {
+      try {
+        updateKlaviyoContactProperties(contact);
+      } catch (Exception e) {
+        log.error("KLAVIYO: Error during cron - updating projectId={}, msg={}", contact.getProjectId(), e.getMessage());
+      }
+    }
+  }
+
+  // Used by the cron query to update only certain values
+  private void updateKlaviyoContactProperties(KlaviyoContactProperties klaviyoContactProperties) {
+    if (ObjectUtils.isEmpty(basicToken) || ObjectUtils.isEmpty(basicToken == null)) {
+      return;
+    }
+
+    String url = apiUrl + "/profiles";
+    JSONObject contactJson = new JSONObject();
+    JSONObject attributes = new JSONObject();
+    JSONObject properties = new JSONObject();
+    JSONObject data = new JSONObject();
+
+    data.put("type", "profile");
+
+    try {
+      properties.put("gclid", klaviyoContactProperties.getGclid() != null ? klaviyoContactProperties.getGclid() : "");
+      properties.put("fbclid", klaviyoContactProperties.getFbclid() != null ? klaviyoContactProperties.getFbclid() : "");
+      properties.put("twclid", klaviyoContactProperties.getTwclid() != null ? klaviyoContactProperties.getTwclid() : "");
+      properties.put("msclid", klaviyoContactProperties.getMsclid() != null ? klaviyoContactProperties.getMsclid() : "");
+      properties.put("UTM Source", klaviyoContactProperties.getUtmSource() != null ? klaviyoContactProperties.getUtmSource() : "");
+      properties.put("UTM Medium", klaviyoContactProperties.getUtmMedium() != null ? klaviyoContactProperties.getUtmMedium() : "");
+      properties.put("UTM Content", klaviyoContactProperties.getUtmContent() != null ? klaviyoContactProperties.getUtmContent() : "");
+      properties.put("UTM Campaign", klaviyoContactProperties.getUtmCampaign() != null ? klaviyoContactProperties.getUtmCampaign() : "");
+
+      // If a project has been created, update the project related values
+      if (klaviyoContactProperties.getProjectId() != null) {
+        properties.put("Is Retargeted", klaviyoContactProperties.isRetargeted());
+        properties.put("Primary Appointment Outcome", klaviyoContactProperties.getCloserAppointmentOutcomeName() != null ? klaviyoContactProperties.getCloserAppointmentOutcomeName() : "");
+        properties.put("Project Status", klaviyoContactProperties.getCompanyProjectStatusType() != null ? klaviyoContactProperties.getCompanyProjectStatusType() : "");
+        properties.put("Utility Provider", klaviyoContactProperties.getUtilityCompanyName() != null ? klaviyoContactProperties.getUtilityCompanyName() : "");
+        properties.put("Pitch Date", klaviyoContactProperties.getFirstAppointmentPitched() != null ? klaviyoContactProperties.getFirstAppointmentPitched() : "");
+        properties.put("Most Recent Note Date", klaviyoContactProperties.getLatestActivityNoteDate() != null ? klaviyoContactProperties.getLatestActivityNoteDate() : "");
+        properties.put("Book Date", klaviyoContactProperties.getCompleteDateBooking() != null ? klaviyoContactProperties.getCompleteDateBooking() : "");
+        properties.put("Primary Appointment Date", klaviyoContactProperties.getPrimaryAppointmentDate() != null ? klaviyoContactProperties.getPrimaryAppointmentDate() : "");
+        properties.put("Sold Date (FDA)", klaviyoContactProperties.getFinalDesignSignedDate() != null ? klaviyoContactProperties.getFinalDesignSignedDate() : "");
+      }
+
+      attributes.put("properties", properties);
+      data.put("attributes", attributes);
+
+      contactJson.put("data", data);
+
+      String klaviyoProfileId = getKlaviyoProfileId(klaviyoContactProperties.getEmail());
+      data.put("id", klaviyoProfileId);
+      ResponseEntity<String> resp = PATCH(url + "/" + klaviyoProfileId, contactJson.toString());
+      if (resp.getStatusCode().value() != 200) {
+        JSONObject errorResp = new JSONObject(resp.getBody());
+        JSONArray errors = errorResp.getJSONArray("errors");
+        String errorMessage = "";
+        for (int i = 0; i < errors.length(); i++) {
+          JSONObject error = errors.getJSONObject(i);
+          errorMessage += error.getString("detail");
+        }
+        log.error("KLAVIYO: Error updating contact during cron {}", errorMessage);
+        throw new Exception(errorMessage);
+      }
+
+      //log.info("KLAVIYO: Successfully updated projectId="+ klaviyoContactProperties.getProjectId());
+    } catch (Exception e) {
+      String msg = "KLAVIYO: Error updating cron projectId="+ klaviyoContactProperties.getProjectId() + ", msg=" +e.getMessage();
+      log.error(msg);
+    }
   }
 
   private void getCfvValues(JSONObject properties, List<CustomFieldValue> values) {
@@ -360,13 +457,13 @@ public class KlaviyoService {
 
       if (cfv.getFieldName() != null) {
         if (cfv.getFieldName().equals("Lead Source")) {
-          properties.put("lead_source", value);
+          properties.put("Lead Source", value);
         } else if (cfv.getFieldName().equals("Lead Source Detail")) {
-          properties.put("lead_source_detail", value);
+          properties.put("Lead Source Detail", value);
         } else if (cfv.getFieldName().equals("Lead Status")) {
-          properties.put("lead_status", value);
+          properties.put("Lead Status", value);
         } else if (cfv.getFieldName().equals("Lead Level")) {
-          properties.put("lead_level", cfv.getIntValue() == null ? "" : cfv.getIntValue().toString());
+          properties.put("Lead Level", cfv.getIntValue() == null ? "" : cfv.getIntValue().toString());
         }
       }
     }
@@ -454,5 +551,14 @@ public class KlaviyoService {
       .toEntity(String.class);
 
     return response;
+  }
+
+  @Data
+  private static class KlaviyoContactProperties {
+    private Long projectId;
+    private boolean isRetargeted;
+    private String closerAppointmentOutcomeName, companyProjectStatusType, utilityCompanyName, firstAppointmentPitched,
+      latestActivityNoteDate, gclid, fbclid, twclid, msclid, utmSource, utmMedium, utmContent, utmCampaign,
+      email, completeDateBooking, primaryAppointmentDate, finalDesignSignedDate;
   }
 }

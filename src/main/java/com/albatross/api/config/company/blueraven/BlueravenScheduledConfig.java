@@ -40,6 +40,9 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
   private Boolean updateGenesysContacts;
 
+  @Value(value = "${app.cron.blueraven.processKlaviyoContacts.enabled:false}")
+  private Boolean updateKlaviyoContacts;
+
   @Value(value = "${app.cron.blueraven.processGetTheReferralContacts.enabled:false}")
   private Boolean updateGetTheReferralContacts;
 
@@ -54,6 +57,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   private final GenesysService genesysService;
 
   private final GetTheReferralService getTheReferralService;
+
+  private final KlaviyoService klaviyoService;
 
   private final MarketoService marketoService;
 
@@ -127,6 +132,16 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       getTheReferralService.updateReferralLeadStatuses();
       getTheReferralService.updateAdvocateStatusInGtr();
       log.info("*** CRON: end processing GetTheReferral contacts ***");
+    }
+  }
+
+  //    every  day at 3 am - mtn
+  @Scheduled(cron = "0 0 9 * * *", zone = "UTC")
+  public void updateKlaviyoContacts() {
+    if (updateKlaviyoContacts) {
+      log.info("*** CRON: start processing Klaviyo contacts ***");
+      klaviyoService.processKlaviyoContacts();
+      log.info("*** CRON: end processing Klaviyo contacts ***");
     }
   }
 

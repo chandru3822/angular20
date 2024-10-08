@@ -172,8 +172,15 @@ public class PartsMasterQuery {
       from brs.upsert_parts_master_custom_field_group(:partsMasterVersionId, :groupUUID, :currentUserId)
     )
     insert
-    into brs.parts_master_version_custom_field_value (parts_master_version_custom_field_group_id, custom_field_group_assignment_id,
-                                                  value, date_created, date_modified, created_by_id, modified_by_id)
+    into brs.parts_master_version_custom_field_value (
+      parts_master_version_custom_field_group_id,
+      custom_field_group_assignment_id,
+      value,
+      date_created,
+      date_modified,
+      created_by_id,
+      modified_by_id
+    )
     select (select id from parts_master_group),
            cfga.id as custom_field_group_assignment_id,
            :value::jsonb,

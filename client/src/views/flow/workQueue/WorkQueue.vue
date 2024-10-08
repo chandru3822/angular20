@@ -1,164 +1,300 @@
 <template>
   <v-container class="wq-container">
     <v-row>
-      <v-col cols="12" >
+      <v-col cols="12">
         <v-card color="white" class="square-card work-queue-container-top">
           <v-row>
             <v-col cols="6" class="">
-              <div v-if="!selectedWorkQueueCategoryId && !categoriesLoading" class="body-medium error--text mb-2">
-                Please select a Work Queue Category</div>
-              <a-autocomplete v-model="selectedWorkQueueCategoryId"
-                              :items="workQueueCategories"
-                              label="Work Queue Category"
-                              item-title="workQueueCategory"
-                              item-value="id"
-                              variant="solo"
-                              hide-details
-                              :loading="categoriesLoading"
-                              background-color="primary"
-                              class="work-queue-selector d-inline-block clickable pt-3"
-                              @input="loadBoth()"
+              <div
+                v-if="!selectedWorkQueueCategoryId && !categoriesLoading"
+                class="body-medium error--text mb-2"
+              >
+                Please select a Work Queue Category
+              </div>
+              <a-autocomplete
+                v-model="selectedWorkQueueCategoryId"
+                :items="workQueueCategories"
+                label="Work Queue Category"
+                item-title="workQueueCategory"
+                item-value="id"
+                variant="solo"
+                hide-details
+                :loading="categoriesLoading"
+                background-color="primary"
+                class="work-queue-selector d-inline-block clickable pt-3"
+                @input="loadBoth()"
               ></a-autocomplete>
               <div class="radio-group-container mt-0">
-                <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column :disabled="!selectedWorkQueueCategoryId">
-                  <v-radio class="d-inline-block mx-4 wq-radio-label"
-                           label="% Completed On Time"
-                           small
-                           :value="0"
-                           :class="{'active-radio': selectedViewType === 0 && !!selectedWorkQueueCategoryId}"
+                <v-radio-group
+                  id="wqt-view-type-selector"
+                  hide-details
+                  v-model="selectedViewType"
+                  column
+                  :disabled="!selectedWorkQueueCategoryId"
+                >
+                  <v-radio
+                    class="d-inline-block mx-4 wq-radio-label"
+                    label="% Completed On Time"
+                    small
+                    :value="0"
+                    :class="{
+                      'active-radio':
+                        selectedViewType === 0 && !!selectedWorkQueueCategoryId
+                    }"
                   ></v-radio>
-                  <v-radio class="d-inline-block mx-4 wq-radio-label"
-                           label="Projects Completed"
-                           :value="1"
-                           :color="selectedViewType === 1 ? 'primary' : '#808588'"
-                           :class="{'active-radio': selectedViewType === 1 && !!selectedWorkQueueCategoryId}"></v-radio>
-                  <v-radio class="d-inline-block mx-4 wq-radio-label"
-                           label="Change in WIP"
-                           :value="2"
-                           :class="{'active-radio': selectedViewType === 2 && !!selectedWorkQueueCategoryId}"></v-radio>
+                  <v-radio
+                    class="d-inline-block mx-4 wq-radio-label"
+                    label="Projects Completed"
+                    :value="1"
+                    :color="selectedViewType === 1 ? 'primary' : '#808588'"
+                    :class="{
+                      'active-radio':
+                        selectedViewType === 1 && !!selectedWorkQueueCategoryId
+                    }"
+                  ></v-radio>
+                  <v-radio
+                    class="d-inline-block mx-4 wq-radio-label"
+                    label="Change in WIP"
+                    :value="2"
+                    :class="{
+                      'active-radio':
+                        selectedViewType === 2 && !!selectedWorkQueueCategoryId
+                    }"
+                  ></v-radio>
                 </v-radio-group>
               </div>
             </v-col>
             <v-col cols="6" class="future-switches">
-
               <div class="future-switch">
-                <label class="wq-follow-up-switch-label" :class="{'grey--text': cardsLoading || metricsLoading || !selectedWorkQueueCategoryId}">
+                <label
+                  class="wq-follow-up-switch-label"
+                  :class="{
+                    'grey--text':
+                      cardsLoading ||
+                      metricsLoading ||
+                      !selectedWorkQueueCategoryId
+                  }"
+                >
                   Hide work with a next follow-up date in the future
                 </label>
                 <v-switch
-                    dense
-                    :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
-                    hide-details
-                    v-model="hideFutureFollowUps"
-                    class="wq-follow-up-switch d-inline-block fix-switch-color"
-                    @change="getWorkQueues(true)"
+                  dense
+                  :disabled="
+                    cardsLoading ||
+                    metricsLoading ||
+                    !selectedWorkQueueCategoryId
+                  "
+                  hide-details
+                  v-model="hideFutureFollowUps"
+                  class="wq-follow-up-switch d-inline-block fix-switch-color"
+                  @change="getWorkQueues(true)"
                 />
               </div>
               <div class="future-switch">
-                <label class="wq-follow-up-switch-label" :class="{'grey--text': cardsLoading || metricsLoading || !selectedWorkQueueCategoryId}">
+                <label
+                  class="wq-follow-up-switch-label"
+                  :class="{
+                    'grey--text':
+                      cardsLoading ||
+                      metricsLoading ||
+                      !selectedWorkQueueCategoryId
+                  }"
+                >
                   Hide work with an event start date in the future
                 </label>
                 <v-switch
-                    dense
-                    :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
-                    hide-details
-                    color="primary"
-                    v-model="hideFutureEvents"
-                    class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
-                    @change="getWorkQueues(true)"
+                  dense
+                  :disabled="
+                    cardsLoading ||
+                    metricsLoading ||
+                    !selectedWorkQueueCategoryId
+                  "
+                  hide-details
+                  color="primary"
+                  v-model="hideFutureEvents"
+                  class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
+                  @change="getWorkQueues(true)"
                 />
               </div>
             </v-col>
           </v-row>
         </v-card>
-        <v-card v-if="selectedWorkQueueCategoryId" color="white" class="square-card work-queue-container-bottom mt-3">
+        <v-card
+          v-if="selectedWorkQueueCategoryId"
+          color="white"
+          class="square-card work-queue-container-bottom mt-3"
+        >
           <v-row class="cards my-0">
-            <!--            <v-card flat color="transparent" class="ml-8"-->
-            <!--                    v-if="!selectedWorkQueueCategoryId && !categoriesLoading">-->
-            <!--              Please select a Work Queue Category-->
-            <!--            </v-card>-->
             <div v-if="cardsLoading" class="one-hunned text-center">
-              <SpinnerInline :size="60" color="primary"/>
+              <SpinnerInline :size="60" color="primary" />
             </div>
-            <v-card v-else flat tile v-for="wq in workQueues" class="flex-display card-main"
-                    :class="{'clickable': wq.workQueueCount > 0,
-                             'light-border': !wq.useEventData,
-                             'dark-border': wq.useEventData}"
-                    :key="wq.id"
-                    width="288" :height="wqHasMetrics(wq) ? 223 : 108">
+            <v-card
+              v-else
+              flat
+              tile
+              v-for="wq in workQueues"
+              class="flex-display card-main"
+              :class="{
+                clickable: wq.workQueueCount > 0,
+                'light-border': !wq.useEventData,
+                'dark-border': wq.useEventData
+              }"
+              :key="wq.id"
+              width="288"
+              :height="wqHasMetrics(wq) ? 223 : 108"
+            >
               <v-card-text class="pa-0">
-                <router-link class="no-text-decoration card-link"
-                             :to="wq.workQueueCount > 0 ? {name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned}} : ''">
-                  <!--                <div class="no-text-decoration card-link"-->
-                  <!--                     :class="{'clickable': wq.workQueueCount > 0}"-->
-                  <!--                     @click="goToRoute(wq.workQueueCount > 0, 'workQueueDrilldown',  {id: wq.workQueueTypeId}, { smartlistId: wq.smartlistId, upId: selectedUserPosition.userId, unassigned: selectedUserPosition.unassigned})">-->
-                  <div class="card-title-container text-left"
-                       :class="{'card-title-container-no-metrics': !wqHasMetrics(wq)}"
-                       :style="{'background-color': wq.color + '20' }">
-                    <div class="card-title ellipse two-lines default-text-color">{{ wq.workQueueType }}</div>
-                    <div class="card-count grey--text text--darken-2">{{ wq.workQueueCount }}</div>
+                <router-link
+                  class="no-text-decoration card-link"
+                  :to="
+                    wq.workQueueCount > 0
+                      ? {
+                          name: 'workQueueDrilldown',
+                          params: { id: wq.workQueueTypeId },
+                          query: {
+                            smartlistId: wq.smartlistId,
+                            upId: selectedUserPosition.userId,
+                            unassigned: selectedUserPosition.unassigned
+                          }
+                        }
+                      : ''
+                  "
+                >
+                  <div
+                    class="card-title-container text-left"
+                    :class="{
+                      'card-title-container-no-metrics': !wqHasMetrics(wq)
+                    }"
+                    :style="{ 'background-color': wq.color + '20' }"
+                  >
+                    <div
+                      class="card-title ellipse two-lines default-text-color"
+                    >
+                      {{ wq.workQueueType }}
+                    </div>
+                    <div class="card-count grey--text text--darken-2">
+                      {{ wq.workQueueCount }}
+                    </div>
                   </div>
-                  <div v-if="null != wq.metrics.expectedTarget && selectedViewType === 0"
-                       class="expected-target-banner"
-                       :style="{'background-color': wq.color, 'color': getTargetColor(wq.color)}">
-                    {{ wq.metrics.expectedTarget * 100 | currency('', 0) }}%
+                  <div
+                    v-if="
+                      null != wq.metrics.expectedTarget &&
+                      selectedViewType === 0
+                    "
+                    class="expected-target-banner"
+                    :style="{
+                      'background-color': wq.color,
+                      color: getTargetColor(wq.color)
+                    }"
+                  >
+                    {{ (wq.metrics.expectedTarget * 100) | currency('', 0) }}%
                   </div>
 
-                  <div class="card-metrics-container"
-                       :class="{'card-metrics-container-secondary-view': selectedViewType !== 0}"
-                       v-if="wqHasMetrics(wq)">
+                  <div
+                    class="card-metrics-container"
+                    :class="{
+                      'card-metrics-container-secondary-view':
+                        selectedViewType !== 0
+                    }"
+                    v-if="wqHasMetrics(wq)"
+                  >
                     <div class="one-hunned" v-if="metricsLoading">
-                      <SpinnerInline :size="50" :spinner-color="wq.color" :transparent="true" :centered="true"/>
+                      <SpinnerInline
+                        :size="50"
+                        :spinner-color="wq.color"
+                        :transparent="true"
+                        :centered="true"
+                      />
                     </div>
                     <div class="one-hunned" v-else>
                       <div class="one-hunned">
                         <div class="card-metric card-metric-left">
-                          <div class="card-metric-percent"
-                               v-if="selectedViewType === 0"
-                               :class="getMetricPercentColor(wq.metrics.shortWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
-                            {{ wq.metrics.shortWindowPercentage * 100 | currency('', 0) }}%
-                            <!--                      <span class="card-metric-difference">-->
-                            <!--                          {{ getMetricDifference(wq.shortWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
-                            <!--                        </span>-->
+                          <div
+                            class="card-metric-percent"
+                            v-if="selectedViewType === 0"
+                            :class="
+                              getMetricPercentColor(
+                                wq.metrics.shortWindowPercentage,
+                                wq.metrics.expectedTarget,
+                                wq.inverseExpectation
+                              )
+                            "
+                          >
+                            {{
+                              (wq.metrics.shortWindowPercentage * 100)
+                                | currency('', 0)
+                            }}%
                           </div>
-                          <div class="card-metric-percent grey--text"
-                               v-else-if="selectedViewType === 1">
+                          <div
+                            class="card-metric-percent grey--text"
+                            v-else-if="selectedViewType === 1"
+                          >
                             {{ wq.metrics.shortWindowExited }}
                           </div>
-                          <div class="card-metric-percent grey--text"
-                               v-else-if="selectedViewType === 2">
-                            {{ wq.metrics.shortWip >= 0 ? '+' : '' }}{{ wq.metrics.shortWip }}
+                          <div
+                            class="card-metric-percent grey--text"
+                            v-else-if="selectedViewType === 2"
+                          >
+                            {{ wq.metrics.shortWip >= 0 ? '+' : '' }}
+                            {{ wq.metrics.shortWip }}
                           </div>
-                          {{ wq.shortWindow }} {{
-                            getDurationTypePluralization(wq.shortWindow, wq.metrics.shortWindowDurationType)
+                          {{ wq.shortWindow }}
+                          {{
+                            getDurationTypePluralization(
+                              wq.shortWindow,
+                              wq.metrics.shortWindowDurationType
+                            )
                           }}
                         </div>
                         <div class="card-metric-divider"></div>
                         <div class="card-metric">
-                          <div class="card-metric-percent"
-                               v-if="selectedViewType === 0"
-                               :class="getMetricPercentColor(wq.metrics.longWindowPercentage, wq.metrics.expectedTarget, wq.inverseExpectation)">
-                            {{ wq.metrics.longWindowPercentage * 100 | currency('', 0) }}%
-                            <!--                      <span class="card-metric-difference">-->
-                            <!--                          {{ getMetricDifference(wq.longWindowPercentage, wq.expectedTarget, wq.inverseExpectation) }}-->
-                            <!--                        </span>-->
+                          <div
+                            class="card-metric-percent"
+                            v-if="selectedViewType === 0"
+                            :class="
+                              getMetricPercentColor(
+                                wq.metrics.longWindowPercentage,
+                                wq.metrics.expectedTarget,
+                                wq.inverseExpectation
+                              )
+                            "
+                          >
+                            {{
+                              (wq.metrics.longWindowPercentage * 100)
+                                | currency('', 0)
+                            }}%
                           </div>
-                          <div class="card-metric-percent grey--text"
-                               v-else-if="selectedViewType === 1">
+                          <div
+                            class="card-metric-percent grey--text"
+                            v-else-if="selectedViewType === 1"
+                          >
                             {{ wq.metrics.longWindowExited }}
                           </div>
-                          <div class="card-metric-percent grey--text"
-                               v-else-if="selectedViewType === 2">
-                            {{ wq.metrics.longWip >= 0 ? '+' : '' }}{{ wq.metrics.longWip }}
+                          <div
+                            class="card-metric-percent grey--text"
+                            v-else-if="selectedViewType === 2"
+                          >
+                            {{ wq.metrics.longWip >= 0 ? '+' : '' }}
+                            {{ wq.metrics.longWip }}
                           </div>
-                          {{ wq.longWindow }} {{ wq.metrics.longWindowDurationType }}
+                          {{ wq.longWindow }}
+                          {{ wq.metrics.longWindowDurationType }}
                         </div>
                       </div>
-                      <div class="card-metrics-expected-cycle" v-if="selectedViewType === 0">
-                        Completed within expected time of <strong>{{ wq.expectedCycle }}
-                        {{
-                          getDurationTypePluralization(wq.metrics.expectedCycle, wq.metrics.expectedCycleDurationType)
-                        }}</strong>
+                      <div
+                        class="card-metrics-expected-cycle"
+                        v-if="selectedViewType === 0"
+                      >
+                        Completed within expected time of
+                        <strong>
+                          {{ wq.expectedCycle }}
+                          {{
+                            getDurationTypePluralization(
+                              wq.metrics.expectedCycle,
+                              wq.metrics.expectedCycleDurationType
+                            )
+                          }}
+                        </strong>
                       </div>
                     </div>
                   </div>
@@ -170,19 +306,23 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="showMetricsDialog" max-width="330" class="wq-metrics-dialog">
+    <v-dialog
+      v-model="showMetricsDialog"
+      max-width="330"
+      class="wq-metrics-dialog"
+    >
       <v-card>
         <span class="flex-display wq-metrics-dialog-text pl-4">
-          Thank you for your interest! More<br>
-          information about work queue metrics,<br>
-          what they mean, and when they are<br>
+          Thank you for your interest! More<br />
+          information about work queue metrics,<br />
+          what they mean, and when they are<br />
           tracked will be coming up soon!
         </span>
         <v-card-actions class="flex-display justify-end">
           <a-btn
-              @click="showMetricsDialog = false"
-              color="unset"
-              text="Close"
+            @click="showMetricsDialog = false"
+            color="unset"
+            text="Close"
           ></a-btn>
         </v-card-actions>
       </v-card>
@@ -191,31 +331,20 @@
 </template>
 
 <script setup>
-
-
 import orderBy from 'lodash.orderby'
-import {getWorkQueueCategories} from '@/services/workQueueService'
+import { getWorkQueueCategories } from '@/services/workQueueService'
 import SpinnerInline from '@/components/SpinnerInline'
 import axios from 'axios'
-import {
-  isLightColor,
-  getRequestWithParams,
+import { isLightColor, getRequestWithParams } from '@/helpers/helpers'
 
-} from '@/helpers/helpers'
-
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import { getCurrentInstance, ref, onMounted } from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
+import { useRouter } from 'vue-router/composables'
 
 const appStore = useAppStore()
-const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 
-const model = ref({})
 const categoriesLoading = ref(true)
 const metricsLoading = ref(true)
 const cardsLoading = ref(false)
@@ -228,22 +357,35 @@ const workQueues = ref([])
 const selectedViewType = ref(0)
 const selectedUserPosition = ref({})
 const workQueueOwners = ref([])
-const anyOwner = ref({id: -1, fullName: 'Anyone', userId: null, unassigned: false})
-const noOwner = ref({id: -99, fullName: 'Unassigned', userId: null, unassigned: true})
+const anyOwner = ref({
+  id: -1,
+  fullName: 'Anyone',
+  userId: null,
+  unassigned: false
+})
+const noOwner = ref({
+  id: -99,
+  fullName: 'Unassigned',
+  userId: null,
+  unassigned: true
+})
 const showMetricsDialog = ref(false)
 const source = ref(null)
 
 onMounted(async () => {
-  hideFutureFollowUps.value = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-  hideFutureEvents.value = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
-  selectedWorkQueueCategoryId.value = parseInt(localStorage.getItem('wqCategoryId')) || null
+  hideFutureFollowUps.value =
+    JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
+  hideFutureEvents.value =
+    JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
+  selectedWorkQueueCategoryId.value =
+    parseInt(localStorage.getItem('wqCategoryId')) || null
   let requests = [getAllWorkQueueCategories(), loadBoth()]
   await Promise.all(requests)
-},)
+})
 
 const goToRoute = (changeRoute, routeName, params, query) => {
   if (changeRoute) {
-    router.push({name: routeName, params, query})
+    router.push({ name: routeName, params, query })
   }
 }
 const getTargetColor = (color) => {
@@ -253,21 +395,27 @@ const wqHasMetrics = (wq) => {
   //per carlin he wants to show the empty box until metrics have loaded so we are changing the "hasMetrics" check to a less restrictive check
   // let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
   //   && wq.metrics.shortWindowDurationType != null && wq.metrics.longWindowDurationType != null && wq.metrics.expectedCycleDurationType != null
-  let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
+  let hasMetrics =
+    wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
   return hasMetrics
 }
-const getAllWorkQueueCategories = async() => {
+const getAllWorkQueueCategories = async () => {
   categoriesLoading.value = true
   try {
-    const {data} = await getWorkQueueCategories()
-    workQueueCategories.value = orderBy(data, [wqc => wqc.displayOrder])
+    const { data } = await getWorkQueueCategories()
+    workQueueCategories.value = orderBy(data, [(wqc) => wqc.displayOrder])
 
     //trying to make the page load all requests simultaneously to speed things up.  dealing with those ramifications
-    let matchingCategory = workQueueCategories.value.find(wqc => wqc.id === selectedWorkQueueCategoryId.value)
-    if(!matchingCategory) {
+    let matchingCategory = workQueueCategories.value.find(
+      (wqc) => wqc.id === selectedWorkQueueCategoryId.value
+    )
+    if (!matchingCategory) {
       //unset the selection, should only mean the user no longer has access to a category they used to have access to
       selectedWorkQueueCategoryId.value = null
-      localStorage.setItem('wqCategoryId', JSON.stringify(selectedWorkQueueCategoryId.value))
+      localStorage.setItem(
+        'wqCategoryId',
+        JSON.stringify(selectedWorkQueueCategoryId.value)
+      )
     }
 
     categoriesLoading.value = false
@@ -278,22 +426,33 @@ const getAllWorkQueueCategories = async() => {
     categoriesLoading.value = false
   }
 }
-const loadBoth = async(isFilteredReload) => {
+const loadBoth = async (isFilteredReload) => {
   let requests = [getWorkQueues(isFilteredReload), loadMetrics()]
   const [wqResults, metricResults] = await Promise.all(requests)
   //assign each metric to the appropriate card
-  metricResults?.forEach(d => {
-    let match = workQueues.value?.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
+  metricResults?.forEach((d) => {
+    let match = Array.isArray(workQueues.value)
+      ? workQueues.value.find((wq) => wq.workQueueTypeId === d.workQueueTypeId)
+      : null
     //if a wqt is hidden from a user then no match will be found
-    if(match) {
+    if (match) {
       match.metrics = d
     }
   })
 }
-const getWorkQueues = async(isFilteredReload) => {
-  localStorage.setItem('wqCategoryId', JSON.stringify(selectedWorkQueueCategoryId.value))
-  localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(hideFutureFollowUps.value))
-  localStorage.setItem('hideFutureWqEvents', JSON.stringify(hideFutureEvents.value))
+const getWorkQueues = async (isFilteredReload) => {
+  localStorage.setItem(
+    'wqCategoryId',
+    JSON.stringify(selectedWorkQueueCategoryId.value)
+  )
+  localStorage.setItem(
+    'hideFutureWqFollowUps',
+    JSON.stringify(hideFutureFollowUps.value)
+  )
+  localStorage.setItem(
+    'hideFutureWqEvents',
+    JSON.stringify(hideFutureEvents.value)
+  )
 
   if (selectedWorkQueueCategoryId.value || showAll.value) {
     if (source.value) {
@@ -304,7 +463,7 @@ const getWorkQueues = async(isFilteredReload) => {
 
     cardsLoading.value = true
     try {
-      const {data, status} = await getRequestWithParams(`/workQueue`, {
+      const { data, status } = await getRequestWithParams(`/workQueue`, {
         source: source.value,
         cancelToken: source.value.token,
         params: {
@@ -315,8 +474,10 @@ const getWorkQueues = async(isFilteredReload) => {
       })
       if (isFilteredReload) {
         //if filtered reload then adjust the numbers...dont reload
-        data.forEach(d => {
-          workQueues.value.find(wq => wq.workQueueTypeId === d.workQueueTypeId).workQueueCount = d.workQueueCount
+        data.forEach((d) => {
+          workQueues.value.find(
+            (wq) => wq.workQueueTypeId === d.workQueueTypeId
+          ).workQueueCount = d.workQueueCount
         })
       } else {
         workQueues.value = data
@@ -340,12 +501,12 @@ const getWorkQueues = async(isFilteredReload) => {
     workQueues.value = []
   }
 }
-const loadMetrics = async() => {
+const loadMetrics = async () => {
   metricsLoading.value = true
   try {
     let url = `/workQueue/metrics`
     //use the same cancel token as loading cards so that this all works
-    const {data, status} = await getRequestWithParams(url, {
+    const { data, status } = await getRequestWithParams(url, {
       source: source.value,
       cancelToken: source.value?.token,
       params: {
@@ -395,10 +556,6 @@ const getBorder = (wq) => {
   display: block !important;
 }
 
-//.inactive-radio .v-icon {
-//  color: #808588 !important;
-//}
-
 .inactive-radio > label {
   color: #808588 !important;
 }
@@ -407,15 +564,18 @@ const getBorder = (wq) => {
   color: var(--v-primary-base) !important;
 }
 
-.work-queue-selector .v-input__slot, .work-queue-selector input {
-  cursor: pointer !important
+.work-queue-selector .v-input__slot,
+.work-queue-selector input {
+  cursor: pointer !important;
 }
 
-.wq-radio-label .v-icon, .wq-radio-label label {
+.wq-radio-label .v-icon,
+.wq-radio-label label {
   font-size: 14px;
 }
 
-.wq-radio-label .v-icon, .wq-radio-label label {
+.wq-radio-label .v-icon,
+.wq-radio-label label {
   font-size: 14px;
 }
 
@@ -425,10 +585,6 @@ const getBorder = (wq) => {
   align-items: end;
   justify-content: end;
   margin-bottom: 10px;
-}
-
-.future-switch {
-
 }
 
 .wq-follow-up-switch-label {
@@ -488,7 +644,7 @@ const getBorder = (wq) => {
 }
 
 .light-border {
-  border: 2px solid #DBE0E3;
+  border: 2px solid #dbe0e3;
 }
 
 .card-main:hover {
@@ -513,7 +669,7 @@ const getBorder = (wq) => {
 }
 
 .expected-target-banner:after {
-  content: " ";
+  content: ' ';
   position: absolute;
   display: block;
   width: 100%;
@@ -630,7 +786,7 @@ const getBorder = (wq) => {
 .card-metric-divider {
   display: inline-block;
   background: #808588;
-  width: .5px;
+  width: 0.5px;
   height: 40px;
 }
 

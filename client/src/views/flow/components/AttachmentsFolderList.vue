@@ -1,191 +1,299 @@
 <template>
   <div id="attachment-folder-list">
-    <v-dialog persistent v-model="showCoversheetModal"
-              content-class="coversheet-modal-content">
-      <AttachmentCoversheetModal :existing-attachment="tempFile"
-                                 :file="fileToUpload"
-                                 :show-modal="showCoversheetModal"
-                                 :close-callback="closeCoversheet"
-                                 :file-uploaded-callback="fileUploaded"
-                                 :projectId="projectId"
-                                 :projectProcessStepId="projectProcessStepId"
-                                 :userId="userId"
-                                 :contactId="contactId"
-                                 :orgId="orgId"
-                                 :objectTypeId="objectTypeId"
-                                 :projectProcessStepEventId="projectProcessStepEventId"
+    <v-dialog
+      persistent
+      v-model="showCoversheetModal"
+      content-class="coversheet-modal-content"
+    >
+      <AttachmentCoversheetModal
+        :existing-attachment="tempFile"
+        :file="fileToUpload"
+        :show-modal="showCoversheetModal"
+        :close-callback="closeCoversheet"
+        :file-uploaded-callback="fileUploaded"
+        :projectId="projectId"
+        :projectProcessStepId="projectProcessStepId"
+        :userId="userId"
+        :contactId="contactId"
+        :orgId="orgId"
+        :objectTypeId="objectTypeId"
+        :projectProcessStepEventId="projectProcessStepEventId"
       >
       </AttachmentCoversheetModal>
     </v-dialog>
     <v-dialog persistent width="90%" v-model="showCompareModal">
-      <AttachmentCompareModal :show-modal="showCompareModal"
-                              :attachments="selectedAttachmentsForCompare"
-                              :close-callback="closeCompareModal">
+      <AttachmentCompareModal
+        :show-modal="showCompareModal"
+        :attachments="selectedAttachmentsForCompare"
+        :close-callback="closeCompareModal"
+      >
       </AttachmentCompareModal>
     </v-dialog>
     <div v-if="loadingDetails" class="one-hunned text-center">
-      <SpinnerInline :size="40" color="primary"/>
+      <SpinnerInline :size="40" color="primary" />
     </div>
-    <div v-else-if="attachmentTypes.length > 0" :class="{'px-3': isCard}">
+    <div v-else-if="attachmentTypes.length > 0" :class="{ 'px-3': isCard }">
       <div v-if="activityTab" class="px-5 sticky-compare-bar">
         <a-text-field
-            v-model="search"
-            prepend-inner-icon="search"
-            clearable
-            label="Search all project documents"
-            single-line
-            hide-details
+          v-model="search"
+          prepend-inner-icon="search"
+          clearable
+          label="Search all project documents"
+          single-line
+          hide-details
         ></a-text-field>
-        <div class="d-flex flex-wrap"
-             :class="{'justify-space-between' : $vuetify.breakpoint.smAndUp}">
-
-          <div class="my-2" :class="{'text-no-wrap' : $vuetify.breakpoint.lgAndUp}">
+        <div
+          class="d-flex flex-wrap"
+          :class="{ 'justify-space-between': $vuetify.breakpoint.smAndUp }"
+        >
+          <div
+            class="my-2"
+            :class="{ 'text-no-wrap': $vuetify.breakpoint.lgAndUp }"
+          >
             <a-btn
-                class="my-2 mr-3"
-                :color="compare ? 'white' : 'primary'"
-                :class="{'primary--text': compare, '' : !compare}"
-                size="small"
-                @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
-                v-if="compare"
-                text="Cancel Comparison"
+              class="my-2 mr-3"
+              :color="compare ? 'white' : 'primary'"
+              :class="{ 'primary--text': compare, '': !compare }"
+              size="small"
+              @click="
+                [
+                  cancelResetKey++,
+                  (selectedAttachmentsForCompare = []),
+                  (compare = false)
+                ]
+              "
+              v-if="compare"
+              text="Cancel Comparison"
             ></a-btn>
             <a-btn
-                color="primary"
-                class="my-2"
-                size="small"
-                @click="showCompareModal = true"
-                v-if="compare "
-                :disabled="selectedAttachmentsForCompare.length === 0"
-                text="Confirm Comparison"
+              color="primary"
+              class="my-2"
+              size="small"
+              @click="showCompareModal = true"
+              v-if="compare"
+              :disabled="selectedAttachmentsForCompare.length === 0"
+              text="Confirm Comparison"
             ></a-btn>
             <a-btn
-                size="small"
-                color="primary"
-                class="my-2"
-                @click="compare = true"
-                v-else-if="!isMobile"
-                text="Compare"
+              size="small"
+              color="primary"
+              class="my-2"
+              @click="compare = true"
+              v-else-if="!isMobile"
+              text="Compare"
             ></a-btn>
           </div>
           <div class="text-no-wrap display-empty-folder-toggle">
-            <label class="mr-3 body-medium"
-                   :class="{'hide-empty-folder-label' : disableHideEmptyFolderSwitch}">
+            <label
+              class="mr-3 body-medium"
+              :class="{
+                'hide-empty-folder-label': disableHideEmptyFolderSwitch
+              }"
+            >
               Hide Empty Folders
             </label>
             <v-switch
-                @change="$emit('toggleEmptyFolders')"
-                :disabled="disableHideEmptyFolderSwitch"
-                v-model="hideEmptyFolderStatus"
-                dense
+              @change="$emit('toggleEmptyFolders')"
+              :disabled="disableHideEmptyFolderSwitch"
+              v-model="hideEmptyFolderStatus"
+              dense
             ></v-switch>
           </div>
         </div>
       </div>
-      <v-toolbar v-if="search.value != null && search.value !== '' && filteredAttachmentTypes.length > 0" dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
-        <v-toolbar-title :class="{'albatross-header-4-new': !smallTitle.value,
-                                  'albatross-body-2': smallTitle.value}">
+      <v-toolbar
+        v-if="
+          search.value != null &&
+          search.value !== '' &&
+          filteredAttachmentTypes.length > 0
+        "
+        dense
+        color="transparent"
+        class="elevation-0 cfg-name-toolbar px-5"
+      >
+        <v-toolbar-title
+          :class="{
+            'albatross-header-4-new': !smallTitle.value,
+            'albatross-body-2': smallTitle.value
+          }"
+        >
           Search Results
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-chip label outlined color="primary--text" class="sort-chip align-self-center albatross-body-2 flex-shrink-0"
-                  @click="sortOldToNew = !sortOldToNew">
+          <v-chip
+            label
+            outlined
+            color="primary--text"
+            class="sort-chip align-self-center albatross-body-2 flex-shrink-0"
+            @click="sortOldToNew = !sortOldToNew"
+          >
             {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
           </v-chip>
         </v-toolbar-items>
       </v-toolbar>
-      <v-toolbar v-if="title" dense color="transparent" class="elevation-0 process-step-toolbar cfg-name-toolbar">
-        <v-toolbar-title :class="{'albatross-header-4-new': !smallTitle.value,
-                                  'albatross-body-2': smallTitle.value}">
+      <v-toolbar
+        v-if="title"
+        dense
+        color="transparent"
+        class="elevation-0 process-step-toolbar cfg-name-toolbar"
+      >
+        <v-toolbar-title
+          :class="{
+            'albatross-header-4-new': !smallTitle.value,
+            'albatross-body-2': smallTitle.value
+          }"
+        >
           {{ title }}
         </v-toolbar-title>
       </v-toolbar>
-      <v-card class="text-left square-card" :class="{'elevation-0': !isCard}">
-        <div v-if="filteredAttachmentTypes.length === 0" class="body-medium text-center">No documents found.</div>
-        <v-expansion-panels v-model="opened" accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
-          <v-expansion-panel v-for="(type, index) in filteredAttachmentTypes" :key="type.attachmentTypeId">
-            <v-expansion-panel-header v-if="getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false" class="albatross-body-1">
+      <v-card class="text-left square-card" :class="{ 'elevation-0': !isCard }">
+        <div
+          v-if="filteredAttachmentTypes.length === 0"
+          class="body-medium text-center"
+        >
+          No documents found.
+        </div>
+        <v-expansion-panels
+          v-model="opened"
+          accordion
+          multiple
+          flat
+          class=".rounded-0 condensed"
+          v-if="!attachmentTypesLoading"
+        >
+          <v-expansion-panel
+            v-for="(type, index) in filteredAttachmentTypes"
+            :key="type.attachmentTypeId"
+          >
+            <v-expansion-panel-header
+              v-if="
+                getTypeCount(type.attachmentTypeId) > 0 ||
+                hideEmptyFolderStatus === false
+              "
+              class="albatross-body-1"
+            >
               <template v-slot:default="{ open }">
-                <v-row v-if="(allowUpload || forceShowUploadBtn)"
-                       class="file-hover d-flex"
-                       :class="{'file-hover-active': dragTypeId === type.attachmentTypeId, 'file-hover-inactive': dragTypeId === null || dragTypeId !== type.attachmentTypeId}"
-                       @dragenter="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
-                       @dragend="dragTypeId = null"
-                       @dragleave="dragTypeId = null"
-                       @drop.prevent="addDragDocument($event, type)"
-                       @dragover.prevent="(allowUpload || forceShowUploadBtn) ? dragTypeId = type.attachmentTypeId : dragTypeId = null"
+                <v-row
+                  v-if="allowUpload || forceShowUploadBtn"
+                  class="file-hover d-flex"
+                  :class="{
+                    'file-hover-active': dragTypeId === type.attachmentTypeId,
+                    'file-hover-inactive':
+                      dragTypeId === null ||
+                      dragTypeId !== type.attachmentTypeId
+                  }"
+                  @dragenter="
+                    allowUpload || forceShowUploadBtn
+                      ? (dragTypeId = type.attachmentTypeId)
+                      : (dragTypeId = null)
+                  "
+                  @dragend="dragTypeId = null"
+                  @dragleave="dragTypeId = null"
+                  @drop.prevent="addDragDocument($event, type)"
+                  @dragover.prevent="
+                    allowUpload || forceShowUploadBtn
+                      ? (dragTypeId = type.attachmentTypeId)
+                      : (dragTypeId = null)
+                  "
                 >
-                  <v-icon class="child-drag-elements" color="primary">upload</v-icon>
+                  <v-icon class="child-drag-elements" color="primary"
+                    >upload</v-icon
+                  >
                 </v-row>
-                <v-row no-gutters class="align-center flex-nowrap" :class="{'bold' : open}">
-                  <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">
+                <v-row
+                  no-gutters
+                  class="align-center flex-nowrap"
+                  :class="{ bold: open }"
+                >
+                  <v-icon
+                    class="mr-3"
+                    :color="
+                      dragTypeId === type.attachmentTypeId
+                        ? 'grey lighten-1'
+                        : 'grey darken-1'
+                    "
+                  >
                     folder
                   </v-icon>
-                  {{ `${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})` }}
+                  {{
+                    `${type.attachmentType} (${getTypeCount(type.attachmentTypeId)})`
+                  }}
                   <v-spacer></v-spacer>
 
                   <input
-                      :id="`fileInput${type.attachmentTypeId}`"
-                      type="file"
-                      :multiple="!type.hasFieldsAssigned"
-                      :accept="acceptedFileTypes"
-                      @change='doUpload($event.target.files, type)'
-                      style="display: none"
-                      :ref="`fileInput${type.attachmentTypeId}`"
-                      @click.stop=""
-                  >
-                  <div class="expansion-panel-header-open" v-if="open"
-                       key="0">
-                  </div>
-                  <span
-                      v-else
-                      key="1"
-                  >
-                </span>
+                    :id="`fileInput${type.attachmentTypeId}`"
+                    type="file"
+                    :multiple="!type.hasFieldsAssigned"
+                    :accept="acceptedFileTypes"
+                    @change="doUpload($event.target.files, type)"
+                    style="display: none"
+                    :ref="`fileInput${type.attachmentTypeId}`"
+                    @click.stop=""
+                  />
+                  <div
+                    class="expansion-panel-header-open"
+                    v-if="open"
+                    key="0"
+                  ></div>
+                  <span v-else key="1"> </span>
                   <a-btn
-                      v-if="allowUpload || forceShowUploadBtn"
-                      @click.native.stop="selectFile(type.attachmentTypeId)"
-                      :icon="isMobile"
-                      :elevation="0"
-                      variant="text"
-                      color="primary"
-                      class="text-capitalize"
-                      :class="{'mr-4': isMobile}"
-                      :disabled="dragTypeId === type.attachmentTypeId"
-                      :prepend-icon="isMobile ? 'mdi-tray-arrow-up' : ''"
-                      :text="!isMobile ? 'Upload' : ''"
+                    v-if="allowUpload || forceShowUploadBtn"
+                    @click.native.stop="selectFile(type.attachmentTypeId)"
+                    :icon="isMobile"
+                    :elevation="0"
+                    variant="text"
+                    color="primary"
+                    class="text-capitalize"
+                    :class="{ 'mr-4': isMobile }"
+                    :disabled="dragTypeId === type.attachmentTypeId"
+                    :prepend-icon="isMobile ? 'mdi-tray-arrow-up' : ''"
+                    :text="!isMobile ? 'Upload' : ''"
                   ></a-btn>
                 </v-row>
               </template>
             </v-expansion-panel-header>
-            <v-expansion-panel-content v-if="getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false">
+            <v-expansion-panel-content
+              v-if="
+                getTypeCount(type.attachmentTypeId) > 0 ||
+                hideEmptyFolderStatus === false
+              "
+            >
               <AttachmentsTable
-                  :search="search"
-                  :display-type="type"
-                  :allow-upload="allowUpload || forceShowUploadBtn"
-                  :load-linked="loadLinked"
-                  :attachments="sortedAttachments"
-                  :projectId="projectId"
-                  :projectProcessStepId="projectProcessStepId"
-                  :userId="userId"
-                  :contactId="contactId"
-                  :compare="!allowUpload && !loadLinked && compare"
-                  :orgId="orgId"
-                  :cancel-reset-key="cancelResetKey"
-                  :objectTypeId="objectTypeId"
-                  :projectProcessStepEventId="projectProcessStepEventId"
-                  :compare-callback="toggleAttachmentToCompare"
-                  :delete-callback="attachmentDeleted"
-                  :count-selected="selectedAttachmentsForCompare.length"
+                :search="search"
+                :display-type="type"
+                :allow-upload="allowUpload || forceShowUploadBtn"
+                :load-linked="loadLinked"
+                :attachments="sortedAttachments"
+                :projectId="projectId"
+                :projectProcessStepId="projectProcessStepId"
+                :userId="userId"
+                :contactId="contactId"
+                :compare="!allowUpload && !loadLinked && compare"
+                :orgId="orgId"
+                :cancel-reset-key="cancelResetKey"
+                :objectTypeId="objectTypeId"
+                :projectProcessStepEventId="projectProcessStepEventId"
+                :compare-callback="toggleAttachmentToCompare"
+                :delete-callback="attachmentDeleted"
+                :count-selected="selectedAttachmentsForCompare.length"
               ></AttachmentsTable>
             </v-expansion-panel-content>
-            <v-divider v-if="index !== attachmentTypes.length - 1 && (getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false)" class="mx-3"></v-divider>
+            <v-divider
+              v-if="
+                index !== attachmentTypes.length - 1 &&
+                (getTypeCount(type.attachmentTypeId) > 0 ||
+                  hideEmptyFolderStatus === false)
+              "
+              class="mx-3"
+            ></v-divider>
           </v-expansion-panel>
         </v-expansion-panels>
       </v-card>
-
     </div>
-    <div v-else-if="!hideEmpty" class="body-large text-center">Attachments Not Available</div>
+    <div v-else-if="!hideEmpty" class="body-large text-center">
+      Attachments Not Available
+    </div>
   </div>
 </template>
 
@@ -193,12 +301,11 @@
 import {
   getAttachmentSourceId,
   getRequestWithParams,
-
   logError
 } from '@/helpers/helpers'
 
 import orderBy from 'lodash.orderby'
-import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
+import AttachmentsTable from '@/views/flow/components/AttachmentsTable'
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
 import constants from '@/helpers/constants'
@@ -207,11 +314,19 @@ import cloneDeep from 'lodash.clonedeep'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
-import {getCurrentInstance, toRefs, computed, ref, onMounted, watch, onBeforeUnmount} from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import {
+  getCurrentInstance,
+  toRefs,
+  computed,
+  ref,
+  onMounted,
+  watch,
+  onBeforeUnmount
+} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
-import {storeToRefs} from "pinia";
+import { storeToRefs } from 'pinia'
 import emitter from '@/services/eventBus.js'
 
 const appStore = useAppStore()
@@ -248,11 +363,24 @@ const props = defineProps({
     default: false
   }
 })
-const { allowUpload, loadLinked, focused, hideEmptyFolderStatus, smallTitle, title,
-  activityTab, forceShowUploadBtn, projectId, userId, contactId, orgId,
-  objectTypeId, isCard, hideEmpty, reloadOnKeyChange } = toRefs(props)
-
-
+const {
+  allowUpload,
+  loadLinked,
+  focused,
+  hideEmptyFolderStatus,
+  smallTitle,
+  title,
+  activityTab,
+  forceShowUploadBtn,
+  projectId,
+  userId,
+  contactId,
+  orgId,
+  objectTypeId,
+  isCard,
+  hideEmpty,
+  reloadOnKeyChange
+} = toRefs(props)
 
 const eventId = ref(null)
 const tempFile = ref({})
@@ -271,9 +399,9 @@ const maxFiles = ref(constants.MAX_FILE_UPLOADS)
 const renderTicker = ref(0)
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_DOCS_AUDIO)
 const headers = ref([
-  {text: null, value: 'fileIcon', show: true},
-  {text: null, value: 'filename', show: true},
-  {text: null, value: 'icons', show: true},
+  { text: null, value: 'fileIcon', show: true },
+  { text: null, value: 'filename', show: true },
+  { text: null, value: 'icons', show: true }
 ])
 const search = ref('')
 const sortOldToNew = ref(false)
@@ -301,16 +429,30 @@ const companyId = computed(() => {
   return userStore.details.companyId
 })
 const sortedAttachments = computed(() => {
-  return orderBy(attachments.value, [a => a.dateCreated], search.value != null && search.value !== '' && sortOldToNew.value ? 'asc' : 'desc')
+  return orderBy(
+    attachments.value,
+    [(a) => a.dateCreated],
+    search.value != null && search.value !== '' && sortOldToNew.value
+      ? 'asc'
+      : 'desc'
+  )
 })
 const filteredAttachmentTypes = computed(() => {
   //if there's a search value, only show folders with an attachment that matches the search
-  return (search.value != null && search.value !== '') ? attachmentTypes.value.filter(type => {
-    return attachments.value.filter(a => {
-      return a.attachmentTypeId === type.attachmentTypeId && !a.archived && a.linked === loadLinked.value
-          && a.displayName.toLowerCase().includes(search.value.toLowerCase())
-    })?.length > 0
-  }) : attachmentTypes.value
+  return search.value != null && search.value !== ''
+    ? attachmentTypes.value.filter((type) => {
+        return (
+          attachments.value.filter((a) => {
+            return (
+              a.attachmentTypeId === type.attachmentTypeId &&
+              !a.archived &&
+              a.linked === loadLinked.value &&
+              a.displayName.toLowerCase().includes(search.value.toLowerCase())
+            )
+          })?.length > 0
+        )
+      })
+    : attachmentTypes.value
 })
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
@@ -330,8 +472,8 @@ watch(filteredAttachmentTypes, (val) => {
   clearTimeout(_filterTimerId.value)
   _filterTimerId.value = setTimeout(() => {
     opened.value = []
-    if(search.value != null && search.value !== '') {
-      for(let i = 0; i < val.length; i++){
+    if (search.value != null && search.value !== '') {
+      for (let i = 0; i < val.length; i++) {
         opened.value.push(i)
       }
     }
@@ -360,22 +502,22 @@ onMounted(() => {
     emitter.on('attachment-deleted', handleAttachmentDeleted)
   }
 
-  loadAllPageDetails();
+  loadAllPageDetails()
 })
 
 onBeforeUnmount(() => {
-  emitter.off('new-attachment-linked', handleAttachmentLinked);
+  emitter.off('new-attachment-linked', handleAttachmentLinked)
   emitter.off('attachment-deleted', handleAttachmentDeleted)
-});
+})
 
 const handleAttachmentDeleted = (id) => {
-  attachments.value = attachments.value.filter(a => a.id !== id)
+  attachments.value = attachments.value.filter((a) => a.id !== id)
 }
 
 const handleAttachmentLinked = (data) => {
-    let clone = cloneDeep(data)
-    clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
-    attachments.value.push(clone)
+  let clone = cloneDeep(data)
+  clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
+  attachments.value.push(clone)
 }
 
 const closeCoversheet = (attachmentTypeId) => {
@@ -396,16 +538,16 @@ const toggleAttachmentToCompare = (attachment) => {
   if (attachment.compare) {
     selectedAttachmentsForCompare.value.push(attachment)
   } else {
-    selectedAttachmentsForCompare.value = selectedAttachmentsForCompare.value.filter(a => a.id !== attachment.id)
+    selectedAttachmentsForCompare.value =
+      selectedAttachmentsForCompare.value.filter((a) => a.id !== attachment.id)
   }
 }
 const attachmentDeleted = (id) => {
-  attachments.value = attachments.value.filter(a => a.id !== id)
+  attachments.value = attachments.value.filter((a) => a.id !== id)
 }
 const fileUploaded = (attachment, error) => {
   if (error) {
     appStore.showSnack('ERROR', error.message)
-
   } else {
     attachments.value.push(attachment)
     if (!forceShowUploadBtn.value) {
@@ -416,10 +558,15 @@ const fileUploaded = (attachment, error) => {
   }
   appStore.loading = false
 }
-const loadAllPageDetails = async() => {
+const loadAllPageDetails = async () => {
   //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
   let params = {}
-  if ((!objectTypeId.value || objectTypeId.value === 1) && !allowUpload.value && !loadLinked.value && projectId.value) {
+  if (
+    (!objectTypeId.value || objectTypeId.value === 1) &&
+    !allowUpload.value &&
+    !loadLinked.value &&
+    projectId.value
+  ) {
     typePath.value = `/combined/project`
     attachmentPath.value = `/project/${projectId.value}/combinedAttachments`
     params.ppsEventId = projectProcessStepEventId.value
@@ -466,41 +613,62 @@ const loadAllPageDetails = async() => {
 const fetchAttachmentTypes = async (typeParams) => {
   emptyFolderToggleState.value = hideEmptyFolderStatus.value
   attachmentTypesLoading.value = true
-  const {data} = await getRequestWithParams(`/attachmentType${typePath.value}`, {
-    params: {
-      ...typeParams,
-      linkable: loadLinked.value,
-      allowUpload: allowUpload.value,
-      focused: focused.value
+  const { data } = await getRequestWithParams(
+    `/attachmentType${typePath.value}`,
+    {
+      params: {
+        ...typeParams,
+        linkable: loadLinked.value,
+        allowUpload: allowUpload.value,
+        focused: focused.value
+      }
     }
-  })
+  )
   attachmentTypes.value = data
   attachmentTypesLoading.value = false
 }
 const fetchAttachments = async (extraParams) => {
-  const {data} = await getRequestWithParams(attachmentPath.value, {
-    params: {
-      ...extraParams,
-      linked: loadLinked.value
-    }
-  }, null, [])
-  data?.forEach(d => {
+  const { data } = await getRequestWithParams(
+    attachmentPath.value,
+    {
+      params: {
+        ...extraParams,
+        linked: loadLinked.value
+      }
+    },
+    null,
+    []
+  )
+  data?.forEach((d) => {
     let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
-    d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
+    d.editableName =
+      tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
     //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
     d.editableNameCopy = d.editableName
   })
 
-  attachments.value = orderBy(data, [a => a.dateCreated], sortOldToNew.value ? 'asc' : 'desc')
+  attachments.value = orderBy(
+    data,
+    [(a) => a.dateCreated],
+    sortOldToNew.value ? 'asc' : 'desc'
+  )
   hideEmptyFolderStatus.value = emptyFolderToggleState.value
 }
 
 const getTypeCount = (typeId) => {
   try {
-    return attachments.value.filter(a => {
-      return a.attachmentTypeId === typeId && !a.archived && a.linked === loadLinked.value
-          && ((search.value != null && search.value !== '') ? a.filename.toLowerCase().includes(search.value.toLowerCase()) : true)
-    })?.length || 0
+    return (
+      attachments.value.filter((a) => {
+        return (
+          a.attachmentTypeId === typeId &&
+          !a.archived &&
+          a.linked === loadLinked.value &&
+          (search.value != null && search.value !== ''
+            ? a.filename.toLowerCase().includes(search.value.toLowerCase())
+            : true)
+        )
+      })?.length || 0
+    )
   } catch {
     return 0
   }
@@ -513,9 +681,9 @@ const addDragDocument = async (e, type) => {
   }
 }
 const selectFile = (typeId) => {
-  document.getElementById(`fileInput${typeId}`)?.click();
+  document.getElementById(`fileInput${typeId}`)?.click()
 }
-const doUpload = async(files, type) => {
+const doUpload = async (files, type) => {
   if (files?.length > 0) {
     if (type.hasFieldsAssigned) {
       let file = files[0]
@@ -532,7 +700,10 @@ const setTempFile = (file, type) => {
   fileToUpload.value = file
   tempFile.value.attachmentTypeId = type.attachmentTypeId
   tempFile.value.attachmentType = type.attachmentType
-  let displayName = fileToUpload.value.name.substr(0, fileToUpload.value.name.lastIndexOf('.'))
+  let displayName = fileToUpload.value.name.substring(
+    0,
+    fileToUpload.value.name.lastIndexOf('.')
+  )
   tempFile.value.displayName = displayName
   showCoversheetModal.value = true
 }
@@ -542,22 +713,28 @@ const uploadDocument = async (files, type) => {
     //reset error message when trying to upload new file
     error.value = {}
     if (files?.length > 0) {
-      const { sourceId, secondaryId } = getAttachmentSourceId(projectId.value, projectProcessStepId.value, projectProcessStepEventId.value,
-          userId.value, contactId.value, orgId.value)
+      const { sourceId, secondaryId } = getAttachmentSourceId(
+        projectId.value,
+        projectProcessStepId.value,
+        projectProcessStepEventId.value,
+        userId.value,
+        contactId.value,
+        orgId.value
+      )
 
       appStore.loading = true
 
       //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
       if (sourceId != null) {
-        if(files.length > 1) {
-          const filesToUpload = [...files].map(file => {
+        if (files.length > 1) {
+          const filesToUpload = [...files].map((file) => {
             return {
               file,
               displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
               attachmentTypeId: type.attachmentTypeId,
               objectTypeId: objectTypeId.value,
               sourceId,
-              secondaryId,
+              secondaryId
             }
           })
           const uploaded = await fileStore.uploadFileMulti(filesToUpload)
@@ -570,7 +747,7 @@ const uploadDocument = async (files, type) => {
           appStore.loading = false
         } else {
           let file = files[0]
-          if(file?.size > 0) {
+          if (file?.size > 0) {
             await fileStore.uploadFile({
               file: file,
               attachmentTypeId: type.attachmentTypeId,
@@ -588,15 +765,9 @@ const uploadDocument = async (files, type) => {
     appStore.loading = false
     logError(e)
     appStore.showSnack('ERROR', 'Error Uploading File')
-
   }
-
 }
 </script>
-
-<style lang="scss">
-
-</style>
 
 <style lang="scss" scoped>
 .sticky-compare-bar {
@@ -613,8 +784,8 @@ const uploadDocument = async (files, type) => {
 }
 
 .v-expansion-panels.condensed
-.v-expansion-panel--active
-.v-expansion-panel-header {
+  .v-expansion-panel--active
+  .v-expansion-panel-header {
   padding-top: 12px;
   padding-bottom: 12px;
 }
@@ -623,7 +794,6 @@ const uploadDocument = async (files, type) => {
 .v-expansion-panels.condensed .v-expansion-panel--active + .v-expansion-panel {
   margin-top: 2px;
 }
-
 
 .bold {
   font-weight: bold;
@@ -680,5 +850,4 @@ const uploadDocument = async (files, type) => {
 .hide-empty-folder-label {
   color: var(--v-grey-darken1);
 }
-
 </style>
