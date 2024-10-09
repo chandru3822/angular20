@@ -520,15 +520,20 @@ public class MessagingService {
   @Async
   public void addNotifications(TwilioMessageRequest sms) {
     // database search col is looking for everything after the +1
-    String cleanPhoneNumber = sms.getFrom().replaceAll("[^0-9]", "");
-    if(cleanPhoneNumber.startsWith("1")) {
-      cleanPhoneNumber = cleanPhoneNumber.substring(1);
+    String cleanExternalPhoneNumber = sms.getFrom().replaceAll("[^0-9]", "");
+    if(cleanExternalPhoneNumber.startsWith("1")) {
+      cleanExternalPhoneNumber = cleanExternalPhoneNumber.substring(1);
+    }
+
+    String cleanInternalPhoneNumber = sms.getTo().replaceAll("[^0-9]", "");
+    if(cleanInternalPhoneNumber.startsWith("1")) {
+      cleanInternalPhoneNumber = cleanInternalPhoneNumber.substring(1);
     }
 
     List<Long> threadIds =
       sqlCache.queryBySql(
         SmsServiceQuery.getThreads,
-        Map.of("phoneNumber", cleanPhoneNumber),
+        Map.of("externalPhoneNumber", cleanExternalPhoneNumber, "internalPhoneNumber", cleanInternalPhoneNumber),
         new SingleColumnRowMapper<>(Long.class));
 
     if (!threadIds.isEmpty()) {
