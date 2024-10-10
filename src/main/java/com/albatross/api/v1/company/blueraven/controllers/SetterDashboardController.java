@@ -100,4 +100,9 @@ public class SetterDashboardController {
   public List<CloserDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
     return setterDashboardService.getDropdownValues(today);
   }
+
+  @GetMapping(value = "/funnel/{id}/columns")
+  public List<FunnelColumn> getFunnelColumns(@PathVariable Long id) {
+    return setterDashboardService.getFunnelColumns(id);
+  }
 }

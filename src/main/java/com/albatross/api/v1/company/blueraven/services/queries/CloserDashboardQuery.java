@@ -268,7 +268,7 @@ public class CloserDashboardQuery {
 
   //language=PostgreSQL
   public final static String getFunnelColumns = """
-    select dmc.id, dmc.title, dmc.display_value as field_name, dmc.display_order, dmc.data_type_id, dt.data_type
+    select dmc.id, dmc.title, dmc.display_value as field_name, dmc.display_order, dmc.data_type_id, dt.data_type, dmc.date_format
     from brs.dashboard_milestone_column dmc
     inner join brs.dashboard_milestone dm on dmc.dashboard_milestone_id = dm.id
     inner join brs.funnel f on dm.id = f.dashboard_milestone_id

@@ -437,11 +437,11 @@ public class CloserDashboardService {
     allColumns.add(new FunnelColumn(34L, "Source", "source_name", 8L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
     allColumns.add(new FunnelColumn(35L, "System Size", "system_size", 9L, DataType.NUMERIC.getId(), DataType.NUMERIC.getDataType()));
     allColumns.add(new FunnelColumn(36L, "Financier", "financier", 10L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
-    allColumns.add(new FunnelColumn(37L, "Appointment Date", "appointment_date", 11L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
-    allColumns.add(new FunnelColumn(38L, "Cancelled Date", "cancelled_date", 12L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    allColumns.add(new FunnelColumn(37L, "Appointment Date", "appointment_date", 11L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType(), "MM/DD/YYYY"));
+    allColumns.add(new FunnelColumn(38L, "Cancelled Date", "cancelled_date", 12L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType(), "MM/DD/YYYY"));
     if (isCheckedInColumn) {
       // checked in column should always be last
-      allColumns.add(new FunnelColumn(39L, "Checked In Time", "checked_in_time", 25L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+      allColumns.add(new FunnelColumn(39L, "Checked In Time", "checked_in_time", 25L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType(), "MM/DD/YYYY h:mm a"));
     }
 
     List<FunnelColumn> results = sqlCache.queryBySql(CloserDashboardQuery.getFunnelColumns, params, FunnelColumn.class);

@@ -5,7 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.SetterDashboardQuery;
-import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.enums.DataType;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
@@ -341,5 +341,33 @@ public class SetterDashboardService {
     ranges.add(new CloserDashboardDateRange(12, "Custom", "CUSTOM", null, null, null, null, null));
 
     return ranges;
+  }
+
+  public List<FunnelColumn> getFunnelColumns(Long id) {
+    List<Long> nonNormalFunnelIds = new ArrayList<>(Arrays.asList(31L, 32L));
+
+    ArrayList<FunnelColumn> allColumns = new ArrayList<>();
+
+    allColumns.add(new FunnelColumn(1L, "Setter", "setter_name", 0L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(2L, "Name", "customer_name", 1L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(3L, "Project ID", "project_id", 2L, DataType.INTEGER.getId(), DataType.INTEGER.getDataType()));
+    allColumns.add(new FunnelColumn(4L, "Appointment Date", "appointment_date", 3L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType(), "MM/DD/YYYY"));
+    allColumns.add(new FunnelColumn(5L, "Closer", "owner_name", 4L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    if (!nonNormalFunnelIds.contains(id)) {
+      allColumns.add(new FunnelColumn(6L, "Verified Setter Lead", "verified_setter_lead", 5L, DataType.BOOLEAN.getId(), DataType.BOOLEAN.getDataType()));
+      allColumns.add(new FunnelColumn(7L, "Appointment Outcome", "appointment_outcome", 6L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+      allColumns.add(new FunnelColumn(8L, "Checked In Time", "checked_in_time", 7L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    }
+    if (id == 31L) {
+      allColumns.add(new FunnelColumn(9L, "Booking Date", "installation_agreement_signed_date", 8L, DataType.DATE.getId(), DataType.DATE.getDataType()));
+    }
+    if (id == 32L) {
+      allColumns.add(new FunnelColumn(10L, "Final Design Complete Date", "final_design_complete_date", 9L, DataType.DATE.getId(), DataType.DATE.getDataType()));
+    }
+    allColumns.add(new FunnelColumn(11L, "Date Created", "date_created", 10L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType(), "MM/DD/YYYY"));
+    allColumns.add(new FunnelColumn(12L, "State", "state", 11L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(13L, "Office", "office", 12L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+
+    return allColumns;
   }
 }
