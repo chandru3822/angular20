@@ -81,9 +81,9 @@ public class BlueravenProposalController {
 
   @PostMapping(value="/projects/{projectId}/ai/design/updateMonthlyUsage")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public void updateMonthlyUsage(@PathVariable String projectId,
+  public ProposalDesign updateMonthlyUsage(@PathVariable Long projectId,
                                  @RequestBody List<Double> monthlyValues) {
-      proposalService.doUpdateMonthlyUsage(projectId, monthlyValues);
+      return proposalService.doUpdateMonthlyUsage(projectId, monthlyValues).orElse(null);
   }
 
 

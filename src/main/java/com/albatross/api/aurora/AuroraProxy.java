@@ -255,7 +255,7 @@ public class AuroraProxy {
     }
   }
 
-    public void updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, String projectId, List<Double> monthlyInputs)  {
+    public AuroraConsumptionProfileDTO updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, Long projectId, List<Double> monthlyInputs)  {
         AuroraUpdateConsumptionProfileDTO acp = new AuroraUpdateConsumptionProfileDTO();
         acp.setMonthlyEnergy(monthlyInputs);
         String bodyJson;
@@ -283,6 +283,7 @@ public class AuroraProxy {
         if (res != null && res.getStatusCode() != HttpStatus.OK) {
             throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
         }
+        return res.getBody();
     }
 
     public DesignSummary getDesignSummary(@NotBlank String designId) throws IOException {

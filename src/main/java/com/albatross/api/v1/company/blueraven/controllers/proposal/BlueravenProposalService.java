@@ -295,11 +295,29 @@ public class BlueravenProposalService {
     return auroraUserId;
   }
 
-  public void doUpdateMonthlyUsage(String projectId, List<Double> monthlyInputs){
+  public Optional<ProposalDesign> doUpdateMonthlyUsage(Long projectId, List<Double> monthlyInputs){
       Optional<String> auroraUserId = getAuroraUserId();
 
       if (auroraUserId.isPresent()) {
-          auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), projectId, monthlyInputs);
+          AuroraConsumptionProfileDTO consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), projectId, monthlyInputs);
+
+          //combine all the monthly_energy values from the consumptionProfile
+          Double sum = 0.0;
+          for(int i = 0; i < consumptionProfile.getMonthlyEnergy().size(); i++){
+              sum+= consumptionProfile.getMonthlyEnergy().get(i);
+          }
+          //put the sum in the estimated annual energy consumption custom field
+          com.albatross.api.v1.flow.model.CustomFieldValue customFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
+          customFieldValue.setCustomFieldGroupAssignmentId(22573L);
+          customFieldValue.setIntValue(Math.round(sum));
+
+          List<com.albatross.api.v1.flow.model.CustomFieldValue> cfgs = new ArrayList<>();
+          cfgs.add(customFieldValue);
+
+          Optional<ProposalDesign> design = getActiveDesign(projectId);
+          Long ppsId = design.get().getProjectProcessStepId();
+          customFieldValueService.updateCustomFieldValues(cfgs, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
+          return design;
       } else {
           throw new ResponseStatusException(
                   HttpStatus.BAD_REQUEST,
