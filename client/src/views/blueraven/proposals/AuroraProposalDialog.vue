@@ -25,12 +25,23 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['close', 'save'])
-const calcEnergyBySqFtg = ref(true)
 const squareFootage = ref(null)
 const aiForm = ref(null)
 const requiredRules = constants.BASIC_REQUIRED_RULE
 const months = constants.MONTHS
 const monthlyUsage = ref([])
+
+const calculatedBy = computed(() => {
+  return props.aiRequestFields.find(field => field.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC)
+})
+
+const calculatedByIsSet = computed(() => {
+  return !!calculatedBy.value?.intValue;
+})
+
+const calcEnergyBySqFtg = computed(() => {
+  return calculatedBy.value?.intValue === 20851
+})
 
 const validateAIRequest = async () => {
   const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0
@@ -194,10 +205,6 @@ const xcelEnergyMNValues = Object.freeze({
           <div v-for="(cf, idx) in aiRequestFields" :key="idx">
             <!--              <div>{{cf}}</div>-->
             <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION">
-                <v-radio-group label="Energy Usage" v-model="calcEnergyBySqFtg" :disabled="savingNewAiDesign">
-                <v-radio :value="true" label="Calculate Energy by Square Footage"></v-radio>
-                <v-radio :value="false" label="Utility Bill"></v-radio>
-              </v-radio-group>
               <div v-if="calcEnergyBySqFtg">
                 <a-text-field type="number"
                               density="compact"
@@ -211,12 +218,12 @@ const xcelEnergyMNValues = Object.freeze({
                 <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
                 <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{monthlyUsage[0]?.usage}} kWh</span></div>
               </div>
-              <div v-else>
+              <div v-else-if="calculatedByIsSet">
                 <v-card class="label-medium pa-0" flat>
                   <v-card-title class="pa-0">Enter usage from utility bill
                   </v-card-title>
                 <v-row class="pt-0">
-                  <v-col v-for="(month, index) in months" cols="3" class="pt-0">
+                  <v-col v-for="(month, index) in months" :key="index" cols="3" class="pt-0">
                     <a-text-field density="dense" type="number" :label="`${month.name}`" @change="addMonthUsage($event, month.id)" :disabled="savingNewAiDesign"></a-text-field>
                   </v-col>
                 </v-row>
@@ -232,6 +239,7 @@ const xcelEnergyMNValues = Object.freeze({
                 @change=""
                 custom-class="albatross-body-2"
                 :field="cf"
+                :custom-label="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC ? 'How should yearly consumption be calculated?' : null"
                 :readonly="savingNewAiDesign"
             ></CustomValueInput>
           </div>
