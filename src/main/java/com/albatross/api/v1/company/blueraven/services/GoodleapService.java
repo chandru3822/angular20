@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapLoanStatus;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
+import com.albatross.api.v1.company.blueraven.services.queries.GoodleapQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,11 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -386,6 +392,51 @@ public class GoodleapService {
     }
 
     return "";
+  }
+
+  public String updateFinancialAgreementSigned(String proposalId, String timestamp) {
+    String errorMsg = "";
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+    Optional<Long> projectId =
+      sqlCache.getBySql(
+        GoodleapQuery.getProjectIdForProposalId, params, new SingleColumnRowMapper<>(Long.class));
+    if (projectId.isPresent()) {
+      errorMsg = updateFinancialAgreementSignedForProjectId(projectId.get(), timestamp);
+    }
+    else {
+      errorMsg = "No Project ID found for Proposal ID: "  + proposalId;
+    }
+
+    return errorMsg;
+  }
+
+  public String updateFinancialAgreementSignedForProjectId(Long projectId, String timestamp) {
+    String errorMsg = "";
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    Optional<Long> designAndFinancingPpsId =
+      sqlCache.getBySql(
+        GoodleapQuery.getDesignAndFinancingPpsId, params, new SingleColumnRowMapper<>(Long.class));
+    if (designAndFinancingPpsId.isPresent()) {
+      Instant instant = Instant.parse(timestamp);
+      LocalDate localDate = instant.atZone(ZoneId.of("UTC")).toLocalDate();
+      String formattedDate = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+      params.put("dateValue", formattedDate);
+      // Sales Dev Lead's user ID
+      params.put("leadOwnerUserId", 2371412L);
+      params.put("projectProcessStepId", designAndFinancingPpsId.get());
+      // Financial Agreement Signed cfgaid
+      params.put("customFieldGroupAssignmentId", 19505L);
+
+      sqlCache.updateBySql(
+        GoodleapQuery.upsertCustomFieldValue, params);
+    }
+    else {
+      errorMsg = "No Design and Financing Project Process Step found for Project ID: " + projectId;
+    }
+
+    return errorMsg;
   }
 
   private void createUser(JSONObject closerDetails) {

@@ -4,6 +4,7 @@ import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.MosaicQuery;
 import com.albatross.api.v1.flow.enums.State;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,8 @@ import java.util.*;
 public class MosaicService {
 
   private final SqlCache sqlCache;
+
+  private final GoodleapService goodleapService;
 
   private String accessToken;
 
@@ -295,6 +298,23 @@ public class MosaicService {
     }
 
     return "";
+  }
+
+  public String updateFinancialAgreementSigned(String mosaicApplicationId, String timestamp) {
+    String errorMsg = "";
+    Map<String, Object> params = new HashMap<>();
+    params.put("mosaicApplicationId", mosaicApplicationId);
+    Optional<Long> projectId =
+      sqlCache.getBySql(
+        MosaicQuery.getProjectIdFromMosaicApplicationId, params, new SingleColumnRowMapper<>(Long.class));
+    if (projectId.isPresent()) {
+      errorMsg = goodleapService.updateFinancialAgreementSignedForProjectId(projectId.get(), timestamp);
+    }
+    else {
+      errorMsg = "No Project ID found for Mosaic ApplicationId ID: "  + mosaicApplicationId;
+    }
+
+    return errorMsg;
   }
 
   private Boolean isEnsembleProposal(String state) {

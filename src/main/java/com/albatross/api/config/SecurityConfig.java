@@ -91,6 +91,8 @@ public class SecurityConfig {
           "/webhook/verse/**",
           "/webhook/hubspot/**",
           "/webhook/genesys/**",
+          "/webhook/goodleap/**",
+          "/webhook/mosaic/**",
 //            // export the endpoint for automating s3 uploads of mobile builds from fast lane
           "/api/v1/flow/app/addAttachmentRecord",
           // export the endpoint for mobile to call to ensure the app_attachment table is present
