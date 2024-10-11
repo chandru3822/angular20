@@ -494,14 +494,16 @@ select p.id,
        p.archived,
        p.date_created,
        p.date_modified,
-       p.locked_tsz is not null                               as locked,
-       p.credit_check_submitted_tsz is not null               as credit_check_submitted,
-       p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
-       p.installation_agreement_sent_tsz is not null          as installation_agreement_sent
+       p.locked_tsz is not null                      as locked,
+       p.credit_check_submitted_tsz is not null      as credit_check_submitted,
+       p.finance_docs_sent_tsz is not null           as finance_docs_sent,
+       p.installation_agreement_sent_tsz is not null as installation_agreement_sent,
+       ocpt.proposal_template_id                     as proposal_template_id
 from brs.proposal p
          inner join flow.project_process_step pps on p.project_process_step_id = pps.id
          inner join flow.project prj on pps.project_id = prj.id
          inner join flow.company_state cs on cs.id = prj.company_state_id
+         inner join brs.object_category_proposal_template ocpt on ocpt.object_category_id = prj.object_category_id
 where p.id = :proposalId
   and p.archived is false
       """;

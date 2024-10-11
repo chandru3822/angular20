@@ -14,4 +14,5 @@ public class AttachmentType {
   private String attachmentType, keyPattern;
   private Boolean archived;
   private List<CustomFieldGroup> customFieldGroups;
+  private List<Long> objectCategoryIds;
 }

@@ -210,6 +210,7 @@ constants.CSV_BLOB_TYPE = 'text/csv;charset=utf-8'
 
 constants.OVERVIEW_FIELD_TYPES = {
     DEFAULT: 'default',
+    CATEGORY: 'category',
     ID: 'id',
     DATE: 'date',
     STATUS: 'status',

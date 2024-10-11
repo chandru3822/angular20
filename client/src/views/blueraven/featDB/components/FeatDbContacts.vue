@@ -167,6 +167,7 @@ const editMode = ref(false)
 const contactsCopy = ref(contacts.value)
 const expanded = ref(true)
 const contactForm = ref(null)
+const ahjItemTypes = ['permit', 'inspection', 'design', 'newHome']
 
 const emit = defineEmits(['toggle-collapse-expand'])
 
@@ -213,7 +214,7 @@ const saveContact = async() => {
       let res = null
 
       //changed to not require updates when a new feat_db gets added
-      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+      if (ahjItemTypes.includes(itemType.value)) {
         res = await postRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/contacts`, selectedContact.value, 'blueraven')
       } else {
         res = await postRequest(`/featDb/${itemType.value}/${itemId.value}/contacts`, selectedContact.value, 'blueraven')
@@ -233,7 +234,7 @@ const saveContact = async() => {
     try {
       let res = null
       //changed to not require updates when a new feat_db gets added
-      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+      if (ahjItemTypes.includes(itemType.value)) {
         res = await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/contacts/${selectedContact.value.id}`, selectedContact.value, 'blueraven')
       } else {
         res = await putRequest(`/featDb/${itemType.value}/${itemId.value}/contacts/${selectedContact.value.id}`, selectedContact.value, 'blueraven')
@@ -264,7 +265,7 @@ const deleteContact = async() => {
 
   try {
     //changed to not require updates when a new feat_db gets added
-    if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+    if (ahjItemTypes.includes(itemType.value)) {
       await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/contacts/${selectedContact.value.id}/archive`, null, 'blueraven')
     } else {
       await putRequest(`/featDb/${itemType.value}/contacts/${selectedContact.value.id}/archive`, null, 'blueraven')

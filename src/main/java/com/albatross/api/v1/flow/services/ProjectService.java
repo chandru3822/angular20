@@ -7,6 +7,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
+import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -69,14 +71,14 @@ public class ProjectService {
   }
 
   public Long getProjectIdByProjectProcessStepId(Long projectProcessStepId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     return sqlCache.queryForObjectBySql(
       ProjectQuery.getProjectIdByProjectProcessStepId, params, Long.class);
   }
 
   public List<Long> getDistinctProjectIdsByPpsIds(List<Long> ppsIds) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     try {
       params.put("ppsIds", sqlArrayService.createSqlArrayOfType("int", ppsIds));
       return sqlCache.queryBySql(ProjectQuery.getProjectIdsByPpsIds, params, new SingleColumnRowMapper<>(Long.class));
@@ -88,7 +90,7 @@ public class ProjectService {
   }
 
   public Long getProjectIdByProjectProcessStepEventId(Long projectProcessStepEventId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectProcessStepEventId", projectProcessStepEventId);
     return sqlCache.queryForObjectBySql(
       ProjectQuery.getProjectIdByProjectProcessStepEventId, params, Long.class);
@@ -101,7 +103,7 @@ public class ProjectService {
         && null != search.getUpperBoundLongitude()
         && null != search.getLowerBoundLatitude()
         && null != search.getLowerBoundLongitude()) {
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
       params.put("upperBoundLatitude", search.getUpperBoundLatitude());
       params.put("upperBoundLongitude", search.getUpperBoundLongitude());
       params.put("lowerBoundLatitude", search.getLowerBoundLatitude());
@@ -159,7 +161,7 @@ public class ProjectService {
           List.of("VIEW_CUSTOM"));
     }
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
     params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
@@ -213,7 +215,7 @@ public class ProjectService {
           List.of("VIEW_CUSTOM"));
     }
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userId", user.getId());
     params.put("viewCustom", viewCustom);
@@ -231,7 +233,7 @@ public class ProjectService {
 
   // i tried to genericize this but it is still pretty specific to only brs.
   public Boolean projectExistsInHierarchy(Long projectId, Long parentCompanyId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("parentCompanyId", parentCompanyId);
     Optional<Project> proj = sqlCache.getBySql(ProjectQuery.existsInHierarchy, params, Project.class);
@@ -240,7 +242,7 @@ public class ProjectService {
 
   // i tried to genericize this but it is still pretty specific to only brs.
   public Boolean projectExists(Long projectId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     Optional<Project> proj = sqlCache.getBySql(ProjectQuery.exists, params, Project.class);
     return proj.isPresent();
@@ -255,6 +257,28 @@ public class ProjectService {
     params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
 
     return sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
+  }
+
+  public List<Project> getProjectChildren(Long projectId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    List<Project> results = sqlCache.queryBySql(ProjectQuery.getChildren, params, Project.class);
+
+    return results;
+  }
+
+  public void addChildProjects(Long projectId, ProjectController.ChildProjectRequest req) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", user.trueUserId());
+    params.put("companyId", user.getCompanyId());
+    params.put("projectId", projectId);
+    params.put("childProjectCount", req.getChildProjectCount());
+    params.put("childCompanyProcessId", req.getChildCompanyProcessId());
+
+    sqlCache.queryBySql(ProjectQuery.addChildren, params, String.class);
   }
 
   public Optional<Project> getProject(Long projectId) {
@@ -322,7 +346,7 @@ public class ProjectService {
       "PROCESS_STEPS",
       List.of("ADMIN"));
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.trueUserId());
     params.put("projectId", projectId);
 
@@ -345,7 +369,7 @@ public class ProjectService {
   public void updateProject(Project project) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", project.getId());
     params.put("street1", project.getStreet1());
     params.put("projectName", CleanString.replaceApostrophe(project.getProjectName()));
@@ -404,7 +428,7 @@ public class ProjectService {
     }
     if (null != updateProjectAddress && updateProjectAddress && !contact.getProjects().isEmpty()) {
 
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
       params.put("contactId", contact.getId());
       params.put("modifiedById", currentUser.trueUserId());
       params.put("street1", contact.getStreet1());
@@ -431,7 +455,7 @@ public class ProjectService {
   public void updateProjectOwner(Long projectId, Owner owner) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", projectId);
     params.put("modifiedById", currentUser.trueUserId());
     params.put("ownerUserPositionId", owner.getUserPositionId());
@@ -439,16 +463,27 @@ public class ProjectService {
     sqlCache.updateBySql(ProjectQuery.updateOwner, params);
   }
 
+  private Long getObjectCategoryFromProcessId(Long processId){
+    Map<String, Object> params = new HashMap<>();
+    params.put("processId", processId);
+
+    Long objectCategoryId = sqlCache.queryForObjectBySql(ProjectQuery.getObjectTypeByProcess, params, Long.class);
+    return objectCategoryId;
+  }
+
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress, Long ownerUserPositionId) throws Exception {
     User user = securityService.getCurrentUser();
 
     if (null != contactId && null != processId) {
+
+      Long objectCategoryId = getObjectCategoryFromProcessId(processId);
+
       // Get active company project status type so new projects can have an active status
       CompanyProjectStatusType companyStatusType =
         projectStatusService.getDefaultCompanyProjectStatusType(contact.getCompanyId());
       Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
       params.put("contactId", contactId);
       params.put("createdById", user.trueUserId());
       params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
@@ -461,6 +496,7 @@ public class ProjectService {
       params.put("postalCode", saveAddress ? contact.getPostalCode() : null);
       params.put("companyProjectStatusTypeId", companyStatusTypeId);
       params.put("userPositionId", ownerUserPositionId);
+      params.put("objectCategoryId", objectCategoryId);
 
       // with my most recent changes the contact should already have a valid lat/long if the address was valid
       // we only insert the lat/long/timezone stuff if the contact is in an active State, otherwise they will have to update the project with a valid address
@@ -495,7 +531,7 @@ public class ProjectService {
 
   public List<Attachment> getAttachments(Long projectId, Boolean isMobile, Boolean linked) {
     User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("linked", linked);
     params.put("companyId", currentUser.getCompanyId());
@@ -507,7 +543,7 @@ public class ProjectService {
 
   public List<Attachment> getCombinedAttachments(Long projectId, Long ppsId, Long ppsEventId) {
     User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("ppsId", ppsId);
     params.put("ppsEventId", ppsEventId);
@@ -520,7 +556,7 @@ public class ProjectService {
 
   public void linkAttachment(Long projectId, Long attachmentId, Boolean doLink) {
     User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("attachmentId", attachmentId);
     params.put("userId", currentUser.trueUserId());
@@ -560,7 +596,7 @@ public class ProjectService {
 
     Attachment attachment = attachmentService.create(inputStream, null, attachmentTypeId, displayName, filename, contentType, contentLength, false, companyId);
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("attachmentId", attachment.getId());
     params.put("linked", false);
@@ -574,7 +610,7 @@ public class ProjectService {
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId, Long statusTypeId) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
     params.put("statusTypeId", statusTypeId);
@@ -588,7 +624,7 @@ public class ProjectService {
 
   public List<ProjectWorkQueueHistory> getWorkQueueHistoryByProjectId(Long projectId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
 
@@ -602,7 +638,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     Boolean systemAdmin = user.getHighestCompanyId() == 1L;
     List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);
     params.put("systemAdmin", systemAdmin);
@@ -612,7 +648,7 @@ public class ProjectService {
 
     for (ProjectProcessStepEvent event : processStepEvents) {
       if (event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
-        HashMap<String, Object> moreParams = new HashMap<>();
+        Map<String, Object> moreParams = new HashMap<>();
         moreParams.put("objectTypeId", 6); //6 is the event object type
         moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
         moreParams.put("primaryId", event.getId());
@@ -667,7 +703,7 @@ public class ProjectService {
 
   public Optional<String> getInstallationScopeOfWork(Long projectId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("companyId", user.getCompanyId());
     return
@@ -689,7 +725,7 @@ public class ProjectService {
   }
 
   public Optional<Project> getStatus(Long projectId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     return sqlCache.getBySql(ProjectStatusQuery.getStatusDetails, params, Project.class);
   }
@@ -743,6 +779,21 @@ public class ProjectService {
       bw.registerCustomEditor(
         Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
 
+      TypeReference<Project> parentRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        Object.class, "parentProject", new JsonCollectionDeserializer(parentRef, objectMapper));
+
+      TypeReference<List<Project>> childProjectsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class, "childProjects", new JsonCollectionDeserializer(childProjectsRef, objectMapper));
+
+      TypeReference<List<ChildCompanyProcess>> childCompanyProcessesRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class, "childCompanyProcesses", new JsonCollectionDeserializer(childCompanyProcessesRef, objectMapper));
+
       TypeReference<List<ProjectTag>> projectTagsRef =
         new TypeReference<>() {
         };
@@ -769,7 +820,6 @@ public class ProjectService {
 
     }
   }
-
 
   private static class ProjectStatusFieldMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
@@ -810,5 +860,4 @@ public class ProjectService {
 
     }
   }
-
 }

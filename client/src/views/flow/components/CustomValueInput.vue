@@ -565,7 +565,7 @@ const rules = computed(() => {
       (v) =>
         (!v && v !== 0) ||
         v <= props.field.maxValue ||
-        `Value must be less than or equal to ${props.field.maxValue}`
+        ` Value must be less than or equal to ${props.field.maxValue}`
     )
   }
   return fieldRules

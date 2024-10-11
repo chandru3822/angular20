@@ -26,7 +26,7 @@
                           variant="text"
                           color="primary"
                           prepend-icon="history"
-                          @click="showChangeLog = !showChangeLog"
+                          @click="getChangeLog"
                           v-bind="attrs"
                           :activation-handler="{ ...tooltip, ...menu }">
                         </a-btn>
@@ -174,19 +174,21 @@ onMounted(async() => {
   await getHoa()
   await getCustomFieldGroupAssignmentsForScreen()
   dataReady.value = true
-  await getChangeLog();
 })
 
 const getChangeLog = async() => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/featDb/hoa/${hoaId.value}/getHoaHistory`, 'blueraven')
-    changeLog.value = cloneDeep(data)
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving HOA Change Log')
-    appStore.loading = false
+  showChangeLog.value = !showChangeLog.value
+  if(showChangeLog.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/featDb/hoa/${hoaId.value}/getHoaHistory`, 'blueraven')
+      changeLog.value = cloneDeep(data)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error retrieving HOA Change Log')
+      appStore.loading = false
+    }
   }
 }
 
@@ -270,7 +272,6 @@ const saveHoa = async() => {
     hoa.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "HOA saved")
-    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)

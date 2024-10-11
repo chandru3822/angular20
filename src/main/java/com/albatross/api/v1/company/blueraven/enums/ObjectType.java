@@ -9,7 +9,8 @@ public enum ObjectType {
   SUPPLIERS(26L, "feat_db_supplier_id", "feat_db_supplier_custom_field_value"),
   INCENTIVE(31L, "feat_db_incentive_id", "feat_db_incentive_custom_field_value"),
   COMMISSION_OVERRIDE(9L, "override_plan_id", "commission_override_custom_field_value"),
-  PROPOSAL(10L, "proposal_id", "proposal_custom_field_value");
+  PROPOSAL(10L, "proposal_id", "proposal_custom_field_value"),
+  AHJ_NEW_HOME(99L, "ahj_new_home_id", "feat_db_ahj_new_home_custom_field_value");
 
   public final Long id;
   public final String primaryKeyColumn;

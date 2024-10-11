@@ -127,7 +127,9 @@
       }
     </style>
       <#-- company specific styles  -->
-    <style> <@b.globalStyles styles=theme/></style>
+    <#if theme??>
+      <style> <@b.globalStyles styles=theme/></style>
+    </#if>
   </head>
   <body>
   <@b.builder blocks=template/>

@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.flow.model.ChildCompanyProcess;
 import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.processStep.ProcessStep;
@@ -27,8 +28,14 @@ public class ProcessController {
   private final ProcessService processService;
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CompanyProcess>> getProcessesForCompany(@RequestParam(required = false) Long contactId) {
-    return new ResponseEntity<>(processService.getProcessesForCompany(contactId), HttpStatus.OK);
+  public ResponseEntity<List<CompanyProcess>> getProcessesForCompany(@RequestParam(required = false) Long contactId,
+                                                                     @RequestParam(required = false) Boolean contactInitialize) {
+    return new ResponseEntity<>(processService.getProcessesForCompany(contactId, contactInitialize), HttpStatus.OK);
+  }
+
+  @GetMapping(value="/children/{companyProcessId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ChildCompanyProcess>> getChildProcessesForProcess(@PathVariable Long companyProcessId) {
+    return new ResponseEntity<>(processService.getChildProcessesForProcess(companyProcessId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)

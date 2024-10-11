@@ -29,10 +29,10 @@ public class ObjectTypeTabService {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
     Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
 
     if (null != projectId) {
       // had to change this so that a parent looking at a child project could still see project tabs
-      params.put("projectId", projectId);
       Optional<Long> overrideCompanyId =
           sqlCache.queryForObjectOptionalBySql(ProjectQuery.getCompanyId, params, Long.class);
       if (overrideCompanyId.isPresent()) {

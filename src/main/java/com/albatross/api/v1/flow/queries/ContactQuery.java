@@ -53,6 +53,8 @@ select c.id,
        c.owner_user_position_id,
        cot.owner_read_only,
        cot.owner_read_only_allow,
+       c.object_category_id,
+       oc.object_category,
        coalesce((
                     SELECT array_to_json(array_agg(row_to_json(wlp)))
                     FROM (
@@ -81,12 +83,15 @@ select c.id,
                         s.abbreviation as "stateAbbreviation",
                         ctr.country,
                         p.date_created as "dateCreated",
+                        p.object_category_id as "objectCategoryId",
+                        oc.object_category as "objectCategory",
                         p.company_project_status_type_id as "companyProjectStatusTypeId",
                         cpst.project_status_type_id as "projectStatusTypeId",
                         cpst.project_status_type as "projectStatusType",
                         pst.project_status_type as "rootProjectStatusType"
                       from flow.project p
                         inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+                        inner join flow.object_category oc on oc.id = p.object_category_id
                         inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
                         left join flow.company_state cs on cs.id = p.company_state_id
                         left join flow.state s on s.id = cs.state_id
@@ -94,6 +99,7 @@ select c.id,
                         left join flow.country ctr on ctr.id = cc.country_id
                      where p.contact_id = c.id
                      and p.archived is false
+                     and p.parent_id is null
                  ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
@@ -114,6 +120,7 @@ select c.id,
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id
              inner join flow.company comp on comp.id = c.company_id
+             inner join flow.object_category oc on oc.id = c.object_category_id
              inner join flow.company_object_type cot on cot.company_id = comp.id and cot.object_type_id = 2
              left outer join flow.company_state cs on cs.id = c.company_state_id
               left outer join flow.state s on s.id = cs.state_id
@@ -163,7 +170,8 @@ select c.id,
 
   //language=PostgreSQL
   public final static String updateContact = """
-    update flow.contact set
+    update flow.contact
+        set
            contact_type_id = :contactTypeId,
            first_name = trim(:firstName),
            last_name = trim(:lastName),
@@ -194,8 +202,17 @@ select c.id,
 
   //language=PostgreSQL
   public final static String insertContact = """
-insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, date_created, modified_by_id, date_modified, company_id, owner_user_position_id, latitude, longitude)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, trim(:postalCode), :companyCountryId, :phone, :email, :mobile, :createdById, now(), :createdById, now(), :companyId, :ownerUserPositionId, :latitude, :longitude)
+  insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code,
+                           company_country_id, phone, email, mobile, created_by_id, date_created, modified_by_id,
+                           date_modified, company_id, owner_user_position_id, latitude, longitude, object_category_id)
+  values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, trim(:postalCode),
+          :companyCountryId, :phone, :email, :mobile, :createdById, now(), :createdById, now(), :companyId,
+          :ownerUserPositionId, :latitude, :longitude, COALESCE(:objectCategoryId, (select id
+                                                                                    from flow.object_category
+                                                                                    where is_default is true
+                                                                                      and archived is false
+                                                                                      and object_type_id = 2
+                                                                                    limit 1)))
     """;
 
   //language=PostgreSQL

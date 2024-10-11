@@ -10,7 +10,7 @@
                   variant="text"
                   color="primary"
                   prepend-icon="history"
-                  @click="showChangeLog = !showChangeLog"
+                  @click="getChangeLog"
                   v-bind="attrs"
                   :activation-handler="{ ...tooltip, ...menu }">
                 </a-btn>
@@ -203,7 +203,6 @@ onMounted(async() => {
   //this is how it was before. don't hate
   await getAhjDesign()
   await getCustomFieldGroupAssignmentsForScreen()
-  await getChangeLog()
   dataReady.value = true
 })
 
@@ -228,7 +227,8 @@ const toggleMinimizeAll = () => {
 
 }
 const getChangeLog = async() => {
-  if (hasManageAccess) {
+  showChangeLog.value = !showChangeLog.value
+  if (hasManageAccess && showChangeLog.value) {
     appStore.loading = true
     try {
       const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/design/getAhjDesignHistory`, 'blueraven')
@@ -362,7 +362,6 @@ const updateAhjDesign = async() => {
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All designs in ' + ahjDesign.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All designs in ' + ahjDesign.value.metroArea + ' have been updated successfully' : 'Design updated successfully'
     appStore.showSnack('SUCCESS', successMessage)
-    await getChangeLog()
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)

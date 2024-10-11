@@ -181,7 +181,7 @@ public class CustomFieldValueService {
         userPositions = null;
       }
 
-      HashMap<String, Object> params = new HashMap<>();
+      Map<String, Object> params = new HashMap<>();
       params.put("objectTypeId", objectType.id);
       params.put("sourceId", id);
       //this is new and only required for attachments because we need to know the attachmentTypeId AND the attachmentId in order to load these values
@@ -210,6 +210,7 @@ public class CustomFieldValueService {
           });
         }
       } catch (Exception e) {
+        log.error("custom field group error", e);
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Field Group Data Error", e);
       }
 

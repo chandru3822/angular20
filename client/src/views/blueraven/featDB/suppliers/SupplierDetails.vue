@@ -26,7 +26,7 @@
                           variant="text"
                           color="primary"
                           prepend-icon="history"
-                          @click="showChangeLog = !showChangeLog"
+                          @click="getChangeLog"
                           v-bind="attrs"
                           :activation-handler="{ ...tooltip, ...menu }">
                         </a-btn>
@@ -171,20 +171,22 @@ onMounted(async() => {
 
   await getSupplier()
   await getCustomFieldGroupAssignmentsForScreen()
-  await getChangeLog()
   dataReady.value = true
 })
 
 const getChangeLog = async() => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/featDb/supplier/${supplierId.value}/getSupplierHistory`, 'blueraven')
-    changeLog.value = cloneDeep(data)
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Retrieving Supplier Change Log')
-    appStore.loading = false
+  showChangeLog.value = !showChangeLog.value
+  if(showChangeLog.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/featDb/supplier/${supplierId.value}/getSupplierHistory`, 'blueraven')
+      changeLog.value = cloneDeep(data)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Supplier Change Log')
+      appStore.loading = false
+    }
   }
 }
 const updateDirtyValue = (item) => {
@@ -270,7 +272,6 @@ const saveSupplier = async() => {
     supplier.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "Supplier saved")
-    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)

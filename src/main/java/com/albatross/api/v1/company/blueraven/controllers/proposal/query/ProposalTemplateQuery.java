@@ -2,52 +2,82 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal.query;
 
 public class ProposalTemplateQuery {
 
+  public final static String listTemplates = """
+select pt.id,
+       pt.template_name,
+       oc.id                                                            as object_category_id,
+       oc.object_category,
+       coalesce((select row_to_json(theme)
+                 from (select t.id,
+                              t.theme_name                                          as name,
+                              coalesce((select json_agg(json_build_object('id', ptv1.id, 'key', ptv1.theme_key))
+                                        from brs.proposal_theme_value ptv1
+                                        where ptv1.proposal_theme_id = t.id), '[]') as "themeClasses",
+                              coalesce((select json_object_agg(ptv2.theme_key, ptv2.theme_value)
+                                        from brs.proposal_theme_value ptv2
+                                        where ptv2.proposal_theme_id = t.id), '{}') as "themeStyle"
+                       from brs.proposal_theme t
+                       where t.id = pt.proposal_theme_id) theme), '{}') as theme,
+       pt.created_by_id,
+       pt.date_created,
+       pt.modified_by_id,
+       pt.date_modified
+from brs.proposal_template pt
+         left join brs.object_category_proposal_template ocpt on pt.id = ocpt.proposal_template_id
+         left join flow.object_category oc on ocpt.object_category_id = oc.id
+    """;
+
   //language=PostgreSQL
   public final static String findById = """
-    select pt.id,
-           pt.template_name,
-           coalesce((select row_to_json(theme)
-                     from (select t.id,
-                                  t.theme_name                                          as name,
-                                  coalesce((select json_agg(json_build_object('id', ptv1.id, 'key', ptv1.theme_key))
-                                            from brs.proposal_theme_value ptv1
-                                            where ptv1.proposal_theme_id = t.id), '[]') as "themeClasses",
-                                  coalesce((select json_object_agg(ptv2.theme_key, ptv2.theme_value)
-                                            from brs.proposal_theme_value ptv2
-                                            where ptv2.proposal_theme_id = t.id), '{}') as "themeStyle"
-                           from brs.proposal_theme t
-                           where t.id = pt.proposal_theme_id) theme), '{}')       as theme,
-           coalesce((select array_to_json(array_agg(row_to_json(blocks)))
-                     from (select ptb.id,
-                                  ptb.proposal_theme_value_id as "themeKeyId",
-                                  ptv.theme_key               as "themeKey",
-                                  ptbt.id                     as "blockTypeId",
-                                  ptbt.block_type             as "blockType",
-                                  ptb.block_name             as "blockName",
-                                  ptbk.id                     as "blockKindId",
-                                  ptbk.block_kind             as "blockKind",
-                                  ptb.block_style             as "blockStyle",
-                                  ptb.block_value             as "blockValue",
-                                  ptb.block_order             as "blockOrder",
-                                  ptb.version,
-                                  ptb.parent_id               as "parentId",
-                                  ptb.visibility,
-                                  ptb.block_uuid              as "blockUUID"
-                           from brs.proposal_template_block ptb
-                                    inner join brs.proposal_template_block_type ptbt
-                                               on ptb.proposal_template_block_type_id = ptbt.id
-                                    left join brs.proposal_theme_value ptv on ptb.proposal_theme_value_id = ptv.id
-                                    left join brs.proposal_template_block_kind ptbk
-                                              on ptb.proposal_template_block_kind_id = ptbk.id
-                           where ptb.proposal_template_id = pt.id
-                             and ptb.date_archived is null
-                           order by coalesce(ptb.parent_id, ptb.id), ptb.parent_id is not null, ptb.id) blocks), '[]') as blocks,
-           pt.created_by_id,
-           pt.date_created,
-           pt.modified_by_id,
-           pt.date_modified
-    from brs.proposal_template pt
-    where pt.id = :id
+       select pt.id,
+              pt.template_name,
+              oc.id                                                            as object_category_id,
+              oc.object_category,
+              coalesce((select row_to_json(theme)
+                        from (select t.id,
+                                     t.theme_name                                          as name,
+                                     coalesce((select json_agg(json_build_object('id', ptv1.id, 'key', ptv1.theme_key))
+                                               from brs.proposal_theme_value ptv1
+                                               where ptv1.proposal_theme_id = t.id), '[]') as "themeClasses",
+                                     coalesce((select json_object_agg(ptv2.theme_key, ptv2.theme_value)
+                                               from brs.proposal_theme_value ptv2
+                                               where ptv2.proposal_theme_id = t.id), '{}') as "themeStyle"
+                              from brs.proposal_theme t
+                              where t.id = pt.proposal_theme_id) theme), '{}') as theme,
+              coalesce((select array_to_json(array_agg(row_to_json(blocks)))
+                        from (select ptb.id,
+                                     ptb.proposal_theme_value_id as "themeKeyId",
+                                     ptv.theme_key               as "themeKey",
+                                     ptbt.id                     as "blockTypeId",
+                                     ptbt.block_type             as "blockType",
+                                     ptb.block_name              as "blockName",
+                                     ptbk.id                     as "blockKindId",
+                                     ptbk.block_kind             as "blockKind",
+                                     ptb.block_style             as "blockStyle",
+                                     ptb.block_value             as "blockValue",
+                                     ptb.block_order             as "blockOrder",
+                                     ptb.version,
+                                     ptb.parent_id               as "parentId",
+                                     ptb.visibility,
+                                     ptb.block_uuid              as "blockUUID"
+                              from brs.proposal_template_block ptb
+                                       inner join brs.proposal_template_block_type ptbt
+                                                  on ptb.proposal_template_block_type_id = ptbt.id
+                                       left join brs.proposal_theme_value ptv on ptb.proposal_theme_value_id = ptv.id
+                                       left join brs.proposal_template_block_kind ptbk
+                                                 on ptb.proposal_template_block_kind_id = ptbk.id
+                              where ptb.proposal_template_id = pt.id
+                                and ptb.date_archived is null
+                              order by coalesce(ptb.parent_id, ptb.id), ptb.parent_id is not null, ptb.id) blocks),
+                       '[]')                                                   as blocks,
+              pt.created_by_id,
+              pt.date_created,
+              pt.modified_by_id,
+              pt.date_modified
+       from brs.proposal_template pt
+                left join brs.object_category_proposal_template ocpt on pt.id = ocpt.proposal_template_id
+                left join flow.object_category oc on ocpt.object_category_id = oc.id
+       where pt.id = :id
     """;
 
   //language=PostgreSQL
@@ -77,69 +107,69 @@ public class ProposalTemplateQuery {
       and ptb.date_archived is null
     """;
 
-  public final static String findBlocksByParentId= """
-  select id from brs.proposal_template_block where parent_id = :parentId and proposal_template_id = :templateId
-""";
+  public final static String findBlocksByParentId = """
+      select id from brs.proposal_template_block where parent_id = :parentId and proposal_template_id = :templateId
+    """;
 
   public final static String insertBlock = """
-insert into brs.proposal_template_block(proposal_template_id, proposal_template_block_type_id, proposal_theme_value_id,
-                                        proposal_template_block_kind_id, block_style, block_name, block_value,
-                                        visibility, version, block_order, parent_id, block_uuid,
-                                        date_created, created_by_id,
-                                        date_modified, modified_by_id)
-values (:templateId, :blockTypeId, :themeValueId, :blockKindId, :blockStyle, :blockName, :blockValue, :visibility,
-        :version, :blockOrder, :parentId, :blockUuid, now(), :modifiedById, now(), :modifiedById)
-            """;
+    insert into brs.proposal_template_block(proposal_template_id, proposal_template_block_type_id, proposal_theme_value_id,
+                                            proposal_template_block_kind_id, block_style, block_name, block_value,
+                                            visibility, version, block_order, parent_id, block_uuid,
+                                            date_created, created_by_id,
+                                            date_modified, modified_by_id)
+    values (:templateId, :blockTypeId, :themeValueId, :blockKindId, :blockStyle, :blockName, :blockValue, :visibility,
+            :version, :blockOrder, :parentId, :blockUuid, now(), :modifiedById, now(), :modifiedById)
+    """;
 
   public final static String archiveBlock = """
-          update brs.proposal_template_block
-          set date_archived                   = now(),
-              modified_by_id                  = :modifiedById
-          where proposal_template_id = :templateId
-                and id = :id
-          """;
+    update brs.proposal_template_block
+    set date_archived                   = now(),
+        modified_by_id                  = :modifiedById
+    where proposal_template_id = :templateId
+          and id = :id
+    """;
 
   //language=PostgreSQL
   public final static String updateBlocks = """
-update brs.proposal_template_block
-set proposal_theme_value_id         = :themeValueId,
-    proposal_template_block_type_id = :blockTypeId,
-    proposal_template_block_kind_id = :blockKindId,
-    block_style                     = :blockStyle,
-    block_name                      = :blockName,
-    block_value                     = :blockValue,
-    block_order                     = :blockOrder,
-    parent_id                       = :parentId,
-    visibility                      = :visibility,
-    version                         = version + 1,
-    date_modified                   = now(),
-    modified_by_id                  = :modifiedById
-where id = :id
-  and proposal_template_id = :templateId
-  and version = :version
+    update brs.proposal_template_block
+    set proposal_theme_value_id         = :themeValueId,
+        proposal_template_block_type_id = :blockTypeId,
+        proposal_template_block_kind_id = :blockKindId,
+        block_style                     = :blockStyle,
+        block_name                      = :blockName,
+        block_value                     = :blockValue,
+        block_order                     = :blockOrder,
+        parent_id                       = :parentId,
+        visibility                      = :visibility,
+        version                         = version + 1,
+        date_modified                   = now(),
+        modified_by_id                  = :modifiedById
+    where id = :id
+      and proposal_template_id = :templateId
+      and version = :version
     """;
 
   //language=PostgreSQL
   public final static String availableTags = """
-SELECT
-    a.attname::text                                  AS tag_name,
-     pg_catalog.format_type(a.atttypid, a.atttypmod) AS tag_type
-FROM pg_catalog.pg_attribute a
-         INNER JOIN pg_catalog.pg_type t
-                    ON a.attrelid = t.typrelid
-         INNER jOIN pg_catalog.pg_namespace n
-                    ON n.oid = t.typnamespace
-where pg_catalog.format_type(t.oid, NULL) = 'brs.calculated_proposal_value'
-except
-SELECT
-    a.attname::text                                  AS tag_name,
-     pg_catalog.format_type(a.atttypid, a.atttypmod) AS tag_type
-FROM pg_catalog.pg_attribute a
-         INNER JOIN pg_catalog.pg_type t
-                    ON a.attrelid = t.typrelid
-         INNER jOIN pg_catalog.pg_namespace n
-                    ON n.oid = t.typnamespace
-where pg_catalog.format_type(t.oid, NULL) = 'brs.excluded_proposal_value'
-order by 1
+    SELECT
+        a.attname::text                                  AS tag_name,
+         pg_catalog.format_type(a.atttypid, a.atttypmod) AS tag_type
+    FROM pg_catalog.pg_attribute a
+             INNER JOIN pg_catalog.pg_type t
+                        ON a.attrelid = t.typrelid
+             INNER jOIN pg_catalog.pg_namespace n
+                        ON n.oid = t.typnamespace
+    where pg_catalog.format_type(t.oid, NULL) = 'brs.calculated_proposal_value'
+    except
+    SELECT
+        a.attname::text                                  AS tag_name,
+         pg_catalog.format_type(a.atttypid, a.atttypmod) AS tag_type
+    FROM pg_catalog.pg_attribute a
+             INNER JOIN pg_catalog.pg_type t
+                        ON a.attrelid = t.typrelid
+             INNER jOIN pg_catalog.pg_namespace n
+                        ON n.oid = t.typnamespace
+    where pg_catalog.format_type(t.oid, NULL) = 'brs.excluded_proposal_value'
+    order by 1
     """;
 }

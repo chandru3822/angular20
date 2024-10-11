@@ -4,7 +4,8 @@ import cloneDeep from 'lodash.clonedeep'
 import {
   getRequest,
   getRequestWithParams,
-  postRequest
+  postRequest,
+  deleteRequest
 } from '@/helpers/helpers.js'
 
 const removedUndefined = (object) => {
@@ -40,10 +41,13 @@ const blocksToJson = (blocks = []) => {
 }
 
 export default defineStore('proposalStore', () => {
+  const templates = ref([])
+
   //a copy of the original
   const _template = ref([])
   const template = ref([])
   const theme = ref({})
+  const currentTemplate = ref(undefined)
   const selectedId = ref(undefined)
   const tags = ref([])
   const loading = ref(false)
@@ -63,7 +67,6 @@ export default defineStore('proposalStore', () => {
   const done = ref([])
   const undone = ref([])
   const newMutation = ref(true)
-
   const canRedo = computed(() => undone.value.length > 0)
   const canUndo = computed(() => done.value.length > 0)
 
@@ -230,11 +233,21 @@ export default defineStore('proposalStore', () => {
     }
   }
 
+  const loadTemplates = async () => {
+    const { data } = await getRequest('/proposal/template', 'blueraven')
+    if (data) {
+      templates.value = data
+      currentTemplate.value = data[0]
+    }
+  }
+
   const fetchTemplate = async () => {
     try {
+      const templateId = currentTemplate.value?.id ?? 1
+
       loading.value = true
       const { data } = await getRequestWithParams(
-        `/proposal/template/1`,
+        `/proposal/template/${templateId}`,
         {},
         'blueraven',
         {}
@@ -293,9 +306,11 @@ export default defineStore('proposalStore', () => {
 
   const saveTemplate = async () => {
     try {
+      const templateId = currentTemplate.value.id
+
       if (modifiedBlocks.value.length > 0) {
         const { data } = await postRequest(
-          `/proposal/template/1/blocks`,
+          `/proposal/template/${templateId}/blocks`,
           { blocks: modifiedBlocks.value },
           'blueraven'
         )
@@ -340,8 +355,10 @@ export default defineStore('proposalStore', () => {
 
   const deleteSelectedBlock = async () => {
     try {
-      const { data } = await postRequest(
-        `/proposal/template/1/archiveBlock/${selectedId.value}`,
+      const templateId = currentTemplate.value.id
+
+      const { data } = await deleteRequest(
+        `/proposal/template/${templateId}/blocks/${selectedId.value}`,
         {},
         'blueraven'
       )
@@ -415,6 +432,9 @@ export default defineStore('proposalStore', () => {
     redo,
     canRedo,
     canUndo,
-    loadingErrorMessage
+    loadingErrorMessage,
+    templates,
+    loadTemplates,
+    currentTemplate
   }
 })

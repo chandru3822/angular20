@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.convert.JsonObjectDeserializer;
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.CustomFieldGroupController;
@@ -16,12 +18,10 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Created by randanunn on 2019-05-20. !Describe Purpose!
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,12 +30,13 @@ public class CustomFieldGroupService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final CustomFieldValueService customFieldValueService;
+  private final SqlArrayService sqlArrayService;
   private final ObjectMapper om;
 
   public CustomField addFieldToGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("customFieldGroupId", customField.getCustomFieldGroupId());
     params.put("defaultFieldId", customField.getDefaultFieldId());
     params.put("customFieldId", customField.getId());
@@ -64,7 +65,7 @@ public class CustomFieldGroupService {
   public CustomField moveFieldToOtherGroup(CustomField customField, Long newGroupId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", customField.getCustomFieldGroupAssignmentId());
     params.put("newGroupId", newGroupId);
     params.put("modifiedById", currentUser.trueUserId());
@@ -75,28 +76,28 @@ public class CustomFieldGroupService {
   }
 
   public CustomField getDataViewCustomField(Long cfgaId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("cfgaId", cfgaId);
     Optional<CustomField> result = sqlCache.getBySql(CustomFieldGroupAssignmentQuery.getDataViewField, params, CustomField.class);
     return result.orElse(null);
   }
 
   public CustomField getDataViewChildCustomField(Long cfgaId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("cfgaId", cfgaId);
     Optional<CustomField> result = sqlCache.getBySql(CustomFieldGroupAssignmentQuery.getDataViewChildField, params, CustomField.class);
     return result.orElse(null);
   }
 
   public CustomField getDefaultCustomField(Long cfgaId) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("cfgaId", cfgaId);
     Optional<CustomField> result = sqlCache.getBySql(CustomFieldGroupAssignmentQuery.getDefaultField, params, CustomField.class);
     return result.orElse(null);
   }
 
   public CustomField getCustomField(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     Optional<CustomField> result =
       sqlCache.getBySql(CustomFieldGroupAssignmentQuery.getCustomField, params, CustomField.class);
@@ -106,7 +107,7 @@ public class CustomFieldGroupService {
   public void deleteAllFieldsInGroup(Long id) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
 
@@ -116,7 +117,7 @@ public class CustomFieldGroupService {
   public void deleteFieldFromGroup(Long id) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
 
@@ -126,7 +127,7 @@ public class CustomFieldGroupService {
   public void deleteGroup(Long id) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
 
@@ -136,7 +137,7 @@ public class CustomFieldGroupService {
   public void saveUseParentData(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.trueUserId());
     params.put("useParentData", customField.getUseParentData());
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
@@ -147,7 +148,7 @@ public class CustomFieldGroupService {
   public void saveDetailView(Long cfgaId, Boolean detailView) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.getId());
     params.put("detailView", detailView);
     params.put("cfgaId", cfgaId);
@@ -158,7 +159,7 @@ public class CustomFieldGroupService {
   public void saveDisplayOnSnippet(Long cfgaId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.getId());
     params.put("cfgaId", cfgaId);
 
@@ -173,7 +174,7 @@ public class CustomFieldGroupService {
     Long whiteListTypeId) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
@@ -224,7 +225,7 @@ public class CustomFieldGroupService {
   public void updateFieldInGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("id", customField.getCustomFieldGroupAssignmentId());
     params.put("modifiedById", currentUser.trueUserId());
     params.put("fieldOrder", customField.getFieldOrder());
@@ -321,35 +322,51 @@ public class CustomFieldGroupService {
 
   public CustomFieldGroup addCustomFieldGroup(
     CustomFieldGroup customFieldGroup, Long companyObjectTypeId) {
-    User user = securityService.getCurrentUser();
 
+    String sqlQuery = CustomFieldGroupQuery.insertCustomFieldGroup;
     Map<String, Object> params = new HashMap<>();
-    params.put("groupName", customFieldGroup.getGroupName());
-    params.put("companyObjectTypeId", companyObjectTypeId);
-    params.put("eventId", customFieldGroup.getEventId());
-    params.put("attachmentTypeId", customFieldGroup.getAttachmentTypeId());
-    params.put("processStepAttachmentTypeId", customFieldGroup.getProcessStepAttachmentTypeId());
-    params.put("userAttachmentTypeId", customFieldGroup.getUserAttachmentTypeId());
-    params.put("projectAttachmentTypeId", customFieldGroup.getProjectAttachmentTypeId());
-    params.put("contactAttachmentTypeId", customFieldGroup.getContactAttachmentTypeId());
-    params.put("orgAttachmentTypeId", customFieldGroup.getOrgAttachmentTypeId());
-    params.put("eventAttachmentTypeId", customFieldGroup.getEventAttachmentTypeId());
-    params.put("processStepId", customFieldGroup.getProcessStepId());
-    params.put("createdById", user.trueUserId());
 
-    Long id =
-      sqlCache
-        .updateBySqlReturningId(CustomFieldGroupQuery.insertCustomFieldGroup, params, "id")
-        .longValue();
-    params.put("id", id);
+    try {
+      if (customFieldGroup.getObjectCategoryIds() == null || customFieldGroup.getObjectCategoryIds().isEmpty()) {
+        if(customFieldGroup.getCompanyObjectTypeId() != null) {
+          validateCategoryIdRequirements(customFieldGroup.getCompanyObjectTypeId(), null);
+        }
+      } else {
+        params.put("objectCategoryIds", sqlArrayService.createSqlArrayOfType("int", customFieldGroup.getObjectCategoryIds()));
+        sqlQuery = CustomFieldGroupQuery.insertCustomFieldGroupWithCategories;
+      }
 
-    Optional<CustomFieldGroup> group =
-      sqlCache.getBySql(
-        CustomFieldGroupAssignmentQuery.getOne,
-        params,
-        new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
-    return group.orElse(null);
+      User user = securityService.getCurrentUser();
+
+      params.put("groupName", customFieldGroup.getGroupName());
+      params.put("companyObjectTypeId", companyObjectTypeId);
+      params.put("eventId", customFieldGroup.getEventId());
+      params.put("attachmentTypeId", customFieldGroup.getAttachmentTypeId());
+      params.put("processStepAttachmentTypeId", customFieldGroup.getProcessStepAttachmentTypeId());
+      params.put("userAttachmentTypeId", customFieldGroup.getUserAttachmentTypeId());
+      params.put("projectAttachmentTypeId", customFieldGroup.getProjectAttachmentTypeId());
+      params.put("contactAttachmentTypeId", customFieldGroup.getContactAttachmentTypeId());
+      params.put("orgAttachmentTypeId", customFieldGroup.getOrgAttachmentTypeId());
+      params.put("eventAttachmentTypeId", customFieldGroup.getEventAttachmentTypeId());
+      params.put("processStepId", customFieldGroup.getProcessStepId());
+      params.put("createdById", user.trueUserId());
+
+
+      Long id =
+        sqlCache
+          .queryForObjectBySql(sqlQuery, params, Long.class);
+
+      Optional<CustomFieldGroup> group =
+        sqlCache.getBySql(
+          CustomFieldGroupAssignmentQuery.getOne,
+          Map.of("id", id),
+          new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+      return group.orElse(null);
+    } catch (SQLException ex) {
+      throw new ApiException(ex);
+    }
   }
 
   public CustomFieldGroup addProcessStepCustomFieldGroup(CustomFieldGroup customFieldGroup) {
@@ -361,25 +378,25 @@ public class CustomFieldGroupService {
     Long companyObjectTypeId =
       sqlCache.queryForObjectBySql(CustomFieldGroupQuery.getCompanyObjectTypeId, params, Long.class);
 
-      return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
   }
 
   public CustomFieldGroup addEventCustomFieldGroup(CustomFieldGroup customFieldGroup) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("objectTypeId", ObjectType.EVENT.id);
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId =
       sqlCache.queryForObjectBySql(CustomFieldGroupQuery.getCompanyObjectTypeId, params, Long.class);
 
-      return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
   }
 
   public CustomFieldGroup addAttachmentCustomFieldGroup(CustomFieldGroup customFieldGroup) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("objectTypeId", ObjectType.ATTACHMENT_TYPE.id);
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId = sqlCache.queryForObjectBySql(CustomFieldGroupQuery.getCompanyObjectTypeId, params, Long.class);
@@ -390,7 +407,7 @@ public class CustomFieldGroupService {
   public CustomFieldGroup addProcessStepAttachmentCustomFieldGroup(CustomFieldGroup customFieldGroup) {
     User currentUser = securityService.getCurrentUser();
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("objectTypeId", ObjectType.ATTACHMENT_TYPE.id);
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId =
@@ -437,8 +454,31 @@ public class CustomFieldGroupService {
     }
   }
 
+  public void validateCategoryIdRequirements(Long companyObjectTypeId, Long cfgId) {
+
+    Long objectTypeId;
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyObjectTypeId", companyObjectTypeId);
+    params.put("cfgId", cfgId);
+
+    if(companyObjectTypeId != null) {
+      objectTypeId = sqlCache.queryForObjectBySql(CustomFieldGroupQuery.getObjectTypeByCompanyObjectId, params, Long.class);
+    } else if (cfgId != null) {
+      objectTypeId = sqlCache.queryForObjectBySql(CustomFieldGroupQuery.getObjectTypeIdForCfg, params, Long.class);
+    } else {
+      objectTypeId = null;
+    }
+
+    long[] array = {ObjectType.PROJECT.id, ObjectType.CONTACT.id};
+    if (objectTypeId != null && Arrays.stream(array).anyMatch(x -> x == objectTypeId)) {
+      throw new ApiException("At least one object category is required");
+    }
+
+  }
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {
     User user = securityService.getCurrentUser();
+
+    try {
 
     Map<String, Object> params = new HashMap<>();
     params.put("id", customFieldGroup.getId());
@@ -446,29 +486,39 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeTabId", customFieldGroup.getCompanyObjectTypeTabId());
     params.put("modifiedById", user.trueUserId());
-	params.put("companyProcessStepStatusTypeIds", (customFieldGroup.getCompanyProcessStepStatusTypeIds() == null || customFieldGroup.getCompanyProcessStepStatusTypeIds().isEmpty()) ?
-		List.of() :
-		customFieldGroup.getCompanyProcessStepStatusTypeIds()
-	);
+    params.put("companyProcessStepStatusTypeIds", (customFieldGroup.getCompanyProcessStepStatusTypeIds() == null || customFieldGroup.getCompanyProcessStepStatusTypeIds().isEmpty()) ?
+      List.of() :
+      customFieldGroup.getCompanyProcessStepStatusTypeIds()
+    );
 
-	params.put("companyEventStatusTypeIds", (customFieldGroup.getCompanyEventStatusTypeIds() == null || customFieldGroup.getCompanyEventStatusTypeIds().isEmpty()) ?
-		List.of() :
-		customFieldGroup.getCompanyEventStatusTypeIds()
-	);
+    params.put("companyEventStatusTypeIds", (customFieldGroup.getCompanyEventStatusTypeIds() == null || customFieldGroup.getCompanyEventStatusTypeIds().isEmpty()) ?
+      List.of() :
+      customFieldGroup.getCompanyEventStatusTypeIds()
+    );
 
-	params.put("processStepStatusTypeIds", (customFieldGroup.getProcessStepStatusTypeIds() == null || customFieldGroup.getProcessStepStatusTypeIds().isEmpty()) ?
-		List.of() :
-		customFieldGroup.getProcessStepStatusTypeIds()
-	);
+    params.put("processStepStatusTypeIds", (customFieldGroup.getProcessStepStatusTypeIds() == null || customFieldGroup.getProcessStepStatusTypeIds().isEmpty()) ?
+      List.of() :
+      customFieldGroup.getProcessStepStatusTypeIds()
+    );
 
-	params.put("eventStatusTypeIds", (customFieldGroup.getEventStatusTypeIds() == null || customFieldGroup.getEventStatusTypeIds().isEmpty()) ?
-		List.of() :
-		customFieldGroup.getEventStatusTypeIds()
-	);
-	params.put("psCollapseByDefault", customFieldGroup.getPsCollapseByDefault());
-	params.put("eventCollapseByDefault", customFieldGroup.getEventCollapseByDefault());
+    params.put("eventStatusTypeIds", (customFieldGroup.getEventStatusTypeIds() == null || customFieldGroup.getEventStatusTypeIds().isEmpty()) ?
+      List.of() :
+      customFieldGroup.getEventStatusTypeIds()
+    );
+    params.put("psCollapseByDefault", customFieldGroup.getPsCollapseByDefault());
+    params.put("eventCollapseByDefault", customFieldGroup.getEventCollapseByDefault());
+    params.put("objectCategoryIds", sqlArrayService.createSqlArrayOfType("int", customFieldGroup.getObjectCategoryIds()));
 
-    sqlCache.updateBySql(CustomFieldGroupQuery.updateCustomFieldGroup, params);
+    String sqlQuery = CustomFieldGroupQuery.updateCustomFieldGroup;
+
+    if (customFieldGroup.getObjectCategoryIds() == null || customFieldGroup.getObjectCategoryIds().isEmpty()) {
+      validateCategoryIdRequirements(null, customFieldGroup.getId());
+    } else {
+      params.put("objectCategoryIds", sqlArrayService.createSqlArrayOfType("int", customFieldGroup.getObjectCategoryIds()));
+      sqlQuery = CustomFieldGroupQuery.updateCustomFieldGroupWithCategories;
+    }
+
+    sqlCache.updateBySql(sqlQuery, params);
 
     return sqlCache
       .getBySql(
@@ -476,6 +526,9 @@ public class CustomFieldGroupService {
         params,
         new CustomFieldGroupMapper<>(CustomFieldGroup.class, om))
       .orElse(null);
+    } catch (SQLException ex) {
+      throw new ApiException(ex);
+    }
   }
 
   public void updateCustomFieldGroups(List<CustomFieldGroup> customFieldGroups) {
@@ -487,7 +540,7 @@ public class CustomFieldGroupService {
   public List<CustomFieldGroup> getInsertFieldsByType(Long companyId, Long objectTypeId) {
     User user = securityService.getCurrentUser();
     Long realCompanyId = null != companyId ? companyId : user.getCompanyId();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", realCompanyId);
     params.put("objectTypeId", objectTypeId);
 
@@ -505,29 +558,28 @@ public class CustomFieldGroupService {
     return results;
   }
 
-    public List<CustomFieldValue> getCustomFieldsByCfgaIds(List<Long> cfgaIds) {
-        User user = securityService.getCurrentUser();
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("companyId", user.getCompanyId());
-        params.put("cfgaIds", cfgaIds);
+  public List<CustomFieldValue> getCustomFieldsByCfgaIds(List<Long> cfgaIds) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("cfgaIds", cfgaIds);
 
+    List<CustomFieldValue> results =
+      sqlCache.queryBySql(
+        CustomFieldGroupQuery.getCustomFieldsByCfgaIds,
+        params,
+        new CustomFieldValueService.CustomFieldValueMapper<>(CustomFieldValue.class, om));
 
-        List<CustomFieldValue> results =
-                sqlCache.queryBySql(
-                        CustomFieldGroupQuery.getCustomFieldsByCfgaIds,
-                        params,
-                        new CustomFieldValueService.CustomFieldValueMapper<>(CustomFieldValue.class, om));
-
-        for(CustomFieldValue field : results) {
-            customFieldValueService.handleCustomListValueForCfv(field, null, null, null, null);
-        }
-
-        return results;
+    for (CustomFieldValue field : results) {
+      customFieldValueService.handleCustomListValueForCfv(field, null, null, null, null);
     }
+
+    return results;
+  }
 
   public void updateFieldShowOrRequire(CustomField customField) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("customFieldGroupAssignmentId", customField.getCustomFieldGroupAssignmentId());
     params.put("modifiedById", user.trueUserId());
     params.put(
@@ -567,52 +619,45 @@ public class CustomFieldGroupService {
         "customFieldValues",
         new JsonCollectionDeserializer(customFieldValueRef, objectMapper));
 
-		TypeReference<List<Long>> companyProcessStepStatusTypeIdsRef = new TypeReference<>() {};
-		bw.registerCustomEditor(
-			List.class,
-			"companyProcessStepStatusTypeIds",
-			new JsonCollectionDeserializer(companyProcessStepStatusTypeIdsRef, objectMapper)
-		);
-
-		TypeReference<List<Long>> companyEventStatusTypeIdsRef = new TypeReference<>() {};
-		bw.registerCustomEditor(
-			List.class,
-			"companyEventStatusTypeIds",
-			new JsonCollectionDeserializer(companyEventStatusTypeIdsRef, objectMapper)
-		);
-
-		TypeReference<List<Long>> processStepStatusTypeIdsRef = new TypeReference<>() {};
-		bw.registerCustomEditor(
-			List.class,
-			"processStepStatusTypeIds",
-			new JsonCollectionDeserializer(processStepStatusTypeIdsRef, objectMapper)
-		);
-
-		TypeReference<List<Long>> eventStatusTypeIdsRef = new TypeReference<>() {};
-		bw.registerCustomEditor(
-			List.class,
-			"eventStatusTypeIds",
-			new JsonCollectionDeserializer(eventStatusTypeIdsRef, objectMapper)
-		);
-    }
-  }
-
-  public static class ScheduleFieldTypeMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
-
-    public ScheduleFieldTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass);
-      this.objectMapper = objectMapper;
-    }
-
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<CustomField>> availableCustomFieldTypeRef = new TypeReference<>() {
+      TypeReference<List<Long>> companyProcessStepStatusTypeIdsRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(
         List.class,
-        "availableCustomFields",
-        new JsonCollectionDeserializer(availableCustomFieldTypeRef, objectMapper));
+        "companyProcessStepStatusTypeIds",
+        new JsonCollectionDeserializer(companyProcessStepStatusTypeIdsRef, objectMapper)
+      );
+
+      TypeReference<List<Long>> companyEventStatusTypeIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class,
+        "companyEventStatusTypeIds",
+        new JsonCollectionDeserializer(companyEventStatusTypeIdsRef, objectMapper)
+      );
+
+      TypeReference<List<Long>> processStepStatusTypeIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class,
+        "processStepStatusTypeIds",
+        new JsonCollectionDeserializer(processStepStatusTypeIdsRef, objectMapper)
+      );
+
+      TypeReference<List<Long>> eventStatusTypeIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class,
+        "eventStatusTypeIds",
+        new JsonCollectionDeserializer(eventStatusTypeIdsRef, objectMapper)
+      );
+
+      TypeReference<List<Long>> objectCategoryIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class,
+        "objectCategoryIds",
+        new JsonObjectDeserializer<>(objectCategoryIdsRef, objectMapper)
+      );
     }
   }
 }

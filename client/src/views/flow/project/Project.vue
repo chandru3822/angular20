@@ -1,11 +1,13 @@
 <template>
   <div id="project-container">
     <!--    modal for editing project fields -->
-    <ConfirmationDialog v-if="showEditProjectModal"
-                        :open-dialog="showEditProjectModal"
-                        @confirm="validateForm()"
-                        parent-close
-                        @close-dialog="showEditProjectModal = false">
+    <ConfirmationDialog
+      v-if="showEditProjectModal"
+      :open-dialog="showEditProjectModal"
+      @confirm="validateForm()"
+      parent-close
+      @close-dialog="showEditProjectModal = false"
+    >
       <template v-slot:title>Project Overview</template>
       <v-form ref="projectEditForm">
         <div>
@@ -13,311 +15,477 @@
             Please enter a valid project address.
           </div>
           <div class="error-text" v-else-if="!stateIsActive()">
-            Project address is in a non-active state. Please update project address to an active state.
+            Project address is in a non-active state. Please update project
+            address to an active state.
           </div>
           <a-text-field
-              v-model="tempProject.projectName"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              label="Project Name"
-              @change="[projectNameChanged = true, tempFirstName = tempProject.projectName.slice(0,tempProject.projectName.trim().lastIndexOf(' ')).trim(), tempLastName = tempProject.projectName.slice(tempProject.projectName.trim().lastIndexOf(' ')).trim()]"
+            v-model="tempProject.projectName"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            label="Project Name"
+            @change="
+              [
+                (projectNameChanged = true),
+                (tempFirstName = tempProject.projectName
+                  .slice(0, tempProject.projectName.trim().lastIndexOf(' '))
+                  .trim()),
+                (tempLastName = tempProject.projectName
+                  .slice(tempProject.projectName.trim().lastIndexOf(' '))
+                  .trim())
+              ]
+            "
           />
-<!--          in tempFirstName and tempLastName ^^ first trim for making sure the last space isn't at the end of the string, and the second one is to get rid of any spaces after splicing -->
+          <!--          in tempFirstName and tempLastName ^^ first trim for making sure the last space isn't at the end of the string, and the second one is to get rid of any spaces after splicing -->
           <a-text-field
-              v-model="tempProject.street1"
-              label="Street"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              counter
-              :maxlength="100"
-              @change="tempProject.reloadCoordinates = true"
+            v-model="tempProject.street1"
+            label="Street"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            counter
+            :maxlength="100"
+            @change="tempProject.reloadCoordinates = true"
           />
           <a-text-field
-              v-model="tempProject.city"
-              label="City"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              @change="tempProject.reloadCoordinates = true"
+            v-model="tempProject.city"
+            label="City"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            @change="tempProject.reloadCoordinates = true"
           />
           <a-text-field
-              type="text"
-              v-model="tempProject.postalCode"
-              counter
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              :maxlength="10"
-              :rules="postalCodeRules"
-              @change="tempProject.reloadCoordinates = true"
-              label="Postal Code"
+            type="text"
+            v-model="tempProject.postalCode"
+            counter
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            :maxlength="10"
+            :rules="postalCodeRules"
+            @change="tempProject.reloadCoordinates = true"
+            label="Postal Code"
           />
-          <div v-if="tempProject.companyStateId && !stateIsActive() && !editState">
+          <div
+            v-if="tempProject.companyStateId && !stateIsActive() && !editState"
+          >
             <a-text-field
-                type="text"
-                v-model="tempProject.state"
-                :readonly="true"
-                :disabled="true"
-                label="State"
-                hide-details
+              type="text"
+              v-model="tempProject.state"
+              :readonly="true"
+              :disabled="true"
+              label="State"
+              hide-details
             />
-            <a class="edit-state-link" @click="editState = true">Click here to edit state</a>
+            <a class="edit-state-link" @click="editState = true"
+              >Click here to edit state</a
+            >
           </div>
-          <a-autocomplete v-else
-                          v-model="tempProject.companyStateId"
-                          :items="states"
-                          label="State"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          :loading="statesLoading"
-                          item-title="state"
-                          item-value="id"
-                          @input="tempProject.reloadCoordinates = true"
+          <a-autocomplete
+            v-else
+            v-model="tempProject.companyStateId"
+            :items="states"
+            label="State"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            :loading="statesLoading"
+            item-title="state"
+            item-value="id"
+            @input="tempProject.reloadCoordinates = true"
           />
-          <a-select v-model="tempProject.companyCountryId"
-                    :items="countries"
-                    label="Country"
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    :loading="countriesLoading"
-                    @input="tempProject.reloadCoordinates = true"
-                    item-title="country"
-                    item-value="id"
+          <a-select
+            v-model="tempProject.companyCountryId"
+            :items="countries"
+            label="Country"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            :loading="countriesLoading"
+            @input="tempProject.reloadCoordinates = true"
+            item-title="country"
+            item-value="id"
           />
         </div>
-        <a-autocomplete v-model="tempProject.owner"
-                        :readonly="projectOwnerFieldIsReadOnly()"
-                        :disabled="projectOwnerFieldIsReadOnly()"
-                        :items="availableOwners"
-                        :loading="ownersLoading"
-                        label="Project Owner"
-                        clearable
-                        item-title="fullName"
-                        return-object
-                        autocomplete="off"/>
-        <a-autocomplete v-model="tempProject.companyProjectStatusTypeId"
-                        :items="statuses"
-                        :readonly="projectStatusIsReadOnly()"
-                        :disabled="projectStatusIsReadOnly()"
-                        :loading="statusesLoading"
-                        label="Project Stage"
-                        item-title="projectStatusType"
-                        item-value="id"
+        <a-autocomplete
+          v-model="tempProject.owner"
+          :readonly="projectOwnerFieldIsReadOnly()"
+          :disabled="projectOwnerFieldIsReadOnly()"
+          :items="availableOwners"
+          :loading="ownersLoading"
+          label="Project Owner"
+          clearable
+          item-title="fullName"
+          return-object
+          autocomplete="off"
+        />
+        <a-autocomplete
+          v-model="tempProject.companyProjectStatusTypeId"
+          :items="statuses"
+          :readonly="projectStatusIsReadOnly()"
+          :disabled="projectStatusIsReadOnly()"
+          :loading="statusesLoading"
+          label="Project Stage"
+          item-title="projectStatusType"
+          item-value="id"
         />
       </v-form>
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
     <!--    modal to prompt contact address update -->
-    <ConfirmationDialog v-if="projectContact && contactLoading === false"  :open-dialog="!showEditProjectModal && (projectAddressChanged || projectNameChanged)" :disable-confirm="!updateContactNameSelected && !updateContactAddressSelected"
-                        @cancel="[projectAddressChanged = false, projectNameChanged=false, updateContactAddressSelected=true, updateContactNameSelected=true]" @confirm="updateContactInfo"
+    <ConfirmationDialog
+      v-if="projectContact && contactLoading === false"
+      :open-dialog="
+        !showEditProjectModal && (projectAddressChanged || projectNameChanged)
+      "
+      :disable-confirm="
+        !updateContactNameSelected && !updateContactAddressSelected
+      "
+      @cancel="
+        [
+          (projectAddressChanged = false),
+          (projectNameChanged = false),
+          (updateContactAddressSelected = true),
+          (updateContactNameSelected = true)
+        ]
+      "
+      @confirm="updateContactInfo"
     >
       <template v-slot:title>Update Contact Information</template>
-      <span v-html="updateContactDialogText"/>
+      <span v-html="updateContactDialogText" />
       <v-row v-if="projectNameChanged">
         <v-col cols="5">
           <span class="label-medium">Current Contact Name</span>
-          <div
-              class="body-medium text-wrap">
+          <div class="body-medium text-wrap">
             <span class="label-small">First Name:</span>
-            <div> {{ projectContact.firstName}}</div>
+            <div>{{ projectContact.firstName }}</div>
             <span class="label-small">Last Name:</span>
-            <div> {{ projectContact.lastName}}</div>
+            <div>{{ projectContact.lastName }}</div>
           </div>
         </v-col>
         <v-col :cols="projectAddressChanged ? 5 : 6">
           <span class="label-medium">New Contact Name</span>
-          <div
-              class="body-medium text-wrap">
-            <a-text-field v-model="tempFirstName" label="First Name" :disabled="!updateContactNameSelected"></a-text-field>
-            <a-text-field v-model="tempLastName" label="Last Name" :disabled="!updateContactNameSelected"></a-text-field>
+          <div class="body-medium text-wrap">
+            <a-text-field
+              v-model="tempFirstName"
+              label="First Name"
+              :disabled="!updateContactNameSelected"
+            ></a-text-field>
+            <a-text-field
+              v-model="tempLastName"
+              label="Last Name"
+              :disabled="!updateContactNameSelected"
+            ></a-text-field>
           </div>
         </v-col>
-        <v-col col="1" v-if="projectAddressChanged" ><v-checkbox v-model="updateContactNameSelected"/></v-col>
+        <v-col col="1" v-if="projectAddressChanged"
+          ><v-checkbox v-model="updateContactNameSelected"
+        /></v-col>
       </v-row>
       <v-row v-if="projectAddressChanged">
         <v-col cols="5">
           <span class="label-medium">Current Contact Address</span>
           <div
-              v-if="projectContact && (projectContact.street1 || projectContact.city || projectContact.state || projectContact.postalCode)"
-              class="body-medium text-wrap">
+            v-if="
+              projectContact &&
+              (projectContact.street1 ||
+                projectContact.city ||
+                projectContact.state ||
+                projectContact.postalCode)
+            "
+            class="body-medium text-wrap"
+          >
             <div>{{ projectContact.street1 }}</div>
-            <div>{{ projectContact.city }}, {{ projectContact.state }} {{ projectContact.postalCode }}</div>
+            <div>
+              {{ projectContact.city }}, {{ projectContact.state }}
+              {{ projectContact.postalCode }}
+            </div>
           </div>
         </v-col>
         <v-col :cols="projectNameChanged ? 5 : 6">
           <span class="label-medium">New Address</span>
-        <div
-            v-if="project && (project.street1 || project.city || project.state || project.postalCode)"
-            class="body-medium text-wrap">
-          <span>{{ project.street1 }}</span><br/>
-          <span>{{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
-        </div>
+          <div
+            v-if="
+              project &&
+              (project.street1 ||
+                project.city ||
+                project.state ||
+                project.postalCode)
+            "
+            class="body-medium text-wrap"
+          >
+            <span>{{ project.street1 }}</span
+            ><br />
+            <span
+              >{{ project.city }}, {{ project.state }}
+              {{ project.postalCode }}</span
+            >
+          </div>
         </v-col>
-        <v-col v-if="projectNameChanged" col="1"><v-checkbox v-model="updateContactAddressSelected" /></v-col>
+        <v-col v-if="projectNameChanged" col="1"
+          ><v-checkbox v-model="updateContactAddressSelected"
+        /></v-col>
       </v-row>
-    <template v-slot:no>Do Not Update</template>
+      <template v-slot:no>Do Not Update</template>
       <template v-slot:yes>Update Contact</template>
     </ConfirmationDialog>
     <!--    end dialog -->
 
-    <ThreeColumnLayoutMobile v-if="isMobile"
-                             :menu-items="[
-                                 pageOverviewMenuItem,
-                                 {pageName:'Details', subMenuSlot: true},
-                                 {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ route.params.projectId }/activeprocessSteps`},
-                                 {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ route.params.projectId }/activeevents`},
-                                 {pageName: 'Documents', customPath: `/project/${ route.params.projectId }/projectActivity?activityView=2`},
-                                 {pageName: 'Notes and Activities', customPath: `/project/${ route.params.projectId }/projectactivity?activityView=1`},
-                                 {pageName: 'Communication', customPath: `/project/${ route.params.projectId }/projectactivity?activityView=0`},
-                                 {pageName: 'Admin', customPath: `/projectAdmin/${projectId}/processSteps`}
-                                 ]"
-                             :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"
-                             :view-change-callback="changeMobileView"
-                             :subMenuSelectedView="selectedTab"
+    <ThreeColumnLayoutMobile
+      v-if="isMobile"
+      :menu-items="[
+        pageOverviewMenuItem,
+        { pageName: 'Details', subMenuSlot: true },
+        {
+          pageName: 'Active Process Steps',
+          subMenuSlot: true,
+          updateKey: updatePpsKey,
+          customPath: `/project/${route.params.projectId}/activeprocessSteps`
+        },
+        {
+          pageName: 'Active Events',
+          subMenuSlot: true,
+          updateKey: updateEventKey,
+          customPath: `/project/${route.params.projectId}/activeevents`
+        },
+        {
+          pageName: 'Documents',
+          customPath: `/project/${route.params.projectId}/projectActivity?activityView=2`
+        },
+        {
+          pageName: 'Notes and Activities',
+          customPath: `/project/${route.params.projectId}/projectactivity?activityView=1`
+        },
+        {
+          pageName: 'Communication',
+          customPath: `/project/${route.params.projectId}/projectactivity?activityView=0`
+        },
+        {
+          pageName: 'Admin',
+          customPath: `/projectAdmin/${projectId}/processSteps`
+        }
+      ]"
+      :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"
+      :view-change-callback="changeMobileView"
+      :subMenuSelectedView="selectedTab"
     >
       <template v-slot:subMenu_1>
-        <ProjectTabs :project="project" hideAdminBtn :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
+        <ProjectTabs
+          :project="project"
+          hideAdminBtn
+          :tab-change-callback="changeTabs"
+          class="mx-2"
+        ></ProjectTabs>
       </template>
       <template v-slot:subMenu_2>
-        <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
+        <ActiveProcessSteps
+          :project="project"
+          :update-key="updatePpsKey"
+          class="mx-2"
+        ></ActiveProcessSteps>
       </template>
       <template v-slot:subMenu_3>
-        <ActiveEvents v-if="userHasEventsFeature"
-                      :update-key="updateEventKey"
-                      :projectId="projectId"
-                      class="mx-2"/>
+        <ActiveEvents
+          v-if="userHasEventsFeature"
+          :update-key="updateEventKey"
+          :projectId="projectId"
+          class="mx-2"
+        />
       </template>
       <template v-slot:header-contents>
         <v-toolbar-title class="title-medium text-wrap">
           <div>
-            <router-link :to="`/project/${project.id}/status`" class="no-text-decoration">{{ project.projectName }}</router-link>
-            <span v-if="projectStore && projectStore.pps && projectStore.pps.processStepName">
-            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2 no-text-decoration"
-                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}`">
-              {{ projectStore.pps.processStepName }}
-            </router-link>
-          </span>
-            <span v-if="projectStore && projectStore.ppsEvent && projectStore.ppsEvent.eventName">
-            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2 no-text-decoration"
-                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}/event/${projectStore.ppsEvent.id}`">
-              {{ projectStore.ppsEvent.eventName }} Event
-            </router-link>
-          </span>
+            <router-link
+              :to="`/project/${project.id}/status`"
+              class="no-text-decoration"
+              >{{ project.projectName }}</router-link
+            >
+            <span
+              v-if="
+                projectStore &&
+                projectStore.pps &&
+                projectStore.pps.processStepName
+              "
+            >
+              <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+              <router-link
+                class="breadcrumb albatross-body-2 no-text-decoration"
+                :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}`"
+              >
+                {{ projectStore.pps.processStepName }}
+              </router-link>
+            </span>
+            <span
+              v-if="
+                projectStore &&
+                projectStore.ppsEvent &&
+                projectStore.ppsEvent.eventName
+              "
+            >
+              <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+              <router-link
+                class="breadcrumb albatross-body-2 no-text-decoration"
+                :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}/event/${projectStore.ppsEvent.id}`"
+              >
+                {{ projectStore.ppsEvent.eventName }} Event
+              </router-link>
+            </span>
           </div>
           <div class="mt-2">
-            <v-chip v-for="(tag, idx) in project.tags"
-					:key="idx"
-                    small
-                    class="tag-chip"
-                    :color="tag.bgColor"
-                    :text-color="tag.fontColor"
-                    :close="tag.removable"
-                    :class="{'ml-2': idx !== 0}">
+            <v-chip
+              v-for="(tag, idx) in project.tags"
+              :key="idx"
+              small
+              class="tag-chip"
+              :color="tag.bgColor"
+              :text-color="tag.fontColor"
+              :close="tag.removable"
+              :class="{ 'ml-2': idx !== 0 }"
+            >
               {{ tag.tagName }}
             </v-chip>
           </div>
         </v-toolbar-title>
       </template>
       <template v-slot:main-column>
-        <router-view @refresh-upcoming-events="updateEventKey++"
-                     @refresh-upcoming-pps="updatePpsKey++"
-                     @refresh-project-status="getUpdatedProjectStatus()"
-                     ref="childComponent"
-                     :project-tab="selectedTab"
-                     v-if="project && project.id" class="router-view"
-                     :project="project"
-                     :milestones="milestones"
-                     page-name="Project"
-                     :isExpandable="false"
-                     :show-edit-btn="(userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
-                     @clickEdit="showEditModal()"
-                     :details="overviewDetails"
-                     :updateKey="updateKeyProp"
-                     :mobileView="true"
-
+        <router-view
+          @refresh-upcoming-events="updateEventKey++"
+          @refresh-upcoming-pps="updatePpsKey++"
+          @refresh-project-status="getUpdatedProjectStatus()"
+          ref="childComponent"
+          :project-tab="selectedTab"
+          v-if="project && project.id"
+          class="router-view"
+          :project="project"
+          :milestones="milestones"
+          page-name="Project"
+          :isExpandable="false"
+          :show-edit-btn="
+            userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') &&
+            userCanEdit
+          "
+          @clickEdit="showEditModal()"
+          :details="overviewDetails"
+          :updateKey="updateKeyProp"
+          :mobileView="true"
         />
       </template>
       <template v-slot:right-column>
-        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
+        <ProjectActivity
+          v-if="!projectLoading && (projectId !== 0 || userId !== 0)"
+          :show-sms-tab="true"
+        ></ProjectActivity>
       </template>
     </ThreeColumnLayoutMobile>
     <ThreeColumnLayout v-else :headerLarge="project.tags?.length > 0">
       <template v-slot:header>
-
-        <v-toolbar-title class="title-large albatross-header-1 align-center "
-        >
+        <v-toolbar-title class="title-large albatross-header-1 align-center">
           <div>
-            <router-link :to="`/project/${project.id}/status`">{{ project.projectName }}</router-link>
-            <span v-if="projectStore && projectStore.pps && projectStore.pps.processStepName">
-            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}`">
-              {{ projectStore.pps.processStepName }}
-            </router-link>
-          </span>
-            <span v-if="projectStore && projectStore.ppsEvent && projectStore.ppsEvent.eventName">
-            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}/event/${projectStore.ppsEvent.id}`">
-              {{ projectStore.ppsEvent.eventName }} Event
-            </router-link>
-          </span>
-            <span v-if="projectStore && selectedTab && route.name === 'projectDetails'" class="breadcrumb albatross-body-2 primary--text">
-            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-              {{ selectedTab.tabName}}
-          </span>
+            <router-link :to="`/project/${project.id}/status`">{{
+              project.projectName
+            }}</router-link>
+            <span
+              v-if="
+                projectStore &&
+                projectStore.pps &&
+                projectStore.pps.processStepName
+              "
+            >
+              <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+              <router-link
+                class="breadcrumb albatross-body-2"
+                :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}`"
+              >
+                {{ projectStore.pps.processStepName }}
+              </router-link>
+            </span>
+            <span
+              v-if="
+                projectStore &&
+                projectStore.ppsEvent &&
+                projectStore.ppsEvent.eventName
+              "
+            >
+              <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+              <router-link
+                class="breadcrumb albatross-body-2"
+                :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}/event/${projectStore.ppsEvent.id}`"
+              >
+                {{ projectStore.ppsEvent.eventName }} Event
+              </router-link>
+            </span>
+            <span
+              v-if="
+                projectStore && selectedTab && route.name === 'projectDetails'
+              "
+              class="breadcrumb albatross-body-2 primary--text"
+            >
+              <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+              {{ selectedTab.tabName }}
+            </span>
           </div>
           <div class="mt-2">
-            <v-chip v-for="(tag, idx) in project.tags"
-					:key="idx"
-                    small
-                    class="tag-chip"
-                    :color="tag.bgColor"
-                    :text-color="tag.fontColor"
-                    :close="tag.removable"
-                    :class="{'ml-2': idx !== 0}">
+            <v-chip
+              v-for="(tag, idx) in project.tags"
+              :key="idx"
+              small
+              class="tag-chip"
+              :color="tag.bgColor"
+              :text-color="tag.fontColor"
+              :close="tag.removable"
+              :class="{ 'ml-2': idx !== 0 }"
+            >
               {{ tag.tagName }}
             </v-chip>
           </div>
         </v-toolbar-title>
-        <v-spacer/>
-        <div v-if="milestones && milestones.length > 0" class = "milestone-container toolbar-z-index-override">
-          <div class="milestone-item" v-for="(milestone, idx) in milestones" :key="idx">
-            <v-menu v-model="milestone.menuOpen"
-                    offset-y
-                    rounded="0"
-                    :close-on-content-click="false"
-                    min-width="290px">
+        <v-spacer />
+        <div
+          v-if="milestones && milestones.length > 0"
+          class="milestone-container toolbar-z-index-override"
+        >
+          <div
+            class="milestone-item"
+            v-for="(milestone, idx) in milestones"
+            :key="idx"
+          >
+            <v-menu
+              v-model="milestone.menuOpen"
+              offset-y
+              rounded="0"
+              :close-on-content-click="false"
+              min-width="290px"
+            >
               <template v-slot:activator="{ on }">
-                <StatusTrackerIcon :on="on"
-                                   :clickable="true"
-                                   :milestone="milestone"
-                                   :current-status-id="project.companyProjectStatusTypeId"
+                <StatusTrackerIcon
+                  :on="on"
+                  :clickable="true"
+                  :milestone="milestone"
+                  :current-status-id="project.companyProjectStatusTypeId"
                 ></StatusTrackerIcon>
               </template>
               <v-card class="pa-5 square-card milestone-card">
                 <div class="label-large">
-                  <StatusTrackerIcon :clickable="false"
-                                     :milestone="milestone"
-                                     :current-status-id="project.companyProjectStatusTypeId"
+                  <StatusTrackerIcon
+                    :clickable="false"
+                    :milestone="milestone"
+                    :current-status-id="project.companyProjectStatusTypeId"
                   ></StatusTrackerIcon>
-                  <span class="ml-2 label-large active-status">{{milestone.projectStatusType}}</span>
-
+                  <span class="ml-2 label-large active-status">{{
+                    milestone.projectStatusType
+                  }}</span>
                 </div>
                 <div>
                   <div v-for="field in milestone.assignedFields">
-                    <StatusTrackerItem :field="field" :cancelled="project.projectStatusType == 'Cancelled'"
+                    <StatusTrackerItem
+                      :field="field"
+                      :cancelled="project.projectStatusType == 'Cancelled'"
                     ></StatusTrackerItem>
                   </div>
                 </div>
                 <div class="text-right">
                   <a-btn
-                      variant="text"
-                      color="primary"
-                      class="body-medium milestone-button"
-                      @click="milestone.menuOpen = false"
-                      text="Done"
+                    variant="text"
+                    color="primary"
+                    class="body-medium milestone-button"
+                    @click="milestone.menuOpen = false"
+                    text="Done"
                   ></a-btn>
                 </div>
               </v-card>
@@ -328,36 +496,149 @@
       <template v-slot:left-column>
         <div v-if="project && project.id">
           <PageOverview
-              page-name="Project"
-              :show-edit-btn="(userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
-              @clickEdit="showEditModal()"
-              :details="overviewDetails"
+            page-name="Project"
+            :show-edit-btn="
+              userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') &&
+              userCanEdit
+            "
+            @clickEdit="showEditModal()"
+            :details="overviewDetails"
           />
-          <v-divider/>
-          <ProjectTabs :project="project" :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
-          <v-divider/>
-          <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
-          <v-divider/>
-          <ActiveEvents v-if="userHasEventsFeature"
-                        :update-key="updateEventKey"
-                        :projectId="projectId"
-                        class="mx-2"/>
-          <v-divider class="mb-3"/>
+          <v-card flat class="contact-snippet albatross-body-1">
+            {{ project.firstName }} {{ project.lastName }}
+            <div
+              class="flex-display mb-2"
+              :class="{ clickable: !!project.phone }"
+              @click="
+                copyToClipBoard(
+                  cleanPhoneNumberForCopying(project.phone),
+                  'Phone Number'
+                )
+              "
+            >
+              <span class="detail-label label-small pr-2"
+                ><v-icon small>mdi-phone</v-icon></span
+              >
+              <span v-if="project.phone" class="detail-item body-medium">{{
+                formatPhoneNumber(project.phone)
+              }}</span>
+              <span v-else class="d-inline-block detail-item body-medium"
+                >N/A</span
+              >
+            </div>
+            <div
+              class="flex-display mb-2"
+              :class="{ clickable: !!project.mobile }"
+              @click="
+                copyToClipBoard(
+                  cleanPhoneNumberForCopying(project.mobile),
+                  'Mobile Phone'
+                )
+              "
+            >
+              <span class="detail-label label-small pr-2">
+                <v-icon small>mdi-cellphone</v-icon>
+              </span>
+              <span v-if="project.mobile" class="detail-item body-medium">{{
+                formatPhoneNumber(project.mobile)
+              }}</span>
+              <span v-else class="d-inline-block detail-item body-medium"
+                >N/A</span
+              >
+            </div>
+            <div
+              class="flex-display mb-2 overview-contact-email"
+              :class="{ clickable: !!project.email }"
+              @click="copyToClipBoard(project.email, 'Email address')"
+            >
+              <span class="detail-label label-small pr-2"
+                ><v-icon small>mdi-email</v-icon></span
+              >
+              <span
+                v-if="project.email"
+                class="detail-item body-medium body-medium"
+              >
+                {{ project.email }}
+              </span>
+              <span v-else class="d-inline-block detail-item body-medium"
+                >N/A</span
+              >
+            </div>
+            <a-btn
+              variant="outlined"
+              size="small"
+              custom-classes="label-medium text-transform-unset px-3 py-1"
+              :to="`/contact/${project.contactId}`"
+              target="_blank"
+            >
+              <template v-slot:default>
+                Go to contact
+                <v-icon small class="pl-2">mdi-open-in-new</v-icon>
+              </template>
+            </a-btn>
+          </v-card>
+          <v-divider v-if="project?.parentProject?.id != null" />
+          <ParentProject
+            v-if="project?.parentProject?.id != null"
+            :parent-project="project.parentProject"
+            class="mx-2"
+          ></ParentProject>
+          <v-divider
+            v-if="
+              project?.childProjects?.length > 0 ||
+              project?.childCompanyProcesses?.length > 0
+            "
+          />
+          <ChildProjects
+            v-if="
+              project?.childProjects?.length > 0 ||
+              project?.childCompanyProcesses?.length > 0
+            "
+            :child-company-processes="project?.childCompanyProcesses"
+            :project-company-process-id="project.companyProcessId"
+            :child-projects="project.childProjects?.slice(0, 3)"
+            class="mx-2"
+          ></ChildProjects>
+          <v-divider />
+          <ProjectTabs
+            :project="project"
+            :tab-change-callback="changeTabs"
+            class="mx-2"
+          ></ProjectTabs>
+          <v-divider />
+          <ActiveProcessSteps
+            :project="project"
+            :update-key="updatePpsKey"
+            class="mx-2"
+          ></ActiveProcessSteps>
+          <v-divider />
+          <ActiveEvents
+            v-if="userHasEventsFeature"
+            :update-key="updateEventKey"
+            :projectId="projectId"
+            class="mx-2"
+          />
+          <v-divider class="mb-3" />
         </div>
       </template>
       <template v-slot:main-column>
-        <router-view @refresh-upcoming-events="updateEventKey++"
-                     @refresh-upcoming-pps="updatePpsKey++"
-                     @refresh-project-status="getUpdatedProjectStatus()"
-                     ref="childComponent"
-                     :project-tab="selectedTab"
-                     v-if="project && project.id" class="router-view"
-                     :project="project"
-                     :milestones="milestones"
+        <router-view
+          @refresh-upcoming-events="updateEventKey++"
+          @refresh-upcoming-pps="updatePpsKey++"
+          @refresh-project-status="getUpdatedProjectStatus()"
+          ref="childComponent"
+          :project-tab="selectedTab"
+          v-if="project && project.id"
+          class="router-view"
+          :project="project"
+          :milestones="milestones"
         />
       </template>
       <template v-slot:right-column>
-        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
+        <ProjectActivity
+          v-if="!projectLoading && (projectId !== 0 || userId !== 0)"
+          :show-sms-tab="true"
+        ></ProjectActivity>
       </template>
     </ThreeColumnLayout>
   </div>
@@ -365,10 +646,10 @@
 
 <script setup>
 import {
+  cleanPhoneNumberForCopying,
   formatPhoneNumber,
   getRequest,
   getRequestWithParams,
-
   handleHidingGlobalLoader,
   logError,
   postRequest,
@@ -383,23 +664,32 @@ import ActiveEvents from '@/views/flow/project/ActiveEvents'
 import {
   getCompanyProjectStatusTypes,
   getStatusColorClass
-} from "@/services/projectStatusTypeService"
-import constants from "@/helpers/constants";
-import {getActiveStates} from "@/services/stateService";
-import {getCountries} from "@/services/countryService";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import PageOverview from "../PageOverview";
-import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
-import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
+} from '@/services/projectStatusTypeService'
+import constants from '@/helpers/constants'
+import { getActiveStates } from '@/services/stateService'
+import { getCountries } from '@/services/countryService'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import PageOverview from '../PageOverview'
+import StatusTrackerIcon from '@/views/flow/project/StatusTrackerIcon'
+import StatusTrackerItem from '@/views/flow/project/StatusTrackerItem'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useNotificationStore } from '@/stores/NotificationStore.js'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import {
+  getCurrentInstance,
+  toRefs,
+  computed,
+  ref,
+  onMounted,
+  watch
+} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
+import ChildProjects from '@/views/flow/project/ChildProjects.vue'
+import ParentProject from '@/views/flow/project/ParentProject.vue'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -447,10 +737,10 @@ const contactLoading = ref(false)
 onMounted(() => {
   //have to reset this on creation in case there is already a state then they go to the project url directly
   projectStore.resetProjectState()
-  loadProject();
+  loadProject()
   pageOverviewMenuItem.value = {
     archived: false,
-    customPath: `/project/${ projectId.value }/projectOverview`,
+    customPath: `/project/${projectId.value}/projectOverview`,
     tabName: 'Overview',
     pageName: 'Overview',
     isExpandable: false,
@@ -460,7 +750,7 @@ onMounted(() => {
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
-  to.params.useSavedFilters = "true"
+  to.params.useSavedFilters = 'true'
   next()
 })
 
@@ -484,10 +774,14 @@ const userHasEventsFeature = computed(() => {
   return userStore.userHasFeature('EVENTS')
 })
 const projectTagEvents = computed(() => {
-  return notificationStore.getEventsByTopic('project_tag')?.filter(e => e.projectId === projectId.value)
+  return notificationStore
+    .getEventsByTopic('project_tag')
+    ?.filter((e) => e.projectId === projectId.value)
 })
 const projectStage = computed(() => {
-  return statuses.value?.find(s => s.id === project.value.companyProjectStatusTypeId)?.rootProjectStatusType
+  return statuses.value?.find(
+    (s) => s.id === project.value.companyProjectStatusTypeId
+  )?.rootProjectStatusType
 })
 const overviewDetails = computed(() => {
   return [
@@ -496,7 +790,12 @@ const overviewDetails = computed(() => {
       type: constants.OVERVIEW_FIELD_TYPES.STATUS,
       value: project.value.projectStatusType,
       statusType: project.value.rootProjectStatusType,
-      statusTypeId: project.value.projectStatusTypeId,
+      statusTypeId: project.value.projectStatusTypeId
+    },
+    {
+      label: 'wtf',
+      type: constants.OVERVIEW_FIELD_TYPES.CATEGORY,
+      value: project.value.objectCategory
     },
     {
       label: 'Project id',
@@ -513,25 +812,25 @@ const overviewDetails = computed(() => {
         zip: project.value.postalCode
       }
     },
-    {
-      label: 'Phone number',
-      type: constants.OVERVIEW_FIELD_TYPES.PHONE,
-      value: project.value.phone,
-    },
-    {
-      label: 'Mobile number',
-      type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
-      value: project.value.mobile
-    },
-    {
-      label: 'Email address',
-      type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
-      value: project.value.email
-    },
-    {
-      type: constants.OVERVIEW_FIELD_TYPES.BUTTON,
-      value: project.value.contactId
-    },
+    // {
+    //   label: 'Phone number',
+    //   type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+    //   value: project.value.phone,
+    // },
+    // {
+    //   label: 'Mobile number',
+    //   type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
+    //   value: project.value.mobile
+    // },
+    // {
+    //   label: 'Email address',
+    //   type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
+    //   value: project.value.email
+    // },
+    // {
+    //   type: constants.OVERVIEW_FIELD_TYPES.BUTTON,
+    //   value: project.value.contactId
+    // },
     {
       label: 'Owner',
       type: constants.OVERVIEW_FIELD_TYPES.OWNER,
@@ -543,46 +842,42 @@ const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 
-watch(processStepId, async() => {
+watch(processStepId, async () => {
   projectStore.resetProjectState()
 })
-watch(ppsEventId, async() => {
+watch(ppsEventId, async () => {
   projectStore.resetPpsEventState()
 })
 
-watch(projectTagEvents, async() => {
+watch(projectTagEvents, async () => {
   if (projectTagEvents.value?.length > 0) {
     await notificationStore.processProjectMsg(projectId.value)
     await getProjectTags()
   }
 })
 
-const loadProject = async()=> {
+const loadProject = async () => {
   await getProject()
   await getMilestones()
 }
-const changeTabs = (selectedChildTab, buttonClicked)  => {
+const changeTabs = (selectedChildTab, buttonClicked) => {
   selectedTab.value = selectedChildTab
   if (buttonClicked && route.name !== 'projectDetails') {
-    router.push({name: 'projectDetails', projectId: projectId.value})
+    router.push({ name: 'projectDetails', projectId: projectId.value })
   }
 }
 const changeMobileView = (selectedView) => {
   updateKeyProp.value = selectedView.updateKey | 0
   router.push(selectedView.customPath)
 }
-const stateIsActive = ()  => {
+const stateIsActive = () => {
   //states is already a list of company states
-  let companyStateIds = states.value.map(s => s.id)
+  let companyStateIds = states.value.map((s) => s.id)
   return companyStateIds.includes(tempProject.value.companyStateId)
 }
-const showEditModal = async() => {
+const showEditModal = async () => {
   //doing all this in a method so we can call it when the page loads if needed
-  let requests = [
-    getStatesAndCountries(),
-    getOwners(),
-    getStatuses()
-  ]
+  let requests = [getStatesAndCountries(), getOwners(), getStatuses()]
   await Promise.all(requests)
   tempProject.value = cloneDeep(project.value)
   showEditProjectModal.value = true
@@ -590,7 +885,7 @@ const showEditModal = async() => {
 const getProject = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/project/${projectId.value}`)
+    const { data, status } = await getRequest(`/project/${projectId.value}`)
     project.value = data
 
     window.document.title = `${project.value.projectName} - Project Details`
@@ -598,25 +893,31 @@ const getProject = async () => {
       showEditModal()
     }
     projectLoading.value = false
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     projectLoading.value = false
     appStore.loading = false
     logError(e)
   }
 }
-const getMilestones = async() => {
+const getMilestones = async () => {
   try {
-    const {data, status} = await getRequest(`/project/${projectId.value}/statusFields`)
+    const { data, status } = await getRequest(
+      `/project/${projectId.value}/statusFields`
+    )
     milestones.value = data
-    let statusCompleted = false;
-    for(let x = milestones.value.length - 1; x >= 0; x--){
-      if(project.value.projectStatusType == 'Cancelled'){
+    let statusCompleted = false
+    for (let x = milestones.value.length - 1; x >= 0; x--) {
+      if (project.value.projectStatusType == 'Cancelled') {
         milestones.value[x].btnColor = '#F5F5F5'
         milestones.value[x].iconColor = 'grey'
-        continue;
+        continue
       }
-      if(statusCompleted || (milestones.value[x].assignedFields.length > 0 && milestones.value[x].assignedFields.every(f => f.fieldValue))) {
+      if (
+        statusCompleted ||
+        (milestones.value[x].assignedFields.length > 0 &&
+          milestones.value[x].assignedFields.every((f) => f.fieldValue))
+      ) {
         milestones.value[x].btnColor = 'var(--v-success-lighten1)'
         milestones.value[x].iconColor = 'white'
       } else {
@@ -624,20 +925,25 @@ const getMilestones = async() => {
         milestones.value[x].iconColor = 'grey'
       }
 
-      if(project.value.projectStatusType == milestones.value[x].projectStatusType){
-        statusCompleted = true;
+      if (
+        project.value.projectStatusType == milestones.value[x].projectStatusType
+      ) {
+        statusCompleted = true
       }
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Status Tracker Details')
-
   }
 }
 const getProjectTags = async () => {
   try {
-    const {data, status} = await getRequestWithParams(`/tag/project/${projectId.value}`,
-        {skipCancel: true}, null, [])
+    const { data, status } = await getRequestWithParams(
+      `/tag/project/${projectId.value}`,
+      { skipCancel: true },
+      null,
+      []
+    )
     project.value.tags = data
   } catch (e) {
     logError(e)
@@ -647,7 +953,9 @@ const getUpdatedProjectStatus = async () => {
   //this gets called if an event gets run, in case it updated the project status
   projectStatusLoading.value = true
   try {
-    const {data, status} = await getRequest(`/project/${projectId.value}/status`)
+    const { data, status } = await getRequest(
+      `/project/${projectId.value}/status`
+    )
     if (data) {
       project.value.companyProjectStatusTypeId = data.companyProjectStatusTypeId
       project.value.projectStatusType = data.projectStatusType
@@ -664,13 +972,12 @@ const getUpdatedProjectStatus = async () => {
 const getStatuses = async () => {
   try {
     statusesLoading.value = true
-    const {data} = await getCompanyProjectStatusTypes(projectId.value, true)
+    const { data } = await getCompanyProjectStatusTypes(projectId.value, true)
     statuses.value = data
     statusesLoading.value = false
   } catch (e) {
     statusesLoading.value = false
     appStore.showSnack('ERROR', 'Error fetching project statuses')
-
   }
 }
 const projectStatusIsReadOnly = () => {
@@ -693,12 +1000,16 @@ const updateStatus = async () => {
     let params = {
       companyProjectStatusTypeId: tempProject.value.companyProjectStatusTypeId
     }
-    const {data, status} = await postRequest(`/project/${projectId.value}/status`, params)
-    tempProject.value.companyProjectStatusTypeId = data.companyProjectStatusTypeId
+    const { data, status } = await postRequest(
+      `/project/${projectId.value}/status`,
+      params
+    )
+    tempProject.value.companyProjectStatusTypeId =
+      data.companyProjectStatusTypeId
     tempProject.value.projectStatusType = data.projectStatusType
     tempProject.value.projectStatusTypeId = data.projectStatusTypeId
     tempProject.value.rootProjectStatusType = data.rootProjectStatusType
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error updating project status')
@@ -710,8 +1021,11 @@ const updateOwner = async () => {
   appStore.loading = true
   try {
     //we use tempProject to save values in case they cancel then it repopulates at the end
-    const {status} = await putRequest(`/project/${projectId.value}/owner`, tempProject.value.owner || {userPositionId: null})
-    handleHidingGlobalLoader( status)
+    const { status } = await putRequest(
+      `/project/${projectId.value}/owner`,
+      tempProject.value.owner || { userPositionId: null }
+    )
+    handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Owner')
@@ -729,7 +1043,7 @@ const getStatesAndCountries = () => {
 const getCompanyStates = async () => {
   try {
     statesLoading.value = true
-    const {data, status} = await getActiveStates()
+    const { data, status } = await getActiveStates()
     states.value = data
     statesLoading.value = false
   } catch (e) {
@@ -742,7 +1056,7 @@ const getCompanyStates = async () => {
 const getAllCountries = async () => {
   try {
     countriesLoading.value = true
-    const {data, status} = await getCountries()
+    const { data, status } = await getCountries()
     countries.value = data
     countriesLoading.value = false
   } catch (e) {
@@ -752,7 +1066,7 @@ const getAllCountries = async () => {
     countriesLoading.value = false
   }
 }
-const validateForm = async() => {
+const validateForm = async () => {
   if (projectEditForm.value.validate()) {
     //these could be combined - just dont have time atm
     saveProjectAddressFields()
@@ -760,12 +1074,14 @@ const validateForm = async() => {
     //have to wait for this one to complete or it doesn't have the right values to display fresh ones
     await updateStatus()
     //set project values if they hit save, have to update state stuff differently cuz there are multiple values needed
-    let selectedState = states.value.find(s => s.id === tempProject.value.companyStateId)
+    let selectedState = states.value.find(
+      (s) => s.id === tempProject.value.companyStateId
+    )
     tempProject.value.state = selectedState?.state || null
     tempProject.value.stateAbbreviation = selectedState?.abbreviation || null
     //if they entered a valid address then stop asking for it
     if (tempProject.value.companyStateId && stateIsActive()) {
-      router.replace({'query': null})
+      router.replace({ query: null })
       checkAddress.value = false
     }
     project.value = cloneDeep(tempProject.value)
@@ -775,20 +1091,21 @@ const validateForm = async() => {
 const saveProjectAddressFields = async () => {
   appStore.loading = true
   let addressChanged = false
-  if(tempProject.value.street1 !== project.value.street1 ||
-      tempProject.value.city !== project.value.city ||
-      tempProject.value.postalCode !== project.value.postalCode ||
-      tempProject.value.companyStateId !== project.value.companyStateId ||
-      tempProject.value.companyCountryId !== project.value.companyCountryId
-  ){
+  if (
+    tempProject.value.street1 !== project.value.street1 ||
+    tempProject.value.city !== project.value.city ||
+    tempProject.value.postalCode !== project.value.postalCode ||
+    tempProject.value.companyStateId !== project.value.companyStateId ||
+    tempProject.value.companyCountryId !== project.value.companyCountryId
+  ) {
     addressChanged = true
   }
   try {
     //temp project holds all the changes in case they cancel. use those values
-    const {status} = await putRequest(`/project`, tempProject.value)
+    const { status } = await putRequest(`/project`, tempProject.value)
     appStore.showSnack('SUCCESS', 'Project Updated')
     projectAddressChanged.value = addressChanged
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Address')
@@ -797,25 +1114,22 @@ const saveProjectAddressFields = async () => {
 }
 
 watch(projectNameChanged, () => {
-  if(projectNameChanged.value === true && !projectContact.value.id){
+  if (projectNameChanged.value === true && !projectContact.value.id) {
     getContact()
   }
 })
 watch(projectAddressChanged, () => {
-  if(projectAddressChanged.value === true && !projectContact.value.id){
+  if (projectAddressChanged.value === true && !projectContact.value.id) {
     getContact()
   }
 })
 const updateContactDialogText = computed(() => {
-
-  if(projectAddressChanged.value && projectNameChanged.value){
+  if (projectAddressChanged.value && projectNameChanged.value) {
     return `The project name and address have changed. Would you also like to update the contact <b>${projectContact.value.fullName}</b>?<br/>
 Please select the information you would like to update.`
-  }
-  else if(projectAddressChanged.value){
+  } else if (projectAddressChanged.value) {
     return `The address for <b>${project.value.projectName}</b> has changed.  Would you also like to update the contact <b>${projectContact.value.fullName}</b> to the new address?`
-  }
-  else if(projectNameChanged.value){
+  } else if (projectNameChanged.value) {
     return `The project name has changed.  Would you also like to update the contact <b>${projectContact.value.fullName}</b> to the new name?`
   }
 })
@@ -823,28 +1137,29 @@ Please select the information you would like to update.`
 const getContact = async () => {
   try {
     contactLoading.value = true
-    const {data, status} = await getRequest(`/contact/${project.value.contactId}`)
+    const { data, status } = await getRequest(
+      `/contact/${project.value.contactId}`
+    )
     projectContact.value = data
     contactLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     contactLoading.value = false
     appStore.showSnack('ERROR', 'Error Retrieving Contact')
-
   }
 }
 const updateContactInfo = async () => {
-  if(updateContactAddressSelected.value && projectAddressChanged.value){
+  if (updateContactAddressSelected.value && projectAddressChanged.value) {
     updateContactAddress()
   }
-  if(updateContactNameSelected.value && projectNameChanged.value) {
+  if (updateContactNameSelected.value && projectNameChanged.value) {
     projectContact.value.firstName = tempFirstName
     projectContact.value.lastName = tempLastName
   }
   projectAddressChanged.value = false
   projectNameChanged.value = false
   try {
-    const {status} = await postRequest(`/contact`, projectContact.value)
+    const { status } = await postRequest(`/contact`, projectContact.value)
     appStore.showSnack('SUCCESS', 'Contact Updated')
   } catch (e) {
     logError(e)
@@ -853,7 +1168,18 @@ const updateContactInfo = async () => {
   updateContactNameSelected.value = true
   updateContactAddressSelected.value = true
 }
-const updateContactAddress = () =>{
+
+const copyToClipBoard = (textValue, label) => {
+  if (textValue) {
+    if (!label) {
+      label = 'text'
+    }
+    navigator.clipboard.writeText(textValue)
+    appStore.showSnack('MINOR', `Copied ${label.toLowerCase()} to clipboard`)
+  }
+}
+
+const updateContactAddress = () => {
   projectContact.value.street1 = project.value.street1
   projectContact.value.street2 = project.value.street2
   projectContact.value.city = project.value.city
@@ -864,14 +1190,13 @@ const updateContactAddress = () =>{
 const getOwners = async () => {
   try {
     ownersLoading.value = true
-    const {data, status} = await getRequest(`/project/owners`)
+    const { data, status } = await getRequest(`/project/owners`)
     availableOwners.value = data
     ownersLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     ownersLoading.value = false
     appStore.showSnack('ERROR', 'Error Retrieving Available Owners')
-
   }
 }
 </script>
@@ -895,7 +1220,8 @@ const getOwners = async () => {
   padding-right: 0 !important;
 }
 
-.title-large, .breadcrumb {
+.title-large,
+.breadcrumb {
   a {
     text-decoration-line: none;
   }
@@ -915,9 +1241,14 @@ const getOwners = async () => {
   overflow: hidden;
 }
 
+.overview-contact-email {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .project-detail-label {
   font-size: 12px;
-  color: #9E9C9C;
+  color: #9e9c9c;
 }
 
 .project-detail-item {
@@ -966,7 +1297,7 @@ const getOwners = async () => {
 .project-section.center-panel {
   //box-shadow: 1px 0px 1px #C4C4C4;
   //the way the center and right panels sit on each other the box shadow just wasn't working - going to try this border and see if they care
-  border-right: solid #C4C4C4 1px;
+  border-right: solid #c4c4c4 1px;
 }
 
 .white-bg {
@@ -1005,7 +1336,6 @@ const getOwners = async () => {
   font-weight: 600;
 }
 
-
 .center-width-right-side-collapse {
   width: calc(83.33% - 72px);
   padding: 10px !important;
@@ -1016,51 +1346,53 @@ const getOwners = async () => {
   padding: 10px !important;
 }
 
+.contact-snippet {
+  border: solid 1px var(--v-grey-lighten1);
+  padding: 10px;
+  margin: 0 23px 10px 23px;
+}
+
 .edit-state-link {
   margin-bottom: 3px;
   font-size: 11px;
 }
 
-.milestone-container{
+.milestone-container {
   height: 28px;
 }
 
 .milestone-item {
   display: inline-block;
   margin-right: 16px;
-  position:relative;
+  position: relative;
 }
 
 .milestone-item:before,
-.milestone-item:after
-{
-  content:'';
+.milestone-item:after {
+  content: '';
   width: 16px;
-  border-bottom:1px solid #9E9E9E;
-  position:absolute;
-  top:50%;
-
+  border-bottom: 1px solid #9e9e9e;
+  position: absolute;
+  top: 50%;
 }
 :after {
-  left:100%;
+  left: 100%;
 }
 :before {
-  right:100%;
+  right: 100%;
 }
 .milestone-item:first-of-type:before,
 .milestone-item:last-of-type:after {
-  display:none;
+  display: none;
 }
 
-.milestone-button{
+.milestone-button {
   margin-top: 12px;
   text-transform: unset !important;
 }
 
-.milestone-card{
+.milestone-card {
   padding: 16px !important;
   border-radius: 4px !important;
 }
-
 </style>
-

@@ -7,4 +7,3 @@
 <script setup>
 import CustomFieldGroup from '@/views/flow/settings/objectType/CustomFieldGroup'
 </script>
-

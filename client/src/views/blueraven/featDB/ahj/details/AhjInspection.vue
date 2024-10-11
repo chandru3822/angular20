@@ -11,7 +11,7 @@
                   variant="text"
                   color="primary"
                   prepend-icon="history"
-                  @click="showChangeLog = !showChangeLog"
+                  @click="getChangeLog"
                   v-bind="attrs"
                   :activation-handler="{ ...tooltip, ...menu }">
                 </a-btn>
@@ -327,19 +327,24 @@ onMounted(async () => {
   getAhjInspection().then(() => {
     getCustomFieldGroupAssignmentsForScreen().then(() => dataReady.value = true)
   })
-  await getChangeLog()
 })
 
 const getChangeLog = async() => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/inspection/getAhjInspectionHistory`, 'blueraven')
-    changeLog.value = cloneDeep(data)
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving AHJ Inspection Change Log')
-    appStore.loading = false
+  showChangeLog.value = !showChangeLog.value
+  if(showChangeLog.value) {
+    appStore.loading = true
+    try {
+      const {
+        data,
+        status
+      } = await getRequest(`/featDb/ahj/${ahjId.value}/inspection/getAhjInspectionHistory`, 'blueraven')
+      changeLog.value = cloneDeep(data)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error retrieving AHJ Inspection Change Log')
+      appStore.loading = false
+    }
   }
 }
 const updateDirtyValue = (item) => {
@@ -485,7 +490,6 @@ const updateAhjInspection = async() => {
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All inspections in ' + ahjInspection.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All inspections in ' + ahjInspection.value.metroArea + ' have been updated successfully': 'Inspection updated successfully'
     appStore.showSnack('SUCCESS', successMessage)
-    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)

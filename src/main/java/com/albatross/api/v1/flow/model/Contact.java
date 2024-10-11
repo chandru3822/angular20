@@ -15,7 +15,7 @@ public class Contact {
 
   // so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;
-  private Long id, contactBaseId, companyId, contactTypeId, companyStateId, companyCountryId, ownerUserPositionId;
+  private Long id, contactBaseId, companyId, contactTypeId, companyStateId, companyCountryId, ownerUserPositionId, objectCategoryId;
   private String firstName,
       lastName,
       fullName,
@@ -35,7 +35,8 @@ public class Contact {
       phone,
       mobile,
       contactType,
-      companyName;
+      companyName,
+      objectCategory;
   private Date dateCreated;
   private Boolean ownerReadOnly, ownerReadOnlyAllow;
   //used to tell contact conversion to copy address fields or not

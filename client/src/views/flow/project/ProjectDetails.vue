@@ -54,9 +54,9 @@
                     "
                   >
                     <v-list-item-content>
-                      <v-list-item-title>{{
-                        item.attachmentType
-                      }}</v-list-item-title>
+                      <v-list-item-title>
+                        {{ item.attachmentType }}
+                      </v-list-item-title>
                     </v-list-item-content>
                     <input
                       :id="`menuFileInput${item.attachmentTypeId}`"
@@ -120,9 +120,9 @@
                   color="transparent"
                   class="elevation-0 process-step-toolbar"
                 >
-                  <v-toolbar-title class="albatross-header-4-new">{{
-                    group.groupName
-                  }}</v-toolbar-title>
+                  <v-toolbar-title class="albatross-header-4-new">
+                    {{ group.groupName }}
+                  </v-toolbar-title>
                 </v-toolbar>
                 <v-card
                   class="px-4 text-left square-card"
@@ -238,7 +238,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
-import {useStickyStore} from "@/stores/StickyStore.js";
+import { useStickyStore } from '@/stores/StickyStore.js'
 
 const projectStore = useProjectStore()
 const fileStore = useFileStore()
@@ -247,7 +247,6 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 
 const vuetify = vueInstance.$vuetify
 
@@ -277,6 +276,7 @@ const props = defineProps({
   project: Object,
   projectTab: Object
 })
+
 const { project, projectTab } = toRefs(props)
 
 onMounted(async () => {
@@ -291,9 +291,7 @@ watch(projectTab, async () => {
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
 })
-const companyId = computed(() => {
-  return userStore.details.companyId
-})
+
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
@@ -308,9 +306,10 @@ onBeforeRouteLeave(async (to, from, next) => {
   }
 
   if (!(to.path === '/projects')) {
-    stickySearch.projectSearchString = ""
+    stickySearch.projectSearchString = ''
   }
 })
+
 onBeforeRouteUpdate(async (to, from, next) => {
   if (dirtyCfvs.value.length === 0) {
     next()
@@ -328,16 +327,19 @@ const loadProjectAttachmentTypes = async () => {
       params: {
         linkable: false,
         allowUpload: true,
-        focused: false
+        focused: false,
+        objectCategoryId: project.value?.objectCategoryId
       }
     }
   )
   attachmentTypes.value = data
 }
+
 const setSplitColumnValue = () => {
   //flip the flag
   projectStore.manualColumnSplit = !projectStore.manualColumnSplit
 }
+
 const getCustomFieldValuesToDisplay = (values, columnNum) => {
   if (projectStore.manualColumnSplit) {
     return values.filter(function (element, index, values) {
@@ -348,9 +350,6 @@ const getCustomFieldValuesToDisplay = (values, columnNum) => {
   }
 }
 
-const getDirtyFieldsCount = () => {
-  return dirtyCfvs.value?.length || 0
-}
 const getFieldGroups = async () => {
   //two custom tabs have id = -1 and id = -2
   if (projectTab.value?.id != null && projectTab.value?.id > 0) {
@@ -370,6 +369,7 @@ const getFieldGroups = async () => {
     }
   }
 }
+
 const updateFieldGroups = async () => {
   if (projectForm.value.validate()) {
     fieldsSaving.value = true
@@ -399,6 +399,7 @@ const updateFieldGroups = async () => {
     appStore.showSnack('ERROR', 'Missing Required Fields')
   }
 }
+
 const populateDirtyCfvs = (field) => {
   const match = dirtyCfvs.value.find(
     (f) =>
@@ -409,12 +410,15 @@ const populateDirtyCfvs = (field) => {
     dirtyCfvs.value.push(field)
   }
 }
+
 const getReadOnly = (field) => {
   return getCustomFieldReadOnly(field) || !userCanEdit.value
 }
+
 const selectFile = (typeId) => {
   document.getElementById(`menuFileInput${typeId}`)?.click()
 }
+
 const doUpload = async (files, type) => {
   if (files?.length > 0) {
     if (type.hasFieldsAssigned) {
@@ -425,6 +429,7 @@ const doUpload = async (files, type) => {
     }
   }
 }
+
 const setTempFile = (file, type) => {
   tempFile.value = {}
   fileToUpload.value = null
@@ -439,6 +444,7 @@ const setTempFile = (file, type) => {
   tempFile.value.displayName = displayName
   showCoversheetModal.value = true
 }
+
 const uploadDocument = async (files, type) => {
   //this should only get called if the attachment type doesn't have any native fields
   try {
@@ -525,9 +531,6 @@ const goToPath = (path, query) => {
   max-height: 100%;
   height: 100%;
   position: relative;
-}
-
-.project-header {
 }
 
 .project-fields-container {

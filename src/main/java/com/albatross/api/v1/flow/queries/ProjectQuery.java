@@ -192,6 +192,36 @@ select *
     """;
 
   //language=PostgreSQL
+  public final static String addChildren = """
+    select flow.add_project_children(:projectId::bigint, :companyId::bigint, :userId::bigint,
+                              :childProjectCount::bigint, :childCompanyProcessId::bigint); 
+  """;
+
+  //language=PostgreSQL
+  public final static String getChildren = """
+  select
+        p.id,
+        p.project_name as "projectName",
+        p.street1,
+        p.city,
+        p.postal_code as "postalCode",
+        p.date_created as "dateCreated",
+        p.object_category_id as "objectCategoryId",
+        oc.object_category as "objectCategory",
+        p.company_project_status_type_id as "companyProjectStatusTypeId",
+        cpst.project_status_type_id as "projectStatusTypeId",
+        cpst.project_status_type as "projectStatusType",
+        pst.project_status_type as "rootProjectStatusType"
+      from flow.project p
+        inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+        inner join flow.object_category oc on oc.id = p.object_category_id
+        inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+     where p.parent_id = :projectId
+     and p.archived is false
+     order by p.id
+  """;
+
+  //language=PostgreSQL
   public final static String get = """
 select
         p.id,
@@ -211,12 +241,15 @@ select
         p.date_created,
         cp.company_id,
         cp.process_id,
+        p.company_process_id,
         p.time_zone,
         p.latitude,
         p.longitude,
         pst.project_status_type as "rootProjectStatusType",
         pro.process_name,
         p.contact_id,
+        p.object_category_id,
+        oc.object_category,
         p.created_by_id,
         concat(u.first_name, ' ', u.last_name) as created_by,
         comp.company_name,
@@ -236,6 +269,28 @@ select
                     inner join flow.company_user_status cus on cus.user_id = u.id
                     inner join flow.user_status_type ust on cus.user_status_type_id = ust.id and ust.company_id = ct.company_id
                   WHERE up.id = p.user_position_id) o) AS owner,
+        (SELECT row_to_json(o)
+            FROM (select
+                                            p2.id,
+                                            p2.project_name as "projectName",
+                                            p2.street1,
+                                            p2.city,
+                                            p2.postal_code as "postalCode",
+                                            p2.date_created as "dateCreated",
+                                            p2.object_category_id as "objectCategoryId",
+                                            oc.object_category as "objectCategory",
+                                            p2.company_project_status_type_id as "companyProjectStatusTypeId",
+                                            cpst.project_status_type_id as "projectStatusTypeId",
+                                            cpst.project_status_type as "projectStatusType",
+                                            pst.project_status_type as "rootProjectStatusType",
+                                            oc.object_category as "objectCategory",
+                                            p2.object_category_id as "objectCategoryId"
+                                          from flow.project p2
+                                            inner join flow.company_project_status_type cpst on p2.company_project_status_type_id = cpst.id
+                                            inner join flow.object_category oc on oc.id = p2.object_category_id
+                                            inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+                                         where p2.id = p.parent_id
+                                         and p2.archived is false) o) AS parent_project,
         p.project_name,
         ct.first_name,
         ct.last_name,
@@ -262,6 +317,19 @@ select
                       inner join flow.tag t on t.id = pt.tag_id
                     WHERE pt.project_id = p.id
                       AND pt.archived is not true) tags), '[]') AS "tags",
+                      coalesce((
+       SELECT array_to_json(array_agg(row_to_json(childCompanyProcesses)))
+       FROM (
+              SELECT cpccp.id,
+                     cpccp.company_process_id as "companyProcessId",
+                     cpccp.child_company_process_id as "childCompanyProcessId",
+                     pc2.process_name as "childProcessName"
+              FROM flow.company_process_child_company_process cpccp
+                inner join flow.company_process cp2 on cpccp.child_company_process_id = cp2.id
+                inner join flow.process pc2 on pc2.id = cp2.process_id
+              WHERE cpccp.company_process_id = p.company_process_id
+                AND cpccp.archived is not true
+                and cp2.archived is not true) childCompanyProcesses), '[]') AS "childCompanyProcesses",
         coalesce((
                      SELECT array_to_json(array_agg(row_to_json(wlp)))
                      FROM (
@@ -287,9 +355,34 @@ select
                               FROM flow.white_listed_position wlp
                               WHERE wlp.white_list_type_id = 4
                                 and wlp.company_id = comp.id
-                                AND wlp.archived is not true) wlp), '[]') AS "ownerReadOnlyWhiteListedPositions"
+                                AND wlp.archived is not true) wlp), '[]') AS "ownerReadOnlyWhiteListedPositions",
+                    coalesce((
+                                SELECT array_to_json(array_agg(row_to_json(projects)))
+                                FROM (
+                                         select
+                                            p2.id,
+                                            p2.project_name as "projectName",
+                                            p2.street1,
+                                            p2.city,
+                                            p2.postal_code as "postalCode",
+                                            p2.date_created as "dateCreated",
+                                            p2.object_category_id as "objectCategoryId",
+                                            oc.object_category as "objectCategory",
+                                            p2.company_project_status_type_id as "companyProjectStatusTypeId",
+                                            cpst.project_status_type_id as "projectStatusTypeId",
+                                            cpst.project_status_type as "projectStatusType",
+                                            pst.project_status_type as "rootProjectStatusType"
+                                          from flow.project p2
+                                            inner join flow.company_project_status_type cpst on p2.company_project_status_type_id = cpst.id
+                                            inner join flow.object_category oc on oc.id = p2.object_category_id
+                                            inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+                                         where p2.parent_id = p.id
+                                         and p2.archived is false
+                                         order by p2.id
+                                     ) projects), '[]') AS "childProjects"
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
+      inner join flow.object_category oc on oc.id = p.object_category_id
       inner join flow.contact ct on ct.id = p.contact_id
       inner join flow.process pro on pro.id = cp.process_id
       inner join flow.company comp on cp.company_id = comp.id
@@ -336,8 +429,8 @@ select
 
   //language=PostgreSQL
   public final static String insert = """
-insert into flow.project (contact_id, company_process_id, project_name, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone, created_by_id, date_created, modified_by_id, date_modified, user_position_id)
-      values (:contactId, :processId, trim(:projectName), :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone, :createdById, now(), :createdById, now(), :userPositionId)
+      insert into flow.project (contact_id, company_process_id, project_name, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code, latitude, longitude, time_zone, created_by_id, date_created, modified_by_id, date_modified, user_position_id, object_category_id)
+      values (:contactId, :processId, trim(:projectName), :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode), :latitude, :longitude, :timezone, :createdById, now(), :createdById, now(), :userPositionId, :objectCategoryId)
     """;
 
   //language=PostgreSQL
@@ -722,6 +815,13 @@ select
             modified_by_id = :modifiedById,
             date_modified = now()
     where id = :id
+ """;
+
+  //language=PostgreSQL
+  public final static String getObjectTypeByProcess = """
+    select object_category_id
+    from flow.process p
+    where p.id = :processId
  """;
 
   //language=PostgreSQL

@@ -39,9 +39,9 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="title-large"
-            >Attachment Types</v-toolbar-title
-          >
+          <v-toolbar-title class="title-large">
+            Attachment Types
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
@@ -57,7 +57,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
+          <v-card v-if="addNew" class="mb-2 pa-5">
             <a-text-field
               v-if="addNew"
               v-model="newType.attachmentType"
@@ -65,10 +65,23 @@
               label="Attachment Type"
             >
             </a-text-field>
+            <v-select
+              v-model="newType.objectCategoryIds"
+              multiple
+              :items="objectCategories"
+              item-text="name"
+              item-value="id"
+              label="Object Category"
+            >
+            </v-select>
             <a-btn
               v-if="addNew"
               color="primary"
-              :disabled="!newType.attachmentType"
+              :disabled="
+                !newType.attachmentType &&
+                (!newType.objectCategoryIds ||
+                  newType.objectCategoryIds.length < 1)
+              "
               @click="addNewType"
               text="Save"
             />
@@ -92,6 +105,7 @@
               :items-per-page="100"
               :search="search"
               :footer-props="footerProps"
+              :sort-by="['attachmentType']"
               hide-default-header
               class="elevation-1 square-card"
             >
@@ -117,7 +131,7 @@
                       size="small"
                       variant="text"
                       color="primary"
-                      @click="getPath(item.id)"
+                      @click="router.push(getPath(item.id))"
                       prepend-icon="edit"
                     />
                   </td>
@@ -129,11 +143,12 @@
             :open-dialog="showDeleteDialog"
             @confirm="deleteType"
             @close-dialog="closeDeleteDialog"
-            >Are you sure you want to delete this attachment type:
-            <strong>{{
-              itemToDeleteAttachmentType
-            }}</strong></ConfirmationDialog
           >
+            Are you sure you want to delete this attachment type:
+            <strong>
+              {{ itemToDeleteAttachmentType }}
+            </strong>
+          </ConfirmationDialog>
         </v-container>
       </v-col>
     </v-row>
@@ -142,7 +157,6 @@
 
 <script setup>
 import { getCurrentInstance, ref, computed, onMounted } from 'vue'
-import orderBy from 'lodash.orderby'
 
 import {
   handleHidingGlobalLoader,
@@ -158,7 +172,6 @@ import { useRouter } from 'vue-router/composables'
 
 const vueInstance = getCurrentInstance().proxy
 
-const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 const router = useRouter()
@@ -167,7 +180,6 @@ const attachmentTypes = ref([])
 const search = ref('')
 const addNew = ref(false)
 const newType = ref({})
-const selectedAttachmentTypeId = ref(null)
 const companyId = ref(userStore.details.companyId)
 const cannotDeleteReasons = ref({})
 const deleteError = ref(false)
@@ -181,30 +193,43 @@ const footerProps = ref({
 })
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
+const objectCategories = ref([])
 
 const itemToDeleteAttachmentType = computed(() => {
   return itemToDelete.value ? itemToDelete.value.attachmentType : ''
 })
 
 const filterTypes = computed(() => {
-  return attachmentTypes.value.filter((e) => {
+  const types = attachmentTypes.value?.filter((e) => {
     return !e.archived
   })
+
+  return types
 })
 
 onMounted(() => {
-  getAttachmentTypes()
+  Promise.allSettled([getAttachmentTypes(), getObjectCategories()])
 })
+
+const getObjectCategories = async () => {
+  try {
+    const { data } = await getRequest(`/objectCategory?objectTypeId=1`)
+    objectCategories.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Object Categories')
+  }
+}
+
 const getPath = (typeId) => {
   return { path: `/settings/attachment/${typeId}/customFieldGroups` }
 }
+
 const getAttachmentTypes = async () => {
   appStore.loading = true
   try {
     const { data, status } = await getRequest(`/attachmentType/types`)
-    attachmentTypes.value = orderBy(data, [
-      (a) => a.attachmentType.toLowerCase()
-    ])
+    attachmentTypes.value = data
 
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -213,11 +238,12 @@ const getAttachmentTypes = async () => {
     appStore.loading = false
   }
 }
+
 const deleteType = async () => {
   const item = itemToDelete.value
   appStore.loading = true
   try {
-    const { status } = await deleteRequest(`/attachmentType/delete/${item.id}`)
+    const { status } = await deleteRequest(`/attachmentType/${item.id}`)
     item.archived = true
     appStore.showSnack('SUCCESS', 'Successfully Deleted Attachment Type')
     handleHidingGlobalLoader(status)
@@ -245,13 +271,10 @@ const addNewType = async () => {
       []
     )
 
-    appStore.showSnack('SUCCESS', 'Action Type Added')
+    appStore.showSnack('SUCCESS', 'Attachment Type Added')
 
     // add it to the records already on the screen
     attachmentTypes.value.push(data)
-    attachmentTypes.value = orderBy(attachmentTypes.value, [
-      (a) => a.attachmentType.toLowerCase()
-    ])
 
     // reset the new process fields
     addNew.value = false
@@ -286,9 +309,6 @@ const closeDeleteDialog = () => {
 
       div.v-data-footer__select {
         justify-content: center;
-      }
-
-      div.v-data-footer__pagination {
       }
 
       div.v-data-footer__icons-before {

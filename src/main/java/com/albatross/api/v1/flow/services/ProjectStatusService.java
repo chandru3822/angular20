@@ -1,5 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ProjectStatusTypeController;
@@ -10,11 +12,16 @@ import com.albatross.api.v1.flow.model.project.ProjectStatusType;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.queries.ProjectStatusQuery;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
@@ -24,6 +31,8 @@ public class ProjectStatusService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final SqlArrayService sqlArrayService;
+  private final ObjectMapper om;
 
   public CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
     return sqlCache
@@ -46,23 +55,30 @@ public class ProjectStatusService {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
 
-    if (null != projectId) {
-      // had to change this so that a parent looking at a child project could still see project statuses
-      Map<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+
+    if (projectId != null) {
       params.put("projectId", projectId);
+
+      // had to change this so that a parent looking at a child project could still see project statuses
       companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
+      params.put("companyId", companyId);
+
+      return sqlCache.queryBySql(
+        ProjectStatusQuery.getCompanyStatusesForProjectId,
+        params, new ProjectStatusTypeMapper<>(ProjectStatusType.class, om));
     }
 
     // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
     return sqlCache.queryBySql(
       ProjectStatusQuery.getCompanyStatuses,
-      Map.of("companyId", companyId),
-      ProjectStatusType.class);
+      params, new ProjectStatusTypeMapper<>(ProjectStatusType.class, om));
   }
 
   public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
     return sqlCache.getBySql(
-      ProjectStatusQuery.getOneCompanyStatus, Map.of("id", id), ProjectStatusType.class);
+      ProjectStatusQuery.getOneCompanyStatus, Map.of("id", id), new ProjectStatusTypeMapper<>(ProjectStatusType.class, om));
   }
 
   public void saveInitialProjectStatusType(Long companyProjectStatusTypeId) {
@@ -77,29 +93,34 @@ public class ProjectStatusService {
   }
 
   public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
-    User currentUser = securityService.getCurrentUser();
-    Map<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.trueUserId());
-    params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
-    params.put("projectStatusType", status.getProjectStatusType());
-    params.put("description", status.getDescription());
-    params.put("isMilestone", status.getIsMilestone());
-    params.put("iconTag", status.getIconTag());
-    params.put("companyId", currentUser.getCompanyId());
-    Long id;
+    try {
+      User currentUser = securityService.getCurrentUser();
+      Map<String, Object> params = new HashMap<>();
+      params.put("currentUserId", currentUser.trueUserId());
+      params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
+      params.put("projectStatusType", status.getProjectStatusType());
+      params.put("description", status.getDescription());
+      params.put("isMilestone", status.getIsMilestone());
+      params.put("iconTag", status.getIconTag());
+      params.put("companyId", currentUser.getCompanyId());
+      params.put("objectCategoryIds", sqlArrayService.createSqlArrayOfType("int", status.getObjectCategoryIds()));
 
-    if (null != status.getId()) {
-      id = status.getId();
-      params.put("id", id);
-      params.put("displayOrder", status.getDisplayOrder());
-      sqlCache.updateBySql(ProjectStatusQuery.updateCompanyStatus, params);
-    } else {
-      id = sqlCache.updateBySqlReturningId(ProjectStatusQuery.insertCompanyStatus, params, "id").longValue();
+      Long id;
+
+      if (null != status.getId()) {
+        id = status.getId();
+        params.put("id", id);
+        params.put("displayOrder", status.getDisplayOrder());
+        sqlCache.updateBySql(ProjectStatusQuery.updateCompanyStatus, params);
+      } else {
+        id = sqlCache.queryForObjectBySql(ProjectStatusQuery.insertCompanyStatus, params, Long.class);
+      }
+
+      // handle attachment
+      return getOneCompanyProjectStatusType(id);
+    } catch (SQLException e) {
+      throw new ApiException(e);
     }
-
-    // handle attachment
-
-    return getOneCompanyProjectStatusType(id);
   }
 
   public void saveCompanyProjectStatuses(List<ProjectStatusType> statuses) {
@@ -155,18 +176,14 @@ public class ProjectStatusService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyProjectStatusTypeId", cpstId);
 
-    List<CompanyProjectStatusFieldAssignment> results = sqlCache.queryBySql(ProjectStatusQuery.getAssignedStatusFields, params, CompanyProjectStatusFieldAssignment.class);
-
-    return results;
+    return sqlCache.queryBySql(ProjectStatusQuery.getAssignedStatusFields, params, CompanyProjectStatusFieldAssignment.class);
   }
 
   public Optional<CompanyProjectStatusFieldAssignment> getOneCompanyProjectStatusFieldAssignment(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<CompanyProjectStatusFieldAssignment> result = sqlCache.getBySql(ProjectStatusQuery.getStatusFieldAssignment, params, CompanyProjectStatusFieldAssignment.class);
-
-    return result;
+    return sqlCache.getBySql(ProjectStatusQuery.getStatusFieldAssignment, params, CompanyProjectStatusFieldAssignment.class);
   }
 
   public void saveFieldsOrder(Long cpstId, List<CompanyProjectStatusFieldAssignment> fields) {
@@ -194,5 +211,24 @@ public class ProjectStatusService {
     params.put("id", fieldId);
 
     sqlCache.updateBySql(ProjectStatusQuery.archiveField, params);
+  }
+
+  public static class ProjectStatusTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProjectStatusTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Long>> listTypeReference = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class,
+        "objectCategoryIds",
+        new JsonCollectionDeserializer<>(listTypeReference, objectMapper));
+    }
   }
 }

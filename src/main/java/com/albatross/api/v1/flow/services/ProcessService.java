@@ -34,7 +34,7 @@ public class ProcessService {
   private final ObjectMapper om;
   private final SecurityService securityService;
 
-  public List<CompanyProcess> getProcessesForCompany(Long contactId) {
+  public List<CompanyProcess> getProcessesForCompany(Long contactId, Boolean contactInitialize) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
@@ -46,7 +46,18 @@ public class ProcessService {
     }
 
     return sqlCache.queryBySql(
-      ProcessQuery.getAllForCompany, Map.of("companyId", companyId), new CompanyProcessMapper<>(CompanyProcess.class, om));
+      ProcessQuery.getAllForCompany, Map.of("companyId", companyId, "contactInitialize", null != contactInitialize && contactInitialize), new CompanyProcessMapper<>(CompanyProcess.class, om));
+  }
+
+  public List<ChildCompanyProcess> getChildProcessesForProcess(Long companyProcessId) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("companyProcessId", companyProcessId);
+
+    return sqlCache.queryBySql(
+      ProcessQuery.getChildProcessesForProcess, params, ChildCompanyProcess.class);
   }
 
   public Optional<CompanyProcess> getProcess(Long companyId, Long processId, Long projectId) {

@@ -83,12 +83,13 @@
                   {{ item.state ? item.state : '' }}
                 </router-link>
               </td>
-              <td class="text-right">
+              <td class="d-flex align-center justify-end">
                 <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
                 <span v-else>
                   <router-link :to="`ahj/${item.id}/permit`" class="mr-3 ahj-link primary--text">Permit</router-link>
                   <router-link :to="`ahj/${item.id}/inspection`" class="mr-3 ahj-link primary--text">Inspection</router-link>
                   <router-link :to="`ahj/${item.id}/design`" class="mr-3 ahj-link primary--text">Design</router-link>
+                  <router-link :to="`ahj/${item.id}/newHome`" class="mr-3 ahj-link primary--text">New Home</router-link>
                 </span>
                 <v-icon v-if="userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')" color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
@@ -225,10 +226,10 @@ const emit = defineEmits(['updateNameSearch'])
 const dataLoading = ref(true)
 const tabs = ref(FEAT_DB_TABS)
 const headers = ref([
-  { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true },
-  { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 250, show: true },
-  { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 200, show: true },
-  { text: null, value: 'icons', sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
+  { text: 'Name', value: 'name', width: 200, show: true },
+  { text: 'Metro Area', value: 'metroArea', width: 200, show: true },
+  { text: 'State', value: 'state', width: 200, show: true },
+  { text: null, value: 'icons', sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 400 }
 ])
 const ahjs = ref([])
 const editedItem = ref({id: '', name: '',metroAreaId: '', archived:'', active:''})

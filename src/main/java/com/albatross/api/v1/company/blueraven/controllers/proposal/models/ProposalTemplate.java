@@ -10,6 +10,8 @@ import java.util.List;
 @Accessors(chain = true)
 public class ProposalTemplate implements Serializable {
   private Long id;
+  private Long objectCategoryId;
+  private String objectCategory;
   private String templateName;
   private ProposalTheme theme;
   private List<ProposalTemplateBlock> blocks;

@@ -48,8 +48,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.*;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 @Slf4j
 @Service
@@ -60,7 +59,6 @@ public class ProposalTemplateService {
   private final freemarker.template.Configuration freemarkerConfiguration;
   private final com.jayway.jsonpath.Configuration jsonPathConfiguration;
   private final PdfService pdfService;
-
 
   public ProposalTemplateService(
     SqlCache sqlCache,
@@ -80,6 +78,10 @@ public class ProposalTemplateService {
         .options(Option.DEFAULT_PATH_LEAF_TO_NULL, Option.SUPPRESS_EXCEPTIONS)
         .mappingProvider(new JacksonMappingProvider())
         .build();
+  }
+
+  public List<ProposalTemplate> getTemplates(){
+    return sqlCache.queryBySql(ProposalTemplateQuery.listTemplates, Map.of(), new ProposalTemplateMapper(objectMapper));
   }
 
   public ProposalTemplate getTemplateById(Long templateId, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType) {
@@ -415,7 +417,12 @@ public class ProposalTemplateService {
 
     final StringWriter stringWriter = new StringWriter();
     final Template template = freemarkerConfiguration.getTemplate("proposal/index.ftlh");
-    template.process(Map.of("template", blocks, "theme", theme), stringWriter);
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("template", blocks);
+    params.put("theme", theme);
+
+    template.process(params, stringWriter);
     final String processedTemplate = stringWriter.toString();
 
     log.debug("Duration of template processing:  {}", Duration.between(start, Instant.now()));

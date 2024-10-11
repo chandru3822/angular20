@@ -9,43 +9,52 @@
             <a-btn
               variant="text"
               color="primary"
-              @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]"
+              @click="
+                ;[
+                  (addNew = !addNew),
+                  (newRoundRobin = {}),
+                  getCompanyTimezones()
+                ]
+              "
               v-if="userCanAdd"
-              :text="addNew ? 'Cancel' : 'Add New' "
+              :text="addNew ? 'Cancel' : 'Add New'"
             ></a-btn>
-
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-card color="transparent" flat v-if="addNew">
+          <v-card class="pa-5 mb-2" v-if="addNew">
             <a-text-field
               label="Round Robin Name"
-              tabindex=1
+              tabindex="1"
               v-model="newRoundRobin.roundRobinName"
             ></a-text-field>
             <a-text-field
               label="Distribution Time Frame (Days)"
-              tabindex=1
+              tabindex="1"
               type="number"
               v-model.number="newRoundRobin.distributionTimeFrameDays"
             ></a-text-field>
-            <a-autocomplete v-model="newRoundRobin.companyTimezoneId"
-                            :items="companyTimezones"
-                            label="Time Zone"
-                            style="width: 200px;"
-                            item-title="timezone"
-                            item-value="id"
-                            attach
+            <a-autocomplete
+              v-model="newRoundRobin.companyTimezoneId"
+              :items="companyTimezones"
+              label="Time Zone"
+              style="width: 200px"
+              item-title="timezone"
+              item-value="id"
+              attach
             ></a-autocomplete>
             <a-btn
               color="primary"
-              :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays
-                  || !newRoundRobin.companyTimezoneId"
+              :disabled="
+                !newRoundRobin.roundRobinName ||
+                !newRoundRobin.distributionTimeFrameDays ||
+                !newRoundRobin.distributionTimeFrameDays ||
+                !newRoundRobin.companyTimezoneId
+              "
               @click="addRoundRobin"
               class="mb-3"
               text="Save"
             ></a-btn>
-
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card clickable">
@@ -66,46 +75,73 @@
               :items-per-page="-1"
               disable-sort
               :loading="dataLoading"
-
               hide-default-footer
               :mobile-breakpoint="770"
               class="elevation-1 table-striped"
             >
-
               <template #header.roundRobinName="{ header }">
                 <th class="pa-2 text-left">
                   {{ header.text }}
-                  <a-text-field variant="outlined"
-                                hide-details
-                                class="filter-input"
-                                v-model="nameSearch"
-                                @input="filterResults()">
+                  <a-text-field
+                    variant="outlined"
+                    hide-details
+                    class="filter-input"
+                    v-model="nameSearch"
+                    @input="filterResults()"
+                  >
                   </a-text-field>
                 </th>
               </template>
 
               <template #item.roundRobinName="{ item, index }">
-                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
+                <router-link
+                  :to="`/settings/roundRobin/${item.id}/scheduleTo`"
+                  class="elevation-0 router-link-td table-striped"
+                >
                   {{ item.roundRobinName }}
                 </router-link>
               </template>
-              <template #item.distributionTimeFrameDays="{item, index}" class="text-left">
-                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
+              <template
+                #item.distributionTimeFrameDays="{ item, index }"
+                class="text-left"
+              >
+                <router-link
+                  :to="`/settings/roundRobin/${item.id}/scheduleTo`"
+                  class="elevation-0 router-link-td table-striped"
+                >
                   {{ item.distributionTimeFrameDays }}
                 </router-link>
               </template>
-              <template #item.schedulableFutureDays="{item, index}" class="text-left">
-                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
+              <template
+                #item.schedulableFutureDays="{ item, index }"
+                class="text-left"
+              >
+                <router-link
+                  :to="`/settings/roundRobin/${item.id}/scheduleTo`"
+                  class="elevation-0 router-link-td table-striped"
+                >
                   {{ item.schedulableFutureDays }}
                 </router-link>
               </template>
-              <template #item.usesTotalLeadAllocation="{item, index}" class="text-left">
-                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
-                  <input type="checkbox" readonly disabled v-model="item.usesTotalLeadAllocation" class="pr-0"/>
+              <template
+                #item.usesTotalLeadAllocation="{ item, index }"
+                class="text-left"
+              >
+                <router-link
+                  :to="`/settings/roundRobin/${item.id}/scheduleTo`"
+                  class="elevation-0 router-link-td table-striped"
+                >
+                  <input
+                    type="checkbox"
+                    readonly
+                    disabled
+                    v-model="item.usesTotalLeadAllocation"
+                    class="pr-0"
+                  />
                 </router-link>
               </template>
 
-              <template #item.icons="{item, index}" class="text-right">
+              <template #item.icons="{ item, index }" class="text-right">
                 <a-btn
                   icon
                   color="primary"
@@ -119,12 +155,13 @@
                   v-if="userCanDelete"
                   icon
                   color="primary"
-                  @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
+                  @click.native.stop="
+                    ;[(itemToDelete = item), (showDeleteDialog = true)]
+                  "
                   prevent-default
                   prepend-icon="delete"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 ></a-btn>
-
               </template>
             </v-data-table>
           </v-card>
@@ -134,15 +171,15 @@
     <ConfirmationDialog
       :open-dialog="showDeleteDialog"
       @confirm="deleteRoundRobin"
-      @close-dialog="closeDeleteDialog">
-      Are you sure you want to delete this round robin: <strong>{{ itemToDeleteName }}</strong>
-
+      @close-dialog="closeDeleteDialog"
+    >
+      Are you sure you want to delete this round robin:
+      <strong>{{ itemToDeleteName }}</strong>
     </ConfirmationDialog>
   </v-container>
 </template>
 
 <script setup>
-
 import debounce from 'lodash.debounce'
 import cloneDeep from 'lodash.clonedeep'
 import {
@@ -152,19 +189,18 @@ import {
   postRequest,
   getSnackbar
 } from '@/helpers/helpers'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import {useRouter} from "vue-router/composables";
-import {useUserStore} from '@/stores/UserStore.js'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router/composables'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const router = useRouter()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
- const userStore = useUserStore()
-
+const userStore = useUserStore()
 
 const addNew = ref(false)
 const search = ref(null)
@@ -178,16 +214,27 @@ const companyTimezones = ref([])
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
 const headers = ref([
-  {text: 'Round Robin Name', value: 'roundRobinName', show: true},
-  {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
-  {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
-  {text: 'Uses Total Lead Allocation', value: 'usesTotalLeadAllocation', show: true},
-  {text: '', value: 'icons', show: true},
+  { text: 'Round Robin Name', value: 'roundRobinName', show: true },
+  {
+    text: 'Distribution Time Frame (Days)',
+    value: 'distributionTimeFrameDays',
+    show: true
+  },
+  {
+    text: 'Schedulable Future Days',
+    value: 'schedulableFutureDays',
+    show: true
+  },
+  {
+    text: 'Uses Total Lead Allocation',
+    value: 'usesTotalLeadAllocation',
+    show: true
+  },
+  { text: '', value: 'icons', show: true }
 ])
 
-
 const filteredRoundRobins = computed(() => {
-  return roundRobins.value.filter(pcz => {
+  return roundRobins.value.filter((pcz) => {
     return !pcz.archived
   })
 })
@@ -214,11 +261,10 @@ onMounted(() => {
   getRoundRobins()
 })
 
-
 const getCompanyTimezones = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequestWithParams(`/timezone`)
+    const { data, status } = await getRequestWithParams(`/timezone`)
     companyTimezones.value = data
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -233,14 +279,16 @@ const debounceSearch = debounce(() => {
 }, 500)
 
 const goToRoundRobin = (rr) => {
-  router.push({path: `/settings/roundRobin/${rr.id}/scheduleTo`})
+  router.push({ path: `/settings/roundRobin/${rr.id}/scheduleTo` })
 }
 
 const getRoundRobins = async () => {
   dataLoading.value = true
   appStore.loading = true
   try {
-    const {data, status} = await getRequestWithParams(`/roundRobin`, {params: {searchQuery: search.value}})
+    const { data, status } = await getRequestWithParams(`/roundRobin`, {
+      params: { searchQuery: search.value }
+    })
     roundRobins.value = data
     masterRoundRobins.value = cloneDeep(data)
     dataLoading.value = false
@@ -257,7 +305,7 @@ const deleteRoundRobin = async () => {
   const roundRobinId = itemToDelete.value.id
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/roundRobin/${roundRobinId}`)
+    const { status } = await deleteRequest(`/roundRobin/${roundRobinId}`)
     appStore.showSnack('SUCCESS', 'Round Robin Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -270,10 +318,13 @@ const deleteRoundRobin = async () => {
 const addRoundRobin = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await postRequest(`/roundRobin`, newRoundRobin.value)
+    const { data, status } = await postRequest(
+      `/roundRobin`,
+      newRoundRobin.value
+    )
     appStore.showSnack('SUCCESS', 'Round Robin Added')
     handleHidingGlobalLoader(status)
-    await router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
+    await router.push({ path: `/settings/roundRobin/${data.id}/scheduleTo` })
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Adding Round Robin')
@@ -281,24 +332,22 @@ const addRoundRobin = async () => {
   }
 }
 const filterResults = () => {
-  roundRobins.value = masterRoundRobins.value.filter(pcz => {
-    return pcz?.roundRobinName?.toLowerCase().includes(nameSearch.value.toLowerCase())
+  roundRobins.value = masterRoundRobins.value.filter((pcz) => {
+    return pcz?.roundRobinName
+      ?.toLowerCase()
+      .includes(nameSearch.value.toLowerCase())
   })
 }
 const closeDeleteDialog = () => {
-  showDeleteDialog.value = false;
-  itemToDelete.value = null;
+  showDeleteDialog.value = false
+  itemToDelete.value = null
 }
-
-
 </script>
 
 <style lang="scss">
 #postal-codes .v-data-table__wrapper {
   height: calc(100vh - 300px);
   min-height: 300px;
-  border-top: solid 1px #E0E0E0;
+  border-top: solid 1px #e0e0e0;
 }
-
 </style>
-

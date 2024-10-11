@@ -1,8 +1,6 @@
 <template>
   <v-container id="hierarchy-container">
-    <v-dialog
-        v-model="deleteError"
-    >
+    <v-dialog v-model="deleteError">
       <v-card>
         <v-card-title class="text-h5 error--text">
           Error Deleting Message Template
@@ -12,22 +10,21 @@
           Template in use by:
           <v-list v-for="(item, index) in templateInUseList" :key="index">
             <v-list-item-content>
-              {{getNonDeleteText(item)}}
+              {{ getNonDeleteText(item) }}
             </v-list-item-content>
           </v-list>
-
         </v-card-text>
 
         <v-card-actions>
           <v-spacer></v-spacer>
 
           <a-btn
-              color="primary"
-              variant="text"
-              dark
-              class="white--text"
-              @click="deleteError = false"
-              text="Ok"
+            color="primary"
+            variant="text"
+            dark
+            class="white--text"
+            @click="deleteError = false"
+            text="Ok"
           />
         </v-card-actions>
       </v-card>
@@ -35,50 +32,72 @@
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!vuetify.breakpoint.smAndDown" class="app-title">Message Templates</v-toolbar-title>
+          <v-toolbar-title
+            v-if="!vuetify.breakpoint.smAndDown"
+            class="app-title"
+          >
+            Message Templates
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
               variant="text"
               color="primary"
-              @click="[addTemplate = !addTemplate, newType = {}]"
+              @click=";[(addTemplate = !addTemplate), (newType = {})]"
               v-if="userCanEdit"
               :hide-text-on-mobile="vuetify.breakpoint.smAndDown"
-              :prepend-icon="vuetify.breakpoint.smAndDown ? addTemplate ? 'close' : 'add' : ''"
+              :prepend-icon="
+                vuetify.breakpoint.smAndDown
+                  ? addTemplate
+                    ? 'close'
+                    : 'add'
+                  : ''
+              "
               :text="addTemplate ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="addTemplate" class="text-left pa-5 mb-3 mt-2" flat >
+        <v-card v-if="addTemplate" class="pa-5 mb-2">
           <h3>Add Template</h3>
-          <a-text-field  v-model="newTemplate.title"
-                        label="Title" />
-          <a-textarea v-model="newTemplate.message"
-                      label="Message" />
-          <a-autocomplete v-model="newTemplate.teamIds"
-                          :items="selectableTeams"
-                          item-title="teamName"
-                          item-value="id"
-                          multiple
-                          placeholder="Select Team(s)"
-                          height="35px"
-                          variant="outlined"
-                          class="team-select"
+          <a-text-field v-model="newTemplate.title" label="Title" />
+          <a-textarea v-model="newTemplate.message" label="Message" />
+          <a-autocomplete
+            v-model="newTemplate.teamIds"
+            :items="selectableTeams"
+            item-title="teamName"
+            item-value="id"
+            multiple
+            placeholder="Select Team(s)"
+            height="35px"
+            variant="outlined"
+            class="team-select"
           >
-            <template  v-slot:selection="{item, index}">
-              <v-chip small v-if="index === 0 && newTemplate.teamIds && newTemplate.teamIds.length < 2">
+            <template v-slot:selection="{ item, index }">
+              <v-chip
+                small
+                v-if="
+                  index === 0 &&
+                  newTemplate.teamIds &&
+                  newTemplate.teamIds.length < 2
+                "
+              >
                 <span>{{ item.teamName }}</span>
               </v-chip>
               <span
-                v-if="index === 1 && newTemplate.teamIds && newTemplate.teamIds.length >= 2"
+                v-if="
+                  index === 1 &&
+                  newTemplate.teamIds &&
+                  newTemplate.teamIds.length >= 2
+                "
                 class="primary--text caption"
-              >{{ newTemplate.teamIds.length }} selected</span>
+                >{{ newTemplate.teamIds.length }} selected</span
+              >
             </template>
           </a-autocomplete>
           <a-btn
             variant="text"
             color="primary"
-            @click="[addTemplate = !addTemplate, newTemplate = {}]"
+            @click=";[(addTemplate = !addTemplate), (newTemplate = {})]"
             text="Cancel"
           />
           <a-btn
@@ -101,89 +120,124 @@
           :item-class="rowClass"
         >
           <template v-slot:header.teamIds="{ header }">
-            <div class="d-flex align-baseline filter-dropdown flex-column flex-md-row"> <div>{{ header.text }}<v-icon small @click="showFilter = !showFilter">mdi-filter</v-icon></div>
-            <a-autocomplete v-if="showFilter"
-                            v-model="teamFilter"
-                            :items="selectableTeams"
-                            item-title="teamName"
-                            item-value="id"
-                            clearable
-                            autofocus
-                            placeholder="Enter Team Name"
-                            class="pl-3 font-weight-regular albatross-body-2"
-            ></a-autocomplete>
-           </div>
+            <div
+              class="d-flex align-baseline filter-dropdown flex-column flex-md-row"
+            >
+              <div>
+                {{ header.text }}
+                <v-icon small @click="showFilter = !showFilter">
+                  mdi-filter
+                </v-icon>
+              </div>
+              <a-autocomplete
+                v-if="showFilter"
+                v-model="teamFilter"
+                :items="selectableTeams"
+                item-title="teamName"
+                item-value="id"
+                clearable
+                autofocus
+                placeholder="Enter Team Name"
+                class="pl-3 font-weight-regular albatross-body-2"
+              ></a-autocomplete>
+            </div>
           </template>
           <template #no-data>
             <span class="default-text-color">No templates available</span>
           </template>
           <template #no-results>
-            <span class="default-text-color">No templates match your selection</span>
+            <span class="default-text-color">
+              No templates match your selection
+            </span>
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-6" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
-              <a-text-field  v-model="item.title" label="Template Name" class="pb-4"/>
-              <a-textarea v-model="item.message"
-                          label="Template Message"
-                          auto-grow
-                          variant="outlined"
+            <td
+              :colspan="headers.length"
+              class="pa-6"
+              :class="{ 'shaded-row': filterTemplates.indexOf(item) % 2 }"
+            >
+              <a-text-field
+                v-model="item.title"
+                label="Template Name"
+                class="pb-4"
+              />
+              <a-textarea
+                v-model="item.message"
+                label="Template Message"
+                auto-grow
+                variant="outlined"
               ></a-textarea>
 
-
-              <a-autocomplete v-model="item.teamIds"
-                              :items="selectableTeams"
-                              item-title="teamName"
-                              item-value="id"
-                              multiple
-                              label="Teams"
-                              class="team-select mt-0 pb-3"
+              <a-autocomplete
+                v-model="item.teamIds"
+                :items="selectableTeams"
+                item-title="teamName"
+                item-value="id"
+                multiple
+                label="Teams"
+                class="team-select mt-0 pb-3"
               >
-
               </a-autocomplete>
 
               <a-btn
                 color="primary"
                 class="white--text mr-2"
-                :disabled="!item.title || !item.message" @click="saveTemplate(item, false)"
+                :disabled="!item.title || !item.message"
+                @click="saveTemplate(item, false)"
                 text="Save"
               />
             </td>
           </template>
 
-          <template #item.title="{ item }" class="text-left">{{ item.title }}</template>
-              <template #item.teamIds="{item}" class="">{{getTeamsForTemplate(item)}}</template>
-              <template #item.icons="{item, index}" class="text-right flex-display align-center">
-                <a-btn
-                  size="small"
-                  variant="text"
-                  color="primary"
-                  v-if="!expanded.includes(item) && userCanEdit"
-                  @click="expanded = [item]; expandedItem = item;"
-                  prepend-icon="edit"
-                />
-                <a-btn
-                  size="small"
-                  variant="text"
-                  color="primary"
-                  v-if="!expanded.includes(item) && userCanEdit" @click="templateToDelete=item"
-                  prepend-icon="delete"
-                />
-                <a-btn
-                  size="small"
-                  variant="text"
-                  color="primary"
-                  v-if="expanded.includes(item)"
-                  @click="expanded = []"
-                  text="Cancel"
-                  :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
-                  hide-text-on-mobile
-                />
-              </template>
+          <template #item.title="{ item }" class="text-left">{{
+            item.title
+          }}</template>
+          <template #item.teamIds="{ item }" class="">{{
+            getTeamsForTemplate(item)
+          }}</template>
+          <template
+            #item.icons="{ item, index }"
+            class="text-right flex-display align-center"
+          >
+            <a-btn
+              size="small"
+              variant="text"
+              color="primary"
+              v-if="!expanded.includes(item) && userCanEdit"
+              @click="
+                expanded = [item]
+                expandedItem = item
+              "
+              prepend-icon="edit"
+            />
+            <a-btn
+              size="small"
+              variant="text"
+              color="primary"
+              v-if="!expanded.includes(item) && userCanEdit"
+              @click="templateToDelete = item"
+              prepend-icon="delete"
+            />
+            <a-btn
+              size="small"
+              variant="text"
+              color="primary"
+              v-if="expanded.includes(item)"
+              @click="expanded = []"
+              text="Cancel"
+              :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
+              hide-text-on-mobile
+            />
+          </template>
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!templateToDelete" @confirm="deleteTemplate" @close-dialog="templateToDelete=null">
+    <ConfirmationDialog
+      :open-dialog="!!templateToDelete"
+      @confirm="deleteTemplate"
+      @close-dialog="templateToDelete = null"
+    >
       Are you sure you want to delete this template?
     </ConfirmationDialog>
   </v-container>
@@ -193,13 +247,12 @@
 import {
   handleHidingGlobalLoader,
   putRequest,
-  getRequest, getRowClass,
+  getRequest,
+  getRowClass
 } from '@/helpers/helpers'
-import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-
-import {computed, getCurrentInstance, onMounted, ref} from 'vue'
+import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 const vueInstance = getCurrentInstance().proxy
@@ -225,9 +278,14 @@ const teams = ref([])
 const selectableTeams = ref([])
 const templateToDelete = ref(null)
 const headers = ref([
-  {text: 'Template Title', value: 'title', show: true },
-  {text: 'Teams', value: 'teamIds', show: true, sortable: false, filter: value => {
-      if(!value || !teamFilter.value) {
+  { text: 'Template Title', value: 'title', show: true },
+  {
+    text: 'Teams',
+    value: 'teamIds',
+    show: true,
+    sortable: false,
+    filter: (value) => {
+      if (!value || !teamFilter.value) {
         return true
       }
       return value.includes(teamFilter.value)
@@ -240,20 +298,22 @@ const rowClass = (item) => {
 }
 
 const filterTemplates = computed(() => {
-  return templates.value.filter(tmp => !tmp.archived)
+  return templates.value.filter((tmp) => !tmp.archived)
 })
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
 })
 
 const getNonDeleteText = (item) => {
-  return `Process Step: ${item.processStepName}, ${item.eventName ? `Event: ${item.eventName}, ` : ''} Action: ${item.actionName}`
+  return `Process Step: ${item.processStepName}, ${
+    item.eventName ? `Event: ${item.eventName}, ` : ''
+  } Action: ${item.actionName}`
 }
 
 const getTemplates = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/messaging/templates`)
+    const { data, status } = await getRequest(`/messaging/templates`)
     templates.value = data
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -265,8 +325,8 @@ const getTemplates = async () => {
 const saveTemplate = async (template, isNew) => {
   appStore.loading = true
   try {
-    const {data, status} = await putRequest(`/messaging/template`, template)
-    if(isNew){
+    const { data, status } = await putRequest(`/messaging/template`, template)
+    if (isNew) {
       templates.value.push(data)
       addTemplate.value = false
       newTemplate.value = {}
@@ -278,7 +338,10 @@ const saveTemplate = async (template, isNew) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
+    appStore.showSnack(
+      'ERROR',
+      isNew ? 'Error Adding Template' : 'Error Updating Template'
+    )
 
     appStore.loading = false
   }
@@ -286,7 +349,9 @@ const saveTemplate = async (template, isNew) => {
 const deleteTemplate = async () => {
   const template = templateToDelete.value
   try {
-    const {status} = await putRequest(`/messaging/template/delete/${template.id}`)
+    const { status } = await putRequest(
+      `/messaging/template/delete/${template.id}`
+    )
     showDeleteDialog.value = false
     template.archived = true
     appStore.showSnack('SUCCESS', 'Template Deleted')
@@ -305,7 +370,7 @@ const deleteTemplate = async () => {
 }
 const getTeams = async () => {
   try {
-    const {data} = await getRequest(`/smsTeam`)
+    const { data } = await getRequest(`/smsTeam`)
     selectableTeams.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -314,16 +379,17 @@ const getTeams = async () => {
 }
 
 const getTeamsForTemplate = (template) => {
-  const teamNames = selectableTeams.value.filter(team => template.teamIds.includes(team.id)).map(team => {
-    return team.teamName
-  })
-  return teamNames.join(", ")
+  const teamNames = selectableTeams.value
+    .filter((team) => template.teamIds.includes(team.id))
+    .map((team) => {
+      return team.teamName
+    })
+  return teamNames.join(', ')
 }
 onMounted(async () => {
   await getTemplates()
   await getTeams()
 })
-
 </script>
 
 <style lang="scss">
@@ -334,7 +400,6 @@ onMounted(async () => {
 </style>
 
 <style lang="scss" scoped>
-
 .filter-dropdown {
   width: 50%;
 }
@@ -346,7 +411,7 @@ onMounted(async () => {
 }
 
 .wqt-header-bar {
-  border-bottom: 1px solid #E6E6E6;
-  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #e6e6e6;
+  border-top: 1px solid #e6e6e6;
 }
 </style>

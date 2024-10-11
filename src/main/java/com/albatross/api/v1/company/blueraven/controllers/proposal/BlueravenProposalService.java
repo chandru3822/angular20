@@ -767,12 +767,12 @@ public class BlueravenProposalService {
     }
   }
 
-  public Optional<ProposalResource> generateProposalPDF(Long proposalId, Long templateId) {
+  public Optional<ProposalResource> generateProposalPDF(Long proposalId) {
     return getSimpleProposal(proposalId)
       .flatMap(proposal -> {
         try {
           final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
-          Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
+          Resource pdf = proposalTemplateService.generatePdf(proposal.getProposalTemplateId(), context, false);
           return Optional.of(new ProposalResource(pdf, proposal, context));
         } catch (ApiException apiException) {
           throw apiException;

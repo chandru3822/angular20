@@ -5,10 +5,6 @@ import lombok.Setter;
 
 import java.util.List;
 
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Getter
 @Setter
 public class CustomFieldGroup {
@@ -34,6 +30,6 @@ public class CustomFieldGroup {
   private Boolean showColor = false;
   private Boolean showGroupId = false;
 
-  private List<Long> companyProcessStepStatusTypeIds, companyEventStatusTypeIds, processStepStatusTypeIds, eventStatusTypeIds;
+  private List<Long> companyProcessStepStatusTypeIds, companyEventStatusTypeIds, processStepStatusTypeIds, eventStatusTypeIds, objectCategoryIds;
 }
 

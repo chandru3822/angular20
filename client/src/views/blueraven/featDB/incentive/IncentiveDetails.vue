@@ -27,7 +27,7 @@
                           variant="text"
                           color="primary"
                           prepend-icon="history"
-                          @click="showChangeLog = !showChangeLog"
+                          @click="getChangeLog"
                           v-bind="attrs"
                           :activation-handler="{ ...tooltip, ...menu }">
                         </a-btn>
@@ -170,20 +170,22 @@ const incentiveId = computed(() => {
 onMounted(async() => {
   await getIncentive()
   await getCustomFieldGroupAssignmentsForScreen()
-  await getChangeLog()
   dataReady.value = true
 })
 
 const getChangeLog = async() => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/featDb/incentive/${incentiveId.value}/getIncentiveHistory`, 'blueraven')
-    changeLog.value = cloneDeep(data)
-    handleHidingGlobalLoader(status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Retrieving Incentive Change Log')
-    appStore.loading = false
+  showChangeLog.value = !showChangeLog.value
+  if(showChangeLog.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/featDb/incentive/${incentiveId.value}/getIncentiveHistory`, 'blueraven')
+      changeLog.value = cloneDeep(data)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Incentive Change Log')
+      appStore.loading = false
+    }
   }
 }
 
@@ -270,7 +272,6 @@ const saveIncentive = async()  => {
     incentive.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "Incentive saved")
-    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)

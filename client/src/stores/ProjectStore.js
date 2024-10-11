@@ -12,7 +12,9 @@ const defaultState = {
   rightSideSplit: false,
   activePpsDropdown: true,
   activeEventDropdown: true,
-  projectDetailsDropdown: false
+  projectDetailsDropdown: false,
+  projectChildrenDropdown: false,
+  projectParentDropdown: false
 }
 
 export const useProjectStore = defineStore('project', {

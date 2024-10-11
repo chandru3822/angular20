@@ -2,11 +2,13 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.CreateAttachmentType;
 import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.model.ObjectTypeAttachmentType;
 import com.albatross.api.v1.flow.model.event.EventAttachmentType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,7 +37,7 @@ public class AttachmentTypeController {
     return attachmentTypeService.getSystemAttachmentTypes();
   }
 
-  @DeleteMapping(value = "/delete/{typeId}")
+  @DeleteMapping(value = "/{typeId}")
   public ResponseEntity<List<FieldInUse>> deleteType(@PathVariable Long typeId) {
     List<FieldInUse> fieldInUses = attachmentTypeService.deleteType(typeId);
     if (fieldInUses.isEmpty()) {
@@ -44,19 +46,20 @@ public class AttachmentTypeController {
     return ResponseEntity.badRequest().body(fieldInUses);
   }
 
-  @PutMapping(value = "/type")
-  public void updateType(@RequestBody AttachmentType type) {
-    attachmentTypeService.updateType(type);
-  }
 
   @PostMapping(value = "/type")
-  public Optional<AttachmentType> insertType(@RequestBody AttachmentType type) {
+  public Optional<AttachmentType> insertType(@RequestBody @Valid CreateAttachmentType type) {
     return attachmentTypeService.insertType(type);
   }
 
   @GetMapping(value = "/type/{id}")
   public Optional<AttachmentType> getType(@PathVariable Long id) {
     return attachmentTypeService.getType(id);
+  }
+
+  @PutMapping(value = "/type/{id}")
+  public void updateType(@PathVariable Long id, @RequestBody @Valid CreateAttachmentType type) {
+    attachmentTypeService.updateType(id, type);
   }
 
   //endpoints for displaying attachment types for uploading to (non-admin side)
@@ -275,29 +278,30 @@ public class AttachmentTypeController {
   @GetMapping(value = "/objectType/project")
   public List<ObjectTypeAttachmentType> getAssignedTypesForProject(@RequestParam Boolean allowUpload,
                                                                    @RequestParam Boolean focused,
-                                                                   @RequestParam Boolean linkable) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.PROJECT, allowUpload, focused, linkable);
+                                                                   @RequestParam Boolean linkable,
+                                                                   @RequestParam(required = false) Long objectCategoryId) {
+    return attachmentTypeService.getAssignedTypes(ObjectType.PROJECT, allowUpload, focused, linkable, objectCategoryId);
   }
 
   @GetMapping(value = "/objectType/contact")
   public List<ObjectTypeAttachmentType> getAssignedTypesForContact(@RequestParam Boolean allowUpload,
                                                                    @RequestParam Boolean focused,
                                                                    @RequestParam Boolean linkable) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.CONTACT, allowUpload, focused, linkable);
+    return attachmentTypeService.getAssignedTypes(ObjectType.CONTACT, allowUpload, focused, linkable, null);
   }
 
   @GetMapping(value = "/objectType/user")
   public List<ObjectTypeAttachmentType> getAssignedTypesForUser(@RequestParam Boolean allowUpload,
                                                                 @RequestParam Boolean focused,
                                                                 @RequestParam Boolean linkable) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.USER, allowUpload, focused, linkable);
+    return attachmentTypeService.getAssignedTypes(ObjectType.USER, allowUpload, focused, linkable, null);
   }
 
   @GetMapping(value = "/objectType/org")
   public List<ObjectTypeAttachmentType> getAssignedTypesForOrg(@RequestParam Boolean allowUpload,
                                                                @RequestParam Boolean focused,
                                                                @RequestParam Boolean linkable) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.ORGANIZATION, allowUpload, focused, linkable);
+    return attachmentTypeService.getAssignedTypes(ObjectType.ORGANIZATION, allowUpload, focused, linkable, null);
   }
 
 }

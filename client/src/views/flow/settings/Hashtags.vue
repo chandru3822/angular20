@@ -3,40 +3,46 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Topic Hashtags</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
+            Topic Hashtags
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
               variant="text"
               color="primary"
-              @click="[addNew = !addNew, newTag = {}]"
+              @click=";[(addNew = !addNew), (newTag = {})]"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               hide-text-on-mobile
               :text="!addNew ? 'Add Topic' : 'Cancel'"
-              :prepend-icon="!addNew ? 'add' : vuetify.breakpoint.smAndDown ? 'close' : ''"
+              :prepend-icon="
+                !addNew ? 'add' : vuetify.breakpoint.smAndDown ? 'close' : ''
+              "
             />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-card v-if="addNew" flat color="transparent">
+          <v-card v-if="addNew" class="pa-5 mb-2">
             <v-form ref="hashtagForm">
               <div class="flex-display">
                 <v-icon size="14" class="mr-2">mdi-pound</v-icon>
-                <a-text-field v-model="newTag.hashtag"
-                              counter
-                              required
-                              :rules="hashtagRules"
-                              :maxlength="tagMaxChars"
-                              placeholder="Hashtag"
-                              @input="validateNew"
-                              label="Add Topic Hashtag">
+                <a-text-field
+                  v-model="newTag.hashtag"
+                  counter
+                  required
+                  :rules="hashtagRules"
+                  :maxlength="tagMaxChars"
+                  placeholder="Hashtag"
+                  @input="validateNew"
+                  label="Add Topic Hashtag"
+                >
                 </a-text-field>
               </div>
               <a-btn
                 variant="text"
                 color="primary"
                 class="mt-4"
-                @click="[addNew = !addNew, newTag = {}]"
+                @click=";[(addNew = !addNew), (newTag = {})]"
                 text="Cancel"
               />
 
@@ -52,12 +58,12 @@
           <v-card class="square-card">
             <v-card-title class="pt-0">
               <a-text-field
-                  v-model="search"
-                  prepend-inner-icon="search"
-                  label="Search"
-                  single-line
-                  hide-details
-                  clearable
+                v-model="search"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                hide-details
+                clearable
               ></a-text-field>
             </v-card-title>
             <v-data-table
@@ -79,11 +85,17 @@
               </template>
 
               <template #item="{ item }">
-                <tr class="text-left" :class="{'shaded-row': tags.indexOf(item) % 2}">
+                <tr
+                  class="text-left"
+                  :class="{ 'shaded-row': tags.indexOf(item) % 2 }"
+                >
                   <td class="text-left">
                     <div class="flex-display">
                       <v-icon size="14" class="mr-2">mdi-pound</v-icon>
-                      <v-form :ref="`editForm${item.id}`" v-if="selectedTagId === item.id">
+                      <v-form
+                        :ref="`editForm${item.id}`"
+                        v-if="selectedTagId === item.id"
+                      >
                         <a-text-field
                           class="one-hunned"
                           label="Hashtag"
@@ -91,7 +103,8 @@
                           required
                           :rules="hashtagRules"
                           :maxlength="tagMaxChars"
-                          v-model="item.hashtag">
+                          v-model="item.hashtag"
+                        >
                         </a-text-field>
                       </v-form>
                       <div v-else>
@@ -108,7 +121,10 @@
                       color="primary"
                       v-if="selectedTagId === item.id"
                       :disabled="!item.hashtag"
-                      @click="tagToSave=item; showSaveDialog = true"
+                      @click="
+                        tagToSave = item
+                        showSaveDialog = true
+                      "
                       prepend-icon="save"
                     />
                     <albatross-button
@@ -131,8 +147,14 @@
                       size="small"
                       variant="text"
                       color="primary"
-                      v-if="item.hashtagTypeId !== 1 && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      @click="tagToDelete=item"
+                      v-if="
+                        item.hashtagTypeId !== 1 &&
+                        userStore.userHasFeatureAccessLevel(
+                          'SETTINGS',
+                          'DELETE'
+                        )
+                      "
+                      @click="tagToDelete = item"
                       prepend-icon="delete"
                     />
 
@@ -157,46 +179,53 @@
                   </td>
                 </tr>
               </template>
-
             </v-data-table>
           </v-card>
-          <ConfirmationDialog :open-dialog="showSaveDialog" @confirm="validateExisting(tagToSave)" @close-dialog="closeSaveDialog">
-            This action will edit the topic in pre-existing notes that are using the original topic hashtag. Are you sure you want to edit the topic?
+          <ConfirmationDialog
+            :open-dialog="showSaveDialog"
+            @confirm="validateExisting(tagToSave)"
+            @close-dialog="closeSaveDialog"
+          >
+            This action will edit the topic in pre-existing notes that are using
+            the original topic hashtag. Are you sure you want to edit the topic?
             <template v-slot:title>Confirm</template>
             <template v-slot:yes>Save Changes</template>
           </ConfirmationDialog>
-          <ConfirmationDialog :open-dialog="!!tagToDelete" @confirm="deleteTag" @close-dialog="tagToDelete=null">
-            Are you sure you want to delete this topic: <strong>#{{ tagToDeleteValue }}</strong>?
+          <ConfirmationDialog
+            :open-dialog="!!tagToDelete"
+            @confirm="deleteTag"
+            @close-dialog="tagToDelete = null"
+          >
+            Are you sure you want to delete this topic:
+            <strong>#{{ tagToDeleteValue }}</strong
+            >?
           </ConfirmationDialog>
         </v-container>
       </v-col>
-
     </v-row>
   </v-container>
 </template>
 
-
 <script setup>
 import orderBy from 'lodash.orderby'
-import { getHashtags } from "@/services/activityService"
+import { getHashtags } from '@/services/activityService'
 import {
   handleHidingGlobalLoader,
   getRequest,
   deleteRequest,
   putRequest,
-  postRequest,
+  postRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-
-import { computed, getCurrentInstance, ref, onMounted } from "vue";
+import { computed, getCurrentInstance, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
- const store = vueInstance.$store
+const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 
@@ -213,17 +242,19 @@ const tagToSave = ref(null)
 const hashtagForm = ref(null)
 
 const headers = ref([
-  {text: 'Hashtag', value: 'hashtag', show: true},
-  {text: 'Type', value: 'hashtagType', show: true},
-  {text: '', value: 'icons', show: true},
+  { text: 'Hashtag', value: 'hashtag', show: true },
+  { text: 'Type', value: 'hashtagType', show: true },
+  { text: '', value: 'icons', show: true }
 ])
 
 const hashtagRules = ref([
-  v => !!v || 'Field is required',
-  v => /^[a-z\-]+$/.test(v) || 'Hashtag must only contain lowercase letters and hyphens',
-  v => /^[a-z].*$/.test(v) || 'Hashtag must start with a lowercase letter',
-  v => /.*[^-]$/.test(v) || 'Hashtag must end with a lowercase letter',
-  v => /^(?!.*--).*$/.test(v) || 'Hashtag cannot have 2 consecutive hyphens',
+  (v) => !!v || 'Field is required',
+  (v) =>
+    /^[a-z\-]+$/.test(v) ||
+    'Hashtag must only contain lowercase letters and hyphens',
+  (v) => /^[a-z].*$/.test(v) || 'Hashtag must start with a lowercase letter',
+  (v) => /.*[^-]$/.test(v) || 'Hashtag must end with a lowercase letter',
+  (v) => /^(?!.*--).*$/.test(v) || 'Hashtag cannot have 2 consecutive hyphens'
 ])
 
 const formValid = ref(false)
@@ -234,22 +265,22 @@ const tagToDeleteValue = computed(() => {
 })
 
 const filteredHashtags = computed(() => {
-  return tags.value.filter(t => !t.archived)
+  return tags.value.filter((t) => !t.archived)
 })
 
 const validateNew = () => {
   formValid.value = hashtagForm.value.validate()
 }
 const validateExisting = async (item) => {
-    let ref = vueInstance.$refs[`editForm${item.id}`]
-    if (ref && ref.validate()) {
-      await saveTag(item, false)
-    }
+  let ref = vueInstance.$refs[`editForm${item.id}`]
+  if (ref && ref.validate()) {
+    await saveTag(item, false)
+  }
 }
 const getTags = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getHashtags()
+    const { data, status } = await getHashtags()
     tags.value = data
     handleHidingGlobalLoader(status)
   } catch (pe) {
@@ -259,12 +290,12 @@ const getTags = async () => {
   }
 }
 
-const deleteTag = async () =>{
+const deleteTag = async () => {
   const tag = tagToDelete.value
   const hashtagId = tagToDelete.value.id
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/hashtag/${hashtagId}`)
+    const { status } = await deleteRequest(`/hashtag/${hashtagId}`)
     appStore.showSnack('SUCCESS', 'Hashtag Deleted')
     tag.archived = true
     handleHidingGlobalLoader(status)
@@ -279,13 +310,13 @@ const saveTag = async (hashtag, isNew) => {
   appStore.loading = true
   try {
     //yes this is hardcoded. im just trying to prep for future requests
-    hashtag.hashtagTypeId = 2  //2 = Notes, this is the only type they can add for now
-    const {data, status} = await putRequest(`/hashtag`, hashtag, null)
+    hashtag.hashtagTypeId = 2 //2 = Notes, this is the only type they can add for now
+    const { data, status } = await putRequest(`/hashtag`, hashtag, null)
     if (isNew) {
       addNew.value = false
       newTag.value = {}
       tags.value.push(data)
-      tags.value = orderBy(tags.value, [a => a.hashtag.toLowerCase()])
+      tags.value = orderBy(tags.value, [(a) => a.hashtag.toLowerCase()])
     } else {
       selectedTagId.value = null
     }
@@ -298,13 +329,11 @@ const saveTag = async (hashtag, isNew) => {
   }
 }
 const closeSaveDialog = () => {
-  showSaveDialog.value = false;
-  tagToSave.value = null;
+  showSaveDialog.value = false
+  tagToSave.value = null
 }
 
 onMounted(() => {
   getTags()
 })
-
 </script>
-

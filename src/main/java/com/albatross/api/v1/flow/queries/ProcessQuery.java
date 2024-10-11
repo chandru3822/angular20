@@ -34,7 +34,23 @@ public class ProcessQuery {
              inner join flow.process on process.id = cp.process_id
              where company_id = :companyId
               and cp.archived is not true
+              and case when :contactInitialize::boolean is true then cp.allow_contact_initiate is true else true end
              order by process.process_name
+    """;
+
+  //language=PostgreSQL
+  public final static String getChildProcessesForProcess = """
+             select cpccp.id,
+                    cpccp.child_company_process_id,
+                    p.process_name
+             from flow.company_process_child_company_process cpccp
+             inner join flow.company_process cp on cpccp.child_company_process_id = cp.id
+              inner join flow.process p on p.id = cp.process_id
+             where company_id = :companyId
+              and cp.archived is not true
+              and cpccp.archived is not true
+              and cpccp.company_process_id = :companyProcessId
+             order by p.process_name
     """;
 
   //language=PostgreSQL

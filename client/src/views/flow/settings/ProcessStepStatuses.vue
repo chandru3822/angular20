@@ -1,8 +1,6 @@
 <template>
   <v-container id="ps-container" class="custom-field-group-container">
-    <v-dialog width="700"
-              v-model="deleteError"
-    >
+    <v-dialog width="700" v-model="deleteError">
       <v-card>
         <v-card-title class="text-h5 grey lighten-2 error--text">
           Error Deleting Process Step Status
@@ -12,8 +10,16 @@
           <div v-if="fieldsInUse && fieldsInUse.inUseByPps" class="mb-5">
             Status is in use by one or more project process steps.
           </div>
-          <div v-if="fieldsInUse && fieldsInUse.steps && fieldsInUse.steps.length > 0" class="mb-5">
-            <div class="mb-3">* This process step type is being used by the following Process Steps.</div>
+          <div
+            v-if="
+              fieldsInUse && fieldsInUse.steps && fieldsInUse.steps.length > 0
+            "
+            class="mb-5"
+          >
+            <div class="mb-3">
+              * This process step type is being used by the following Process
+              Steps.
+            </div>
             <div v-for="a in fieldsInUse.steps" :key="a.id" class="ml-5">
               <strong>{{ a.processStepName }}</strong>
             </div>
@@ -37,38 +43,51 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!vuetify.breakpoint.smAndDown" class="app-title">Process Step Status Types</v-toolbar-title>
+          <v-toolbar-title
+            v-if="!vuetify.breakpoint.smAndDown"
+            class="app-title"
+          >
+            Process Step Status Types
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
               v-if="userCanEdit"
               variant="text"
               color="primary"
-              @click="[addNew = !addNew, newType = {}]"
+              @click=";[(addNew = !addNew), (newType = {})]"
               hide-text-on-mobile
-              :prepend-icon="vuetify.breakpoint.smAndDown ? addNew ? 'close' : 'add' : ''"
+              :prepend-icon="
+                vuetify.breakpoint.smAndDown ? (addNew ? 'close' : 'add') : ''
+              "
               :text="addNew ? 'Cancel' : 'Add New'"
-
             />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
-            <a-text-field v-if="addNew"
-                          v-model="newType.processStepStatusType"
-                          placeholder="Enter a type"
-                          label="Status Type">
+          <v-card v-if="addNew" class="pa-5 mb-2">
+            <a-text-field
+              v-if="addNew"
+              v-model="newType.processStepStatusType"
+              placeholder="Enter a type"
+              label="Status Type"
+            >
             </a-text-field>
-            <a-autocomplete single-line
-                            :items="rootStatusTypes"
-                            v-model="newType.processStepStatusTypeId"
-                            item-value="id"
-                            label="Select a Category"
-                            item-title="processStepStatusType"
-                            attach></a-autocomplete>
+            <a-autocomplete
+              single-line
+              :items="rootStatusTypes"
+              v-model="newType.processStepStatusTypeId"
+              item-value="id"
+              label="Select a Category"
+              item-title="processStepStatusType"
+              attach
+            ></a-autocomplete>
             <a-btn
               color="primary"
-              :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType"
+              :disabled="
+                !newType.processStepStatusTypeId ||
+                !newType.processStepStatusType
+              "
               @click="addNewType"
               text="Save"
             />
@@ -95,19 +114,26 @@
               class="elevation-1"
             >
               <template #expanded-item="{ headers, item }">
-                <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
+                <td
+                  :colspan="headers.length"
+                  class="pa-4 text-left"
+                  :class="{ 'shaded-row': statusTypes.indexOf(item) % 2 }"
+                >
                   <h3 class="mb-3">Edit Status Type</h3>
-                  <a-text-field v-model="item.processStepStatusType"
-                                label="Status Type"
-                                :readonly="!userCanEdit"
-                                :disabled="!userCanEdit"
+                  <a-text-field
+                    v-model="item.processStepStatusType"
+                    label="Status Type"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit"
                   ></a-text-field>
                   <a-autocomplete
                     :items="filteredRootStatuses"
                     v-model="item.processStepStatusTypeId"
                     item-value="id"
                     :readonly="!userCanEdit"
-                    :disabled="!userCanEdit || item.processStepStatusTypeId === 3"
+                    :disabled="
+                      !userCanEdit || item.processStepStatusTypeId === 3
+                    "
                     label="Select a Category"
                     item-title="processStepStatusType"
                     attach
@@ -117,28 +143,33 @@
                     color="primary"
                     dark
                     class="white--text mr-4"
-                    :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
+                    :disabled="
+                      !item.processStepStatusType ||
+                      !item.processStepStatusTypeId
+                    "
                     @click="saveType(item, false)"
                     text="Save"
                   />
                 </td>
               </template>
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
+                <tr :class="{ 'shaded-row': index % 2 }">
                   <td class="text-left">
-                    {{item.processStepStatusType}}
+                    {{ item.processStepStatusType }}
                   </td>
                   <td class="text-left">
-                    {{item.rootProcessStepStatusType}}
+                    {{ item.rootProcessStepStatusType }}
                   </td>
                   <td class="text-right">
                     <a-btn
                       size="small"
                       variant="text"
                       color="primary"
-                      @click="getUsesForStatus(item.id, item.processStepStatusType)"
+                      @click="
+                        getUsesForStatus(item.id, item.processStepStatusType)
+                      "
                       prepend-icon="mdi-clipboard-list-outline"
-                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
+                      :class="{ 'my-2': vuetify.breakpoint.smAndDown }"
                     />
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
@@ -149,10 +180,10 @@
                           v-bind="attrs"
                           :activation-handler="on"
                           prepend-icon="mdi-information"
-                          :class="{'my-2':vuetify.breakpoint.smAndDown}"
+                          :class="{ 'my-2': vuetify.breakpoint.smAndDown }"
                         />
                       </template>
-                      <span>Process Step Status ID: {{item.id}}</span>
+                      <span>Process Step Status ID: {{ item.id }}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
                     <a-btn
@@ -162,7 +193,7 @@
                       v-if="!expanded.includes(item)"
                       @click="expanded = [item]"
                       prepend-icon="edit"
-                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
+                      :class="{ 'my-2': vuetify.breakpoint.smAndDown }"
                     />
                     <a-btn
                       size="small"
@@ -172,264 +203,304 @@
                       @click="expanded = []"
                       text="Cancel"
                       hide-text-on-mobile
-                      :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
-                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
+                      :prepend-icon="
+                        vuetify.breakpoint.smAndDown ? 'close' : ''
+                      "
+                      :class="{ 'my-2': vuetify.breakpoint.smAndDown }"
                     />
 
                     <a-btn
                       size="small"
                       variant="text"
                       color="primary"
-                      v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      @click="[itemToDelete=item, showDeleteDialog=true]"
+                      v-if="
+                        userStore.userHasFeatureAccessLevel(
+                          'SETTINGS',
+                          'DELETE'
+                        )
+                      "
+                      @click="
+                        ;[(itemToDelete = item), (showDeleteDialog = true)]
+                      "
                       prepend-icon="delete"
-                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
+                      :class="{ 'my-2': vuetify.breakpoint.smAndDown }"
                     />
                   </td>
-
                 </tr>
               </template>
             </v-data-table>
           </v-card>
         </v-container>
       </v-col>
-
     </v-row>
-    <ConfirmationDialog :open-dialog="showDeleteDialog"
-                                 @confirm="deleteType"
-                                 @close-dialog="closeDeleteDialog"
+    <ConfirmationDialog
+      :open-dialog="showDeleteDialog"
+      @confirm="deleteType"
+      @close-dialog="closeDeleteDialog"
     >
-      Are you sure you want to delete this status type: <strong>{{toDeleteProcessStepStatusType}}</strong>?
-
+      Are you sure you want to delete this status type:
+      <strong>{{ toDeleteProcessStepStatusType }}</strong
+      >?
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="showInfoDialog"
-                        hideConfirm
-                        @close-dialog="showInfoDialog=false"
+    <ConfirmationDialog
+      :open-dialog="showInfoDialog"
+      hideConfirm
+      @close-dialog="showInfoDialog = false"
     >
-      <template v-slot:title>Process Step Status Usages: {{!!objectsUsingStatus ? objectsUsingStatus.fieldName : ''}}</template>
+      <template v-slot:title>
+        Process Step Status Usages:
+        {{ !!objectsUsingStatus ? objectsUsingStatus.fieldName : '' }}
+      </template>
       <span v-if="!objectsUsingStatus || objectsUsingStatus.steps.length === 0">
         Nothing using this process step status.
       </span>
       <span v-else id="process-step-table">
-        <div v-if="objectsUsingStatus.steps.length > 0" class="label-large mt-6">Process Steps</div>
-      <v-simple-table v-if="objectsUsingStatus.steps.length > 0">
-        <tbody>
-        <tr v-for="(item, index) in objectsUsingStatus.steps" :key="index" :class="{'shaded-row': objectsUsingStatus.steps.length>1 && !(index % 2)}">
-          <td>{{item.processStepName}}</td>
-        </tr>
-        </tbody>
-      </v-simple-table>
+        <div
+          v-if="objectsUsingStatus.steps.length > 0"
+          class="label-large mt-6"
+        >
+          Process Steps
+        </div>
+        <v-simple-table v-if="objectsUsingStatus.steps.length > 0">
+          <tbody>
+            <tr
+              v-for="(item, index) in objectsUsingStatus.steps"
+              :key="index"
+              :class="{
+                'shaded-row':
+                  objectsUsingStatus.steps.length > 1 && !(index % 2)
+              }"
+            >
+              <td>{{ item.processStepName }}</td>
+            </tr>
+          </tbody>
+        </v-simple-table>
       </span>
       <template v-slot:no>Close</template>
     </ConfirmationDialog>
-
   </v-container>
 </template>
 
-
 <script setup>
+import orderBy from 'lodash.orderby'
+import {
+  getStatusTypes,
+  getCompanyStatusTypes
+} from '@/services/processStepStatusTypeService'
+import {
+  handleHidingGlobalLoader,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getRequest
+} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 
+import { getCurrentInstance, onMounted, ref, computed } from 'vue'
 
-  import orderBy from 'lodash.orderby'
-  import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
-  import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getRequest} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ConfirmationDialog from '@/components/ConfirmationDialog'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
 
-  import {getCurrentInstance, onMounted, ref, computed} from 'vue'
+const store = vueInstance.$store
+const userStore = useUserStore()
+const vuetify = vueInstance.$vuetify
 
-  import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStore.js'
-  const appStore = useAppStore()
-  const vueInstance = getCurrentInstance().proxy
-
-  const store = vueInstance.$store
-  const userStore = useUserStore()
-  const vuetify= vueInstance.$vuetify
-
-  const search = ref('')
-  const statusTypes = ref([])
-  const expanded = ref([])
-  const rootStatusTypes = ref([])
-  const headers = ref([
-    {text: 'Process Step Status', value: 'processStepStatusType', show: true},
-    {text: 'Category', value: 'rootProcessStepStatusType', show: true},
-    {text: '', value: 'icons', show: true, sortable: false},
-  ])
-  const footerProps = ref({
-    'items-per-page-options': [25, 50, 100, 1000],
-    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+const search = ref('')
+const statusTypes = ref([])
+const expanded = ref([])
+const rootStatusTypes = ref([])
+const headers = ref([
+  { text: 'Process Step Status', value: 'processStepStatusType', show: true },
+  { text: 'Category', value: 'rootProcessStepStatusType', show: true },
+  { text: '', value: 'icons', show: true, sortable: false }
+])
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const options = ref({
+  itemsPerPage: 100
+})
+const addNew = ref(false)
+const newType = ref({})
+const selectedStatusTypeId = ref(null)
+const fieldsInUse = ref([])
+const deleteError = ref(false)
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const showInfoDialog = ref(false)
+const objectsUsingStatus = ref({
+  fieldName: null,
+  steps: []
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const toDeleteProcessStepStatusType = computed(() => {
+  return itemToDelete.value ? itemToDelete.value.processStepStatusType : ''
+})
+const filteredRootStatuses = computed(() => {
+  return rootStatusTypes.value.filter((rst) => rst.id !== 3)
+})
+const filteredProcessStepStatuses = computed(() => {
+  return statusTypes.value.filter((s) => {
+    return !s.archived
   })
-  const options = ref({
-    itemsPerPage: 100
-  })
-  const addNew = ref(false)
-  const newType = ref({})
-  const selectedStatusTypeId = ref(null)
-  const fieldsInUse = ref([])
-  const deleteError = ref(false)
-  const showDeleteDialog = ref(false)
-  const itemToDelete = ref(null)
-  const showInfoDialog = ref(false)
-  const objectsUsingStatus = ref({
-    fieldName: null,
-    steps: []
-  })
-  const userCanEdit = computed(() => {
-    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-  })
-  const companyId = computed(() => {
-    return userStore.details.companyId
-  })
-  const userId = computed(() => {
-    return userStore.details.id
-  })
-  const toDeleteProcessStepStatusType = computed(() => {
-    return itemToDelete.value ? itemToDelete.value.processStepStatusType : ''
-  })
-  const filteredRootStatuses = computed(() => {
-    return rootStatusTypes.value.filter(rst => rst.id !== 3)
-  })
-  const filteredProcessStepStatuses = computed(() => {
-    return statusTypes.value.filter(s => { return !s.archived})
-  })
-  const getAllCompanyStatusTypes = async () => {
-    appStore.loading = true
-    try {
-      const {data, status} = await getCompanyStatusTypes()
-      statusTypes.value = data
-      handleHidingGlobalLoader(status)
-    } catch (e) {
+})
+const getAllCompanyStatusTypes = async () => {
+  appStore.loading = true
+  try {
+    const { data, status } = await getCompanyStatusTypes()
+    statusTypes.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const getAllStatusTypes = async () => {
+  appStore.loading = true
+  try {
+    const { data, status } = await getStatusTypes()
+    rootStatusTypes.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const getUsesForStatus = async (processStepStatusId, processStepStatusName) => {
+  appStore.loading = true
+  try {
+    const { data, status } = await getRequest(
+      `/processStep/status/getObjectsUsingStatus/${processStepStatusId}`
+    )
+    objectsUsingStatus.value.steps = data
+    objectsUsingStatus.value.fieldName = processStepStatusName
+    showInfoDialog.value = true
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const deleteType = async () => {
+  const type = itemToDelete.value
+  appStore.loading = true
+  try {
+    const { data, status } = await deleteRequest(
+      `/processStep/status/${type.id}`
+    )
+    fieldsInUse.value = []
+    type.archived = true
+    appStore.showSnack('SUCCESS', 'Status Deleted')
+    handleHidingGlobalLoader(status)
+    appStore.loading = false
+  } catch (e) {
+    if (e.status === 400) {
+      deleteError.value = true
+      fieldsInUse.value = e.data
+      appStore.showSnack('ERROR', 'Status Cannot Be Deleted')
+      appStore.loading = false
+    } else {
       console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Deleting Status')
       appStore.loading = false
     }
   }
-  const getAllStatusTypes = async () => {
-    appStore.loading = true
-    try {
-      const {data, status} = await getStatusTypes()
-      rootStatusTypes.value = data
-      handleHidingGlobalLoader(status)
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Retrieving Data')
-      appStore.loading = false
-    }
+  closeDeleteDialog()
+}
+const addNewType = async () => {
+  appStore.loading = true
+  try {
+    newType.value.companyId = companyId.value
+    const { data, status } = await postRequest(
+      `/processStep/status`,
+      newType.value
+    )
+
+    // add it to the records already on the screen
+    statusTypes.value.push(data)
+    statusTypes.value = orderBy(statusTypes.value, [
+      (s) => s.processStepStatusType.toLowerCase()
+    ])
+
+    // reset the new process fields
+    addNew.value = false
+    newType.value = {}
+    appStore.showSnack('SUCCESS', 'Status Added')
+
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Adding Status')
+
+    appStore.loading = false
   }
-  const getUsesForStatus = async (processStepStatusId, processStepStatusName) => {
-    appStore.loading = true
-    try {
-      const {data, status} = await getRequest(`/processStep/status/getObjectsUsingStatus/${processStepStatusId}`);
-      objectsUsingStatus.value.steps = data
-      objectsUsingStatus.value.fieldName = processStepStatusName
-      showInfoDialog.value = true
-      appStore.loading = false
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Retrieving Data')
-      appStore.loading = false
-    }
-  }
-  const deleteType = async () => {
-    const type = itemToDelete.value
-    appStore.loading = true
-    try {
-      const {data, status} = await deleteRequest(`/processStep/status/${type.id}`)
-      fieldsInUse.value = [];
-      type.archived = true
-      appStore.showSnack('SUCCESS', 'Status Deleted')
-      handleHidingGlobalLoader(status)
-      appStore.loading = false
-    } catch (e) {
-      if (e.status === 400) {
-        deleteError.value = true;
-        fieldsInUse.value = e.data;
-        appStore.showSnack("ERROR", "Status Cannot Be Deleted");
-        appStore.loading = false
-      }
-      else {
-        console.error('*** ERROR ***', e)
-        appStore.showSnack('ERROR', 'Error Deleting Status')
-        appStore.loading = false
-      }
-    }
-    closeDeleteDialog()
-  }
-  const addNewType = async () => {
-    appStore.loading = true
-    try {
-      newType.value.companyId = companyId.value
-      const {data, status} = await postRequest(`/processStep/status`, newType.value)
-
-      // add it to the records already on the screen
-      statusTypes.value.push(data)
-      statusTypes.value = orderBy(statusTypes.value, [s => s.processStepStatusType.toLowerCase()])
-
-      // reset the new process fields
-      addNew.value = false
-      newType.value = {}
-      appStore.showSnack('SUCCESS', 'Status Added')
-
-      handleHidingGlobalLoader(status)
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Adding Status')
-
-      appStore.loading = false
-    }
-  }
-  const saveType = async (s) => {
-    appStore.loading = true
-    try {
-      const {status} = await putRequest(`/processStep/status`, s)
-      selectedStatusTypeId.value = null
-      expanded.value = []
-      await getAllCompanyStatusTypes()
-      appStore.showSnack('SUCCESS', 'Status Updated')
-
-      handleHidingGlobalLoader(status)
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Updating Status')
-
-      appStore.loading = false
-    }
-  }
-
-  const copyToClipBoard = (textValue)=> {
-    navigator.clipboard.writeText(textValue);
-    appStore.showSnack('SUCCESS', 'Copied id to clipboard')
-
-  }
-  const closeDeleteDialog = () => {
-    showDeleteDialog.value = false
-    itemToDelete.value = null
-  }
-  onMounted(async () => {
+}
+const saveType = async (s) => {
+  appStore.loading = true
+  try {
+    const { status } = await putRequest(`/processStep/status`, s)
+    selectedStatusTypeId.value = null
+    expanded.value = []
     await getAllCompanyStatusTypes()
-    await getAllStatusTypes()
-  })
+    appStore.showSnack('SUCCESS', 'Status Updated')
 
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Updating Status')
+
+    appStore.loading = false
+  }
+}
+
+const copyToClipBoard = (textValue) => {
+  navigator.clipboard.writeText(textValue)
+  appStore.showSnack('SUCCESS', 'Copied id to clipboard')
+}
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false
+  itemToDelete.value = null
+}
+onMounted(async () => {
+  await getAllCompanyStatusTypes()
+  await getAllStatusTypes()
+})
 </script>
 
 <style lang="scss">
-  #ps-container .v-data-table__wrapper {
-    height: calc(100vh - 290px);
-    min-height: 300px;
-  }
+#ps-container .v-data-table__wrapper {
+  height: calc(100vh - 290px);
+  min-height: 300px;
+}
 </style>
 
 <style scoped lang="scss">
-  #ps-container {
-    margin-top: -15px;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 0;
-  }
+#ps-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
 </style>
 <style lang="scss">
-#process-step-table > div.v-data-table.theme--light > div.v-data-table__wrapper {
+#process-step-table
+  > div.v-data-table.theme--light
+  > div.v-data-table__wrapper {
   max-height: calc(100vh - 450px);
   overflow-y: scroll;
 }

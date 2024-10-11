@@ -11,7 +11,7 @@
                   variant="text"
                   color="primary"
                   prepend-icon="history"
-                  @click="showChangeLog = !showChangeLog"
+                  @click="getChangeLog"
                   v-bind="attrs"
                   :activation-handler="{ ...tooltip, ...menu }">
                 </a-btn>
@@ -276,7 +276,6 @@ onMounted(async () => {
     getCustomFieldGroupAssignmentsForScreen()
     getSubmissionDocuments()
     getApprovalDocuments()
-    getChangeLog()
   })
 })
 
@@ -301,15 +300,18 @@ const toggleCollapseExpand = (wasExpanded) => {
   }
 }
 const getChangeLog = async() => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/permit/getAhjPermitHistory`, 'blueraven')
-    changeLog.value = cloneDeep(data)
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error retrieving AHJ Permit Change Log')
-    appStore.loading = false
+  showChangeLog.value = !showChangeLog.value
+  if(showChangeLog.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/permit/getAhjPermitHistory`, 'blueraven')
+      changeLog.value = cloneDeep(data)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error retrieving AHJ Permit Change Log')
+      appStore.loading = false
+    }
   }
 }
 const getAhjPermit = async() => {
@@ -446,7 +448,6 @@ const updateAhjPermit = async() => {
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All permits in ' + ahjPermit.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All permits in ' + ahjPermit.value.metroArea + ' have been updated successfully': 'Permit updated successfully'
     appStore.showSnack('SUCCESS', successMessage)
-    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)

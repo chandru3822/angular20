@@ -24,6 +24,11 @@ import java.util.Optional;
 public class ProposalTemplateController {
   private final ProposalTemplateService proposalTemplateService;
 
+  @GetMapping
+  public List<ProposalTemplate> getTemplates() {
+    return proposalTemplateService.getTemplates();
+  }
+
   @GetMapping(value = "/{templateId}")
   public Optional<ProposalTemplate> getTemplateDetailById(@PathVariable Long templateId) {
     return proposalTemplateService.getTemplateById(templateId);
@@ -46,7 +51,7 @@ public class ProposalTemplateController {
         templateId, update.blocks, details.getTrueUserId());
   }
 
-  @PostMapping(value = "/{templateId}/archiveBlock/{blockId}")
+  @DeleteMapping(value = "/{templateId}/blocks/{blockId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<Integer> archiveBlockFromTemplate(
           @PathVariable Long templateId,

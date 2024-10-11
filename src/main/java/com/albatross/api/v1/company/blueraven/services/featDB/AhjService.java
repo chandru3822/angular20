@@ -25,11 +25,9 @@ public class AhjService {
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
-
   private final AhjPermitService ahjPermitService;
-
   private final AhjInspectionService ahjInspectionService;
-
+  private final AhjNewHomeService ahjNewHomeService;
   private final AhjDesignService ahjDesignService;
 
   public List<AhjSummary> getAhjList() {
@@ -52,10 +50,11 @@ public class AhjService {
       if (ahj.isEmpty()) {
         id = sqlCache.updateBySqlReturningId(AhjQuery.create, params, "id").longValue();
 
-        // create an empty permit, inspection, and design tied to the ahj - only required for new
+        // create an empty permit, inspection, design, and new home tied to the ahj - only required for new
         ahjPermitService.saveAhjPermit(id, null, new AhjPermit(), false);
         ahjInspectionService.saveAhjInspection(id, null, new AhjInspection(), false);
         ahjDesignService.saveAhjDesign(id, null, new AhjDesign(), false);
+        ahjNewHomeService.saveAhjNewHome(id, null, new AhjNewHome(), false);
       } else {
         return Optional.empty();
       }
@@ -140,6 +139,8 @@ public class AhjService {
         ahjPermitService.savePermitContact(id, contactId);
       } else if (AhjType.INSPECTION.equals(ahjType)) {
         ahjInspectionService.saveInspectionContact(id, contactId);
+      } else if (AhjType.NEW_HOME.equals(ahjType)) {
+        ahjNewHomeService.saveNewHomeContact(id, contactId);
       }
 
     } else {

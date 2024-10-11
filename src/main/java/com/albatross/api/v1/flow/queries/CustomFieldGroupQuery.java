@@ -4,27 +4,85 @@ public class CustomFieldGroupQuery {
 
   //language=PostgreSQL
   public final static String insertCustomFieldGroup = """
-    insert into flow.custom_field_group(group_name, company_object_type_id, process_step_id,
-                                          event_id, attachment_type_id, process_step_attachment_type_id,
-                                          project_attachment_type_id, contact_attachment_type_id, user_attachment_type_id,
-                                          org_attachment_type_id, event_attachment_type_id,
-                                          created_by_id, date_created, modified_by_id, date_modified, group_order)
-      values (:groupName, :companyObjectTypeId, :processStepId, :eventId, :attachmentTypeId,
-              :processStepAttachmentTypeId, :projectAttachmentTypeId, :contactAttachmentTypeId, :userAttachmentTypeId,
-              :orgAttachmentTypeId, :eventAttachmentTypeId,
-              :createdById, now(), :createdById, now(),
-              (select coalesce(max(group_order) + 1, 0)
-               from flow.custom_field_group cfg
-               where case when :processStepId::bigint is not null then cfg.process_step_id = :processStepId::bigint
-                          when :eventId::bigint is not null then event_id = :eventId::bigint
-                          when :attachmentTypeId::bigint is not null then cfg.attachment_type_id = :attachmentTypeId::bigint
-                          when :processStepAttachmentTypeId::bigint is not null then process_step_attachment_type_id = :processStepAttachmentTypeId::bigint
-                          when :projectAttachmentTypeId::bigint is not null then project_attachment_type_id = :projectAttachmentTypeId::bigint
-                          when :userAttachmentTypeId::bigint is not null then user_attachment_type_id = :userAttachmentTypeId::bigint
-                          when :orgAttachmentTypeId::bigint is not null then org_attachment_type_id = :orgAttachmentTypeId::bigint
-                          when :contactAttachmentTypeId::bigint is not null then contact_attachment_type_id = :contactAttachmentTypeId::bigint
-                          when :eventAttachmentTypeId::bigint is not null then event_attachment_type_id = :eventAttachmentTypeId::bigint
-                          else company_object_type_id = :companyObjectTypeId end))
+    insert into flow.custom_field_group (group_name, company_object_type_id, process_step_id,
+                                         event_id, attachment_type_id, process_step_attachment_type_id,
+                                         project_attachment_type_id, contact_attachment_type_id,
+                                         user_attachment_type_id,
+                                         org_attachment_type_id, event_attachment_type_id,
+                                         created_by_id, date_created, modified_by_id, date_modified, group_order)
+        values (:groupName, :companyObjectTypeId, :processStepId, :eventId, :attachmentTypeId,
+                :processStepAttachmentTypeId, :projectAttachmentTypeId, :contactAttachmentTypeId, :userAttachmentTypeId,
+                :orgAttachmentTypeId, :eventAttachmentTypeId,
+                :createdById, now(), :createdById, now(),
+                (select coalesce(max(group_order) + 1, 0)
+                 from flow.custom_field_group cfg
+                 where case
+                           when :processStepId::bigint is not null then cfg.process_step_id = :processStepId::bigint
+                           when :eventId::bigint is not null then event_id = :eventId::bigint
+                           when :attachmentTypeId::bigint is not null then cfg.attachment_type_id = :attachmentTypeId::bigint
+                           when :processStepAttachmentTypeId::bigint is not null
+                               then process_step_attachment_type_id = :processStepAttachmentTypeId::bigint
+                           when :projectAttachmentTypeId::bigint is not null
+                               then project_attachment_type_id = :projectAttachmentTypeId::bigint
+                           when :userAttachmentTypeId::bigint is not null
+                               then user_attachment_type_id = :userAttachmentTypeId::bigint
+                           when :orgAttachmentTypeId::bigint is not null
+                               then org_attachment_type_id = :orgAttachmentTypeId::bigint
+                           when :contactAttachmentTypeId::bigint is not null
+                               then contact_attachment_type_id = :contactAttachmentTypeId::bigint
+                           when :eventAttachmentTypeId::bigint is not null
+                               then event_attachment_type_id = :eventAttachmentTypeId::bigint
+                           else company_object_type_id = :companyObjectTypeId end))
+        returning id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertCustomFieldGroupWithCategories = """
+with cfg as (
+    insert into flow.custom_field_group (group_name, company_object_type_id, process_step_id,
+                                         event_id, attachment_type_id, process_step_attachment_type_id,
+                                         project_attachment_type_id, contact_attachment_type_id,
+                                         user_attachment_type_id,
+                                         org_attachment_type_id, event_attachment_type_id,
+                                         created_by_id, date_created, modified_by_id, date_modified, group_order)
+        values (:groupName, :companyObjectTypeId, :processStepId, :eventId, :attachmentTypeId,
+                :processStepAttachmentTypeId, :projectAttachmentTypeId, :contactAttachmentTypeId, :userAttachmentTypeId,
+                :orgAttachmentTypeId, :eventAttachmentTypeId,
+                :createdById, now(), :createdById, now(),
+                (select coalesce(max(group_order) + 1, 0)
+                 from flow.custom_field_group cfg
+                 where case
+                           when :processStepId::bigint is not null then cfg.process_step_id = :processStepId::bigint
+                           when :eventId::bigint is not null then event_id = :eventId::bigint
+                           when :attachmentTypeId::bigint is not null then cfg.attachment_type_id = :attachmentTypeId::bigint
+                           when :processStepAttachmentTypeId::bigint is not null
+                               then process_step_attachment_type_id = :processStepAttachmentTypeId::bigint
+                           when :projectAttachmentTypeId::bigint is not null
+                               then project_attachment_type_id = :projectAttachmentTypeId::bigint
+                           when :userAttachmentTypeId::bigint is not null
+                               then user_attachment_type_id = :userAttachmentTypeId::bigint
+                           when :orgAttachmentTypeId::bigint is not null
+                               then org_attachment_type_id = :orgAttachmentTypeId::bigint
+                           when :contactAttachmentTypeId::bigint is not null
+                               then contact_attachment_type_id = :contactAttachmentTypeId::bigint
+                           when :eventAttachmentTypeId::bigint is not null
+                               then event_attachment_type_id = :eventAttachmentTypeId::bigint
+                           else company_object_type_id = :companyObjectTypeId end))
+        returning *),
+     object_categories as (
+         insert
+             into flow.object_category_custom_field_group (object_category_id, custom_field_group_id, created_by_id,
+                                                           modified_by_id)
+                 select t.id, cfg.id, cfg.created_by_id, cfg.modified_by_id
+                 from cfg
+                          cross join (select unnest(:objectCategoryIds) as id) t
+                 on conflict (object_category_id, custom_field_group_id) do update
+                     set modified_by_id = excluded.modified_by_id,
+                         date_modified = now()
+                 returning *)
+select distinct custom_field_group_id
+from object_categories
+limit 1
     """;
 
   //language=PostgreSQL
@@ -33,6 +91,21 @@ public class CustomFieldGroupQuery {
         from flow.company_object_type
         where object_type_id = :objectTypeId
           and company_id = :companyId
+    """;
+
+  //language=PostgreSQL
+  public final static String getObjectTypeByCompanyObjectId = """
+    select object_type_id
+        from flow.company_object_type
+        where id = :companyObjectTypeId
+    """;
+
+  //language=PostgreSQL
+  public final static String getObjectTypeIdForCfg = """
+    select cot.object_type_id
+        from flow.custom_field_group cfg
+          inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+        where cfg.id = :cfgId
     """;
 
   //language=PostgreSQL
@@ -50,6 +123,42 @@ public class CustomFieldGroupQuery {
              ps_collapse_by_default = :psCollapseByDefault,
              event_collapse_by_default = :eventCollapseByDefault
        where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String updateCustomFieldGroupWithCategories = """
+    with cfgUpdate as (update flow.custom_field_group
+         set group_name = :groupName,
+             company_object_type_tab_id = :companyObjectTypeTabId,
+             group_order = :groupOrder,
+             modified_by_id = :modifiedById,
+             date_modified = now(),
+             company_process_step_status_type_ids = array[ :companyProcessStepStatusTypeIds ]::bigint[],
+             company_event_status_type_ids = array[ :companyEventStatusTypeIds ]::bigint[],
+             process_step_status_type_ids = array[ :processStepStatusTypeIds ]::bigint[],
+             event_status_type_ids = array[ :eventStatusTypeIds ]::bigint[],
+             ps_collapse_by_default = :psCollapseByDefault,
+             event_collapse_by_default = :eventCollapseByDefault
+       where id = :id
+       returning id, created_by_id, modified_by_id ),
+       inserts as (
+         insert
+               into flow.object_category_custom_field_group (object_category_id, custom_field_group_id, created_by_id,
+                                                             modified_by_id)
+                   select t.id, cu.id, cu.created_by_id, cu.modified_by_id
+                   from cfgUpdate cu
+                            cross join (select unnest(:objectCategoryIds) as id) t
+                   on conflict (object_category_id, custom_field_group_id) do update
+                       set modified_by_id = excluded.modified_by_id,
+                           archived = false,
+                           date_modified = now()
+           )
+           update flow.object_category_custom_field_group
+            set archived = true,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+          where custom_field_group_id = :id
+           and object_category_id not in (select unnest(:objectCategoryIds))
     """;
 
   //language=PostgreSQL

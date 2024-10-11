@@ -3,13 +3,15 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Event Status Types</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
+            Event Status Types
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
               variant="text"
               color="primary"
-              @click="[addNew = !addNew, newType = {}]"
+              @click=";[(addNew = !addNew), (newType = {})]"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :hide-text-on-mobile="constants.IS_MOBILE"
               :text="!addNew ? 'Add New Field' : 'Cancel'"
@@ -17,23 +19,24 @@
             />
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
+        <v-card v-if="addNew" class="pa-5 mb-2">
           <h3>Add Event Status</h3>
           <a-text-field label="Event Status" v-model="newType.eventStatusType">
           </a-text-field>
-          <a-autocomplete single-line
-                          :items="rootStatusTypes"
-                          v-model="newType.eventStatusTypeId"
-                          item-value="id"
-                          label="Select a Category"
-                          item-title="eventStatusType"></a-autocomplete>
+          <a-autocomplete
+            single-line
+            :items="rootStatusTypes"
+            v-model="newType.eventStatusTypeId"
+            item-value="id"
+            label="Select a Category"
+            item-title="eventStatusType"
+          ></a-autocomplete>
           <a-btn
             color="primary"
             :disabled="!newType.eventStatusTypeId || !newType.eventStatusType"
             @click="saveType(newType, true)"
             text="Save"
           />
-
         </v-card>
         <v-card class="square-card">
           <v-card-title class="pt-0">
@@ -61,178 +64,264 @@
             @current-items="updateCurrentItems"
           >
             <template #expanded-item="{ headers, item }">
-              <td :colspan="headers.length" class="pa-4 text-left overflow-visible overflow-hidden-m one-hunned-minus-fifty"
-                  :class="{'shaded-row': currentItems.indexOf(item) % 2 === 1}">
+              <td
+                :colspan="headers.length"
+                class="pa-4 text-left overflow-visible overflow-hidden-m one-hunned-minus-fifty"
+                :class="{ 'shaded-row': currentItems.indexOf(item) % 2 === 1 }"
+              >
                 <h3 class="mb-3">Edit Status Type</h3>
                 <v-row>
                   <v-col cols="12">
-                <a-text-field v-model="item.eventStatusType"
-                              label="Status Type"
-                              :readonly="!userCanEdit"
-                              :disabled="!userCanEdit"
-                ></a-text-field>
-                <a-autocomplete
-                  :items="rootStatusTypes"
-                  v-model="item.eventStatusTypeId"
-                  item-value="id"
-                  :readonly="!userCanEdit"
-                  :disabled="!userCanEdit"
-                  label="Select a Category"
-                  item-title="eventStatusType"></a-autocomplete>
-                <a-btn
-                  color="primary"
-                  dark
-                  class="white--text"
-                  v-if="userCanEdit"
-                  :disabled="!item.eventStatusType || !item.eventStatusTypeId"
-                  @click="saveType(item, false)"
-                  text="Save"
-                />
+                    <a-text-field
+                      v-model="item.eventStatusType"
+                      label="Status Type"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                    ></a-text-field>
+                    <a-autocomplete
+                      :items="rootStatusTypes"
+                      v-model="item.eventStatusTypeId"
+                      item-value="id"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      label="Select a Category"
+                      item-title="eventStatusType"
+                    ></a-autocomplete>
+                    <a-btn
+                      color="primary"
+                      dark
+                      class="white--text"
+                      v-if="userCanEdit"
+                      :disabled="
+                        !item.eventStatusType || !item.eventStatusTypeId
+                      "
+                      @click="saveType(item, false)"
+                      text="Save"
+                    />
                   </v-col>
                 </v-row>
               </td>
             </template>
             <template #item.draggable="{ item, index }" style="width: 50px">
-                  <a-btn
-                    variant="text"
-                    color="primary"
-                    size="small"
-                    class="handle"
-                    v-if="userCanEdit"
-                    prepend-icon="drag_handle"
-                  />
+              <a-btn
+                variant="text"
+                color="primary"
+                size="small"
+                class="handle"
+                v-if="userCanEdit"
+                prepend-icon="drag_handle"
+              />
             </template>
-                <template #item.eventStatusType="{item}" class="text-left">
-                  {{ item.eventStatusType }}
-                </template>
-                <template #item.rootEventStatusType="{item}" class="text-left">
-                  {{ item.rootEventStatusType }}
-                </template>
-                <template #item.icons="{item, index}" class="text-right">
+            <template #item.eventStatusType="{ item }" class="text-left">
+              {{ item.eventStatusType }}
+            </template>
+            <template #item.rootEventStatusType="{ item }" class="text-left">
+              {{ item.rootEventStatusType }}
+            </template>
+            <template #item.icons="{ item, index }" class="text-right">
+              <a-btn
+                size="small"
+                variant="text"
+                color="primary"
+                @click="getUsesForStatus(item.id, item.eventStatusType)"
+                prepend-icon="mdi-clipboard-list-outline"
+              />
+              <v-tooltip left>
+                <template v-slot:activator="{ on, attrs }">
                   <a-btn
-                    size="small"
-                    variant="text"
                     color="primary"
-                    @click="getUsesForStatus(item.id, item.eventStatusType)"
-                    prepend-icon="mdi-clipboard-list-outline"/>
-                  <v-tooltip left>
-                    <template v-slot:activator="{ on, attrs }">
-                      <a-btn
-                        color="primary"
-                        @click="copyToClipBoard(item.id)" v-bind="attrs"
-                        :activation-handler="on"
-                        prepend-icon="mdi-information"
-                        icon
-                      />
-                    </template>
-                    <span>Event Status Id: {{item.id}}</span>
-                    <div class="text-center">(click to copy)</div>
-                  </v-tooltip>
-                  <a-btn
+                    @click="copyToClipBoard(item.id)"
+                    v-bind="attrs"
+                    :activation-handler="on"
+                    prepend-icon="mdi-information"
                     icon
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    v-if="!expanded.includes(item)" @click="expanded = [item]"
-                    prepend-icon="edit"
-                  />
-                  <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    v-if="expanded.includes(item)" @click="expanded = []"
-                    text="Cancel"
-                  />
-                  <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    @click="[itemToDelete=item, showDeleteDialog=true]"
-                    prepend-icon="delete"
                   />
                 </template>
-
-
+                <span>Event Status Id: {{ item.id }}</span>
+                <div class="text-center">(click to copy)</div>
+              </v-tooltip>
+              <a-btn
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                v-if="!expanded.includes(item)"
+                @click="expanded = [item]"
+                prepend-icon="edit"
+              />
+              <a-btn
+                size="small"
+                variant="text"
+                color="primary"
+                v-if="expanded.includes(item)"
+                @click="expanded = []"
+                text="Cancel"
+              />
+              <a-btn
+                size="small"
+                variant="text"
+                color="primary"
+                v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                @click=";[(itemToDelete = item), (showDeleteDialog = true)]"
+                prepend-icon="delete"
+              />
+            </template>
           </v-data-table>
         </v-card>
       </v-col>
-
     </v-row>
-    <ConfirmationDialog :open-dialog="showDeleteDialog"
-                                 @confirm="deleteType"
-                                 @close-dialog="closeDeleteDialog">
-      Are you sure you want to delete this status type: <strong>{{itemToDeleteEventStatusType}}</strong>?
-
-    </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="showInfoDialog"
-                        hideConfirm
-                        @close-dialog="showInfoDialog=false"
-                        :width="700"
+    <ConfirmationDialog
+      :open-dialog="showDeleteDialog"
+      @confirm="deleteType"
+      @close-dialog="closeDeleteDialog"
     >
-      <template v-slot:title>Event Status Usages: {{!!objectsUsingStatus ? objectsUsingStatus.fieldName : ''}}</template>
-        <span v-if="deleteError" class="error-text">* Error deleting status</span>
-        <span v-if="!objectsUsingStatus || (objectsUsingStatus.events && objectsUsingStatus.events.length === 0 && objectsUsingStatus.processStepEventActions && objectsUsingStatus.processStepEventActions.length === 0 && objectsUsingStatus.processStepEventRequirements && objectsUsingStatus.processStepEventRequirements.length === 0)">
-          Nothing using this event status.
-        </span>
+      Are you sure you want to delete this status type:
+      <strong>{{ itemToDeleteEventStatusType }}</strong
+      >?
+    </ConfirmationDialog>
+    <ConfirmationDialog
+      :open-dialog="showInfoDialog"
+      hideConfirm
+      @close-dialog="showInfoDialog = false"
+      :width="700"
+    >
+      <template v-slot:title
+        >Event Status Usages:
+        {{ !!objectsUsingStatus ? objectsUsingStatus.fieldName : '' }}</template
+      >
+      <span v-if="deleteError" class="error-text">* Error deleting status</span>
+      <span
+        v-if="
+          !objectsUsingStatus ||
+          (objectsUsingStatus.events &&
+            objectsUsingStatus.events.length === 0 &&
+            objectsUsingStatus.processStepEventActions &&
+            objectsUsingStatus.processStepEventActions.length === 0 &&
+            objectsUsingStatus.processStepEventRequirements &&
+            objectsUsingStatus.processStepEventRequirements.length === 0)
+        "
+      >
+        Nothing using this event status.
+      </span>
 
       <div v-else id="event-status-uses-table">
-        <div v-if="objectsUsingStatus.events && objectsUsingStatus.events.length > 0" class="label-large mt-6">Events</div>
-      <v-simple-table v-if="objectsUsingStatus.events && objectsUsingStatus.events.length > 0">
-        <tbody>
-        <tr v-for="(item, index) in objectsUsingStatus.events" :key="index" :class="{'shaded-row': !(index % 2)}">
-          <td>{{item.eventName}}</td>
-        </tr>
-        </tbody>
-      </v-simple-table>
-      <div v-if="objectsUsingStatus.processStepEventRequirements && objectsUsingStatus.processStepEventRequirements.length > 0" class="label-large mt-6">Process Step Event Requirements</div>
-      <v-simple-table v-if="objectsUsingStatus.processStepEventRequirements && objectsUsingStatus.processStepEventRequirements.length > 0">
-        <thead>
-        <tr>
-          <th>Event</th>
-          <th>Process Step</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="(item, index) in objectsUsingStatus.processStepEventRequirements" :key="index" :class="{'shaded-row': !(index % 2)}">
-          <td>{{item.eventName}}</td>
-          <td>{{item.processStepName}}</td>
-        </tr>
-        </tbody>
-      </v-simple-table>
-        <div v-if="objectsUsingStatus.processStepEventActions && objectsUsingStatus.processStepEventActions.length > 0" class="label-large mt-6">Process Step Event Actions</div>
-      <v-simple-table v-if="objectsUsingStatus.processStepEventActions && objectsUsingStatus.processStepEventActions.length > 0">
-        <thead>
-        <tr>
-          <th>Event</th>
-          <th>Process Step</th>
-          <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="(item, index) in objectsUsingStatus.processStepEventActions" :key="index" :class="{'shaded-row': !(index % 2)}">
-          <td>{{item.eventName}}</td>
-          <td>{{item.processStepName}}</td>
-          <td>{{item.actionName}}</td>
-        </tr>
-        </tbody>
-      </v-simple-table>
+        <div
+          v-if="
+            objectsUsingStatus.events && objectsUsingStatus.events.length > 0
+          "
+          class="label-large mt-6"
+        >
+          Events
+        </div>
+        <v-simple-table
+          v-if="
+            objectsUsingStatus.events && objectsUsingStatus.events.length > 0
+          "
+        >
+          <tbody>
+            <tr
+              v-for="(item, index) in objectsUsingStatus.events"
+              :key="index"
+              :class="{ 'shaded-row': !(index % 2) }"
+            >
+              <td>{{ item.eventName }}</td>
+            </tr>
+          </tbody>
+        </v-simple-table>
+        <div
+          v-if="
+            objectsUsingStatus.processStepEventRequirements &&
+            objectsUsingStatus.processStepEventRequirements.length > 0
+          "
+          class="label-large mt-6"
+        >
+          Process Step Event Requirements
+        </div>
+        <v-simple-table
+          v-if="
+            objectsUsingStatus.processStepEventRequirements &&
+            objectsUsingStatus.processStepEventRequirements.length > 0
+          "
+        >
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Process Step</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(
+                item, index
+              ) in objectsUsingStatus.processStepEventRequirements"
+              :key="index"
+              :class="{ 'shaded-row': !(index % 2) }"
+            >
+              <td>{{ item.eventName }}</td>
+              <td>{{ item.processStepName }}</td>
+            </tr>
+          </tbody>
+        </v-simple-table>
+        <div
+          v-if="
+            objectsUsingStatus.processStepEventActions &&
+            objectsUsingStatus.processStepEventActions.length > 0
+          "
+          class="label-large mt-6"
+        >
+          Process Step Event Actions
+        </div>
+        <v-simple-table
+          v-if="
+            objectsUsingStatus.processStepEventActions &&
+            objectsUsingStatus.processStepEventActions.length > 0
+          "
+        >
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Process Step</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(
+                item, index
+              ) in objectsUsingStatus.processStepEventActions"
+              :key="index"
+              :class="{ 'shaded-row': !(index % 2) }"
+            >
+              <td>{{ item.eventName }}</td>
+              <td>{{ item.processStepName }}</td>
+              <td>{{ item.actionName }}</td>
+            </tr>
+          </tbody>
+        </v-simple-table>
       </div>
       <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
 </template>
 
-
 <script setup>
 import draggable from 'vuedraggable'
 
 import orderBy from 'lodash.orderby'
-import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
-import {getRequest, deleteRequest, putRequest, defineSortableTable, getRowClass} from '@/helpers/helpers'
+import {
+  getCompanyEventStatusTypes,
+  getEventStatusTypes
+} from '@/services/eventStatusTypeService'
+import {
+  getRequest,
+  deleteRequest,
+  putRequest,
+  defineSortableTable,
+  getRowClass
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import {computed, getCurrentInstance, ref, onMounted} from "vue";
+import { computed, getCurrentInstance, ref, onMounted } from 'vue'
 
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
@@ -252,10 +341,10 @@ const rootStatusTypes = ref([])
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
 const savingTypeLogo = ref(false)
 const headers = ref([
-  {text: null, value: 'draggable', width: '50px', show: true},
-  {text: 'Event Status', value: 'eventStatusType', show: true},
-  {text: 'Status', value: 'rootEventStatusType', show: true},
-  {text: '', value: 'icons', show: true},
+  { text: null, value: 'draggable', width: '50px', show: true },
+  { text: 'Event Status', value: 'eventStatusType', show: true },
+  { text: 'Status', value: 'rootEventStatusType', show: true },
+  { text: '', value: 'icons', show: true }
 ])
 const addNew = ref(false)
 const newType = ref({})
@@ -278,11 +367,11 @@ onMounted(() => {
   getAllEventStatusTypes()
 })
 
-const itemToDeleteEventStatusType = computed(() =>{
+const itemToDeleteEventStatusType = computed(() => {
   return itemToDelete.value ? itemToDelete.value.eventStatusType : ''
 })
-const filteredEventStatuses = computed(() =>{
-  return statusTypes.value.filter(s => !s.archived)
+const filteredEventStatuses = computed(() => {
+  return statusTypes.value.filter((s) => !s.archived)
 })
 
 const saveOrderChanges = async (types) => {
@@ -297,7 +386,13 @@ const saveOrderChanges = async (types) => {
     appStore.loading = false
   }
 }
-const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) => {
+const uploadFile = async (
+  item,
+  files,
+  attachmentTypeId,
+  sourceId,
+  sizeLimit
+) => {
   try {
     appStore.loading = true
     let file = files[0]
@@ -346,7 +441,7 @@ const deleteAttachment = async (item) => {
 const getCompanyStatusTypes = async () => {
   appStore.loading = true
   try {
-    const {data} = await getCompanyEventStatusTypes()
+    const { data } = await getCompanyEventStatusTypes()
     statusTypes.value = data
     appStore.loading = false
   } catch (e) {
@@ -359,7 +454,7 @@ const getCompanyStatusTypes = async () => {
 const getAllEventStatusTypes = async () => {
   appStore.loading = true
   try {
-    const {data} = await getEventStatusTypes()
+    const { data } = await getEventStatusTypes()
     rootStatusTypes.value = data
     appStore.loading = false
   } catch (e) {
@@ -372,7 +467,9 @@ const getUsesForStatus = async (eventStatusId, eventStatusName) => {
   deleteError.value = false
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`);
+    const { data, status } = await getRequest(
+      `/event/companyStatusUses/${eventStatusId}`
+    )
     objectsUsingStatus.value = data
     objectsUsingStatus.value.fieldName = eventStatusName
     showInfoDialog.value = true
@@ -390,7 +487,7 @@ const deleteType = async () => {
   appStore.loading = true
   try {
     await deleteRequest(`/event/companyStatus/${item.id}`)
-    fieldsInUse.value = [];
+    fieldsInUse.value = []
     appStore.showSnack('SUCCESS', 'Status Deleted')
 
     appStore.loading = false
@@ -401,12 +498,11 @@ const deleteType = async () => {
     if (e.status === 400) {
       showInfoDialog.value = true
       deleteError.value = true
-      objectsUsingStatus.value = e.data;
+      objectsUsingStatus.value = e.data
       objectsUsingStatus.value.fieldName = item.eventStatusType
-      appStore.showSnack("ERROR", "Error Deleting Status");
+      appStore.showSnack('ERROR', 'Error Deleting Status')
       appStore.loading = false
-    }
-    else {
+    } else {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error Deleting Status')
       appStore.loading = false
@@ -419,12 +515,14 @@ const deleteType = async () => {
 const saveType = async (type, isNew) => {
   appStore.loading = true
   try {
-    const {data} = await putRequest(`/event/companyStatus`, type)
+    const { data } = await putRequest(`/event/companyStatus`, type)
 
     if (isNew) {
       // add it to the records already on the screen
       statusTypes.value.push(data)
-      statusTypes.value = orderBy(statusTypes.value, [s => s.eventStatusType.toLowerCase()])
+      statusTypes.value = orderBy(statusTypes.value, [
+        (s) => s.eventStatusType.toLowerCase()
+      ])
 
       // reset the new process fields
       addNew.value = false
@@ -445,12 +543,11 @@ const saveType = async (type, isNew) => {
   }
 }
 
-const copyToClipBoard = (textValue) =>{
-  navigator.clipboard.writeText(textValue);
+const copyToClipBoard = (textValue) => {
+  navigator.clipboard.writeText(textValue)
   appStore.showSnack('SUCCESS', 'Copied text to clipboard')
-
 }
-const closeDeleteDialog = () =>{
+const closeDeleteDialog = () => {
   showDeleteDialog.value = false
   itemToDelete.value = null
 }
@@ -461,19 +558,19 @@ const currentItems = ref([])
 const updateCurrentItems = (cIs) => {
   currentItems.value = cIs
 }
-
 </script>
 
 <style lang="scss">
-#event-status-uses-table > div.v-data-table.theme--light > div.v-data-table__wrapper {
+#event-status-uses-table
+  > div.v-data-table.theme--light
+  > div.v-data-table__wrapper {
   max-height: 175px;
   overflow-y: scroll;
 }
 </style>
 
-
 <style scoped lang="scss">
-.one-hunned-minus-fifty{
+.one-hunned-minus-fifty {
   @media (max-width: 960px) {
     width: calc(100vw - 50px);
   }

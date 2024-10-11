@@ -3,9 +3,22 @@ create or replace function flow.get_cfgs_with_values(p_object_type_id bigint, p_
 as $$
 DECLARE
 v_json json;
+  v_object_category_id bigint;
 BEGIN
     --todo: figure out what to do with attachment type ancillary custom fields
 --todo: would be nice if this could return cfgs with cfvs OR just cfvs (could replace getUserProfileFields if it could do that...and maybe more)
+
+if p_object_type_id = 2 then
+  select object_category_id
+  into v_object_category_id
+  from flow.contact
+  where id = p_source_id;
+elsif p_object_type_id = 1 then
+  select object_category_id
+  into v_object_category_id
+  from flow.project
+  where id = p_source_id;
+end if;
 
 create temp table cfvs
     (
@@ -54,7 +67,8 @@ create temp table cfvs
         numeric_value                              numeric,
         int_value                                  bigint,
         int_array_value                            bigint[],
-        detail_view                                boolean
+        detail_view                                boolean,
+        object_category_id                         bigint
     );
 
 create index cfvs_cfga_id on cfvs (custom_field_group_assignment_id);
@@ -70,6 +84,7 @@ create index cfvs_project_id on cfvs (project_id);
 create index cfvs_contact_id on cfvs (contact_id);
 create index cfvs_cf_sql on cfvs (custom_field_sql);
 create index cfvs_ancillary_cfga_id on cfvs (ancillary_custom_field_group_assignment_id);
+create index cfvs_object_category_id on cfvs (object_category_id);
 
 --insert some basic info
 insert into cfvs(project_id, contact_id, custom_field_group_assignment_id, custom_field_group_id,
@@ -83,7 +98,7 @@ insert into cfvs(project_id, contact_id, custom_field_group_assignment_id, custo
                  custom_field_sql_key,
                  custom_field_sql_smartlist,
                  company_system_list_id, system_list_option_ids, company_data_type_id, data_type_id, has_list_values,
-                 detail_view)
+                 detail_view,object_category_id)
 select case
          when native_cot.object_type_id = 1 then p_source_id
          when native_cot.object_type_id = 4 then (select pps.project_id
@@ -154,12 +169,14 @@ select case
                 ancillary_cf.company_data_type_id)                                 as company_data_type_id,
        coalesce(native_cdt.data_type_id, ancillary_cdt.data_type_id)               as data_type_id,
        coalesce(native_cdt.has_list_values, ancillary_cdt.has_list_values, false)  as has_list_values,
-       native_cfga.detail_view
-
+       native_cfga.detail_view,
+       occfg.object_category_id
 from flow.custom_field_group_assignment native_cfga
        inner join flow.custom_field_group native_cfg
                   on native_cfg.id = native_cfga.custom_field_group_id and native_cfg.archived is false
        inner join flow.company_object_type native_cot on native_cot.id = native_cfg.company_object_type_id
+       left join flow.object_category_custom_field_group as occfg on occfg.custom_field_group_id = native_cfg.id and
+                                                                     occfg.object_category_id = v_object_category_id and occfg.archived is false
        left join flow.custom_field_group_assignment ancillary_cfga
                  on ancillary_cfga.id = native_cfga.ancillary_custom_field_group_assignment_id and
                     ancillary_cfga.archived is false
@@ -174,9 +191,9 @@ from flow.custom_field_group_assignment native_cfga
 where native_cfga.archived is false
   and native_cot.company_id = p_company_id
   and case
-        when p_object_type_id = 1 and p_secondary_id is null then native_cot.object_type_id = 1
-        when p_object_type_id = 1 and p_secondary_id is not null then native_cot.object_type_id = 1 and native_cfg.company_object_type_tab_id = p_secondary_id
-        when p_object_type_id = 2 then native_cot.object_type_id = 2
+        when p_object_type_id = 1 and p_secondary_id is null then native_cot.object_type_id = 1 and occfg.object_category_id = v_object_category_id
+        when p_object_type_id = 1 and p_secondary_id is not null then native_cot.object_type_id = 1 and native_cfg.company_object_type_tab_id = p_secondary_id and occfg.object_category_id = v_object_category_id
+        when p_object_type_id = 2 then native_cot.object_type_id = 2 and occfg.object_category_id = v_object_category_id
         when p_object_type_id = 3 then native_cot.object_type_id = 3
         when p_object_type_id = 4 then (native_cot.object_type_id = 4 and native_cfg.process_step_id =
                                                                           (select process_step_id
@@ -189,6 +206,7 @@ where native_cfga.archived is false
                                                                                                  where ppse.id = p_source_id))
         when p_object_type_id = 7 then native_cot.object_type_id = 7 and
                                        native_cfg.attachment_type_id = p_source_id end;
+
 
 if p_object_type_id = 1 then --project
     --update the native rows
@@ -825,11 +843,14 @@ FROM (select cfg.id,
                                                else 1 = 1 end
                              order by field_order, field_name) fields), '[]') AS "customFieldValues"
       from flow.custom_field_group cfg
+        left join flow.object_category_custom_field_group o on o.custom_field_group_id = cfg.id and o.object_category_id = v_object_category_id and o.archived is false
              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
       where cot.object_type_id = p_object_type_id
         and cfg.archived is false
+        and case when p_object_type_id = 2 then o.object_category_id = v_object_category_id else true end
         and case
               when p_object_type_id = 1 and p_secondary_id is not null then cfg.company_object_type_tab_id = p_secondary_id
+                                        and o.object_category_id = v_object_category_id
               when p_object_type_id = 4 then cfg.process_step_id = (select pps.process_step_id
                                                                     from flow.project_process_step pps
                                                                     where pps.id = p_source_id)

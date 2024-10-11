@@ -84,20 +84,48 @@ select
 
   //language=PostgreSQL
   public final static String getCompanyStatuses = """
-    select
-        cpst.id,
-        cpst.project_status_type,
-        cpst.display_order,
-        cpst.description,
-        cpst.icon_tag,
-        cpst.is_default,
-        cpst.is_milestone,
-        pst.id as "projectStatusTypeId",
-        cpst.archived,
-        pst.project_status_type as "rootProjectStatusType"
+select cpst.id,
+       cpst.project_status_type,
+       cpst.display_order,
+       cpst.description,
+       cpst.icon_tag,
+       cpst.is_default,
+       cpst.is_milestone,
+       pst.id                                                  as "projectStatusTypeId",
+       cpst.archived,
+       pst.project_status_type                                 as "rootProjectStatusType",
+       (select coalesce(array_to_json(array_agg(occpst.object_category_id)), '[]')
+        from flow.object_category_company_project_status_type occpst
+        where occpst.company_project_status_type_id = cpst.id and occpst.archived is false) as "objectCategoryIds"
+from flow.company_project_status_type cpst
+         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+where cpst.company_id = :companyId
+  and cpst.archived is not true
+order by cpst.display_order
+    """;
+
+
+  public final static String getCompanyStatusesForProjectId = """
+    select cpst.id,
+           cpst.project_status_type,
+           cpst.display_order,
+           cpst.description,
+           cpst.icon_tag,
+           cpst.is_default,
+           cpst.is_milestone,
+           pst.id                                                  as "projectStatusTypeId",
+           cpst.archived,
+           pst.project_status_type                                 as "rootProjectStatusType",
+           (select coalesce(array_to_json(array_agg(occpst.object_category_id)), '[]')
+            from flow.object_category_company_project_status_type occpst
+            where occpst.company_project_status_type_id = cpst.id and occpst.archived is false) as "objectCategoryIds"
     from flow.company_project_status_type cpst
-    inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
-    where cpst.company_id = :companyId and cpst.archived is not true
+             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+             inner join flow.object_category_company_project_status_type occpst2
+                        on cpst.id = occpst2.company_project_status_type_id
+    where cpst.company_id = :companyId
+      and cpst.archived is not true
+      and occpst2.object_category_id = (select object_category_id from flow.project where id = :projectId)
     order by cpst.display_order
     """;
 
@@ -113,7 +141,10 @@ select
         cpst.is_milestone,
         pst.id as "projectStatusTypeId",
         cpst.archived,
-        pst.project_status_type as "rootProjectStatusType"
+        pst.project_status_type as "rootProjectStatusType",
+    (select coalesce(array_to_json(array_agg(occpst.object_category_id)), '[]')
+            from flow.object_category_company_project_status_type occpst
+            where occpst.company_project_status_type_id = cpst.id and occpst.archived is false) as "objectCategoryIds"
     from flow.company_project_status_type cpst
     inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where cpst.id = :id
@@ -132,15 +163,35 @@ select
 
   //language=PostgreSQL
   public final static String updateCompanyStatus = """
+with project_status as (
     update flow.company_project_status_type
-    set project_status_type = :projectStatusType,
-        modified_by_id = :currentUserId,
-        display_order = :displayOrder,
-        icon_tag = trim(:iconTag),
-        description = :description,
-        is_milestone = :isMilestone,
-        date_modified = now()
-    where id = :id
+        set project_status_type = :projectStatusType,
+            modified_by_id = :currentUserId,
+            display_order = :displayOrder,
+            icon_tag = trim(:iconTag),
+            description = :description,
+            is_milestone = :isMilestone,
+            date_modified = now()
+        where id = :id
+        returning *),
+     object_categories as (
+         insert
+             into flow.object_category_company_project_status_type (object_category_id, company_project_status_type_id,
+                                                                    created_by_id, modified_by_id)
+                 select c.id, att.id, att.created_by_id, att.modified_by_id
+                 from project_status att
+                          cross join (select unnest(:objectCategoryIds::int[]) as id) c
+                 on conflict (object_category_id, company_project_status_type_id)
+                     do update
+                         set archived = false,
+                             modified_by_id = excluded.modified_by_id,
+                             date_modified = now()
+                 returning *)
+update flow.object_category_company_project_status_type ocat
+set archived = true
+from object_categories oc
+where oc.company_project_status_type_id = ocat.company_project_status_type_id
+  and ocat.object_category_id not in (select unnest(:objectCategoryIds::int[]))
     """;
 
   //language=PostgreSQL
@@ -239,8 +290,27 @@ update flow.company_project_status_type
 
   //language=PostgreSQL
   public final static String insertCompanyStatus = """
-insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
-    values (:rootProjectStatusTypeId, :projectStatusType, :companyId, (select coalesce(max(display_order) + 1, 0) from flow.company_project_status_type where company_id = :companyId and archived is not true), :currentUserId, now(), :currentUserId, now())
+with project_status as (
+    insert into flow.company_project_status_type (project_status_type_id, project_status_type, company_id,
+                                                  display_order, created_by_id, date_created,
+                                                  modified_by_id, date_modified)
+        values (:rootProjectStatusTypeId, :projectStatusType, :companyId,
+                (select coalesce(max(display_order) + 1, 0)
+                 from flow.company_project_status_type
+                 where company_id = :companyId
+                   and archived is not true), :currentUserId, now(), :currentUserId, now())
+        returning *),
+     object_categories as (
+         insert
+             into flow.object_category_company_project_status_type (object_category_id, company_project_status_type_id,
+                                                                    created_by_id, modified_by_id)
+                 select c.id, att.id, att.created_by_id, att.modified_by_id
+                 from project_status att
+                          cross join (select unnest(:objectCategoryIds) as id) c
+                 returning company_project_status_type_id)
+select distinct company_project_status_type_id
+from object_categories
+limit 1;
     """;
 
   //language=PostgreSQL

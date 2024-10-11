@@ -1,16 +1,20 @@
 <template>
   <v-container id="event-step-container" class="custom-field-group-container">
-    <v-dialog width="700"
-              v-model="deleteError"
-    >
+    <v-dialog width="700" v-model="deleteError">
       <v-card>
         <v-card-title class="text-h5 grey lighten-2 error--text">
           Error Deleting Event
         </v-card-title>
 
         <v-card-text class="pt-5">
-          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
-            <div class="mb-3">* This event is being used by Process Steps Events.  You must remove from the following locations before deleting this event.</div>
+          <div
+            v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0"
+            class="mb-5"
+          >
+            <div class="mb-3">
+              * This event is being used by Process Steps Events. You must
+              remove from the following locations before deleting this event.
+            </div>
             <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
               <strong>{{ a.processStepName }}</strong>
             </div>
@@ -38,17 +42,19 @@
             <a-btn
               variant="text"
               color="primary"
-              @click="[addNew = !addNew, newStep = {}, getResourceFields()]"
+              @click="
+                ;[(addNew = !addNew), (newStep = {}), getResourceFields()]
+              "
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :text="addNew ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
         </v-toolbar>
         <v-container class="pa-0">
-          <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
+          <v-card v-if="addNew" class="mb-2 pa-5">
             <a-text-field
               label="Event Name"
-              tabindex=1
+              tabindex="1"
               v-model="newEvent.eventName"
             ></a-text-field>
 
@@ -89,11 +95,14 @@
               class="elevation-1 square-card table-striped"
             >
               <template #item.eventName="{ item }">
-                <router-link :to="`/settings/event/${item.id}/components`" class="router-link-td elevation-0">
-                  {{item.eventName}}
+                <router-link
+                  :to="`/settings/event/${item.id}/components`"
+                  class="router-link-td elevation-0"
+                >
+                  {{ item.eventName }}
                 </router-link>
               </template>
-              <template #item.icons="{item}" class="text-end">
+              <template #item.icons="{ item }" class="text-end">
                 <a-btn
                   size="small"
                   variant="text"
@@ -105,33 +114,44 @@
                   size="small"
                   variant="text"
                   color="primary"
-                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                  @click="eventToDelete=item"
+                  v-if="
+                    userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+                  "
+                  @click="eventToDelete = item"
                   prepend-icon="delete"
                 />
               </template>
-
             </v-data-table>
           </v-card>
-          <ConfirmationDialog :open-dialog="!!eventToDelete" @confirm="deleteEvent" @close-dialog="eventToDelete=null">
-            Are you sure you want to delete this event: <b>{{eventToDeleteName}}</b>?
+          <ConfirmationDialog
+            :open-dialog="!!eventToDelete"
+            @confirm="deleteEvent"
+            @close-dialog="eventToDelete = null"
+          >
+            Are you sure you want to delete this event:
+            <b>{{ eventToDeleteName }}</b
+            >?
           </ConfirmationDialog>
         </v-container>
       </v-col>
-
     </v-row>
   </v-container>
 </template>
 
 <script setup>
-import {getRequest, putRequest, postRequest, handleHidingGlobalLoader} from '@/helpers/helpers'
-import { getEventResourceFields } from "@/services/eventService"
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import {
+  getRequest,
+  putRequest,
+  postRequest,
+  handleHidingGlobalLoader
+} from '@/helpers/helpers'
+import { getEventResourceFields } from '@/services/eventService'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-import {computed, getCurrentInstance, ref, onMounted} from "vue";
+import { computed, getCurrentInstance, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
-import {useRouter} from "vue-router/composables"
+import { useRouter } from 'vue-router/composables'
 
 const vueInstance = getCurrentInstance().proxy
 
@@ -152,15 +172,14 @@ const userId = ref(userStore.details.id)
 const events = ref([])
 const eventResourceFields = ref([])
 const headers = ref([
-  {text: 'Event Name', value: 'eventName', show: true},
-  {text: '', value: 'icons', show: true},
+  { text: 'Event Name', value: 'eventName', show: true },
+  { text: '', value: 'icons', show: true }
 ])
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 1000],
   'items-per-page-text': 'Rows per page:'
 })
 const eventToDelete = ref(null)
-
 
 onMounted(() => {
   getEvents()
@@ -176,16 +195,16 @@ const eventToDeleteName = computed(() => {
 })
 
 const filterEvents = computed(() => {
-  return events.value.filter(e => {
+  return events.value.filter((e) => {
     return !e.archived
   })
 })
 
 const getResourceFields = async () => {
-  if(addNew.value) {
+  if (addNew.value) {
     appStore.loading = true
     try {
-      const {data} = await getEventResourceFields()
+      const { data } = await getEventResourceFields()
       eventResourceFields.value = data
       appStore.loading = false
     } catch (e) {
@@ -199,7 +218,7 @@ const getResourceFields = async () => {
 const getEvents = async () => {
   appStore.loading = true
   try {
-    const {data} = await getRequest(`/event`)
+    const { data } = await getRequest(`/event`)
     events.value = data
     appStore.loading = false
   } catch (e) {
@@ -209,11 +228,11 @@ const getEvents = async () => {
   }
 }
 
-const deleteEvent =  async () => {
+const deleteEvent = async () => {
   const event = eventToDelete.value
   appStore.loading = true
   try {
-    const {status} = await putRequest(`/event/delete/${event.id}`)
+    const { status } = await putRequest(`/event/delete/${event.id}`)
     event.archived = true
     appStore.showSnack('SUCCESS', 'Event Deleted')
     handleHidingGlobalLoader(status)
@@ -233,8 +252,8 @@ const deleteEvent =  async () => {
 const addEvent = async () => {
   appStore.loading = true
   try {
-    const {data} = await postRequest(`/event`, newEvent.value)
-    router.push({path: `/settings/event/${data.id}/customFieldGroups`})
+    const { data } = await postRequest(`/event`, newEvent.value)
+    router.push({ path: `/settings/event/${data.id}/customFieldGroups` })
     appStore.showSnack('SUCCESS', 'Event Added')
     appStore.loading = false
   } catch (e) {
@@ -245,9 +264,8 @@ const addEvent = async () => {
 }
 
 const goToEvent = (eventId) => {
-  router.push({path: `/settings/event/${eventId}/components`})
+  router.push({ path: `/settings/event/${eventId}/components` })
 }
-
 </script>
 
 <style lang="scss">
@@ -276,20 +294,16 @@ const goToEvent = (eventId) => {
       }
 
       div.v-data-footer__pagination {
-
       }
 
       div.v-data-footer__icons-before {
         display: inline;
         margin-left: calc(50% - 36px);
-
-
       }
 
       div.v-data-footer__icons-after {
         display: inline;
       }
-
     }
   }
 }

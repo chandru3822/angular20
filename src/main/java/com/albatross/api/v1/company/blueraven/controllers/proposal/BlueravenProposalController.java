@@ -295,12 +295,11 @@ public class BlueravenProposalController {
   @GetMapping(value = "/{proposalId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public ResponseEntity<StreamingResponseBody> getProposalTemplatePdf(@PathVariable Long proposalId,
-                                                                      @Parameter(hidden = true) @RequestParam(defaultValue = "1") Long templateId,
                                                                       @RequestParam(defaultValue = "false") boolean inline,
                                                                       HttpServletResponse response) {
     final StreamingResponseBody responseBody = outputStream -> {
       try {
-        ProposalResource result = proposalService.generateProposalPDF(proposalId, templateId)
+        ProposalResource result = proposalService.generateProposalPDF(proposalId)
           .orElseThrow(() -> new ApiException("Proposal not found"));
 
         Proposal proposal = result.proposal();

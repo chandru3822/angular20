@@ -368,6 +368,8 @@ public class ContactService {
       params.put("longitude", longitude);
       params.put("contactTypeId", ContactType.LEAD.id);
       params.put("createdById", currentUser.trueUserId());
+      params.put("objectCategoryId", contact.getObjectCategoryId()); //TODO?
+
       id = sqlCache.updateBySqlReturningId(ContactQuery.insertContact, params, "id").longValue();
     }
 
@@ -414,7 +416,7 @@ public class ContactService {
     User currentUser = securityService.getCurrentUser();
 
     // save contact_type_id
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     params.put("contactTypeId", ContactType.CUSTOMER.id);
     params.put("modifiedById", currentUser.trueUserId());
@@ -431,7 +433,7 @@ public class ContactService {
 
     if (project.isPresent()) {
       //this will only add the activity if the company has it enabled
-      HashMap<String, Object> actParams = new HashMap<>();
+      Map<String, Object> actParams = new HashMap<>();
       actParams.put("activityId", SystemActivity.PROJECT_CREATED.id);
       actParams.put("objectTypeId", ObjectType.PROJECT.id);
       actParams.put("userId", currentUser.trueUserId());

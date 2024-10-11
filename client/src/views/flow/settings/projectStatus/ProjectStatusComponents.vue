@@ -3,53 +3,49 @@
     <v-row>
       <v-col cols="12">
         <div class="px-5">
-          <a-text-field v-model="projectStatus.projectStatusType"
-                        label="Status Type"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
+          <a-text-field
+            v-model="projectStatus.projectStatusType"
+            label="Status Type"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
           ></a-text-field>
           <a-autocomplete
-              :items="rootStatusTypes"
-              v-model="projectStatus.projectStatusTypeId"
-              item-value="id"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              label="Select a Category"
-              item-title="projectStatusType"
-              attach></a-autocomplete>
+            :items="rootStatusTypes"
+            v-model="projectStatus.projectStatusTypeId"
+            item-value="id"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            label="Select a Category"
+            item-title="projectStatusType"
+            attach
+          ></a-autocomplete>
           <a-textarea
-              label="Description"
-              variant="outlined"
-              hide-details
-              auto-grow
-              v-model="projectStatus.description"
+            label="Description"
+            variant="outlined"
+            hide-details
+            auto-grow
+            v-model="projectStatus.description"
           ></a-textarea>
 
-          <v-checkbox label="Use as Milestone"
-                      class="default-text-color"
-                      v-model="projectStatus.isMilestone"
+          <v-checkbox
+            label="Use as Milestone"
+            class="default-text-color"
+            v-model="projectStatus.isMilestone"
           />
 
           <div v-if="!projectStatus.isDefault" class="mb-3">
-            <v-dialog
-                v-model="projectStatus.setInitialConfirm"
-                width="500">
+            <v-dialog v-model="projectStatus.setInitialConfirm" width="500">
               <template #activator="{ on }">
-                <a-btn
-                    :activation-handler="on"
-                    text="Set as Initial"
-                ></a-btn>
+                <a-btn :activation-handler="on" text="Set as Initial"></a-btn>
               </template>
               <v-card>
-                <v-card-title
-                    class="text-h5 grey lighten-2"
-                    primary-title>
+                <v-card-title class="text-h5 grey lighten-2" primary-title>
                   Confirm
                 </v-card-title>
 
                 <v-card-text class="pt-4">
-                  Setting this Project Status Type as default will unset the other initial status. Are you sure you want
-                  to continue?
+                  Setting this Project Status Type as default will unset the
+                  other initial status. Are you sure you want to continue?
                 </v-card-text>
 
                 <v-divider></v-divider>
@@ -57,62 +53,65 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <a-btn
-                      @click="projectStatus.setInitialConfirm = false"
-                      text="No"
+                    @click="projectStatus.setInitialConfirm = false"
+                    text="No"
                   ></a-btn>
 
                   <a-btn
-                      color="primary"
-                      variant="text"
-                      @click="setAsInitial(projectStatus)"
-                      text="Yes"
+                    color="primary"
+                    variant="text"
+                    @click="setAsInitial(projectStatus)"
+                    text="Yes"
                   ></a-btn>
-
                 </v-card-actions>
               </v-card>
             </v-dialog>
           </div>
 
           <v-card class="fifty-cent">
-            <a-text-field v-model="projectStatus.iconTag"
-                          label="Material Icon Tag"
-                          hide-details
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+            <a-text-field
+              v-model="projectStatus.iconTag"
+              label="Material Icon Tag"
+              hide-details
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
             ></a-text-field>
             <div class="mt-3">
               Preview:
-              <v-icon v-if="projectStatus.iconTag">{{ projectStatus.iconTag }}</v-icon>
+              <v-icon v-if="projectStatus.iconTag">{{
+                projectStatus.iconTag
+              }}</v-icon>
             </div>
           </v-card>
         </div>
-        
+
         <a-btn
-            v-if="userCanEdit"
-            :disabled="!projectStatus.projectStatusType || !projectStatus.projectStatusTypeId"
-            color="primary"
-            class="d-inline-block mt-5"
-            @click="saveType(projectStatus)"
-            prepend-icon="save"
-            text="Save"
+          v-if="userCanEdit"
+          :disabled="
+            !projectStatus.projectStatusType ||
+            !projectStatus.projectStatusTypeId
+          "
+          color="primary"
+          class="d-inline-block mt-5"
+          @click="saveType(projectStatus)"
+          prepend-icon="save"
+          text="Save"
         ></a-btn>
-
       </v-col>
-
     </v-row>
   </v-container>
 </template>
 
-
 <script setup>
-
-
-import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
+import {
+  getCompanyProjectStatusType,
+  getProjectStatusTypes
+} from '@/services/projectStatusTypeService'
+import { handleHidingGlobalLoader, putRequest } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute} from "vue-router/composables";
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute } from 'vue-router/composables'
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
@@ -121,14 +120,8 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
- const fileStore = useFileStore()
+const fileStore = useFileStore()
 
-// const colorOptions = ref({
-//   canvasHeight: 75,
-//   width: 200,
-//   mode: 'hexa',
-//   hideModeSwitch: true
-// })
 const projectStatus = ref({})
 const rootStatusTypes = ref([])
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
@@ -147,11 +140,17 @@ onMounted(() => {
   getTheseProjectStatusTypes()
 })
 
-
 const initItemColor = (item) => {
   item.color = item.color ?? '#FFFFFF'
 }
-const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) => {
+
+const uploadFile = async (
+  item,
+  files,
+  attachmentTypeId,
+  sourceId,
+  sizeLimit
+) => {
   try {
     appStore.loading = true
     let file = files[0]
@@ -199,7 +198,7 @@ const deleteAttachment = async (item) => {
 const getStatusInfo = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getCompanyProjectStatusType(statusId.value)
+    const { data, status } = await getCompanyProjectStatusType(statusId.value)
     projectStatus.value = data
     initItemColor(projectStatus.value)
     handleHidingGlobalLoader(status)
@@ -212,7 +211,7 @@ const getStatusInfo = async () => {
 const getTheseProjectStatusTypes = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getProjectStatusTypes()
+    const { data, status } = await getProjectStatusTypes()
     rootStatusTypes.value = data
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -224,7 +223,7 @@ const getTheseProjectStatusTypes = async () => {
 const saveType = async (type) => {
   appStore.loading = true
   try {
-    const {data, status} = await putRequest(`/projectStatus/company`, type)
+    const { data, status } = await putRequest(`/projectStatus/company`, type)
     appStore.showSnack('SUCCESS', 'Project Status Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -236,7 +235,9 @@ const saveType = async (type) => {
 const setAsInitial = async (item) => {
   appStore.loading = true
   try {
-    const {status} = await putRequest(`/projectStatus/company/initial/${item.id}`,)
+    const { status } = await putRequest(
+      `/projectStatus/company/initial/${item.id}`
+    )
     item.isDefault = true
     appStore.showSnack('SUCCESS', 'Status Updated')
     handleHidingGlobalLoader(status)

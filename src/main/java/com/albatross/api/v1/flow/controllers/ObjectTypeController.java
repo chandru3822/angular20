@@ -12,36 +12,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/api/v1/flow/objectType")
+@RequestMapping(value = "/api/v1/flow/objectType", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ObjectTypeController {
 
   private final ObjectTypeService objectTypeService;
 
-  @GetMapping(value = "/getCompanyObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getCompanyObjectTypes")
   public List<CompanyObjectType> getCompanyObjectTypes() {
     return objectTypeService.getCompanyObjectTypes();
   }
 
-  @GetMapping(value = "/getByType/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getByType/{typeId}")
   public Optional<CompanyObjectType> getCustomFieldObjectTypeDetail(@PathVariable Long typeId) {
     return objectTypeService.getCompanyObjectTypeDetail(typeId);
   }
 
-  @PutMapping(value = "/saveStatusReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/saveStatusReadOnlyAndWhiteList")
   public void saveStatusAndWhiteList(@RequestParam(required = false) Boolean savePositions,
-                                         @RequestBody CompanyObjectType objectType) {
+                                     @RequestBody CompanyObjectType objectType) {
     objectTypeService.saveTypeAndWhiteList(objectType, true, savePositions, WhiteListType.PROJECT_STATUS_READ_ONLY.id);
   }
 
-  @PutMapping(value = "/saveOwnerReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/saveOwnerReadOnlyAndWhiteList")
   public void saveOwnerReadOnlyAndWhiteList(@RequestParam(required = false) Boolean savePositions,
                                             @RequestBody CompanyObjectType objectType) {
     //get the correct whitelist type id and then save

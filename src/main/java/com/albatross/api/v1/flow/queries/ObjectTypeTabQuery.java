@@ -4,19 +4,27 @@ public class ObjectTypeTabQuery {
 
   //language=PostgreSQL
   public final static String getProjectTabs = """
-    select cott.id,
-           cott.tab_name,
-           cott.company_object_type_id,
-           cot.object_type_id,
-           cott.display_order,
-           cott.archived,
-           concat('tab_',cott.id) as unique_identifier
-    from flow.company_object_type_tab cott
-        inner join flow.company_object_type cot on cot.id = cott.company_object_type_id
-    where cot.object_type_id = :objectTypeId
-        and cot.company_id = :companyId
-        and cott.archived is not true
-    order by cott.display_order
+select distinct cott.id,
+                cott.tab_name,
+                cott.company_object_type_id,
+                cot.object_type_id,
+                cott.display_order,
+                cott.archived,
+                concat('tab_', cott.id) as unique_identifier
+from flow.company_object_type_tab cott
+         inner join flow.company_object_type cot on cot.id = cott.company_object_type_id
+         left join flow.custom_field_group cfg
+                    on cott.id = cfg.company_object_type_tab_id and cot.id = cfg.company_object_type_id
+                        and cfg.archived is false
+         left join flow.object_category_custom_field_group occfg on cfg.id = occfg.custom_field_group_id and occfg.archived is false
+where cot.object_type_id = :objectTypeId
+  and cot.company_id = :companyId
+  and cott.archived is not true
+  and case
+          when :projectId::bigint is not null then
+              occfg.object_category_id = (select object_category_id from flow.project where id = :projectId)
+          else 1 = 1 end
+order by cott.display_order
     """;
 
   //language=PostgreSQL

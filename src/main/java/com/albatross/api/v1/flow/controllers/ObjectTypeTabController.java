@@ -10,36 +10,31 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/api/v1/flow/objectTypeTab")
+@RequestMapping(value = "/api/v1/flow/objectTypeTab", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ObjectTypeTabController {
 
   private final ObjectTypeTabService objectTypeTabService;
 
-  @GetMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectTypeTab> getTabs (@RequestParam(required = false) Long projectId) {
+  @GetMapping(value = "/project")
+  public List<ObjectTypeTab> getTabs(@RequestParam(required = false) Long projectId) {
     return objectTypeTabService.getTabs(ObjectType.PROJECT.id, projectId);
   }
 
-  @PostMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ObjectTypeTab saveProjectTab (@RequestBody ObjectTypeTab tab) {
+  @PostMapping(value = "/project")
+  public ObjectTypeTab saveProjectTab(@RequestBody ObjectTypeTab tab) {
     return objectTypeTabService.saveTab(tab, ObjectType.PROJECT.id);
   }
 
-  @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveTabOrder (@RequestBody List<ObjectTypeTab> tabs) {
+  @PutMapping(value = "/order")
+  public void saveTabOrder(@RequestBody List<ObjectTypeTab> tabs) {
     objectTypeTabService.updateTabOrder(tabs);
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteTab (@PathVariable Long id) {
+  @DeleteMapping(value = "/{id}")
+  public void deleteTab(@PathVariable Long id) {
     objectTypeTabService.deleteTab(id);
   }
 

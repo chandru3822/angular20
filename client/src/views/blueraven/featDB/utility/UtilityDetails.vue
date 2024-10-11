@@ -26,7 +26,7 @@
                           variant="text"
                           color="primary"
                           prepend-icon="history"
-                          @click="showChangeLog = !showChangeLog"
+                          @click="getChangeLog"
                           v-bind="attrs"
                           :activation-handler="{ ...tooltip, ...menu }">
                         </a-btn>
@@ -191,9 +191,6 @@ const utilityId = computed(() => {
 
 onMounted(async() => {
   await pageLoad(true)
-  if (hasManageAccess) {
-    await getChangeLog()
-  }
 })
 
 const http = axios.create({
@@ -209,7 +206,8 @@ http.interceptors.response.use((response) => {
 })
 
 const getChangeLog = async() => {
-  if (hasManageAccess === true) {
+  showChangeLog.value = !showChangeLog.value
+  if (hasManageAccess === true && showChangeLog.value) {
     appStore.loading = true
     try {
       const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}/getUtilityHistory`, 'blueraven')
@@ -379,9 +377,6 @@ const saveUtility = async() => {
     utility.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "Utility saved")
-    if (hasManageAccess) {
-      await getChangeLog()
-    }
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)

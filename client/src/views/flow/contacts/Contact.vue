@@ -289,15 +289,19 @@
               </v-menu>
             </template>
             <template v-slot:expanded-content>
-              <div>
-                <v-card flat v-for="p in contact.projects"
-                        class="project-button albatross-body-1"
-                        :to="`/project/${p.id}/${defaultProjectPage}`">
-                  <div class="body-large" >{{ p.projectName }} </div>
-                  <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
-                </v-card>
-                <span v-if="contact?.projects?.length === 0">No associated projects</span>
+              <div v-if="contact?.projects?.length > 0">
+
+                <div v-for="(projects, category) in groupedProjects" :key="category" :value="true">
+                  {{category}}
+                  <v-card flat v-for="p in projects"
+                          class="project-button albatross-body-1"
+                          :to="`/project/${p.id}/${defaultProjectPage}`">
+                    <div class="body-large" >{{ p.projectName }} </div>
+                    <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
+                  </v-card>
+                </div>
               </div>
+              <span v-else>No associated projects</span>
             </template>
           </SidePanelExpansionPanel>
           <v-divider></v-divider>
@@ -693,6 +697,16 @@ const companyId  = computed(() => {
 const timezone  = computed(() => {
   return userStore.timezone.value
 })
+const groupedProjects  = computed(() => {
+  return contact.value?.projects?.reduce((groups, project) => {
+    const category = project?.objectCategory;
+    if (!groups[category]) {
+      groups[category] = [];
+    }
+    groups[category].push(project);
+    return groups;
+  }, {});
+})
 
 const addressFieldRequired = computed(() => {
   //this logic seems backwards but it is just the way rules work
@@ -707,6 +721,11 @@ const addressFieldRequired = computed(() => {
 })
 const overviewDetails = computed(() => {
   return [
+    {
+      label: '',
+      type: constants.OVERVIEW_FIELD_TYPES.CATEGORY,
+      value: contact.value.objectCategory
+    },
     {
       label: 'Date Created',
       type: constants.OVERVIEW_FIELD_TYPES.DATE,
@@ -1006,7 +1025,8 @@ const getAvailableProcesses = async() => {
   try {
     processesLoading.value = true
     let params = {
-      contactId: parseInt(contactId.value)
+      contactId: parseInt(contactId.value),
+      contactInitialize: true
     }
     const {data, status} = await getRequestWithParams(`/processes`, {params})
     availableProcesses.value = data

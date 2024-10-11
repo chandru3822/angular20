@@ -60,7 +60,7 @@ public class ProposalProcessor {
       log.debug("[Proposal] Generating final PDF for proposalId={}", proposalId);
 
       try {
-        proposalService.generateProposalPDF(proposalId, 1L)
+        proposalService.generateProposalPDF(proposalId)
           .ifPresent(result -> {
             handleResult(result);
             count.getAndIncrement();

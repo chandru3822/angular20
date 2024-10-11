@@ -109,6 +109,7 @@ const selectedLink = ref({})
 const editMode = ref(false)
 const validUrl = ref(false)
 const linksCopy = ref(links.value)
+const ahjItemTypes = ['permit', 'inspection', 'design', 'newHome']
 
 const linkInfoEntered = computed(() => {
   return selectedLink.value.name && selectedLink.value.link && validUrl.value
@@ -139,7 +140,7 @@ const saveLink = async (newLink) => {
     try {
       let res = null
       //changed to not require updates when a new feat_db gets added
-      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+      if (ahjItemTypes.includes(itemType.value)) {
         res = await postRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/links`, selectedLink.value, 'blueraven')
       } else {
         res = await postRequest(`/featDb/${itemType.value}/${itemId.value}/links`, selectedLink.value, 'blueraven')
@@ -156,7 +157,7 @@ const saveLink = async (newLink) => {
     try {
       let res = null
       //changed to not require updates when a new feat_db gets added
-      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+      if (ahjItemTypes.includes(itemType.value)) {
         res = await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/links/${selectedLink.value.id}`, selectedLink.value, 'blueraven')
       } else {
         res = await putRequest(`/featDb/${itemType.value}/${itemId.value}/links/${selectedLink.value.id}`, selectedLink.value, 'blueraven')
@@ -182,7 +183,7 @@ const deleteLink = async () => {
 
   try {
     //changed to not require updates when a new feat_db gets added
-    if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+    if (ahjItemTypes.includes(itemType.value)) {
       await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/links/${selectedLink.value.id}/archive`, null, 'blueraven')
     } else {
       await putRequest(`/featDb/${itemType.value}/links/${selectedLink.value.id}/archive`, null, 'blueraven')

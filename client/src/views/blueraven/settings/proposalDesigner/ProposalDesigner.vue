@@ -1,7 +1,21 @@
 <template>
   <div id="designer">
     <div class="toolbar">
-      <div id="props-designer-toolbar-left">
+      <div>
+        <a-select
+          class="d-inline-block"
+          label="Template"
+          dense
+          attach
+          v-model="currentTemplate"
+          :hint="`${currentTemplate?.templateName} ${currentTemplate?.objectCategory ? ', ' + currentTemplate?.objectCategory : ''}`"
+          :items="templates"
+          item-value="id"
+          item-title="templateName"
+          return-object
+          @input="(t) => store.fetchTemplate(t.id)"
+        >
+        </a-select>
         <v-tooltip bottom>
           <template #activator="{ on, attrs }">
             <a-btn
@@ -78,7 +92,7 @@
           <span>Generate PDF Preview</span>
         </v-tooltip>
       </div>
-      <div id="props-designer-toolbar-right">
+      <div>
         <v-tooltip bottom>
           <template #activator="{ on, attrs }">
             <a-btn
@@ -121,7 +135,7 @@
       <div class="main-sidebar">
         <v-tabs v-model="tabs">
           <v-tab>Editor</v-tab>
-          <v-tab>Tree </v-tab>
+          <v-tab>Tree</v-tab>
         </v-tabs>
         <v-tabs-items v-model="tabs" class="tabs-scrollable">
           <v-tab-item>
@@ -270,9 +284,9 @@
                 outlined
                 color="primary--text"
                 class="mt-4 mb-0 sort-chip align-self-center albatross-body-2 flex-shrink-0"
-                @click=";[(sortbyId = !sortbyId), (expandAll = true)]"
+                @click=";[(sortById = !sortById), (expandAll = true)]"
               >
-                {{ sortbyId ? 'Sort by doc order' : 'Sort by Id' }}
+                {{ sortById ? 'Sort by doc order' : 'Sort by Id' }}
               </v-chip>
               <a-btn
                 variant="text"
@@ -285,7 +299,7 @@
             <v-card class="mx-auto pa-4" flat>
               <nested-tree
                 :children="pages"
-                :sort-by-id="sortbyId"
+                :sort-by-id="sortById"
                 :expandAll="expandAll"
                 @select="focusNode"
                 id="props-designer-tree"
@@ -318,6 +332,9 @@ import ImagePanel from './panel/Image'
 import NestedTree from './panel/NestedTree'
 import TextMenuWidget from './panel/TextMenuWidget'
 import AdvancedPanel from './panel/Advanced.vue'
+import AddComponentWidget from './panel/AddComponentWidget.vue'
+import LocationSelectorWidget from './panel/LocationSelectorWidget.vue'
+
 import ProposalTemplate from './ProposalTemplate'
 import { apiRequest } from '@/helpers/helpers'
 import { Editor } from '@tiptap/vue-2'
@@ -327,13 +344,12 @@ import { computed, ref, onMounted, watch, onBeforeUnmount, provide } from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from './store.js'
 import { storeToRefs } from 'pinia'
-import AddComponentWidget from '@/views/blueraven/settings/proposalDesigner/panel/AddComponentWidget.vue'
-import LocationSelectorWidget from '@/views/blueraven/settings/proposalDesigner/panel/LocationSelectorWidget.vue'
+
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 
 const appStore = useAppStore()
 const store = useProposalStore()
-const { selectedId, template } = storeToRefs(store)
+const { selectedId, template, templates, currentTemplate } = storeToRefs(store)
 
 const historyKeyListener = function (e) {
   if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
@@ -353,7 +369,11 @@ const historyKeyListener = function (e) {
 
 onMounted(async () => {
   document.addEventListener('keydown', historyKeyListener)
-  await Promise.allSettled([store.fetchTags(), store.fetchTemplate()])
+  await Promise.allSettled([
+    store.fetchTags(),
+    store.loadTemplates(),
+    store.fetchTemplate()
+  ])
 })
 
 onBeforeUnmount(() =>
@@ -384,7 +404,7 @@ const editedBlockName = ref(null)
 const showDeleteDialog = ref(false)
 const activeEditor = ref(undefined)
 const viewportEl = ref(null)
-const sortbyId = ref(true)
+const sortById = ref(true)
 const expandAll = ref(true)
 
 const editor = {}
@@ -414,6 +434,7 @@ const updateAddValue = ({ newBlock, blockLocation }) => {
   store.addBlock({ ...newBlock }, blockLocation)
   addBlock.value = false
 }
+
 const updateName = (name) => {
   store.setName({
     blockId: selected.value.id,
@@ -428,18 +449,21 @@ const updateStyles = (styles) => {
     styles
   })
 }
+
 const updateVisibility = (visibility) => {
   store.setVisibility({
     blockId: selected.value.id,
     visibility
   })
 }
+
 const downloadPreview = async () => {
   try {
     appStore.loading = true
+    const currentTemplateId = currentTemplate.value?.id
     const { data } = await apiRequest('blueraven', {
       method: 'post',
-      url: '/proposal-preview/1',
+      url: `/proposal-preview/${currentTemplateId}`,
       responseType: 'blob'
     })
 

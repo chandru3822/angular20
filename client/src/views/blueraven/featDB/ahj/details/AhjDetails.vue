@@ -59,6 +59,10 @@ const ahjId = computed(() => {
         {
           label: 'Design',
           path: '/database/ahj/' + ahjId.value + '/design'
+        },
+        {
+          label: 'New Home',
+          path: '/database/ahj/' + ahjId.value + '/newHome'
         }
       ]
     })

@@ -27,6 +27,9 @@
             </div>
             <div v-else class="detail-item body-medium body-medium">N/A</div>
           </div>
+          <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.CATEGORY" class="mb-4">
+            <span v-if="detail.value" class="detail-item body-medium">{{ detail.value }}</span>
+          </div>
           <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.DATE" class="mb-4">
             <span class="detail-label label-small">{{ detail.label }}: </span><br/>
             <span v-if="detail.value" class="detail-item body-medium">{{ formatDate(detail.value) }}</span>
@@ -61,7 +64,7 @@
                   class="detail-item body-medium body-medium"
                   :class="{'clickable underline anchor':detail.clickable}">
           {{ detail.value }}
-        </span>
+            </span>
             <span v-else class="d-inline-block detail-item body-medium">N/A</span>
           </div>
 

@@ -74,6 +74,22 @@ public class ProjectController {
     return projectService.getProject(projectId);
   }
 
+  @Data
+  public static class ChildProjectRequest {
+    private Long childProjectCount, childCompanyProcessId;
+  }
+
+  @PostMapping(value = "/{projectId}/addChildren")
+  public void addChildProjects(@PathVariable Long projectId,
+                               @RequestBody ChildProjectRequest req) {
+    projectService.addChildProjects(projectId, req);
+  }
+
+  @GetMapping(value = "/{projectId}/children")
+  public List<Project> getProjectChildren(@PathVariable Long projectId) {
+    return projectService.getProjectChildren(projectId);
+  }
+
   @GetMapping(value = "/{projectId}/statusFields")
   public List<ProjectStatusField> getStatusFieldsByProject(@PathVariable Long projectId) {
     return projectService.getStatusFieldsByProject(projectId, null);

@@ -22,7 +22,7 @@
           </v-col>
         </v-row>
 
-        <v-card flat class="mt-3 d-flex" width="100%">
+        <v-card class="d-flex mb-2 pa-4">
           <div class="new-proposal-header">
             <router-link
               id="back-btn"
@@ -41,18 +41,14 @@
               @input="handleNameChange"
             />
           </div>
-          <v-chip
-            v-if="proposal.locked"
-            small
-            color="error"
-            dark
-            class="ml-2 text-uppercase"
-          >
-            <v-icon small>mdi-lock</v-icon>
-            Locked
-          </v-chip>
+          <div v-if="proposal.locked" class="d-flex align-center">
+            <v-chip small color="error" dark class="ml-2 text-uppercase">
+              <v-icon small>mdi-lock</v-icon>
+              Locked
+            </v-chip>
+          </div>
           <v-spacer />
-          <div class="d-flex align-center pr-4 py-4">
+          <div class="d-flex align-center">
             <v-menu
               v-model="versionMenu"
               v-if="proposal && proposal.projectId"
@@ -1008,8 +1004,9 @@ const beforeWindowUnload = (e) => {
 .proposal-viewer {
   padding-left: 16px;
   height: calc(
-    100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
-      var(--proposal-action-height)
+    100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - var(
+        --proposal-action-height
+      )
   );
 }
 
@@ -1090,8 +1087,9 @@ const beforeWindowUnload = (e) => {
 
   .proposal-viewer {
     height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) -
-        var(--proposal-action-height) - 32px
+      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - var(
+          --proposal-action-height
+        ) - 32px
     );
   }
 }
