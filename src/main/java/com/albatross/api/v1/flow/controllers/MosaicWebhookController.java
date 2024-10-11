@@ -29,9 +29,6 @@ public class MosaicWebhookController {
 
     String mosaicApplicationId = contractSignedEventWrapper.getData().getAttributes().getApplicationId();
     String eventTime = contractSignedEventWrapper.getData().getAttributes().getEventTime();
-    /*log.debug(
-        "GOODLEAP: Received new contract signed event from GoodLeap. applicationId: {}",
-      contractSignedEvent.getApplicationId() != null ? contractSignedEvent.getApplicationId() : "null");*/
     String errorMsg = "";
     try {
       errorMsg = mosaicService.updateFinancialAgreementSigned(mosaicApplicationId, eventTime);
