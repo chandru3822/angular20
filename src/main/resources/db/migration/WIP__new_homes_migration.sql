@@ -2714,11 +2714,11 @@ $do$
     v_count bigint;
   BEGIN
     v_count = 0;
-    for x in select p.id    as project_id,
-                    c.id    as community_id
-             from brs.NH_COMMUNITY_C c
-                    inner join flow.project p on p.nw_migration_id = c.id
-                    inner join brs.account a on a.id = c.builder_c
+    for x in select p.id     as project_id,
+                    co.id    as community_id
+             from brs.NH_COMMUNITY_C co
+                    inner join flow.project p on p.nw_migration_id = co.id
+                    inner join brs.account a on a.id = co.builder_c
                     inner join flow.contact c2 on c2.nw_migration_id = a.id
       loop
         v_count = v_count + 1;
