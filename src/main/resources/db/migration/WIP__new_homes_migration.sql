@@ -2437,8 +2437,7 @@ $do$
   end
 $do$;
 
-SET session_replication_role = default;
-SET session_replication_role = replica;
+
 DO  --2:38
 $do$
   declare
@@ -2698,7 +2697,7 @@ $do$
   end
 $do$;
 
-SET session_replication_role = replica;
+
 DO  --35 seconds
 $do$
   declare
@@ -2909,7 +2908,7 @@ $do$
   end
 $do$;
 
-SET session_replication_role = replica;
+
 DO
 $do$
   declare
@@ -3289,3 +3288,4 @@ $do$
 
   end
 $do$;
+SET session_replication_role = default;
