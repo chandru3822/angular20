@@ -2750,10 +2750,12 @@ $do$
                    c3.end_date,
                    c3.short_description_c,
                    c3.description,
-                   c3.solar_cut_off_c
+                   c3.solar_cut_off_c,
+                   CASE WHEN ROW_NUMBER() OVER (PARTITION BY nh_community_c ORDER BY c3.last_modified_date desc ) = 1 THEN TRUE ELSE FALSE END AS is_last_row
           from brs.campaign c3
                  left join flow.list_of_value lov1 on lov1.name = c3.sales_status_c and lov1.parent_id = 25309
           where c3.nh_community_c = x.community_id
+          order by c3.nh_community_c, c3.last_modified_date
         loop
             v_project_process_step_campaign_id = null;
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -2761,7 +2763,7 @@ $do$
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.project_id, 3758, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+            values (x.project_id, 3758, null, case when c.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
             returning id into v_project_process_step_campaign_id;
             perform flow.set_pps_cfv(x.project_id, 2384850, 28116, c.lov1_sales_status_c_id::text, true);
             --perform flow.set_pps_cfv(x.project_id, 2384850, 28117, x.owner_id, true);
