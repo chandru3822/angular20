@@ -2319,6 +2319,8 @@
 -- CREATE INDEX if not exists nh_community_c_id ON brs.campaign (nh_community_c);
 -- CREATE INDEX if not exists nh_community_c_id_id ON brs.plan_type_c (community_c);
 -- CREATE INDEX if not exists nh_NEW_HOMES_COMMUNITY_C_id ON brs.DESIGN_C (NEW_HOMES_COMMUNITY_C);
+-- CREATE INDEX if not exists nh_reason_level_2_c_id ON brs.DESIGN_C (reason_level_2_c);
+-- CREATE INDEX if not exists nh_reason_level_1_c ON brs.DESIGN_C (reason_level_1_c);
 --
 -- CREATE INDEX if not exists nh_mppp_revision_needed_c ON brs.DESIGN_C (mppp_revision_needed_c);
 -- CREATE INDEX if not exists nh_nh_urgent_request_type_c ON brs.DESIGN_C (nh_urgent_request_type_c);
@@ -2704,7 +2706,7 @@ $do$
     x                                      record;
     y                                      record;
     z                                      record;
-    c record;
+    u record;
     v_project_process_step_id              bigint;
     v_project_process_step_event_id        bigint;
     v_project_process_step_event_design_id bigint;
@@ -2744,7 +2746,7 @@ $do$
         values (x.project_id, 3738, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
         returning id into v_project_process_step_design_id;
 
-        for c in select
+        for u in select
                    c3.owner_id,
                    lov1.id as lov1_sales_status_c_id,
                    c3.end_date,
@@ -2763,14 +2765,15 @@ $do$
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.project_id, 3758, null, case when c.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+            values (x.project_id, 3758, null, case when u.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
+                    case when u.is_last_row is true then  true else false end, null, null, null)
             returning id into v_project_process_step_campaign_id;
-            perform flow.set_pps_cfv(x.project_id, 2384850, 28116, c.lov1_sales_status_c_id::text, true);
+            perform flow.set_pps_cfv(x.project_id, 2384850, 28116, u.lov1_sales_status_c_id::text, true);
             --perform flow.set_pps_cfv(x.project_id, 2384850, 28117, x.owner_id, true);
-            perform flow.set_pps_cfv(x.project_id, 2384850, 28118, c.end_date::text, true);
-            perform flow.set_pps_cfv(x.project_id, 2384850, 28119, c.short_description_c::text, true);
-            perform flow.set_pps_cfv(x.project_id, 2384850, 28120, c.description::text, true);
-            perform flow.set_pps_cfv(x.project_id, 2384850, 28121, c.solar_cut_off_c::text, true);
+            perform flow.set_pps_cfv(x.project_id, 2384850, 28118, u.end_date::text, true);
+            perform flow.set_pps_cfv(x.project_id, 2384850, 28119, u.short_description_c::text, true);
+            perform flow.set_pps_cfv(x.project_id, 2384850, 28120, u.description::text, true);
+            perform flow.set_pps_cfv(x.project_id, 2384850, 28121, u.solar_cut_off_c::text, true);
         end loop;
 
         for y in select ptc.*,
@@ -2812,7 +2815,9 @@ $do$
                           lov3.id as lov3_incoming_request_had_all_information_c_id,
                           lov4.id as lov4_pdf_copy_only_c_id,
                           lov5.id as lov5_electrical_pe_signature_c_id,
-                          lov6.id as lov6_structural_pe_signature_c_id
+                          lov6.id as lov6_structural_pe_signature_c_id,
+                          lov7.id as lov7_reason_level_1_c_id,
+                          lov8.id as lov8_reason_level_2_c_id
                    from brs.DESIGN_C DC
                           left join flow.list_of_value lov1
                                     on lov1.name = dc.mppp_revision_needed_c and lov1.parent_id = 25617
@@ -2825,6 +2830,10 @@ $do$
                                     on lov5.name = dc.electrical_pe_signature_c and lov5.parent_id = 25635
                           left join flow.list_of_value lov6
                                     on lov6.name = dc.structural_pe_signature_c and lov6.parent_id = 25643
+                          left join flow.list_of_value lov7
+                                    on lov7.name = dc.reason_level_1_c and lov7.parent_id = 25589
+                          left join flow.list_of_value lov8
+                                    on lov8.name = dc.reason_level_2_c and lov8.parent_id =25594
                    where dc.NEW_HOMES_COMMUNITY_C = x.community_id
 
             loop
@@ -2862,8 +2871,8 @@ $do$
 
               --  perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28740, z.project_designer_c, true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28428, z.revision_of_c::text,true);
-              perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28429, z.reason_level_1_c::text,true);
-              perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28430, z.reason_level_2_c::text,true);
+              perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28429, z.lov7_reason_level_1_c_id::text,true);
+              perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28430, z.lov8_reason_level_2_c_id::text,true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28739, z.lov1_mppp_revision_needed_c_id::text, true);
               -- perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28427, z., true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28741,z.lov2_nh_urgent_request_type_c_id::text, true);
