@@ -2327,6 +2327,42 @@ CREATE INDEX if not exists nh_pdf_copy_only_c ON brs.DESIGN_C (pdf_copy_only_c);
 CREATE INDEX if not exists nh_electrical_pe_signature_c ON brs.DESIGN_C (electrical_pe_signature_c);
 CREATE INDEX if not exists nh_structural_pe_signature_c ON brs.DESIGN_C (structural_pe_signature_c);
 
+CREATE INDEX if not exists rpc_priority_c ON brs.residential_project_c (priority_c);
+CREATE INDEX if not exists rpc_cancellation_justification_c ON brs.residential_project_c (cancellation_justification_c);
+CREATE INDEX if not exists rpc_sun_power_deal_type_c ON brs.residential_project_c (sun_power_deal_type_c);
+CREATE INDEX if not exists rpc_sun_vault_deal_type_c ON brs.residential_project_c (sun_vault_deal_type_c);
+CREATE INDEX if not exists rpc_rescheduled_reason_code_c ON brs.residential_project_c (rescheduled_reason_code_c);
+CREATE INDEX if not exists rpc_rp_fields_and_builder_files_validated_c ON brs.residential_project_c (rp_fields_and_builder_files_validated_c);
+CREATE INDEX if not exists rpc_block_reason_c ON brs.residential_project_c (block_reason_c);
+CREATE INDEX if not exists rpc_monitoring_c ON brs.residential_project_c (monitoring_c);
+CREATE INDEX if not exists rpc_roof_attachment_c ON brs.residential_project_c (roof_attachment_c);
+CREATE INDEX if not exists rpc_smart_thermostat_c ON brs.residential_project_c (smart_thermostat_c);
+CREATE INDEX if not exists rpc_thermostat_manufacturer_c ON brs.residential_project_c (thermostat_manufacturer_c);
+CREATE INDEX if not exists rpc_thermostat_model_c ON brs.residential_project_c (thermostat_model_c);
+CREATE INDEX if not exists rpc_installation_type_c ON brs.residential_project_c (installation_type_c);
+CREATE INDEX if not exists rpc_roof_type_c ON brs.residential_project_c (roof_type_c);
+CREATE INDEX if not exists rpc_type_of_design_c ON brs.residential_project_c (type_of_design_c);
+CREATE INDEX if not exists rpc_roof_1_pitch_c ON brs.residential_project_c (roof_1_pitch_c);
+CREATE INDEX if not exists rpc_proposed_solar_breaker_installed_in_msp_c ON brs.residential_project_c (proposed_solar_breaker_installed_in_msp_c);
+CREATE INDEX if not exists rpc_pdf_copy_only_c ON brs.residential_project_c (pdf_copy_only_c);
+CREATE INDEX if not exists rpc_roof_2_pitch_c ON brs.residential_project_c (roof_2_pitch_c);
+CREATE INDEX if not exists rpc_roof_3_pitch_c ON brs.residential_project_c (roof_3_pitch_c);
+CREATE INDEX if not exists rpc_roof_4_pitch_c ON brs.residential_project_c (roof_4_pitch_c);
+CREATE INDEX if not exists rpc_further_discount_status_c ON brs.residential_project_c (further_discount_status_c);
+CREATE INDEX if not exists rpc_microinverter_status_c ON brs.residential_project_c (microinverter_status_c);
+CREATE INDEX if not exists rpc_pre_coe_comm_failure_reason_c ON brs.residential_project_c (pre_coe_comm_failure_reason_c);
+CREATE INDEX if not exists rpc_utility_meter_installed_c ON brs.residential_project_c (utility_meter_installed_c);
+CREATE INDEX if not exists rpc_system_activation_status_c ON brs.residential_project_c (system_activation_status_c);
+CREATE INDEX if not exists rpc_rse_outcome_c ON brs.residential_project_c (rse_outcome_c);
+CREATE INDEX if not exists rpc_pv_hers_certification_type_c ON brs.residential_project_c (pv_hers_certification_type_c);
+CREATE INDEX if not exists rpc_nem_applicability_c ON brs.residential_project_c (nem_applicability_c);
+CREATE INDEX if not exists rpc_internet_access_c ON brs.residential_project_c (internet_access_c);
+CREATE INDEX if not exists rpc_preferred_communication_c ON brs.residential_project_c (preferred_communication_c);
+CREATE INDEX if not exists rpc_tree_trim_c ON brs.residential_project_c (tree_trim_c);
+CREATE INDEX if not exists rpc_attic_crawl_space_c ON brs.residential_project_c (attic_crawl_space_c);
+CREATE INDEX if not exists rpc_dog_on_site_c ON brs.residential_project_c (dog_on_site_c);
+CREATE INDEX if not exists rpc_customer_construction_project_c ON brs.residential_project_c (customer_construction_project_c);
+CREATE INDEX if not exists rpc_complexity_indicator_c ON brs.residential_project_c (complexity_indicator_c);
 
 DO
 $do$
@@ -2755,7 +2791,7 @@ $do$
                       lov5.id as lov5_electrical_pe_signature_c_id,
                       lov6.id as lov6_structural_pe_signature_c_id
                  from brs.DESIGN_C DC
-                        left join flow.list_of_value lov1 on lov1.name = dc.mppp_revision_needed_c and lov1.parent_id =25617
+                        left join flow.list_of_value lov1 on lov1.name = rpc. and lov1.parent_id =25617
                         left join flow.list_of_value lov2 on lov2.name = dc.nh_urgent_request_type_c and lov2.parent_id =25620
                         left join flow.list_of_value lov3 on lov3.name = dc.incoming_request_had_all_information_c and lov3.parent_id =25632
                         left join flow.list_of_value lov4 on lov4.name = dc.pdf_copy_only_c and lov4.parent_id =25504
@@ -2854,6 +2890,7 @@ $do$
   v_contact_id bigint;
   v_project_id bigint;
   v_object_category_project_id bigint;
+  v_system_adders_c bigint[];
   BEGIN
     select oc.id
     into v_object_category_project_id
@@ -2870,7 +2907,43 @@ $do$
                     cs.id as company_state_id,
                     rpc.*,
                     c2.id as builder_contact_id,
-                    p.id as community_project_id
+                    p.id as community_project_id,
+                    lov1.id as  lov1_priority_c,
+                    lov2.id as  lov2_cancellation_justification_c,
+                    lov3.id as  lov3_sun_power_deal_type_c,
+                    lov4.id as  lov4_sun_vault_deal_type_c,
+                    lov5.id as  lov5_rescheduled_reason_code_c,
+                    lov6.id as  lov6_rp_fields_and_builder_files_validated_c,
+                    lov7.id as  lov7_block_reason_c,
+                    lov8.id as  lov8_monitoring_c,
+                    lov9.id as  lov9_roof_attachment_c,
+                    lov10.id as lov10_smart_thermostat_c,
+                    lov11.id as lov11_thermostat_manufacturer_c,
+                    lov12.id as lov12_thermostat_model_c,
+                    lov13.id as lov13_installation_type_c,
+                    lov14.id as lov14_roof_type_c,
+                    lov15.id as lov15_type_of_design_c,
+                    lov16.id as lov16_roof_1_pitch_c,
+                    lov17.id as lov17_proposed_solar_breaker_installed_in_msp_c,
+                    lov18.id as lov18_pdf_copy_only_c,
+                    lov19.id as lov19_roof_2_pitch_c,
+                    lov20.id as lov20_roof_3_pitch_c,
+                    lov21.id as lov21_roof_4_pitch_c,
+                    lov22.id as lov22_further_discount_status_c,
+                    lov23.id as lov23_microinverter_status_c,
+                    lov24.id as lov24_pre_coe_comm_failure_reason_c,
+                    lov25.id as lov25_utility_meter_installed_c,
+                    lov26.id as lov26_system_activation_status_c,
+                    lov27.id as lov27_rse_outcome_c,
+                    lov28.id as lov28_pv_hers_certification_type_c,
+                    lov29.id as lov29_nem_applicability_c,
+                    lov30.id as lov30_internet_access_c,
+                    lov31.id as lov31_preferred_communication_c,
+                    lov32.id as lov32_tree_trim_c,
+                    lov33.id as lov33_attic_crawl_space_c,
+                    lov34.id as lov34_dog_on_site_c,
+                    lov35.id as lov35_customer_construction_project_c,
+                    lov36.id as lov36_complexity_indicator_c
              from brs.NH_COMMUNITY_C c
                     inner join flow.project p on p.nw_migration_id = c.id
                     inner join brs.account a on a.id = c.builder_c
@@ -2879,6 +2952,42 @@ $do$
                     left join brs.account a2 on a2.id = rpc.account_c and a2.type in ('Home Owner – SSE','Home Owner','Homeowner')
                     left join flow.state s on s.abbreviation = a2.billing_state
                     left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
+                    left join flow.list_of_value lov1 on lov1.name =   rpc.priority_c and lov1.parent_id =25516
+                    left join flow.list_of_value lov2 on lov2.name =   rpc.cancellation_justification_c and lov2.parent_id =25520
+                    left join flow.list_of_value lov3 on lov3.name =   rpc.sun_power_deal_type_c and lov3.parent_id =25524
+                    left join flow.list_of_value lov4 on lov4.name =   rpc.sun_vault_deal_type_c and lov4.parent_id =25528
+                    left join flow.list_of_value lov5 on lov5.name =   rpc.rescheduled_reason_code_c and lov5.parent_id =25544
+                    left join flow.list_of_value lov6 on lov6.name =   rpc.rp_fields_and_builder_files_validated_c and lov6.parent_id =25542
+                    left join flow.list_of_value lov7 on lov7.name =   rpc.block_reason_c and lov7.parent_id =25540
+                    left join flow.list_of_value lov8 on lov8.name =   rpc.monitoring_c and lov8.parent_id =25538
+                    left join flow.list_of_value lov9 on lov9.name =   rpc.roof_attachment_c and lov9.parent_id =25538
+                    left join flow.list_of_value lov10 on lov10.name = rpc.smart_thermostat_c and lov10.parent_id =25532
+                    left join flow.list_of_value lov11 on lov11.name = rpc.thermostat_manufacturer_c and lov11.parent_id =25522
+                    left join flow.list_of_value lov12 on lov12.name = rpc.thermostat_model_c and lov12.parent_id =25518
+                    left join flow.list_of_value lov13 on lov13.name = rpc.installation_type_c and lov13.parent_id =25514
+                    left join flow.list_of_value lov14 on lov14.name = rpc.roof_type_c and lov14.parent_id =25512
+                    left join flow.list_of_value lov15 on lov15.name = rpc.type_of_design_c and lov15.parent_id =25510
+                    left join flow.list_of_value lov16 on lov16.name = rpc.roof_1_pitch_c and lov16.parent_id =25508
+                    left join flow.list_of_value lov17 on lov17.name = rpc.proposed_solar_breaker_installed_in_msp_c and lov17.parent_id =25506
+                    left join flow.list_of_value lov18 on lov18.name = rpc.pdf_copy_only_c and lov18.parent_id =25504
+                    left join flow.list_of_value lov19 on lov19.name = rpc.roof_2_pitch_c and lov19.parent_id =25502
+                    left join flow.list_of_value lov20 on lov20.name = rpc.roof_3_pitch_c and lov20.parent_id =25430
+                    left join flow.list_of_value lov21 on lov21.name = rpc.roof_4_pitch_c and lov21.parent_id =25436
+                    left join flow.list_of_value lov22 on lov22.name = rpc.further_discount_status_c and lov22.parent_id =25485
+                    left join flow.list_of_value lov23 on lov23.name = rpc.microinverter_status_c and lov23.parent_id =25500
+                    left join flow.list_of_value lov24 on lov24.name = rpc.pre_coe_comm_failure_reason_c and lov24.parent_id =25487
+                    left join flow.list_of_value lov25 on lov25.name = rpc.utility_meter_installed_c and lov25.parent_id =25482
+                    left join flow.list_of_value lov26 on lov26.name = rpc.system_activation_status_c and lov26.parent_id =25444
+                    left join flow.list_of_value lov27 on lov27.name = rpc.rse_outcome_c and lov27.parent_id =25438
+                    left join flow.list_of_value lov28 on lov28.name = rpc.pv_hers_certification_type_c and lov28.parent_id =25432
+                    left join flow.list_of_value lov29 on lov29.name = rpc.nem_applicability_c and lov29.parent_id =25427
+                    left join flow.list_of_value lov30 on lov30.name = rpc.internet_access_c and lov30.parent_id =25425
+                    left join flow.list_of_value lov31 on lov31.name = rpc.preferred_communication_c and lov31.parent_id =25423
+                    left join flow.list_of_value lov32 on lov32.name = rpc.tree_trim_c and lov32.parent_id =25421
+                    left join flow.list_of_value lov33 on lov33.name = rpc.attic_crawl_space_c and lov33.parent_id =25419
+                    left join flow.list_of_value lov34 on lov34.name = rpc.dog_on_site_c and lov34.parent_id =25417
+                    left join flow.list_of_value lov35 on lov35.name = rpc.customer_construction_project_c and lov35.parent_id =25415
+                    left join flow.list_of_value lov36 on lov36.name = rpc.complexity_indicator_c and lov36.parent_id =25413
 
       loop
         v_contact_id = null;
@@ -2908,8 +3017,8 @@ $do$
              case when x.status_c = 'Hold' then 224
                   when x.status_c = 'On Hold' then 224
                   when x.status_c = 'Active' then 223
-                  when x.status_c = 'At Risk' then 223
-                  when x.status_c = 'Construction Complete' then 226
+                  when x.status_c = 'At Risk' then 230
+                  when x.status_c = 'Construction Complete' then 228
                   when x.status_c = 'Closed' then 227 end,
              x.billing_street,null,x.billing_city,x.billing_postal_code,x.company_state_id,1,false,null,x.id,
              v_object_category_project_id,x.community_project_id
@@ -3080,54 +3189,56 @@ $do$
         perform flow.set_project_cfv(v_project_id , 2384850,28156,x.age_of_roof_c, true);
         perform flow.set_project_cfv(v_project_id , 2384850,28158,x.intake_notes_c, true);
         perform flow.set_project_cfv(v_project_id , 2384850,28160,x.age_of_home_c, true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
-
-
-
+        perform flow.set_project_cfv(v_project_id , 2384850,28123,x.lov1_priority_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28124,x.lov2_cancellation_justification_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28125,x.lov3_sun_power_deal_type_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28126,x.lov4_sun_vault_deal_type_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28164,x.lov5_rescheduled_reason_code_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28177,x.lov6_rp_fields_and_builder_files_validated_c , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,29189,x.lov7_block_reason_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28199,x.lov8_monitoring_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28203,x.lov9_roof_attachment_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28205,x.lov10_smart_thermostat_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28207,x.lov11_thermostat_manufacturer_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28210,x.lov12_thermostat_model_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28212,x.lov13_installation_type_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28249,x.lov14_roof_type_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28250,x.lov15_type_of_design_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28258,x.lov16_roof_1_pitch_c , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28259,x.lov17_proposed_solar_breaker_installed_in_msp_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28262,x.lov18_pdf_copy_only_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28264,x.lov19_roof_2_pitch_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28271,x.lov20_roof_3_pitch_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28276,x.lov21_roof_4_pitch_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28300,x.lov22_further_discount_status_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28311,x.lov23_microinverter_status_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28317,x.lov24_pre_coe_comm_failure_reason_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28319,x.lov25_utility_meter_installed_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28327,x.lov26_system_activation_status_c , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28331,x.lov27_rse_outcome_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28179,x.lov28_pv_hers_certification_type_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28198,x.lov29_nem_applicability_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28140,x.lov30_internet_access_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28143,x.lov31_preferred_communication_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28145,x.lov32_tree_trim_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28733,x.lov33_attic_crawl_space_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28152,x.lov34_dog_on_site_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28154,x.lov35_customer_construction_project_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28162,x.lov36_complexity_indicator_c , true);
+        v_system_adders_c = null;
+        if x.system_adders_c is not null then
+          select array_agg(lov.id)
+          into v_system_adders_c
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) system_adders_c
+                 FROM (
+                        SELECT STRING_AGG(system_adders_c, ';') AS aggregated_column
+                        from brs.residential_project_c r
+                        where r.id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.system_adders_c and lov.parent_id = 25442;
+          perform flow.set_project_cfv(v_project_id , 2384850,28328,v_system_adders_c, true);
+        end if;
       end loop;
 
   end
