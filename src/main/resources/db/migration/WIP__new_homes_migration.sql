@@ -1824,6 +1824,437 @@ create table if not exists brs.MODULE_CONFIGURATION_C
   BACKSHEET_COLOR_C      VARCHAR(765)
 );
 
+drop table if exists brs.DESIGN_C;
+create table if not exists  brs.DESIGN_C
+(
+  ID                                         VARCHAR(18),
+  OWNER_ID                                   VARCHAR(18),
+  IS_DELETED                                 BOOLEAN,
+  NAME                                       VARCHAR(240),
+  CURRENCY_ISO_CODE                          VARCHAR(9),
+  RECORD_TYPE_ID                             VARCHAR(18),
+  CREATED_DATE                               TIMESTAMPTZ,
+  CREATED_BY_ID                              VARCHAR(18),
+  LAST_MODIFIED_DATE                         TIMESTAMPTZ,
+  LAST_MODIFIED_BY_ID                        VARCHAR(18),
+  SYSTEM_MODSTAMP                            TIMESTAMPTZ,
+  LAST_ACTIVITY_DATE                         DATE,
+  LAST_VIEWED_DATE                           TIMESTAMPTZ,
+  LAST_REFERENCED_DATE                       TIMESTAMPTZ,
+  CONNECTION_RECEIVED_ID                     VARCHAR(18),
+  CONNECTION_SENT_ID                         VARCHAR(18),
+  AC_DISCONNECT_REQUIRED_C                   VARCHAR(765),
+  ACTIVE_C                                   BOOLEAN,
+  ACTUAL_SYSTEM_SIZE_C                       numeric,
+  ELECTRICAL_AUDIT_NOTES_C                   VARCHAR(765),
+  ACTUAL_TIME_HOURS_C                        VARCHAR(9),
+  ARCHITECT_CONTACT_PHONE_C                  VARCHAR(120),
+  ARCHITECT_DESIGN_EMAIL_C                   VARCHAR(240),
+  ARCHITECT_DESIGN_NAME_C                    VARCHAR(150),
+  BUILDER_DESIGN_EMAIL_C                     VARCHAR(240),
+  BUILDER_DESIGN_NAME_C                      VARCHAR(150),
+  BUILDER_DESIGN_PHONE_C                     VARCHAR(120),
+  CHECKBOX_DESIGNER_NEEDS_INFORMATION_C      BOOLEAN,
+  CITY_C                                     VARCHAR(150),
+  CLIENT_APPROVE_PACKAGE_C                   DATE,
+  CLIENT_COMMENTS_FINAL_RESPONSE_C           DATE,
+  CLIENT_COMMENTS_FIRST_RECEIPT_C            DATE,
+  CLIENT_REVIEW_ACTUAL_SUBMIT_C              DATE,
+  SPWR_SCADA_ENGINEER_C                      VARCHAR(18),
+  CLIENT_REVIEW_FORECAST_SUBMIT_C            DATE,
+  CLIENT_REVIEW_PLANNED_SUBMIT_C             DATE,
+  COMMENTS_C                                 VARCHAR(96000),
+  COMMERCIAL_OPERATION_DATE_C                DATE,
+  CONDUIT_C                                  VARCHAR(765),
+  CONSTRUCTION_MANAGER_C                     VARCHAR(18),
+  CONTRACT_TYPE_C                            VARCHAR(765),
+  COUNTY_C                                   VARCHAR(150),
+  CYCLE_TIME_HOURS_C                         numeric,
+  DC_AC_RATIO_C                              numeric,
+  DC_DISCONNECT_REQUIRED_C                   VARCHAR(765),
+  DWG_ELEVATIONS_C                           VARCHAR(765),
+  DWG_FLOOR_ELEVATIONS_C                     VARCHAR(765),
+  DWG_ROOF_LAYOUT_C                          VARCHAR(765),
+  DATE_ANTICIPATED_DELIVERY_C                DATE,
+  DATE_COMPLETED_DESIGN_REVIEWED_C           DATE,
+  DATE_DELIVERY_REQUESTED_C                  DATE,
+  DATE_DESIGN_COMPLETED_C                    DATE,
+  DATE_DESIGN_REQUEST_VERIFIED_C             DATE,
+  DATE_DESIGN_SHIPPED_C                      DATE,
+  DATE_DESIGN_SIGNED_C                       DATE,
+  DATE_DESIGN_MUST_BE_COMPLETED_C            DATE,
+  DATE_RECIEVED_FROM_PRINTERS_C              DATE,
+  ELECTRICAL_AUDIT_C                         VARCHAR(765),
+  DATE_OF_AGREED_DELIVERY_C                  DATE,
+  POINT_OF_INTERCONNECTION_NOTES_C           VARCHAR(765),
+  DATE_OF_EXPECTED_COMPLETION_C              DATE,
+  DEAL_STATUS_C                              VARCHAR(765),
+  DELIVER_COMPLETED_PAPER_DESIGN_TO_C        VARCHAR(765),
+  DELIVERY_CARRIER_C                         VARCHAR(765),
+  DELIVERY_CITY_C                            VARCHAR(150),
+  DELIVERY_NAME_C                            VARCHAR(90),
+  DELIVERY_STATE_C                           VARCHAR(6),
+  DELIVERY_STREET_C                          VARCHAR(300),
+  DELIVERY_TRACKING_NUMBER_C                 VARCHAR(150),
+  DELIVERY_ZIP_C                             numeric,
+  DESCRIPTION_C                              VARCHAR(300),
+  DESIGN_FILES_LOCATED_IN_C                  VARCHAR(765),
+  INTERCONNECT_STUDY_C                       VARCHAR(765),
+  DESIGN_REVIEW_MEETING_CLIENT_C             DATE,
+  DESIGN_REVIEW_MEETING_PLAN_CHECK_C         DATE,
+  DESIGN_TRACKING_C                          DATE,
+  DESIGN_WORK_COMPLETED_ON_C                 DATE,
+  DESIGN_WORK_CONFIRMED_BY_C                 DATE,
+  DESIGN_WORK_LOCATED_IN_C                   VARCHAR(765),
+  DESIGN_WORK_REQUESTED_BY_C                 DATE,
+  DESIGN_REQUEST_REVIEWED_BY_C               VARCHAR(18),
+  DESIGNER_1_C                               VARCHAR(18),
+  DESIGNER_2_C                               VARCHAR(18),
+  DESIGNER_2_PERCENTAGE_C                    numeric,
+  DESIGNER_C                                 VARCHAR(765),
+  DRAFTER_C                                  VARCHAR(18),
+  DWG_FILES_C                                BOOLEAN,
+  ELECTRIC_UTILITY_C                         VARCHAR(765),
+  DESIGN_PACKAGE_TYPE_C                      VARCHAR(765),
+  ELECTRICAL_NOTES_C                         VARCHAR(765),
+  ELECTRICAL_PE_SIGNATURE_C                  VARCHAR(765),
+  EMAIL_COMPLETED_PDF_DESIGN_TO_C            VARCHAR(4099),
+  ESTIMATED_COMPLETION_DATE_C                DATE,
+  EXTERNAL_DESIGN_ERRORS_C                   VARCHAR(4099),
+  FED_EX_COST_C                              numeric(6, 2),
+  FORMAT_2_C                                 VARCHAR(765),
+  FORMAT_C                                   VARCHAR(765),
+  GCR_C                                      numeric,
+  GEOTECH_STRUCTURAL_LETTER_ACTUAL_C         DATE,
+  HERS_DATA_C                                BOOLEAN,
+  INCOMING_REQUEST_HAD_ALL_INFORMATION_C     VARCHAR(765),
+  INFORMATION_ABOUT_SYSTEM_SIZE_C            VARCHAR(150),
+  INTERNAL_DESIGN_ERRORS_C                   VARCHAR(4099),
+  ISSUE_ELECTRICAL_BOM_ACTUAL_C              DATE,
+  ISSUE_ELECTRICAL_BOM_PLANNED_C             DATE,
+  ISSUE_MECHANICAL_BOM_ACTUAL_C              DATE,
+  ISSUE_MECHANICAL_BOM_PLANNED_C             DATE,
+  LAYOUT_2_C                                 VARCHAR(765),
+  LAYOUT_C                                   VARCHAR(765),
+  LOCATION_OF_REVISION_DOCUMENTS_C           VARCHAR(765),
+  LOT_PERMITS_C                              VARCHAR(4099),
+  LOT_S_FOR_THIS_DESIGN_C                    VARCHAR(60),
+  MASTER_PERMIT_PACKAGE_LAYOUT_C             VARCHAR(4099),
+  MISSING_INFORMATION_C                      VARCHAR(765),
+  NECESSARY_ARCHITECT_BUILDER_INFO_FILED_C   VARCHAR(765),
+  NOTES_FROM_DESIGNER_C                      VARCHAR(765),
+  NOTES_FROM_REQUESTER_C                     VARCHAR(60000),
+  NOTES_ON_PV_FAST_C                         VARCHAR(765),
+  NUMBER_OF_CLIENT_COMMENTS_C                numeric,
+  NUMBER_OF_DESIGN_ERRORS_C                  numeric,
+  NUMBER_OF_ELEVATIONS_C                     numeric,
+  NUMBER_OF_LOT_PERMIT_C                     VARCHAR(765),
+  NUMBER_OF_MASTER_PERMIT_SETS_C             VARCHAR(765),
+  NUMBER_OF_PERMIT_AGENCY_COMMENTS_C         numeric,
+  NUMBER_OF_PLAN_TYPES_C                     numeric,
+  NUMBER_OF_SETS_C                           numeric,
+  OPEN_RFIS_C                                numeric,
+  OPPORTUNITY_C                              VARCHAR(18),
+  OTHER_EMAIL_C                              VARCHAR(240),
+  PE_SIGNATURE_C                             VARCHAR(765),
+  PSR_C                                      VARCHAR(18),
+  PERCENT_OF_DESIGN_COMPLETE_C               numeric,
+  PERMIT_AWARD_ACTUAL_C                      DATE,
+  PERMIT_AWARD_PLANNED_C                     DATE,
+  PERMIT_COMMENTS_FINAL_RESPONSE_C           DATE,
+  PERMIT_COMMENTS_FIRST_RECIEPT_C            DATE,
+  PERMIT_JURISDICTION_C                      VARCHAR(150),
+  PERMIT_PACKAGE_FORMAT_C                    VARCHAR(765),
+  PERMIT_PACKAGE_SETS_REQUIRED_C             VARCHAR(765),
+  PHASE_MAP_SEQUENCE_SHEETS_C                VARCHAR(765),
+  PHASE_C                                    VARCHAR(765),
+  PHASE_S_FOR_THIS_DESGN_C                   VARCHAR(60),
+  PHASES_IN_PROJECT_C                        VARCHAR(765),
+  PHONE_DELIVERY_C                           VARCHAR(120),
+  PLAN_CHECK_ACTUAL_SUBMIT_C                 DATE,
+  PLAN_CHECK_PLANNED_SUBMIT_C                DATE,
+  PLAN_TYPE_DETAILS_C                        VARCHAR(765),
+  PLOT_PLANS_C                               VARCHAR(765),
+  PRICE_BOOK_C                               VARCHAR(765),
+  PRIMARY_PSR_DESIGN_C                       BOOLEAN,
+  PRODUCT_TYPE_C                             VARCHAR(765),
+  PROJECT_DESIGNER_C                         VARCHAR(18),
+  PROJECT_MANAGER_CONTACT_C                  VARCHAR(18),
+  PROJECT_MANAGER_C                          VARCHAR(18),
+  PROJECT_NUMBER_C                           VARCHAR(15),
+  PROPOSAL_DESIGNER_C                        VARCHAR(18),
+  QUOTE_C                                    VARCHAR(18),
+  REASON_FOR_REVISION_C                      VARCHAR(765),
+  REASON_FOR_LATE_DELIVERY_C                 VARCHAR(96000),
+  RECORD_DRAWINGS_ACTUAL_SUBMIT_C            DATE,
+  RECORD_DRAWINGS_RED_LINES_RECEIVED_C       DATE,
+  REFRESH_COUNT_C                            numeric,
+  REQUESTED_SYSTEM_SIZE_C                    numeric,
+  REVISION_LETTER_C                          VARCHAR(765),
+  REVISION_TYPE_C                            VARCHAR(765),
+  ROOF_PITCH_S_ARE_KNOWN_C                   VARCHAR(765),
+  ROOF_TYPE_NOTES_C                          VARCHAR(765),
+  ROOF_TYPE_C                                VARCHAR(765),
+  SALES_ANALYST_C                            VARCHAR(18),
+  SALESPERSON_C                              VARCHAR(765),
+  SHEET_SIZE_2_C                             VARCHAR(765),
+  SHEET_SIZE_C                               VARCHAR(765),
+  SIGNAGE_C                                  VARCHAR(765),
+  SINGLE_LINE_COMPLETED_C                    DATE,
+  SINGLE_LINE_STATUS_C                       VARCHAR(765),
+  SITE_MAP_C                                 VARCHAR(765),
+  SITE_MAXIMIZED_C                           VARCHAR(765),
+  SITE_C                                     VARCHAR(18),
+  SOLAR_STARTS_IN_PHASE_C                    VARCHAR(765),
+  SOURCE_C                                   VARCHAR(765),
+  SPECIAL_PERMIT_REQUIREMENTS_C              VARCHAR(765),
+  STANDARD_TIME_HOURS_C                      numeric,
+  STATUS_2_0_C                               VARCHAR(765),
+  STATUS_C                                   VARCHAR(765),
+  STRUCTURAL_ENGINEER_C                      VARCHAR(18),
+  STRUCTURAL_PE_SIGNATURE_C                  VARCHAR(765),
+  SYSTEM_SIZE_NOTES_C                        VARCHAR(300),
+  SYSTEM_SIZE_C                              VARCHAR(75),
+  TASK_ID_C                                  VARCHAR(54),
+  TOPO_GPS_SURVEY_ACTUAL_C                   DATE,
+  SPWR_ELECTRICAL_ENGINEER_1_C               VARCHAR(18),
+  TOTAL_NUMBER_OF_SETS_2_C                   numeric,
+  TOTAL_PHASES_IN_PROJECT_C                  numeric,
+  TOTAL_RFIS_C                               numeric,
+  TYPE_OF_DESIGN_WORK_REQUIRED_C             VARCHAR(765),
+  TYPE_OF_DESIGN_C                           VARCHAR(765),
+  TYPE_OF_PROJECT_C                          VARCHAR(765),
+  URL_OF_DESIGN_NEEDING_REVISION_C           VARCHAR(765),
+  INTERCONNECT_STUDY_NOTES_C                 VARCHAR(765),
+  URGENT_REQUEST_C                           BOOLEAN,
+  UTILITY_C                                  VARCHAR(765),
+  VDC_C                                      VARCHAR(765),
+  WAS_PV_FAST_HELPFUL_C                      VARCHAR(765),
+  WAS_PV_FAST_USED_C                         VARCHAR(765),
+  WEIGHT_C                                   VARCHAR(9),
+  X_75_PERCENT_BRIEFING_MEETING_C            DATE,
+  OF_SHEETS_PRINTED_C                        numeric,
+  ACTUAL_SYSTEM_SIZE_PV_C                    numeric,
+  ACTUAL_SYSTEM_SIZE_BOS_C                   numeric,
+  RECEIVED_INFORMATION_TO_DESIGN_C           DATE,
+  ELECTRICAL_ENGINEER_OF_RECORD_C            VARCHAR(18),
+  OPPORTUNITY_NAME_HIDDEN_C                  VARCHAR(297),
+  DESIGN_START_DATE_C                        DATE,
+  PSR_OWNER_C                                VARCHAR(18),
+  ORIGINAL_SUBMIT_DATE_C                     DATE,
+  SR_PROJECT_DESIGN_ENGINEER_C               VARCHAR(18),
+  DEVELOPMENT_ENGINEER_C                     VARCHAR(18),
+  PROJECT_ENGINEER_C                         VARCHAR(18),
+  PV_POWER_RATING_C                          numeric,
+  SCHEDULE_APPROVAL_PLANNED_DATE_C           DATE,
+  BUDGET_APPROVAL_PLANNED_DATE_C             DATE,
+  CONSTRAINTS_MAP_RECEIVED_C                 VARCHAR(765),
+  PRELIMINARY_BOM_PLANNED_DATE_C             DATE,
+  REASON_FOR_CANCELLATION_REJECTION_C        VARCHAR(4099),
+  X_75_SALES_HANDOFF_MEETING_DATE_C          DATE,
+  X_75_DESIGN_KICKOFF_MEETING_DATE_C         DATE,
+  DESIGN_START_DATE_PLANNED_C                DATE,
+  DESIGN_START_DATE_ACTUAL_C                 DATE,
+  PROJECT_BOM_PLANNED_DATE_C                 DATE,
+  X_25_SCHEMATIC_DOCUMENTS_PLANNED_DATE_C    DATE,
+  X_50_DESIGN_DOCUMENTS_PLANNED_DATE_C       DATE,
+  X_90_DESIGN_REVIEW_PLANNED_DATE_C          DATE,
+  X_90_DESIGN_DOCUMENTS_PLANNED_DATE_C       DATE,
+  CLIENT_REVIEW_SUBMITTAL_PLANNED_DATE_C     DATE,
+  DESIGN_COMPLETED_PLANNED_DATE_C            DATE,
+  CLIENT_APPROVAL_PLANNED_DATE_C             DATE,
+  CONSTRAINTS_MAP_NOTES_C                    VARCHAR(765),
+  TIME_IN_QUEUE_C                            numeric,
+  APPLIED_FOR_PERMIT_C                       DATE,
+  STRUCTURAL_ENGINEER_OF_RECORD_C            VARCHAR(18),
+  ESTIMATED_TIME_HRS_C                       numeric,
+  REV_A_ESTIMATED_TIMES_C                    numeric,
+  ALL_OTHER_REVS_ESTIMATED_TIMES_C           numeric,
+  SITE_AUDIT_NOTES_C                         VARCHAR(765),
+  STRUCTURAL_QUALIFICATION_NOTES_C           VARCHAR(765),
+  ROOF_REPORT_NOTES_C                        VARCHAR(765),
+  TOPO_GPS_NOTES_C                           VARCHAR(765),
+  INVERTER_NOTES_C                           VARCHAR(765),
+  GEOTECH_NOTES_C                            VARCHAR(765),
+  PACKAGE_TYPE_C                             VARCHAR(765),
+  TECHNOLOGY_SYSTEM_C                        VARCHAR(765),
+  REVISION_C                                 VARCHAR(765),
+  STRUCTURAL_AS_BUILT_DRAWING_C              VARCHAR(765),
+  SUN_POWER_SITE_AUDIT_C                     VARCHAR(765),
+  GEOTECH_REPORT_RECEIVED_C                  VARCHAR(765),
+  TOPO_GPS_SURVEY_RECEIVED_C                 VARCHAR(765),
+  ROOF_REPORT_RECEIVED_C                     VARCHAR(765),
+  STRUCTURAL_QUALIFICATION_RECEIVED_C        VARCHAR(765),
+  ELECTRICAL_AS_BUILT_DRAWINGS_C             VARCHAR(765),
+  CIVIL_AS_BUILT_DRAWINGS_C                  VARCHAR(765),
+  ARCHITECTURAL_AS_BUILT_DRAWINGS_C          VARCHAR(765),
+  TITLE_REPORT_RECEIVED_C                    VARCHAR(765),
+  TITLE_REPORT_NOTES_C                       VARCHAR(765),
+  ALTA_NOTES_C                               VARCHAR(765),
+  HYDROLOGY_REPORT_RECEIVED_C                VARCHAR(765),
+  HYDROLOGY_REPORT_NOTES_C                   VARCHAR(765),
+  MODULE_TYPE_C                              VARCHAR(765),
+  BOM_ENTERED_INTO_ORACLE_C                  DATE,
+  INVERTER_MANUFACTURER_C                    VARCHAR(765),
+  TASKS_GENERATED_C                          BOOLEAN,
+  DELIVER_TO_C                               VARCHAR(4099),
+  DESIGN_ERROR_TYPE_C                        VARCHAR(4099),
+  FOR_EOR_REJECTION_DATE_C                   DATE,
+  FOR_EOR_REVIEW_DATE_C                      DATE,
+  NH_URGENT_REQUEST_TYPE_C                   VARCHAR(765),
+  NEW_HOMES_COMMUNITY_C                      VARCHAR(18),
+  PDF_COPY_ONLY_C                            BOOLEAN,
+  PURE_DESIGN_TIME_C                         numeric,
+  REASON_LEVEL_1_C                           VARCHAR(765),
+  REASON_LEVEL_2_C                           VARCHAR(765),
+  REASON_FOR_CANCELLATION_REJECTION_2_C      VARCHAR(765),
+  SHARED_WITH_BUILDER_C                      DATE,
+  DESIGN_NOT_STARTED_DATE_C                  DATE,
+  DESIGN_NOT_STARTED_C                       TIMESTAMPTZ,
+  COLUMN_COUNT_C                             numeric,
+  CONFIGURATION_CONCERN_DESCRIPTION_C        VARCHAR(98304),
+  DESIGN_TEAM_NOTES_C                        VARCHAR(98304),
+  DUE_DILIGENCE_REPORTS_C                    VARCHAR(98304),
+  ROOF_MATERIAL_MANUFACTURER_C               VARCHAR(765),
+  X_3_RD_PARTY_ARCHITECT_C                   VARCHAR(18),
+  X_3_RD_PARTY_CARPORT_CANOPY_DESIGNER_C     VARCHAR(18),
+  X_3_RD_PARTY_DESIGNER_C                    VARCHAR(18),
+  X_3_RD_PARTY_ELECTRICAL_ENG_C              VARCHAR(18),
+  DESIGN_APPLICATIONS_C                      VARCHAR(4099),
+  _FIVETRAN_SYNCED                           TIMESTAMPTZ,
+  MPPP_REVISION_NEEDED_C                     VARCHAR(765),
+  _FIVETRAN_DELETED                          BOOLEAN,
+  ROW_GAP_C                                  VARCHAR(765),
+  ASCE_CODE_C                                VARCHAR(765),
+  ACCESS_PATHWAY_SKYLIGHT_C                  numeric,
+  STORAGE_QUANTITY_1_C                       numeric,
+  DEALER_STATUS_C                            VARCHAR(765),
+  RAPID_SHUTDOWN_GUIDELINES_C                VARCHAR(765),
+  EXCESSIVE_UNDOCUMENTED_FILL_C              BOOLEAN,
+  PARTNER_COMMENTS_C                         VARCHAR(393216),
+  SITE_LOCATED_IN_A_FLOOD_PLAIN_C            BOOLEAN,
+  X_7_5_DEGREE_TILT_C                        BOOLEAN,
+  SNOW_GUARD_REQUIRED_PICKLIST_C             VARCHAR(765),
+  DECKING_C                                  BOOLEAN,
+  ID_JSON_C                                  VARCHAR(393216),
+  ID_RADIUS_C                                numeric,
+  PROJECT_CONTACT_PERSON_C                   VARCHAR(18),
+  LIGHT_FIXTURES_C                           VARCHAR(765),
+  PAUSE_COUNTER_C                            numeric,
+  VERTICAL_UPLIFT_RESISTANCE_SKIN_FRICTION_C numeric,
+  VERTICAL_DOWNWARD_LOAD_SKIN_FRICTION_C     numeric,
+  MULTI_SITE_C                               VARCHAR(765),
+  STORAGE_OPTION_2_C                         VARCHAR(765),
+  ACCESS_PATHWAY_SERVICEABLE_VENT_C          numeric,
+  SETBACK_DISTANCE_HVAC_C                    numeric,
+  MODULE_QUANTITY_C                          numeric,
+  MIN_CLEARANCE_LOWER_EDGE_C                 numeric,
+  COMMERCIAL_PSR_C                           VARCHAR(18),
+  TOPO_GRADE_CHANGE_SPECIFY_C                numeric,
+  AC_RUN_C                                   VARCHAR(765),
+  DESIGN_AWAITING_APPROVAL_C                 TIMESTAMPTZ,
+  IS_SITE_IN_SPECIAL_SNOW_REGION_C           VARCHAR(765),
+  HELIX_DESIGN_TYPE_C                        VARCHAR(765),
+  STEP_NUMBER_C                              numeric,
+  FALL_PROTECTION_C                          VARCHAR(765),
+  SNOW_LOAD_C                                VARCHAR(765),
+  ALLOWABLE_PASSIVE_PRESSURE_C               numeric,
+  INVERTER_TYPE_C                            VARCHAR(765),
+  WIND_SPEED_C                               VARCHAR(765),
+  DESIGN_COMPLETED_DATE_C                    TIMESTAMPTZ,
+  WIND_SPEED_MRI_C                           VARCHAR(765),
+  SHALLOW_BEDROCK_C                          BOOLEAN,
+  FINAL_DESIGN_C                             BOOLEAN,
+  SOIL_SUBJECT_TO_LIQUEFACTION_C             BOOLEAN,
+  SETBACK_DISTANCE_SERVICEABLE_VENT_C        numeric,
+  MIN_CLEARANCE_HEIGHT_REQUIRED_IS_GREATER_C VARCHAR(765),
+  FLUSH_MOUNTED_PIERS_PICKLIST_C             VARCHAR(765),
+  REMOVE_TREES_C                             BOOLEAN,
+  WATER_MANAGEMENT_C                         VARCHAR(765),
+  DESIGN_APPROVED_C                          TIMESTAMPTZ,
+  DESIGN_STARTED_DATE_C                      TIMESTAMPTZ,
+  STORAGE_OPTION_1_C                         VARCHAR(765),
+  CRSM_C                                     VARCHAR(18),
+  DEALER_REQUESTED_SYSTEM_SIZE_AC_C          numeric,
+  STORAGE_QUANTITY_2_C                       numeric,
+  TARGET_ANNUAL_PRODUCTION_C                 numeric,
+  DEALER_NAME_C                              VARCHAR(18),
+  IS_SITE_IN_SPECIAL_WIND_REGION_C           VARCHAR(765),
+  SUBMITTED_C                                BOOLEAN,
+  SEPARATE_DC_SWITCH_REQUIRED_C              BOOLEAN,
+  TOPO_GRADE_CHANGE_C                        BOOLEAN,
+  FLUSH_MOUNTED_PIERS_C                      BOOLEAN,
+  DESIGN_AWAITING_APPROVAL_DATE_C            DATE,
+  INCREASED_CORROSION_PROTECTION_C           VARCHAR(765),
+  CONTRACT_DESIGN_C                          BOOLEAN,
+  LABOR_C                                    VARCHAR(765),
+  SNOW_GUARD_REQUIRED_C                      BOOLEAN,
+  REVISION_OF_C                              VARCHAR(18),
+  GCR_REQUIREMENT_C                          VARCHAR(765),
+  BALLAST_BLOCK_WEIGHT_C                     numeric,
+  PRIMARY_SIMULATION_C                       VARCHAR(18),
+  EMAIL_C                                    VARCHAR(240),
+  DESIGN_COMPLEXITY_C                        VARCHAR(765),
+  CALIFORNIA_DSA_REQUIRED_C                  VARCHAR(765),
+  ADDITIONAL_37_WATT_EDGE_LIGHTING_C         BOOLEAN,
+  EXPECTED_INSTALLATION_DATE_C               DATE,
+  SETBACK_DISTANCE_SKYLIGHT_C                numeric,
+  REROUTE_CONDUIT_C                          BOOLEAN,
+  NO_OF_DAS_MONITOR_BOX_C                    numeric,
+  APPROVAL_SUBMITTED_C                       TIMESTAMPTZ,
+  BRANDING_C                                 BOOLEAN,
+  ACTUAL_ANNUAL_PRODUCTION_C                 numeric,
+  ACCESS_PATHWAY_HVAC_C                      numeric,
+  DESIGN_SUBMITTED_DATE_C                    TIMESTAMPTZ,
+  DESIGN_ORIGINATED_BY_C                     VARCHAR(765),
+  MAX_OUTTHE_ROOF_SPACE_C                    BOOLEAN,
+  UNDERGROUND_UTILITY_LINES_C                BOOLEAN,
+  TILT_OPTION_C                              VARCHAR(765),
+  TIME_IN_REVIEW_C                           numeric,
+  MODULE_TYPEAND_WATTAGE_C                   VARCHAR(765),
+  METER_INTERCONNECTION_APPLICATION_C        VARCHAR(18),
+  PLAN_CHECK_FORECAST_SUBMIT_C               DATE,
+  AZIMUTH_C                                  numeric,
+  OLD_SYS_DESIGN_NAME_C                      VARCHAR(150),
+  DATE_TIME_PAUSED_C                         TIMESTAMPTZ,
+  QUOTE_ESTIMATE_C                           VARCHAR(18),
+  SUBMITTED_DATE_C                           DATE,
+  TILT_C                                     numeric,
+  QA_REVIEWED_BY_C                           VARCHAR(18),
+  PERMIT_AWARD_FORECAST_C                    DATE,
+  SCOPE_C                                    VARCHAR(765),
+  ADD_AC_SPLICE_BOX_C                        BOOLEAN,
+  ROOF_DESIGN_C                              VARCHAR(18),
+  ACTUAL_SYSTEM_SIZE_DC_K_WP_C               numeric,
+  CUSTOMER_DOCUMENTS_C                       VARCHAR(98304),
+  BUILDING_HEIGHT_NOTES_C                    VARCHAR(98304),
+  VALID_UNTIL_C                              DATE,
+  TITLE_24_DOCUMENTS_C                       VARCHAR(98304),
+  TOTAL_ITEM_COST_C                          numeric(18, 2),
+  TITLE_24_GUIDANCE_C                        VARCHAR(98304),
+  PV_COST_C                                  numeric(18, 4),
+  BOS_COST_C                                 numeric(18, 4),
+  MODULE_LEVEL_SHUT_DOWN_DEVICE_C            VARCHAR(765),
+  DATE_PAUSED_C                              DATE,
+  MODULE_WATTAGE_AND_TYPE_C                  VARCHAR(765),
+  TIER_1_DESIGN_C                            VARCHAR(18),
+  ATTACHMENT_TYPE_C                          VARCHAR(765),
+  YIELD_C                                    numeric,
+  ROOF_MATERIAL_C                            VARCHAR(765),
+  SYSTEM_SIZE_AC_C                           numeric,
+  POWER_AUXILIARY_FROM_HELIX_AC_COMBINER_C   BOOLEAN,
+  ANNUAL_SHADING_C                           numeric,
+  AURORA_DOCUMENTS_C                         VARCHAR(98304),
+  TARGET_SYSTEM_SIZE_DC_K_WP_C               numeric,
+  PVSIM_MODULE_NO_C                          VARCHAR(30),
+  DEGRADATION_RATE_C                         numeric,
+  ADD_AUXILIARY_BOX_FOR_MONITORING_UNIT_C    BOOLEAN,
+  POINTS_OF_INTERCONNECTION_C                numeric
+);
+
+
+
+
 CREATE INDEX if not exists nw_account_type ON brs.account (type);
 CREATE INDEX if not exists nw_account_id ON brs.account (id);
 CREATE INDEX if not exists nw_billing_state ON brs.account (billing_state);
@@ -1872,7 +2303,29 @@ CREATE INDEX if not exists ncc_COMMUNITY_ADDER_C ON brs.nh_community_c (COMMUNIT
 CREATE INDEX if not exists ptc_CFI_C ON brs.plan_type_c (CFI_C);
 CREATE INDEX if not exists ptc_code_level_c ON brs.plan_type_c (code_level_c);
 
-CREATE INDEX if not exists campaign_id ON brs.campaign (id);
+CREATE INDEX if not exists DESIGN_C_id ON brs.DESIGN_C (id);
+CREATE INDEX if not exists MODULE_CONFIGURATION_C_id ON brs.MODULE_CONFIGURATION_C (id);
+CREATE INDEX if not exists PLAN_TYPE_C_id ON brs.PLAN_TYPE_C (id);
+CREATE INDEX if not exists NH_CONTRACTS_C_id ON brs.NH_CONTRACTS_C (id);
+CREATE INDEX if not exists NH_COMMUNITY_VISIT_C_id ON brs.NH_COMMUNITY_VISIT_C (id);
+CREATE INDEX if not exists NH_COMMUNITY_C_id ON brs.NH_COMMUNITY_C (id);
+CREATE INDEX if not exists CAMPAIGN_id ON brs.CAMPAIGN (id);
+CREATE INDEX if not exists BUILDER_PRICING_C_id ON brs.BUILDER_PRICING_C (id);
+CREATE INDEX if not exists ALLIANCE_PARTNER_C_id ON brs.ALLIANCE_PARTNER_C (id);
+CREATE INDEX if not exists AHJ_UTILITY_C_id ON brs.AHJ_UTILITY_C (id);
+CREATE INDEX if not exists ACCOUNT_id ON brs.ACCOUNT (id);
+CREATE INDEX if not exists RESIDENTIAL_PROJECT_C_id ON brs.RESIDENTIAL_PROJECT_C (id);
+
+CREATE INDEX if not exists nh_community_c_id ON brs.campaign (nh_community_c);
+CREATE INDEX if not exists nh_community_c_id_id ON brs.plan_type_c (community_c);
+CREATE INDEX if not exists nh_NEW_HOMES_COMMUNITY_C_id ON brs.DESIGN_C (NEW_HOMES_COMMUNITY_C);
+
+CREATE INDEX if not exists nh_mppp_revision_needed_c ON brs.DESIGN_C (mppp_revision_needed_c);
+CREATE INDEX if not exists nh_nh_urgent_request_type_c ON brs.DESIGN_C (nh_urgent_request_type_c);
+CREATE INDEX if not exists nh_incoming_request_had_all_information_c ON brs.DESIGN_C (incoming_request_had_all_information_c);
+CREATE INDEX if not exists nh_pdf_copy_only_c ON brs.DESIGN_C (pdf_copy_only_c);
+CREATE INDEX if not exists nh_electrical_pe_signature_c ON brs.DESIGN_C (electrical_pe_signature_c);
+CREATE INDEX if not exists nh_structural_pe_signature_c ON brs.DESIGN_C (structural_pe_signature_c);
 
 
 DO
@@ -2195,14 +2648,18 @@ $do$;
 DO
 $do$
   declare
-    x                               record;
-    y                               record;
-    v_project_process_step_id       bigint;
-    v_project_process_step_event_id bigint;
-  v_project_process_step_campaign_id bigint;
+    x                                  record;
+    y                                  record;
+    z                                  record;
+    v_project_process_step_id          bigint;
+    v_project_process_step_event_id    bigint;
+    v_project_process_step_event_design_id    bigint;
+    v_project_process_step_campaign_id bigint;
+  v_project_process_step_design_id            bigint;
+    v_deliver_to_c_id bigint[];
   BEGIN
-    for x in select p.id as project_id,
-                    c.id as community_id,
+    for x in select p.id    as project_id,
+                    c.id    as community_id,
                     c3.owner_id,
                     lov1.id as lov1_sales_status_c_id,
                     c3.end_date,
@@ -2218,6 +2675,7 @@ $do$
       loop
         v_project_process_step_id = null;
         v_project_process_step_campaign_id = null;
+        v_project_process_step_design_id = null;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -2234,12 +2692,20 @@ $do$
         values (x.project_id, 3758, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
         returning id into v_project_process_step_campaign_id;
 
-        perform flow.set_pps_cfv(x.project_id, 2384850,28116,x.lov1_sales_status_c_id , true);
-        perform flow.set_pps_cfv(x.project_id, 2384850,28117,x.owner_id , true);
-        perform flow.set_pps_cfv(x.project_id, 2384850,28118,x.end_date , true);
-        perform flow.set_pps_cfv(x.project_id, 2384850,28119,x.short_description_c , true);
-        perform flow.set_pps_cfv(x.project_id, 2384850,28120,x.description , true);
-        perform flow.set_pps_cfv(x.project_id, 2384850,28121,x.solar_cut_off_c , true);
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3738, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+        returning id into v_project_process_step_design_id;
+
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28116, x.lov1_sales_status_c_id, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28117, x.owner_id, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28118, x.end_date, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28119, x.short_description_c, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28120, x.description, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28121, x.solar_cut_off_c, true);
 
 
         for y in select ptc.*,
@@ -2281,9 +2747,378 @@ $do$
                                            true);
 
           end loop;
+        for z in select dc.*,
+                        lov1.id as lov1_mppp_revision_needed_c_id,
+                      lov2.id as lov2_nh_urgent_request_type_c_id,
+                      lov3.id as lov3_incoming_request_had_all_information_c_id,
+                      lov4.id as lov4_pdf_copy_only_c_id,
+                      lov5.id as lov5_electrical_pe_signature_c_id,
+                      lov6.id as lov6_structural_pe_signature_c_id
+                 from brs.DESIGN_C DC
+                        left join flow.list_of_value lov1 on lov1.name = dc.mppp_revision_needed_c and lov1.parent_id =25617
+                        left join flow.list_of_value lov2 on lov2.name = dc.nh_urgent_request_type_c and lov2.parent_id =25620
+                        left join flow.list_of_value lov3 on lov3.name = dc.incoming_request_had_all_information_c and lov3.parent_id =25632
+                        left join flow.list_of_value lov4 on lov4.name = dc.pdf_copy_only_c and lov4.parent_id =25504
+                        left join flow.list_of_value lov5 on lov5.name = dc.electrical_pe_signature_c and lov5.parent_id =25635
+                        left join flow.list_of_value lov6 on lov6.name = dc.structural_pe_signature_c and lov6.parent_id =25643
+                 where dc.NEW_HOMES_COMMUNITY_C = x.community_id
+
+          loop
+            v_project_process_step_event_design_id = null;
+            insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                        company_event_status_type_id, start_time, end_time,
+                                                        date_created,
+                                                        date_modified, created_by_id, modified_by_id, archived,
+                                                        cancelled_date, completed_date, scheduled_date, save_version)
+            values (v_project_process_step_design_id, 240, null,
+                    case when z.status_c = 'Not Started' then 90
+                         when z.status_c = 'Pending MP Completion' then 91
+                         when z.status_c = 'In Progress' then 106
+                         when z.status_c = 'Request for Information' then 92
+                         when z.status_c = 'Pending Information' then 93
+                         when z.status_c = 'Under Review' then 94
+                         when z.status_c = 'Rejected' then 95
+                         when z.status_c = 'Approved' then 96
+                         when z.status_c = 'For Plotting' then 97
+                         when z.status_c = 'Reference Only' then 98
+                         when z.status_c = 'Sent to Builder' then 99
+                         when z.status_c = 'Submitted to AHJ' then 100
+                         when z.status_c = 'Rejected with Comments' then 101
+                         when z.status_c = 'Received AHJ Approval' then 102
+                         when z.status_c = 'Delivered to Builder' then 103
+                         when z.status_c = 'Revised' then 107
+                         when z.status_c = 'Built Out' then 108
+                         when z.status_c = 'Cancelled' then 104
+                         when z.status_c = 'Engineering Research' then 105 end, null, null, now(), now(), 2384850, 2384850, false, null,
+                    null, null, 1)
+            returning id into v_project_process_step_event_design_id;
+
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28740, z.project_designer_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28428, z.revision_of_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28429, z.reason_level_1_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28430, z.reason_level_2_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28739, z.lov1_mppp_revision_needed_c_id, true);
+           -- perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28427, z., true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28741, z.lov2_nh_urgent_request_type_c_id, true);
+            --perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28742, z.ownr, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28743, z.lov3_incoming_request_had_all_information_c_id, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28744, z.missing_information_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28745, z.date_design_must_be_completed_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28746, z.date_design_request_verified_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28747, z.estimated_completion_date_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28748, z.design_start_date_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28749, z.date_completed_design_reviewed_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28750, z.design_completed_date_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28751, z.actual_time_hours_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28752, z.reason_for_late_delivery_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28753, z.for_eor_review_date_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28754, z.for_eor_rejection_date_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28755, z.design_approved_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28756, z.date_design_signed_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28757, z.date_design_shipped_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28758, z.applied_for_permit_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28759, z.permit_award_actual_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28760, z.shared_with_builder_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28761, z.design_work_located_in_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28762, z.number_of_sets_c, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28763, z.lov4_pdf_copy_only_c_id, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28764, z.lov5_electrical_pe_signature_c_id, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28765, z.lov6_structural_pe_signature_c_id, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28766, z.delivery_tracking_number_c, true);
+            if z.deliver_to_c is not null then
+              select array_agg(lov.id)
+              into v_deliver_to_c_id
+              from (
+                     SELECT unnest(string_to_array(aggregated_column, ';')) deliver_to_c
+                     FROM (
+                            SELECT STRING_AGG(deliver_to_c, ';') AS aggregated_column
+                            from brs.design_c d
+                            where id = z.id
+                          ) AS subquery) as foo
+                     inner join flow.list_of_value lov on lov.name = foo.deliver_to_c and lov.parent_id = 25647;
+              perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28767, v_deliver_to_c_id, true);
+            end if;
+            perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28768, z.notes_from_requester_c, true);
+          end loop;
       end loop;
 
   end
 $do$;
 
 
+DO
+$do$
+  declare
+    x record;
+  v_object_category_id bigint;
+  v_contact_id bigint;
+  v_project_id bigint;
+  v_object_category_project_id bigint;
+  BEGIN
+    select oc.id
+    into v_object_category_project_id
+    from flow.object_category oc
+    where object_category_code = 'NEW_HOME';
+    for x in select a2.homeowner_preferred_name_c,a2.id as homeowner_id,
+                    a2.first_name,
+                    a2.last_name,
+                    a2.billing_street,
+                    a2.billing_city,
+                    a2.billing_postal_code,
+                    a2.phone,
+                    a2.email_c,
+                    cs.id as company_state_id,
+                    rpc.*,
+                    c2.id as builder_contact_id,
+                    p.id as community_project_id
+             from brs.NH_COMMUNITY_C c
+                    inner join flow.project p on p.nw_migration_id = c.id
+                    inner join brs.account a on a.id = c.builder_c
+                    inner join flow.contact c2 on c2.nw_migration_id = a.id
+                    inner join brs.residential_project_c rpc on rpc.community_c = c.id
+                    left join brs.account a2 on a2.id = rpc.account_c and a2.type in ('Home Owner – SSE','Home Owner','Homeowner')
+                    left join flow.state s on s.abbreviation = a2.billing_state
+                    left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
+
+      loop
+        v_contact_id = null;
+        v_object_category_id = null;
+      if x.homeowner_id is not null then
+        select oc.id
+        into v_object_category_id
+        from flow.object_category oc
+        where object_category_code = 'NEW_HOMEOWNER';
+        insert into flow.contact(contact_type_id, first_name, last_name, street1, street2, city, postal_code,
+                                 phone, email, mobile, date_created, date_modified,
+                                 created_by_id, modified_by_id, company_id, archived,
+                                 company_state_id,
+                                 company_country_id, nw_migration_id, object_category_id)
+        values (1, x.first_name, x.last_name, x.billing_street, null, x.billing_city, x.billing_postal_code, x.phone, x.email_c,
+                x.phone, now(), now(), 2384850, 2384850, 3, false,
+                x.company_state_id, 1, x.id,v_object_category_id) returning id into v_contact_id;
+      else
+        v_contact_id = x.builder_contact_id;
+      end if;
+        insert into flow.project(contact_id, company_process_id, project_name, date_created, date_modified,
+                                 created_by_id, modified_by_id, company_project_status_type_id,
+                                street1, street2, city, postal_code,
+                                company_state_id, company_country_id,
+                                 archived, cancelled_date, nw_migration_id,object_category_id,parent_id)
+      values(v_contact_id,27,x.homeowner_preferred_name_c,now(),now(),2384850,2384850,
+             case when x.status_c = 'Hold' then 224
+                  when x.status_c = 'On Hold' then 224
+                  when x.status_c = 'Active' then 223
+                  when x.status_c = 'At Risk' then 223
+                  when x.status_c = 'Construction Complete' then 226
+                  when x.status_c = 'Closed' then 227 end,
+             x.billing_street,null,x.billing_city,x.billing_postal_code,x.company_state_id,1,false,null,x.id,
+             v_object_category_project_id,x.community_project_id
+             ) returning id into v_project_id;
+
+        perform flow.set_project_cfv(v_project_id , 2384850,28122,x.record_type_id , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28675,x.project_number_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28127,x.lot_number_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28128,x.elevation_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28129,x.enhancements_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28130,x.structural_option_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28131,x.activation_coordinator_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28132,x.pto_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28133,x.ntp_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28134,x.esd_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28135,x.sales_order_complete_date_c , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28136,x.phase_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28138,x.closed_won_date_nh_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28139,x.est_escrow_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28141,x.lines_ready_to_submit_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28142,x.sales_order_number_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28144,x.escrow_date_ho_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28146,x.auto_booked_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28148,x.ho_provided_escrow_response_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28149,x.historical_sales_order_number_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28151,x.scheduled_installation_date_c , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28169,x.oracle_order_header_id_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28153,x.first_scheduled_installation_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28159,x.amendment_reconciled_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28161,x.unblock_quote_amendment_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28174,x.solar_access_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28176,x.scheduled_ahj_inspection_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28185,x.milestone_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28186,x.rev_rec_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28188,x.misc_notes_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28191,x.forecasted_unblock_date_c , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28192,x.hoa_submission_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28835,x.escrow_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28194,x.number_of_panels_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28196,x.inverter_quantity_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28197,x.system_wattage_ac_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28200,x.system_wattage_dc_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28206,x.requested_delivery_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28209,x.scheduled_arrival_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28211,x.material_shipped_date_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28243,x.material_delivery_date_c , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28244,x.storage_system_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,28252,x.roof_1_system_orientation_c, true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x. , true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+        perform flow.set_project_cfv(v_project_id , 2384850,,x., true);
+
+
+
+      end loop;
+
+  end
+$do$;
