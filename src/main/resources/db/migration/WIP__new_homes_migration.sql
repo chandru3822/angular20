@@ -2252,7 +2252,89 @@
 --   POINTS_OF_INTERCONNECTION_C                numeric
 -- );
 --
+-- drop table if exists brs.PROJECT_TASK_C;
+-- create table if not exists brs.PROJECT_TASK_C
+-- (
+--   ID                                 VARCHAR(18),
+--   IS_DELETED                         BOOLEAN,
+--   NAME                               VARCHAR(240),
+--   CURRENCY_ISO_CODE                  VARCHAR(9),
+--   RECORD_TYPE_ID                     VARCHAR(18),
+--   CREATED_DATE                       TIMESTAMPTZ,
+--   CREATED_BY_ID                      VARCHAR(18),
+--   LAST_MODIFIED_DATE                 TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                VARCHAR(18),
+--   SYSTEM_MODSTAMP                    TIMESTAMPTZ,
+--   LAST_ACTIVITY_DATE                 DATE,
+--   LAST_VIEWED_DATE                   TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE               TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID             VARCHAR(18),
+--   CONNECTION_SENT_ID                 VARCHAR(18),
+--   RESIDENTIAL_PROJECT_C              VARCHAR(18),
+--   ASSIGNED_TO_C                      VARCHAR(18),
+--   CRITICAL_PATH_C                    BOOLEAN,
+--   DESCRIPTION_C                      VARCHAR(765),
+--   DOCUMENT_REQUIRED_C                BOOLEAN,
+--   DUE_DATE_C                         DATE,
+--   ELAPSED_DATE_TIME_C                TIMESTAMPTZ,
+--   END_DATE_TIME_C                    TIMESTAMPTZ,
+--   MILESTONE_C                        VARCHAR(765),
+--   ORDER_C                            numeric,
+--   PROJECT_PRIORITY_C                 VARCHAR(765),
+--   PROJECT_TASK_C                     VARCHAR(18),
+--   ROLE_ASSIGNMENT_C                  VARCHAR(765),
+--   SLA_DAYS_C                         numeric,
+--   START_DATE_TIME_C                  TIMESTAMPTZ,
+--   STATUS_C                           VARCHAR(765),
+--   TASK_TYPE_NAME_C                   VARCHAR(765),
+--   TEMPLATE_TASK_C                    VARCHAR(18),
+--   TIME_DIFFERENTIAL_C                numeric,
+--   TIMES_REPEATED_C                   numeric,
+--   COMMENT_C                          VARCHAR(98304),
+--   ESCALATION_CATEGORY_C              VARCHAR(765),
+--   ESCALATION_SUB_CATEGORY_C          VARCHAR(765),
+--   PARENT_TASK_C                      VARCHAR(18),
+--   REWORK_CATEGORY_C                  VARCHAR(765),
+--   TASK_TYPE_C                        VARCHAR(765),
+--   REQUIRED_PROJECT_FIELDS_C          VARCHAR(4099),
+--   APEX_UPDATED_C                     numeric,
+--   APEX_NAME_C                        VARCHAR(384),
+--   NOTIFICATION_SENT_C                BOOLEAN,
+--   FIRST_COMPLETE_END_DATE_TIME_C     TIMESTAMPTZ,
+--   BLOCKING_C                         VARCHAR(18),
+--   BLOCKS_C                           VARCHAR(765),
+--   PATH_TYPE_C                        VARCHAR(765),
+--   PATH_TO_BLOCK_C                    VARCHAR(765),
+--   EXCEPTION_WORKFLOW_TEMPLATE_C      VARCHAR(18),
+--   APPOINTMENT_CANCELLATION_NOTES_C   VARCHAR(765),
+--   APPOINTMENT_CANCELLATION_C         BOOLEAN,
+--   CANCELLATION_REASONS_C             VARCHAR(765),
+--   RESCHEDULED_APPOINTMENT_DATE_C     TIMESTAMPTZ,
+--   TASK_PATH_TYPE_C                   VARCHAR(18),
+--   MAIN_PANEL_UPGRADE_REASON_C        VARCHAR(765),
+--   COMPLETED_BY_C                     VARCHAR(18),
+--   _FIVETRAN_SYNCED                   TIMESTAMPTZ,
+--   COMMENT_INITIAL_MODIFIED_DATE_C    VARCHAR(765),
+--   EXCEPTION_WORKFLOW_TEMPLATE_TEXT_C VARCHAR(765),
+--   RESUBMISSION_FEE_C                 BOOLEAN,
+--   _FIVETRAN_DELETED                  BOOLEAN,
+--   ASSIGNED_TO_TEXT_C                 VARCHAR(240),
+--   FIRST_COMPLETE_TIME_DIFFERENTIAL_C numeric,
+--   REASON_LEVELS_C                    VARCHAR(765),
+--   BLOCKED_BY_SUBTASKS_C              VARCHAR(98304),
+--   LAST_TASK_REWORK_CHECK_C           BOOLEAN,
+--   PRIORITY_C                         numeric,
+--   IP_OWNER_C                         VARCHAR(18),
+--   LAST_MODIFIED_BY_C                 VARCHAR(18),
+--   LAST_MODIFIED_C                    TIMESTAMPTZ,
+--   BYPASS_LAST_MODIFIED_C             BOOLEAN,
+--   REWORK_TIME_DIFFERENTIAL_C         numeric,
+--   LAST_STATUS_C                      VARCHAR(384),
+--   REWORK_START_DATE_TIME_C           TIMESTAMPTZ
+-- );
 --
+-- CREATE INDEX if not exists PROJECT_TASK_C ON brs.PROJECT_TASK_C (RESIDENTIAL_PROJECT_C);
+-- CREATE INDEX if not exists RESIDENTIAL_PROJECT_C ON brs.PROJECT_TASK_C (id);
 --
 --
 -- CREATE INDEX if not exists nw_account_type ON brs.account (type);
@@ -2308,9 +2390,11 @@
 -- CREATE INDEX if not exists PLAN_TYPE_C_id ON brs.PLAN_TYPE_C (id);
 -- CREATE INDEX if not exists NH_CONTRACTS_C_id ON brs.NH_CONTRACTS_C (id);
 -- CREATE INDEX if not exists NH_COMMUNITY_VISIT_C_id ON brs.NH_COMMUNITY_VISIT_C (id);
+-- CREATE INDEX if not exists NH_COMMUNITY_VISIT_C_id ON brs.NH_COMMUNITY_VISIT_C (nh_community_c);
 -- CREATE INDEX if not exists NH_COMMUNITY_C_id ON brs.NH_COMMUNITY_C (id);
 -- CREATE INDEX if not exists CAMPAIGN_id ON brs.CAMPAIGN (id);
 -- CREATE INDEX if not exists BUILDER_PRICING_C_id ON brs.BUILDER_PRICING_C (id);
+-- CREATE INDEX if not exists BUILDER_PRICING_C_id ON brs.BUILDER_PRICING_C (community_c);
 -- CREATE INDEX if not exists ALLIANCE_PARTNER_C_id ON brs.ALLIANCE_PARTNER_C (id);
 -- CREATE INDEX if not exists AHJ_UTILITY_C_id ON brs.AHJ_UTILITY_C (id);
 -- CREATE INDEX if not exists ACCOUNT_id ON brs.ACCOUNT (id);
@@ -2366,6 +2450,10 @@
 -- CREATE INDEX if not exists rpc_dog_on_site_c ON brs.residential_project_c (dog_on_site_c);
 -- CREATE INDEX if not exists rpc_customer_construction_project_c ON brs.residential_project_c (customer_construction_project_c);
 -- CREATE INDEX if not exists rpc_complexity_indicator_c ON brs.residential_project_c (complexity_indicator_c);
+
+--  CREATE INDEX if not exists storage_size_c ON brs.builder_pricing_c (storage_size_c);
+--  CREATE INDEX if not exists code_year_c ON brs.builder_pricing_c (code_year_c);
+-- CREATE INDEX if not exists role_c ON brs.nh_community_visit_c (role_c);
 
 SET session_replication_role = replica;
 DO --10 seconds
@@ -2706,14 +2794,20 @@ $do$
     x                                      record;
     y                                      record;
     z                                      record;
+    t                                      record;
+    s                                      record;
     u record;
-    v_project_process_step_id              bigint;
-    v_project_process_step_event_id        bigint;
+    v_project_process_step_plan_id              bigint;
+    v_project_process_step_plan_event_id        bigint;
+    v_project_process_step_design_id       bigint;
     v_project_process_step_event_design_id bigint;
     v_project_process_step_campaign_id     bigint;
-    v_project_process_step_design_id       bigint;
     v_deliver_to_c_id                      bigint[];
     v_count bigint;
+    v_project_process_step_pricing_id  bigint;
+    v_project_process_step_pricing_event_id  bigint;
+      v_project_process_step_visits_id  bigint;
+  v_project_process_step_visits_events_id   bigint;
   BEGIN
     v_count = 0;
     for x in select p.id     as project_id,
@@ -2728,15 +2822,17 @@ $do$
           raise notice 'v_count = %',v_count;
         v_count = 0;
           end if;
-        v_project_process_step_id = null;
+        v_project_process_step_plan_id = null;
         v_project_process_step_design_id = null;
+        v_project_process_step_visits_id = null;
+        v_project_process_step_pricing_id = null;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id)
         values (x.project_id, 3756, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
-        returning id into v_project_process_step_id;
+        returning id into v_project_process_step_plan_id;
 
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
@@ -2745,6 +2841,24 @@ $do$
                                                cancelled_date, parent_project_process_step_event_id)
         values (x.project_id, 3738, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
         returning id into v_project_process_step_design_id;
+
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3789, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+        returning id into v_project_process_step_pricing_id;
+
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3757, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+        returning id into v_project_process_step_visits_id;
+
+
 
         for u in select
                    c3.owner_id,
@@ -2776,6 +2890,66 @@ $do$
             perform flow.set_pps_cfv(x.project_id, 2384850, 28121, u.solar_cut_off_c::text, true);
         end loop;
 
+        for s in select bpc.*,
+                        lov1.id as lov1_code_year_c,
+                        lov2.id as lov2_storage_size_c
+                 from brs.builder_pricing_c bpc
+                        left join flow.list_of_value lov1 on lov1.name = bpc.code_year_c and lov1.parent_id = 25300
+                        left join flow.list_of_value lov2 on lov2.name = bpc.storage_size_c and lov2.parent_id = 25562
+                 where bpc.community_c = x.community_id
+
+          loop
+            v_project_process_step_pricing_event_id = null;
+            insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                        company_event_status_type_id, start_time, end_time,
+                                                        date_created,
+                                                        date_modified, created_by_id, modified_by_id, archived,
+                                                        cancelled_date, completed_date, scheduled_date, save_version)
+            values (v_project_process_step_pricing_id, 239, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
+                    null, null, 1)
+            returning id into v_project_process_step_pricing_event_id;
+
+            --  perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28099, y.CREATED_BY_ID, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28732, s.active_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28572, s.cash_incentive_fee_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28574, s.lov1_code_year_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28575, s.lease_incentive_fee_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28576, s.nem_3_0_lease_incentives_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28585, s.net_contracted_price_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28570, s.notes_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28578, s.storage_configuration_group_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28580, s.storage_price_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28834, s.lov2_storage_size_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28582, s.system_wattage_dc_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_pricing_event_id, 2384850, 28583, s.wrap_insurance_percent_c::text,true);
+
+
+
+          end loop;
+
+        for t in select ncvc.*,
+                        lov1.id as lov1_role_c_id
+                 from brs.NH_COMMUNITY_VISIT_C ncvc
+                 left join flow.list_of_value lov1 on lov1.name =ncvc.role_c and lov1.parent_id =25304
+                 where ncvc.nh_community_c = x.community_id
+
+          loop
+            v_project_process_step_visits_events_id = null;
+            insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                        company_event_status_type_id, start_time, end_time,
+                                                        date_created,
+                                                        date_modified, created_by_id, modified_by_id, archived,
+                                                        cancelled_date, completed_date, scheduled_date, save_version)
+            values (v_project_process_step_visits_id, 237, null, 3, t.RECENT_VISIT_DATE_C, null, now(), now(), 2384850, 2384850, false, null,
+                    null, null, 1)
+            returning id into v_project_process_step_visits_events_id;
+
+            --  perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28099, y.CREATED_BY_ID, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_visits_events_id, 2384850, 28114, t.lov1_role_c_id::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_visits_events_id, 2384850, 28115, t.visit_notes_c::text,true);
+
+          end loop;
+
         for y in select ptc.*,
                         lov1.id as lov1_CFI_C_id,
                         lov2.id as lov2_code_level_c_id
@@ -2785,28 +2959,28 @@ $do$
                  where ptc.community_c = x.community_id
 
           loop
-            v_project_process_step_event_id = null;
+            v_project_process_step_plan_event_id = null;
             insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                         company_event_status_type_id, start_time, end_time,
                                                         date_created,
                                                         date_modified, created_by_id, modified_by_id, archived,
                                                         cancelled_date, completed_date, scheduled_date, save_version)
-            values (v_project_process_step_id, 236, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
+            values (v_project_process_step_plan_id, 236, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
                     null, null, 1)
-            returning id into v_project_process_step_event_id;
+            returning id into v_project_process_step_plan_event_id;
 
             --  perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28099, y.CREATED_BY_ID, true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28098, y.NAME::text, true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28100, y.ADDITIONAL_COST_FOR_STORAGE_C::text, true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28101, y.BASE_SQUARE_FOOTAGE_C::text,true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28102, y.lov1_CFI_C_id::text, true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28103, y.lov2_code_level_c_id::text,true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28104, y.flat_monthly_tpo_rate_c::text,true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28105, y.min_system_size_watts_c::text,true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28107, y.modules_c::text, true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28108, y.retail_value_c::text, true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28109, y.solar_access_c::text, true);
-            perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28110, y.sun_vault_retail_value_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28098, y.NAME::text, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28100, y.ADDITIONAL_COST_FOR_STORAGE_C::text, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28101, y.BASE_SQUARE_FOOTAGE_C::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28102, y.lov1_CFI_C_id::text, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28103, y.lov2_code_level_c_id::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28104, y.flat_monthly_tpo_rate_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28105, y.min_system_size_watts_c::text,true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28107, y.modules_c::text, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28108, y.retail_value_c::text, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28109, y.solar_access_c::text, true);
+            perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28110, y.sun_vault_retail_value_c::text,true);
 
           end loop;
           for z in select dc.*,
