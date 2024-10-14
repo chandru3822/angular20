@@ -612,6 +612,7 @@ const requestAIDesign = async (monthlyInputs) => {
       window.open(url, '_blank')
     }
     await getActiveDesign()
+    appStore.showSnack('SUCCESS', 'A new design has been requested')
   } catch (e) {
     logError(e)
     appStore.loading = false
@@ -624,7 +625,6 @@ const requestAIDesign = async (monthlyInputs) => {
   } finally {
     showAIDesignRequestForm.value = false
     savingNewAiDesign.value = false
-    appStore.showSnack('SUCCESS', 'A new design has been requested')
   }
 }
 

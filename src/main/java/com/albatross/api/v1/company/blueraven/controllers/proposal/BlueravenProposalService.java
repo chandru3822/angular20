@@ -310,7 +310,6 @@ public class BlueravenProposalService {
           ){
       Optional<String> auroraUserId = getAuroraUserId();
 
-      if (auroraUserId.isPresent()) {
           //update the monthly inputs on Aurora
           AuroraConsumptionProfileDTO consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
           if(calcMethodValue.equals(20851L)){
@@ -331,12 +330,6 @@ public class BlueravenProposalService {
           cfgs.add(customFieldValue);
 
           customFieldValueService.updateCustomFieldValues(cfgs, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
-      } else {
-          throw new ResponseStatusException(
-                  HttpStatus.BAD_REQUEST,
-                  "You can't create an Aurora design without an Aurora account. Contact SalesHR to get an Aurora account created.",
-                  new Exception());
-      }
 
   }
   public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(String auroraUserId, Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, List<Double> monthlyInputs) {
