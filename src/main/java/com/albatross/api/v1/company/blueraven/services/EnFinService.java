@@ -4,6 +4,7 @@ import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.EnfinQuery;
 import com.albatross.api.v1.flow.enums.State;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +12,17 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -25,6 +30,7 @@ import java.util.Map;
 public class EnFinService {
 
   private final SqlCache sqlCache;
+  private final GoodleapService goodleapService;
 
   private String accessToken;
 
@@ -205,6 +211,24 @@ public class EnFinService {
     JSONArray projectsResp = respJson.getJSONArray("projects");
     JSONObject currProject = projectsResp.getJSONObject(0);
     return currProject.getString("statusText");
+  }
+
+  public String updateFinancialAgreementSigned(String enfinApplicationId) {
+    String msg = "";
+    Map<String, Object> params = new HashMap<>();
+    params.put("enfinApplicationId", enfinApplicationId);
+    Optional<Long> projectId =
+      sqlCache.getBySql(
+        EnfinQuery.getProjectIdFromEnfinApplicationId, params, new SingleColumnRowMapper<>(Long.class));
+    if (projectId.isPresent()) {
+      Instant now = Instant.now();
+      msg = goodleapService.updateFinancialAgreementSignedForProjectId(projectId.get(), DateTimeFormatter.ISO_INSTANT.format(now));
+    }
+    else {
+      msg = "No Project ID found for EnFin ApplicationId ID: "  + enfinApplicationId;
+    }
+
+    return msg;
   }
 
   private String generateToken() throws Exception {

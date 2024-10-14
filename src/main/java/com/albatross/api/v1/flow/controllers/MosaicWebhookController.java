@@ -17,40 +17,48 @@ public class MosaicWebhookController {
 
   private final MosaicService mosaicService;
 
+  private final String CONTRACT_SIGNED_EVENT = "event.offer.ContractSigned";
+
   @ResponseStatus(HttpStatus.ACCEPTED)
-  @PostMapping(value = "/contractSigned")
-  public ResponseEntity updateContractSignedDate(@RequestBody ContractSignedEventWrapper contractSignedEventWrapper) {
-    String msg;
-    if (contractSignedEventWrapper.getData() == null) {
+  @PostMapping(value = "/webhook/offer")
+  public ResponseEntity handleOffer(@RequestBody EventWrapper eventWrapper) {
+    String msg = "";
+    if (eventWrapper.getData() == null) {
       msg = "MOSAIC: Data is missing";
       log.error(msg);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
     }
 
-    String mosaicApplicationId = contractSignedEventWrapper.getData().getAttributes().getApplicationId();
-    String eventTime = contractSignedEventWrapper.getData().getAttributes().getEventTime();
-    String errorMsg = "";
-    try {
-      errorMsg = mosaicService.updateFinancialAgreementSigned(mosaicApplicationId, eventTime);
-    } catch (Exception e) {
-      errorMsg = e.getMessage();
+    String eventType = eventWrapper.getData().getType();
+    if (eventType.equals(CONTRACT_SIGNED_EVENT)) {
+      String mosaicApplicationId = eventWrapper.getData().getAttributes().getApplicationId();
+      String eventTime = eventWrapper.getData().getAttributes().getEventTime();
+      try {
+        msg = mosaicService.updateFinancialAgreementSigned(mosaicApplicationId, eventTime);
+      } catch (Exception e) {
+        msg = e.getMessage();
+      }
     }
-    if (errorMsg.isBlank()) {
+    else {
+      return ResponseEntity.ok("Unsupported event type: " + eventType);
+    }
+
+    if (msg.isBlank()) {
       return ResponseEntity.ok("Financial Agreement Signed date successfully updated");
     }
     else {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + errorMsg);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
     }
   }
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class ContractSignedEventWrapper {
-    private ContractSignedEvent data;
+  public static class EventWrapper {
+    private Event data;
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ContractSignedEvent {
+    public static class Event {
       private String type;
       private String id;
       private Attributes attributes;

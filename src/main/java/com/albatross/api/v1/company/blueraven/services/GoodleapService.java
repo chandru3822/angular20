@@ -48,6 +48,10 @@ public class GoodleapService {
 
   private final String DEFAULT_NEW_USER_PASSWORD = "Solar101!";
 
+  private final Long FINANCIAL_AGREEMENT_SIGNED_CFGAID = 19505L;
+
+  private final Long SALES_DEV_USER_ID = 2371412L;
+
   @PostConstruct
   public void init() {
     headers = new HttpHeaders();
@@ -424,10 +428,9 @@ public class GoodleapService {
       String formattedDate = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
       params.put("dateValue", formattedDate);
       // Sales Dev Lead's user ID
-      params.put("leadOwnerUserId", 2371412L);
+      params.put("leadOwnerUserId", SALES_DEV_USER_ID);
       params.put("projectProcessStepId", designAndFinancingPpsId.get());
-      // Financial Agreement Signed cfgaid
-      params.put("customFieldGroupAssignmentId", 19505L);
+      params.put("customFieldGroupAssignmentId", FINANCIAL_AGREEMENT_SIGNED_CFGAID);
 
       sqlCache.updateBySql(
         GoodleapQuery.upsertCustomFieldValue, params);

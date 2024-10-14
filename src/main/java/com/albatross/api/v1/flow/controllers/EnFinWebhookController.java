@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.company.blueraven.services.GoodleapService;
+import com.albatross.api.v1.company.blueraven.services.EnFinService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,33 +10,32 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/webhook/goodleap")
+@RequestMapping(value = "/webhook/enfin")
 @RequiredArgsConstructor
-public class GoodLeapWebhookController {
+public class EnFinWebhookController {
 
-  private final GoodleapService goodleapService;
-
-  private final String CONTRACT_SIGNED_EVENT = "ContractSigned";
+  private final String CONTRACT_SIGNED_EVENT = "PROJECT CONTRACT SIGNED";
+  private final EnFinService enFinService;
 
   @ResponseStatus(HttpStatus.ACCEPTED)
   @PostMapping(value = "/webhook/event")
   public ResponseEntity handleEvent(@RequestBody EventWrapper eventWrapper) {
     String msg = "";
-    if (eventWrapper.getReferenceNumber() == null) {
-      msg = "GOODLEAP: Application ID is missing";
+    if (eventWrapper.getApplicationId() == null) {
+      msg = "ENFIN: Application ID is missing";
       log.error(msg);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
     }
 
-    if (eventWrapper.getEvent().equals(CONTRACT_SIGNED_EVENT)) {
+    if (eventWrapper.getStatus().equals(CONTRACT_SIGNED_EVENT)) {
       try {
-        msg = goodleapService.updateFinancialAgreementSigned(eventWrapper.getApplicationId(), eventWrapper.getTimestamp());
+        msg = enFinService.updateFinancialAgreementSigned(eventWrapper.getApplicationId());
       } catch (Exception e) {
         msg = e.getMessage();
       }
     }
     else {
-      return ResponseEntity.ok("Unsupported event type: " + eventWrapper.getEvent());
+      return ResponseEntity.ok("Unsupported event type: " + eventWrapper.getStatus());
     }
 
     if (msg.isBlank()) {
@@ -49,6 +48,6 @@ public class GoodLeapWebhookController {
 
   @Data
   public static class EventWrapper {
-    String event, applicationId, timestamp, referenceNumber;
+    String status, applicationId, contractId;
   }
 }
