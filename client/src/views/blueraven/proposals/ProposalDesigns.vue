@@ -624,7 +624,7 @@ const requestAIDesign = async (monthlyInputs) => {
   } finally {
     showAIDesignRequestForm.value = false
     savingNewAiDesign.value = false
-    appStore.showSnack('Success', 'A new design has been requested')
+    appStore.showSnack('SUCCESS', 'A new design has been requested')
   }
 }
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class ProposalAiRequestDTO {
-    @JsonProperty("values")
+    @JsonProperty("customFieldValuesList")
     private List<CustomFieldValue> customFieldValuesList;
 
     @JsonProperty("monthlyInputs")
