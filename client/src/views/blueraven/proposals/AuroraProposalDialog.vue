@@ -242,6 +242,7 @@ const xcelEnergyMNValues = Object.freeze({
                 :custom-label="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC ? 'How should yearly consumption be calculated?' : null"
                 :readonly="savingNewAiDesign"
             ></CustomValueInput>
+            <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC && cf.intValue === 22778" class="error-text pb-2">If you have less than 4 months of usage data, you should use the Square footage instead.</div>
           </div>
         </v-form>
   </ConfirmationDialog>
