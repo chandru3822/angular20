@@ -159,26 +159,44 @@ const minMonthsFilled = computed(() => {
 
 
 // Square Footage Option
-const calculateUsage = (sqft, field) => {
-  const squareFootage = Number(sqft)
+const calculateUsage = (field) => {
+  const squareFootage = Number(field.textValue)
+  const yearlyConsumptionField = props.aiRequestFields.find(cf => cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION)
   //pass in the correct enum to the energyUsage function; this works because they all use the same names
   switch (utilityCoId.value) {
     case null:
-      field.intValue = null
+      yearlyConsumptionField.intValue = null
       break;
     case 232: //Xcel Energy
-      field.intValue = energyUsage(squareFootage, xcelEnergyValues)
+      yearlyConsumptionField.intValue = energyUsage(squareFootage, xcelEnergyValues)
           break;
     case 383: //Xcel Eneregy MN
-      field.intValue = energyUsage(squareFootage, xcelEnergyMNValues)
+      yearlyConsumptionField.intValue = energyUsage(squareFootage, xcelEnergyMNValues)
           break;
     default:
-      field.intValue = energyUsage(squareFootage, defaultEnergyValues)
+      yearlyConsumptionField.intValue = energyUsage(squareFootage, defaultEnergyValues)
           break;
   }
   monthlyUsage.value = [{
-    usage: Math.round(field.intValue / 12)
+    usage: Math.round(yearlyConsumptionField.intValue / 12)
   }]
+}
+
+const updateEnergyUsageValues = (event) =>{
+  //if the utility company changes when we're calculating by square footage, we need to recalculate the energy usage
+  if(event.customFieldGroupAssignmentId === ProposalCFGAIDs.UTILITY_CO && calcEnergyBySqFtg.value){
+    const sqFtField = props.aiRequestFields.find(cf => cf.customFieldGroupAssignmentId === ProposalCFGAIDs.SQUARE_FOOTAGE)
+    calculateUsage(sqFtField)
+  }
+  //if the field for HOW_WAS_YEARLY_CONSUMPTION_CALC was changed, we should clear out all the fields related to energy usage
+  if(event.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC) {
+    props.aiRequestFields.forEach(cf => {
+      if (cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION || cf.customFieldGroupAssignmentId === ProposalCFGAIDs.SQUARE_FOOTAGE) {
+        cf.intValue = null
+        cf.textValue = null
+      }
+    })
+  }
 }
 
 const energyUsage = (sqft, energyEstimates) =>{
@@ -257,23 +275,25 @@ const xcelEnergyMNValues = Object.freeze({
         <v-form ref="aiForm">
           <div v-for="(cf, idx) in aiRequestFields" :key="idx">
             <!--              <div>{{cf}}</div>-->
-            <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION">
-              <div v-if="calcEnergyBySqFtg">
-                <a-text-field type="number"
-                              density="compact"
-                              label="Enter Square Footage"
-                              :value="squareFootage"
-                              :rules="calcEnergyBySqFtg ? [...requiredRules] : null"
-                              :disabled="savingNewAiDesign || !utilityCoId"
-                              @change="calculateUsage($event, cf)"
-                >
-                </a-text-field>
+            <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.SQUARE_FOOTAGE && calcEnergyBySqFtg">
                 <div v-if="!utilityCoId" class="error--text">Please select a utility company to calculate the annual and monthly energy usage.</div>
+                <CustomValueInput
+                    :field="cf"
+                    :show-field-name="false"
+                    :value="squareFootage"
+                    :required="calcEnergyBySqFtg"
+                    :readonly="savingNewAiDesign || !utilityCoId"
+                    :callback="calculateUsage"
+                    custom-class="albatross-body-2"
+                >5432
+                </CustomValueInput>
+            </div>
+              <div v-else-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION && calcEnergyBySqFtg">
                 <div class="label-large">Energy Usage</div>
                 <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
                 <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{monthlyUsage[0]?.usage}} kWh</span></div>
               </div>
-              <div v-else-if="calculatedByIsSet">
+              <div v-else-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION && calculatedByIsSet && !calcEnergyBySqFtg">
                 <v-card class="label-medium pa-0" flat>
                   <v-card-title class="pa-0">Enter usage from utility bill
                   </v-card-title>
@@ -294,12 +314,11 @@ const xcelEnergyMNValues = Object.freeze({
 
               </div>
 
-            </div>
             <CustomValueInput
-                v-else
+                v-else-if="cf.customFieldGroupAssignmentId !== ProposalCFGAIDs.SQUARE_FOOTAGE && cf.customFieldGroupAssignmentId !== ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION"
                 :show-field-name="false"
                 :required="true"
-                @change=""
+                :callback="updateEnergyUsageValues"
                 custom-class="albatross-body-2"
                 :field="cf"
                 :custom-label="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC ? 'How should yearly consumption be calculated?' : null"
