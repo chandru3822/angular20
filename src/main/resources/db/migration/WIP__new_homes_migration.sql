@@ -2359,6 +2359,70 @@
 --   _FIVETRAN_DELETED             BOOLEAN,
 --   CUSTOMER_ACCOUNT_C            VARCHAR(18)
 -- );
+
+-- drop table if exists brs.CREDIT_CHECK_REQUEST_C;
+-- create table if not exists  brs.CREDIT_CHECK_REQUEST_C
+-- (
+--   ID                                         VARCHAR(18),
+--   IS_DELETED                                 BOOLEAN,
+--   NAME                                       VARCHAR(240),
+--   CURRENCY_ISO_CODE                          VARCHAR(9),
+--   CREATED_DATE                               TIMESTAMPTZ,
+--   CREATED_BY_ID                              VARCHAR(18),
+--   LAST_MODIFIED_DATE                         TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                        VARCHAR(18),
+--   SYSTEM_MODSTAMP                            TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID                     VARCHAR(18),
+--   CONNECTION_SENT_ID                         VARCHAR(18),
+--   ACCOUNT_C                                  VARCHAR(18),
+--   CONTACT_C                                  VARCHAR(18),
+--   EMAIL_C                                    VARCHAR(240),
+--   FIRST_NAME_C                               VARCHAR(300),
+--   LAST_NAME_C                                VARCHAR(300),
+--   STATUS_C                                   VARCHAR(300),
+--   SUCCESSFUL_INVITE_C                        BOOLEAN,
+--   ERROR_MESSAGE_C                            VARCHAR(765),
+--   APPLICATION_ID_C                           VARCHAR(765),
+--   APPLICATION_TYPE_C                         VARCHAR(765),
+--   CREDIT_BEUREU_C                            VARCHAR(765),
+--   CREDIT_CHECK_APPROVAL_DATE_C               DATE,
+--   CREDIT_CHECK_EXPIRATION_DATE_C             DATE,
+--   CREDIT_CHECK_MESSAGE_C                     VARCHAR(390000),
+--   CREDIT_CHECK_SUBMISSION_DATE_C             DATE,
+--   OPPORTUNITY_C                              VARCHAR(18),
+--   CITY_C                                     VARCHAR(765),
+--   PHONE_C                                    VARCHAR(120),
+--   STATE_C                                    VARCHAR(765),
+--   STREET_2_C                                 VARCHAR(765),
+--   STREET_C                                   VARCHAR(765),
+--   ZIP_C                                      VARCHAR(30),
+--   SEND_LEASE_CREDIT_CHECK_FAILURE_EMAIL_C    BOOLEAN,
+--   BUREAU_C                                   VARCHAR(765),
+--   DECISION_REASON_C                          VARCHAR(765),
+--   CREDIT_APPLICATION_URL_C                   VARCHAR(765),
+--   MORTGAGE_PRE_APPROVAL_LETTER_URL_C         VARCHAR(765),
+--   LENDER_C                                   VARCHAR(765),
+--   SELF_SERVICE_USER_C                        VARCHAR(18),
+--   AUTH_TOKEN_C                               VARCHAR(765),
+--   COMMENTS_C                                 VARCHAR(96000),
+--   CREDIT_CHECK_DECISION_DATE_C               DATE,
+--   GOVT_ID_UPLOAD_TIME_C                      TIMESTAMPTZ,
+--   MORTGAGE_PRE_APPROVAL_LETTER_UPLOAD_TIME_C TIMESTAMPTZ,
+--   EXTERNAL_ID_C                              VARCHAR(765),
+--   _FIVETRAN_SYNCED                           TIMESTAMPTZ,
+--   _FIVETRAN_DELETED                          BOOLEAN,
+--   PROJECT_ID_C                               VARCHAR(765),
+--   OFFER_ID_C                                 VARCHAR(765),
+--   SHARE_ID_C                                 VARCHAR(765),
+--   EMAIL_COUNTER_C                            numeric
+-- );
+--
+--  CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_id ON brs.CREDIT_CHECK_REQUEST_C (id);
+--  CREATE INDEX if not exists ACCOUNT_C ON brs.CREDIT_CHECK_REQUEST_C (ACCOUNT_C);
+--  CREATE INDEX if not exists lender_c ON brs.CREDIT_CHECK_REQUEST_C (lender_c);
+--  CREATE INDEX if not exists credit_beureu_c ON brs.CREDIT_CHECK_REQUEST_C (credit_beureu_c);
+--  CREATE INDEX if not exists bureau_c ON brs.CREDIT_CHECK_REQUEST_C (bureau_c);
+--  CREATE INDEX if not exists application_type_c ON brs.CREDIT_CHECK_REQUEST_C (application_type_c);
 --
 -- CREATE INDEX if not exists ALLIANCE_PARTNER_C ON brs.ALLIANCE_PARTNER_C (id);
 -- CREATE INDEX if not exists COMMUNITY_C ON brs.ALLIANCE_PARTNER_C (COMMUNITY_C);
@@ -2369,7 +2433,9 @@
 -- CREATE INDEX if not exists PROJECT_TASK_C ON brs.PROJECT_TASK_C (RESIDENTIAL_PROJECT_C);
 -- CREATE INDEX if not exists RESIDENTIAL_PROJECT_C ON brs.PROJECT_TASK_C (id);
 -- CREATE INDEX if not exists status_c ON brs.PROJECT_TASK_C (status_c);
---
+-- CREATE INDEX if not exists community_project_id ON brs.PROJECT_TASK_C (community_project_id);
+-- CREATE INDEX if not exists record_type_id ON brs.PROJECT_TASK_C (record_type_id);
+-- CREATE INDEX if not exists created_date ON brs.PROJECT_TASK_C (created_date);
 --
 -- CREATE INDEX if not exists nw_account_type ON brs.account (type);
 -- CREATE INDEX if not exists nw_account_id ON brs.account (id);
@@ -2488,6 +2554,10 @@
 --  CREATE INDEX if not exists storage_size_c ON brs.builder_pricing_c (storage_size_c);
 --  CREATE INDEX if not exists code_year_c ON brs.builder_pricing_c (code_year_c);
 -- CREATE INDEX if not exists role_c ON brs.nh_community_visit_c (role_c);
+-- CREATE INDEX if not exists project_priority_c ON brs.project_task_c (project_priority_c);
+-- CREATE INDEX if not exists role_assignment_c ON brs.project_task_c (role_assignment_c);
+-- CREATE INDEX if not exists blocks_c ON brs.project_task_c (blocks_c);
+ --CREATE INDEX if not exists path_type_c_123 ON brs.project_task_c ( upper(path_type_c));
 
 SET session_replication_role = replica;
 DO --10 seconds
@@ -3124,13 +3194,50 @@ $do$
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28768,z.notes_from_requester_c::text, true);
             end loop;
 
-          for w in select  *
+          for w in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c
                    from brs.alliance_partner_c apc
                    where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
                      and apc.RECORD_TYPE_ID = '01234000000UQPYAA4'
                      and apc.community_c = x.community_id
+                  order by apc.created_date desc
           loop
-
+            case when w.role_c = 'Builder' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28877,w.partner_account_c::text, true);
+                 when w.role_c = 'Builder HERS Rater' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28878,w.partner_account_c::text, true);
+                 when w.role_c = 'Commissioning Partner' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28879,w.partner_account_c::text, true);
+                 when w.role_c = 'Customer Service Partner' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28880,w.partner_account_c::text, true);
+                 when w.role_c = 'Dealer' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28881,w.partner_account_c::text, true);
+                 when w.role_c = 'Design Partner' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28882,w.partner_account_c::text, true);
+                 when w.role_c = 'DRIP' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28883,w.partner_account_c::text, true);
+                 when w.role_c = 'EV Electrician' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28884,w.partner_account_c::text, true);
+                 when w.role_c = 'Field Service Representative' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28886,w.partner_account_c::text, true);
+                 when w.role_c = 'Inspection Partner' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28887,w.partner_account_c::text, true);
+                 when w.role_c = 'IP' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28888,w.partner_account_c::text, true);
+                 when w.role_c = 'MPU Electrician' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28889,w.partner_account_c::text, true);
+                 when w.role_c = 'Permitting Partner' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28890,w.partner_account_c::text, true);
+                 when w.role_c = 'PV HERS Provider' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28891,w.partner_account_c::text, true);
+                 when w.role_c = 'Roofer' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28892,w.partner_account_c::text, true);
+                 when w.role_c = 'Storage IP' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28893,w.partner_account_c::text, true);
+                 when w.role_c = 'T24 Energy Consultant' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28894,w.partner_account_c::text, true);
+                 when w.role_c = 'TPS' then
+                   perform flow.set_project_cfv(x.project_id , 2384850,28895,w.partner_account_c::text, true);
+            end case;
           end loop;
       end loop;
 
@@ -3143,6 +3250,7 @@ $do$
   declare
     x record;
     w record;
+    t record;
   v_object_category_id bigint;
   v_contact_id bigint;
   v_project_id bigint;
@@ -3273,7 +3381,7 @@ $do$
                                  company_country_id, nw_migration_id, object_category_id)
         values (1, x.account_name, null, x.billing_street, null, x.billing_city, substr(x.billing_postal_code,1,10), x.phone, x.email_c,
                 x.phone, now(), now(), 2384850, 2384850, 3, false,
-                x.company_state_id, 1, x.id,v_object_category_id) returning id into v_contact_id;
+                x.company_state_id, 1, x.homeowner_id,v_object_category_id) returning id into v_contact_id;
       else
         v_contact_id = x.builder_contact_id;
       end if;
@@ -3511,9 +3619,69 @@ $do$
                  inner join flow.list_of_value lov on lov.name = foo.system_adders_c and lov.parent_id = 25442;
           perform flow.set_project_cfv(v_project_id , 2384850,28328,v_system_adders_c::text, true);
         end if;
-      end loop;
 
-    for w in select
+--         for t in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c
+--                  from brs.alliance_partner_c apc
+--                  where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
+--                    and apc.RECORD_TYPE_ID = '01234000000UQPXAA4'
+--                    and apc.community_c = x.id
+--                  order by apc.created_date desc
+--           loop
+--             case when t.role_c = 'Builder' then
+--               perform flow.set_project_cfv(x.community_project_id , 2384850,28877,t.partner_account_c::text, true);
+--                  when t.role_c = 'Builder HERS Rater' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28878,t.partner_account_c::text, true);
+--                  when t.role_c = 'Commissioning Partner' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28879,t.partner_account_c::text, true);
+--                  when t.role_c = 'Customer Service Partner' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28880,t.partner_account_c::text, true);
+--                  when t.role_c = 'Dealer' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28881,t.partner_account_c::text, true);
+--                  when t.role_c = 'Design Partner' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28882,t.partner_account_c::text, true);
+--                  when t.role_c = 'DRIP' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28883,t.partner_account_c::text, true);
+--                  when t.role_c = 'EV Electrician' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28884,t.partner_account_c::text, true);
+--                  when t.role_c = 'Field Service Representative' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28886,t.partner_account_c::text, true);
+--                  when t.role_c = 'Inspection Partner' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28887,t.partner_account_c::text, true);
+--                  when t.role_c = 'IP' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28888,t.partner_account_c::text, true);
+--                  when t.role_c = 'MPU Electrician' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28889,t.partner_account_c::text, true);
+--                  when t.role_c = 'Permitting Partner' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28890,t.partner_account_c::text, true);
+--                  when t.role_c = 'PV HERS Provider' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28891,t.partner_account_c::text, true);
+--                  when t.role_c = 'Roofer' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28892,t.partner_account_c::text, true);
+--                  when t.role_c = 'Storage IP' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28893,t.partner_account_c::text, true);
+--                  when t.role_c = 'T24 Energy Consultant' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28894,t.partner_account_c::text, true);
+--                  when t.role_c = 'TPS' then
+--                    perform flow.set_project_cfv(x.community_project_id , 2384850,28895,t.partner_account_c::text, true);
+--               end case;
+--           end loop;
+      end loop;
+  end
+$do$;
+
+
+DO
+$do$
+  declare
+    w record;
+v_count bigint;
+    v_total bigint;
+  v_project_process_step_id bigint;
+  BEGIN
+    v_count = 0;
+    v_total = 0;
+    for w in
+           select
                distinct on (ptc.residential_project_c)
                ptc.description_c,
                ptc.project_priority_c,
@@ -3526,13 +3694,31 @@ $do$
                ptc.first_complete_end_date_time_c,
                ptc.end_date_time_c,
                ptc.completed_by_c,
-               ptc.name
+               ptc.name,
+               lov1.id as lov1_project_priority_c_id,
+               lov2.id as lov2_role_assignment_c_id,
+               lov3.id as lov3_blocks_c_id,
+               p.id as community_project_id,
+               ptc.id as project_task_id
              from brs.PROJECT_TASK_C ptc
-      where residential_project_c = x.id and
+            inner join flow.project p on p.nw_migration_id = ptc.residential_project_c
+             left join flow.list_of_value lov1 on lov1.name = ptc.project_priority_c and  lov1.parent_id = 25516
+             left join flow.list_of_value lov2 on lov2.name = ptc.role_assignment_c and lov2.parent_id = 25733
+             left join flow.list_of_value lov3 on lov3.name = ptc.blocks_c and lov3.parent_id = 25741
+      where
             ptc.status_c != 'Not Started' and
-            ptc.record_type_id = '01234000000BmbOAAS'
+            ptc.record_type_id = '01234000000BmbOAAS' and
+            ptc.is_deleted = false and
+            upper(ptc.path_type_c) = 'STANDARD'
       order by residential_project_c,ptc.created_date desc
       loop
+        v_count = v_count + 1;
+        v_total = v_total + 1;
+        if v_count = 1000 then
+          raise notice 'v_count %',v_count;
+          raise notice 'v_total %',v_total;
+          v_count = 0;
+        end if;
         case
           when w.name = 'Input Promise Dates' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -3540,21 +3726,22 @@ $do$
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3759, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
+            values (w.community_project_id, 3759, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+            returning id into v_project_process_step_id;
 
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29025, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29026, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29027, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29028, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29029, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29030, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29031, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29050, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29051, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29052, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29053, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29025, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29026, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29027, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29028, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29029, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29030, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29031, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29050, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29051, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29052, w.end_date_time_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 29053, w.completed_by_c::text, true);
 
-
+            perform brs.create_event_sub_tasks(w.project_task_id, 3759, v_project_process_step_id);
           when w.name = 'Obtain Builder Plot Plan' then
 
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -3562,18 +3749,19 @@ $do$
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3760, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29065, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29066, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29067, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29068, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29069, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29070, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29071, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29072, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29073, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29074, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29075, w.completed_by_c::text, true);
+            values (w.community_project_id, 3760, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29065, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29066, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29067, w.comment_c::text, true);
+        --    perform flow.set_pps_cfv(w.community_project_id, 2384850, 29068, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29069, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29070, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29071, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29072, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29073, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29074, w.end_date_time_c::text, true);
+            --perform flow.set_pps_cfv(w.community_project_id, 2384850, 29075, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3760, v_project_process_step_id);
 
           when w.name = 'Complete Design Package' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -3581,490 +3769,636 @@ $do$
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3761, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28977, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28978, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28979, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28980, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28981, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28982, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28983, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28984, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28985, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28986, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28987, w.completed_by_c::text, true);
-
+            values (w.community_project_id, 3761, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28977, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28978, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28979, w.comment_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 28980, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28981, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28982, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28983, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28984, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28985, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28986, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 28987, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3761, v_project_process_step_id);
           when w.name = 'Provide Stamping' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3762, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28977, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28978, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28979, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28980, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28981, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28982, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28983, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28984, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28985, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28986, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28987, w.completed_by_c::text, true);
+            values (w.community_project_id, 3762, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28977, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28978, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28979, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 28980, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28981, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28982, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28983, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28984, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28985, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28986, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 28987, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3762, v_project_process_step_id);
           when w.name = 'Complete BOM' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3763, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28955, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28956, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28957, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28958, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28959, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28960, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28961, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28962, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28963, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28964, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28965, w.completed_by_c::text, true);
+            values (w.community_project_id, 3763, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28955, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28956, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28957, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 28958, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28959, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28960, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28961, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28962, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28963, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28964, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 28965, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3763, v_project_process_step_id);
           when w.name = 'Preliminary IC Submission w/Utility' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3764, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29076, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29077, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29078, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29079, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29080, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29081, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29082, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29083, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29084, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29085, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29086, w.completed_by_c::text, true);
+            values (w.community_project_id, 3764, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29076, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29077, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29078, w.comment_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 29079, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29080, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29081, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29082, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29083, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29084, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29085, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29086, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3764, v_project_process_step_id);
           when w.name = 'Upload Design' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3765, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29087, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29088, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29089, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29090, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29091, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29092, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29093, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29094, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29095, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29096, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29097, w.completed_by_c::text, true);
+            values (w.community_project_id, 3765, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29087, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29088, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29089, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29090, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29091, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29092, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29093, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29094, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29095, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29096, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29097, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3765, v_project_process_step_id);
           when w.name = 'Apply for Permit' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3766, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28932, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28933, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28935, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28936, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28937, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28938, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28939, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28940, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28941, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28942, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28943, w.completed_by_c::text, true);
+            values (w.community_project_id, 3766, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28932, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28933, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28935, w.comment_c::text, true);
+            --perform flow.set_pps_cfv(w.community_project_id, 2384850, 28936, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28937, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28938, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28939, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28940, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28941, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28942, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 28943, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3766, v_project_process_step_id);
           when w.name = 'Designs Distributed' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3767, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29018, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29019, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29020, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29021, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29022, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29023, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29024, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29046, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29047, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29048, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29049, w.completed_by_c::text, true);
+            values (w.community_project_id, 3767, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29018, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29019, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29020, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29021, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29022, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29023, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29024, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29046, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29047, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29048, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29049, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3767, v_project_process_step_id);
           when w.name = 'Permit Pickup' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3768, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29098, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29099, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29100, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29101, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29102, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29103, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29104, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29105, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29106, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29107, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29108, w.completed_by_c::text, true);
+            values (w.community_project_id, 3768, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29098, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29099, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29100, w.comment_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 29101, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29102, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29103, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29104, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29105, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29106, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29107, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29108, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3768, v_project_process_step_id);
           when w.name = 'Complete Rough Wire' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3769, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28988, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28989, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28990, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28991, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28992, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28993, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28994, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28995, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28996, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29032, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29033, w.completed_by_c::text, true);
+            values (w.community_project_id, 3769, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28988, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28989, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28990, w.comment_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 28991, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28992, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28993, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28994, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28995, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28996, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29032, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29033, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3769, v_project_process_step_id);
           when w.name = 'Complete Storage Rough' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3770, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28997, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28998, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28999, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29000, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29001, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29002, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29003, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29034, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29035, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29036, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29037, w.completed_by_c::text, true);
+            values (w.community_project_id, 3770, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28997, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28998, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28999, w.comment_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 29000, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29001, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29002, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29003, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29034, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29035, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29036, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29037, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3770, v_project_process_step_id);
           when w.name = 'Obtain Builder WO' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3771, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29109, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29110, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29111, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29112, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29113, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29114, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29115, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29116, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29117, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29118, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29119, w.completed_by_c::text, true);
+            values (w.community_project_id, 3771, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29109, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29110, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29111, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29112, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29113, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29114, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29115, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29116, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29117, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29118, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29119, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3771, v_project_process_step_id);
           when w.name = 'Create Material Lines & PO/SO' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3772, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29004, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29005, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29006, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29007, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29008, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29009, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29010, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29038, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29039, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29040, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29041, w.completed_by_c::text, true);
+            values (w.community_project_id, 3772, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29004, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29005, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29006, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29007, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29008, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29009, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29010, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29038, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29039, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29040, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29041, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3772, v_project_process_step_id);
           when w.name = 'Preliminary IC Approval' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3773, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29120, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29121, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29122, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29123, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29124, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29125, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29126, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29127, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29128, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29129, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29130, w.completed_by_c::text, true);
+            values (w.community_project_id, 3773, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29120, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29121, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29122, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29123, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29124, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29125, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29126, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29127, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29128, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29129, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29130, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3773, v_project_process_step_id);
           when w.name = 'Complete CF-2R in Registry' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3774, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28966, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28967, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28968, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28969, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28970, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28971, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28972, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28973, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28974, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28975, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28976, w.completed_by_c::text, true);
+            values (w.community_project_id, 3774, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28966, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28967, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28968, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 28969, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28970, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28971, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28972, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28973, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28974, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28975, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 28976, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3774, v_project_process_step_id);
           when w.name = 'System Installation' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3775, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29131, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29132, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29133, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29134, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29135, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29136, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29137, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29138, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29139, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29140, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29141, w.completed_by_c::text, true);
+            values (w.community_project_id, 3775, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29131, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29132, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29133, w.comment_c::text, true);
+        --    perform flow.set_pps_cfv(w.community_project_id, 2384850, 29134, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29135, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29136, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29137, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29138, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29139, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29140, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29141, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3775, v_project_process_step_id);
           when w.name = 'Installation Checklist Uploaded' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3776, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29054, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29055, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29056, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29057, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29058, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29059, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29060, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29061, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29062, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29063, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29064, w.completed_by_c::text, true);
+            values (w.community_project_id, 3776, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29054, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29055, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29056, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29057, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29058, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29059, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29060, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29061, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29062, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29063, w.end_date_time_c::text, true);
+        --    perform flow.set_pps_cfv(w.community_project_id, 2384850, 29064, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3776, v_project_process_step_id);
           when w.name = 'Storage Installation' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3777, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29142, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29143, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29144, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29145, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29146, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29147, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29148, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29149, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29150, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29151, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29152, w.completed_by_c::text, true);
+            values (w.community_project_id, 3777, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29142, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29143, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29144, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29145, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29146, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29147, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29148, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29149, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29150, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29151, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29152, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3777, v_project_process_step_id);
           when w.name = 'Storage Checklist Completed' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3778, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29153, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29154, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29155, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29156, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29157, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29158, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29159, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29160, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29161, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29162, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29163, w.completed_by_c::text, true);
+            values (w.community_project_id, 3778, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29153, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29154, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29155, w.comment_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 29156, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29157, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29158, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29159, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29160, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29161, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29162, w.end_date_time_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29163, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3778, v_project_process_step_id);
           when w.name = 'Affirm AHJ Inspection Complete' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3779, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28910, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28911, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28912, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28913, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28914, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28915, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28916, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28917, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28918, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28919, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28920, w.completed_by_c::text, true);
+            values (w.community_project_id, 3779, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28910, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28911, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28912, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 28913, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28914, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28915, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28916, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28917, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28918, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28919, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 28920, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3779, v_project_process_step_id);
           when w.name = 'AHJ Storage Inspection' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3780, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28921, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28922, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28923, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28924, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28925, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28926, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28927, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28928, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28929, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28930, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28931, w.completed_by_c::text, true);
+            values (w.community_project_id, 3780, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28921, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28922, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28923, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 28924, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28925, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28926, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28927, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28928, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28929, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28930, w.end_date_time_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 28931, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3780, v_project_process_step_id);
           when w.name = 'Closure of RevRec' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3781, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28944, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28945, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28946, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28947, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28948, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28949, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28950, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28951, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28952, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28953, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 28954, w.completed_by_c::text, true);
+            values (w.community_project_id, 3781, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28944, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28945, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28946, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 28947, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28948, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28949, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28950, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28951, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28952, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 28953, w.end_date_time_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 28954, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3781, v_project_process_step_id);
           when w.name = 'Upload Final Building Permit' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3782, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29164, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29165, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29166, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29167, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29168, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29169, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29170, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29171, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29172, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29173, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29174, w.completed_by_c::text, true);
+            values (w.community_project_id, 3782, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29164, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29165, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29166, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29167, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29168, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29169, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29170, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29171, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29172, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29173, w.end_date_time_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 29174, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3782, v_project_process_step_id);
           when w.name = 'Invoice Packet Complete and Sent' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3783, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29175, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29176, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29177, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29178, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29179, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29180, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29181, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29182, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29183, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29184, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29185, w.completed_by_c::text, true);
+            values (w.community_project_id, 3783, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29175, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29176, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29177, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29178, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29179, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29180, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29181, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29182, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29183, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29184, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29185, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3783, v_project_process_step_id);
           when w.name = 'Obtain HO Utility Information' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3784, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29186, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29187, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29188, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29189, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29190, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29191, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29192, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29193, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29194, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29195, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29196, w.completed_by_c::text, true);
+            values (w.community_project_id, 3784, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29186, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29187, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29188, w.comment_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29189, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29190, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29191, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29192, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29193, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29194, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29195, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29196, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3784, v_project_process_step_id);
           when w.name = 'Submit Documents for PTO' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3785, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29197, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29198, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29199, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29200, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29201, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29202, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29203, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29204, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29205, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29206, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29207, w.completed_by_c::text, true);
+            values (w.community_project_id, 3785, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29197, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29198, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29199, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29200, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29201, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29202, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29203, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29204, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29205, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29206, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29207, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3785, v_project_process_step_id);
           when w.name = 'Receive PTO from Utility' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3786, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29208, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29209, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29210, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29211, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29212, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29213, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29214, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29215, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29216, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29217, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29218, w.completed_by_c::text, true);
+            values (w.community_project_id, 3786, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29208, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29209, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29210, w.comment_c::text, true);
+         --   perform flow.set_pps_cfv(w.community_project_id, 2384850, 29211, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29212, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29213, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29214, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29215, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29216, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29217, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29218, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3786, v_project_process_step_id);
           when w.name = 'Customer System Activation' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
                                                    cancelled_date, parent_project_process_step_event_id)
-            values (x.community_project_id, 3787, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29011, w.description_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29012, w.project_priority_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29013, w.comment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29014, w.assigned_to_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29015, w.ip_owner_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29016, w.role_assignment_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29017, w.blocks_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29042, w.start_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29043, w.first_complete_end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29044, w.end_date_time_c::text, true);
-            perform flow.set_pps_cfv(x.community_project_id, 2384850, 29045, w.completed_by_c::text, true); end case;
+            values (w.community_project_id, 3787, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29011, w.description_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29012, w.lov1_project_priority_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29013, w.comment_c::text, true);
+           -- perform flow.set_pps_cfv(w.community_project_id, 2384850, 29014, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29015, w.ip_owner_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29016, w.lov2_role_assignment_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29017, w.lov3_blocks_c_id::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29042, w.start_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29043, w.first_complete_end_date_time_c::text, true);
+            perform flow.set_pps_cfv(w.community_project_id, 2384850, 29044, w.end_date_time_c::text, true);
+          --  perform flow.set_pps_cfv(w.community_project_id, 2384850, 29045, w.completed_by_c::text, true);
+            perform brs.create_event_sub_tasks(w.project_task_id, 3787, v_project_process_step_id);
+            else
+              null;
+            end case;
 
+      end loop;
+end
+$do$;
+
+
+DO
+$do$
+  declare
+    x record;
+
+  BEGIN
+    for x in select p.id as project_id,ccrc.*,
+                    lov1.id as lov1_application_type_c_id ,
+                     lov2.id as lov2_bureau_c_id,
+                     lov3.id as lov3_credit_beureu_c_id,
+                     lov4.id as lov4_lender_c_id
+
+    from brs.CREDIT_CHECK_REQUEST_C ccrc
+    inner join flow.contact c on c.nw_migration_id = ccrc.account_c
+    inner join flow.project p on p.contact_id = c.id
+    left join flow.list_of_value lov1 on lov1.name = ccrc.application_type_c and lov1.parent_id = 25709
+    left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
+    left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713
+    left join flow.list_of_value lov4 on lov4.name = ccrc.lender_c and lov4.parent_id = 25715
+                                                                                                                                                    loop
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3792, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
+
+        perform flow.set_project_cfv(x.project_id , 2384850,28786,x.auth_token_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28788,x.comments_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28789,x.credit_application_url_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28791,x.credit_check_approval_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28792,x.credit_check_decision_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28793,x.credit_check_expiration_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28794,x.credit_check_message_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28796,x.credit_check_submission_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28797,x.decision_reason_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28798,x.error_message_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28799,x.external_id_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28800,x.first_name_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28801,x.govt_id_upload_time_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28802,x.last_name_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28804,x.mortgage_pre_approval_letter_upload_time_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28805,x.mortgage_pre_approval_letter_url_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28806,x.offer_id_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28807,x.phone_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28808,x.send_lease_credit_check_failure_email_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28809,x.share_id_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28810,x.status_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28811,x.successful_invite_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28785,x.lov1_application_type_c_id::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28790,x.lov2_bureau_c_id::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28795,x.lov3_credit_beureu_c_id::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28803,x.lov4_lender_c_id::text, true);
+    end loop;
+
+end
+$do$;
+
+DO
+$do$
+  declare
+    x record;
+
+  BEGIN
+    for x in select p.id as project_id,ccrc.*,
+                    lov1.id as lov1_application_type_c_id ,
+                    lov2.id as lov2_bureau_c_id,
+                    lov3.id as lov3_credit_beureu_c_id,
+                    lov4.id as lov4_lender_c_id
+
+             from brs.CREDIT_CHECK_REQUEST_C ccrc
+                    inner join flow.contact c on c.nw_migration_id = ccrc.account_c
+                    inner join flow.project p on p.contact_id = c.id
+                    left join flow.list_of_value lov1 on lov1.name = ccrc.application_type_c and lov1.parent_id = 25709
+                    left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
+                    left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713
+                    left join flow.list_of_value lov4 on lov4.name = ccrc.lender_c and lov4.parent_id = 25715
+      loop
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3792, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
+
+        perform flow.set_project_cfv(x.project_id , 2384850,28786,x.auth_token_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28788,x.comments_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28789,x.credit_application_url_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28791,x.credit_check_approval_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28792,x.credit_check_decision_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28793,x.credit_check_expiration_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28794,x.credit_check_message_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28796,x.credit_check_submission_date_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28797,x.decision_reason_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28798,x.error_message_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28799,x.external_id_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28800,x.first_name_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28801,x.govt_id_upload_time_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28802,x.last_name_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28804,x.mortgage_pre_approval_letter_upload_time_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28805,x.mortgage_pre_approval_letter_url_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28806,x.offer_id_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28807,x.phone_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28808,x.send_lease_credit_check_failure_email_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28809,x.share_id_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28810,x.status_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28811,x.successful_invite_c::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28785,x.lov1_application_type_c_id::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28790,x.lov2_bureau_c_id::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28795,x.lov3_credit_beureu_c_id::text, true);
+        perform flow.set_project_cfv(x.project_id , 2384850,28803,x.lov4_lender_c_id::text, true);
       end loop;
 
   end
 $do$;
+
 SET session_replication_role = default;
