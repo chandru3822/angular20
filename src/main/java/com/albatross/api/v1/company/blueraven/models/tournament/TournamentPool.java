@@ -17,7 +17,7 @@ public class TournamentPool {
   private String poolType, customName, backgroundAttachmentPresignedUrl;
   private String startDate, endDate;
   private Boolean archived, advanced, liveTournament;
-  private List<TournamentPoolUser> users;
+  private List<TournamentPoolUser> users, excludedUsers;
   private List<TournamentPoolPosition> positions;
 }
 

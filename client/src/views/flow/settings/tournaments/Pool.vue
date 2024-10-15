@@ -181,7 +181,7 @@
 
         <div id="pool-container">
           <v-toolbar flat class="wqt-header-bar">
-            <v-toolbar-title class="title-large">Users</v-toolbar-title>
+            <v-toolbar-title class="title-large">Add Users</v-toolbar-title>
             <v-spacer></v-spacer>
             <a-btn
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
@@ -191,7 +191,7 @@
                 prepend-icon="delete"
                 @click="deleteUsers = true">
             </a-btn>
-            <ConfirmationDialog :open-dialog="deleteUsers" @confirm="deleteUsersFromPool" @close-dialog="deleteUsers=false">
+            <ConfirmationDialog :open-dialog="deleteUsers" @confirm="deleteUsersFromPool(false)" @close-dialog="deleteUsers=false">
               Are you sure you want to delete all the users from this Tournament Pool?
             </ConfirmationDialog>
             <a-btn
@@ -354,12 +354,109 @@
 
           </v-data-table>
         </div>
+
+
+        <div id="exclude-pool-container">
+          <v-toolbar flat class="wqt-header-bar">
+            <v-toolbar-title class="title-large">Exclude Users</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
+                v-if="!pool.liveTournament && filteredExcludedUsers?.length > 0"
+                prepend-icon="delete"
+                @click="deleteUsers = true">
+            </a-btn>
+            <ConfirmationDialog :open-dialog="deleteExcludedUsers" @confirm="deleteUsersFromPool(true)" @close-dialog="deleteExcludedUsers=false">
+              Are you sure you want to delete all the excluded users from this Tournament Pool?
+            </ConfirmationDialog>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
+                prepend-icon="add"
+                @click="[addExcludedUser = !addExcludedUser, getUsers()]">
+            </a-btn>
+          </v-toolbar>
+          <v-card flat v-if="addExcludedUser">
+            <a-autocomplete
+                v-model="userId"
+                :items="users"
+                label="Users"
+                :loading="usersLoading"
+                item-title="fullName"
+                item-value="id"
+                attach
+            ></a-autocomplete>
+
+            <a-btn
+                color="primary"
+                text="Save"
+                :disabled="!userId"
+                @click="addUserToPool(true)">
+            </a-btn>
+
+            <a-btn
+                color="primary"
+                text="Cancel"
+                variant="text"
+                @click="[addExcludedUser = !addExcludedUser, userId = null]">
+            </a-btn>
+          </v-card>
+          <a-text-field
+              v-model="excludedUserSearch"
+              prepend-inner-icon="search"
+              label="Search"
+              class="mb-2"
+              single-line
+              hide-details
+          ></a-text-field>
+          <v-data-table id="tournament-pool-table"
+                        :headers="userHeaders"
+                        :items="filteredExcludedUsers"
+                        :fixed-header="true"
+                        :search="excludedUserSearch"
+                        :items-per-page="100"
+                        :mobile-breakpoint="0"
+                        class="elevation-1 org-type-table"
+          >
+            <template #no-data>
+              <span class="default-text-color">No users excluded</span>
+            </template>
+
+            <template #no-results>
+              <span class="default-text-color">No users excluded</span>
+            </template>
+
+            <template #item="{ item }">
+              <tr class="text-left" :class="{'shaded-row': pool.excludedUsers?.indexOf(item) % 2}">
+                <td class="text-left">{{ item.fullName }}</td>
+                <td class="text-right">
+                  <a-btn
+                      :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                      icon
+                      color="primary"
+                      prepend-icon="delete"
+                      @click="excludedUserToDelete=item">
+                  </a-btn>
+                </td>
+              </tr>
+            </template>
+
+          </v-data-table>
+        </div>
       </v-col>
 
     </v-row>
-    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPool" @close-dialog="userToDelete=null">
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPool(false)" @close-dialog="userToDelete=null">
       Are you sure you want to delete this user: <strong>{{ userToDeleteName }}</strong>?
     </ConfirmationDialog>
+
+    <ConfirmationDialog :open-dialog="!!excludedUserToDelete" @confirm="deleteUserFromPool(true)" @close-dialog="excludedUserToDelete=null">
+      Are you sure you want to delete this excluded user: <strong>{{ excludedUserToDeleteName }}</strong>?
+    </ConfirmationDialog>
+
     <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deletePositionFromPool"
                         @close-dialog="positionToDelete=null">
       Are you sure you want to delete this position?
@@ -399,6 +496,7 @@ const positionToDelete = ref(null)
 const edit = ref(false)
 const pool = ref({})
 const userSearch = ref('')
+const excludedUserSearch = ref('')
 const addImage = ref(false)
 const savingImage = ref(false)
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
@@ -410,8 +508,10 @@ const positionId = ref(null)
 const positions = ref([])
 const positionsLoading = ref(true)
 const addUser = ref(false)
+const addExcludedUser = ref(false)
 const addCustomUsers = ref(false)
 const deleteUsers = ref(false)
+const deleteExcludedUsers = ref(false)
 const userId = ref(null)
 const users = ref([])
 const usersLoading = ref(true)
@@ -422,6 +522,7 @@ const customFdcMax = ref(null)
 const customInclusive = ref(true)
 const deleteWinnerBackgroundDialog = ref(false)
 const userToDelete = ref(null)
+const excludedUserToDelete = ref(null)
 const positionHeaders = ref([
   {text: 'Position', value: 'position', show: true},
   {text: null, value: 'icons', show: true}
@@ -479,6 +580,10 @@ const userToDeleteName = computed(() => {
   return userToDelete.value ? userToDelete.value.fullName : ''
 })
 
+const excludedUserToDeleteName = computed(() => {
+  return excludedUserToDelete.value ? excludedUserToDelete.value.fullName : ''
+})
+
 const filteredPositions = computed(() => {
   return pool.value?.positions?.filter(p => {
     return !p.archived
@@ -487,6 +592,12 @@ const filteredPositions = computed(() => {
 
 const filteredUsers = computed(() => {
   return pool.value?.users?.filter(p => {
+    return !p.archived
+  })
+})
+
+const filteredExcludedUsers = computed(() => {
+  return pool.value?.excludedUsers?.filter(p => {
     return !p.archived
   })
 })
@@ -526,11 +637,16 @@ const getPositions = async () => {
     }
   }
 }
-const deleteUsersFromPool = async () => {
+const deleteUsersFromPool = async (exclude) => {
   try {
+    let url = exclude ? `/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteExcludedUsers` : `/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUsers`
     appStore.loading = true
-    await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUsers`, 'blueraven')
-    pool.value.users = []
+    await deleteRequest(url, 'blueraven')
+    if(exclude) {
+      pool.value.excludedUsers = []
+    } else {
+      pool.value.users = []
+    }
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Deleting Users')
@@ -539,7 +655,7 @@ const deleteUsersFromPool = async () => {
   }
 }
 const getUsers = async () => {
-  if(users.value?.length === 0 && addUser.value) {
+  if(users.value?.length === 0 && (addUser.value || addExcludedUser.value)) {
     try {
       usersLoading.value = true
       const {data, status} = await getRequest(`/user/active`)
@@ -639,14 +755,19 @@ const saveCustomUsers = async () => {
   }
 }
 
-const addUserToPool = async () => {
+const addUserToPool = async (exclude) => {
   appStore.loading = true
   try {
+    let url = exclude ? `/tournament/${tournamentId.value}/pool/${pool.value.id}/excludeUser/${userId.value}` : `/tournament/${tournamentId.value}/pool/${pool.value.id}/addUser/${userId.value}`
     const {
       data,
       status
-    } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addUser/${userId.value}`, {}, 'blueraven')
-    pool.value.users.push(data)
+    } = await postRequest(url, {}, 'blueraven')
+    if(exclude) {
+      pool.value.excludedUsers?.push(data)
+    } else {
+      pool.value.users?.push(data)
+    }
     userId.value = null
     addUser.value = false
     handleHidingGlobalLoader(status)
@@ -657,11 +778,19 @@ const addUserToPool = async () => {
     appStore.loading = false
   }
 }
-const deleteUserFromPool = async () => {
-  const user = userToDelete.value
+const deleteUserFromPool = async (exclude) => {
+  let user, url
+
+  if(exclude) {
+    user = excludedUserToDelete.value
+    url = `/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteExcludedUser/${user.id}`
+  } else {
+    user = userToDelete.value
+    url = `/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUser/${user.id}`
+  }
   appStore.loading = true
   try {
-    const {status} = await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUser/${user.id}`, 'blueraven')
+    const {status} = await deleteRequest(url, 'blueraven')
     user.archived = true
     handleHidingGlobalLoader(status)
   } catch (e) {

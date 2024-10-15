@@ -90,10 +90,11 @@ public class TournamentPoolService {
   }
 
 
-  public Optional<TournamentPoolUser> getPoolUser(Long id) {
+  public Optional<TournamentPoolUser> getPoolUser(Long id, Boolean excluded) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.getBySql(TournamentPoolQuery.getUser, params, TournamentPoolUser.class);
+    String sqlQuery = excluded ? TournamentPoolQuery.getExcludedUser : TournamentPoolQuery.getUser;
+    return sqlCache.getBySql(sqlQuery, params, TournamentPoolUser.class);
   }
 
   public List<TournamentPoolUser> addCustomUsers(Long poolId, TournamentPoolCustomUserRequest req) {
@@ -119,27 +120,44 @@ public class TournamentPoolService {
       params.put("userId", userId);
       params.put("createdById", user.trueUserId());
       Long id = sqlCache.updateBySqlReturningId(TournamentPoolQuery.addUser, params, "id").longValue();
-      return getPoolUser(id);
+      return getPoolUser(id, false);
     } catch (DuplicateKeyException e) {
       String msg = "The selected user has already been added to this pool.";
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
     }
   }
 
-  public void deleteAllUsersFromPool(Long poolId) {
+  public Optional<TournamentPoolUser> excludeUserFromPool(Long poolId, Long userId) {
+    try {
+      User user = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("poolId", poolId);
+      params.put("userId", userId);
+      params.put("createdById", user.trueUserId());
+      Long id = sqlCache.updateBySqlReturningId(TournamentPoolQuery.excludeUser, params, "id").longValue();
+      return getPoolUser(id, true);
+    } catch (DuplicateKeyException e) {
+      String msg = "The selected user has already been excluded from this pool.";
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
+    }
+  }
+
+  public void deleteAllUsersFromPool(Long poolId, Boolean excluded) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("poolId", poolId);
     params.put("userId", user.trueUserId());
-    sqlCache.updateBySql(TournamentPoolQuery.deleteAllUsers, params);
+    String sqlQuery = excluded ? TournamentPoolQuery.deleteAllExcludedUsers : TournamentPoolQuery.deleteAllUsers;
+    sqlCache.updateBySql(sqlQuery, params);
   }
 
-  public void deleteUserFromPool(Long tournamentPoolUserId) {
+  public void deleteUserFromPool(Long tournamentPoolUserId, Boolean exclude) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("tournamentPoolUserId", tournamentPoolUserId);
     params.put("userId", user.trueUserId());
-    sqlCache.updateBySql(TournamentPoolQuery.deleteUser, params);
+    String sqlQuery = exclude ? TournamentPoolQuery.deleteExcludeUser : TournamentPoolQuery.deleteUser;
+    sqlCache.updateBySql(sqlQuery, params);
   }
 
   public void assignUsersToMatches(Long tournamentId, Long poolId, String seededMatches) {
@@ -180,6 +198,12 @@ public class TournamentPoolService {
       };
       bw.registerCustomEditor(List.class, "users",
         new JsonCollectionDeserializer(usersRef, objectMapper));
+
+      TypeReference<List<TournamentPoolUser>> excludedUsersRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "excludedUsers",
+        new JsonCollectionDeserializer(excludedUsersRef, objectMapper));
+
       TypeReference<List<TournamentPoolPosition>> positionsRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "positions",

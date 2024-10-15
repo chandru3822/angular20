@@ -22,6 +22,13 @@ BEGIN
                              where tp.tournament_id = p_tournament_id
                                and tpu.archived is not true
                                and tp.tournament_pool_type_id = p_tournament_pool_type_id
+                               and not exists (
+                                   select id
+                                   from brs.tournament_pool_excluded_user tpeu
+                                   where tpeu.user_id = tpu.user_id
+                                     and tpeu.tournament_pool_id = tp.id
+                                        and tpeu.archived is false
+                                 )
                              union
                              select u.first_name || ' ' || u.last_name                       as "fullName",
                                     u.id                                                     as "userId",
@@ -51,6 +58,13 @@ BEGIN
                              where tp.tournament_id = p_tournament_id
                                and tpu.archived is not true
                                and tp.tournament_pool_type_id = p_tournament_pool_type_id
+                               and not exists (
+                                 select id
+                                 from brs.tournament_pool_excluded_user tpeu
+                                 where tpeu.user_id = u.id
+                                   and tpeu.tournament_pool_id = tp.id
+                                   and tpeu.archived is false
+                             )
                                --group by 1, 2, 3, t.tournament_formula_id, tp.start_date, tp.end_date
                              order by 4 desc nulls last, 1) as pools), '[]') as pools;
 

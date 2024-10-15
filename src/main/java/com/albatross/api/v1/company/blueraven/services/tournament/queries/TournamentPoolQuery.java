@@ -37,6 +37,19 @@ public class TournamentPoolQuery {
                                  WHERE tpu.tournament_pool_id = tp.id
                                    AND tpu.archived is not true
                                    order by qualified is not true, "fullName") tb), '[]') AS "users",
+                                              coalesce((
+              SELECT array_to_json(array_agg(row_to_json(tb)))
+              FROM (
+                       SELECT tpu.id,
+                              tpu.user_id as "userId",
+                              concat(u.first_name, ' ', u.last_name) as "fullName",
+                              tpu.tournament_pool_id as "tournamentPoolId",
+                              tpu.archived
+                       FROM brs.tournament_pool_excluded_user tpu
+                          inner join flow."user" u on tpu.user_id = u.id
+                       WHERE tpu.tournament_pool_id = tp.id
+                         AND tpu.archived is not true
+                         order by "fullName") tb), '[]') AS "excludedUsers",
            tpt.pool_type,
            t.active as live_tournament
     from brs.tournament_pool tp
@@ -97,6 +110,15 @@ public class TournamentPoolQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getExcludedUser = """
+    select tpu.*,
+           concat(u.first_name, ' ', u.last_name) as full_name
+    from brs.tournament_pool_excluded_user tpu
+    inner join flow.user u on u.id = tpu.user_id
+    where tpu.id = :id
+    """;
+
+  //language=PostgreSQL
   public final static String getAllUsersInPool = """
     select tpu.*,
            concat(u.first_name, ' ', u.last_name) as full_name
@@ -109,6 +131,12 @@ public class TournamentPoolQuery {
   //language=PostgreSQL
   public final static String addUser = """
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:userId, :poolId, :createdById, now(), :createdById, now())
+    """;
+
+  //language=PostgreSQL
+  public final static String excludeUser = """
+    insert into brs.tournament_pool_excluded_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:userId, :poolId, :createdById, now(), :createdById, now())
     """;
 
@@ -127,8 +155,26 @@ public class TournamentPoolQuery {
     """;
 
   //language=PostgreSQL
+  public final static String deleteAllExcludedUsers = """
+    update brs.tournament_pool_excluded_user
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+      where tournament_pool_id = :poolId
+    """;
+
+  //language=PostgreSQL
   public final static String deleteUser = """
     update brs.tournament_pool_user
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+      where id = :tournamentPoolUserId
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteExcludeUser = """
+    update brs.tournament_pool_excluded_user
       set archived = true,
           date_modified = now(),
           modified_by_id = :userId

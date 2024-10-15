@@ -66,14 +66,30 @@ public class TournamentPoolController {
     return tournamentPoolService.addUserToPool(poolId, userId);
   }
 
+  @PostMapping(value = "/{poolId}/excludeUser/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<TournamentPoolUser> excludeUserFromPool(@PathVariable Long poolId,
+                                                          @PathVariable Long userId) {
+    return tournamentPoolService.excludeUserFromPool(poolId, userId);
+  }
+
   @DeleteMapping(value = "/{poolId}/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deletAlleUsersFromPool(@PathVariable Long poolId) {
-    tournamentPoolService.deleteAllUsersFromPool(poolId);
+  public void deletAllUsersFromPool(@PathVariable Long poolId) {
+    tournamentPoolService.deleteAllUsersFromPool(poolId, false);
+  }
+
+  @DeleteMapping(value = "/{poolId}/deleteExcludedUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletAllExcludedUsersFromPool(@PathVariable Long poolId) {
+    tournamentPoolService.deleteAllUsersFromPool(poolId, true);
   }
 
   @DeleteMapping(value = "/{poolId}/deleteUser/{tournamentPoolUserId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteUserFromPool(@PathVariable Long tournamentPoolUserId) {
-    tournamentPoolService.deleteUserFromPool(tournamentPoolUserId);
+    tournamentPoolService.deleteUserFromPool(tournamentPoolUserId, false);
+  }
+
+  @DeleteMapping(value = "/{poolId}/deleteExcludedUser/{tournamentPoolUserId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteExcludedUserFromPool(@PathVariable Long tournamentPoolUserId) {
+    tournamentPoolService.deleteUserFromPool(tournamentPoolUserId, true);
   }
 
   @PostMapping(value = "/{poolId}/assignUsersToMatches", produces = MediaType.APPLICATION_JSON_VALUE)

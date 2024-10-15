@@ -36,13 +36,6 @@
               @click="advanceSelectedToBracket()"
               :text="matchesNotGenerated ? 'Must Generate Matches' : !pool.advanced ? 'Advance Selected to Bracket' : 'Pool Has Been Advanced'"
           ></a-btn>
-          <a-btn
-              v-if="userCanEdit"
-              :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || bracketsEmpty || matchesNotGenerated"
-              color="primary"
-              @click="advanceSelectedToBracket()"
-              :text="matchesNotGenerated ? 'Must Generate Matches' : !pool.advanced ? 'Advance Selected to Bracket' : 'Pool Has Been Advanced'"
-          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
 
@@ -61,7 +54,7 @@
           :fixed-header="true"
           :search="search"
           dense
-          :items-per-page="100"
+          :items-per-page="1000"
           :footer-props="footerProps"
           disable-sort
           class="elevation-1 square-card"
@@ -350,7 +343,11 @@ const getPoolUsers = async() => {
     const {data, status} = await getRequest(`/tournament/${tournamentId.value}/pool/usersByType/${poolTypeId.value}`, 'blueraven')
     poolUsers.value = data
     if(!bracketsEmpty.value) {
-      lastQualifiedUserScore.value = poolUsers.value[tournamentUserCount.value - 1].score
+      if(poolUsers.value?.length < tournamentUserCount.value) {
+        appStore.showSnack('ERROR', 'There are not enough users to populate the Bracket Matches')
+      } else {
+        lastQualifiedUserScore.value = poolUsers.value[tournamentUserCount.value - 1].score
+      }
     }
     handleHidingGlobalLoader( status)
   } catch (e) {
