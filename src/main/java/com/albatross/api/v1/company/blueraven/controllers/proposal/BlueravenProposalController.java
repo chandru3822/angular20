@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.aurora.AuroraDesignWrappedDTO;
+import com.albatross.api.aurora.ProposalAiRequestDTO;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
@@ -64,10 +65,11 @@ public class BlueravenProposalController {
     @PostMapping(value = "/projects/{projectId}/ai")
     @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
     public AuroraDesignWrappedDTO doProposalAiRequest(@PathVariable Long projectId,
-                                                      @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+                                                      @RequestBody ProposalAiRequestDTO proposalAiRequestDTO) {
         //this is called to generate an initial aurora design
-        return proposalService.doProposalAiRequest(projectId, values);
+        return proposalService.doProposalAiRequest(projectId, proposalAiRequestDTO.getCustomFieldValuesList(), proposalAiRequestDTO.getMonthlyInputs());
     }
+
 
   @PostMapping(value = "/projects/{projectId}/ai/design/{designId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
@@ -77,13 +79,6 @@ public class BlueravenProposalController {
                                   @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
     //this is only called after duplicating an aurora design
     proposalService.handleNewPpsForAuroraDesign(projectId, designId, values, null != designByAuroraValue ? designByAuroraValue : false);
-  }
-
-  @PostMapping(value="/projects/{projectId}/ai/design/updateMonthlyUsage")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public void updateMonthlyUsage(@PathVariable String projectId,
-                                 @RequestBody List<Double> monthlyValues) {
-      proposalService.doUpdateMonthlyUsage(projectId, monthlyValues);
   }
 
 

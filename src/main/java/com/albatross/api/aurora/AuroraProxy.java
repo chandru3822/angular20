@@ -255,7 +255,7 @@ public class AuroraProxy {
     }
   }
 
-    public void updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, String projectId, List<Double> monthlyInputs)  {
+    public AuroraConsumptionProfileDTO updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, String auroraProjectId, List<Double> monthlyInputs)  {
         AuroraUpdateConsumptionProfileDTO acp = new AuroraUpdateConsumptionProfileDTO();
         acp.setMonthlyEnergy(monthlyInputs);
         String bodyJson;
@@ -273,7 +273,7 @@ public class AuroraProxy {
         RestClient client2 = RestClient.builder().baseUrl(host).build();
         ResponseEntity<AuroraConsumptionProfileDTO> res = client2
                 .put()
-                .uri("/tenants/%s/projects/%s/consumption_profile".formatted(tenantId, projectId))
+                .uri("/tenants/%s/projects/%s/consumption_profile".formatted(tenantId, auroraProjectId))
                 .header("Authorization", "Bearer " + tokenV2022)
                 .body(bodyJson)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -283,6 +283,7 @@ public class AuroraProxy {
         if (res != null && res.getStatusCode() != HttpStatus.OK) {
             throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
         }
+        return res.getBody();
     }
 
     public DesignSummary getDesignSummary(@NotBlank String designId) throws IOException {

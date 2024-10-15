@@ -161,7 +161,7 @@ public class BlueravenProposalService {
       .body(Resource.class);
   }
 
-  public AuroraDesignWrappedDTO duplicateExistingProposalAi(String auroraUserId, Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean useExactDesign) {
+  public AuroraDesignWrappedDTO duplicateExistingProposalAi(String auroraUserId, Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean useExactDesign, List<Double> monthlyInputs) {
     //this function needs to:
     //try/catch finding a design by id
     //if successful, try/catch finding all designs on that same project and getting the first one ever created
@@ -205,9 +205,15 @@ public class BlueravenProposalService {
             //find the design on our side that is using the firstDesignId...check the designedByAuroraField
             Boolean designedByAurora = useExactDesign ? false : getDesignedByAuroraValue(projectId, firstDesign.getId());
 
-            //then create the new pps
-            handleNewPpsForAuroraDesign(projectId, auroraDesignWrappedDTO.getId(), values, designedByAurora);
-
+            //then create the new pps and update the monthly usage data on Aurora
+            Long ppsId = handleNewPpsForAuroraDesign(projectId, auroraDesignWrappedDTO.getId(), values, designedByAurora);
+              if(auroraDesignWrappedDTO != null && auroraDesignWrappedDTO.getProjectId() != null){
+                  com.albatross.api.v1.flow.model.CustomFieldValue calcMethodField = values.stream().filter(cfg -> cfg.getCustomFieldGroupAssignmentId() != null && cfg.getCustomFieldGroupAssignmentId().equals(23803L)).findFirst().orElse(null);
+                  if(calcMethodField != null) {
+                      Long calcMethodValue = calcMethodField.getIntValue();
+                      updateEnergyUsage(ppsId, auroraDesignWrappedDTO.getProjectId(), monthlyInputs, calcMethodValue);
+                  }
+              }
             return auroraDesignWrappedDTO;
           } else {
             throw new RuntimeException("Error: Unable to duplicate DESIGN for project: " + designSummary.getProjectId().get());
@@ -238,7 +244,7 @@ public class BlueravenProposalService {
     return result.orElse(false);
   }
 
-  public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+  public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, List<Double> monthlyInputs) {
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
 
@@ -249,15 +255,15 @@ public class BlueravenProposalService {
       //then check for any existing design id on a Create Proposal Design step, if found use the oldest, then do duplicateExistingProposalAi
       Optional<String> oldestDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getOldestDesignIdForProject, params, String.class);
       if (oldestDesignId.isPresent()) {
-        return duplicateExistingProposalAi(auroraUserId.get(), projectId, oldestDesignId.get(), values, false);
+        return duplicateExistingProposalAi(auroraUserId.get(), projectId, oldestDesignId.get(), values, false, monthlyInputs);
       } else {
         //then check for any existing design id on a Create Predesign step, if found use the oldest then do new function to be made
         Optional<String> createPredesignDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getDesignIdForCreatePredesignStep, params, String.class);
         if (createPredesignDesignId.isPresent()) {
-          return duplicateExistingProposalAi(auroraUserId.get(), projectId, createPredesignDesignId.get(), values, true);
+          return duplicateExistingProposalAi(auroraUserId.get(), projectId, createPredesignDesignId.get(), values, true, monthlyInputs);
         } else {
           //if none of those then createNewAuroraProjectAndDesign
-          return createNewAuroraProjectAndDesign(auroraUserId.get(), projectId, values);
+          return createNewAuroraProjectAndDesign(auroraUserId.get(), projectId, values, monthlyInputs);
         }
       }
     } else {
@@ -295,20 +301,38 @@ public class BlueravenProposalService {
     return auroraUserId;
   }
 
-  public void doUpdateMonthlyUsage(String projectId, List<Double> monthlyInputs){
+
+  public void updateEnergyUsage(
+          Long ppsId,
+          String auroraProjectId,
+          List<Double> monthlyInputs,
+          Long calcMethodValue
+          ){
       Optional<String> auroraUserId = getAuroraUserId();
 
-      if (auroraUserId.isPresent()) {
-          auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), projectId, monthlyInputs);
-      } else {
-          throw new ResponseStatusException(
-                  HttpStatus.BAD_REQUEST,
-                  "You can't create an Aurora design without an Aurora account. Contact SalesHR to get an Aurora account created.",
-                  new Exception());
-      }
+          //update the monthly inputs on Aurora
+          AuroraConsumptionProfileDTO consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
+          if(calcMethodValue.equals(20851L)){
+              //calculate by square footage then we're done b/c we've already updated the annual energy
+              return;
+          }
+          //combine all the monthly_energy values from the consumptionProfile
+          Double sum = 0.0;
+          for(int i = 0; i < consumptionProfile.getMonthlyEnergy().size(); i++){
+              sum+= consumptionProfile.getMonthlyEnergy().get(i);
+          }
+          //otherwise put the sum in the estimated annual energy consumption custom field
+          com.albatross.api.v1.flow.model.CustomFieldValue customFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
+          customFieldValue.setCustomFieldGroupAssignmentId(22573L);
+          customFieldValue.setIntValue(Math.round(sum));
+
+          List<com.albatross.api.v1.flow.model.CustomFieldValue> cfgs = new ArrayList<>();
+          cfgs.add(customFieldValue);
+
+          customFieldValueService.updateCustomFieldValues(cfgs, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
 
   }
-  public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(String auroraUserId, Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+  public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(String auroraUserId, Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, List<Double> monthlyInputs) {
     //this function needs to:
     //try/catch creating an aurora project
     //if successful, try/catch creating an aurora design with that project
@@ -325,7 +349,14 @@ public class BlueravenProposalService {
         if (null != auroraProject.getId()) {
           AuroraDesignWrappedDTO auroraDesign = auroraProxy.createDesign(auroraProject.getId(), nameFieldValue.get().getTextValue());
           if (null != auroraDesign.getId()) {
-            handleNewPpsForAuroraDesign(projectId, auroraDesign.getId(), values, true);
+            Long ppsId = handleNewPpsForAuroraDesign(projectId, auroraDesign.getId(), values, true);
+              if(auroraDesign.getProjectId() != null){
+                  com.albatross.api.v1.flow.model.CustomFieldValue calcMethodField = values.stream().filter(cfg -> cfg.getCustomFieldGroupAssignmentId() != null && cfg.getCustomFieldGroupAssignmentId().equals(23803L)).findFirst().orElse(null);
+                  if(calcMethodField != null) {
+                      Long calcMethodValue = calcMethodField.getIntValue();
+                      updateEnergyUsage(ppsId, auroraDesign.getProjectId(), monthlyInputs, calcMethodValue);
+                  }
+              }
             return auroraDesign;
           } else {
             throw new RuntimeException("Error: Unable to create DESIGN for project: " + projectId);
@@ -345,7 +376,7 @@ public class BlueravenProposalService {
     }
   }
 
-  public void handleNewPpsForAuroraDesign(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean designByAuroraValue) {
+  public Long handleNewPpsForAuroraDesign(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean designByAuroraValue) {
     //insert a new Create Proposal Design Process Step
     Long ppsId = insertProjectProcessStep(projectId, 3507L);
 
@@ -375,7 +406,8 @@ public class BlueravenProposalService {
     autoTriggerHandlerService.handlePpsAutoTriggersAfterCfvUpdate(projectId, ppsId, values);
     autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
 
-    //return the design id
+    //return the project process step id
+      return ppsId;
   }
 
   public List<ProposalDesign> getProposalDesigns(@NonNull Long projectId) {

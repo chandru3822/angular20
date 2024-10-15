@@ -420,6 +420,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  customLabel: String,
   hideDetails: {
     type: Boolean,
     default: false
@@ -456,6 +457,7 @@ const {
   useFieldAncillaryName,
   showFieldName,
   hideLabel,
+  customLabel,
   hideDetails,
   lockFeature,
   copyFeature,
@@ -610,7 +612,9 @@ const getFieldName = () => {
     ? null
     : useFieldAncillaryName.value
     ? fieldAncillaryName.value
-    : field.value.fieldName
+    : !!customLabel.value
+    ? customLabel.value
+    :field.value.fieldName
 }
 
 const getItems = debounce(async (query = '') => {

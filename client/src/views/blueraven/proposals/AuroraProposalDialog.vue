@@ -8,8 +8,8 @@
 *
 */
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
-import {computed, defineEmits, ref} from "vue";
-import {ProposalCFGAIDs} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
+import {computed, defineEmits, onMounted, ref} from "vue";
+import {ProposalCFGAIDs, YearlyConsumptionCalcListOfValueId} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
 import constants from "@/helpers/constants.js";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
@@ -25,18 +25,34 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['close', 'save'])
-const calcEnergyBySqFtg = ref(true)
 const squareFootage = ref(null)
 const aiForm = ref(null)
 const requiredRules = constants.BASIC_REQUIRED_RULE
 const months = constants.MONTHS
 const monthlyUsage = ref([])
+const disabledMonthIds = ref([])
+const showMinMonthsError = ref(false)
+
+const calculatedBy = computed(() => {
+  return props.aiRequestFields.find(field => field.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC)
+})
+
+const calculatedByIsSet = computed(() => {
+  return !!calculatedBy.value?.intValue;
+})
+
+const calcEnergyBySqFtg = computed(() => {
+  return calculatedBy.value?.intValue === YearlyConsumptionCalcListOfValueId.SQUARE_FOOTAGE
+})
 
 const validateAIRequest = async () => {
-  const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0
+  const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0 && minMonthsFilled.value
   if (valid) {
     //all checks for how to create the design are handled by backend now
     emit('save', monthlyUsageFlattened.value)
+  }
+  else if(!minMonthsFilled.value){
+    showMinMonthsError.value = true
   }
 }
 
@@ -63,17 +79,6 @@ const monthlyUsageFlattened = computed(() =>{
 return populated
 })
 
-const toggleCalcMethod = (field) => {
-  //todo: call this when we switch between the two radio buttons
-  if(!calcEnergyBySqFtg.value) {
-    squareFootage.value = null
-  } else {
-
-  }
-  field.intValue = null
-  calcEnergyBySqFtg.value = !calcEnergyBySqFtg.value
-}
-
 const utilityCoId = computed(() => {
   const utilityCoField = props.aiRequestFields.find(f => f.customFieldGroupAssignmentId === ProposalCFGAIDs.UTILITY_CO)
   return utilityCoField?.intValue
@@ -83,7 +88,7 @@ const utilityCoId = computed(() => {
 //Utility Bill Option
 const addMonthUsage = (usage, monthId) =>{
   //make sure we don't add a duplicate if they change a value or clear a value
-  const existingUsageIndex = monthlyUsage.value.indexOf(mu => mu.monthId === monthId)
+  const existingUsageIndex = monthlyUsage.value.findIndex(mu => mu.monthId === monthId)
   if(existingUsageIndex >= 0){
     monthlyUsage.value.splice(existingUsageIndex,1)
   }
@@ -94,7 +99,63 @@ const addMonthUsage = (usage, monthId) =>{
       usage: Number(usage)
     })
   }
+  updateDisabledMonths()
 }
+
+const updateDisabledMonths = (() =>{
+  if(maxMonthsFilled()){
+    months.forEach(m => {
+      const existingUsage = monthlyUsage.value.find(mu =>  mu.monthId === m.id)
+      if(!existingUsage){
+        disabledMonthIds.value.push(m.id);
+      }
+    })
+  }
+  else{
+      disabledMonthIds.value = []
+  }
+})
+
+const maxMonthsFilled = (() => {
+  //if the calculation method hasn't been selected yet, there is no max months
+  if(!calculatedBy.value?.intValue){
+    return false
+  }
+  switch (calculatedBy.value?.intValue) {
+    case YearlyConsumptionCalcListOfValueId.MONTHS_12_ABOVE:
+      return false;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_8_11:
+      return monthlyUsage.value.length === 11;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_4_7:
+      return monthlyUsage.value.length === 7;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_4_BELOW:
+      return monthlyUsage.value.length === 3;
+    default:
+      return false;
+  }
+})
+
+const minMonths = computed(()=>{
+  //if the calculation method hasn't been selected yet, there is no min months
+  if(!calculatedBy.value?.intValue){
+    return 0
+  }
+  switch (calculatedBy.value?.intValue) {
+    case YearlyConsumptionCalcListOfValueId.MONTHS_12_ABOVE:
+      return 12;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_8_11:
+      return 8;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_4_7:
+      return  4;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_4_BELOW:
+    default:
+      return 1;
+  }
+})
+
+const minMonthsFilled = computed(() => {
+  return monthlyUsage.value.length >= minMonths.value
+})
 
 
 // Square Footage Option
@@ -102,6 +163,9 @@ const calculateUsage = (sqft, field) => {
   const squareFootage = Number(sqft)
   //pass in the correct enum to the energyUsage function; this works because they all use the same names
   switch (utilityCoId.value) {
+    case null:
+      field.intValue = null
+      break;
     case 232: //Xcel Energy
       field.intValue = energyUsage(squareFootage, xcelEnergyValues)
           break;
@@ -194,30 +258,36 @@ const xcelEnergyMNValues = Object.freeze({
           <div v-for="(cf, idx) in aiRequestFields" :key="idx">
             <!--              <div>{{cf}}</div>-->
             <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION">
-                <v-radio-group label="Energy Usage" v-model="calcEnergyBySqFtg" :disabled="savingNewAiDesign">
-                <v-radio :value="true" label="Calculate Energy by Square Footage"></v-radio>
-                <v-radio :value="false" label="Utility Bill"></v-radio>
-              </v-radio-group>
               <div v-if="calcEnergyBySqFtg">
                 <a-text-field type="number"
                               density="compact"
                               label="Enter Square Footage"
                               :value="squareFootage"
                               :rules="calcEnergyBySqFtg ? [...requiredRules] : null"
-                              :disabled="savingNewAiDesign"
+                              :disabled="savingNewAiDesign || !utilityCoId"
                               @change="calculateUsage($event, cf)"
                 >
                 </a-text-field>
+                <div v-if="!utilityCoId" class="error--text">Please select a utility company to calculate the annual and monthly energy usage.</div>
+                <div class="label-large">Energy Usage</div>
                 <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
                 <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{monthlyUsage[0]?.usage}} kWh</span></div>
               </div>
-              <div v-else>
+              <div v-else-if="calculatedByIsSet">
                 <v-card class="label-medium pa-0" flat>
                   <v-card-title class="pa-0">Enter usage from utility bill
                   </v-card-title>
+                  <div v-if="showMinMonthsError && !minMonthsFilled" class="error--text">Pleas enter at least {{minMonths}} months of usage data.</div>
                 <v-row class="pt-0">
-                  <v-col v-for="(month, index) in months" cols="3" class="pt-0">
-                    <a-text-field density="dense" type="number" :label="`${month.name}`" @change="addMonthUsage($event, month.id)" :disabled="savingNewAiDesign"></a-text-field>
+                  <v-col v-for="(month, index) in months" :key="index" cols="3" class="pt-0">
+                    <a-text-field
+                        density="dense"
+                        type="number"
+                        :label="`${month.name}`"
+                        @change="addMonthUsage($event, month.id)"
+                        :disabled="savingNewAiDesign ||(disabledMonthIds.length > 0 && disabledMonthIds.indexOf(month.id) >= 0)"
+                        :rules="[ minMonthsFilled || '']"
+                    />
                   </v-col>
                 </v-row>
                 </v-card>
@@ -232,8 +302,10 @@ const xcelEnergyMNValues = Object.freeze({
                 @change=""
                 custom-class="albatross-body-2"
                 :field="cf"
+                :custom-label="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC ? 'How should yearly consumption be calculated?' : null"
                 :readonly="savingNewAiDesign"
             ></CustomValueInput>
+            <div v-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC && cf.intValue === 22778" class="error-text pb-2">If you have less than 4 months of usage data, you should use the Square footage instead.</div>
           </div>
         </v-form>
   </ConfirmationDialog>

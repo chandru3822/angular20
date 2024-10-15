@@ -569,9 +569,9 @@ const validateAIRequest = async (aiForm) => {
 }
 
 const handleAIRequest = async (useExisting) => {
-  //utility company (23802), estimated annual consumption (22573), design name (26300)
+  //utility company (23802), how was yearly consumption calculated (23803), estimated annual consumption (22573), design name (26300)
   useExistingDesign.value = useExisting
-  const encodedIds = encodeURI([ProposalCFGAIDs.UTILITY_CO, ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION, ProposalCFGAIDs.DESIGN_NAME])
+  const encodedIds = encodeURI([ProposalCFGAIDs.UTILITY_CO, ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC, ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION, ProposalCFGAIDs.DESIGN_NAME])
   const params = { cfgaIds: encodedIds }
   const { data } = await getRequestWithParams(
     `/customFieldGroup/getCustomFieldsByCfgaIds`,
@@ -604,20 +604,15 @@ const requestAIDesign = async (monthlyInputs) => {
     savingNewAiDesign.value = true
     const { data } = await postRequest(
         `/proposal/projects/${projectId.value}/ai`,
-        aiRequestFields.value,
+        {customFieldValuesList: aiRequestFields.value, monthlyInputs: monthlyInputs},
         'blueraven'
     )
     if (data?.design?.id && data?.design?.project_id) {
-    const {monthData} = await postRequest(
-        `/proposal/projects/${data.design.project_id}/ai/design/updateMonthlyUsage`,
-        monthlyInputs,
-        'blueraven'
-    )
-
       const url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
       window.open(url, '_blank')
     }
     await getActiveDesign()
+    appStore.showSnack('SUCCESS', 'A new design has been requested')
   } catch (e) {
     logError(e)
     appStore.loading = false
@@ -630,7 +625,6 @@ const requestAIDesign = async (monthlyInputs) => {
   } finally {
     showAIDesignRequestForm.value = false
     savingNewAiDesign.value = false
-    appStore.showSnack('Success', 'A new design has been requested')
   }
 }
 
