@@ -39,30 +39,33 @@
           ></a-btn>
         </template>
         <v-card class="pa-5 body-large">
-          Select a process to be used
-          <a-select v-model="selectedProcess"
-                    :items="childCompanyProcesses"
-                    label="Process"
-                    id="qa-process-selector"
-                    placeholder="Select one..."
-                    item-title="childProcessName"
-                    return-object
-                    class="mt-2 qa-process-selector"
-          ></a-select>
-          <a-text-field
-              type="number"
-              label="How many to add?"
-              placeholder=""
-              v-model.number="projectsToAddCount"></a-text-field>
-          <a-btn
-              variant="text"
-              color="primary"
-              class="body-medium"
-              :disabled="!selectedProcess || !selectedProcess.childCompanyProcessId || projectsToAddCount == null || projectsToAddCount < 1"
-              @click="addChildProjects"
-              id="qa-add-project-button"
-              text="Add Projects"
-          ></a-btn>
+          <v-form ref="addChildForm">
+            Select a process to be used
+            <a-select v-model="selectedProcess"
+                      :items="childCompanyProcesses"
+                      label="Process"
+                      id="qa-process-selector"
+                      placeholder="Select one..."
+                      item-title="childProcessName"
+                      return-object
+                      class="mt-2 qa-process-selector"
+            ></a-select>
+            <a-text-field
+                type="number"
+                label="How many to add?"
+                :rules="projectCountRule"
+                placeholder=""
+                v-model.number="projectsToAddCount"></a-text-field>
+            <a-btn
+                variant="text"
+                color="primary"
+                class="body-medium"
+                :disabled="!selectedProcess || !selectedProcess.childCompanyProcessId || projectsToAddCount == null || projectsToAddCount < 1"
+                @click="addChildProjects"
+                id="qa-add-project-button"
+                text="Add Projects"
+            ></a-btn>
+          </v-form>
         </v-card>
       </v-menu>
     </template>
@@ -105,6 +108,14 @@ const childProjectMenuOpen = ref(false)
 // const availableProcesses = ref([])
 const selectedProcess = ref(null)
 const projectsToAddCount = ref(null)
+const addChildForm = ref(null)
+
+const maxChildProjectCount = ref(300)
+const projectCountRule = ref([
+  v => !!v || "This field is required",
+  v => ( v && v >= 0 ) || "Amount must be greater than 0",
+  v => ( v && v <= maxChildProjectCount.value ) || `Amount can not be above ${maxChildProjectCount.value}`,
+])
 
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
@@ -145,24 +156,28 @@ const resetMenu = () => {
   selectedProcess.value = null
 }
 
+
+
 const addChildProjects = async() => {
-  appStore.loading = true
-  try {
-    let params = {
-      childCompanyProcessId: selectedProcess.value.childCompanyProcessId,
-      childProjectCount: projectsToAddCount.value
+  if (addChildForm.value.validate()) {
+    appStore.loading = true
+    try {
+      let params = {
+        childCompanyProcessId: selectedProcess.value.childCompanyProcessId,
+        childProjectCount: projectsToAddCount.value
+      }
+      const {data, status} = await postRequest(`/projectProcessStep/project/${projectId.value}/addChildren`, params)
+      appStore.showSnack('SUCCESS', `Added ${projectsToAddCount.value} projects.`)
+      resetMenu()
+      //reload the screen because i dont want to have to pass it all back to the various screens they could be active on
+      window.location.reload()
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Adding Projects')
+    } finally {
+      appStore.loading = false
     }
-    const {data, status} = await postRequest(`/project/${projectId.value}/addChildren`, params)
-    appStore.showSnack('SUCCESS', `Added ${projectsToAddCount.value} projects.`)
-    resetMenu()
-    //reload the screen because i dont want to have to pass it all back to the various screens they could be active on
-    window.location.reload()
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Adding Projects')
-  } finally {
-    appStore.loading = false
   }
 }
 

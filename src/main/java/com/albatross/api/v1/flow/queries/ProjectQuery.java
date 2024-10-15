@@ -193,8 +193,8 @@ select *
 
   //language=PostgreSQL
   public final static String addChildren = """
-    select flow.add_project_children(:projectId::bigint, :companyId::bigint, :userId::bigint,
-                              :childProjectCount::bigint, :childCompanyProcessId::bigint); 
+    select * from flow.add_project_children(:projectId::bigint, :companyId::bigint, :userId::bigint,
+                              :childProjectCount::bigint, :childCompanyProcessId::bigint)
   """;
 
   //language=PostgreSQL
@@ -379,6 +379,7 @@ select
                                          where p2.parent_id = p.id
                                          and p2.archived is false
                                          order by p2.id
+                                         limit 3
                                      ) projects), '[]') AS "childProjects"
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id

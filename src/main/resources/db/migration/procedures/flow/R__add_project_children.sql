@@ -2,12 +2,16 @@ drop function if exists flow.add_project_children( bigint,  bigint,  bigint,
                                                    bigint,  bigint);
   CREATE OR REPLACE FUNCTION flow.add_project_children(p_parent_project_id bigint, p_company_id bigint, p_user_id bigint,
                                                        p_num_projects_to_create bigint, p_company_process_id bigint)
-    RETURNS void
+      returns table (
+                        pps_id bigint
+                    )
     LANGUAGE plpgsql AS
 $$
 DECLARE
     v_project_company_id bigint;
     v_contact_id bigint;
+    v_new_pps_ids bigint[];
+    v_all_new_pps_ids bigint[];
     v_parent_project_name text;
     v_existing_child_project_count bigint = 0;
     v_new_project_name text;
@@ -21,7 +25,7 @@ BEGIN
     where p.id = p_parent_project_id;
 
     if(v_project_company_id != p_company_id) then
-        return;
+        return query select null;
     end if;
 
     select count(1)
@@ -33,13 +37,19 @@ BEGIN
 
     for i in 1..p_num_projects_to_create
     loop
+        v_new_pps_ids = null;
         v_existing_child_project_count = v_existing_child_project_count + 1;
         v_new_project_name = concat('Shell #', v_existing_child_project_count, ' [', v_parent_project_name, ']');
         --Shell # ((count of existing child projects of this type)+1) [Community Name]
 
         --do project creation here
-        perform flow.create_project(v_contact_id, v_new_project_name, p_company_process_id, p_user_id, p_parent_project_id);
+        select * from flow.create_project(v_contact_id, v_new_project_name, p_company_process_id, p_user_id, p_parent_project_id)
+        into v_new_pps_ids;
+
+        v_all_new_pps_ids := v_all_new_pps_ids || v_new_pps_ids;
     end loop;
+
+    return query select unnest(v_all_new_pps_ids);
 
 END;
 $$

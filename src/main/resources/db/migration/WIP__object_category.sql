@@ -177,6 +177,14 @@ update flow.process
 set object_category_id = (select id from flow.object_category where object_category_code = 'REMOVAL_REINSTALLATION')
 where id = 23;
 
+update flow.process
+set object_category_id = (select id from flow.object_category where object_category_code = 'COMMUNITY')
+where id = 26;
+
+update flow.process
+set object_category_id = (select id from flow.object_category where object_category_code = 'NEW_HOME')
+where id = 27;
+
 -- update flow.process
 -- set object_category_id = (select id from flow.object_category where object_category_code = 'REMOVAL_REINSTALLATION')
 -- where id = 21;
@@ -418,7 +426,7 @@ insert into flow.object_category_company_project_status_type(object_category_id,
      and cpst.archived is false
      and oc.object_type_id = 1
      and oc.object_category_code in
-         ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'RETROFIT', 'RESIDENTIAL_STANDARD', 'NEW_HOME',
+         ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'COMMUNITY', 'RETROFIT', 'RESIDENTIAL_STANDARD', 'NEW_HOME',
           'BUILDER_NEW_HOMES_BUILDER'))
 on conflict do nothing;
 

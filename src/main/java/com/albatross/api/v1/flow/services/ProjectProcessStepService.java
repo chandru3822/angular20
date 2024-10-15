@@ -11,6 +11,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.services.*;
+import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemActivity;
 import com.albatross.api.v1.flow.enums.SystemSettings;
@@ -242,6 +243,24 @@ public class ProjectProcessStepService {
       return ResponseEntity.ok("Owner Saved");
     } else {
       return ResponseEntity.badRequest().body("Project Process Step is already assigned to another user. Please refresh page.");
+    }
+  }
+
+  public void addChildProjects(Long projectId, ProjectController.ChildProjectRequest req) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", user.trueUserId());
+    params.put("companyId", user.getCompanyId());
+    params.put("projectId", projectId);
+    params.put("childProjectCount", req.getChildProjectCount());
+    params.put("childCompanyProcessId", req.getChildCompanyProcessId());
+
+    List<Long> ppsIds = sqlCache.queryBySql(ProjectQuery.addChildren, params, new SingleColumnRowMapper<>(Long.class));
+
+    for(Long ppsId : ppsIds) {
+      PpsActionResult ppsActionResult = this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+      this.updateProjectTagsViaRedis(ppsActionResult.getShouldRunProjectTagUpdate(), projectId, null);
     }
   }
 

@@ -114,6 +114,22 @@ public class ProjectProcessStepController {
     }
   }
 
+  /*
+   * it is weird to put this in the pps controller instead of the project controller, but....
+   * it created circular dependencies and i didnt want to move the auto trigger stuff to its own service
+   * cuz that seemed hard. back off.
+   */
+  @PostMapping(value = "/project/{projectId}/addChildren")
+  public void addChildProjects(@PathVariable Long projectId,
+                               @RequestBody ProjectController.ChildProjectRequest req) {
+    //note: if you change this max count  you must do it on the frontend too
+    if(req.getChildProjectCount() > 300) {
+      throw new RuntimeException("Child project count cannot exceed 300");
+    } else {
+      projectProcessStepService.addChildProjects(projectId, req);
+    }
+  }
+
   @PostMapping(value = "/{projectProcessStepId}/action/{actionId}")
   public ResponseEntity<ProjectProcessStepActionResult> performAction(
     @PathVariable Long projectProcessStepId, @PathVariable Long actionId) {

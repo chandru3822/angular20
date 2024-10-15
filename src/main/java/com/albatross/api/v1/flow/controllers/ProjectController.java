@@ -79,12 +79,6 @@ public class ProjectController {
     private Long childProjectCount, childCompanyProcessId;
   }
 
-  @PostMapping(value = "/{projectId}/addChildren")
-  public void addChildProjects(@PathVariable Long projectId,
-                               @RequestBody ChildProjectRequest req) {
-    projectService.addChildProjects(projectId, req);
-  }
-
   @GetMapping(value = "/{projectId}/children")
   public List<Project> getProjectChildren(@PathVariable Long projectId) {
     return projectService.getProjectChildren(projectId);

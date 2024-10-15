@@ -4,7 +4,7 @@ drop function if exists flow.create_project(p_contact_id bigint, p_project_name 
   CREATE OR REPLACE FUNCTION flow.create_project(p_contact_id bigint, p_project_name text,
   p_company_process_id bigint, p_current_user_id bigint,
   p_parent_id bigint default null)
-    RETURNS void
+    RETURNS bigint[]
     LANGUAGE plpgsql AS
 $$
 DECLARE
@@ -103,5 +103,6 @@ BEGIN
     end loop;
 
     --todo: do i need to return the list of pps ids to run auto triggers with in the java?
+    return v_new_pps_ids;
 END;
 $$

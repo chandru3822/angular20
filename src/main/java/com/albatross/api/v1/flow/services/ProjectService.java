@@ -268,23 +268,12 @@ public class ProjectService {
     return results;
   }
 
-  public void addChildProjects(Long projectId, ProjectController.ChildProjectRequest req) {
-    User user = securityService.getCurrentUser();
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("userId", user.trueUserId());
-    params.put("companyId", user.getCompanyId());
-    params.put("projectId", projectId);
-    params.put("childProjectCount", req.getChildProjectCount());
-    params.put("childCompanyProcessId", req.getChildCompanyProcessId());
-
-    sqlCache.queryBySql(ProjectQuery.addChildren, params, String.class);
-  }
-
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 
     Map<String, Object> params = Map.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
+    // for now I limit the # of child projects returned to 3. the frontend only shows 3 and if they want to see more they load via a different query
+    // there can be hundreds of child projects
     Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
     if (result.isPresent()) {
 
