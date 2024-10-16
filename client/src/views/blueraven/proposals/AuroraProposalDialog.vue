@@ -46,7 +46,7 @@ const calcEnergyBySqFtg = computed(() => {
 })
 
 const validateAIRequest = async () => {
-  const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0 && minMonthsFilled.value
+  const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0 && minMonthsFilled.value && !monthsOverFilled()
   if (valid) {
     //all checks for how to create the design are handled by backend now
     emit('save', monthlyUsageFlattened.value)
@@ -103,7 +103,7 @@ const addMonthUsage = (usage, monthId) =>{
 }
 
 const updateDisabledMonths = (() =>{
-  if(maxMonthsFilled()){
+  if(maxMonthsFilled() || monthsOverFilled()){
     months.forEach(m => {
       const existingUsage = monthlyUsage.value.find(mu =>  mu.monthId === m.id)
       if(!existingUsage){
@@ -130,6 +130,25 @@ const maxMonthsFilled = (() => {
       return monthlyUsage.value.length === 7;
     case YearlyConsumptionCalcListOfValueId.MONTHS_4_BELOW:
       return monthlyUsage.value.length === 3;
+    default:
+      return false;
+  }
+})
+
+const monthsOverFilled = (() => {
+  //if the calculation method hasn't been selected yet, there is no max months
+  if(!calculatedBy.value?.intValue){
+    return false
+  }
+  switch (calculatedBy.value?.intValue) {
+    case YearlyConsumptionCalcListOfValueId.MONTHS_12_ABOVE:
+      return false;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_8_11:
+      return monthlyUsage.value.length > 11;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_4_7:
+      return monthlyUsage.value.length > 7;
+    case YearlyConsumptionCalcListOfValueId.MONTHS_4_BELOW:
+      return monthlyUsage.value.length > 3;
     default:
       return false;
   }
@@ -190,12 +209,14 @@ const updateEnergyUsageValues = (event) =>{
   }
   //if the field for HOW_WAS_YEARLY_CONSUMPTION_CALC was changed, we should clear out all the fields related to energy usage
   if(event.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC) {
+    debugger
     props.aiRequestFields.forEach(cf => {
       if (cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION || cf.customFieldGroupAssignmentId === ProposalCFGAIDs.SQUARE_FOOTAGE) {
         cf.intValue = null
         cf.textValue = null
       }
     })
+    updateDisabledMonths()
   }
 }
 
@@ -310,6 +331,7 @@ const xcelEnergyMNValues = Object.freeze({
                     />
                   </v-col>
                 </v-row>
+                  <div v-if="monthsOverFilled()" class="error-text mt-n4 pb-2">You have entered data for more months than indicated in the yearly consumption calculation field.  Please remove some month data or update the yearly consumption calculation field.</div>
                 </v-card>
 
               </div>
