@@ -451,15 +451,25 @@ select u.user_id, outbound_message from users u
     """;
 
   //language=PostgreSQL
+  public final static String removeAllThreadUsers = """
+      update flow.sms_thread_owner
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+        where sms_thread_id = :threadId
+        and user_id is not null
+    """;
+
+  //language=PostgreSQL
   public final static String markThreadSmsAsReadForUser = """
     update flow.notification
     set message_read_tsz   = now(),
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
-      and user_id = :userId
+      and case when :userId::int is not null then user_id = :userId else true end
       and (metadata->>'threadId')::bigint = :threadId
-      and (metadata->>'smsTeamId')::bigint = :smsTeamId
+      and case when :smsTeamId:int is not null then (metadata->>'smsTeamId')::bigint = :smsTeamId else true end
       and message_read_tsz is null
     """;
 

@@ -409,7 +409,7 @@ public class MessagingService {
     sqlCache.updateBySql(MessagingQuery.removeEntireThreadTeam, params);
 
     try {
-      markSmsThreadNotificationsAsRead(threadId, null, projectId, smsTeamId, modifiedByUserId);
+      markSmsThreadNotificationsAsRead(threadId, null, smsTeamId, modifiedByUserId);
     } catch (SQLException e) {
       log.error("MESSAGE: Error marking SMS notifications as read {}", e.getMessage());
     }
@@ -443,7 +443,7 @@ public class MessagingService {
     }
   }
 
-  public void removeAllTeamsFromThread(Long smsThreadId, Long projectId, Long userId, Long modifiedByUserId) {
+  public Long removeAllTeamsFromThread(Long smsThreadId, Long projectId, Long userId, Long modifiedByUserId) {
     Long threadId = smsThreadId;
 
     if(threadId == null) {
@@ -455,6 +455,21 @@ public class MessagingService {
     params.put("modifiedById", modifiedByUserId);
     params.put("threadId", threadId);
     sqlCache.updateBySql(MessagingQuery.removeAllThreadTeams, params);
+    return threadId;
+  }
+
+  public void removeAllUsersFromThread(Long smsThreadId, Long projectId, Long userId, Long modifiedByUserId) {
+    Long threadId = smsThreadId;
+
+    if(threadId == null) {
+      //you should never get projectId AND userId so this should work
+      threadId = getThreadId(projectId, userId);
+    }
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("modifiedById", modifiedByUserId);
+    params.put("threadId", threadId);
+    sqlCache.updateBySql(MessagingQuery.removeAllThreadUsers, params);
   }
 
   @Transactional
@@ -476,44 +491,12 @@ public class MessagingService {
     sqlCache.updateBySql(MessagingQuery.removeThreadOwner, params);
 
     try {
-      markSmsThreadNotificationsAsRead(threadId, owner.getUserId(), projectId, owner.getSmsTeamId(), modifiedByUserId);
+      markSmsThreadNotificationsAsRead(threadId, owner.getUserId(), owner.getSmsTeamId(), modifiedByUserId);
     } catch (SQLException e) {
       log.error("MESSAGE: Error marking SMS notifications as read {}", e.getMessage());
     }
 
     addSmsThreadOwnershipNotification(threadId, null, null, modifiedByUserId);
-  }
-
-  private void updateThreadOwnerHistory(
-    Long projectId, Long smsTeamId, List<Long> userIds, boolean isAdd, boolean removeTeam, Long modifiedByUserId) {
-    String sqlQuery =
-      "SELECT * FROM flow.set_sms_project_owner_history(:projectId::bigint, :smsTeamId::bigint, array[ :userIds ]::bigint[], :modifiedById::bigint, :isAdd::boolean, :removeTeam::boolean)";
-
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("projectId", projectId);
-    parameters.addValue("smsTeamId", smsTeamId);
-    parameters.addValue("userIds", userIds);
-    parameters.addValue("modifiedById", modifiedByUserId);
-    parameters.addValue("isAdd", isAdd);
-    parameters.addValue("removeTeam", removeTeam);
-
-    jdbc.queryForObject(sqlQuery, parameters, String.class);
-  }
-
-  private void updateUserOwnerHistory(
-    Long userId, Long smsTeamId, List<Long> userIds, boolean isAdd, boolean removeTeam, Long modifiedByUserId) {
-    String sqlQuery =
-      "SELECT * FROM flow.set_sms_user_owner_history(:userId::bigint, :smsTeamId::bigint, array[ :userIds ]::bigint[], :modifiedById::bigint, :isAdd::boolean, :removeTeam::boolean)";
-
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-    parameters.addValue("smsTeamId", smsTeamId);
-    parameters.addValue("userIds", userIds);
-    parameters.addValue("modifiedById", modifiedByUserId);
-    parameters.addValue("isAdd", isAdd);
-    parameters.addValue("removeTeam", removeTeam);
-
-    jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
   // Used to add notifications when a customer/user send an SMS message reply
@@ -760,10 +743,11 @@ public class MessagingService {
     params.put("modifiedById", modifiedByUserId);
 
     removeAllTeamsFromThread(threadId, null, null, modifiedByUserId);
+    removeAllUsersFromThread(threadId, null, null, modifiedByUserId);
     sqlCache.updateBySql(MessagingQuery.closeThread, params);
 
     try {
-      markSmsThreadNotificationsAsRead(threadId, null, null, null, modifiedByUserId);
+      markSmsThreadNotificationsAsRead(threadId, null, null, modifiedByUserId);
     } catch (SQLException e) {
       log.error("MESSAGE: Error marking SMS notifications as read {}", e.getMessage());
     }
@@ -794,7 +778,7 @@ public class MessagingService {
       .queryBySql(SmsTeamQuery.getTeamNotificationUsers, params, new SmsTeamService.SmsTeamMapper<>(SmsTeam.class, om));
   }
 
-  public void markSmsThreadNotificationsAsRead(Long threadId, Long userId, Long projectId, Long smsTeamId, @NonNull Long modifiedByUserId)
+  public void markSmsThreadNotificationsAsRead(Long threadId, Long userId, Long smsTeamId, @NonNull Long modifiedByUserId)
     throws SQLException {
 
     int updatedRecords;
