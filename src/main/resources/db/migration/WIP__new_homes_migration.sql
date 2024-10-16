@@ -4057,6 +4057,25 @@
 -- CREATE INDEX if not exists role_assignment_c ON brs.project_task_c (role_assignment_c);
 -- CREATE INDEX if not exists project_priority_c ON brs.project_task_c (project_priority_c);
 -- CREATE INDEX if not exists opportunity_c ON brs.residential_project_c (opportunity_c);
+--  CREATE INDEX if not exists cancellation_details_c ON brs.work_order (cancellation_details_c);
+-- CREATE INDEX if not exists service_request_type_c ON brs.work_order (service_request_type_c);
+-- CREATE INDEX if not exists cancellation_reasons_c ON brs.work_order (cancellation_reasons_c);
+-- CREATE INDEX if not exists opportunity_c ON brs.work_order (opportunity_c);
+-- CREATE INDEX if not exists cancellation_details_c ON brs.work_order (priority);
+-- CREATE INDEX if not exists service_type_c ON brs.work_order (service_type_c);
+-- CREATE INDEX if not exists disposition_reason_c ON brs.work_order (disposition_reason_c);
+-- CREATE INDEX if not exists inspection_type_c ON brs.work_order (inspection_type_c);
+-- CREATE INDEX if not exists follow_up_reason_c ON brs.work_order (follow_up_reason_c);
+-- CREATE INDEX if not exists severity_c ON brs.task_rework_request_c (severity_c);
+-- CREATE INDEX if not exists rca_tag_c ON brs.task_rework_request_c (rca_tag_c);
+-- CREATE INDEX if not exists action_required_c ON brs.rework_requests_c (action_required_c);
+-- CREATE INDEX if not exists rework_quality_tag_c ON brs.rework_requests_c (rework_quality_tag_c);
+-- CREATE INDEX if not exists rework_reason_c ON brs.rework_requests_c (rework_reason_c);
+-- CREATE INDEX if not exists rework_reason_2_c ON brs.rework_requests_c (rework_reason_2_c);
+-- CREATE INDEX if not exists rework_reason_3_c ON brs.rework_requests_c (rework_reason_3_c);
+
+
+
 SET session_replication_role = replica;
 DO --10 seconds
 $do$
@@ -5919,9 +5938,9 @@ $do$
              from brs.opportunity o
                   inner join brs.residential_project_c rpc on rpc.opportunity_c
                     inner join flow.project p on rpc.id = p.nw_migration_id
-                    left join flow.list_of_value lov1 on lov1.name = o.stage_name and lov1.parent_id = 1
-                    left join flow.list_of_value lov2 on lov2.name = o.sub_stage_c and lov1.parent_id =2
-                    left join flow.list_of_value lov3 on lov3.name = o.reason_won_lost_c and lov1.parent_id =3
+                    left join flow.list_of_value lov1 on lov1.name = o.stage_name and lov1.parent_id = 25746
+                    left join flow.list_of_value lov2 on lov2.name = o.sub_stage_c and lov1.parent_id =25796
+                    left join flow.list_of_value lov3 on lov3.name = o.reason_won_lost_c and lov1.parent_id =25798
 
       loop
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -6062,12 +6081,19 @@ $do$
               severity_c,
               rca_tag_c,
               explanation_c,
-              rework_category_c,
+              rework_reason_c,
               rework_reason_2_c,
               rework_reason_3_c,
               row_type,
               residential_project_c,
               project_id,
+              lov1_action_required_c_id,
+              lov2_rework_quality_tag_c_id,
+              lov3_severity_c_id,
+              lov4_rca_tag_c_id,
+              lov5_rework_reason_c_id,
+              lov6_rework_reason_2_c_id,
+              lov7_rework_reason_3_c_ID,
               CASE WHEN ROW_NUMBER() OVER (PARTITION BY residential_project_c ORDER BY created_date ) = 1 THEN TRUE ELSE FALSE END AS is_last_row
               from (
             select trr.created_date,
@@ -6079,15 +6105,24 @@ $do$
                    trr.severity_c,
                    trr.rca_tag_c,
                    trr.explanation_c,
-                   null as rework_category_c,
+                   null as rework_reason_c,
                    null as rework_reason_2_c,
                    null as rework_reason_3_c,
                    'TASK_REWORK_REQUEST_C' as row_type,
                    trr.residential_project_c,
-                   p.id as project_id
+                   p.id as project_id,
+                   lov3.id as lov3_severity_c_id,
+                   lov4.id as lov4_rca_tag_c_id,
+                   null as lov1_action_required_c_id,
+                   null as lov2_rework_quality_tag_c_id,
+                   null as lov5_rework_reason_c_id,
+                   null as lov6_rework_reason_2_c_id,
+                   null as lov7_rework_reason_3_c_ID
             from flow.project p
             inner join brs.residential_project_c rpc on rpc.id = p.nw_migration_id
             inner join  brs.TASK_REWORK_REQUEST_C trr on trr.residential_project_c = rpc.id
+                left join flow.list_of_value lov3 on lov3.name = severity_c and lov3.parent_id = 25801
+                left join flow.list_of_value lov4 on lov4.name = rca_tag_c and lov4.parent_id = 25802
             union
              select rrc.created_date,
                     rrc.created_by_id,
@@ -6098,16 +6133,28 @@ $do$
                     null as severity_c,
                     null as rca_tag_c,
                     null as explanation_c,
-                    rrc.rework_category_c,
+                    rrc.rework_reason_c,
                     rrc.rework_reason_2_c,
                     rrc.rework_reason_3_c,
                     'REWORK_REQUESTS_C' as row_type,
                     rrc.residential_project_c,
-                    p.id as project_id
+                    p.id as project_id,
+                    null,
+                null,
+                lov1.id as lov1_action_required_c_id,
+                lov2.id as lov2_rework_quality_tag_c_id,
+                lov5.id as lov5_rework_reason_c_id,
+                lov6.id as lov6_rework_reason_2_c_id,
+                lov7.id as lov7_rework_reason_3_c_ID
              from flow.project p
             inner join brs.residential_project_c rpc on rpc.id = p.nw_migration_id
-            inner join  brs.REWORK_REQUESTS_C rrc on rrc.residential_project_c = rpc.id) as foo
-      order by created_date
+            inner join  brs.REWORK_REQUESTS_C rrc on rrc.residential_project_c = rpc.id
+                left join flow.list_of_value lov1 on lov1.name = action_required_c and lov1.parent_id = 25799
+                left join flow.list_of_value lov2 on lov2.name = rework_quality_tag_c and lov2.parent_id = 25800
+                left join flow.list_of_value lov5 on lov5.name = rework_reason_c and lov5.parent_id = 25803
+                left join flow.list_of_value lov6 on lov6.name = rework_reason_2_c and lov6.parent_id = 25804
+                left join flow.list_of_value lov7 on lov7.name = rework_reason_3_c and lov7.parent_id = 25805) as foo
+            order by created_date
 
       loop
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -6119,16 +6166,16 @@ $do$
                 case when x.is_last_row is true then true else false end, null, null, null);
 
         --perform flow.set_project_cfv(x.project_id , 2384850,29241,x.created_by_id::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29242,x.action_required_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29242,x.lov1_action_required_c_id::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29243,x.end_date_time_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29244,x.open_date_time_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29245,x.rework_quality_tag_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29246,x.severity_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29247,x.rca_tag_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29245,x.lov2_rework_quality_tag_c_id::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29246,x.lov3_severity_c_id::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29247,x.lov4_rca_tag_c_id::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29248,x.explanation_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29249,x.rework_category_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29250,x.rework_reason_2_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29251,x.rework_reason_3_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29249,x.lov5_rework_reason_c_id::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29250,x.lov6_rework_reason_2_c_id::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29251,x.lov7_rework_reason_3_c_ID::text , true);
       end loop;
 
 end
@@ -6150,11 +6197,11 @@ $do$
                     lov5.id as  lov5_follow_up_reason_c_id
       from brs.work_order wo
       inner join flow.project p on p.nw_migration_id = wo.residential_project_c
-      left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
-      left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 1
-      left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 1
-      left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 1
-      left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 1
+      left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25526
+      left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+      left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 225812
+      left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+      left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
       where wo.record_type_id in ('0122T000000HtKlQAK','0122T000000HtKkQAK')
       and wo.residential_project_c is not null
 
@@ -6250,11 +6297,11 @@ $do$
              from brs.work_order wo
                     inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
                     inner join flow.project p on p.nw_migration_id = rpc.id
-                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
-                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 1
-                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 1
-                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 1
-                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 1
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
              where wo.record_type_id in ('0122T000000HtKlQAK', '0122T000000HtKkQAK')
                and wo.residential_project_c is null
                and wo.account_id is not null
@@ -6352,11 +6399,11 @@ $do$
                     inner join brs.case c on c.id = wo.case_id
                     inner join brs.residential_project_c rpc on rpc.id = c.residential_project_c
                     inner join flow.project p on p.nw_migration_id = rpc.id
-                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
-                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 1
-                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 1
-                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 1
-                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 1
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
              where wo.record_type_id in ('0122T000000HtKlQAK','0122T000000HtKkQAK')
                and wo.residential_project_c is null and wo.account_id is  null and wo.case_id is not null
 
@@ -6453,10 +6500,10 @@ $do$
              from brs.work_order wo
                     inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
                 inner join flow.project p on p.nw_migration_id = rpc.id
-             left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
-              left join flow.list_of_value lov2 on lov2.name = wo.service_request_type_c and lov2.parent_id = 1
-              left join flow.list_of_value lov3 on lov3.name = wo.cancellation_reasons_c and lov3.parent_id = 1
-              left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 1
+             left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+              left join flow.list_of_value lov2 on lov2.name = wo.service_request_type_c and lov2.parent_id = 25818
+              left join flow.list_of_value lov3 on lov3.name = wo.cancellation_reasons_c and lov3.parent_id = 25820
+              left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 25822
              where wo.record_type_id = '01234000000M5IcAAK'
 
       loop
@@ -6531,10 +6578,10 @@ $do$
                     inner join brs.case c on c.id = wo.case_id
                     inner join brs.residential_project_c rpc on rpc.id = c.residential_project_c
                     inner join flow.project p on p.nw_migration_id = rpc.id
-                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
-                    left join flow.list_of_value lov2 on lov2.name = wo.service_request_type_c and lov2.parent_id = 1
-                    left join flow.list_of_value lov3 on lov3.name = wo.cancellation_reasons_c and lov3.parent_id = 1
-                    left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 1
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_request_type_c and lov2.parent_id = 25818
+                    left join flow.list_of_value lov3 on lov3.name = wo.cancellation_reasons_c and lov3.parent_id = 25820
+                    left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 25822
              where wo.record_type_id = '01234000000M5IcAAK'
                and wo.case_id is not null and wo.account_id is null
 
