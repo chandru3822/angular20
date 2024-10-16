@@ -5781,9 +5781,16 @@ $do$
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
   BEGIN
-    for x in select c.*, p.id as project_id
+    for x in select c.*, p.id as project_id,
+                    lov1.id as lov1_category_c_id,
+                    lov2.id as lov2_sub_categories_c_id,
+                    lov3.id as lov3_status_id
+
              from brs."case" c
                     inner join flow.project p on c.residential_project_c = p.nw_migration_id
+                    inner join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
+                    inner join flow.list_of_value lov2 on lov2.name = c.sub_categories_c and lov2.parent_id =99999999999
+                    inner join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
 
       loop
         v_project_process_step_event_id = null;
@@ -5805,15 +5812,66 @@ $do$
                 null, null, 1)
         returning id into v_project_process_step_event_id;
 
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28351, x.name::text, true);
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 29237, x.name::text, true);
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28350, x.name::text, true);
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28731, x.name::text, true);
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28352, x.name::text, true);
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28353, x.name::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 29237, x.lov2_sub_categories_c_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28350, x.subject::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28731, x.lov3_status_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28352, x.jira_ticket_number_c::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28353, x.resolution_comment_c::text, true);
       end loop;
 
   end
 $do$;
+
+DO
+$do$
+  declare
+    x                               record;
+    v_project_process_step_id       bigint;
+    v_project_process_step_event_id bigint;
+  BEGIN
+    for x in select c.*, p.id as project_id,
+                    lov1.id as lov1_category_c_id,
+                    lov2.id as lov2_sub_categories_c_id,
+                    lov3.id as lov3_status_id
+             from brs."case" c
+                   inner join flow.contact c1 on c1.nw_migration_id = c.account_id
+                   inner join flow.project p on p.contact_id = c1.id
+                   inner join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
+                   inner join flow.list_of_value lov2 on lov2.name = c.sub_categories_c and lov2.parent_id =99999999999
+                   inner join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
+             where account_id is not null and c.residential_project_c is null
+
+      loop
+        v_project_process_step_event_id = null;
+        v_project_process_step_id = null;
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 388, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+        returning id into v_project_process_step_id;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version)
+        values (v_project_process_step_id, 238, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1)
+        returning id into v_project_process_step_event_id;
+
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 29237, x.lov2_sub_categories_c_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28350, x.subject::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28731, x.lov3_status_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28352, x.jira_ticket_number_c::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28353, x.resolution_comment_c::text, true);
+      end loop;
+
+  end
+$do$;
+
 
 SET session_replication_role = default;
