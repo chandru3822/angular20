@@ -679,3 +679,16 @@ alter table flow.project
 CREATE INDEX if not exists c_nw_project_idx ON flow.project (nw_migration_id);
 
 CREATE INDEX if not exists lov_name_idx ON flow.list_of_value (name);
+
+
+drop trigger if exists list_of_value_name_change_trg on flow.list_of_value;
+
+alter table flow.list_of_value
+    alter column name type varchar(500) using name::varchar(500);
+
+CREATE TRIGGER list_of_value_name_change_trg
+    after update
+    ON flow.list_of_value
+    FOR EACH ROW
+    when(old.name != new.name)
+EXECUTE PROCEDURE flow.list_of_value_name_change();
