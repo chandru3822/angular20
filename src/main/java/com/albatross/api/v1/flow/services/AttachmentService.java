@@ -432,7 +432,7 @@ public class AttachmentService {
     params.put("contentType", contentType);
     params.put("key", key);
     params.put("size", contentLength);
-    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
+    params.put("displayName", cleanDisplayName(displayName));
     params.put("createdById", currentUser.trueUserId());
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("companyId", companyId != null ? companyId : currentUser.getCompanyId());
@@ -451,6 +451,18 @@ public class AttachmentService {
     }
 
     return findById(attachmentId);
+  }
+
+  public String cleanDisplayName(String original) {
+    if (original == null) {
+      return null;
+    }
+
+    String clean = CleanString.cleanFilename(original);
+    if (clean.length() > 100) {
+      return clean.substring(0, 100);
+    }
+    return clean;
   }
 
   public void addToJoinTable(
