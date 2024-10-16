@@ -209,7 +209,6 @@ const updateEnergyUsageValues = (event) =>{
   }
   //if the field for HOW_WAS_YEARLY_CONSUMPTION_CALC was changed, we should clear out all the fields related to energy usage
   if(event.customFieldGroupAssignmentId === ProposalCFGAIDs.HOW_WAS_YEARLY_CONSUMPTION_CALC) {
-    debugger
     props.aiRequestFields.forEach(cf => {
       if (cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION || cf.customFieldGroupAssignmentId === ProposalCFGAIDs.SQUARE_FOOTAGE) {
         cf.intValue = null
