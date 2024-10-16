@@ -3381,7 +3381,7 @@
 --   PE_ACTION_C                               VARCHAR(765),
 --   RMA_1_C                                   VARCHAR(765),
 --   INITIAL_RESPONSE_TIME_FOR_BIRLASOFT_C     VARCHAR(90),
---   TIME_WITH_CUSTOMER_C                      numeric,
+--   TIME_WITH_CUSTOMER_C                      double precision,
 --   RETURN_TAG_ISSUED_NA_C                    BOOLEAN,
 --   BOL_ISSUED_C                              BOOLEAN,
 --   RETURN_TAG_ISSUED_AU_C                    BOOLEAN,
