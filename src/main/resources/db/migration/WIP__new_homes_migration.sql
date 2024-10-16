@@ -3121,8 +3121,8 @@
 --   LEAD_ANALYST_C                              VARCHAR(765),
 --   FINANCING_APPLICATION_SUBMITTED_C           BOOLEAN
 -- );
--- drop table if exists brs.case;
--- create table if not exists  brs.CASE
+--  drop table if exists brs.case;
+-- create table if not exists brs.CASE
 -- (
 --   ID                                        VARCHAR(18),
 --   IS_DELETED                                BOOLEAN,
@@ -3721,6 +3721,178 @@
 --   LESSEE_S_LEGAL_NAME_SELLER_C              VARCHAR(765),
 --   DATE_COMPLETE_FILES_RECEIVED_C            DATE
 -- );
+
+-- drop table if exists brs.TASK_REWORK_REQUEST_C;
+-- create table if not exists brs.TASK_REWORK_REQUEST_C
+-- (
+--   ID                     VARCHAR(18),
+--   IS_DELETED             BOOLEAN,
+--   NAME                   VARCHAR(240),
+--   CURRENCY_ISO_CODE      VARCHAR(9),
+--   CREATED_DATE           TIMESTAMPTZ,
+--   CREATED_BY_ID          VARCHAR(18),
+--   LAST_MODIFIED_DATE     TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID    VARCHAR(18),
+--   SYSTEM_MODSTAMP        TIMESTAMPTZ,
+--   LAST_ACTIVITY_DATE     DATE,
+--   CONNECTION_RECEIVED_ID VARCHAR(18),
+--   CONNECTION_SENT_ID     VARCHAR(18),
+--   INITIATING_TASK_C      VARCHAR(18),
+--   END_DATE_TIME_C        TIMESTAMPTZ,
+--   EXPLANATION_C          VARCHAR(98304),
+--   REWORK_CATEGORY_C      VARCHAR(765),
+--   REWORK_TASK_C          VARCHAR(18),
+--   START_DATE_TIME_C      TIMESTAMPTZ,
+--   STATUS_C               VARCHAR(765),
+--   REASON_LEVEL_1_C       VARCHAR(765),
+--   REASON_LEVEL_2_C       VARCHAR(765),
+--   RESIDENTIAL_PROJECT_C  VARCHAR(18),
+--   INVALID_TASK_C         BOOLEAN,
+--   RCA_TAG_C              VARCHAR(765),
+--   REWORK_ACTION_OWNER_C  VARCHAR(765),
+--   REWORK_QUALITY_TAG_C   VARCHAR(765),
+--   SEVERITY_C             VARCHAR(765),
+--   ACTION_DECRIPTION_C    VARCHAR(765),
+--   REQUIRED_FOR_C         VARCHAR(765),
+--   _FIVETRAN_SYNCED       TIMESTAMPTZ,
+--   _FIVETRAN_DELETED      BOOLEAN,
+--   REWORK_REQUESTS_C      VARCHAR(18),
+--   NOTES_C                VARCHAR(98304)
+-- );
+
+-- drop table if exists brs.WORK_ORDER;
+-- create table if not exists brs.WORK_ORDER
+-- (
+--   ID                                          VARCHAR(18),
+--   OWNER_ID                                    VARCHAR(18),
+--   IS_DELETED                                  BOOLEAN,
+--   WORK_ORDER_NUMBER                           VARCHAR(765),
+--   CURRENCY_ISO_CODE                           VARCHAR(9),
+--   RECORD_TYPE_ID                              VARCHAR(18),
+--   CREATED_DATE                                TIMESTAMPTZ,
+--   CREATED_BY_ID                               VARCHAR(18),
+--   LAST_MODIFIED_DATE                          TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                         VARCHAR(18),
+--   SYSTEM_MODSTAMP                             TIMESTAMPTZ,
+--   LAST_VIEWED_DATE                            TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE                        TIMESTAMPTZ,
+--   ACCOUNT_ID                                  VARCHAR(18),
+--   CONTACT_ID                                  VARCHAR(18),
+--   CASE_ID                                     VARCHAR(18),
+--   ASSET_ID                                    VARCHAR(18),
+--   STREET                                      VARCHAR(765),
+--   CITY                                        VARCHAR(120),
+--   STATE                                       VARCHAR(240),
+--   POSTAL_CODE                                 VARCHAR(60),
+--   COUNTRY                                     VARCHAR(240),
+--   LATITUDE                                    numeric,
+--   LONGITUDE                                   numeric,
+--   GEOCODE_ACCURACY                            VARCHAR(765),
+--   DESCRIPTION                                 VARCHAR(96000),
+--   START_DATE                                  TIMESTAMPTZ,
+--   END_DATE                                    TIMESTAMPTZ,
+--   SUBJECT                                     VARCHAR(765),
+--   ROOT_WORK_ORDER_ID                          VARCHAR(18),
+--   STATUS                                      VARCHAR(120),
+--   PRIORITY                                    VARCHAR(120),
+--   TAX                                         numeric(18, 2),
+--   PRICEBOOK_2_ID                              VARCHAR(18),
+--   DISCOUNT                                    numeric,
+--   GRAND_TOTAL                                 numeric(18, 2),
+--   PARENT_WORK_ORDER_ID                        VARCHAR(18),
+--   IS_CLOSED                                   BOOLEAN,
+--   BUSINESS_HOURS_ID                           VARCHAR(18),
+--   DURATION                                    numeric,
+--   DURATION_TYPE                               VARCHAR(765),
+--   DURATION_IN_MINUTES                         numeric,
+--   SERVICE_APPOINTMENT_COUNT                   numeric,
+--   STATUS_CATEGORY                             VARCHAR(765),
+--   LOCATION_ID                                 VARCHAR(18),
+--   REQUESTED_DATE_C                            DATE,
+--   DATE_ACTION_COMPLETED_C                     DATE,
+--   RMA_C                                       VARCHAR(18),
+--   REASON_CODE_C                               VARCHAR(4099),
+--   RESPONSE_CODE_C                             VARCHAR(765),
+--   RESPONSE_COMMENTS_C                         VARCHAR(98304),
+--   COMMITMENT_DATE_C                           DATE,
+--   SKEDULO_JOB_TYPE_C                          VARCHAR(765),
+--   SKEDULO_JOB_C                               BOOLEAN,
+--   SERVICE_REQUEST_TYPE_C                      VARCHAR(765),
+--   SCHEDULER_C                                 VARCHAR(18),
+--   APPOINTMENT_CANCELLATION_NOTES_C            VARCHAR(765),
+--   APPOINTMENT_CANCELLATION_C                  BOOLEAN,
+--   CANCELLATION_DETAILS_C                      VARCHAR(765),
+--   CANCELLATION_REASONS_C                      VARCHAR(765),
+--   MOST_RECENT_QUEUE_C                         VARCHAR(135),
+--   CLOSED_TIMESTAMP_C                          TIMESTAMPTZ,
+--   COMPLETED_DATE_C                            TIMESTAMPTZ,
+--   CREATED_TIMESTAMP_C                         TIMESTAMPTZ,
+--   _FIVETRAN_SYNCED                            TIMESTAMPTZ,
+--   SALES_ORDER_C                               VARCHAR(765),
+--   PAYMENT_REFERENCE_C                         VARCHAR(765),
+--   _FIVETRAN_DELETED                           BOOLEAN,
+--   ASSET_WARRANTY_ID                           VARCHAR(18),
+--   INTAKE_NOTES_C                              VARCHAR(98304),
+--   FSL_PREVENT_GEOCODING_FOR_CHATTER_ACTIONS_C BOOLEAN,
+--   FOLLOW_UP_WORK_C                            BOOLEAN,
+--   LEAD_C                                      VARCHAR(18),
+--   PRODUCT_SERVICE_CAMPAIGN_ID                 VARCHAR(18),
+--   INSPECTION_TYPE_C                           VARCHAR(765),
+--   DISPOSITION_REASON_C                        VARCHAR(765),
+--   MAINTENANCE_WORK_RULE_ID                    VARCHAR(18),
+--   WORK_TYPE_ID                                VARCHAR(18),
+--   RETURN_ORDER_LINE_ITEM_ID                   VARCHAR(18),
+--   SERVICE_TERRITORY_ID                        VARCHAR(18),
+--   PRODUCT_SERVICE_CAMPAIGN_ITEM_ID            VARCHAR(18),
+--   FSL_VISITING_HOURS_C                        VARCHAR(18),
+--   PARTNER_C                                   VARCHAR(18),
+--   FOLLOW_UP_REASON_DETAILS_C                  VARCHAR(98304),
+--   FOLLOW_UP_WORK_START_DATE_TIME_C            TIMESTAMPTZ,
+--   SERVICE_REPORT_LANGUAGE                     VARCHAR(765),
+--   FIRST_CONTACT_DATE_C                        DATE,
+--   ORIGINAL_SERVICE_REQUEST_C                  VARCHAR(18),
+--   SCHEDULING_POLICY_C                         VARCHAR(18),
+--   FOLLOW_UP_REASON_C                          VARCHAR(765),
+--   OPPORTUNITY_C                               VARCHAR(18),
+--   RECOMMENDED_CREW_SIZE                       numeric,
+--   SUGGESTED_MAINTENANCE_DATE                  DATE,
+--   SERVICE_TYPE_C                              VARCHAR(765),
+--   IS_GENERATED_FROM_MAINTENANCE_PLAN          BOOLEAN,
+--   SERVICE_REPORT_TEMPLATE_ID                  VARCHAR(18),
+--   FSL_IS_FILL_IN_CANDIDATE_C                  BOOLEAN,
+--   ORIGIN_C                                    VARCHAR(765),
+--   RETURN_ORDER_ID                             VARCHAR(18),
+--   RESIDENTIAL_PROJECT_C                       VARCHAR(18),
+--   MAINTENANCE_PLAN_ID                         VARCHAR(18),
+--   MINIMUM_CREW_SIZE                           numeric,
+--   AUDIT_RESULT_C                              VARCHAR(765),
+--   REQUIRES_AUDIT_C                            BOOLEAN,
+--   FSL_COMPLETED_DATE_TIME_C                   TIMESTAMPTZ,
+--   FSL_IN_JEOPARDY_REASON_C                    VARCHAR(765),
+--   FSL_IN_JEOPARDY_C                           BOOLEAN,
+--   INSTALLATION_TECHNICIANS_C                  VARCHAR(765),
+--   SERVICE_REQUEST_BEING_AUDITED_C             VARCHAR(18),
+--   PROCESSED_BY_AUDIT_BATCH_C                  BOOLEAN,
+--   AMOUNT_C                                    numeric(18, 2),
+--   PAYMENT_DATE_C                              DATE,
+--   CUSTOMER_PO_C                               VARCHAR(765),
+--   SCOPE_OF_WORK_C                             VARCHAR(4099),
+--   ADDITIONAL_COMMENTS_C                       VARCHAR(98304),
+--   RELATED_SERVICE_REQUEST_C                   VARCHAR(18),
+--   SCHEDULED_WITH_SELF_SERVICE_C               BOOLEAN,
+--   CANCELED_BY_SELF_SERVICE_USER_C             BOOLEAN,
+--   RESCHEDULED_WITH_SELF_SERVICE_C             BOOLEAN,
+--   SSS_SENT_DATE_C                             TIMESTAMPTZ,
+--   ERS_INVOICE_NUMBER_C                        VARCHAR(300),
+--   ASSIGNED_RESOURCE_C                         VARCHAR(18)
+-- );
+--
+--    CREATE INDEX if not exists residential_project_c ON brs.REWORK_REQUESTS_C (residential_project_c);
+-- --    CREATE INDEX if not exists residential_project_c ON brs.TASK_REWORK_REQUEST_C (residential_project_c);
+--    CREATE INDEX if not exists work_order_id ON brs.work_order (id);
+--    CREATE INDEX if not exists residential_project_c ON brs.work_order (case_id);
+--    CREATE INDEX if not exists residential_project_c ON brs.work_order (residential_project_c);
+--    CREATE INDEX if not exists residential_project_c ON brs.work_order (account_id);
 --   CREATE INDEX if not exists case_id ON brs.case (id);
 --   CREATE INDEX if not exists residential_project_c ON brs.case (residential_project_c);
 -- CREATE INDEX if not exists CATEGORY_C ON brs.case (CATEGORY_C);
@@ -5868,6 +6040,555 @@ $do$
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28731, x.lov3_status_id::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28352, x.jira_ticket_number_c::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28353, x.resolution_comment_c::text, true);
+      end loop;
+
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x record;
+
+  BEGIN
+    for x in
+            select
+              created_date,
+              created_by_id,
+              action_required_c,
+              end_date_time_c,
+              open_date_time_c,
+              rework_quality_tag_c,
+              severity_c,
+              rca_tag_c,
+              explanation_c,
+              rework_category_c,
+              rework_reason_2_c,
+              rework_reason_3_c,
+              row_type,
+              residential_project_c,
+              project_id,
+              CASE WHEN ROW_NUMBER() OVER (PARTITION BY residential_project_c ORDER BY created_date ) = 1 THEN TRUE ELSE FALSE END AS is_last_row
+              from (
+            select trr.created_date,
+                   trr.created_by_id,
+                   null as action_required_c,
+                   trr.end_date_time_c,
+                   null as open_date_time_c,
+                   trr.rework_quality_tag_c,
+                   trr.severity_c,
+                   trr.rca_tag_c,
+                   trr.explanation_c,
+                   null as rework_category_c,
+                   null as rework_reason_2_c,
+                   null as rework_reason_3_c,
+                   'TASK_REWORK_REQUEST_C' as row_type,
+                   trr.residential_project_c,
+                   p.id as project_id
+            from flow.project p
+            inner join brs.residential_project_c rpc on rpc.id = p.nw_migration_id
+            inner join  brs.TASK_REWORK_REQUEST_C trr on trr.residential_project_c = rpc.id
+            union
+             select rrc.created_date,
+                    rrc.created_by_id,
+                    rrc.action_required_c,
+                    rrc.end_date_time_c,
+                    rrc.open_date_time_c,
+                    rrc.rework_quality_tag_c,
+                    null as severity_c,
+                    null as rca_tag_c,
+                    null as explanation_c,
+                    rrc.rework_category_c,
+                    rrc.rework_reason_2_c,
+                    rrc.rework_reason_3_c,
+                    'REWORK_REQUESTS_C' as row_type,
+                    rrc.residential_project_c,
+                    p.id as project_id
+             from flow.project p
+            inner join brs.residential_project_c rpc on rpc.id = p.nw_migration_id
+            inner join  brs.REWORK_REQUESTS_C rrc on rrc.residential_project_c = rpc.id) as foo
+      order by created_date
+
+      loop
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3792, null,  2 , null, now(), now(), 2384850, 2384850, false,
+                case when x.is_last_row is true then true else false end, null, null, null);
+
+        --perform flow.set_project_cfv(x.project_id , 2384850,29241,x.created_by_id::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29242,x.action_required_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29243,x.end_date_time_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29244,x.open_date_time_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29245,x.rework_quality_tag_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29246,x.severity_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29247,x.rca_tag_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29248,x.explanation_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29249,x.rework_category_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29250,x.rework_reason_2_c::text , true);
+        perform flow.set_project_cfv(x.project_id , 2384850,29251,x.rework_reason_3_c::text , true);
+      end loop;
+
+end
+$do$;
+
+DO
+$do$
+  declare
+    x record;
+    v_project_process_step_id bigint;
+  v_project_process_step__event_id bigint;
+  v_lov_scope_of_work bigint[];
+  BEGIN
+    for x in select wo.*,p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+      from brs.work_order wo
+      inner join flow.project p on p.nw_migration_id = wo.residential_project_c
+      left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
+      left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 1
+      left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 1
+      left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 1
+      left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 1
+      where wo.record_type_id in ('0122T000000HtKlQAK','0122T000000HtKkQAK')
+      and wo.residential_project_c is not null
+
+      loop
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3797, null,  1 , null, now(), now(), 2384850, 2384850, false,
+                true , null, null, null)
+        returning id into v_project_process_step_id;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version)
+        values (v_project_process_step_id, 273, null,
+          case when x.status = 'New' then 119
+           when x.status = 'Assigned' then 111
+           when x.status = 'In Progress' then 106
+           when x.status = 'Closed' then 115
+           when x.status = 'Action Completed' then 112
+           when x.status = 'Closed - Unresolved' then 113
+           when x.status = 'Closed - Duplicate' then 114
+           when x.status = 'Scheduled' then 120
+           when x.status = 'Dispatched' then 116
+           when x.status = 'Completed' then 3
+           when x.status = 'Canceled' then 2
+           when x.status = 'Pending Customer' then 117
+           when x.status = 'Cannot Complete' then 118 else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1)
+        returning id into v_project_process_step__event_id;
+
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+       -- perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29253, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 1;
+          perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+
+    end loop;
+
+end
+$do$;
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+  BEGIN
+    for x in select wo.*, p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
+                    inner join flow.project p on p.nw_migration_id = rpc.id
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 1
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 1
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 1
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 1
+             where wo.record_type_id in ('0122T000000HtKlQAK', '0122T000000HtKkQAK')
+               and wo.residential_project_c is null
+               and wo.account_id is not null
+
+      loop
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
+                true, null, null, null)
+        returning id into v_project_process_step_id;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version)
+        values (v_project_process_step_id, 273, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Action Completed' then 112
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  when x.status = 'Scheduled' then 120
+                  when x.status = 'Dispatched' then 116
+                  when x.status = 'Completed' then 3
+                  when x.status = 'Canceled' then 2
+                  when x.status = 'Pending Customer' then 117
+                  when x.status = 'Cannot Complete' then 118
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1)
+        returning id into v_project_process_step__event_id;
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        -- perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29253, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 1;
+          perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+      end loop;
+
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+  BEGIN
+    for x in select wo.*,p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join brs.case c on c.id = wo.case_id
+                    inner join brs.residential_project_c rpc on rpc.id = c.residential_project_c
+                    inner join flow.project p on p.nw_migration_id = rpc.id
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 1
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 1
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 1
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 1
+             where wo.record_type_id in ('0122T000000HtKlQAK','0122T000000HtKkQAK')
+               and wo.residential_project_c is null and wo.account_id is  null and wo.case_id is not null
+
+      loop
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
+                true, null, null, null)
+        returning id into v_project_process_step_id;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version)
+        values (v_project_process_step_id, 273, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Action Completed' then 112
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  when x.status = 'Scheduled' then 120
+                  when x.status = 'Dispatched' then 116
+                  when x.status = 'Completed' then 3
+                  when x.status = 'Canceled' then 2
+                  when x.status = 'Pending Customer' then 117
+                  when x.status = 'Cannot Complete' then 118
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1)
+        returning id into v_project_process_step__event_id;
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        -- perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29253, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 1;
+          perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+      end loop;
+
+  end
+$do$;
+
+
+
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+  BEGIN
+    for x in select wo.*,p.id as project_id,
+                    lov1.id as lov1_priority_id,
+                    lov2.id as lov2_service_request_type_c_id,
+                    lov3.id as lov3_cancellation_reasons_c_id,
+                    lov4.id as lov4_cancellation_details_c_id
+             from brs.work_order wo
+                    inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
+                inner join flow.project p on p.nw_migration_id = rpc.id
+             left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
+              left join flow.list_of_value lov2 on lov2.name = wo.service_request_type_c and lov2.parent_id = 1
+              left join flow.list_of_value lov3 on lov3.name = wo.cancellation_reasons_c and lov3.parent_id = 1
+              left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 1
+             where wo.record_type_id = '01234000000M5IcAAK'
+
+      loop
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false,
+                true, null, null, null)
+        returning id into v_project_process_step_id;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version)
+        values (v_project_process_step_id, 274, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1)
+        returning id into v_project_process_step__event_id;
+
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29275, x.completed_date_c::text,true);
+        --perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29271, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29272, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29273, x.lov2_service_request_type_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29283, x.lov3_cancellation_reasons_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29284, x.lov4_cancellation_details_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29274, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29276, x.commitment_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29277, x.subject::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29278, x.description::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29290, x.intake_notes_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29280, x.response_comments_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29281, x.appointment_cancellation_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29282, x.appointment_cancellation_notes_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29285, x.sales_order_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29286, x.payment_reference_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29287, x.customer_po_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29288, x.payment_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29289, x.amount_c::text,true);
+
+      end loop;
+
+  end
+$do$;
+
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+  BEGIN
+    for x in select wo.*,p.id as project_id,
+                    lov1.id as lov1_priority_id,
+                    lov2.id as lov2_service_request_type_c_id,
+                    lov3.id as lov3_cancellation_reasons_c_id,
+                    lov4.id as lov4_cancellation_details_c_id
+             from brs.work_order wo
+                    inner join brs.case c on c.id = wo.case_id
+                    inner join brs.residential_project_c rpc on rpc.id = c.residential_project_c
+                    inner join flow.project p on p.nw_migration_id = rpc.id
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 1
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_request_type_c and lov2.parent_id = 1
+                    left join flow.list_of_value lov3 on lov3.name = wo.cancellation_reasons_c and lov3.parent_id = 1
+                    left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 1
+             where wo.record_type_id = '01234000000M5IcAAK'
+               and wo.case_id is not null and wo.account_id is null
+
+      loop
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                               company_process_step_status_type_id,
+                                               process_step_complete_date, date_created, date_modified, created_by_id,
+                                               modified_by_id, archived, main, parent_project_process_step_id,
+                                               cancelled_date, parent_project_process_step_event_id)
+        values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false,
+                true, null, null, null)
+        returning id into v_project_process_step_id;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version)
+        values (v_project_process_step_id, 274, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1)
+        returning id into v_project_process_step__event_id;
+
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29275, x.completed_date_c::text,true);
+        --perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29271, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29272, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29273, x.lov2_service_request_type_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29283, x.lov3_cancellation_reasons_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29284, x.lov4_cancellation_details_c_id::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29274, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29276, x.commitment_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29277, x.subject::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29278, x.description::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29290, x.intake_notes_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29280, x.response_comments_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29281, x.appointment_cancellation_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29282, x.appointment_cancellation_notes_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29285, x.sales_order_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29286, x.payment_reference_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29287, x.customer_po_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29288, x.payment_date_c::text,true);
+        perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29289, x.amount_c::text,true);
+
+
       end loop;
 
   end
