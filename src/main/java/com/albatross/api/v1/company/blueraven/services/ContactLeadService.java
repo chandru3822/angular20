@@ -46,8 +46,7 @@ public class ContactLeadService {
     HubspotLead hubspotLead = new HubspotLead();
     User currentUser = securityService.getCurrentUser();
 
-    log.debug(
-        "CONTACTLEAD: Received new contact information from a Contact Lead. {}", cl.toString());
+    log.debug("CONTACTLEAD: Received new contact information from a Contact Lead. {}", cl.toString());
 
     String formattedZip = null != cl.getZip() ? cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)) : null;
 
@@ -60,6 +59,7 @@ public class ContactLeadService {
     params.put("email", cl.getEmail());
     params.put("companyId", 3);
     params.put("createdById", currentUser.trueUserId());
+    params.put("objectCategoryId", cl.getObjectCategoryId());
 
     if (cl.getOwnerUserPositionId() != null) {
       params.put("ownerUserPositionId", cl.getOwnerUserPositionId());
@@ -120,13 +120,13 @@ public class ContactLeadService {
     params.put("latitude", latitude);
     params.put("longitude", longitude);
 
+    // todo: combine these queries into the normal contact insert query in ContactQuery.java
     if (stateValue != null) {
       params.put("state", stateValue);
       contactId = sqlCache.updateBySqlReturningId(ContactLeadQuery.insertContact, params, "id").longValue();
     } else {
       // Case for no State
-      contactId =
-          sqlCache.updateBySqlReturningId(ContactLeadQuery.insertContactNoState, params, "id").longValue();
+      contactId = sqlCache.updateBySqlReturningId(ContactLeadQuery.insertContactNoState, params, "id").longValue();
     }
     hubspotLead.setContactId(contactId);
 

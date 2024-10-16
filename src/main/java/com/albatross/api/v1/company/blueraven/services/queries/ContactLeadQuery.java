@@ -4,18 +4,110 @@ public class ContactLeadQuery {
 
   //language=PostgreSQL
   public final static String insertContact = """
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, company_id, owner_user_position_id, company_state_id, company_country_id, latitude, longitude, created_by_id,date_created, modified_by_id, date_modified)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :companyId, :ownerUserPositionId,
-            (select cs.id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
-             where s.state = :state and cs.company_id = :companyId),
-            (select s.country_id from flow.state s inner join flow.company_state cs on s.id = cs.state_id
-             where s.state = :state and cs.company_id = :companyId),  :latitude, :longitude, :createdById, now(), :createdById, now())
+    insert into flow.contact(
+      contact_type_id,
+      first_name,
+      last_name,
+      street1,
+      city,
+      postal_code,
+      phone,
+      email,
+      company_id,
+      owner_user_position_id,
+      company_state_id,
+      company_country_id,
+      latitude,
+      longitude,
+      created_by_id,
+      date_created,
+      modified_by_id,
+      date_modified,
+      object_category_id
+    )
+    values (
+      :contactTypeId,
+      trim(:firstName),
+      trim(:lastName),
+      :street1,
+      :city,
+      trim(:postalCode),
+      :phone,
+      :email,
+      :companyId,
+      :ownerUserPositionId,
+      (
+        select cs.id
+        from flow.state s
+             inner join flow.company_state cs on s.id = cs.state_id
+        where s.state = :state and cs.company_id = :companyId),
+      (
+        select s.country_id
+        from flow.state s
+             inner join flow.company_state cs on s.id = cs.state_id
+        where s.state = :state and cs.company_id = :companyId),
+      :latitude,
+      :longitude,
+      :createdById,
+      now(),
+      :createdById,
+      now(),
+      coalesce(:objectCategoryId, (
+        select id
+        from flow.object_category
+        where is_default is true and
+          archived is false and
+          object_type_id = 2
+        limit 1))
+    )
     """;
 
   //language=PostgreSQL
   public final static String insertContactNoState = """
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, postal_code, phone, email, company_id, owner_user_position_id, latitude, longitude, created_by_id, date_created, modified_by_id, date_modified)
-    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, trim(:postalCode), :phone, :email, :companyId, :ownerUserPositionId, :latitude, :longitude, :createdById, now(), :createdById, now())
+    insert into flow.contact(
+      contact_type_id,
+      first_name,
+      last_name,
+      street1,
+      city,
+      postal_code,
+      phone,
+      email,
+      company_id,
+      owner_user_position_id,
+      latitude,
+      longitude,
+      created_by_id,
+      date_created,
+      modified_by_id,
+      date_modified,
+      object_category_id
+    )
+    values (
+      :contactTypeId,
+      trim(:firstName),
+      trim(:lastName),
+      :street1,
+      :city,
+      trim(:postalCode),
+      :phone,
+      :email,
+      :companyId,
+      :ownerUserPositionId,
+      :latitude,
+      :longitude,
+      :createdById,
+      now(),
+      :createdById,
+      now(),
+      coalesce(:objectCategoryId, (
+        select id
+        from flow.object_category
+        where is_default is true and
+          archived is false and
+          object_type_id = 2
+        limit 1))
+    )
     """;
 
   //language=PostgreSQL

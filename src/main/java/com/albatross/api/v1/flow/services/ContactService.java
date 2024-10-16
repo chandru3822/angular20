@@ -428,8 +428,7 @@ public class ContactService {
     Long ownerUserPositionId = process.getOwnerUserPositionId();
 
     // create project (use contact_full_name as project_name)
-    Optional<Project> project =
-      projectService.insertProject(contact.getId(), process.getId(), contact, contact.isActiveState(), ownerUserPositionId);
+    Optional<Project> project = projectService.insertProject(contact.getId(), process.getId(), contact, contact.isActiveState(), ownerUserPositionId);
 
     if (project.isPresent()) {
       //this will only add the activity if the company has it enabled
