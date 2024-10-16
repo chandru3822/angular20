@@ -127,29 +127,31 @@ insert into flow.object_category(object_category, object_category_code, date_cre
           2
    where not exists (select id from flow.object_category oc where oc.object_category_code = 'PRIMARY_HOMEOWNER'));
 
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Secondary Homeowner (spouse or co-owner of home,may also be a co-borrower)',
-          'SECONDARY_HOMEOWNER',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          2
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'SECONDARY_HOMEOWNER'));
+--per carlin - not using these V1 pls remove
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Secondary Homeowner (spouse or co-owner of home,may also be a co-borrower)',
+--           'SECONDARY_HOMEOWNER',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           2
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'SECONDARY_HOMEOWNER'));
 
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'New Homeowner (someone who buys a home with a BRS system and may or may not assume the loan',
-          'NEW_HOMEOWNER',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          2
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'NEW_HOMEOWNER'));
+--per carlin - not using these V1 pls remove
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'New Homeowner (someone who buys a home with a BRS system and may or may not assume the loan',
+--           'NEW_HOMEOWNER',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           2
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'NEW_HOMEOWNER'));
 
 
 alter table flow.process
@@ -365,7 +367,7 @@ insert into flow.object_category_custom_field_group(object_category_id, custom_f
      where cfg.company_object_type_id = 2
        and cfg.archived is false
        and oc.object_type_id = 2
-       and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER','SECONDARY_HOMEOWNER','NEW_HOMEOWNER','PRIMARY_HOMEOWNER'))
+       and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER','PRIMARY_HOMEOWNER'))
 on conflict do nothing;
 
 
