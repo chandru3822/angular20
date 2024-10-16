@@ -97,7 +97,7 @@
                             multiple
                             clearable
                             @input="teamSelectionChanged"
-                            v-if="teamFilterOptions.length > 1">
+                            v-if="teamFilterOptions.length > 0">
               <template  v-slot:prepend-item>
                 <v-list-item
                   ripple

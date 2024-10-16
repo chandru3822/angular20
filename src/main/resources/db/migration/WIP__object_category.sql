@@ -357,6 +357,17 @@ insert into flow.object_category_custom_field_group(object_category_id, custom_f
      and oc.object_category_code in ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'RETROFIT', 'RESIDENTIAL_STANDARD'))
 on conflict do nothing;
 
+insert into flow.object_category_custom_field_group(object_category_id, custom_field_group_id, created_by_id,
+                                                    modified_by_id)
+    (select oc.id, cfg.id, 2384850, 2384850
+     from flow.custom_field_group cfg
+              cross join flow.object_category as oc
+     where cfg.company_object_type_id = 2
+       and cfg.archived is false
+       and oc.object_type_id = 2
+       and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER','SECONDARY_HOMEOWNER','NEW_HOMEOWNER','PRIMARY_HOMEOWNER'))
+on conflict do nothing;
+
 
 CREATE TABLE if not exists flow.object_category_attachment_type
 (
@@ -429,6 +440,8 @@ insert into flow.object_category_company_project_status_type(object_category_id,
          ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'COMMUNITY', 'RETROFIT', 'RESIDENTIAL_STANDARD', 'NEW_HOME',
           'BUILDER_NEW_HOMES_BUILDER'))
 on conflict do nothing;
+
+
 
 
 --proposal template object categories
