@@ -19,8 +19,16 @@ BEGIN
     and pse.archived is false;
 
   for x in
-    select *
+    select ptc.*,
+           lov1.id as lov1_project_priority_c_id,
+           lov2.id as lov2_role_assignment_c_id,
+           lov3.id as lov3_task_path_type_c_id,
+           lov4.id as lov4_reason_levels_c_id
     from brs.project_task_c ptc
+    left join flow.list_of_value lov1 on lov1.name = ptc.project_priority_c and lov1.parent_id = 25516
+    left join flow.list_of_value lov2 on lov2.name = ptc.role_assignment_c  and lov2.parent_id = 25733
+    left join flow.list_of_value lov3 on lov3.name = ptc.task_path_type_c and lov3.parent_id = 25735
+    left join flow.list_of_value lov4 on lov4.name = ptc.reason_levels_c  and lov4.parent_id = 25737
     where ptc.parent_task_c = p_parent_task_c
       and ptc.record_type_id = '01234000000GHgIAAW'
       and ptc.is_deleted = false
@@ -50,7 +58,10 @@ BEGIN
       perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28908, x.end_date_time_c::text,true);
 
 
-      --perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28575, s.lease_incentive_fee_c::text,true);
+      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28897, x.lov1_project_priority_c_id::text,true);
+      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28904, x.lov2_role_assignment_c_id::text,true);
+      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28906, x.lov3_task_path_type_c_id::text,true);
+      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28909, x.lov4_reason_levels_c_id::text,true);
 
     end loop;
 
