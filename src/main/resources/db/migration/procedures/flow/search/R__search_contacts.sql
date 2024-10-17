@@ -38,7 +38,7 @@ DECLARE
   v_company_ids               bigint[];
   v_clean_id_search_term      varchar;
 BEGIN
-  v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.&', '')));
+  v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = trim(translate(p_searchterm, '-(). ', ''));
   v_clean_email_search_term = lower(trim(p_searchterm));
   v_clean_address_search_term = trim(lower(translate(p_searchterm, '.,', '')));

@@ -3886,129 +3886,1708 @@
 --   ERS_INVOICE_NUMBER_C                        VARCHAR(300),
 --   ASSIGNED_RESOURCE_C                         VARCHAR(18)
 -- );
---
---    CREATE INDEX if not exists residential_project_c ON brs.REWORK_REQUESTS_C (residential_project_c);
--- --    CREATE INDEX if not exists residential_project_c ON brs.TASK_REWORK_REQUEST_C (residential_project_c);
---    CREATE INDEX if not exists work_order_id ON brs.work_order (id);
---    CREATE INDEX if not exists residential_project_c ON brs.work_order (case_id);
---    CREATE INDEX if not exists residential_project_c ON brs.work_order (residential_project_c);
---    CREATE INDEX if not exists residential_project_c ON brs.work_order (account_id);
---   CREATE INDEX if not exists case_id ON brs.case (id);
---   CREATE INDEX if not exists residential_project_c ON brs.case (residential_project_c);
--- CREATE INDEX if not exists CATEGORY_C ON brs.case (CATEGORY_C);
--- CREATE INDEX if not exists SUB_CATEGORIES_C ON brs.case (SUB_CATEGORIES_C);
--- CREATE INDEX if not exists STATUS ON brs.case (STATUS);
--- CREATE INDEX if not exists PARTNER_ACCOUNT_C ON brs.case (PARTNER_ACCOUNT_C);
---
---  CREATE INDEX if not exists OPPORTUNITY_id ON brs.OPPORTUNITY (id);
---  CREATE INDEX if not exists REASON_WON_LOST_C ON brs.OPPORTUNITY (REASON_WON_LOST_C);
--- CREATE INDEX if not exists SUB_STAGE_C ON brs.OPPORTUNITY (SUB_STAGE_C);
--- CREATE INDEX if not exists STAGE_NAME ON brs.OPPORTUNITY (STAGE_NAME);
+-- drop table if exists brs.sp_user;
+-- create table if not exists brs.sp_USER
+-- (
+--   ID                                                                       VARCHAR(18),
+--   USERNAME                                                                 VARCHAR(240),
+--   LAST_NAME                                                                VARCHAR(240),
+--   FIRST_NAME                                                               VARCHAR(120),
+--   NAME                                                                     VARCHAR(363),
+--   COMPANY_NAME                                                             VARCHAR(240),
+--   DIVISION                                                                 VARCHAR(240),
+--   DEPARTMENT                                                               VARCHAR(240),
+--   TITLE                                                                    VARCHAR(240),
+--   STREET                                                                   VARCHAR(765),
+--   CITY                                                                     VARCHAR(120),
+--   STATE                                                                    VARCHAR(240),
+--   POSTAL_CODE                                                              VARCHAR(60),
+--   COUNTRY                                                                  VARCHAR(240),
+--   LATITUDE                                                                 numeric,
+--   LONGITUDE                                                                numeric,
+--   GEOCODE_ACCURACY                                                         VARCHAR(120),
+--   EMAIL                                                                    VARCHAR(384),
+--   EMAIL_PREFERENCES_AUTO_BCC                                               BOOLEAN,
+--   EMAIL_PREFERENCES_AUTO_BCC_STAY_IN_TOUCH                                 BOOLEAN,
+--   EMAIL_PREFERENCES_STAY_IN_TOUCH_REMINDER                                 BOOLEAN,
+--   SENDER_EMAIL                                                             VARCHAR(240),
+--   SENDER_NAME                                                              VARCHAR(240),
+--   SIGNATURE                                                                VARCHAR(3999),
+--   STAY_IN_TOUCH_SUBJECT                                                    VARCHAR(240),
+--   STAY_IN_TOUCH_SIGNATURE                                                  VARCHAR(1536),
+--   STAY_IN_TOUCH_NOTE                                                       VARCHAR(1536),
+--   PHONE                                                                    VARCHAR(120),
+--   FAX                                                                      VARCHAR(120),
+--   MOBILE_PHONE                                                             VARCHAR(120),
+--   ALIAS                                                                    VARCHAR(24),
+--   COMMUNITY_NICKNAME                                                       VARCHAR(120),
+--   BADGE_TEXT                                                               VARCHAR(240),
+--   IS_ACTIVE                                                                BOOLEAN,
+--   TIME_ZONE_SID_KEY                                                        VARCHAR(120),
+--   USER_ROLE_ID                                                             VARCHAR(18),
+--   LOCALE_SID_KEY                                                           VARCHAR(120),
+--   RECEIVES_INFO_EMAILS                                                     BOOLEAN,
+--   RECEIVES_ADMIN_INFO_EMAILS                                               BOOLEAN,
+--   EMAIL_ENCODING_KEY                                                       VARCHAR(120),
+--   DEFAULT_CURRENCY_ISO_CODE                                                VARCHAR(9),
+--   CURRENCY_ISO_CODE                                                        VARCHAR(9),
+--   PROFILE_ID                                                               VARCHAR(18),
+--   USER_TYPE                                                                VARCHAR(120),
+--   LANGUAGE_LOCALE_KEY                                                      VARCHAR(120),
+--   EMPLOYEE_NUMBER                                                          VARCHAR(60),
+--   DELEGATED_APPROVER_ID                                                    VARCHAR(18),
+--   MANAGER_ID                                                               VARCHAR(18),
+--   LAST_LOGIN_DATE                                                          TIMESTAMPTZ,
+--   CREATED_DATE                                                             TIMESTAMPTZ,
+--   CREATED_BY_ID                                                            VARCHAR(18),
+--   LAST_MODIFIED_DATE                                                       TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                                                      VARCHAR(18),
+--   SYSTEM_MODSTAMP                                                          TIMESTAMPTZ,
+--   OFFLINE_TRIAL_EXPIRATION_DATE                                            TIMESTAMPTZ,
+--   OFFLINE_PDA_TRIAL_EXPIRATION_DATE                                        TIMESTAMPTZ,
+--   USER_PERMISSIONS_MARKETING_USER                                          BOOLEAN,
+--   USER_PERMISSIONS_OFFLINE_USER                                            BOOLEAN,
+--   USER_PERMISSIONS_AVANTGO_USER                                            BOOLEAN,
+--   USER_PERMISSIONS_CALL_CENTER_AUTO_LOGIN                                  BOOLEAN,
+--   USER_PERMISSIONS_SFCONTENT_USER                                          BOOLEAN,
+--   USER_PERMISSIONS_KNOWLEDGE_USER                                          BOOLEAN,
+--   USER_PERMISSIONS_INTERACTION_USER                                        BOOLEAN,
+--   USER_PERMISSIONS_SUPPORT_USER                                            BOOLEAN,
+--   USER_PERMISSIONS_LIVE_AGENT_USER                                         BOOLEAN,
+--   USER_PERMISSIONS_CHATTER_ANSWERS_USER                                    BOOLEAN,
+--   USER_PREFERENCES_ACTIVITY_REMINDERS_POPUP                                BOOLEAN,
+--   USER_PREFERENCES_EVENT_REMINDERS_CHECKBOX_DEFAULT                        BOOLEAN,
+--   USER_PREFERENCES_TASK_REMINDERS_CHECKBOX_DEFAULT                         BOOLEAN,
+--   USER_PREFERENCES_REMINDER_SOUND_OFF                                      BOOLEAN,
+--   USER_PREFERENCES_DISABLE_ALL_FEEDS_EMAIL                                 BOOLEAN,
+--   USER_PREFERENCES_DISABLE_FOLLOWERS_EMAIL                                 BOOLEAN,
+--   USER_PREFERENCES_DISABLE_PROFILE_POST_EMAIL                              BOOLEAN,
+--   USER_PREFERENCES_DISABLE_CHANGE_COMMENT_EMAIL                            BOOLEAN,
+--   USER_PREFERENCES_DISABLE_LATER_COMMENT_EMAIL                             BOOLEAN,
+--   USER_PREFERENCES_DIS_PROF_POST_COMMENT_EMAIL                             BOOLEAN,
+--   USER_PREFERENCES_CONTENT_NO_EMAIL                                        BOOLEAN,
+--   USER_PREFERENCES_CONTENT_EMAIL_AS_AND_WHEN                               BOOLEAN,
+--   USER_PREFERENCES_APEX_PAGES_DEVELOPER_MODE                               BOOLEAN,
+--   USER_PREFERENCES_RECEIVE_NO_NOTIFICATIONS_AS_APPROVER                    BOOLEAN,
+--   USER_PREFERENCES_RECEIVE_NOTIFICATIONS_AS_DELEGATED_APPROVER             BOOLEAN,
+--   USER_PREFERENCES_HIDE_CSNGET_CHATTER_MOBILE_TASK                         BOOLEAN,
+--   USER_PREFERENCES_DISABLE_MENTIONS_POST_EMAIL                             BOOLEAN,
+--   USER_PREFERENCES_DIS_MENTIONS_COMMENT_EMAIL                              BOOLEAN,
+--   USER_PREFERENCES_HIDE_CSNDESKTOP_TASK                                    BOOLEAN,
+--   USER_PREFERENCES_HIDE_CHATTER_ONBOARDING_SPLASH                          BOOLEAN,
+--   USER_PREFERENCES_HIDE_SECOND_CHATTER_ONBOARDING_SPLASH                   BOOLEAN,
+--   USER_PREFERENCES_DIS_COMMENT_AFTER_LIKE_EMAIL                            BOOLEAN,
+--   USER_PREFERENCES_DISABLE_LIKE_EMAIL                                      BOOLEAN,
+--   USER_PREFERENCES_SORT_FEED_BY_COMMENT                                    BOOLEAN,
+--   USER_PREFERENCES_DISABLE_MESSAGE_EMAIL                                   BOOLEAN,
+--   USER_PREFERENCES_DISABLE_BOOKMARK_EMAIL                                  BOOLEAN,
+--   USER_PREFERENCES_DISABLE_SHARE_POST_EMAIL                                BOOLEAN,
+--   USER_PREFERENCES_ENABLE_AUTO_SUB_FOR_FEEDS                               BOOLEAN,
+--   USER_PREFERENCES_DISABLE_FILE_SHARE_NOTIFICATIONS_FOR_API                BOOLEAN,
+--   USER_PREFERENCES_SHOW_TITLE_TO_EXTERNAL_USERS                            BOOLEAN,
+--   USER_PREFERENCES_SHOW_MANAGER_TO_EXTERNAL_USERS                          BOOLEAN,
+--   USER_PREFERENCES_SHOW_EMAIL_TO_EXTERNAL_USERS                            BOOLEAN,
+--   USER_PREFERENCES_SHOW_WORK_PHONE_TO_EXTERNAL_USERS                       BOOLEAN,
+--   USER_PREFERENCES_SHOW_MOBILE_PHONE_TO_EXTERNAL_USERS                     BOOLEAN,
+--   USER_PREFERENCES_SHOW_FAX_TO_EXTERNAL_USERS                              BOOLEAN,
+--   USER_PREFERENCES_SHOW_STREET_ADDRESS_TO_EXTERNAL_USERS                   BOOLEAN,
+--   USER_PREFERENCES_SHOW_CITY_TO_EXTERNAL_USERS                             BOOLEAN,
+--   USER_PREFERENCES_SHOW_STATE_TO_EXTERNAL_USERS                            BOOLEAN,
+--   USER_PREFERENCES_SHOW_POSTAL_CODE_TO_EXTERNAL_USERS                      BOOLEAN,
+--   USER_PREFERENCES_SHOW_COUNTRY_TO_EXTERNAL_USERS                          BOOLEAN,
+--   USER_PREFERENCES_SHOW_PROFILE_PIC_TO_GUEST_USERS                         BOOLEAN,
+--   USER_PREFERENCES_SHOW_TITLE_TO_GUEST_USERS                               BOOLEAN,
+--   USER_PREFERENCES_SHOW_CITY_TO_GUEST_USERS                                BOOLEAN,
+--   USER_PREFERENCES_SHOW_STATE_TO_GUEST_USERS                               BOOLEAN,
+--   USER_PREFERENCES_SHOW_POSTAL_CODE_TO_GUEST_USERS                         BOOLEAN,
+--   USER_PREFERENCES_SHOW_COUNTRY_TO_GUEST_USERS                             BOOLEAN,
+--   USER_PREFERENCES_SHOW_FORECASTING_CHANGE_SIGNALS                         BOOLEAN,
+--   USER_PREFERENCES_HIDE_S_1_BROWSER_UI                                     BOOLEAN,
+--   USER_PREFERENCES_DISABLE_ENDORSEMENT_EMAIL                               BOOLEAN,
+--   USER_PREFERENCES_PATH_ASSISTANT_COLLAPSED                                BOOLEAN,
+--   USER_PREFERENCES_CACHE_DIAGNOSTICS                                       BOOLEAN,
+--   USER_PREFERENCES_SHOW_EMAIL_TO_GUEST_USERS                               BOOLEAN,
+--   USER_PREFERENCES_SHOW_MANAGER_TO_GUEST_USERS                             BOOLEAN,
+--   USER_PREFERENCES_SHOW_WORK_PHONE_TO_GUEST_USERS                          BOOLEAN,
+--   USER_PREFERENCES_SHOW_MOBILE_PHONE_TO_GUEST_USERS                        BOOLEAN,
+--   USER_PREFERENCES_SHOW_FAX_TO_GUEST_USERS                                 BOOLEAN,
+--   USER_PREFERENCES_SHOW_STREET_ADDRESS_TO_GUEST_USERS                      BOOLEAN,
+--   USER_PREFERENCES_LIGHTNING_EXPERIENCE_PREFERRED                          BOOLEAN,
+--   USER_PREFERENCES_HIDE_END_USER_ONBOARDING_ASSISTANT_MODAL                BOOLEAN,
+--   USER_PREFERENCES_HIDE_LIGHTNING_MIGRATION_MODAL                          BOOLEAN,
+--   USER_PREFERENCES_HIDE_SFX_WELCOME_MAT                                    BOOLEAN,
+--   USER_PREFERENCES_HIDE_BIGGER_PHOTO_CALLOUT                               BOOLEAN,
+--   USER_PREFERENCES_GLOBAL_NAV_BAR_WTSHOWN                                  BOOLEAN,
+--   USER_PREFERENCES_GLOBAL_NAV_GRID_MENU_WTSHOWN                            BOOLEAN,
+--   USER_PREFERENCES_CREATE_LEXAPPS_WTSHOWN                                  BOOLEAN,
+--   USER_PREFERENCES_FAVORITES_WTSHOWN                                       BOOLEAN,
+--   USER_PREFERENCES_RECORD_HOME_SECTION_COLLAPSE_WTSHOWN                    BOOLEAN,
+--   USER_PREFERENCES_RECORD_HOME_RESERVED_WTSHOWN                            BOOLEAN,
+--   USER_PREFERENCES_FAVORITES_SHOW_TOP_FAVORITES                            BOOLEAN,
+--   USER_PREFERENCES_EXCLUDE_MAIL_APP_ATTACHMENTS                            BOOLEAN,
+--   USER_PREFERENCES_SUPPRESS_TASK_SFXREMINDERS                              BOOLEAN,
+--   USER_PREFERENCES_SUPPRESS_EVENT_SFXREMINDERS                             BOOLEAN,
+--   USER_PREFERENCES_PREVIEW_CUSTOM_THEME                                    BOOLEAN,
+--   USER_PREFERENCES_HAS_CELEBRATION_BADGE                                   BOOLEAN,
+--   USER_PREFERENCES_USER_DEBUG_MODE_PREF                                    BOOLEAN,
+--   USER_PREFERENCES_SRHOVERRIDE_ACTIVITIES                                  BOOLEAN,
+--   USER_PREFERENCES_NEW_LIGHTNING_REPORT_RUN_PAGE_ENABLED                   BOOLEAN,
+--   USER_PREFERENCES_REVERSE_OPEN_ACTIVITIES_VIEW                            BOOLEAN,
+--   USER_PREFERENCES_HAS_SENT_WARNING_EMAIL                                  BOOLEAN,
+--   USER_PREFERENCES_HIDE_BROWSE_PRODUCT_REDIRECT_CONFIRMATION               BOOLEAN,
+--   USER_PREFERENCES_HIDE_ONLINE_SALES_APP_WELCOME_MAT                       BOOLEAN,
+--   CONTACT_ID                                                               VARCHAR(18),
+--   ACCOUNT_ID                                                               VARCHAR(18),
+--   CALL_CENTER_ID                                                           VARCHAR(18),
+--   EXTENSION                                                                VARCHAR(120),
+--   PORTAL_ROLE                                                              VARCHAR(120),
+--   IS_PORTAL_ENABLED                                                        BOOLEAN,
+--   FEDERATION_IDENTIFIER                                                    VARCHAR(1536),
+--   ABOUT_ME                                                                 VARCHAR(3000),
+--   FULL_PHOTO_URL                                                           VARCHAR(3072),
+--   SMALL_PHOTO_URL                                                          VARCHAR(3072),
+--   IS_EXT_INDICATOR_VISIBLE                                                 BOOLEAN,
+--   OUT_OF_OFFICE_MESSAGE                                                    VARCHAR(120),
+--   MEDIUM_PHOTO_URL                                                         VARCHAR(3072),
+--   DIGEST_FREQUENCY                                                         VARCHAR(120),
+--   DEFAULT_GROUP_NOTIFICATION_FREQUENCY                                     VARCHAR(120),
+--   LAST_VIEWED_DATE                                                         TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE                                                     TIMESTAMPTZ,
+--   BANNER_PHOTO_URL                                                         VARCHAR(3072),
+--   SMALL_BANNER_PHOTO_URL                                                   VARCHAR(3072),
+--   MEDIUM_BANNER_PHOTO_URL                                                  VARCHAR(3072),
+--   IS_PROFILE_PHOTO_ACTIVE                                                  BOOLEAN,
+--   INDIVIDUAL_ID                                                            VARCHAR(18),
+--   CASE_OWNER_C                                                             VARCHAR(18),
+--   COUNTRY_DOMAIN_C                                                         VARCHAR(765),
+--   DO_NOT_CALL_C                                                            BOOLEAN,
+--   EMAIL_NOTIFICATIONS_C                                                    BOOLEAN,
+--   INTEGRATION_ID_C                                                         VARCHAR(60),
+--   PARTNER_STORE_VISIBLE_C                                                  BOOLEAN,
+--   BUSINESS_UNIT_C                                                          VARCHAR(765),
+--   LMS_SUPERVISOR_ID_C                                                      VARCHAR(60),
+--   MAIL_OPT_OUT_C                                                           BOOLEAN,
+--   PARTNER_ROLE_C                                                           VARCHAR(765),
+--   PLATEAU_ID_C                                                             VARCHAR(120),
+--   SMART_STORE_ID_C                                                         VARCHAR(240),
+--   BY_PASS_VALIDATION_C                                                     BOOLEAN,
+--   ALTERNATE_EMAIL_C                                                        VARCHAR(240),
+--   TERRITORY_C                                                              VARCHAR(150),
+--   FORUM_PASSWORD_C                                                         VARCHAR(60),
+--   VIEWABLE_INVERTERS_C                                                     VARCHAR(765),
+--   USER_CONTACT_ROLE_C                                                      VARCHAR(765),
+--   WEB_USER_C                                                               BOOLEAN,
+--   SEND_PDF_NOTIFICATION_C                                                  BOOLEAN,
+--   PORTAL_USER_TYPE_C                                                       VARCHAR(765),
+--   BYPASS_LEAD_VALIDATION_C                                                 BOOLEAN,
+--   LEAD_TEAM_C                                                              VARCHAR(765),
+--   ADMIN_NOTES_C                                                            VARCHAR(98304),
+--   NAC_MARKETING_C                                                          VARCHAR(765),
+--   UPDATE_FORECAST_CATEGORY_ALLOWED_C                                       BOOLEAN,
+--   PARTNER_AMBASSADOR_RIGHTS_C                                              BOOLEAN,
+--   EDIT_PARTNER_USERS_C                                                     BOOLEAN,
+--   UPDATE_CLOSED_OPPORTUNITIES_C                                            BOOLEAN,
+--   ALLOW_FINANCIER_UPDATE_C                                                 BOOLEAN,
+--   CPR_SALESPERSON_ID_C                                                     VARCHAR(126),
+--   LEASE_DOC_CREATION_ALLOWED_C                                             BOOLEAN,
+--   PLACE_IN_SERVICE_CHANGE_AUTHORIZE_C                                      BOOLEAN,
+--   TEST_C                                                                   BOOLEAN,
+--   TENESOL_C                                                                BOOLEAN,
+--   VENDOR_C                                                                 VARCHAR(765),
+--   VENDOR_SUPPLIER_C                                                        BOOLEAN,
+--   PVSIM_ACCESS_KEY_C                                                       VARCHAR(765),
+--   ECHOSIGN_DEV_1_ECHO_SIGN_ALLOW_DELEGATED_SENDING_C                       BOOLEAN,
+--   ECHOSIGN_DEV_1_ECHO_SIGN_EMAIL_VERIFIED_C                                BOOLEAN,
+--   SSO_VALIDATION_C                                                         BOOLEAN,
+--   SOLUTIONS_EDITOR_C                                                       VARCHAR(765),
+--   BYPASS_LOAN_PATH_VALIDATION_C                                            BOOLEAN,
+--   PROJECT_MANAGER_ACCESS_C                                                 VARCHAR(765),
+--   QUOTE_CREATION_ALLOWED_C                                                 BOOLEAN,
+--   DISPLAY_BUTTON_C                                                         BOOLEAN,
+--   SOX_AUDIT_REVIEWED_C                                                     VARCHAR(765),
+--   ABOUT_C                                                                  VARCHAR(98304),
+--   BUSINESS_FUNCTION_C                                                      VARCHAR(4099),
+--   SUPERVISOR_C                                                             VARCHAR(297),
+--   SOX_PROFILE_WAS_APPROVAL_RECEIVED_C                                      BOOLEAN,
+--   CASE_NUMBER_C                                                            VARCHAR(54),
+--   EC_REGIONS_C                                                             VARCHAR(765),
+--   HIS_EXPIRATION_DATE_C                                                    DATE,
+--   HIS_REGISTRATION_NUMBER_C                                                VARCHAR(150),
+--   COUNTER_SIGNATURE_C                                                      VARCHAR(150),
+--   BYPASS_WORKFLOW_C                                                        BOOLEAN,
+--   SPWR_ADDED_TO_HIS_C                                                      BOOLEAN,
+--   LMS_ID_C                                                                 VARCHAR(54),
+--   LMS_ACTIVE_C                                                             BOOLEAN,
+--   EDIT_ORDER_CONSOLE_RECORD_C                                              BOOLEAN,
+--   REGION_S_C                                                               VARCHAR(4099),
+--   REGIONAL_DATA_JUSTIFICATION_C                                            VARCHAR(3000),
+--   IS_MANAGER_C                                                             BOOLEAN,
+--   MANAGER_C                                                                VARCHAR(18),
+--   USER_REPORT_PREFERENCE_C                                                 VARCHAR(765),
+--   PORTAL_USER_SAVED_REPORTS_C                                              VARCHAR(98304),
+--   ADMIN_PORTAL_USER_C                                                      BOOLEAN,
+--   DFSLE_CAN_MANAGE_ACCOUNT_C                                               BOOLEAN,
+--   DFSLE_PROVISIONED_C                                                      DATE,
+--   DFSLE_STATUS_C                                                           VARCHAR(765),
+--   DFSLE_USERNAME_C                                                         VARCHAR(300),
+--   DEALER_STORE_SSO_ID_C                                                    VARCHAR(75),
+--   INTERNAL_USER_C                                                          VARCHAR(18),
+--   PARTNER_USER_C                                                           VARCHAR(18),
+--   INTRO_MESSAGE_C                                                          VARCHAR(765),
+--   _FIVETRAN_DELETED                                                        BOOLEAN,
+--   _FIVETRAN_SYNCED                                                         TIMESTAMPTZ,
+--   EXTERNAL_ID_C                                                            VARCHAR(90),
+--   USER_PREFERENCES_HAS_SENT_WARNING_EMAIL_238                              BOOLEAN,
+--   USER_PREFERENCES_HAS_SENT_WARNING_EMAIL_240                              BOOLEAN,
+--   USER_PREFERENCES_SHOW_TERRITORY_TIME_ZONE_SHIFTS                         BOOLEAN,
+--   NUMBER_OF_FAILED_LOGINS                                                  numeric,
+--   LAST_PASSWORD_CHANGE_DATE                                                TIMESTAMPTZ,
+--   MOSAIC_ENABLED_C                                                         BOOLEAN,
+--   USER_PREFERENCES_NATIVE_EMAIL_CLIENT                                     BOOLEAN,
+--   COMPLIANCE_CONTROL_C                                                     BOOLEAN,
+--   INTRO_SMS_PHOTO_URL_C                                                    VARCHAR(765),
+--   ORTOO_QRA_ASSIGNMENT_GROUP_IS_ACTIVE_C                                   BOOLEAN,
+--   TWILIO_SF_TWILIO_PERSONAL_NUMBER_C                                       VARCHAR(120),
+--   TWILIO_SF_TWILIO_PERSONAL_NUMBER_IS_VALID_C                              BOOLEAN,
+--   USER_PREFERENCES_SHOW_FORECASTING_ROUNDED_AMOUNTS                        BOOLEAN,
+--   USER_PREFERENCES_LIVE_AGENT_MIAW_SETUP_DEFLECTION                        BOOLEAN,
+--   AMAZONCONNECT_AMAZON_CONNECT_USERNAME_C                                  VARCHAR(765),
+--   DESIGN_TOOL_USER_ID_C                                                    VARCHAR(240),
+--   DESIGN_TOOL_USER_STATUS_C                                                VARCHAR(240),
+--   ACCEPT_TAND_C_C                                                          BOOLEAN,
+--   ACCESS_TO_RESIDENTIAL_NOTIFICATIONS_C                                    BOOLEAN,
+--   USER_PREFERENCES_HIDE BOOLEAN
+-- );
+-- drop table if exists brs.quote;
+-- create table if not exists brs.QUOTE
+-- (
+--   ID                                         VARCHAR(18),
+--   OWNER_ID                                   VARCHAR(18),
+--   IS_DELETED                                 BOOLEAN,
+--   NAME                                       VARCHAR(765),
+--   CURRENCY_ISO_CODE                          VARCHAR(9),
+--   RECORD_TYPE_ID                             VARCHAR(18),
+--   CREATED_DATE                               TIMESTAMPTZ,
+--   CREATED_BY_ID                              VARCHAR(18),
+--   LAST_MODIFIED_DATE                         TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                        VARCHAR(18),
+--   SYSTEM_MODSTAMP                            TIMESTAMPTZ,
+--   LAST_VIEWED_DATE                           TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE                       TIMESTAMPTZ,
+--   OPPORTUNITY_ID                             VARCHAR(18),
+--   PRICEBOOK_2_ID                             VARCHAR(18),
+--   CONTACT_ID                                 VARCHAR(18),
+--   QUOTE_NUMBER                               VARCHAR(90),
+--   IS_SYNCING                                 BOOLEAN,
+--   SHIPPING_HANDLING                          numeric(18, 2),
+--   TAX                                        numeric(18, 2),
+--   STATUS                                     VARCHAR(120),
+--   EXPIRATION_DATE                            DATE,
+--   DESCRIPTION                                VARCHAR(96000),
+--   BILLING_STREET                             VARCHAR(765),
+--   BILLING_CITY                               VARCHAR(120),
+--   BILLING_STATE                              VARCHAR(240),
+--   BILLING_POSTAL_CODE                        VARCHAR(60),
+--   BILLING_COUNTRY                            VARCHAR(240),
+--   BILLING_LATITUDE                           double precision,
+--   BILLING_LONGITUDE                          double precision,
+--   BILLING_GEOCODE_ACCURACY                   VARCHAR(765),
+--   SHIPPING_STREET                            VARCHAR(765),
+--   SHIPPING_CITY                              VARCHAR(120),
+--   SHIPPING_STATE                             VARCHAR(240),
+--   SHIPPING_POSTAL_CODE                       VARCHAR(60),
+--   SHIPPING_COUNTRY                           VARCHAR(240),
+--   SHIPPING_LATITUDE                          double precision,
+--   SHIPPING_LONGITUDE                         double precision,
+--   SHIPPING_GEOCODE_ACCURACY                  VARCHAR(765),
+--   QUOTE_TO_STREET                            VARCHAR(765),
+--   QUOTE_TO_CITY                              VARCHAR(120),
+--   QUOTE_TO_STATE                             VARCHAR(240),
+--   QUOTE_TO_POSTAL_CODE                       VARCHAR(60),
+--   QUOTE_TO_COUNTRY                           VARCHAR(240),
+--   QUOTE_TO_LATITUDE                          double precision,
+--   QUOTE_TO_LONGITUDE                         double precision,
+--   QUOTE_TO_GEOCODE_ACCURACY                  VARCHAR(765),
+--   ADDITIONAL_STREET                          VARCHAR(765),
+--   ADDITIONAL_CITY                            VARCHAR(120),
+--   ADDITIONAL_STATE                           VARCHAR(240),
+--   ADDITIONAL_POSTAL_CODE                     VARCHAR(60),
+--   ADDITIONAL_COUNTRY                         VARCHAR(240),
+--   ADDITIONAL_LATITUDE                        double precision,
+--   ADDITIONAL_LONGITUDE                       double precision,
+--   ADDITIONAL_GEOCODE_ACCURACY                VARCHAR(765),
+--   BILLING_NAME                               VARCHAR(765),
+--   SHIPPING_NAME                              VARCHAR(765),
+--   QUOTE_TO_NAME                              VARCHAR(765),
+--   ADDITIONAL_NAME                            VARCHAR(765),
+--   EMAIL                                      VARCHAR(240),
+--   PHONE                                      VARCHAR(120),
+--   FAX                                        VARCHAR(120),
+--   ACCOUNT_ID                                 VARCHAR(18),
+--   DISCOUNT                                   double precision,
+--   GRAND_TOTAL                                numeric(18, 2),
+--   CAN_CREATE_QUOTE_LINE_ITEMS                BOOLEAN,
+--   ASP_1_C                                    numeric(18, 2),
+--   BLENDED_SAVINGS_ESS_C                      numeric(18, 2),
+--   ANNUAL_PRICE_C                             numeric(18, 2),
+--   BLENDED_SAVINGS_PV_C                       numeric(18, 2),
+--   CUSTOMER_PE_GU_C                           numeric(18, 2),
+--   YIELD_C                                    double precision,
+--   DISCOUNT_RATE_C                            double precision,
+--   FEDERAL_TAX_RATE_C                         double precision,
+--   BOS_W_C                                    numeric(18, 3),
+--   CELL_MONITORING_COST_C                     numeric(18),
+--   NET_CONTRACT_PRICE_C                       numeric(18, 2),
+--   CENTS_K_WH_C                               double precision,
+--   COMMENTS_C                                 VARCHAR(96000),
+--   RETAIL_SUPPLY_RATE_K_WH_C                  numeric(18, 3),
+--   CONTRACT_PRICING_APPROVAL_C                BOOLEAN,
+--   CONTRACT_SIGNED_DATE_C                     DATE,
+--   CONTRACT_TYPE_C                            VARCHAR(765),
+--   STORAGE_COUNT_C                            double precision,
+--   STORAGE_MODEL_C                            VARCHAR(765),
+--   DISCOUNT_C                                 numeric(16, 2),
+--   COST_ESTIMATE_DATE_REQUESTED_C             DATE,
+--   COST_ESTIMATE_PACKAGE_C                    BOOLEAN,
+--   SITE_C                                     VARCHAR(18),
+--   COSTOMATIC_FIRM_C                          BOOLEAN,
+--   COSTS_OUTPUT_COMMENTS_C                    VARCHAR(96000),
+--   CREATED_DATE_C                             DATE,
+--   INVESTOR_PE_GU_C                           numeric(18, 2),
+--   O_M_PRICE_C                                numeric(18, 2),
+--   DATE_SENT_TO_CUSTOMER_C                    DATE,
+--   ANNUAL_INCENTIVE_NO_OF_YEARS_C             double precision,
+--   DESIGN_LOOKUP_C                            VARCHAR(18),
+--   PROPERTY_TAX_RATE_C                        double precision,
+--   STATE_TAX_RATE_C                           double precision,
+--   DIRECT_PROJECT_MARGIN_C                    double precision,
+--   LEASE_MARGIN_C                             double precision,
+--   LEASE_RATE_C                               numeric(18, 4),
+--   PPA_RATE_ADDER_C                           numeric(18, 4),
+--   SOLAR_ONLY_NPV_C                           numeric(18, 2),
+--   SOLAR_ONLY_SAVINGS_TOTAL_C                 numeric(18, 2),
+--   ELECTRICAL_ENGINEER_C                      VARCHAR(765),
+--   ELECTRICAL_ENGINEERS_C                     VARCHAR(18),
+--   ELECTRICAL_ESTIMATOR_C                     VARCHAR(765),
+--   ENERGY_EFFICENCY_QUOTE_C                   BOOLEAN,
+--   ESCALATOR_C                                double precision,
+--   ESTIMATE_URGENT_REQUEST_C                  BOOLEAN,
+--   ESTIMATED_PROPOSAL_DELIVERY_C              DATE,
+--   ESTIMATOR_C                                VARCHAR(765),
+--   FINANCIAL_STRUCTURE_FEASIBILITY_C          BOOLEAN,
+--   FULL_PROPOSAL_OR_JUST_PRICING_C            VARCHAR(765),
+--   GROSS_MARGIN_C                             double precision,
+--   INCENTIVE_FORMS_COMPLETED_C                BOOLEAN,
+--   INITIAL_COST_ESTIMATE_ON_TIME_C            VARCHAR(765),
+--   INITIAL_LAYOUT_ON_TIME_C                   VARCHAR(765),
+--   INITIAL_SIMULATION_ON_TIME_C               VARCHAR(765),
+--   INITIAL_SINGLE_LINE_ON_TIME_C              VARCHAR(765),
+--   INITIAL_SITE_AUDIT_ON_TIME_C               VARCHAR(765),
+--   INITIAL_STRUCTURAL_ANALYSIS_ON_TIME_C      VARCHAR(765),
+--   KICKOFF_MEETING_DATE_C                     DATE,
+--   LEGAL_SUPPORT_C                            BOOLEAN,
+--   LINE_ITEMS_FROM_OPP_C                      BOOLEAN,
+--   MODULE_TYPE_C                              VARCHAR(765),
+--   MOUNTING_SYSTEM_MODULE_C                   VARCHAR(4099),
+--   NEW_DESIGN_C                               double precision,
+--   NUMBER_OF_SITES_C                          double precision,
+--   OCIP_REQUIRED_C                            VARCHAR(765),
+--   O_M_SERVICE_LEVEL_C                        VARCHAR(765),
+--   O_M_SUPORT_C                               BOOLEAN,
+--   OTHER_ROOFING_C                            VARCHAR(150),
+--   PM_COST_BASED_ON_DESIGN_C                  double precision,
+--   PM_COST_WITHOUT_DESIGN_C                   numeric(18, 2),
+--   PPA_CUSTOMIZATION_C                        BOOLEAN,
+--   PPA_PRICING_TEMPLATE_BUDGETARY_C           BOOLEAN,
+--   PPA_PRICING_TEMPLATE_FIRM_C                BOOLEAN,
+--   PSR_C                                      VARCHAR(18),
+--   PV_AVAILABILITY_STATUS_C                   VARCHAR(765),
+--   PV_W_C                                     numeric(18, 3),
+--   PAYMENT_TERMS_C                            VARCHAR(765),
+--   PERMITS_INCLUDED_C                         VARCHAR(765),
+--   PERMITTING_DUE_DILIGENCE_COMPLETE_C        BOOLEAN,
+--   PHOTO_RENDERING_C                          BOOLEAN,
+--   PRESENTATION_C                             BOOLEAN,
+--   PRICE_APPROVAL_C                           BOOLEAN,
+--   PRICE_TO_CUSTOMER_C                        numeric(10, 2),
+--   PRICING_MODEL_FILE_NAME_C                  VARCHAR(360),
+--   PRO_FORMA_C                                BOOLEAN,
+--   PROJECT_MANAGER_COSTING_C                  BOOLEAN,
+--   PROJECT_MANAGER_C                          VARCHAR(765),
+--   PROJECT_MANAGERS_C                         VARCHAR(18),
+--   PROJECT_SERVICE_REQUEST_DATE_SENT_C        DATE,
+--   CASH_INCENTIVE_DISCOUNT_C                  numeric(18, 2),
+--   PROPOSAL_DUE_ORIGINAL_C                    DATE,
+--   PROPOSAL_DUE_C                             DATE,
+--   PROPOSAL_FILE_NAME_C                       VARCHAR(765),
+--   PROPOSAL_C                                 BOOLEAN,
+--   ACH_OPT_IN_C                               BOOLEAN,
+--   BYPASS_ACH_C                               BOOLEAN,
+--   APR_TYPE_C                                 VARCHAR(765),
+--   STORAGE_COMMISSION_C                       numeric(16, 2),
+--   SUN_POWER_DISCOUNT_C                       numeric(18, 2),
+--   DATE_SENT_TO_MY_SUN_POWER_C                TIMESTAMPTZ,
+--   QUOTE_AMOUNT_C                             numeric(14, 2),
+--   QUOTE_APPROVAL_DATE_C                      DATE,
+--   QUOTE_COST_C                               numeric(18, 2),
+--   QUOTE_EXPIRATION_DATE_C                    DATE,
+--   QUOTE_GROSS_MARGIN_C                       numeric(14, 2),
+--   QUOTE_STEPS_C                              VARCHAR(765),
+--   RFI_DATE_SENT_C                            DATE,
+--   RATE_ANALYSIS_C                            BOOLEAN,
+--   REBATE_C                                   VARCHAR(300),
+--   RESOURCE_APPROVAL_C                        BOOLEAN,
+--   REVENUE_C                                  numeric(10, 2),
+--   ROOF_PITCH_C                               VARCHAR(765),
+--   ROOFING_MATERIAL_C                         VARCHAR(4099),
+--   SALES_ANALYST_C                            VARCHAR(18),
+--   SHIPPING_INCO_TERM_DATE_C                  DATE,
+--   SHIPPING_INCO_TERMS_C                      VARCHAR(765),
+--   SIMULATION_COMPLETED_C                     DATE,
+--   SIMULATION_DATE_REQUESTED_C                DATE,
+--   SIMULATION_C                               BOOLEAN,
+--   SIMULATOR_C_C                              VARCHAR(765),
+--   SINGLE_LINE_BASED_ON_DESIGN_C              double precision,
+--   SINGLE_LINE_COMPLETED_C                    DATE,
+--   SINGLE_LINE_DATE_REQUESTED_C               DATE,
+--   SINGLE_LINE_URGENT_REQUEST_C               BOOLEAN,
+--   SINGLE_LINE_WITHOUT_DESIGN_C               double precision,
+--   SINGLE_LINE_C                              BOOLEAN,
+--   SOLAR_ONLY_SAVINGS_YR_1_C                  numeric(18, 2),
+--   SOLAR_STORAGE_NPV_C                        numeric(18, 2),
+--   SOLAR_STORAGE_SAVINGS_TOTAL_C              numeric(18, 2),
+--   SOLAR_STORAGE_SAVINGS_YR_1_C               numeric(18, 2),
+--   SELECTED_ESS_C                             VARCHAR(18),
+--   STORAGE_PRICE_C                            numeric(18, 2),
+--   CASH_ASP_SOLAR_ONLY_C                      numeric(18, 2),
+--   CASH_NPV_C                                 numeric(18, 2),
+--   ARCHIVED_C                                 BOOLEAN,
+--   SITE_AUDITORS_C                            VARCHAR(18),
+--   MY_SUN_POWER_C                             BOOLEAN,
+--   STORAGE_BACKUP_TYPE_C                      VARCHAR(765),
+--   SIZING_CALCULATIONS_C                      BOOLEAN,
+--   STANDARD_CONTRACT_USED_C                   BOOLEAN,
+--   LOAN_BASE_PRICE_C                          numeric(18, 2),
+--   STRL_FDTN_ANALYSIS_DUE_C                   DATE,
+--   STRL_FDTN_ANALYSIS_TRACKING_COMPLETED_C    DATE,
+--   STRUCTURAL_FOUNDATION_ENGINEERS_C          VARCHAR(18),
+--   SYSTEM_OUTPUT_K_WH_C                       double precision,
+--   STORAGE_EXPANSION_UNIT_QUANTITY_C          double precision,
+--   STORAGE_EXPANSION_UNIT_C                   VARCHAR(765),
+--   STORAGE_SYSTEM_C                           VARCHAR(765),
+--   SYSTEM_SIZE_BOS_C                          numeric(18, 2),
+--   SYSTEM_SIZE_PV_C                           numeric(18, 3),
+--   SYSTEM_SIZE_K_WP_C                         double precision,
+--   TERM_YEARS_C                               double precision,
+--   TOTAL_BOS_COST_C                           numeric(18, 2),
+--   TOTAL_DEVELOPMENT_COST_C                   numeric(18, 2),
+--   TOTAL_PV_COST_C                            numeric(18, 2),
+--   TRANSMISSION_DUE_DILIGENCE_COMPLETE_C      BOOLEAN,
+--   K_WP_SMARTMOUNT_C                          double precision,
+--   K_WP_SUNTILE_C                             double precision,
+--   OLD_SYS_QUOTE_NUMBER_C                     VARCHAR(150),
+--   STORAGE_LOCATION_C                         VARCHAR(765),
+--   FINANCE_CHARGE_C                           numeric(18, 2),
+--   LOAN_DATE_PHASE_1_C                        DATE,
+--   LOAN_DATE_PHASE_2_C                        DATE,
+--   SEND_TO_DRC_C                              BOOLEAN,
+--   IS_SEND_APPROVALTO_SALES_ANALYST_C         BOOLEAN,
+--   DRC_NOTES_C                                VARCHAR(96000),
+--   SALES_ANALYST_SUPPORT_C                    BOOLEAN,
+--   OPPORTUNITY_OWNER_S_MANAGER_C              VARCHAR(240),
+--   PRICE_C                                    numeric(18, 2),
+--   ACCOUNT_C                                  VARCHAR(18),
+--   ADDITIONAL_EQUIPMENT_C                     VARCHAR(765),
+--   ADMIN_NOTES_C                              VARCHAR(765),
+--   COMPANY_ID_C                               VARCHAR(120),
+--   CONSTRUCTION_C                             numeric(18, 2),
+--   CUSTOMER_ID_C                              VARCHAR(765),
+--   CUSTOMER_ADDRESS_ADDRESS_C                 VARCHAR(120),
+--   CUSTOMER_ADDRESS_CITY_C                    VARCHAR(120),
+--   CUSTOMER_ADDRESS_COUNTY_C                  VARCHAR(120),
+--   CUSTOMER_ADDRESS_STATE_C                   VARCHAR(6),
+--   CUSTOMER_ADDRESS_ZIP_C                     double precision,
+--   CUSTOMER_ELECTRIC_UTILITY_C                VARCHAR(765),
+--   CUSTOMER_RATE_NAME_C                       VARCHAR(765),
+--   DATE_CREATED_C                             DATE,
+--   DATE_MODIFIED_C                            DATE,
+--   FULL_PRE_PAYMENT_AMOUNT_BASE_AMOUNT_C      numeric(18, 2),
+--   IS_LOCKED_C                                BOOLEAN,
+--   LEASE_DOC_CREATED_C                        BOOLEAN,
+--   LEASE_NUMBER_C                             VARCHAR(90),
+--   MODULE_ORACLE_ITEM_NUMBER_C                VARCHAR(18),
+--   MODULE_QUANTITY_C                          double precision,
+--   OVERRIDE_30_KW_LIMIT_C                     BOOLEAN,
+--   TEMP_CONTACT_1_C                           VARCHAR(765),
+--   TEMP_CONTACT_2_C                           VARCHAR(765),
+--   CHECK_CONT_LICENCE_C                       BOOLEAN,
+--   LOAN_DATE_PHASE_3_C                        DATE,
+--   CONTACTS_NAMES_C                           VARCHAR(765),
+--   DATE_C                                     VARCHAR(765),
+--   DEALER_CONTRACTOR_LICENSE_NUMBER_C         VARCHAR(765),
+--   DEALER_FEES_C                              numeric(18, 2),
+--   DEALER_INSTALLER_ADDRESS_ADDRESS_C         VARCHAR(180),
+--   DEALER_INSTALLER_ADDRESS_CITY_C            VARCHAR(765),
+--   DEALER_INSTALLER_ADDRESS_COUNTY_C          VARCHAR(765),
+--   DEALER_INSTALLER_ADDRESS_STATE_C           VARCHAR(765),
+--   DEALER_INSTALLER_ADDRESS_ZIP_C             double precision,
+--   DEALER_INSTALLER_C                         VARCHAR(180),
+--   DESCRIPTION_C                              VARCHAR(765),
+--   DOC_OUT_FOR_SIGNATURE_C                    BOOLEAN,
+--   MONTHLY_PAYMENT_W_ACH_PHASE_1_C            numeric(16, 2),
+--   EARLY_BUYOUT_OPTION_DATE_C                 VARCHAR(765),
+--   EARLY_BUYOUT_OPTION_PRICE_C                numeric(18),
+--   FIRST_MONTHLY_PAYMENT_BASE_AMOUNT_C        numeric(18, 2),
+--   FIRST_MONTHLY_PAYMENT_EST_TAX_ON_PAYME_C   numeric(18, 2),
+--   FIRST_MONTHLY_PAYMENT_ESTIMATED_PAYMENT_C  numeric(18, 2),
+--   FIRST_MONTHLY_PAYMENT_C                    double precision,
+--   FULL_PRE_PAYMENT_AMOUNT_ESTIMATED_PAYMEN_C numeric(18, 2),
+--   FULL_PRE_PAYMENT_AMOUNT_ESTIMATED_TAX_ON_C numeric(18, 2),
+--   FULL_PREPAID_LEASE_C                       BOOLEAN,
+--   FULL_PREPAYMENT_OF_LEASE_AMOUNT_C          numeric(18, 2),
+--   INSTALL_DATE_C                             VARCHAR(765),
+--   INTERCONNECT_C                             numeric(18, 2),
+--   INVERTER_BRAND_2_C                         VARCHAR(300),
+--   INVERTER_BRAND_3_C                         VARCHAR(300),
+--   INVERTER_BRAND_4_C                         VARCHAR(300),
+--   INVERTER_BRAND_C                           VARCHAR(300),
+--   INVERTER_MODEL_2_C                         VARCHAR(300),
+--   INVERTER_MODEL_3_C                         VARCHAR(300),
+--   INVERTER_MODEL_4_C                         VARCHAR(300),
+--   INVERTER_MODEL_C                           VARCHAR(300),
+--   INVERTER_QUANTITY_2_C                      double precision,
+--   INVERTER_QUANTITY_3_C                      double precision,
+--   INVERTER_QUANTITY_4_C                      double precision,
+--   INVERTER_QUANTITY_C                        double precision,
+--   IS_QUOTE_LOCKED_C                          BOOLEAN,
+--   IS_SELECTED_SCENARIO_C                     BOOLEAN,
+--   EV_CHARGER_MODEL_C                         VARCHAR(765),
+--   LEASE_DOC_SIGNED_C                         BOOLEAN,
+--   LEASE_DOC_TERMINATED_C                     BOOLEAN,
+--   LEASE_FROM_ACCOUNT_C                       BOOLEAN,
+--   LESSEE_2_C                                 VARCHAR(300),
+--   LESSEE_3_C                                 VARCHAR(300),
+--   LESSEE_4_C                                 VARCHAR(300),
+--   LESSEE_C                                   VARCHAR(18),
+--   LICENSE_ID_C                               VARCHAR(120),
+--   MODULE_C                                   VARCHAR(120),
+--   MONITORING_SYSTEM_MODEL_C                  VARCHAR(300),
+--   MONITORING_SYSTEM_OPTION_C                 VARCHAR(180),
+--   MONITORING_SYSTEM_QUANTITY_C               VARCHAR(150),
+--   MONTHLY_POWER_BILL_AFTER_SOLAR_C           VARCHAR(150),
+--   MONTHLY_POWER_BILL_BEFORE_SOLAR_C          VARCHAR(150),
+--   MOUNTING_OPTION_C                          VARCHAR(120),
+--   ORACLE_VENDOR_EMAIL_FIELD_VALUE_C          VARCHAR(240),
+--   ORIGINATION_C                              numeric(18, 2),
+--   OTHER_CHARGES_ROW_0_AMOUNT_C               VARCHAR(150),
+--   OTHER_CHARGES_ROW_0_DESCRIPTION_C          VARCHAR(765),
+--   OTHER_CHARGES_ROW_0_NAME_C                 VARCHAR(765),
+--   OTHER_CHARGES_ROW_1_AMOUNT_C               VARCHAR(150),
+--   OTHER_CHARGES_ROW_1_DESCRIPTION_C          VARCHAR(765),
+--   OTHER_CHARGES_ROW_1_NAME_C                 VARCHAR(765),
+--   OTHER_CHARGES_ROW_2_AMOUNT_C               VARCHAR(150),
+--   OTHER_CHARGES_ROW_2_DESCRIPTION_C          VARCHAR(765),
+--   OTHER_CHARGES_ROW_2_NAME_C                 VARCHAR(765),
+--   OTHER_CHARGES_ROW_3_AMOUNT_C               VARCHAR(150),
+--   OTHER_CHARGES_ROW_3_DESCRIPTION_C          VARCHAR(765),
+--   OTHER_CHARGES_ROW_3_NAME_C                 VARCHAR(765),
+--   OTHER_CHARGES_ROW_4_AMOUNT_C               VARCHAR(150),
+--   OTHER_CHARGES_ROW_4_DESCRIPTION_C          VARCHAR(765),
+--   OTHER_CHARGES_ROW_4_NAME_C                 VARCHAR(765),
+--   OTHER_CHARGES_ROW_5_AMOUNT_C               VARCHAR(150),
+--   OTHER_CHARGES_ROW_5_DESCRIPTION_C          VARCHAR(765),
+--   OTHER_CHARGES_ROW_5_NAME_C                 VARCHAR(765),
+--   OTHER_CHARGES_ROW_6_AMOUNT_C               VARCHAR(150),
+--   OTHER_CHARGES_ROW_6_DESCRIPTION_C          VARCHAR(765),
+--   OTHER_CHARGES_ROW_6_NAME_C                 VARCHAR(765),
+--   PARTIAL_PREPAYMENT_C                       double precision,
+--   POWER_USED_BEFORE_SOLAR_K_WH_YEAR_C        VARCHAR(300),
+--   PRIMARY_PSR_EMAIL_ID_C                     VARCHAR(240),
+--   PROPOSED_ELECTRIC_UTILITY_C                VARCHAR(765),
+--   PROPOSED_RATE_NAME_C                       VARCHAR(765),
+--   QUOTE_DATA_UPLOAD_FAILURE_C                VARCHAR(765),
+--   QUOTE_ID_C                                 VARCHAR(120),
+--   QUOTE_INVERTER_VALUES_C                    VARCHAR(96000),
+--   QUOTE_SUMMARY_C                            VARCHAR(18),
+--   RACKING_NU_C                               VARCHAR(120),
+--   RACKING_QUANTITY_C                         VARCHAR(150),
+--   REF_BY_OLD_QUOTE_C                         BOOLEAN,
+--   SALESPERSON_ID_C                           VARCHAR(120),
+--   SCENARIO_ID_C                              VARCHAR(60),
+--   SCENARIO_INDEX_C                           double precision,
+--   SHADING_MEASUREMENT_DATE_C                 VARCHAR(150),
+--   SHADING_NOTES_C                            VARCHAR(765),
+--   SOLAR_REBATE_AMOUNT_C                      numeric(18, 2),
+--   SYSTEM_COST_C                              numeric(18, 2),
+--   THE_ENDO_BOX_C                             BOOLEAN,
+--   TOTAL_MONTHLY_PAYMENTS_C                   numeric(18, 2),
+--   FINAL_LEASE_NUMBER_C                       VARCHAR(90),
+--   SALES_TAX_C                                double precision,
+--   ORIGINAL_LEASE_NUMBER_C                    VARCHAR(54),
+--   ADHOC_CREATE_LDA_C                         BOOLEAN,
+--   MONTHLY_PAYMENT_W_ACH_PHASE_2_C            numeric(16, 2),
+--   ORIGINAL_LEASE_DOC_DATE_C                  DATE,
+--   LEASE_DOC_SIGNED_DATE_C                    DATE,
+--   LEASE_DOC_CREATED_DATE_C                   DATE,
+--   LEASE_DOC_SENT_OUT_FOR_SIGNATURE_C         DATE,
+--   CONSOLIDATED_LEASE_NUMBER_DUP_C            VARCHAR(90),
+--   MONTHLY_PAYMENT_W_ACH_PHASE_3_C            numeric(16, 2),
+--   AMENDED_LEASE_C                            VARCHAR(18),
+--   AMENDED_C                                  BOOLEAN,
+--   AMENDMENT_COPY_ERROR_MESSAGE_C             VARCHAR(98304),
+--   AMENDMENT_DATE_C                           DATE,
+--   AMENDMENT_DOC_SIGNED_C                     BOOLEAN,
+--   AMENDMENT_HISTORY_1_C                      VARCHAR(765),
+--   AMENDMENT_QUOTE_ID_C                       VARCHAR(765),
+--   AMENDMENT_TYPE_C                           VARCHAR(765),
+--   AMMENDMENT_TYPE_AMD_QUOTE_C                VARCHAR(75),
+--   FINANCING_AMENDMENT_NOTES_C                VARCHAR(765),
+--   LEASE_TOBE_AMENDED_C                       VARCHAR(765),
+--   LESSEE_INFO_AM_DATE_C                      TIMESTAMPTZ,
+--   PRODUCT_AM_DATE_C                          TIMESTAMPTZ,
+--   PRODUCTION_AM_DATE_C                       TIMESTAMPTZ,
+--   AMENDED_LEASE_NUMBER_C                     VARCHAR(765),
+--   LEASE_ANNUAL_ESCALATION_C                  double precision,
+--   NUMBER_OF_INTERCONNECTIONS_C               double precision,
+--   SYSTEM_PRODUCTION_YEAR_1_C                 double precision,
+--   UTILITY_BILL_ANNUAL_ESCALATION_C           double precision,
+--   LESSOR_C                                   VARCHAR(765),
+--   SENT_WELCOME_EMAIL_C                       BOOLEAN,
+--   SEND_LIEN_WAIVER_AGREEMENT_C               BOOLEAN,
+--   TRIGGER_CHECKBOX_C                         BOOLEAN,
+--   LIEN_WAIVER_ALREADY_SENT_C                 BOOLEAN,
+--   ANNUAL_BILL_C                              numeric(18),
+--   ANNUAL_USAGE_C                             double precision,
+--   ANNUAL_TARGET_C                            BOOLEAN,
+--   AUTO_DRIVING_REDUCTION_C                   double precision,
+--   BUYDOWN_AMOUNT_C                           numeric(18),
+--   BUYDOWN_OVERRIDE_C                         BOOLEAN,
+--   CO_2_EMISSIONS_REDUCTION_C                 double precision,
+--   CASH_AMOUNT_1_C                            numeric(18),
+--   CASH_AMOUNT_2_C                            numeric(18, 2),
+--   CASH_AMOUNT_3_C                            numeric(18, 2),
+--   CASH_AMOUNT_C                              double precision,
+--   CASH_DESCRIPTION_1_C                       VARCHAR(75),
+--   CASH_DESCRIPTION_2_C                       VARCHAR(75),
+--   CASH_DESCRIPTION_3_C                       VARCHAR(75),
+--   CASH_DESCRIPTION_C                         VARCHAR(75),
+--   CURRENT_RATE_C                             VARCHAR(765),
+--   DM_C                                       double precision,
+--   DESIGN_FACTOR_C                            VARCHAR(765),
+--   DESIGN_FACTOR_VALUE_C                      double precision,
+--   DOWN_PAYMENT_C                             double precision,
+--   ELAPSED_TIME_C                             VARCHAR(30),
+--   END_DATE_C                                 DATE,
+--   FILING_STATUS_C                            VARCHAR(765),
+--   GENERAL_DERATE_FACTOR_C                    double precision,
+--   INCENTIVES_C                               numeric(18),
+--   INCENTIVES_DETAIL_1_C                      VARCHAR(600),
+--   INCENTIVES_DETAIL_1_AMT_C                  numeric(10),
+--   INCENTIVES_DETAIL_2_C                      VARCHAR(600),
+--   INCENTIVES_DETAIL_2_AMT_C                  numeric(10),
+--   INCENTIVES_DETAIL_3_C                      VARCHAR(600),
+--   INCOME_C                                   numeric(18),
+--   INV_0_LAYOUT_0_MODULE_COUNT_PER_STRING_C   double precision,
+--   INV_0_LAYOUT_0_PARALLEL_STRINGS_COUNT_C    double precision,
+--   INVERTER_0_LAYOUT_0_AXIS_TILT_ANGLE_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_10_C     VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_11_C     VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_12_C     VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_1_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_2_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_3_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_4_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_5_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_6_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_7_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_8_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_SHADING_MONTH_9_C      VARCHAR(30),
+--   INVERTER_0_LAYOUT_0_STANDARD_PVMODULE_ID_C double precision,
+--   INVERTER_0_LAYOUT_0_SYSTEM_AZIMUTH_C       double precision,
+--   INVERTER_0_STANDAR_INVERTER_ID_C           double precision,
+--   INVERTER_COUNT_C                           double precision,
+--   INVERTER_MANUFACTURER_ROOF_1_C             VARCHAR(765),
+--   INVERTER_MANUFACTURER_ROOF_2_C             VARCHAR(765),
+--   INVERTER_MANUFACTURER_ROOF_3_C             VARCHAR(765),
+--   INVERTER_MANUFACTURER_ROOF_4_C             VARCHAR(765),
+--   INVERTER_MANUFACTURER_C                    VARCHAR(765),
+--   ISNEW_C                                    BOOLEAN,
+--   LATITUDE_C                                 VARCHAR(60),
+--   LEASE_SALES_TAX_RATE_C                     double precision,
+--   LOAN_TERM_C                                VARCHAR(765),
+--   LONGITUDE_C                                VARCHAR(75),
+--   MODULES_PER_STRING_ROOF_1_C                double precision,
+--   MODULES_PER_STRING_ROOF_2_C                double precision,
+--   MODULES_PER_STRING_ROOF_3_C                double precision,
+--   MODULES_PER_STRING_ROOF_4_C                double precision,
+--   MODULES_PER_STRING_C                       double precision,
+--   MODULES_C                                  VARCHAR(765),
+--   MONITORING_SYSTEM_C                        VARCHAR(765),
+--   MONTHLY_APR_C                              double precision,
+--   MONTHLY_AUG_C                              double precision,
+--   MONTHLY_DEC_C                              double precision,
+--   MONTHLY_FEB_C                              double precision,
+--   MONTHLY_JAN_C                              double precision,
+--   MONTHLY_JUL_C                              double precision,
+--   MONTHLY_JUN_C                              double precision,
+--   MONTHLY_MAR_C                              double precision,
+--   MONTHLY_MAY_C                              double precision,
+--   MONTHLY_NOV_C                              double precision,
+--   MONTHLY_OCT_C                              double precision,
+--   MONTHLY_SEP_C                              double precision,
+--   MOUNTING_DESCRIPTION_C                     VARCHAR(765),
+--   NOT_AN_HISTORICAL_QUOTE_C                  BOOLEAN,
+--   ON_MARKUP_ONLY_C                           BOOLEAN,
+--   OPTIONAL_INCENTIVES_C                      VARCHAR(765),
+--   PBI_AMOUNT_C                               numeric(18),
+--   PBI_OVERRIDE_C                             BOOLEAN,
+--   PBI_YEARS_C                                double precision,
+--   PARTIAL_TARGET_C                           BOOLEAN,
+--   PRODUCTION_SHAVER_C                        double precision,
+--   PROPOSED_RATE_C                            VARCHAR(765),
+--   QUOTE_TYPE_C                               VARCHAR(765),
+--   REC_ESCALATION_C                           double precision,
+--   REC_LIFE_YEARS_C                           double precision,
+--   REC_VALUE_K_WH_C                           double precision,
+--   RECALCULATE_C                              VARCHAR(6),
+--   ROOF_DETAILS_1_C                           VARCHAR(18),
+--   ROOF_DETAILS_2_C                           VARCHAR(18),
+--   ROOF_DETAILS_3_C                           VARCHAR(18),
+--   ROOF_DETAILS_4_C                           VARCHAR(18),
+--   SALES_TAX_RATE_C                           double precision,
+--   STATUS_C                                   VARCHAR(30),
+--   SYSTEM_MODEL_C                             VARCHAR(765),
+--   TARGET_IMPLIED_RATE_C                      double precision,
+--   TARGET_IMPLIED_TARGET_C                    BOOLEAN,
+--   TAXABLE_1_C                                BOOLEAN,
+--   TAXABLE_2_C                                BOOLEAN,
+--   TAXABLE_3_C                                BOOLEAN,
+--   TAXABLE_C                                  BOOLEAN,
+--   TOTAL_ENERGY_C                             double precision,
+--   TOTAL_PARALLEL_STRINGS_ROOF_1_C            double precision,
+--   TOTAL_PARALLEL_STRINGS_ROOF_2_C            double precision,
+--   TOTAL_PARALLEL_STRINGS_ROOF_3_C            double precision,
+--   TOTAL_PARALLEL_STRINGS_ROOF_4_C            double precision,
+--   TOTAL_PARALLEL_STRINGS_C                   double precision,
+--   TREES_PLANTED_C                            double precision,
+--   MARK_1_C                                   double precision,
+--   TOTAL_ENERGY_TEST_C                        double precision,
+--   COPY_SM_BEFORE_LOCK_C                      VARCHAR(300),
+--   COPY_SM_AFTER_LOCK_C                       VARCHAR(300),
+--   AGREEMENT_STATUS_C                         VARCHAR(300),
+--   CUSTOMER_S_DOWN_PAYMENT_1_C                double precision,
+--   CUSTOMER_S_DOWN_PAYMENT_2_C                double precision,
+--   DC_CABINET_C                               double precision,
+--   DESIGN_HELP_STATUS_C                       VARCHAR(765),
+--   DIRECTION_C                                double precision,
+--   DOWN_PAYMENT_TYPE_C                        VARCHAR(765),
+--   ERDF_FEE_C                                 numeric(18, 4),
+--   NON_ACH_FINANCE_CHARGE_C                   numeric(16, 2),
+--   APPLIED_REBATE_RATE_C                      double precision,
+--   NON_ACH_TOTAL_PAYMENTS_C                   numeric(16, 2),
+--   FEASIBILITY_INDICATOR_C                    VARCHAR(765),
+--   FIT_ANNUAL_ESC_C                           double precision,
+--   FIT_RATE_C                                 numeric(18, 4),
+--   GREATER_THAN_25_METERS_C                   BOOLEAN,
+--   GRID_CONNECTION_TYPE_C                     VARCHAR(765),
+--   INVERTER_COUNT_ROOF_1_C                    double precision,
+--   INVERTER_COUNT_ROOF_2_C                    double precision,
+--   INVERTER_COUNT_ROOF_3_C                    double precision,
+--   INVERTER_COUNT_ROOF_4_C                    double precision,
+--   INVERTER_MODEL_ROOF_1_C                    VARCHAR(300),
+--   INVERTER_MODEL_ROOF_2_C                    VARCHAR(300),
+--   INVERTER_MODEL_ROOF_3_C                    VARCHAR(300),
+--   INVERTER_MODEL_ROOF_4_C                    VARCHAR(300),
+--   IRREGULAR_ROOF_C                           BOOLEAN,
+--   MULTIPLE_ROOFS_C                           BOOLEAN,
+--   ORIGINAL_ERDFFEE_C                         numeric(18, 4),
+--   ORIGINAL_FIT_RATE_C                        numeric(18, 4),
+--   PRIMARY_CONTACT_C                          VARCHAR(18),
+--   QUOTE_LOI_STATUS_C                         VARCHAR(765),
+--   RACKING_C                                  VARCHAR(765),
+--   ROOF_1_MPPT_1_MODULE_C                     double precision,
+--   ROOF_1_MPPT_1_STRING_C                     double precision,
+--   ROOF_1_MPPT_2_MODULE_C                     double precision,
+--   ROOF_1_MPPT_2_STRING_C                     double precision,
+--   ROOF_1_MPPT_3_MODULE_C                     double precision,
+--   ROOF_1_MPPT_3_STRING_C                     double precision,
+--   ROOF_1_MPPT_4_MODULE_C                     double precision,
+--   ROOF_1_MPPT_4_STRING_C                     double precision,
+--   ROOF_2_MPPT_1_MODULE_C                     double precision,
+--   ROOF_2_MPPT_1_STRING_C                     double precision,
+--   ROOF_2_MPPT_2_MODULE_C                     double precision,
+--   ROOF_2_MPPT_2_STRING_C                     double precision,
+--   ROOF_2_MPPT_3_MODULE_C                     double precision,
+--   ROOF_2_MPPT_3_STRING_C                     double precision,
+--   ROOF_2_MPPT_4_MODULE_C                     double precision,
+--   ROOF_2_MPPT_4_STRING_C                     double precision,
+--   NON_ACH_INTEREST_RATE_C                    double precision,
+--   LENDER_ALLOCATION_STATUS_C                 VARCHAR(765),
+--   EV_CHARGER_COMMISSION_C                    numeric(16, 2),
+--   LEASE_DOC_REVIEWED_C                       VARCHAR(765),
+--   EV_CHARGER_QUANTITY_C                      double precision,
+--   QUOTE_SELECTED_DATE_C                      TIMESTAMPTZ,
+--   REFINANCED_QUOTE_C                         VARCHAR(18),
+--   EV_OUTLET_MODEL_C                          VARCHAR(765),
+--   DESIGN_FILE_C                              VARCHAR(765),
+--   EV_OUTLET_QUANTITY_C                       double precision,
+--   EV_CHARGER_COST_C                          numeric(18, 2),
+--   EV_OUTLET_COST_C                           numeric(18, 2),
+--   TOTAL_EV_PRICE_C                           numeric(18, 2),
+--   SECONDARY_CONTACT_C                        VARCHAR(18),
+--   SYSTEM_MODEL_FR_C                          VARCHAR(765),
+--   SYSTEM_PRICE_C                             numeric(18, 2),
+--   TOTAL_YR_1_PRODUCTION_C                    double precision,
+--   TRENCHING_C                                VARCHAR(765),
+--   WIRING_DISTANCE_C                          VARCHAR(765),
+--   X_25_METERS_OR_LESS_C                      BOOLEAN,
+--   DC_CABINET_ROOF_2_C                        double precision,
+--   DC_CABINET_ROOF_3_C                        double precision,
+--   DC_CABINET_ROOF_4_C                        double precision,
+--   AC_CABINET_TYPE_C                          VARCHAR(150),
+--   CUSTOMER_DOWNPAYMENT_TYPE_C                VARCHAR(765),
+--   AVERGE_PAYBACK_RATE_PER_K_WH_C             double precision,
+--   DEALER_FEE_INSTALLATION_PARTNER_TOTAL_C    numeric(18, 2),
+--   DEALER_FEES_SALES_PARTNER_TOTAL_C          numeric(18, 2),
+--   DOWN_PAYMENT_TAX_C                         numeric(18, 2),
+--   INSTALLER_C                                VARCHAR(18),
+--   MAXIMUM_RATED_CAPACITY_DC_C                double precision,
+--   MONTHLY_BASE_PLUS_TAX_YEAR_1_C             double precision,
+--   MONTHLY_PAYMENT_BASE_YEAR_1_C              numeric(18, 2),
+--   MONTHLY_PAYMENT_TAX_FEES_YEAR_1_C          numeric(18, 2),
+--   MONTHLY_PAYMENT_TAX_YEAR_1_C               numeric(18, 2),
+--   PRIMARY_C                                  BOOLEAN,
+--   PROPOSAL_DOCUMENT_LINK_C                   VARCHAR(39000),
+--   SENT_FOR_CREDIT_CHECK_C                    BOOLEAN,
+--   FORECASTED_INSTALLATION_DATE_C             DATE,
+--   TOTAL_MONTHLY_PAYMENT_BASE_PLUS_TAX_C      numeric(18, 2),
+--   TOTAL_MONTHLY_PAYMENT_BASE_C               numeric(18, 2),
+--   TOTAL_MONTHLY_PAYMENT_TAX_FEES_C           numeric(18, 2),
+--   TOTAL_MONTHLY_PAYMENT_TAX_C                numeric(18, 2),
+--   TOTAL_PRODUCTION_BASE_C                    double precision,
+--   TOTAL_PRODUCTION_HIGH_C                    double precision,
+--   TOTAL_PRODUCTION_LOW_C                     double precision,
+--   TOTAL_PRODUCTION_RANGE_C                   VARCHAR(765),
+--   UTILITY_DISTRIBUTOR_C                      VARCHAR(765),
+--   O_M_ESCALATOR_C                            double precision,
+--   SAFE_HARBOR_MODULE_QUANTITY_C              double precision,
+--   SPECTRUM_PARTNER_QUOTE_C                   BOOLEAN,
+--   PERCENTAGE_ELECTRICITY_PRODUCED_C          double precision,
+--   SYSTEM_SIZE_AC_C                           double precision,
+--   PBI_SUM_C                                  double precision,
+--   PBI_TERM_C                                 double precision,
+--   ADDER_FEE_C                                numeric(18, 2),
+--   CREATE_TPS_PO_C                            BOOLEAN,
+--   DRIP_FEE_C                                 numeric(18, 2),
+--   IP_FEE_C                                   numeric(18, 2),
+--   TPS_FEE_C                                  numeric(18, 2),
+--   TOTAL_DEALER_FEE_C                         numeric(18, 2),
+--   NH_COMMUNITY_C                             VARCHAR(18),
+--   OK_TO_CREATE_LEASE_CONTRACT_C              BOOLEAN,
+--   APPROVED_FINANCE_AMOUNT_C                  numeric(18, 2),
+--   COST_OF_FINANCING_C                        double precision,
+--   CREDIT_BUREAU_C                            VARCHAR(765),
+--   CREDIT_CHECK_APPLICATION_C                 VARCHAR(18),
+--   EQUIPMENT_INSTALLATION_VALUE_C             numeric(18, 2),
+--   FINANCED_AMOUNT_C                          numeric(18, 2),
+--   LOAN_CONTRACT_STATUS_C                     VARCHAR(765),
+--   TOTAL_CONTRACT_PRICE_C                     numeric(18, 2),
+--   INSTALLATION_MODEL_C                       VARCHAR(18),
+--   INTEREST_RATE_C                            double precision,
+--   PROPOSAL_PREP_BY_C                         VARCHAR(300),
+--   MASTER_CONFIGURATOR_ID_C                   VARCHAR(18),
+--   MODULE_CONFIGURATION_ID_C                  VARCHAR(18),
+--   SECTOR_C                                   VARCHAR(300),
+--   CERTIFIED_THIRD_PARTY_LOAN_C               BOOLEAN,
+--   ECOBEE_USER_C                              BOOLEAN,
+--   THIRD_PARTY_LOAN_NUMBER_C                  VARCHAR(90),
+--   SREC_INDICATOR_C                           BOOLEAN,
+--   DYNAMIC_PROPOSAL_C                         BOOLEAN,
+--   ESS_TERM_C                                 VARCHAR(765),
+--   MONTHLY_RESILIENCY_PAYMENT_C               numeric(18, 2),
+--   QUOTE_WIZARD_C                             VARCHAR(765),
+--   CREDIT_RATING_C                            VARCHAR(765),
+--   ITC_INELIGIBLE_COST_C                      numeric(12, 2),
+--   UTILITY_RATE_CODE_C                        VARCHAR(765),
+--   YEAR_1_PPA_PRICE_C                         numeric(18, 2),
+--   YEAR_1_SAVINGS_C                           numeric(18, 2),
+--   TERM_SHEET_GENERATED_DATE_C                TIMESTAMPTZ,
+--   TERM_SHEET_C                               BOOLEAN,
+--   EST_FEDERAL_TAX_CREDIT_C                   numeric(18, 2),
+--   EST_STATE_TAX_CREDIT_C                     numeric(18, 2),
+--   EST_STATE_AND_LOCAL_REBATES_C              numeric(18, 2),
+--   BLENDED_COST_PER_K_WH_C                    numeric(18, 2),
+--   DEMAND_COST_AFTER_C                        numeric(18, 2),
+--   DEMAND_COST_BEFORE_C                       numeric(18, 2),
+--   ESS_AVERAGE_DEGREDATION_RATE_C             double precision,
+--   ESS_ENERGY_CONSUMPTION_YR_1_C              double precision,
+--   ESS_INCLUDED_C                             BOOLEAN,
+--   ESS_MAX_DISCHARGE_POWER_K_W_C              double precision,
+--   ESS_NUMBER_OF_CYCLES_C                     double precision,
+--   ESS_TOTAL_COST_C                           numeric(18, 2),
+--   ESS_TOTAL_ENERGY_CAPACITY_K_WH_C           double precision,
+--   ESS_TOTAL_ENERGY_DISCHARGE_YR_1_C          double precision,
+--   ELECTRIC_BILL_COST_AFTER_C                 numeric(18, 2),
+--   ELECTRIC_BILL_COST_BEFORE_C                numeric(18, 2),
+--   ENERGY_COST_AFTER_C                        numeric(18, 2),
+--   ENERGY_COST_BEFORE_C                       numeric(18, 2),
+--   EXTERNAL_PROPOSAL_ID_C                     VARCHAR(150),
+--   EXTERNAL_PROPOSAL_URL_C                    VARCHAR(765),
+--   MAXIMUM_RATED_CAPACITY_AC_C                double precision,
+--   MODULE_DEGRADATION_RATE_C                  double precision,
+--   NET_ANNUAL_USAGE_C                         double precision,
+--   PERFORMANCE_GUARANTEE_C                    BOOLEAN,
+--   ESS_PRICE_TYPE_C                           VARCHAR(765),
+--   SELECTED_QUOTE_IN_MY_SUN_POWER_C           BOOLEAN,
+--   MONTHLY_PAYMENT_PHASE_1_C                  numeric(18, 2),
+--   MONTHLY_PAYMENT_PHASE_2_C                  numeric(18, 2),
+--   MONTHLY_PAYMENT_PHASE_3_C                  numeric(18, 2),
+--   NUM_OF_PAYMENTS_PHASE_1_C                  double precision,
+--   NUM_OF_PAYMENTS_PHASE_2_C                  double precision,
+--   NUM_OF_PAYMENTS_PHASE_3_C                  double precision,
+--   _FIVETRAN_SYNCED                           TIMESTAMPTZ,
+--   IO_LOAN_AVAILABLE_C                        BOOLEAN,
+--   COST_OF_FINANCING_W_C                      numeric(19, 4),
+--   _FIVETRAN_DELETED                          BOOLEAN,
+--   SYSTEM_PRICE_EXCLUDING_TAX_C               numeric(18, 2),
+--   STORAGE_SIZE_K_WH_C                        double precision,
+--   OTHER_INSTALLATION_LOCATION_C              VARCHAR(450),
+--   EXISTING_MAIN_PANEL_RATING_C               VARCHAR(765),
+--   NEW_MAIN_PANEL_RATING_C                    VARCHAR(765),
+--   TRENCH_DIRT_ONLY_C                         double precision,
+--   SUB_PANEL_FEEDER_MIGRATION_C               double precision,
+--   TRENCH_NON_DIRT_SURFACES_C                 double precision,
+--   FEEDER_CONDUCTORS_UP_TO_125_A_C            double precision,
+--   FEEDER_CONDUCTORS_125_A_C                  double precision,
+--   INSTALLATION_LOCATION_C                    VARCHAR(765),
+--   MAIN_PANEL_UPGRADE_C                       VARCHAR(765),
+--   BOLLARD_INSTALLATIONS_C                    double precision,
+--   CIRCUIT_MIGRATION_C                        double precision,
+--   CHARGING_AMPERAGE_NEEDED_C                 VARCHAR(765),
+--   DISTANCE_FROM_MAIN_PANEL_C                 double precision,
+--   FEEDER_MIGRATION_100_A_C                   double precision,
+--   FEEDER_CONDUCTORS_UT_125_A_C               VARCHAR(765),
+--   FEEDER_CONDUCTORS_GT_125_A_C               VARCHAR(765),
+--   ANNUAL_INCENTIVE_RATE_K_WH_C               numeric(20, 4),
+--   PRICE_ID_C                                 VARCHAR(765),
+--   OPTIMIZATION_TYPE_C                        VARCHAR(765),
+--   AVOIDED_COST_OF_POWER_C                    numeric(14, 4),
+--   ENERGY_COST_PER_KWH_WITHOUT_SOLAR_1_C      numeric(19, 4),
+--   CONDITIONAL_MPU_NON_STANDARD_REASON_C      VARCHAR(4099),
+--   APPROVALS_IN_PLACE_C                       BOOLEAN,
+--   QUOTE_IS_READY_AND_APPROVED_C              BOOLEAN,
+--   APPROVAL_REQUIRED_C                        BOOLEAN,
+--   PRICE_W_C                                  double precision,
+--   PRICE_K_WH_C                               double precision,
+--   REJECTION_REASON_CODE_S_C                  VARCHAR(4099),
+--   PRICING_CATALOG_VERSION_C                  VARCHAR(765),
+--   INSUFFICIENT_INFO_C                        BOOLEAN,
+--   INSUFFICIENT_HOME_SURVEY_REASON_CODES_C    VARCHAR(4099),
+--   REMAINING_AMOUNT_C                         numeric(18, 2),
+--   DEPOSIT_SUBMITTED_C                        BOOLEAN,
+--   DEPOSIT_DATE_C                             TIMESTAMPTZ,
+--   COMPLEX_INSTALL_ADDER_C                    numeric(14),
+--   REASON_COMPLEX_INSTALL_ADDER_C             VARCHAR(4099),
+--   STORAGE_MANUFACTURER_C                     VARCHAR(765),
+--   ARCHIVED_QUOTE_LINE_DATA_C                 VARCHAR(393216),
+--   NUMBER_OF_QUOTE_LINES_ARCHIVED_C           double precision,
+--   NON_BACKUP_STORAGE_ACKNOWLEDGED_C          VARCHAR(765),
+--   RELATED_WORK_ID                            VARCHAR(18),
+--   CONTRACT_ID                                VARCHAR(18)
+-- );
+-- drop table if exists brs.DS_AGREEMENT_C;
+-- create table if not exists brs.DS_AGREEMENT_C
+-- (
+--   ID                                    VARCHAR(18),
+--   OWNER_ID                              VARCHAR(18),
+--   IS_DELETED                            BOOLEAN,
+--   NAME                                  VARCHAR(240),
+--   CURRENCY_ISO_CODE                     VARCHAR(9),
+--   RECORD_TYPE_ID                        VARCHAR(18),
+--   CREATED_DATE                          TIMESTAMPTZ,
+--   CREATED_BY_ID                         VARCHAR(18),
+--   LAST_MODIFIED_DATE                    TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                   VARCHAR(18),
+--   SYSTEM_MODSTAMP                       TIMESTAMPTZ,
+--   LAST_VIEWED_DATE                      TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE                  TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID                VARCHAR(18),
+--   CONNECTION_SENT_ID                    VARCHAR(18),
+--   ACCOUNT_C                             VARCHAR(18),
+--   CHANGE_ORDER_TYPE_C                   VARCHAR(765),
+--   COUNTERSIGNATORY_NOTES_C              VARCHAR(98304),
+--   NOTES_C                               VARCHAR(98304),
+--   QUOTE_C                               VARCHAR(18),
+--   SENT_TO_MY_SUN_POWER_C                BOOLEAN,
+--   NH_CONFIRMATION_EMAIL_STATUS_C        VARCHAR(765),
+--   COPIED_FROM_C                         VARCHAR(18),
+--   DS_AGREEMENT_C                        VARCHAR(18),
+--   DOCU_SIGN_ENVELOPE_C                  VARCHAR(18),
+--   DOCU_SIGN_STATUS_C                    VARCHAR(18),
+--   ENVELOPE_STATUS_C                     VARCHAR(765),
+--   ON_HOLD_REASON_S_C                    VARCHAR(4099),
+--   REVIEWER_C                            VARCHAR(18),
+--   ADHOC_CREATE_LDA_REQUESTED_C          BOOLEAN,
+--   CANCELLATION_REASON_C                 VARCHAR(765),
+--   CO_BORROWER_AMENDMENT_C               BOOLEAN,
+--   CONTRACT_TYPE_C                       VARCHAR(765),
+--   DOCUMENT_URL_C                        VARCHAR(765),
+--   READY_TO_SIGN_C                       BOOLEAN,
+--   HOMEOWNER_DATA_C                      VARCHAR(18),
+--   SUBMITTED_FOR_REVIEW_C                BOOLEAN,
+--   LEGACY_AGREEMENT_ID_C                 VARCHAR(54),
+--   LEGACY_DOCUMENT_KEY_C                 VARCHAR(765),
+--   MIGRATED_FROM_ADOBE_C                 BOOLEAN,
+--   CONNECTED_SOLUTIONS_PARTICIPANT_C     VARCHAR(765),
+--   ACCOUNT_NAME_C                        VARCHAR(765),
+--   CONTRACT_END_DATE_C                   DATE,
+--   CONTRACT_START_DATE_C                 DATE,
+--   FINANCIAL_PAYMENT_C                   VARCHAR(18),
+--   INTERCONNECTION_AMOUNT_C              numeric(18, 2),
+--   INVOICE_COMPLIANCE_DOCUMENT_C         VARCHAR(18),
+--   ORIGINATION_AND_INSTALLATION_AMOUNT_C numeric(18, 2),
+--   TEMPLATES_C                           VARCHAR(1500),
+--   HOLD_NOTES_C                          VARCHAR(98304),
+--   SUB_CATEGORY_C                        VARCHAR(4099),
+--   _FIVETRAN_SYNCED                      TIMESTAMPTZ,
+--   _FIVETRAN_DELETED                     BOOLEAN,
+--   TITLE_CHECK_C                         VARCHAR(18)
+-- );
+-- drop table if exists brs.LEASE_PAYMENT_C;
+-- create table if not exists brs.LEASE_PAYMENT_C
+-- (
+--   ID                                         VARCHAR(18),
+--   IS_DELETED                                 BOOLEAN,
+--   NAME                                       VARCHAR(240),
+--   CURRENCY_ISO_CODE                          VARCHAR(9),
+--   RECORD_TYPE_ID                             VARCHAR(18),
+--   CREATED_DATE                               TIMESTAMPTZ,
+--   CREATED_BY_ID                              VARCHAR(18),
+--   LAST_MODIFIED_DATE                         TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                        VARCHAR(18),
+--   SYSTEM_MODSTAMP                            TIMESTAMPTZ,
+--   LAST_ACTIVITY_DATE                         DATE,
+--   LAST_VIEWED_DATE                           TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE                       TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID                     VARCHAR(18),
+--   CONNECTION_SENT_ID                         VARCHAR(18),
+--   ACCEPTANCE_APPRVD_C                        DATE,
+--   ACCEPTANCE_RCVD_C                          DATE,
+--   ADD_EQUIPMENT_QTY_C                        double precision,
+--   ADDITIONAL_EQUIPMENT_C                     VARCHAR(765),
+--   CM_PYMNT_POSTED_C                          DATE,
+--   CM_PYMNT_REFERENCE_C                       VARCHAR(72),
+--   CM_PYMNT_RQUSTD_C                          DATE,
+--   CLOSING_REQUEST_BATCH_C                    VARCHAR(600),
+--   CLOSING_REQUEST_DATE_C                     DATE,
+--   CLOSING_REQUEST_RESP_C                     VARCHAR(600),
+--   CMPLTD_ICF_APPRVD_C                        DATE,
+--   CMPLTD_ICF_RCVD_C                          DATE,
+--   CMSNG_RPT_APPRVD_C                         DATE,
+--   CMSNG_RPT_RCVD_C                           DATE,
+--   CNFRMD_ICF_APPRVD_C                        DATE,
+--   CNFRMD_ICF_RCVD_C                          DATE,
+--   CNFRMD_MON_PRVSND_C                        DATE,
+--   COND_FIN_LW_APPRVD_C                       DATE,
+--   COND_FIN_LW_RCVD_C                         DATE,
+--   COND_PROG_LW_APPRVD_C                      DATE,
+--   COND_PROG_LW_RCVD_C                        DATE,
+--   CURRENT_STAGE_DATE_C                       DATE,
+--   DEALER_LABOR_COST_C                        numeric(12, 2),
+--   DEALER_MATERIAL_COST_C                     numeric(12, 2),
+--   DEALER_CONTACT_C                           VARCHAR(18),
+--   DES_PLAN_APPRVD_C                          DATE,
+--   DES_PLAN_RCVD_C                            DATE,
+--   EARLY_BUYOUT_PRICE_C                       numeric(10, 2),
+--   EST_NPV_C                                  numeric(10, 2),
+--   EST_YR_1_PRODUCTION_C                      double precision,
+--   FILING_STATUS_C                            VARCHAR(765),
+--   FIN_PERMITS_APPRVD_C                       DATE,
+--   FIN_PERMITS_RCVD_C                         DATE,
+--   INCOME_C                                   numeric(18),
+--   INSTALL_INV_AMOUNT_C                       numeric(8, 2),
+--   INSTALL_INV_APPRVD_C                       DATE,
+--   INSTALL_INV_NUMBER_C                       VARCHAR(96),
+--   INSTALL_INV_RCVD_C                         DATE,
+--   INSTALL_PYMNT_APPRVD_C                     DATE,
+--   INSTALL_PYMNT_SENT_C                       DATE,
+--   INSTALLATION_PO_C                          VARCHAR(90),
+--   INTERCONNECT_PO_C                          VARCHAR(90),
+--   INTRCNCT_INV_AMOUNT_C                      numeric(8, 2),
+--   INTRCNCT_INV_APPRVD_C                      DATE,
+--   INTRCNCT_INV_NUMBER_C                      VARCHAR(96),
+--   INTRCNCT_INV_RCVD_C                        DATE,
+--   INTRCNCT_PYMNT_APPRVD_C                    DATE,
+--   INTRCNCT_PYMNT_SENT_C                      DATE,
+--   LEASE_CLOSE_DATE_C                         DATE,
+--   AMENDMENT_DATE_C                           DATE,
+--   MAT_INV_AMOUNT_C                           numeric(12, 2),
+--   MAT_INV_APPRVD_C                           DATE,
+--   MAT_INV_LW_APPRVD_C                        DATE,
+--   MAT_INV_LIEN_WAIVER_C                      DATE,
+--   MAT_INV_RCVD_C                             DATE,
+--   MAT_INVOICE_NUMBER_C                       VARCHAR(96),
+--   MAT_PYMNT_APPRVD_C                         DATE,
+--   MAT_PYMNT_SENT_C                           DATE,
+--   AMENDMENT_REVISION_LEASE_NUMBER_C          double precision,
+--   ANNUAL_ESCALATION_NOT_AVAILABLE_CHECKBOX_C BOOLEAN,
+--   BYPASS_ENERGY_START_DATE_UPDATE_C          BOOLEAN,
+--   ORIGINATION_PO_C                           VARCHAR(90),
+--   PTO_LTR_APPRVD_C                           DATE,
+--   PTO_LTR_RCVD_C                             DATE,
+--   PARTNER_ACCOUNT_C                          VARCHAR(18),
+--   PARTNER_ACCOUNT_ID_C                       VARCHAR(18),
+--   PHOTOS_APPRVD_C                            DATE,
+--   PHOTOS_RCVD_C                              DATE,
+--   PRE_SOLAR_ELEC_USAGE_C                     VARCHAR(765),
+--   PRE_SOLAR_TARIFF_C                         VARCHAR(762),
+--   PREFLIGHT_BATCH_DATE_C                     DATE,
+--   PREFLIGHT_BATCH_C                          VARCHAR(600),
+--   PREFLIGHT_RESPONSE_C                       VARCHAR(600),
+--   PROJ_ADMIN_STATUS_C                        VARCHAR(765),
+--   PROJ_INSTALL_COMPETE_C                     DATE,
+--   PLACE_IN_SERVICE_ENTERED_C                 BOOLEAN,
+--   RACKING_BRAND_C                            VARCHAR(60),
+--   SO_NUMBER_C                                VARCHAR(30),
+--   SP_INVOICE_APPRVD_C                        DATE,
+--   SP_INVOICE_RCVD_C                          DATE,
+--   SP_INVOICE_C                               VARCHAR(90),
+--   SP_MATERIAL_COSTS_C                        numeric(12, 2),
+--   SALES_TAX_C                                double precision,
+--   SCHED_DELIVERY_DATE_C                      DATE,
+--   STAGE_C                                    VARCHAR(765),
+--   SYSTEM_PRICE_2_C                           numeric(12, 2),
+--   UNCOND_FIN_LW_APPROVED_C                   DATE,
+--   UNCOND_FIN_LW_RCVD_C                       DATE,
+--   WARR_SNS_APPRVD_C                          DATE,
+--   WARR_SNS_RCVD_C                            DATE,
+--   Y_1_MONTHLY_PAYMENT_C                      numeric(6, 2),
+--   INTRCNCT_LTR_RCVD_C                        DATE,
+--   INTRCNCT_LTR_APPRVD_C                      DATE,
+--   LEASE_2_C                                  BOOLEAN,
+--   PLACED_IN_SERVICE_C                        DATE,
+--   NOTE_TO_DEALER_INSTALL_C                   VARCHAR(3000),
+--   NOTE_TO_DEALER_FINAL_C                     VARCHAR(3000),
+--   BILLING_NOTES_C                            VARCHAR(765),
+--   LEASE_CHANGE_HOLD_APPLIED_C                DATE,
+--   LEASE_CHANGE_HOLD_RELEASED_C               DATE,
+--   LEASE_CHANGE_HOLD_DISPOSITION_C            VARCHAR(765),
+--   ADDENDUM_SENT_C                            DATE,
+--   ADDENDUM_SIGNED_C                          DATE,
+--   ADDENDUM_COUNTERSIGNED_C                   DATE,
+--   LEASE_CHANGE_NOTES_C                       VARCHAR(765),
+--   REVISED_ITEMS_RCVD_C                       DATE,
+--   CM_PYMNT_SUBMITTED_C                       VARCHAR(60),
+--   NOTICE_TO_PROCEED_SENT_C                   DATE,
+--   CITI_ACCEPTANCE_DATE_C                     DATE,
+--   MAT_PYMNT_SUBMITTED_C                      DATE,
+--   INSTALL_PYMNT_SUBMITTED_C                  DATE,
+--   INTRCNCT_PYMNT_SUBMITTED_C                 DATE,
+--   LEASE_1_C                                  BOOLEAN,
+--   DEALER_FEE_PO_C                            VARCHAR(60),
+--   PO_CREATED_C                               DATE,
+--   SPEB_SO_C                                  VARCHAR(90),
+--   DEALER_LEASE_CONTACT_NAME_C                VARCHAR(120),
+--   DEALER_LEASE_CONTACT_EMAIL_C               VARCHAR(240),
+--   DATE_DELIVERED_C                           DATE,
+--   PROJECTED_INTERCONNECT_DATE_C              DATE,
+--   PRICING_C                                  VARCHAR(75),
+--   DEALER_FEE_90_PO_RECEIPT_COMPLETE_C        DATE,
+--   DEALER_FEE_90_PO_RECEIPT_NUMBER_C          VARCHAR(150),
+--   DEALER_FEE_10_PO_RECEIPT_COMPLETE_C        DATE,
+--   DEALER_FEE_10_PO_RECEIPT_NUMBER_C          VARCHAR(150),
+--   CASH_GRANT_PACKAGE_COMPLETE_C              DATE,
+--   FMV_BY_STATE_C                             double precision,
+--   WATTAGE_C                                  double precision,
+--   US_CASH_GRANT_SUBMISSION_DATE_C            DATE,
+--   INVOICE_ADMIN_C                            VARCHAR(150),
+--   DEALER_FEE_ORIGINATION_C                   numeric(18, 2),
+--   DEALER_FEE_INSTALL_C                       numeric(18, 2),
+--   DEALER_FEE_INTERCONNECT_C                  numeric(18, 2),
+--   INVERTER_MODEL_3_C                         double precision,
+--   PARTNER_ID_TEXT_C                          VARCHAR(297),
+--   US_CASH_GRANT_RECEIVED_DATE_C              DATE,
+--   DEALER_REBATE_RESERVATION_CONFIRMATION_C   VARCHAR(297),
+--   STATUS_C                                   VARCHAR(765),
+--   FUNDING_TRANCHE_C                          VARCHAR(765),
+--   REBATE_AUTHORITY_C                         VARCHAR(765),
+--   EXPIRATION_DATE_C                          DATE,
+--   DATE_IN_PTO_LETTER_C                       DATE,
+--   ACH_C                                      BOOLEAN,
+--   TAN_C                                      VARCHAR(297),
+--   PAYMENT_RECEIVED_C                         DATE,
+--   REBATE_RESERVED_C                          numeric(18, 2),
+--   REBATE_ACTUAL_C                            numeric(18, 2),
+--   INSPECTION_WAIVER_C                        BOOLEAN,
+--   FINANCING_PREPAYMENT_C                     numeric(18, 2),
+--   REASON_FOR_CANCELLATION_C                  VARCHAR(765),
+--   BOOKING_TEMPLATE_SENT_TO_LD_C              DATE,
+--   ACCOUNT_C                                  VARCHAR(18),
+--   CONTACT_C                                  VARCHAR(18),
+--   DEALER_ORIGINATION_FEE_C                   numeric(12, 2),
+--   DEALER_REBATE_CLAIM_C                      numeric(12, 2),
+--   END_CUSTOMER_ACCOUNT_C                     VARCHAR(18),
+--   OPPORTUNITY_C                              VARCHAR(18),
+--   PYMNT_CERT_MONTH_C                         VARCHAR(60),
+--   QUOTE_C                                    VARCHAR(18),
+--   SIZE_KWDC_C                                double precision,
+--   PERFORMANCE_ACCEPTANCE_DATE_C              DATE,
+--   PAYMENT_REQUEST_SUBMITTED_C                DATE,
+--   INSTALL_ACCULMAGE_CONFIRMED_C              DATE,
+--   INTERCONNECTION_ACCULMAGED_CONFIRMED_C     DATE,
+--   LEASE_1_OR_2_C                             VARCHAR(765),
+--   ANNUAL_PROD_REPORT_YR_1_C                  DATE,
+--   TRANCHING_STATUS_C                         VARCHAR(765),
+--   ANNUAL_ESCALATION_NOT_AVAILABLE_C          VARCHAR(765),
+--   CUSTOMER_PROMISE_DATE_INVERTER_C           DATE,
+--   CUSTOMER_PROMISE_DATE_MOUNTING_C           DATE,
+--   CUSTOMER_PROMISE_DATE_PV_C                 DATE,
+--   CUSTOMER_REQUEST_DATE_INVERTER_C           DATE,
+--   CUSTOMER_REQUEST_DATE_MOUNTING_C           DATE,
+--   AMENDMENT_REVISION_LEASE_NUMBER_1_C        VARCHAR(60),
+--   LEASE_CHANGE_TYPE_C                        VARCHAR(765),
+--   CUSTOMER_REQUEST_DATE_PV_C                 DATE,
+--   ANNUAL_ESCALATION_OLD_C                    double precision,
+--   BASE_MON_PYMNT_YR_1_OLD_C                  numeric(12, 2),
+--   CREATE_LEASE_SUMMARY_C                     BOOLEAN,
+--   DELIVERY_DATE_INVERTERS_C                  DATE,
+--   DELIVERY_DATE_MOUNTING_C                   DATE,
+--   DELIVERY_DATE_PV_C                         DATE,
+--   FINANCIER_CHANGE_DATE_C                    DATE,
+--   LEASE_COST_C                               numeric(18, 2),
+--   PO_AMOUNT_INSTALLATION_C                   numeric(18, 2),
+--   PO_AMOUNT_INTERCONNECT_C                   numeric(18, 2),
+--   FAIR_MARKET_VALUE_ACCTG_C                  numeric(18, 2),
+--   PO_AMOUNT_ORIGINATION_C                    numeric(18, 2),
+--   DEALER_CONTACT_OLD_C                       VARCHAR(18),
+--   PO_CREATION_DATE_INSTALLATION_C            TIMESTAMPTZ,
+--   PO_CREATION_DATE_INTERCONNECT_C            TIMESTAMPTZ,
+--   INVERTER_SERIAL_NUMBERS_C                  VARCHAR(180),
+--   PO_CREATION_DATE_ORIGINATION_C             TIMESTAMPTZ,
+--   DATE_LEASE_DOCUMENT_SIGNED_C               DATE,
+--   SMS_INSTALLATION_CHECKLIST_RECEIVED_C      DATE,
+--   SMS_INSTALLATION_CHECKLIST_APPROV_C        DATE,
+--   LPS_NOTES_C                                VARCHAR(98304),
+--   PTO_PRIOR_NTP_C                            VARCHAR(765),
+--   CG_VALUATION_METHODOLOGY_C                 VARCHAR(765),
+--   COND_PROG_LW_RCVD_OLD_C                    DATE,
+--   CREDIT_CHECK_DATE_OLD_C                    DATE,
+--   CREDIT_CHECK_STATUS_OLD_C                  VARCHAR(30),
+--   DATE_OF_COMMISSIONING_C                    DATE,
+--   X_1603_FINANCIER_C                         VARCHAR(765),
+--   PO_RECEIPT_INSTALLATION_C                  VARCHAR(765),
+--   ENERGY_START_DATE_C                        DATE,
+--   SMS_ID_C                                   VARCHAR(18),
+--   X_1603_STATUS_C                            VARCHAR(765),
+--   X_1603_STATUS_DATE_C                       DATE,
+--   X_1603_NOTES_C                             VARCHAR(765),
+--   COST_BASIS_AMOUNT_C                        VARCHAR(765),
+--   DEALER_FEE_TOTAL_OLD_C                     numeric(14, 2),
+--   SOCIAL_SECURITY_NUMBER_C                   VARCHAR(27),
+--   DEALER_NAME_OLD_C                          VARCHAR(540),
+--   PO_RECEIPT_INTERCONNECT_C                  VARCHAR(765),
+--   INVOICE_DOCUMENT_EMAIL_C                   VARCHAR(240),
+--   DISPOSAL_FLAG_C                            VARCHAR(765),
+--   DOCS_GEN_DATE_OLD_C                        DATE,
+--   DOWN_PAYMENT_OLD_C                         numeric(9, 2),
+--   EARLY_BUYOUT_DATE_OLD_C                    DATE,
+--   REPORTING_FINANCIER_C                      VARCHAR(765),
+--   EMAIL_1_OLD_C                              VARCHAR(240),
+--   EMAIL_2_OLD_C                              VARCHAR(240),
+--   LAST_INSTALL_DOC_SUBMISSION_C              DATE,
+--   PO_RECEIPT_ORIGINATION_C                   VARCHAR(765),
+--   LAST_INTERCONNECT_DOC_SUBMISSION_C         DATE,
+--   EXPECTED_REBATE_OLD_C                      numeric(9, 2),
+--   PAYMENT_AMOUNT_INSTALLATION_C              numeric(18, 2),
+--   LESSEE_EMAIL_C                             VARCHAR(240),
+--   PARTNER_ORACLE_VENDOR_EMAIL_C              VARCHAR(240),
+--   PAYMENT_AMOUNT_INTERCONNECT_C              numeric(18, 2),
+--   PAYMENT_AMOUNT_ORIGINATION_C               numeric(18, 2),
+--   NOTICE_TO_PROCEED_SENT_TEXT_C              VARCHAR(765),
+--   INSTALL_INV_APPRVD_TEXT_C                  VARCHAR(765),
+--   SENT_INTERCONNECTION_EMAIL_C               BOOLEAN,
+--   FIRST_NAME_1_OLD_C                         VARCHAR(105),
+--   FIRST_NAME_2_OLD_C                         VARCHAR(105),
+--   FULL_PREPAID_LEASE_OLD_C                   BOOLEAN,
+--   FULL_PREPAYMENT_AMT_OLD_C                  numeric(9, 2),
+--   INTERCONNECTION_EMAIL_SENT_C               BOOLEAN,
+--   HOME_PHONE_OLD_C                           VARCHAR(120),
+--   PENDING_INTERCONNECTION_EMAIL_SENT_C       BOOLEAN,
+--   ANNUAL_PROD_REPORT_YR_2_C                  DATE,
+--   ANNUAL_PROD_REPORT_YR_3_C                  DATE,
+--   ANNUAL_PROD_REPORT_YR_4_C                  DATE,
+--   ANNUAL_PROD_REPORT_YR_5_C                  DATE,
+--   AWARD_AMOUNT_C                             numeric(12, 2),
+--   FMV_PURCHASE_PRICE_C                       numeric(12, 2),
+--   FINANCING_COMPLETION_PAYMENT_C             numeric(12, 2),
+--   INCENTIVE_INTERCONNECT_DATE_C              DATE,
+--   FMV_RATE_C                                 numeric(9, 7),
+--   PAYMENT_DATE_INSTALLATION_C                DATE,
+--   PAYMENT_DATE_INTERCONNECT_C                DATE,
+--   PIS_ENTRY_DATE_C                           DATE,
+--   NEW_HOMEOWNER_ACCOUNT_C                    VARCHAR(18),
+--   INVERTER_BRAND_OLD_C                       VARCHAR(60),
+--   INVERTER_MODEL_2_OLD_C                     VARCHAR(120),
+--   INVERTER_MODEL_3_OLD_C                     double precision,
+--   INVERTER_MODEL_OLD_C                       VARCHAR(120),
+--   INVERTER_QTY_OLD_C                         double precision,
+--   DEV_CO_C                                   VARCHAR(765),
+--   LAST_NAME_1_OLD_C                          VARCHAR(105),
+--   LAST_NAME_2_OLD_C                          VARCHAR(105),
+--   PTO_LETTER_ISSUANCE_DATE_C                 DATE,
+--   LEASE_TYPE_OLD_C                           VARCHAR(60),
+--   LEASE_OLD_C                                VARCHAR(90),
+--   BOS_COST_C                                 numeric(18, 2),
+--   INVERTER_COST_C                            numeric(18, 2),
+--   PAYMENT_DATE_ORIGINATION_C                 DATE,
+--   MISC_COST_INTERNAL_FUTURE_USE_C            numeric(18, 2),
+--   MISC_ITEMS_INSTALLER_C                     numeric(18, 2),
+--   MONITORING_C                               numeric(18, 2),
+--   MODULE_QTY_OLD_C                           double precision,
+--   MODULE_OLD_C                               VARCHAR(60),
+--   MONITORING_TYPE_OLD_C                      VARCHAR(150),
+--   NET_DEALER_SERVICE_COST_C                  numeric(18, 2),
+--   PV_COST_C                                  numeric(18, 2),
+--   RACKING_COST_INSTALLER_C                   numeric(18, 2),
+--   RACKING_COST_INTERNAL_C                    numeric(18, 2),
+--   SALES_TAX_AMOUNT_C                         numeric(18, 2),
+--   PURCHASE_ORDER_NUMBER_INSTALLATION_C       VARCHAR(765),
+--   PSR_OLD_C                                  VARCHAR(150),
+--   TOTAL_DEALER_SUPPLIED_MATERIAL_C           numeric(18, 2),
+--   TOTAL_MATERIAL_COST_C                      numeric(18, 2),
+--   PARTIAL_PREPAYMENT_OLD_C                   numeric(12, 2),
+--   PURCHASE_ORDER_NUMBER_INTERCONNECT_C       VARCHAR(765),
+--   PARTNER_ACCOUNT_OLD_C                      VARCHAR(18),
+--   TOTAL_SPWR_SUPPLIER_MATERIAL_C             numeric(18, 2),
+--   TOTAL_SERVICE_COST_DEALER_FEE_C            numeric(18, 2),
+--   UPDATED_DELIVERY_DATE_C                    DATE,
+--   AGREEMENT_C                                VARCHAR(18),
+--   COMMISSIONING_APPROVED_C                   DATE,
+--   COMMISSIONING_STATUS_C                     VARCHAR(765),
+--   CONDUCTOR_INSPECTION_DATE_C                DATE,
+--   PRICING_OLD_C                              VARCHAR(75),
+--   CONDUCTOR_INSPECTION_STATUS_C              VARCHAR(765),
+--   PROJ_INSTALL_COMPETE_OLD_C                 DATE,
+--   PROJ_INSTALL_DATE_OLD_C                    DATE,
+--   CONDUCTOR_INSPECTION_C                     VARCHAR(765),
+--   CONSUEL_APPROVED_C                         VARCHAR(765),
+--   CONSUEL_CERTIFICATION_RECEIVED_C           DATE,
+--   RSM_OLD_C                                  VARCHAR(120),
+--   CONSUEL_CERTIFICATION_REQUESTED_C          VARCHAR(765),
+--   RACKING_MODEL_OLD_C                        VARCHAR(90),
+--   RACKING_QTY_OLD_C                          double precision,
+--   REBATE_ACTUAL_OLD_C                        numeric(18, 2),
+--   DP_DELIVERY_RECEIPT_C                      DATE,
+--   SO_NUMBER_OLD_C                            VARCHAR(30),
+--   DECLARATION_PREALABLE_APPROVED_C           DATE,
+--   DECLARATION_PREALABLE_REQUEST_DATE_C       DATE,
+--   DECLARATION_PREALABLE_STATUS_C             VARCHAR(765),
+--   SALES_TAX_OLD_C                            double precision,
+--   DOCUMENTS_REMAINING_FOR_INSTALL_PAYMENTS_C double precision,
+--   SITE_CITY_OLD_C                            VARCHAR(105),
+--   SITE_COUNTY_OLD_C                          VARCHAR(105),
+--   SITE_STATE_PROV_OLD_C                      VARCHAR(105),
+--   SITE_STREET_OLD_C                          VARCHAR(765),
+--   SITE_ZIP_POST_CODE_OLD_C                   VARCHAR(105),
+--   DOSSIER_PREPARATION_C                      VARCHAR(765),
+--   ERDF_APPROVED_C                            VARCHAR(765),
+--   ERDF_DELIVERY_RECEIPT_DATE_EXPIRED_C       DATE,
+--   ERDF_INTERCONNECTION_REQUEST_DATE_C        DATE,
+--   SYSTEM_PRICE_OLD_C                         numeric(12, 2),
+--   TOT_MONTHLY_PAYMENTS_OLD_C                 numeric(7, 2),
+--   ERDF_PROPOSAL_APPROVED_DATE_C              DATE,
+--   ERDF_STATUS_C                              VARCHAR(765),
+--   WARR_SNS_APPRVD_OLD_C                      DATE,
+--   FI_T_BONUS_APPROVAL_STATUS_C               VARCHAR(765),
+--   WARR_SNS_RCVD_OLD_C                        DATE,
+--   GRID_CONNECTION_APPROVAL_STATUS_C          VARCHAR(765),
+--   PURCHASE_ORDER_NUMBER_ORIGINATION_C        VARCHAR(765),
+--   Y_1_MONTHLY_PAYMENT_OLD_C                  numeric(6, 2),
+--   DELETE_NOTE_C                              VARCHAR(297),
+--   SALES_ORDER_NUMBER_C                       VARCHAR(765),
+--   LEASE_DUP_C                                VARCHAR(90),
+--   SCHED_DELIVERY_DATE_INVERTERS_C            DATE,
+--   INSPECTION_WAIVER_RECEIVED_DATE_C          DATE,
+--   SCHED_DELIVERY_DATE_MOUNTING_C             DATE,
+--   SCHED_DELIVERY_DATE_PV_C                   DATE,
+--   PSR_EMAIL_C                                VARCHAR(240),
+--   INVOICE_ADMIN_2_C                          VARCHAR(18),
+--   SCHEDULED_PAYMENT_DATE_INSTALLATION_C      DATE,
+--   SCHEDULED_PAYMENT_DATE_INTERCONNECT_C      DATE,
+--   SCHEDULED_PAYMENT_DATE_ORIGINATION_C       DATE,
+--   SUBSTITUTE_REPORT_SUBMITTED_DATE_C         DATE,
+--   SUPPLIER_INVOICE_AMOUNT_INSTALLATION_C     numeric(18, 2),
+--   SUPPLIER_INVOICE_AMOUNT_INTERCONNECT_C     numeric(18, 2),
+--   SUPPLIER_INVOICE_AMOUNT_ORIGINATION_C      numeric(18, 2),
+--   SUPPLIER_INVOICE_NUMBER_INSTALLATION_C     VARCHAR(765),
+--   SUPPLIER_INVOICE_NUMBER_INTERCONNECT_C     VARCHAR(765),
+--   SUPPLIER_INVOICE_NUMBER_ORIGINATION_C      VARCHAR(765),
+--   TRANCHE_1_BATCH_C                          VARCHAR(18),
+--   TRANCHE_1_RESPONSE_C                       VARCHAR(765),
+--   TRANCHE_2_BATCH_C                          VARCHAR(18),
+--   TRANCHE_2_RESPONSE_C                       VARCHAR(765),
+--   TRANCHE_3_BATCH_C                          VARCHAR(18),
+--   TRANCHE_3_RESPONSE_C                       VARCHAR(765),
+--   TRANCHE_NOTES_C                            VARCHAR(765),
+--   X_1603_PLACED_IN_SERVICE_SUBMISSION_DATE_C DATE,
+--   SUBMITTED_FOR_BOOKING_DATE_C               DATE,
+--   BOOKED_DATE_C                              DATE,
+--   ITC_CASH_GRANT_VALUATION_ACCTG_C           numeric(18, 2),
+--   NOTICE_TO_PROCEED_EMAIL_SENT_C             BOOLEAN,
+--   WITH_SH_INVENTORY_C                        BOOLEAN,
+--   INSTALLATION_COMPLETED_C                   VARCHAR(765),
+--   INSTALLATION_FEES_C                        numeric(18),
+--   INSTALLATION_INVOCE_PAID_C                 DATE,
+--   INSTALLATION_REQUEST_DATE_C                DATE,
+--   INTERCONECTION_INVOICE_PAID_C              DATE,
+--   INTERCONNECTION_DATE_C                     DATE,
+--   INTERCONNECTION_FEES_C                     numeric(18),
+--   INTERCONNECTION_REQUEST_DATE_C             DATE,
+--   LEASE_OF_INTENT_STATUS_C                   VARCHAR(765),
+--   LETTER_OF_INTENT_SIGNED_C                  DATE,
+--   LETTER_OF_INTENT_STATUS_C                  VARCHAR(765),
+--   MATERIALS_DELIVERED_C                      DATE,
+--   METER_INSTALLATION_C                       VARCHAR(765),
+--   ORDER_STATUS_C                             VARCHAR(765),
+--   SITE_COUNTRY_OLD_C                         VARCHAR(150),
+--   TPO_APPROVAL_STATUS_C                      VARCHAR(765),
+--   TOWN_HALL_MAILING_ADDRESS_C                VARCHAR(765),
+--   UNDER_WRITING_STATUS_C                     VARCHAR(765),
+--   UNDER_WRITING_CALL_C                       VARCHAR(765),
+--   UNDERWRITING_DISAPPROVED_REASON_C          VARCHAR(765),
+--   UNDERWRITING_EMAIL_C                       VARCHAR(765),
+--   NEW_HOMEOWNER_PRIMARY_CONTACT_C            VARCHAR(18),
+--   COA_SIGNATURE_DATE_C                       DATE,
+--   CRAE_NR_C                                  VARCHAR(765),
+--   CALL_DATE_C                                DATE,
+--   COMMISSIONING_DATE_PLANNED_C               DATE,
+--   COMMISSIONING_REQUEST_DATE_TO_ERDF_C       DATE,
+--   CONSUEL_CERTIFICATE_C                      VARCHAR(765),
+--   DP_RECEIPT_DATE_C                          DATE,
+--   DELIVERY_POINT_NUMBER_OF_PRODUCTION_C      VARCHAR(765),
+--   DOCUMENTS_REMAINING_FOR_THE_COMMISSIONIN_C double precision,
+--   ERDF_RECEIPT_DATE_OF_OUR_ORDER_C           DATE,
+--   SPVT_MEASUREMENT_DATE_C                    DATE,
+--   EMAIL_DATE_C                               DATE,
+--   FILE_NR_C                                  VARCHAR(765),
+--   FORWARDING_DATE_OF_THE_NON_OPPOSITION_CE_C DATE,
+--   FORWARDING_DATE_TO_THE_PARTNER_C           DATE,
+--   FORWARDING_DATE_TO_THE_TAX_DEPARTMENT_C    DATE,
+--   HOMEOWNER_SIGNATURE_DATE_C                 DATE,
+--   INSTALLATION_START_DATE_BY_THE_PARTNER_C   DATE,
+--   INTERCONNECTION_PAYMENT_APPROVED_DATE_C    DATE,
+--   INTERCONNECTION_PAYMENT_DATE_C             DATE,
+--   INTERCONNECTION_QUOTATION_DATE_PDR_C       DATE,
+--   METER_INSTALLATION_DATE_PLANNED_C          DATE,
+--   NON_OPPOSITION_CERTIFICATE_DATE_C          DATE,
+--   OA_CONTRACT_NUMBER_C                       VARCHAR(765),
+--   PDR_ORDER_AND_PAYMENT_DATE_C               DATE,
+--   QUALIFIED_INTERCONNECTION_REQUEST_DATE_C   DATE,
+--   RECEIPT_FORWARDING_DATE_TO_THE_HO_PAR_C    DATE,
+--   SIGNATURE_DATE_BY_THE_TAX_DEPARTMENT_C     DATE,
+--   TECHNICAL_VISIT_DATE_PLANNED_C             DATE,
+--   INVOICE_COMPLIANCE_NOTES_C                 VARCHAR(98304),
+--   RECOMMENDED_FOLLOW_UP_DATE_C               DATE,
+--   SPVT_RESULT_C                              VARCHAR(765),
+--   SPVT_CASE_TO_SUN_POWER_C                   BOOLEAN,
+--   RECOMMENDED_FOLLOW_UP_DATE_UIR_C           DATE,
+--   SENT_ENERGY_PRODUCING_EMAIL_C              BOOLEAN,
+--   GUARANTEE_START_DATE_C                     DATE,
+--   ELECTRICITY_DISTRIBUTOR_C                  VARCHAR(765),
+--   ORIGINATION_PAYMENT_APPROVED_C             DATE,
+--   ORIGINATION_INVOICE_AMOUNT_C               double precision,
+--   ORIGINATION_INVOICE_NUMBER_C               VARCHAR(96),
+--   ORIGINATION_PAYMENT_DATE_C                 DATE,
+--   ORIGINATION_PAYMENT_SUBMITTED_C            DATE,
+--   PTC_DATE_C                                 DATE,
+--   ORIGINATION_ACCULMAGE_CONFIRMED_C          DATE,
+--   SREC_FINANCIER_C                           VARCHAR(18),
+--   NOTE_TO_DEALER_ORIGINATION_C               VARCHAR(765),
+--   INTERCONNECT_HOLD_RELEASE_SENT_TO_AP_C     DATE,
+--   SPVT_RESULT_PASS_DATE_C                    DATE,
+--   DEALER_FEE_ORIGINATION_PO_RECEIPT_COMPLE_C DATE,
+--   DEALER_FEE_ORIGINATION_PO_RECEIPT_NUMBER_C VARCHAR(150),
+--   ORIGINATION_INV_AMOUNT_C                   numeric(12, 2),
+--   PROPOSAL_DESIGN_REVIEW_PASSED_C            BOOLEAN,
+--   PIS_DEADLINE_DATE_C                        DATE,
+--   D_4_D_CATEGORY_C                           VARCHAR(765),
+--   SREC_JV_VALUE_C                            numeric(18, 2),
+--   PIS_ESTIMATION_C                           VARCHAR(60),
+--   ESS_COMMISSION_DATE_C                      DATE,
+--   ESS_TERM_C                                 double precision,
+--   ENERGY_SOLUTIONS_C                         VARCHAR(765),
+--   MONTHLY_RESILIENCY_PAYMENT_C               numeric(18, 2),
+--   SREC_SS_FACE_VALUE_C                       numeric(18, 2),
+--   SREC_SS_SHORTFALL_VALUE_C                  numeric(18, 2),
+--   TERMINATION_DATE_C                         DATE,
+--   MOSAIC_STATUS_C                            VARCHAR(765),
+--   RESIDENTIAL_PROJECT_C                      VARCHAR(18),
+--   ORACLE_CANCELLATION_STATUS_C               VARCHAR(765),
+--   APPROVED_INSTALL_DOCS_C                    double precision,
+--   APPROVED_INTERCONNECT_DOCS_C               double precision,
+--   APPROVED_ORIGINATION_DOCS_C                double precision,
+--   SUBMITTED_INSTALL_DOCS_C                   double precision,
+--   SUBMITTED_INTERCONNECT_DOCS_C              double precision,
+--   SUBMITTED_ORIGINATION_DOCS_C               double precision,
+--   TOTAL_INSTALL_DOCS_C                       double precision,
+--   TOTAL_INTERCONNECT_DOCS_C                  double precision,
+--   TOTAL_ORIGINATION_DOCS_C                   double precision,
+--   NOTE_TO_DEALER_C                           DATE,
+--   INTEGRATION_HISTORY_C                      VARCHAR(98304),
+--   AUTO_AMENDMENT_HOLD_C                      BOOLEAN,
+--   BUYDOWN_OVERRIDE_C                         BOOLEAN,
+--   BATCH_04_DATE_C                            DATE,
+--   DEVCO_BATCH_4_C                            VARCHAR(765),
+--   HOLDBACK_NTP_B_C                           VARCHAR(765),
+--   PURCHASE_NTP_B_C                           VARCHAR(765),
+--   SETTLEMENT_NTP_B_C                         VARCHAR(765),
+--   WELCOME_CALL_COMPLETE_C                    DATE,
+--   _FIVETRAN_SYNCED                           TIMESTAMPTZ,
+--   SREC_FINANCIERS_C                          VARCHAR(765),
+--   AGREEMENT_TEXT_C                           VARCHAR(60),
+--   ORDER_DESIRED_DATE_C                       DATE,
+--   _FIVETRAN_DELETED                          BOOLEAN,
+--   PRIMARY_CONTACT_EMAIL_C                    VARCHAR(240),
+--   SETTLEMENT_SR_DEBT_C                       double precision,
+--   HOLD_BACK_SR_DEBT_C                        double precision,
+--   PURCHASE_PRICE_C                           double precision,
+--   SETTLEMENT_HANNON_MEZZ_C                   double precision,
+--   BATCH_01_DATE_C                            DATE,
+--   SETTLEMENT_PRICE_C                         double precision,
+--   SETTLEMENT_SUN_POWER_MEZZ_C                double precision,
+--   BATCH_02_DATE_C                            DATE,
+--   BATCH_03_DATE_C                            DATE,
+--   FORECASTED_REVREC_C                        DATE,
+--   HOLD_BACK_HANNON_MEZZ_C                    double precision,
+--   SERVICER_OF_RECORD_C                       VARCHAR(765),
+--   HOLD_BACK_TE_CASH_C                        double precision,
+--   PURCHASE_HANNON_MEZZ_C                     double precision,
+--   HOLD_BACK_SUNPOWER_MEZZ_C                  double precision,
+--   DEVCO_BATCH_3_C                            VARCHAR(765),
+--   DATE_COUNTERSIGNED_OLD_C                   DATE,
+--   CONTRACT_STATUS_C                          VARCHAR(765),
+--   PURCHASE_TE_CASH_C                         double precision,
+--   DEVCO_BATCH_2_C                            VARCHAR(765),
+--   DEVCO_BATCH_1_C                            VARCHAR(765),
+--   SETTLEMENT_TE_CASH_C                       double precision,
+--   PURCHASE_SR_DEBT_C                         double precision,
+--   FUNDING_NOTES_C                            VARCHAR(765),
+--   PURCHASE_SUN_POWER_MEZZ_C                  double precision,
+--   FINAL_PERMITS_ENTERED_BY_C                 VARCHAR(18),
+--   REV_REC_ENTRY_DATE_C                       TIMESTAMPTZ
+-- );
 
 
---  CREATE INDEX if not exists TITLE_CHECK_C_id ON brs.TITLE_CHECK_C (id);
---  CREATE INDEX if not exists ACCOUNT_C ON brs.TITLE_CHECK_C (ACCOUNT_C);
--- CREATE INDEX if not exists ACTION_TAKEN_C ON brs.TITLE_CHECK_C (ACTION_TAKEN_C);
 
---
---  CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_id ON brs.CREDIT_CHECK_REQUEST_C (id);
---  CREATE INDEX if not exists ACCOUNT_C ON brs.CREDIT_CHECK_REQUEST_C (ACCOUNT_C);
---  CREATE INDEX if not exists lender_c ON brs.CREDIT_CHECK_REQUEST_C (lender_c);
---  CREATE INDEX if not exists credit_beureu_c ON brs.CREDIT_CHECK_REQUEST_C (credit_beureu_c);
---  CREATE INDEX if not exists bureau_c ON brs.CREDIT_CHECK_REQUEST_C (bureau_c);
---  CREATE INDEX if not exists application_type_c ON brs.CREDIT_CHECK_REQUEST_C (application_type_c);
---
--- CREATE INDEX if not exists ALLIANCE_PARTNER_C ON brs.ALLIANCE_PARTNER_C (id);
--- CREATE INDEX if not exists COMMUNITY_C ON brs.ALLIANCE_PARTNER_C (COMMUNITY_C);
--- CREATE INDEX if not exists RESIDENTIAL_PROJECT_C ON brs.ALLIANCE_PARTNER_C (RESIDENTIAL_PROJECT_C);
--- CREATE INDEX if not exists ROLE_C ON brs.ALLIANCE_PARTNER_C (ROLE_C);
 
---
--- CREATE INDEX if not exists PROJECT_TASK_C ON brs.PROJECT_TASK_C (RESIDENTIAL_PROJECT_C);
--- CREATE INDEX if not exists RESIDENTIAL_PROJECT_C ON brs.PROJECT_TASK_C (id);
--- CREATE INDEX if not exists status_c ON brs.PROJECT_TASK_C (status_c);
--- CREATE INDEX if not exists community_project_id ON brs.PROJECT_TASK_C (community_project_id);
--- CREATE INDEX if not exists record_type_id ON brs.PROJECT_TASK_C (record_type_id);
--- CREATE INDEX if not exists created_date ON brs.PROJECT_TASK_C (created_date);
---
--- CREATE INDEX if not exists nw_account_type ON brs.account (type);
+-- CREATE INDEX if not exists REWORK_REQUESTS_C_residential_project_c ON brs.REWORK_REQUESTS_C (residential_project_c);
+-- CREATE INDEX if not exists TASK_REWORK_REQUEST_C_residential_project_c ON brs.TASK_REWORK_REQUEST_C (residential_project_c);
+-- CREATE INDEX if not exists work_order_id ON brs.work_order (id);
+-- CREATE INDEX if not exists work_order_case_id ON brs.work_order (case_id);
+-- CREATE INDEX if not exists work_order_residential_project_c ON brs.work_order (residential_project_c);
+-- CREATE INDEX if not exists work_order_account_id ON brs.work_order (account_id);
+-- CREATE INDEX if not exists case_id ON brs.case (id);
+-- CREATE INDEX if not exists case_residential_project_c ON brs.case (residential_project_c);
+-- CREATE INDEX if not exists case_CATEGORY_C ON brs.case (CATEGORY_C);
+-- CREATE INDEX if not exists case_SUB_CATEGORIES_C ON brs.case (SUB_CATEGORIES_C);
+-- CREATE INDEX if not exists case_STATUS ON brs.case (STATUS);
+-- CREATE INDEX if not exists case_PARTNER_ACCOUNT_C ON brs.case (PARTNER_ACCOUNT_C);
+-- CREATE INDEX if not exists OPPORTUNITY_id ON brs.OPPORTUNITY (id);
+-- CREATE INDEX if not exists OPPORTUNITY_REASON_WON_LOST_C ON brs.OPPORTUNITY (REASON_WON_LOST_C);
+-- CREATE INDEX if not exists OPPORTUNITY_SUB_STAGE_C ON brs.OPPORTUNITY (SUB_STAGE_C);
+-- CREATE INDEX if not exists OPPORTUNITY_STAGE_NAME ON brs.OPPORTUNITY (STAGE_NAME);
+-- CREATE INDEX if not exists TITLE_CHECK_C_id ON brs.TITLE_CHECK_C (id);
+-- CREATE INDEX if not exists TITLE_CHECK_C_ACCOUNT_C ON brs.TITLE_CHECK_C (ACCOUNT_C);
+-- CREATE INDEX if not exists TITLE_CHECK_C_ACTION_TAKEN_C ON brs.TITLE_CHECK_C (ACTION_TAKEN_C);
+-- CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_id ON brs.CREDIT_CHECK_REQUEST_C (id);
+-- CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_ACCOUNT_C ON brs.CREDIT_CHECK_REQUEST_C (ACCOUNT_C);
+-- CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_lender_c ON brs.CREDIT_CHECK_REQUEST_C (lender_c);
+-- CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_credit_beureu_c ON brs.CREDIT_CHECK_REQUEST_C (credit_beureu_c);
+-- CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_bureau_c ON brs.CREDIT_CHECK_REQUEST_C (bureau_c);
+-- CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_application_type_c ON brs.CREDIT_CHECK_REQUEST_C (application_type_c);
+-- CREATE INDEX if not exists ALLIANCE_PARTNER_C_ALLIANCE_PARTNER_C ON brs.ALLIANCE_PARTNER_C (id);
+-- CREATE INDEX if not exists ALLIANCE_PARTNER_C_COMMUNITY_C ON brs.ALLIANCE_PARTNER_C (COMMUNITY_C);
+-- CREATE INDEX if not exists ALLIANCE_PARTNER_C_RESIDENTIAL_PROJECT_C ON brs.ALLIANCE_PARTNER_C (RESIDENTIAL_PROJECT_C);
+-- CREATE INDEX if not exists ALLIANCE_PARTNER_C_ROLE_C ON brs.ALLIANCE_PARTNER_C (ROLE_C);
+-- CREATE INDEX if not exists PROJECT_TASK_C_RESIDENTIAL_PROJECT_C ON brs.PROJECT_TASK_C (RESIDENTIAL_PROJECT_C);
+-- CREATE INDEX if not exists PROJECT_TASK_C_id ON brs.PROJECT_TASK_C (id);
+-- CREATE INDEX if not exists PROJECT_TASK_C_status_c ON brs.PROJECT_TASK_C (status_c);
+-- CREATE INDEX if not exists PROJECT_TASK_C_record_type_id ON brs.PROJECT_TASK_C (record_type_id);
+-- CREATE INDEX if not exists PROJECT_TASK_C_created_date ON brs.PROJECT_TASK_C (created_date);
+-- CREATE INDEX if not exists PROJECT_TASK_C_is_deleted ON brs.PROJECT_TASK_C (is_deleted);
+-- CREATE INDEX if not exists PROJECT_TASK_C_parent_task_c ON brs.PROJECT_TASK_C (parent_task_c);
+-- CREATE INDEX if not exists account_nw_account_type ON brs.account (type);
 -- CREATE INDEX if not exists nw_account_id ON brs.account (id);
--- CREATE INDEX if not exists nw_billing_state ON brs.account (billing_state);
--- CREATE INDEX if not exists nw_available_lender_c ON brs.account (available_lender_c);
--- CREATE INDEX if not exists nw_status_c ON brs.account (status_c);
---
--- CREATE INDEX if not exists ncc_builder_c ON brs.nh_community_c (builder_c);
--- CREATE INDEX if not exists ncc_state_c ON brs.nh_community_c (state_c);
--- CREATE INDEX if not exists ncc_lease_term_c ON brs.nh_community_c (lease_term_c);
--- CREATE INDEX if not exists ncc_weeks_prior_to_rough_install_for_cut_off_c ON brs.nh_community_c (weeks_prior_to_rough_install_for_cut_off_c);
--- CREATE INDEX if not exists ncc_builder_architect_c ON brs.nh_community_c (builder_architect_c);
--- CREATE INDEX if not exists ncc_builder_project_manager_c ON brs.nh_community_c (builder_project_manager_c);
--- CREATE INDEX if not exists ncc_campaign_c ON brs.nh_community_c (campaign_c);
--- CREATE INDEX if not exists ncc_competitor_c ON brs.nh_community_c (competitor_c);
--- CREATE INDEX if not exists ncc_distribution_type_c ON brs.nh_community_c (distribution_type_c);
--- CREATE INDEX if not exists ncc_home_energy_source_c ON brs.nh_community_c (home_energy_source_c);
--- CREATE INDEX if not exists ncc_multi_family_interconnection_c ON brs.nh_community_c (multi_family_interconnection_c);
--- CREATE INDEX if not exists ncc_pre_plumb_c ON brs.nh_community_c (pre_plumb_c);
--- CREATE INDEX if not exists ncc_reason_won_lost_c ON brs.nh_community_c (reason_won_lost_c);
--- CREATE INDEX if not exists ncc_rough_wire_c ON brs.nh_community_c (rough_wire_c);
--- CREATE INDEX if not exists ncc_type_of_release_c ON brs.nh_community_c (type_of_release_c);
--- CREATE INDEX if not exists ncc_stage_c ON brs.nh_community_c (stage_c);
--- CREATE INDEX if not exists ncc_building_type_c ON brs.nh_community_c (building_type_c);
--- CREATE INDEX if not exists ncc_ownership_type_c ON brs.nh_community_c (ownership_type_c);
--- CREATE INDEX if not exists ncc_financial_offering_c ON brs.nh_community_c (financial_offering_c);
--- CREATE INDEX if not exists ncc_permit_pack_type_c ON brs.nh_community_c (permit_pack_type_c);
--- CREATE INDEX if not exists ncc_permitting_responsibility_c ON brs.nh_community_c (permitting_responsibility_c);
--- CREATE INDEX if not exists ncc_ssp_required_c ON brs.nh_community_c (ssp_required_c);
--- CREATE INDEX if not exists ncc_ess_permit_pack_type_c ON brs.nh_community_c (ess_permit_pack_type_c);
--- CREATE INDEX if not exists ncc_ess_permitting_responsibility_c ON brs.nh_community_c (ess_permitting_responsibility_c);
--- CREATE INDEX if not exists ncc_mounting_type_c ON brs.nh_community_c (mounting_type_c);
--- CREATE INDEX if not exists ncc_roof_attachment_c ON brs.nh_community_c (roof_attachment_c);
--- CREATE INDEX if not exists ncc_multi_family_array_c ON brs.nh_community_c (multi_family_array_c);
--- CREATE INDEX if not exists ncc_roof_type_c ON brs.nh_community_c (roof_type_c);
--- CREATE INDEX if not exists ncc_installation_type_c ON brs.nh_community_c (installation_type_c);
--- CREATE INDEX if not exists ncc_inverter_type_c ON brs.nh_community_c (inverter_type_c);
--- CREATE INDEX if not exists ncc_structural_options_enhancements_c ON brs.nh_community_c (structural_options_enhancements_c);
--- CREATE INDEX if not exists ncc_evse_offering_c ON brs.nh_community_c (evse_offering_c);
--- CREATE INDEX if not exists ncc_builder_file_validation_c ON brs.nh_community_c (builder_file_validation_c);
--- CREATE INDEX if not exists ncc_storage_type_c ON brs.nh_community_c (storage_type_c);
--- CREATE INDEX if not exists ncc_storage_backup_type_c ON brs.nh_community_c (storage_backup_type_c);
--- CREATE INDEX if not exists ncc_rebate_program_c ON brs.nh_community_c (rebate_program_c);
--- CREATE INDEX if not exists ncc_rebate_payable_to_c ON brs.nh_community_c (rebate_payable_to_c);
--- CREATE INDEX if not exists ncc_COMMUNITY_ADDER_C ON brs.nh_community_c (COMMUNITY_ADDER_C);
---
--- CREATE INDEX if not exists ptc_CFI_C ON brs.plan_type_c (CFI_C);
--- CREATE INDEX if not exists ptc_code_level_c ON brs.plan_type_c (code_level_c);
---
+-- CREATE INDEX if not exists account_nw_billing_state ON brs.account (billing_state);
+-- CREATE INDEX if not exists account_nw_available_lender_c ON brs.account (available_lender_c);
+-- CREATE INDEX if not exists account_nw_status_c ON brs.account (status_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_builder_c ON brs.nh_community_c (builder_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_state_c ON brs.nh_community_c (state_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_lease_term_c ON brs.nh_community_c (lease_term_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_weeks_prior_to_rough_install_for_cut_off_c ON brs.nh_community_c (weeks_prior_to_rough_install_for_cut_off_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_builder_architect_c ON brs.nh_community_c (builder_architect_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_builder_project_manager_c ON brs.nh_community_c (builder_project_manager_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_campaign_c ON brs.nh_community_c (campaign_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_competitor_c ON brs.nh_community_c (competitor_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_distribution_type_c ON brs.nh_community_c (distribution_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_home_energy_source_c ON brs.nh_community_c (home_energy_source_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_multi_family_interconnection_c ON brs.nh_community_c (multi_family_interconnection_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_pre_plumb_c ON brs.nh_community_c (pre_plumb_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_reason_won_lost_c ON brs.nh_community_c (reason_won_lost_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_rough_wire_c ON brs.nh_community_c (rough_wire_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_type_of_release_c ON brs.nh_community_c (type_of_release_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_stage_c ON brs.nh_community_c (stage_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_building_type_c ON brs.nh_community_c (building_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_ownership_type_c ON brs.nh_community_c (ownership_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_financial_offering_c ON brs.nh_community_c (financial_offering_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_permit_pack_type_c ON brs.nh_community_c (permit_pack_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_permitting_responsibility_c ON brs.nh_community_c (permitting_responsibility_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_ssp_required_c ON brs.nh_community_c (ssp_required_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_ess_permit_pack_type_c ON brs.nh_community_c (ess_permit_pack_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_ess_permitting_responsibility_c ON brs.nh_community_c (ess_permitting_responsibility_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_mounting_type_c ON brs.nh_community_c (mounting_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_roof_attachment_c ON brs.nh_community_c (roof_attachment_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_multi_family_array_c ON brs.nh_community_c (multi_family_array_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_roof_type_c ON brs.nh_community_c (roof_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_installation_type_c ON brs.nh_community_c (installation_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_inverter_type_c ON brs.nh_community_c (inverter_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_structural_options_enhancements_c ON brs.nh_community_c (structural_options_enhancements_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_evse_offering_c ON brs.nh_community_c (evse_offering_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_builder_file_validation_c ON brs.nh_community_c (builder_file_validation_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_storage_type_c ON brs.nh_community_c (storage_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_storage_backup_type_c ON brs.nh_community_c (storage_backup_type_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_rebate_program_c ON brs.nh_community_c (rebate_program_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_rebate_payable_to_c ON brs.nh_community_c (rebate_payable_to_c);
+-- CREATE INDEX if not exists nh_community_c_ncc_COMMUNITY_ADDER_C ON brs.nh_community_c (COMMUNITY_ADDER_C);
+-- CREATE INDEX if not exists plan_type_c_ptc_CFI_C ON brs.plan_type_c (CFI_C);
+-- CREATE INDEX if not exists plan_type_c_ptc_code_level_c ON brs.plan_type_c (code_level_c);
 -- CREATE INDEX if not exists DESIGN_C_id ON brs.DESIGN_C (id);
 -- CREATE INDEX if not exists MODULE_CONFIGURATION_C_id ON brs.MODULE_CONFIGURATION_C (id);
 -- CREATE INDEX if not exists PLAN_TYPE_C_id ON brs.PLAN_TYPE_C (id);
 -- CREATE INDEX if not exists NH_CONTRACTS_C_id ON brs.NH_CONTRACTS_C (id);
 -- CREATE INDEX if not exists NH_COMMUNITY_VISIT_C_id ON brs.NH_COMMUNITY_VISIT_C (id);
--- CREATE INDEX if not exists NH_COMMUNITY_VISIT_C_id ON brs.NH_COMMUNITY_VISIT_C (nh_community_c);
+-- CREATE INDEX if not exists NH_COMMUNITY_VISIT_C_nh_community_c ON brs.NH_COMMUNITY_VISIT_C (nh_community_c);
 -- CREATE INDEX if not exists NH_COMMUNITY_C_id ON brs.NH_COMMUNITY_C (id);
 -- CREATE INDEX if not exists CAMPAIGN_id ON brs.CAMPAIGN (id);
 -- CREATE INDEX if not exists BUILDER_PRICING_C_id ON brs.BUILDER_PRICING_C (id);
--- CREATE INDEX if not exists BUILDER_PRICING_C_id ON brs.BUILDER_PRICING_C (community_c);
+-- CREATE INDEX if not exists BUILDER_PRICING_C_community_c ON brs.BUILDER_PRICING_C (community_c);
 -- CREATE INDEX if not exists ALLIANCE_PARTNER_C_id ON brs.ALLIANCE_PARTNER_C (id);
 -- CREATE INDEX if not exists AHJ_UTILITY_C_id ON brs.AHJ_UTILITY_C (id);
--- CREATE INDEX if not exists ACCOUNT_id ON brs.ACCOUNT (id);
+-- CREATE INDEX if not exists ACCOUNT_id_id ON brs.ACCOUNT (id);
 -- CREATE INDEX if not exists RESIDENTIAL_PROJECT_C_id ON brs.RESIDENTIAL_PROJECT_C (id);
---
--- CREATE INDEX if not exists nh_community_c_id ON brs.campaign (nh_community_c);
--- CREATE INDEX if not exists nh_community_c_id_id ON brs.plan_type_c (community_c);
--- CREATE INDEX if not exists nh_NEW_HOMES_COMMUNITY_C_id ON brs.DESIGN_C (NEW_HOMES_COMMUNITY_C);
--- CREATE INDEX if not exists nh_reason_level_2_c_id ON brs.DESIGN_C (reason_level_2_c);
--- CREATE INDEX if not exists nh_reason_level_1_c ON brs.DESIGN_C (reason_level_1_c);
---
--- CREATE INDEX if not exists nh_mppp_revision_needed_c ON brs.DESIGN_C (mppp_revision_needed_c);
--- CREATE INDEX if not exists nh_nh_urgent_request_type_c ON brs.DESIGN_C (nh_urgent_request_type_c);
--- CREATE INDEX if not exists nh_incoming_request_had_all_information_c ON brs.DESIGN_C (incoming_request_had_all_information_c);
--- CREATE INDEX if not exists nh_pdf_copy_only_c ON brs.DESIGN_C (pdf_copy_only_c);
--- CREATE INDEX if not exists nh_electrical_pe_signature_c ON brs.DESIGN_C (electrical_pe_signature_c);
--- CREATE INDEX if not exists nh_structural_pe_signature_c ON brs.DESIGN_C (structural_pe_signature_c);
---
--- CREATE INDEX if not exists rpc_priority_c ON brs.residential_project_c (priority_c);
--- CREATE INDEX if not exists rpc_community_c ON brs.residential_project_c (community_c);
+-- CREATE INDEX if not exists campaign_nh_community_c_id ON brs.campaign (nh_community_c);
+-- CREATE INDEX if not exists plan_type_c_community_c ON brs.plan_type_c (community_c);
+-- CREATE INDEX if not exists DESIGN_C_nh_NEW_HOMES_COMMUNITY_C_id ON brs.DESIGN_C (NEW_HOMES_COMMUNITY_C);
+-- CREATE INDEX if not exists DESIGN_C_nh_reason_level_2_c_id ON brs.DESIGN_C (reason_level_2_c);
+-- CREATE INDEX if not exists DESIGN_C_nh_reason_level_1_c ON brs.DESIGN_C (reason_level_1_c);
+-- CREATE INDEX if not exists DESIGN_C_nh_mppp_revision_needed_c ON brs.DESIGN_C (mppp_revision_needed_c);
+-- CREATE INDEX if not exists DESIGN_C_nh_urgent_request_type_c ON brs.DESIGN_C (nh_urgent_request_type_c);
+-- CREATE INDEX if not exists DESIGN_C_incoming_request_had_all_information_c ON brs.DESIGN_C (incoming_request_had_all_information_c);
+-- CREATE INDEX if not exists DESIGN_C_pdf_copy_only_c ON brs.DESIGN_C (pdf_copy_only_c);
+-- CREATE INDEX if not exists DESIGN_C_electrical_pe_signature_c ON brs.DESIGN_C (electrical_pe_signature_c);
+-- CREATE INDEX if not exists DESIGN_C_structural_pe_signature_c ON brs.DESIGN_C (structural_pe_signature_c);
+-- CREATE INDEX if not exists residential_project_c_priority_c ON brs.residential_project_c (priority_c);
+-- CREATE INDEX if not exists residential_project_c_community_c ON brs.residential_project_c (community_c);
 -- CREATE INDEX if not exists rpc_cancellation_justification_c ON brs.residential_project_c (cancellation_justification_c);
 -- CREATE INDEX if not exists rpc_sun_power_deal_type_c ON brs.residential_project_c (sun_power_deal_type_c);
 -- CREATE INDEX if not exists rpc_sun_vault_deal_type_c ON brs.residential_project_c (sun_vault_deal_type_c);
@@ -4044,39 +5623,60 @@
 -- CREATE INDEX if not exists rpc_dog_on_site_c ON brs.residential_project_c (dog_on_site_c);
 -- CREATE INDEX if not exists rpc_customer_construction_project_c ON brs.residential_project_c (customer_construction_project_c);
 -- CREATE INDEX if not exists rpc_complexity_indicator_c ON brs.residential_project_c (complexity_indicator_c);
-
---  CREATE INDEX if not exists storage_size_c ON brs.builder_pricing_c (storage_size_c);
---  CREATE INDEX if not exists code_year_c ON brs.builder_pricing_c (code_year_c);
--- CREATE INDEX if not exists role_c ON brs.nh_community_visit_c (role_c);
--- CREATE INDEX if not exists project_priority_c ON brs.project_task_c (project_priority_c);
--- CREATE INDEX if not exists role_assignment_c ON brs.project_task_c (role_assignment_c);
--- CREATE INDEX if not exists blocks_c ON brs.project_task_c (blocks_c);
- --CREATE INDEX if not exists path_type_c_123 ON brs.project_task_c ( upper(path_type_c));
--- CREATE INDEX if not exists reason_levels_c ON brs.project_task_c (reason_levels_c);
--- CREATE INDEX if not exists task_path_type_c ON brs.project_task_c (task_path_type_c);
--- CREATE INDEX if not exists role_assignment_c ON brs.project_task_c (role_assignment_c);
--- CREATE INDEX if not exists project_priority_c ON brs.project_task_c (project_priority_c);
--- CREATE INDEX if not exists opportunity_c ON brs.residential_project_c (opportunity_c);
---  CREATE INDEX if not exists cancellation_details_c ON brs.work_order (cancellation_details_c);
--- CREATE INDEX if not exists service_request_type_c ON brs.work_order (service_request_type_c);
--- CREATE INDEX if not exists cancellation_reasons_c ON brs.work_order (cancellation_reasons_c);
--- CREATE INDEX if not exists opportunity_c ON brs.work_order (opportunity_c);
--- CREATE INDEX if not exists cancellation_details_c ON brs.work_order (priority);
--- CREATE INDEX if not exists service_type_c ON brs.work_order (service_type_c);
--- CREATE INDEX if not exists disposition_reason_c ON brs.work_order (disposition_reason_c);
--- CREATE INDEX if not exists inspection_type_c ON brs.work_order (inspection_type_c);
--- CREATE INDEX if not exists follow_up_reason_c ON brs.work_order (follow_up_reason_c);
--- CREATE INDEX if not exists severity_c ON brs.task_rework_request_c (severity_c);
--- CREATE INDEX if not exists rca_tag_c ON brs.task_rework_request_c (rca_tag_c);
--- CREATE INDEX if not exists action_required_c ON brs.rework_requests_c (action_required_c);
--- CREATE INDEX if not exists rework_quality_tag_c ON brs.rework_requests_c (rework_quality_tag_c);
--- CREATE INDEX if not exists rework_reason_c ON brs.rework_requests_c (rework_reason_c);
--- CREATE INDEX if not exists rework_reason_2_c ON brs.rework_requests_c (rework_reason_2_c);
--- CREATE INDEX if not exists rework_reason_3_c ON brs.rework_requests_c (rework_reason_3_c);
-
+-- CREATE INDEX if not exists builder_pricing_c_storage_size_c ON brs.builder_pricing_c (storage_size_c);
+-- CREATE INDEX if not exists builder_pricing_c_code_year_c ON brs.builder_pricing_c (code_year_c);
+-- CREATE INDEX if not exists nh_community_visit_c_role_c ON brs.nh_community_visit_c (role_c);
+-- CREATE INDEX if not exists project_task_c_project_priority_c ON brs.project_task_c (project_priority_c);
+-- CREATE INDEX if not exists project_task_c_role_assignment_c ON brs.project_task_c (role_assignment_c);
+-- CREATE INDEX if not exists project_task_c_blocks_c ON brs.project_task_c (blocks_c);
+-- CREATE INDEX if not exists project_task_c_path_type_c_123 ON brs.project_task_c ( upper(path_type_c));
+-- CREATE INDEX if not exists project_task_c_reason_levels_c ON brs.project_task_c (reason_levels_c);
+-- CREATE INDEX if not exists project_task_c_task_path_type_c ON brs.project_task_c (task_path_type_c);
+-- CREATE INDEX if not exists residential_project_c_opportunity_c ON brs.residential_project_c (opportunity_c);
+-- CREATE INDEX if not exists work_order_cancellation_details_c ON brs.work_order (cancellation_details_c);
+-- CREATE INDEX if not exists work_order_service_request_type_c ON brs.work_order (service_request_type_c);
+-- CREATE INDEX if not exists work_order_cancellation_reasons_c ON brs.work_order (cancellation_reasons_c);
+-- CREATE INDEX if not exists work_order_opportunity_c ON brs.work_order (opportunity_c);
+-- CREATE INDEX if not exists work_order_priority ON brs.work_order (priority);
+-- CREATE INDEX if not exists work_order_service_type_c ON brs.work_order (service_type_c);
+-- CREATE INDEX if not exists work_order_disposition_reason_c ON brs.work_order (disposition_reason_c);
+-- CREATE INDEX if not exists work_order_inspection_type_c ON brs.work_order (inspection_type_c);
+-- CREATE INDEX if not exists work_order_follow_up_reason_c ON brs.work_order (follow_up_reason_c);
+-- CREATE INDEX if not exists task_rework_request_c_severity_c ON brs.task_rework_request_c (severity_c);
+-- CREATE INDEX if not exists task_rework_request_c_rca_tag_c ON brs.task_rework_request_c (rca_tag_c);
+-- CREATE INDEX if not exists rework_requests_c_action_required_c ON brs.rework_requests_c (action_required_c);
+-- CREATE INDEX if not exists rework_requests_c_rework_quality_tag_c ON brs.rework_requests_c (rework_quality_tag_c);
+-- CREATE INDEX if not exists rework_requests_c_rework_reason_c ON brs.rework_requests_c (rework_reason_c);
+-- CREATE INDEX if not exists rework_requests_c_rework_reason_2_c ON brs.rework_requests_c (rework_reason_2_c);
+-- CREATE INDEX if not exists rework_requests_c_rework_reason_3_c ON brs.rework_requests_c (rework_reason_3_c);
+-- CREATE INDEX if not exists quote_account_c ON brs.quote (account_c);
+-- CREATE INDEX if not exists quote_created_date ON brs.quote (created_date);
+-- CREATE INDEX if not exists residential_project_c_account_c ON brs.residential_project_c (account_c);
 
 
 SET session_replication_role = replica;
+with update_data as (
+  select u.first_name,u.last_name
+  from flow.user_position upos
+         join flow.user u on upos.user_id = u.id
+         inner join brs.sp_user spu on u.first_name like spu.first_name  and u.last_name like spu.last_name
+  where upos.position_id in (804,803,802)
+    and is_active is true
+  group by u.first_name,u.last_name
+  having count(1) = 1),
+     update_for_reals as (
+       select u.id,spu.id as sunpower_id,u.first_name,u.last_name
+       from flow.user u
+              join flow.user_position upos on upos.user_id = u.id
+              inner join update_data ud on ud.first_name = u.first_name and ud.last_name = u.last_name
+              inner join brs.sp_user spu on u.first_name like spu.first_name  and u.last_name like spu.last_name and spu.is_active is true
+       where upos.position_id in (804,803,802))
+update flow."user" u2
+set nh_migration_id = sunpower_id
+from update_for_reals ufr
+where ufr.id = u2.id;
+
+
 DO --10 seconds
 $do$
   declare
@@ -4090,7 +5690,33 @@ $do$
       into v_object_category_id
         from flow.object_category oc
       where object_category_code = 'BUILDER_NEW_HOMES_BUILDER' and object_type_id= 2;
-    for x in select lov1.id as status_c1 ,cs.id as company_state_id, a.*
+    for x in select lov1.id as status_c1 ,cs.id as company_state_id,
+                    a.cash_partner_c,
+                    a.contact_name_c,
+                    a.credit_check_c,
+                    a.credit_limit_c,
+                    a.credit_limit_date_c,
+                    a.default_dealer_warehouse_shipping_site_c,
+                    a.description,
+                    a.i_supplier_c,
+                    a.legal_business_name_c,
+                    a.rlcpa_notes_c,
+                    a.shipping_city,
+                    a.shipping_postal_code,
+                    a.shipping_state,
+                    a.shipping_street,
+                    a.spwr_cash_partner_c,
+                    a.website,
+                    a.id,
+                    a.name,
+                    a.last_name,
+                    a.billing_street,
+                    a.billing_city,
+                    a.billing_postal_code,
+                    a.phone,
+                    a.email_c,
+                    a.account_number,
+                    a.available_lender_c
              from brs.account a
                     left join flow.state s on s.abbreviation = a.billing_state
                     left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
@@ -4163,7 +5789,81 @@ $do$
     into v_object_category_id
     from flow.object_category oc
     where object_category_code = 'COMMUNITY' and object_type_id = 1;
-    for x in select c2.id as contact_id,c.*,cs.id as company_state_id,lov.id as lov_lease_term_c_id,
+    for x in select c2.id as contact_id,
+                    c.community_id_c,
+                    c.number_of_homes_reserved_c,
+                    c.sr_community_account_manager_c,
+                    c.proposal_link_c,
+                    c.account_manager_c,
+                    c.expected_community_construction_start_c,
+                    c.grand_opening_date_c,
+                    c.number_of_homes_in_community_c,
+                    c.field_manager_c,
+                    c.sr_builder_operation_manager_c,
+                    c.utility_c,
+                    c.sr_community_account_manager_c,
+                    c.ahj_c,
+                    c.builder_initial_submitter_c,
+                    c.tract_number_c,
+                    c.model_discount_c,
+                    c.lease_escalator_c,
+                    c.flat_lease_community_c,
+                    c.my_sun_power_c,
+                    c.bulk_rp_creation_c,
+                    c.builder_purchasing_contact_c,
+                    c.builder_utility_rep_c,
+                    c.community_adder_c,
+                    c.distance_adder_c,
+                    c.phase_cutover_c,
+                    c.prevailing_wage_c,
+                    c.prevailing_wage_details_c,
+                    c.transition_notes_c,
+                    c.utility_considerations_c,
+                    c.region_c,
+                    c.financial_offering_c,
+                    c.preferred_pv_partner_c,
+                    c.preferred_storage_partner_c,
+                    c.community_superintendent_name_c,
+                    c.community_superintendent_email_c,
+                    c.community_superintendent_phone_number_c,
+                    c.activation_coordinator_c,
+                    c.tracking_number_c,
+                    c.builder_delivery_info_c,
+                    c.permit_ahj_fees_c,
+                    c.permitting_notes_c,
+                    c.master_permit_c,
+                    c.builder_permitting_complete_c,
+                    c.cash_pv_module_qty_c,
+                    c.right_sized_c,
+                    c.sheet_size_c,
+                    c.roof_attachment_c,
+                    c.multi_family_steep_roof_c,
+                    c.custom_community_adder_c,
+                    c.custom_adder_description_c,
+                    c.storage_c,
+                    c.climate_zone_c,
+                    c.t_24_code_reserved_c,
+                    c.rebate_reservation_expiry_date_c,
+                    c.rebate_reservation_confirmation_number_c,
+                    c.reservation_amount_per_project_c,
+                    c.reserved_kw_c,
+                    c.reservation_notes_c,
+                    c.reserved_incentive_level_c,
+                    c.registry_notes_c,
+                    c.builder_hers_rater_c,
+                    c.load_application_c,
+                    c.load_application_received_c,
+                    c.address_list_c,
+                    c.address_list_info_complete_c,
+                    c.architecture_files_c,
+                    c.architecture_files_info_complete_c,
+                    c.community_documents_folder_c,
+                    c.document_notes_c,
+                    c.electrical_diagram_c,
+                    c.sequence_sheet_c,
+                    c.sequence_sheet_info_complete_c,
+                    c.site_plan_c,
+                    c.site_plan_info_complete_c,cs.id as company_state_id,lov.id as lov_lease_term_c_id,
                     l.id as l_weeks_prior_to_rough_install_for_cut_off_c_id,
                     l1.id as l1_builder_architect_c_id,
                     l2.id as l1_builder_project_manager_c_id,
@@ -4195,7 +5895,14 @@ $do$
                     l30.id as l30_storage_backup_type_c_id,
                     l31.id as l31_rebate_program_c_id,
                     l32.id as l32_rebate_payable_to_c_id,
-                    l33.id as l33_community_type_c_id
+                    l33.id as l33_community_type_c_id,
+                    c.community_status_c,
+                    c.name,
+                    c.id,
+                    c.zip_code_c,
+                    c.city_location_c,
+                    c.IS_DELETED,
+                    c.builder_preferred_roofer_c
              from brs.NH_COMMUNITY_C c
                     inner join brs.account a on a.id = c.builder_c
                     inner join flow.contact c2 on c2.nw_migration_id = a.id
@@ -4262,7 +5969,7 @@ $do$
           perform flow.set_project_cfv(v_project_id , 2384850,27981,x.expected_community_construction_start_c::text , true);
           perform flow.set_project_cfv(v_project_id , 2384850,27982,x.grand_opening_date_c::text , true);
           perform flow.set_project_cfv(v_project_id , 2384850,27983,x.number_of_homes_in_community_c::text , true);
-          perform flow.set_project_cfv(v_project_id , 2384850,27996,x.my_sun_power_c::text , true);
+     --TODO check this dup with below     perform flow.set_project_cfv(v_project_id , 2384850,27996,x.my_sun_power_c::text , true);
          -- perform flow.set_project_cfv(v_project_id , 2384850,27988,x.field_manager_c::text , true);
          -- perform flow.set_project_cfv(v_project_id , 2384850,27989,x.sr_builder_operation_manager_c::text , true);
           perform flow.set_project_cfv(v_project_id , 2384850,28006,x.utility_c::text , true);
@@ -4489,11 +6196,11 @@ $do$
                    c3.short_description_c,
                    c3.description,
                    c3.solar_cut_off_c,
-                   CASE WHEN ROW_NUMBER() OVER (PARTITION BY nh_community_c ORDER BY c3.last_modified_date desc ) = 1 THEN TRUE ELSE FALSE END AS is_last_row
+                   CASE WHEN row_number() OVER (PARTITION BY nh_community_c ORDER BY c3.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
           from brs.campaign c3
                  left join flow.list_of_value lov1 on lov1.name = c3.sales_status_c and lov1.parent_id = 25309
           where c3.nh_community_c = x.community_id
-          order by c3.nh_community_c, c3.last_modified_date
+          order by c3.nh_community_c, c3.created_date
         loop
             v_project_process_step_campaign_id = null;
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -4512,7 +6219,16 @@ $do$
             perform flow.set_pps_cfv(x.project_id, 2384850, 28121, u.solar_cut_off_c::text, true);
         end loop;
 
-        for s in select bpc.*,
+        for s in select bpc.active_c,
+                        bpc.cash_incentive_fee_c,
+                        bpc.lease_incentive_fee_c,
+                        bpc.nem_3_0_lease_incentives_c,
+                        bpc.net_contracted_price_c,
+                        bpc.notes_c,
+                        bpc.storage_configuration_group_c,
+                        bpc.storage_price_c,
+                        bpc.system_wattage_dc_c,
+                        bpc.wrap_insurance_percent_c,
                         lov1.id as lov1_code_year_c,
                         lov2.id as lov2_storage_size_c
                  from brs.builder_pricing_c bpc
@@ -4549,7 +6265,8 @@ $do$
 
           end loop;
 
-        for t in select ncvc.*,
+        for t in select ncvc.visit_notes_c,
+                        ncvc.RECENT_VISIT_DATE_C,
                         lov1.id as lov1_role_c_id
                  from brs.NH_COMMUNITY_VISIT_C ncvc
                  left join flow.list_of_value lov1 on lov1.name =ncvc.role_c and lov1.parent_id =25304
@@ -4572,7 +6289,15 @@ $do$
 
           end loop;
 
-        for y in select ptc.*,
+        for y in select ptc.NAME,
+                        ptc.ADDITIONAL_COST_FOR_STORAGE_C,
+                        ptc.BASE_SQUARE_FOOTAGE_C,
+                        ptc.flat_monthly_tpo_rate_c,
+                        ptc.min_system_size_watts_c,
+                        ptc.modules_c,
+                        ptc.retail_value_c,
+                        ptc.solar_access_c,
+                        ptc.sun_vault_retail_value_c,
                         lov1.id as lov1_CFI_C_id,
                         lov2.id as lov2_code_level_c_id
                  from brs.plan_type_c ptc
@@ -4605,7 +6330,31 @@ $do$
             perform flow.set_pps_event_cfv(v_project_process_step_plan_event_id, 2384850, 28110, y.sun_vault_retail_value_c::text,true);
 
           end loop;
-          for z in select dc.*,
+          for z in select dc.revision_of_c,
+                          dc.missing_information_c,
+                          dc.date_design_must_be_completed_c,
+                          dc.date_design_request_verified_c,
+                          dc.estimated_completion_date_c,
+                          dc.design_start_date_c,
+                          dc.date_completed_design_reviewed_c,
+                          dc.design_completed_date_c,
+                          dc.actual_time_hours_c,
+                          dc.reason_for_late_delivery_c,
+                          dc.for_eor_review_date_c,
+                          dc.for_eor_rejection_date_c,
+                          dc.design_approved_c,
+                          dc.date_design_signed_c,
+                          dc.date_design_shipped_c,
+                          dc.applied_for_permit_c,
+                          dc.permit_award_actual_c,
+                          dc.shared_with_builder_c,
+                          dc.design_work_located_in_c,
+                          dc.number_of_sets_c,
+                          dc.delivery_tracking_number_c,
+                          dc.deliver_to_c,
+                          dc.notes_from_requester_c,
+                          dc.status_c,
+                          dc.id,
                           lov1.id as lov1_mppp_revision_needed_c_id,
                           lov2.id as lov2_nh_urgent_request_type_c_id,
                           lov3.id as lov3_incoming_request_had_all_information_c_id,
@@ -4690,7 +6439,7 @@ $do$
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28757,z.date_design_shipped_c::text, true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28758,z.applied_for_permit_c::text, true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28759,z.permit_award_actual_c::text, true);
-              perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28760, z.shared_with_builder_c::text, true);
+              perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28760,z.shared_with_builder_c::text, true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28761,z.design_work_located_in_c::text, true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28762,z.number_of_sets_c::text,true);
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28763,z.lov4_pdf_copy_only_c_id::text, true);
@@ -4711,51 +6460,51 @@ $do$
               perform flow.set_pps_event_cfv(v_project_process_step_event_design_id, 2384850, 28768,z.notes_from_requester_c::text, true);
             end loop;
 
-          for w in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c
-                   from brs.alliance_partner_c apc
-                   where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
-                     and apc.RECORD_TYPE_ID = '01234000000UQPYAA4'
-                     and apc.community_c = x.community_id
-                  order by apc.created_date desc
-          loop
-            case when w.role_c = 'Builder' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28877,w.partner_account_c::text, true);
-                 when w.role_c = 'Builder HERS Rater' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28878,w.partner_account_c::text, true);
-                 when w.role_c = 'Commissioning Partner' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28879,w.partner_account_c::text, true);
-                 when w.role_c = 'Customer Service Partner' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28880,w.partner_account_c::text, true);
-                 when w.role_c = 'Dealer' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28881,w.partner_account_c::text, true);
-                 when w.role_c = 'Design Partner' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28882,w.partner_account_c::text, true);
-                 when w.role_c = 'DRIP' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28883,w.partner_account_c::text, true);
-                 when w.role_c = 'EV Electrician' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28884,w.partner_account_c::text, true);
-                 when w.role_c = 'Field Service Representative' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28886,w.partner_account_c::text, true);
-                 when w.role_c = 'Inspection Partner' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28887,w.partner_account_c::text, true);
-                 when w.role_c = 'IP' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28888,w.partner_account_c::text, true);
-                 when w.role_c = 'MPU Electrician' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28889,w.partner_account_c::text, true);
-                 when w.role_c = 'Permitting Partner' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28890,w.partner_account_c::text, true);
-                 when w.role_c = 'PV HERS Provider' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28891,w.partner_account_c::text, true);
-                 when w.role_c = 'Roofer' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28892,w.partner_account_c::text, true);
-                 when w.role_c = 'Storage IP' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28893,w.partner_account_c::text, true);
-                 when w.role_c = 'T24 Energy Consultant' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28894,w.partner_account_c::text, true);
-                 when w.role_c = 'TPS' then
-                   perform flow.set_project_cfv(x.project_id , 2384850,28895,w.partner_account_c::text, true);
-            end case;
-          end loop;
+--           for w in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c
+--                    from brs.alliance_partner_c apc
+--                    where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
+--                      and apc.RECORD_TYPE_ID = '01234000000UQPYAA4'
+--                      and apc.community_c = x.community_id
+--                   order by apc.role_c ,apc.created_date desc
+--           loop
+--             case when w.role_c = 'Builder' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28877,w.partner_account_c::text, true);
+--                  when w.role_c = 'Builder HERS Rater' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28878,w.partner_account_c::text, true);
+--                  when w.role_c = 'Commissioning Partner' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28879,w.partner_account_c::text, true);
+--                  when w.role_c = 'Customer Service Partner' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28880,w.partner_account_c::text, true);
+--                  when w.role_c = 'Dealer' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28881,w.partner_account_c::text, true);
+--                  when w.role_c = 'Design Partner' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28882,w.partner_account_c::text, true);
+--                  when w.role_c = 'DRIP' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28883,w.partner_account_c::text, true);
+--                  when w.role_c = 'EV Electrician' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28884,w.partner_account_c::text, true);
+--                  when w.role_c = 'Field Service Representative' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28886,w.partner_account_c::text, true);
+--                  when w.role_c = 'Inspection Partner' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28887,w.partner_account_c::text, true);
+--                  when w.role_c = 'IP' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28888,w.partner_account_c::text, true);
+--                  when w.role_c = 'MPU Electrician' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28889,w.partner_account_c::text, true);
+--                  when w.role_c = 'Permitting Partner' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28890,w.partner_account_c::text, true);
+--                  when w.role_c = 'PV HERS Provider' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28891,w.partner_account_c::text, true);
+--                  when w.role_c = 'Roofer' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28892,w.partner_account_c::text, true);
+--                  when w.role_c = 'Storage IP' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28893,w.partner_account_c::text, true);
+--                  when w.role_c = 'T24 Energy Consultant' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28894,w.partner_account_c::text, true);
+--                  when w.role_c = 'TPS' then
+--                    perform flow.set_project_cfv(x.project_id , 2384850,28895,w.partner_account_c::text, true);
+--             end case;
+--           end loop;
       end loop;
 
   end
@@ -4794,7 +6543,171 @@ $do$
                     a.phone as builder_phone,
                     a.email_c as builder_email_c,
                     cs.id as company_state_id,
-                    rpc.*,
+                    rpc.record_type_id,
+                    rpc.project_number_c,
+                    rpc.lot_number_c,
+                    rpc.elevation_c,
+                    rpc.enhancements_c,
+                    rpc.structural_option_c,
+                    rpc.pto_date_c,
+                    rpc.ntp_date_c,
+                    rpc.esd_date_c,
+                    rpc.sales_order_complete_date_c,
+                    rpc.phase_c,
+                    rpc.closed_won_date_nh_c,
+                    rpc.est_escrow_date_c,
+                    rpc.lines_ready_to_submit_c,
+                    rpc.sales_order_number_c,
+                    rpc.escrow_date_ho_c,
+                    rpc.auto_booked_c,
+                    rpc.ho_provided_escrow_response_c,
+                    rpc.historical_sales_order_number_c,
+                    rpc.scheduled_installation_date_c,
+                    rpc.oracle_order_header_id_c,
+                    rpc.first_scheduled_installation_date_c,
+                    rpc.amendment_reconciled_c,
+                    rpc.unblock_quote_amendment_c,
+                    rpc.solar_access_c,
+                    rpc.scheduled_ahj_inspection_c,
+                    rpc.milestone_c,
+                    rpc.rev_rec_date_c,
+                    rpc.misc_notes_c,
+                    rpc.forecasted_unblock_date_c,
+                    rpc.hoa_submission_date_c,
+                    rpc.escrow_date_c,
+                    rpc.number_of_panels_c,
+                    rpc.inverter_quantity_c,
+                    rpc.system_wattage_ac_c,
+                    rpc.system_wattage_dc_c,
+                    rpc.requested_delivery_date_c,
+                    rpc.scheduled_arrival_date_c,
+                    rpc.material_shipped_date_c,
+                    rpc.material_delivery_date_c,
+                    rpc.storage_system_c,
+                    rpc.roof_1_system_orientation_c,
+                    rpc.design_required_c,
+                    rpc.roof_1_no_of_modules_c,
+                    rpc.actual_time_hours_c,
+                    rpc.roof_2_system_orientation_c,
+                    rpc.roof_2_no_of_modules_c,
+                    rpc.total_number_of_sets_proj_c,
+                    rpc.roof_3_system_orientation_c,
+                    rpc.number_of_split_arrays_c,
+                    rpc.roof_3_no_of_modules_c,
+                    rpc.design_notes_c,
+                    rpc.roof_4_system_orientation_c,
+                    rpc.permit_execution_fees_c,
+                    rpc.roof_4_no_of_modules_c,
+                    rpc.permit_eta_c,
+                    rpc.previous_permit_eta_c,
+                    rpc.sun_power_permit_override_c,
+                    rpc.builder_wo_c,
+                    rpc.builder_wo_date_of_receipt_c,
+                    rpc.storage_size_discrepancy_c,
+                    rpc.wo_price_c,
+                    rpc.wo_system_size_w_c,
+                    rpc.storage_price_discrepancy_c,
+                    rpc.wo_storage_price_c,
+                    rpc.module_count_discrepancy_c,
+                    rpc.builder_wo_value_c,
+                    rpc.builder_wo_value_c,
+                    rpc.additional_builder_services_wo_c,
+                    rpc.wrap_insurance_amount_c,
+                    rpc.addtl_builder_services_wodateof_receipt_c,
+                    rpc.total_sovalue_c,
+                    rpc.additional_builder_services_wo_value_c,
+                    rpc.further_discount_amount_c,
+                    rpc.builder_incentive_value_c,
+                    rpc.further_discount_rationale_c,
+                    rpc.model_discount_percent_c,
+                    rpc.model_discount_amount_c,
+                    rpc.sunvault_model_discount_c,
+                    rpc.sunvault_model_discount_amount_c,
+                    rpc.trim_labor_pricing_c,
+                    rpc.pv_trim_po_c,
+                    rpc.rough_wire_wo_c,
+                    rpc.trench_date_promised_c,
+                    rpc.rough_wire_wo_date_receipt_c,
+                    rpc.trench_started_c,
+                    rpc.rough_wire_wo_value_c,
+                    rpc.trench_date_c,
+                    rpc.rough_labor_pricing_c,
+                    rpc.pv_rough_po_c,
+                    rpc.rough_wire_promised_c,
+                    rpc.roofer_labor_pricing_c,
+                    rpc.pv_install_promised_c,
+                    rpc.roofer_inset_po_c,
+                    rpc.trim_promised_c,
+                    rpc.ready_for_rough_wire_checkbox_c,
+                    rpc.ready_for_install_checkbox_c,
+                    rpc.ready_for_rough_wire_c,
+                    rpc.ready_for_install_c,
+                    rpc.roughwire_complete_c,
+                    rpc.pv_install_complete_c,
+                    rpc.pv_install_completed_c,
+                    rpc.rough_wire_completed_c,
+                    rpc.rough_wire_pull_date_c,
+                    rpc.trim_install_complete_c,
+                    rpc.pre_coe_commissioning_pricing_c,
+                    rpc.trim_install_completed_c,
+                    rpc.trim_install_pull_date_c,
+                    rpc.install_complete_c,
+                    rpc.install_completed_c,
+                    rpc.pre_coe_comm_notes_c,
+                    rpc.install_pull_date_c,
+                    rpc.utility_meter_confirmation_date_c,
+                    rpc.inspection_price_c,
+                    rpc.serial_number_c,
+                    rpc.permit_cost_actual_c,
+                    rpc.wi_fi_connected_c,
+                    rpc.adders_value_c,
+                    rpc.follow_up_date_c,
+                    rpc.commitment_date_c,
+                    rpc.storage_rough_po_c,
+                    rpc.site_id_c,
+                    rpc.storage_trim_po_c,
+                    rpc.storage_rough_wire_promised_c,
+                    rpc.storage_install_promised_c,
+                    rpc.storage_rough_complete_c,
+                    rpc.storage_rough_complete_date_c,
+                    rpc.storage_rough_complete_pull_date_c,
+                    rpc.storage_install_complete_c,
+                    rpc.storage_install_complete_date_c,
+                    rpc.storage_install_complete_pull_date_c,
+                    rpc.rebate_reservation_expiry_date_lot_c,
+                    rpc.hers_inspection_notes_c,
+                    rpc.solar_rebate_actual_c,
+                    rpc.pv_id_c,
+                    rpc.solar_rebate_expected_c,
+                    rpc.rebate_reservation_confirmation_lot_c,
+                    rpc.rebate_claim_notes_c,
+                    rpc.cf_2_r_c,
+                    rpc.energy_efficiency_code_c,
+                    rpc.rebate_claim_submitted_c,
+                    rpc.hers_inspection_completed_c,
+                    rpc.rebate_claim_approved_c,
+                    rpc.utility_application_id_c,
+                    rpc.t_24_notes_c,
+                    rpc.utility_account_number_c,
+                    rpc.utility_meter_number_c,
+                    rpc.hers_certificate_received_c,
+                    rpc.interconnection_notes_c,
+                    rpc.rebate_claim_expiry_date_c,
+                    rpc.gate_code_c,
+                    rpc.roof_material_c,
+                    rpc.hoa_name_c,
+                    rpc.hoa_contact_phone_email_c,
+                    rpc.age_of_roof_c,
+                    rpc.intake_notes_c,
+                    rpc.age_of_home_c,
+                    rpc.storage_install_completed_by_c,
+                   -- rpc.storage_rough_completed_c,
+                    rpc.install_completed_by_c,
+                    rpc.trim_install_completed_by_c,
+                    rpc.pv_install_completed_by_c,
+                    rpc.rough_wire_completed_by_c,
+                    rpc.trench_completed_by_c,
+                    rpc.activation_coordinator_c,
                     c2.id as builder_contact_id,
                     p.id as community_project_id,
                     lov1.id as  lov1_priority_c,
@@ -4832,7 +6745,11 @@ $do$
                     lov33.id as lov33_attic_crawl_space_c,
                     lov34.id as lov34_dog_on_site_c,
                     lov35.id as lov35_customer_construction_project_c,
-                    lov36.id as lov36_complexity_indicator_c
+                    lov36.id as lov36_complexity_indicator_c,
+                    rpc.status_c,
+                    rpc.name,
+                    rpc.system_adders_c,
+                    rpc.id
              from brs.NH_COMMUNITY_C c
                     inner join flow.project p on p.nw_migration_id = c.id
                     inner join brs.account a on a.id = c.builder_c
@@ -5231,6 +7148,7 @@ v_count bigint;
       loop
         v_count = v_count + 1;
         v_total = v_total + 1;
+        v_project_process_step_id = null;
         if v_count = 1000 then
           raise notice 'v_count %',v_count;
           raise notice 'v_total %',v_total;
@@ -5805,81 +7723,162 @@ $do$;
 DO
 $do$
   declare
-    x record;
-
+    x       record;
+    v_count bigint;
   BEGIN
-    for x in select p.id as project_id,ccrc.*,
-                    lov1.id as lov1_application_type_c_id ,
-                     lov2.id as lov2_bureau_c_id,
-                     lov3.id as lov3_credit_beureu_c_id,
-                     lov4.id as lov4_lender_c_id
-
-    from brs.CREDIT_CHECK_REQUEST_C ccrc
-    inner join flow.contact c on c.nw_migration_id = ccrc.account_c
-    inner join flow.project p on p.contact_id = c.id
-    left join flow.list_of_value lov1 on lov1.name = ccrc.application_type_c and lov1.parent_id = 25709
-    left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
-    left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713
-    left join flow.list_of_value lov4 on lov4.name = ccrc.lender_c and lov4.parent_id = 25715
-                                                                                                                                                    loop
+    v_count = 0;
+    for x in select p.id             as project_id,
+                    ccrc.auth_token_c,
+                    ccrc.comments_c,
+                    ccrc.credit_application_url_c,
+                    ccrc.credit_check_approval_date_c,
+                    ccrc.credit_check_decision_date_c,
+                    ccrc.credit_check_expiration_date_c,
+                    ccrc.credit_check_message_c,
+                    ccrc.credit_check_submission_date_c,
+                    ccrc.decision_reason_c,
+                    ccrc.error_message_c,
+                    ccrc.external_id_c,
+                    ccrc.first_name_c,
+                    ccrc.govt_id_upload_time_c,
+                    ccrc.last_name_c,
+                    ccrc.mortgage_pre_approval_letter_upload_time_c,
+                    ccrc.mortgage_pre_approval_letter_url_c,
+                    ccrc.offer_id_c,
+                    ccrc.phone_c,
+                    ccrc.send_lease_credit_check_failure_email_c,
+                    ccrc.share_id_c,
+                    ccrc.status_c,
+                    ccrc.successful_invite_c,
+                    lov1.id          as lov1_application_type_c_id,
+                    lov2.id          as lov2_bureau_c_id,
+                    lov3.id          as lov3_credit_beureu_c_id,
+                    lov4.id          as lov4_lender_c_id,
+                    CASE
+                      WHEN row_number() OVER (PARTITION BY account_c ORDER BY ccrc.created_date desc) = 1 THEN TRUE
+                      ELSE FALSE END AS is_last_row
+             from brs.CREDIT_CHECK_REQUEST_C ccrc
+                    inner join flow.contact c on c.nw_migration_id = ccrc.account_c
+                    inner join flow.project p on p.contact_id = c.id
+                    left join flow.list_of_value lov1 on lov1.name = ccrc.application_type_c and lov1.parent_id = 25709
+                    left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
+                    left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713
+                    left join flow.list_of_value lov4 on lov4.name = ccrc.lender_c and lov4.parent_id = 25715
+             order by ccrc.account_c,ccrc.created_date
+      loop
+      v_count = v_count + 1;
+      if v_count = 1000 then
+        raise notice 'v_count = %',v_count;
+        v_count = 0;
+      end if;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3792, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
+        values (x.project_id, 3792, null, case when x.is_last_row is true then 1 else 2 end, null, now(), now(),
+                2384850, 2384850, false,
+                case when x.is_last_row is true then true else false end, null, null, null);
 
-        perform flow.set_pps_cfv(x.project_id , 2384850,28786,x.auth_token_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28788,x.comments_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28789,x.credit_application_url_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28791,x.credit_check_approval_date_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28792,x.credit_check_decision_date_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28793,x.credit_check_expiration_date_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28794,x.credit_check_message_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28796,x.credit_check_submission_date_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28797,x.decision_reason_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28798,x.error_message_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28799,x.external_id_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28800,x.first_name_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28801,x.govt_id_upload_time_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28802,x.last_name_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28804,x.mortgage_pre_approval_letter_upload_time_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28805,x.mortgage_pre_approval_letter_url_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28806,x.offer_id_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28807,x.phone_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28808,x.send_lease_credit_check_failure_email_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28809,x.share_id_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28810,x.status_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28811,x.successful_invite_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28785,x.lov1_application_type_c_id::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28790,x.lov2_bureau_c_id::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28795,x.lov3_credit_beureu_c_id::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,28803,x.lov4_lender_c_id::text, true);
-    end loop;
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28786, x.auth_token_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28788, x.comments_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28789, x.credit_application_url_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28791, x.credit_check_approval_date_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28792, x.credit_check_decision_date_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28793, x.credit_check_expiration_date_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28794, x.credit_check_message_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28796, x.credit_check_submission_date_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28797, x.decision_reason_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28798, x.error_message_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28799, x.external_id_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28800, x.first_name_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28801, x.govt_id_upload_time_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28802, x.last_name_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28804, x.mortgage_pre_approval_letter_upload_time_c::text,
+                                 true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28805, x.mortgage_pre_approval_letter_url_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28806, x.offer_id_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28807, x.phone_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28808, x.send_lease_credit_check_failure_email_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28809, x.share_id_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28810, x.status_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28811, x.successful_invite_c::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28785, x.lov1_application_type_c_id::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28790, x.lov2_bureau_c_id::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28795, x.lov3_credit_beureu_c_id::text, true);
+        perform flow.set_pps_cfv(x.project_id, 2384850, 28803, x.lov4_lender_c_id::text, true);
+      end loop;
 
-end
+  end
 $do$;
 
 DO
 $do$
   declare
     x record;
-
+  v_count bigint;
   BEGIN
-    for x in select p.id as project_id,tcc.*,
-                    lov1.id as lov1_action_taken_c_id
+    v_count = 0;
+    for x in select p.id as project_id,
+                    tcc.alternate_apn_c,
+                    tcc.apn_c,
+                    tcc.census_block_c,
+                    tcc.census_block_group_c,
+                    tcc.census_tract_c,
+                    tcc.comments_c,
+                    tcc.external_property_id_c,
+                    tcc.county_c,
+                    tcc.county_use_c,
+                    tcc.county_use_code_c,
+                    tcc.land_use_c,
+                    tcc.land_use_code_c,
+                    tcc.legal_block_c,
+                    tcc.legal_description_c,
+                    tcc.legal_lot_c,
+                    tcc.mailing_city_state_c,
+                    tcc.mailing_street_c,
+                    tcc.mailing_zip_c,
+                    tcc.map_reference_c,
+                    tcc.map_reference_2_c,
+                    tcc.municipality_c,
+                    tcc.owner_first_name_c,
+                    tcc.owner_last_name_c,
+                    tcc.owner_name_c,
+                    tcc.property_city_c,
+                    tcc.property_state_c,
+                    tcc.property_street_c,
+                    tcc.property_zip_c,
+                    tcc.recording_date_c,
+                    tcc.sale_date_c,
+                    tcc.secondary_owner_c,
+                    tcc.seller_name_c,
+                    tcc.state_use_c,
+                    tcc.state_use_code_c,
+                    tcc.subdivision_c,
+                    tcc.township_c,
+                    tcc.township_range_section_c,
+                    tcc.vesting_code_c,
+                    lov1.id as lov1_action_taken_c_id,
+                    CASE WHEN row_number() OVER (PARTITION BY tcc.account_c ORDER BY tcc.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
              from brs.title_check_c tcc
                     inner join flow.contact c on c.nw_migration_id = tcc.account_c
                     inner join flow.project p on p.contact_id = c.id
                     left join flow.list_of_value lov1 on lov1.name = tcc.action_taken_c and lov1.parent_id = 25729
+             order by tcc.account_c,tcc.created_date
 
       loop
+        v_count = v_count + 1;
+        if v_count = 1000 then
+          raise notice 'v_count = %',v_count;
+          v_count = 0;
+        end if;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3794, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
+        values (x.project_id, 3794, null, case when x.is_last_row is true then 1 else 2 end,
+                null, now(), now(), 2384850, 2384850, false, case when x.is_last_row is true then true else false end, null, null, null);
 
         perform flow.set_pps_cfv(x.project_id , 2384850,28838,x.lov1_action_taken_c_id::text, true);
         perform flow.set_pps_cfv(x.project_id , 2384850,28839,x.alternate_apn_c::text, true);
@@ -5931,12 +7930,21 @@ $do$
     x record;
 
   BEGIN
-    for x in select p.id as project_id,o.*,
+    for x in select p.id as project_id,
+                    o.id,
+                    o.opportunity_owner_s_manager_c,
+                    o.close_date,
+                    o.lead_qualification_notes_c,
+                    o.APPOINTMENT_TIME_C,
+                    o.APPOINTMENT_DATE_C,
+                    o.first_contacted_date_time_c,
+                    o.description,
+                    o.reason_won_lost_comments_c,
                     lov1.id as lov1_stage_name_id,
                     lov2.id as lov2_sub_stage_c_id,
                     lov3.id as lov3_reason_won_lost_c_id
              from brs.opportunity o
-                  inner join brs.residential_project_c rpc on rpc.opportunity_c
+                  inner join brs.residential_project_c rpc on rpc.opportunity_c = o.id
                     inner join flow.project p on rpc.id = p.nw_migration_id
                     left join flow.list_of_value lov1 on lov1.name = o.stage_name and lov1.parent_id = 25746
                     left join flow.list_of_value lov2 on lov2.name = o.sub_stage_c and lov1.parent_id =25796
@@ -5953,7 +7961,13 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29221,x.opportunity_owner_s_manager_c::text, true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29228,x.close_date::text, true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29233,x.lead_qualification_notes_c::text, true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29234, TO_TIMESTAMP(CONCAT(x.APPOINTMENT_DATE_C, ' ', x.APPOINTMENT_TIME_C), 'YYYY-MM-DD HH12:MI PM')::text, true);
+        if x.appointment_date_c is not null and x.APPOINTMENT_TIME_C is not null then
+          begin
+            perform flow.set_pps_cfv(x.project_id , 2384850,29234, TO_TIMESTAMP(CONCAT(x.APPOINTMENT_DATE_C, ' ', x.APPOINTMENT_TIME_C), 'YYYY-MM-DD HH12:MI PM')::text, true);
+          exception when others then
+            raise notice 'opportunity id = % APPOINTMENT_DATE_C = %, APPOINTMENT_TIME_C = %',x.id,x.APPOINTMENT_DATE_C,x.APPOINTMENT_TIME_C;
+          end;
+        end if;
         perform flow.set_pps_cfv(x.project_id , 2384850,29235,x.first_contacted_date_time_c::text, true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29240,x.description::text, true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29239,x.reason_won_lost_comments_c::text, true);
@@ -5972,27 +7986,39 @@ $do$
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
   BEGIN
-    for x in select c.*, p.id as project_id,
+    for x in select
+                    c.sub_categories_c,
+                    c.subject,
+                    c.jira_ticket_number_c,
+                    c.resolution_comment_c,
+                    p.id as project_id,
                     lov1.id as lov1_category_c_id,
-                    lov2.id as lov2_sub_categories_c_id,
                     lov3.id as lov3_status_id
 
              from brs."case" c
                     inner join flow.project p on c.residential_project_c = p.nw_migration_id
-                    inner join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
-                    inner join flow.list_of_value lov2 on lov2.name = c.sub_categories_c and lov2.parent_id =99999999999
-                    inner join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
+                    left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
+                    left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
 
       loop
         v_project_process_step_event_id = null;
         v_project_process_step_id = null;
-        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
-                                               company_process_step_status_type_id,
-                                               process_step_complete_date, date_created, date_modified, created_by_id,
-                                               modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 388, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
-        returning id into v_project_process_step_id;
+
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and
+              pps.process_step_id = 3788;
+
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id)
+          values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+          returning id into v_project_process_step_id;
+        end if;
 
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                     company_event_status_type_id, start_time, end_time,
@@ -6004,7 +8030,7 @@ $do$
         returning id into v_project_process_step_event_id;
 
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 29237, x.lov2_sub_categories_c_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 29237, x.sub_categories_c::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28350, x.subject::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28731, x.lov3_status_id::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28352, x.jira_ticket_number_c::text, true);
@@ -6021,28 +8047,40 @@ $do$
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
   BEGIN
-    for x in select c.*, p.id as project_id,
+    for x in select
+                    c.sub_categories_c,
+                    c.subject,
+
+                    c.jira_ticket_number_c,
+                    c.resolution_comment_c, p.id as project_id,
                     lov1.id as lov1_category_c_id,
-                    lov2.id as lov2_sub_categories_c_id,
                     lov3.id as lov3_status_id
              from brs."case" c
                    inner join flow.contact c1 on c1.nw_migration_id = c.account_id
                    inner join flow.project p on p.contact_id = c1.id
-                   inner join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
-                   inner join flow.list_of_value lov2 on lov2.name = c.sub_categories_c and lov2.parent_id =99999999999
-                   inner join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
+                   left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
+                   left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
              where account_id is not null and c.residential_project_c is null
 
       loop
         v_project_process_step_event_id = null;
         v_project_process_step_id = null;
-        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
-                                               company_process_step_status_type_id,
-                                               process_step_complete_date, date_created, date_modified, created_by_id,
-                                               modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 388, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
-        returning id into v_project_process_step_id;
+
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and
+          pps.process_step_id = 3788;
+
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id)
+          values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+          returning id into v_project_process_step_id;
+        end if;
 
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                     company_event_status_type_id, start_time, end_time,
@@ -6054,7 +8092,7 @@ $do$
         returning id into v_project_process_step_event_id;
 
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
-        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 29237, x.lov2_sub_categories_c_id::text, true);
+        perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 29237, x.sub_categories_c::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28350, x.subject::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28731, x.lov3_status_id::text, true);
         perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28352, x.jira_ticket_number_c::text, true);
@@ -6094,7 +8132,7 @@ $do$
               lov5_rework_reason_c_id,
               lov6_rework_reason_2_c_id,
               lov7_rework_reason_3_c_ID,
-              CASE WHEN ROW_NUMBER() OVER (PARTITION BY residential_project_c ORDER BY created_date ) = 1 THEN TRUE ELSE FALSE END AS is_last_row
+              CASE WHEN row_number() OVER (PARTITION BY residential_project_c ORDER BY created_date desc ) = 1 THEN TRUE ELSE FALSE END AS is_last_row
               from (
             select trr.created_date,
                    trr.created_by_id,
@@ -6154,16 +8192,18 @@ $do$
                 left join flow.list_of_value lov5 on lov5.name = rework_reason_c and lov5.parent_id = 25803
                 left join flow.list_of_value lov6 on lov6.name = rework_reason_2_c and lov6.parent_id = 25804
                 left join flow.list_of_value lov7 on lov7.name = rework_reason_3_c and lov7.parent_id = 25805) as foo
-            order by created_date
+            order by residential_project_c,created_date
 
       loop
+
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3792, null,  2 , null, now(), now(), 2384850, 2384850, false,
+        values (x.project_id, 3796, null,  2 , null, now(), now(), 2384850, 2384850, false,
                 case when x.is_last_row is true then true else false end, null, null, null);
+
 
         --perform flow.set_project_cfv(x.project_id , 2384850,29241,x.created_by_id::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29242,x.lov1_action_required_c_id::text , true);
@@ -6208,6 +8248,12 @@ $do$
       loop
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+
+        if v_project_process_step_id is null then
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -6216,6 +8262,7 @@ $do$
         values (x.project_id, 3797, null,  1 , null, now(), now(), 2384850, 2384850, false,
                 true , null, null, null)
         returning id into v_project_process_step_id;
+        end if;
 
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                     company_event_status_type_id, start_time, end_time,
@@ -6254,7 +8301,7 @@ $do$
                         from brs.work_order w
                         where id = x.id
                       ) AS subquery) as foo
-                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 1;
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
           perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
         end if;
 
@@ -6288,7 +8335,22 @@ $do$
     v_project_process_step__event_id bigint;
     v_lov_scope_of_work bigint[];
   BEGIN
-    for x in select wo.*, p.id as project_id,
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.status,
+                    p.id as project_id,
                     lov1.id as  lov1_priority_id,
                     lov2.id as  lov2_service_type_c_id,
                     lov3.id as  lov3_disposition_reason_c_id,
@@ -6309,6 +8371,11 @@ $do$
       loop
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+        if v_project_process_step_id is null then
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -6317,6 +8384,7 @@ $do$
         values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
                 true, null, null, null)
         returning id into v_project_process_step_id;
+        end if;
 
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                     company_event_status_type_id, start_time, end_time,
@@ -6356,7 +8424,7 @@ $do$
                         from brs.work_order w
                         where id = x.id
                       ) AS subquery) as foo
-                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 1;
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
           perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
         end if;
 
@@ -6389,7 +8457,22 @@ $do$
     v_project_process_step__event_id bigint;
     v_lov_scope_of_work bigint[];
   BEGIN
-    for x in select wo.*,p.id as project_id,
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.status,
+                    p.id as project_id,
                     lov1.id as  lov1_priority_id,
                     lov2.id as  lov2_service_type_c_id,
                     lov3.id as  lov3_disposition_reason_c_id,
@@ -6410,6 +8493,11 @@ $do$
       loop
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+        if v_project_process_step_id is null then
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -6418,6 +8506,7 @@ $do$
         values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
                 true, null, null, null)
         returning id into v_project_process_step_id;
+        end if;
 
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                     company_event_status_type_id, start_time, end_time,
@@ -6457,7 +8546,7 @@ $do$
                         from brs.work_order w
                         where id = x.id
                       ) AS subquery) as foo
-                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 1;
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
           perform flow.set_pps_event_cfv(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
         end if;
 
@@ -6492,7 +8581,31 @@ $do$
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
   BEGIN
-    for x in select wo.*,p.id as project_id,
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.status,
+                    wo.response_comments_c,
+                    wo.appointment_cancellation_c,
+                    wo.appointment_cancellation_notes_c,
+                    wo.sales_order_c,
+                    wo.payment_reference_c,
+                    wo.customer_po_c,
+                    wo.payment_date_c,
+                    wo.amount_c,
+                    wo.commitment_date_c,
+                    p.id as project_id,
                     lov1.id as lov1_priority_id,
                     lov2.id as lov2_service_request_type_c_id,
                     lov3.id as lov3_cancellation_reasons_c_id,
@@ -6509,6 +8622,11 @@ $do$
       loop
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3788;
+        if v_project_process_step_id is null then
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -6517,6 +8635,7 @@ $do$
         values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false,
                 true, null, null, null)
         returning id into v_project_process_step_id;
+        end if;
 
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                     company_event_status_type_id, start_time, end_time,
@@ -6569,7 +8688,31 @@ $do$
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
   BEGIN
-    for x in select wo.*,p.id as project_id,
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.status,
+                    wo.response_comments_c,
+                    wo.appointment_cancellation_c,
+                    wo.appointment_cancellation_notes_c,
+                    wo.sales_order_c,
+                    wo.payment_reference_c,
+                    wo.customer_po_c,
+                    wo.payment_date_c,
+                    wo.amount_c,
+                    wo.commitment_date_c,
+                    p.id as project_id,
                     lov1.id as lov1_priority_id,
                     lov2.id as lov2_service_request_type_c_id,
                     lov3.id as lov3_cancellation_reasons_c_id,
@@ -6588,7 +8731,12 @@ $do$
       loop
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
-        insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3788;
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
@@ -6596,6 +8744,7 @@ $do$
         values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false,
                 true, null, null, null)
         returning id into v_project_process_step_id;
+          end if;
 
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
                                                     company_event_status_type_id, start_time, end_time,
@@ -6641,5 +8790,25 @@ $do$
   end
 $do$;
 
+
+-- DO
+-- $do$
+--   declare
+--     x record;
+--
+--   BEGIN
+--     for x in  select q.id,--p.id as project_id,
+--       CASE WHEN row_number() OVER (PARTITION BY rpc.id ORDER BY q.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
+--       from brs.quote q
+--       inner join brs.account a on a.id = q.account_c
+--       inner join brs.residential_project_c rpc on rpc.account_c = a.id
+--       inner join flow.project p on p.nw_migration_id = rpc.id
+--       order by rpc.id,q.created_date
+--       loop
+--
+--   end loop;
+--
+-- end
+-- $do$;
 
 SET session_replication_role = default;
