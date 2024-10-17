@@ -5658,6 +5658,7 @@
 -- CREATE INDEX if not exists quote_non_backup_storage_acknowledged_c ON brs.quote (non_backup_storage_acknowledged_c);
 -- CREATE INDEX if not exists quote_credit_bureau_c ON brs.quote (credit_bureau_c);
 -- CREATE INDEX if not exists quote_lease_doc_reviewed_c ON brs.quote (lease_doc_reviewed_c);
+-- CREATE INDEX if not exists ds_agreement_c_account_c ON brs.ds_agreement_c (account_c);
 
 
 
@@ -9001,6 +9002,42 @@ $do$
         perform flow.set_project_cfv(x.project_id , 2384850,29372,x.full_prepayment_of_lease_amount_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29373,x.System_Size_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29374,x.Net_Cost_c::text , true);
+
+  end loop;
+
+end
+$do$;
+
+DO
+$do$
+  declare
+    x record;
+
+  BEGIN
+    for x in select
+                    dac.name,
+                    dac.docu_sign_envelope_c,
+                    dac.docu_sign_status_c,
+                    dac.contract_type_c,
+                    dac.document_url_c,
+                    dac.ready_to_sign_c,
+                    dac.owner_id,
+                    dac.reviewer_c,
+                    dac.record_type_id,
+                    dac.adhoc_create_lda_requested_c,
+                    dac.migrated_from_adobe_c,
+                    dac.on_hold_reason_s_c,
+                    dac.sub_category_c,
+                    dac.notes_c,
+                    dac.countersignatory_notes_c,
+                    dac.cancellation_reason_c,
+                    dac.hold_notes_c
+              from brs.ds_agreement_c dac
+                     inner join brs.account a on a.id = dac.account_c
+                     inner join brs.residential_project_c rpc on rpc.account_c = a.id
+                     inner join flow.project p on p.nw_migration_id = rpc.id
+
+      loop
 
   end loop;
 
