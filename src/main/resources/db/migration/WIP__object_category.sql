@@ -636,6 +636,14 @@ update flow.company_process
 set allow_contact_initiate = true
 where process_id != 27;
 
+--add the flow.copy_from_parent_to_child to company_process (i added the db_function record in prod so it doesn't get lost on data dump)
+insert into flow.company_function(company_function_name, db_function_id, archived, company_id)
+select df.display_name, df.id, df.archived, 3 from flow.db_function df
+where df.function_name = 'flow.copy_from_parent_to_child'
+  and not exists (select cf.id from flow.company_function cf
+                            inner join flow.db_function df2 on cf.db_function_id = df2.id
+                            where df.function_name = 'flow.copy_from_parent_to_child');
+
 CREATE TABLE if not exists flow.company_process_child_company_process
 (
   id                       bigserial NOT NULL,
