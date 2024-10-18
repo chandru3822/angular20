@@ -17,7 +17,7 @@ declare
   v_project_id                bigint;
   v_child_ids                 bigint[];
   v_from_object_type_id       bigint;
-  v_from_list_of_values       boolean;
+  v_from_list_of_value_id     bigint;
   v_from_company_data_type_id bigint;
   v_from_data_type_id         bigint;
   v_to_object_type_id         bigint;
@@ -31,7 +31,7 @@ BEGIN
   --check that both cfga's share the same data type - using company_data_type_id also ensures they are from the same company
   --and get the object type for each cfga
   select cf.company_data_type_id, cdt.data_type_id, cot.object_type_id, cf.list_of_value_id
-  into v_from_company_data_type_id, v_from_data_type_id, v_from_object_type_id, v_from_list_of_values
+  into v_from_company_data_type_id, v_from_data_type_id, v_from_object_type_id, v_from_list_of_value_id
   from flow.custom_field_group_assignment cfga
          inner join flow.custom_field cf on cfga.custom_field_id = cf.id
          inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
@@ -47,9 +47,10 @@ BEGIN
          inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
   where cfga.id = p_cfga_copy_to;
 
+  --we are not doing this on events for now
   if v_from_company_data_type_id != v_to_company_data_type_id or
      v_to_object_type_id = 6 or v_from_data_type_id = 6 or
-     (coalesce(v_to_list_of_value_id, 0) != coalesce(v_from_list_of_values, 0)) then
+     (coalesce(v_to_list_of_value_id, 0) != coalesce(v_from_list_of_value_id, 0)) then
     return false;
   else
 
