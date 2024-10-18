@@ -9065,7 +9065,7 @@ $do$
                      inner join brs.account a on a.id = dac.account_c
                      inner join brs.residential_project_c rpc on rpc.account_c = a.id
                      inner join flow.project p on p.nw_migration_id = rpc.id
-                      left join flow.list_of_value lov1 on lov1.name = dac.cancellation_reason_c and lov1.parent_id =
+                      left join flow.list_of_value lov1 on lov1.name = dac.cancellation_reason_c and lov1.parent_id =25850
                       left join flow.list_of_value lov2 on lov2.name = dac.contract_type_c and lov2.parent_id = 25842
               order by rpc.id,dac.created_date
       loop
