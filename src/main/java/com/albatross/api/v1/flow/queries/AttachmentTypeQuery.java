@@ -259,9 +259,12 @@ limit 1
                allow_upload
          from flow.project_attachment_type oat
                 inner join flow.attachment_type at on oat.attachment_type_id = at.id
+                   inner join flow.object_category_attachment_type ocat on at.id = ocat.attachment_type_id
+                    and ocat.object_category_id = (select p.object_category_id from flow.project p where p.id = :projectId)
          where oat.company_id = :companyId
            and oat.archived is not true
            and oat.focused is true
+           and ocat.archived is false
          order by attachment_type
     """;
 
@@ -299,6 +302,9 @@ limit 1
                             oat.attachment_type_id
             from flow.project_attachment_type oat
                    inner join flow.attachment_type at on oat.attachment_type_id = at.id
+                   inner join flow.object_category_attachment_type ocat on at.id = ocat.attachment_type_id
+                    and ocat.object_category_id = (select p.object_category_id from flow.project p where p.id = :projectId)
+                    and ocat.archived is false
             where oat.company_id = :companyId
               and oat.archived is not true -- 27
             union
@@ -306,6 +312,9 @@ limit 1
                             psat.attachment_type_id
             from flow.process_step_attachment_type psat
                    inner join flow.attachment_type at on at.id = psat.attachment_type_id
+                   inner join flow.object_category_attachment_type ocat on at.id = ocat.attachment_type_id
+                    and ocat.object_category_id = (select p.object_category_id from flow.project p where p.id = :projectId)
+                    and ocat.archived is false
             where psat.archived is not true
               and at.company_id = :companyId -- 68
             union
@@ -313,6 +322,9 @@ limit 1
                             eat.attachment_type_id
             from flow.event_attachment_type eat
                    inner join flow.attachment_type at on at.id = eat.attachment_type_id
+                   inner join flow.object_category_attachment_type ocat on at.id = ocat.attachment_type_id
+                    and ocat.object_category_id = (select p.object_category_id from flow.project p where p.id = :projectId)
+                    and ocat.archived is false
                    inner join flow.event e on eat.event_id = e.id
             where eat.archived is not true
               and e.company_id = :companyId
@@ -715,6 +727,12 @@ limit 1
           and case when :allowUpload::boolean is true then oat.allow_upload is true else 1 = 1 end
           and case when :focused::boolean is true then oat.focused is true else 1 = 1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1 = 1 end
+          and case
+            when :objectCategoryId::int is not null then at.id in (select ocat.attachment_type_id
+                                                                   from flow.object_category_attachment_type ocat
+                                                                   where ocat.object_category_id = :objectCategoryId::int
+                                                                     and ocat.archived is false)
+            else 1 = 1 end
         order by at.attachment_type
     """;
 
@@ -745,6 +763,12 @@ limit 1
           and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
           and case when :focused::boolean is true then oat.focused is true else 1=1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+          and case
+            when :objectCategoryId::int is not null then at.id in (select ocat.attachment_type_id
+                                                                   from flow.object_category_attachment_type ocat
+                                                                   where ocat.object_category_id = :objectCategoryId::int
+                                                                     and ocat.archived is false)
+            else 1 = 1 end
         order by at.attachment_type
     """;
 
@@ -776,6 +800,12 @@ limit 1
           and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
           and case when :focused::boolean is true then oat.focused is true else 1=1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+          and case
+            when :objectCategoryId::int is not null then at.id in (select ocat.attachment_type_id
+                                                                   from flow.object_category_attachment_type ocat
+                                                                   where ocat.object_category_id = :objectCategoryId::int
+                                                                     and ocat.archived is false)
+            else 1 = 1 end
         order by at.attachment_type
     """;
 
@@ -807,6 +837,12 @@ limit 1
           and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
           and case when :focused::boolean is true then oat.focused is true else 1=1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
+          and case
+            when :objectCategoryId::int is not null then at.id in (select ocat.attachment_type_id
+                                                                   from flow.object_category_attachment_type ocat
+                                                                   where ocat.object_category_id = :objectCategoryId::int
+                                                                     and ocat.archived is false)
+            else 1 = 1 end
         order by at.attachment_type
     """;
 }

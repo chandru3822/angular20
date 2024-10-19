@@ -313,6 +313,8 @@ import SpinnerInline from '@/components/SpinnerInline'
 import cloneDeep from 'lodash.clonedeep'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 import {
   getCurrentInstance,
@@ -323,30 +325,23 @@ import {
   watch,
   onBeforeUnmount
 } from 'vue'
-import { useUserStore } from '@/stores/UserStore.js'
-import { useRoute, useRouter } from 'vue-router/composables'
-import { useAppStore } from '@/stores/AppStore.js'
+import { useRoute } from 'vue-router/composables'
 import { storeToRefs } from 'pinia'
 import emitter from '@/services/eventBus.js'
 
 const appStore = useAppStore()
 const route = useRoute()
-const router = useRouter()
 const userStore = useUserStore()
 const fileStore = useFileStore()
 const projectStore = useProjectStore()
 const { forceReloadKey } = storeToRefs(projectStore)
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-
 const vuetify = vueInstance.$vuetify
-// const rootInstance = getCurrentInstance().appContext.app;
 
 const props = defineProps({
   allowUpload: Boolean,
   loadLinked: Boolean,
   focused: Boolean,
-  hideEmptyFolderStatus: Boolean,
   smallTitle: Boolean,
   title: String,
   activityTab: Boolean, //this tells us whether to show the search and compare buttons
@@ -367,7 +362,6 @@ const {
   allowUpload,
   loadLinked,
   focused,
-  hideEmptyFolderStatus,
   smallTitle,
   title,
   activityTab,
@@ -382,7 +376,7 @@ const {
   reloadOnKeyChange
 } = toRefs(props)
 
-const eventId = ref(null)
+const hideEmptyFolderStatus = ref(false)
 const tempFile = ref({})
 const fileToUpload = ref(null)
 const loadingDetails = ref(false)
@@ -392,11 +386,8 @@ const attachmentTypes = ref([])
 const attachments = ref([])
 const dragTypeId = ref(null)
 const showCoversheetModal = ref(false)
-const coversheetSelectedTypeId = ref(null)
 const attachmentTypesLoading = ref(false)
 const error = ref({})
-const maxFiles = ref(constants.MAX_FILE_UPLOADS)
-const renderTicker = ref(0)
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_DOCS_AUDIO)
 const headers = ref([
   { text: null, value: 'fileIcon', show: true },
@@ -408,7 +399,6 @@ const sortOldToNew = ref(false)
 const compare = ref(false)
 const showCompareModal = ref(false)
 const opened = ref([])
-const emptyFolderToggleState = ref(null)
 const _filterTimerId = ref(null)
 const typePath = ref('')
 const attachmentPath = ref('')
@@ -428,6 +418,7 @@ const projectProcessStepEventId = computed(() => {
 const companyId = computed(() => {
   return userStore.details.companyId
 })
+
 const sortedAttachments = computed(() => {
   return orderBy(
     attachments.value,
@@ -569,6 +560,7 @@ const loadAllPageDetails = async () => {
   ) {
     typePath.value = `/combined/project`
     attachmentPath.value = `/project/${projectId.value}/combinedAttachments`
+    params.projectId = projectId.value
     params.ppsEventId = projectProcessStepEventId.value
     params.ppsId = projectProcessStepId.value
   } else {
@@ -579,6 +571,8 @@ const loadAllPageDetails = async () => {
       typePath.value = `/processStepTypes/${projectProcessStepId.value}`
       attachmentPath.value = `/projectProcessStep/${projectProcessStepId.value}/attachments`
     } else if (projectId.value) {
+      params.projectId = projectId.value
+
       typePath.value = `/objectType/project`
       attachmentPath.value = `/project/${projectId.value}/attachments`
     } else if (objectTypeId.value === 2) {
@@ -587,7 +581,7 @@ const loadAllPageDetails = async () => {
       attachmentPath.value = `/contact/${contactId.value}/attachments`
     } else if (objectTypeId.value === 5) {
       //org
-      typePath.value = `/objectType/org`
+      typePath.value = `/objectType/organization`
       attachmentPath.value = `/org/${orgId.value}/attachments`
     } else if (objectTypeId.value === 3) {
       //user
@@ -596,23 +590,18 @@ const loadAllPageDetails = async () => {
     }
   }
 
-  //if focused then override attachment path to get all in project
-  // if (focused.value) {
-  //   attachmentPath.value = `/project/${projectId.value}/combinedAttachments`
-  //   params.ppsEventId = projectProcessStepEventId.value
-  //   params.ppsId = projectProcessStepId.value
-  // }
-
   if (typePath.value && attachmentPath.value) {
     loadingDetails.value = true
-    let requests = [fetchAttachmentTypes(params), fetchAttachments(params)]
-    await Promise.all(requests)
+    await Promise.allSettled([
+      fetchAttachmentTypes(params),
+      fetchAttachments(params)
+    ])
     loadingDetails.value = false
   }
 }
 const fetchAttachmentTypes = async (typeParams) => {
-  emptyFolderToggleState.value = hideEmptyFolderStatus.value
   attachmentTypesLoading.value = true
+
   const { data } = await getRequestWithParams(
     `/attachmentType${typePath.value}`,
     {
@@ -627,6 +616,7 @@ const fetchAttachmentTypes = async (typeParams) => {
   attachmentTypes.value = data
   attachmentTypesLoading.value = false
 }
+
 const fetchAttachments = async (extraParams) => {
   const { data } = await getRequestWithParams(
     attachmentPath.value,
@@ -640,7 +630,7 @@ const fetchAttachments = async (extraParams) => {
     []
   )
   data?.forEach((d) => {
-    let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
+    let tempFileName = d.filename.substring(0, d.filename.lastIndexOf('.'))
     d.editableName =
       tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
     //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
@@ -652,7 +642,6 @@ const fetchAttachments = async (extraParams) => {
     [(a) => a.dateCreated],
     sortOldToNew.value ? 'asc' : 'desc'
   )
-  hideEmptyFolderStatus.value = emptyFolderToggleState.value
 }
 
 const getTypeCount = (typeId) => {
@@ -700,7 +689,7 @@ const setTempFile = (file, type) => {
   fileToUpload.value = file
   tempFile.value.attachmentTypeId = type.attachmentTypeId
   tempFile.value.attachmentType = type.attachmentType
-  let displayName = fileToUpload.value.name.substring(
+  const displayName = fileToUpload.value.name.substring(
     0,
     fileToUpload.value.name.lastIndexOf('.')
   )
@@ -751,7 +740,10 @@ const uploadDocument = async (files, type) => {
             await fileStore.uploadFile({
               file: file,
               attachmentTypeId: type.attachmentTypeId,
-              displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+              displayName: file?.name?.substring(
+                0,
+                file?.name?.lastIndexOf('.')
+              ),
               objectTypeId: objectTypeId.value,
               sourceId,
               secondaryId,
@@ -817,26 +809,18 @@ const uploadDocument = async (files, type) => {
 }
 
 .file-hover-inactive {
-  hidden: true;
-
   i {
     display: none;
   }
 }
 
 .file-hover-active {
-  hidden: false;
   background-color: rgba(#e3eff7, 90%);
 
   i {
     display: inline-flex;
   }
 }
-
-//todo check if still needed??
-//.theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
-//  background-color: transparent !important;
-//}
 
 .child-drag-elements {
   pointer-events: none;

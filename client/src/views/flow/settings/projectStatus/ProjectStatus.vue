@@ -135,7 +135,8 @@ const projectStatusObjectCategories = computed(() => {
     ?.map((id) => {
       return objectCategories.value.find((category) => category.id === id)
     })
-    ?.map((oc) => oc.name)
+    ?.filter((oc) => oc.name !== undefined)
+    ?.map((oc) => oc?.name)
     ?.join(', ')
 })
 

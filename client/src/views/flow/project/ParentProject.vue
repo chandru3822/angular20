@@ -1,63 +1,51 @@
 <template>
-  <SidePanelExpansionPanel :header="parentProject.objectCategory" :section-expanded="sectionExpanded" @click="toggleCollapseExpand" id="qa-project-children-expansion">
+  <SidePanelExpansionPanel
+    :header="parentProject.objectCategory"
+    :section-expanded="sectionExpanded"
+    @click="toggleCollapseExpand"
+    id="qa-project-children-expansion"
+  >
     <template v-slot:expanded-content>
-      <v-card outlined
-              class="mb-2 pa-2 elevation-0 body-large"
-              @click="goToProject(parentProject.id)">
-        <div class="body-large" >{{ parentProject.projectName }} </div>
-        <div class="body-small" :class="getStatusClass(parentProject.projectStatusTypeId)">{{ parentProject.projectStatusType }}</div>
+      <v-card
+        outlined
+        class="mb-2 pa-2 elevation-0 body-large"
+        @click="goToProject(parentProject.id)"
+      >
+        <div class="body-large">{{ parentProject.projectName }}</div>
+        <div
+          class="body-small"
+          :class="getStatusClass(parentProject.projectStatusTypeId)"
+        >
+          {{ parentProject.projectStatusType }}
+        </div>
       </v-card>
     </template>
   </SidePanelExpansionPanel>
 </template>
 <script setup>
-
-import {getProjectPath, getRequestWithParams, logError} from '@/helpers/helpers'
-import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import { toRefs, computed, ref } from 'vue'
+import { getProjectPath } from '@/helpers/helpers'
+import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
 import { useProjectStore } from '@/stores/ProjectStore.js'
-
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStore.js'
-import {getStatusClass} from "@/services/processStepStatusTypeService.js";
+import { getStatusClass } from '@/services/processStepStatusTypeService.js'
+import { useRouter } from 'vue-router/composables'
 
 const projectStore = useProjectStore()
-const appStore = useAppStore()
-const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
- const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
-  parentProject: Object,
+  parentProject: Object
 })
 const { parentProject } = toRefs(props)
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 
-const projectId = computed(() => {
-  return parseInt(route.params.projectId)
-})
-
-// const header = computed(() => {
-//   return childProjects.value[0].objectCategory + " Projects"
-// })
-
-onMounted(() => {
-})
-
-const sectionExpanded = computed(()  => {
+const sectionExpanded = computed(() => {
   return projectStore.projectParentDropdown
-})
-const isMobile = computed(() => {
-  return vuetify.breakpoint.smAndDown
 })
 
 const goToProject = (pId) => {
   let path = `/project/${pId}/${defaultProjectPage.value}`
-  let routerData = router.resolve({path})
+  let routerData = router.resolve({ path })
   window.open(routerData.href, '_blank')
 }
 
@@ -73,7 +61,7 @@ const toggleCollapseExpand = () => {
 }
 
 .active-tab {
-  background-color: var(--v-primary-lighten9) ;
+  background-color: var(--v-primary-lighten9);
 }
 
 .active-tab-button {
@@ -81,7 +69,6 @@ const toggleCollapseExpand = () => {
   padding: 10px;
   margin-bottom: 10px;
 }
-
 </style>
 
 <style lang="scss">
