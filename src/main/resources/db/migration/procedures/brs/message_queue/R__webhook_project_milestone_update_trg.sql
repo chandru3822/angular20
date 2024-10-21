@@ -96,8 +96,8 @@ if v_partner_ids is not null and new.company_id = 3 then
       'data', v_webhook_payload
     );
 
-    insert into flow.message_queue(topic, payload, created_by)
-    values ('webhook:project_milestone', v_message_payload, 99999999);
+    insert into flow.message_queue(topic_id, payload, created_by)
+    values (1, v_message_payload, 99999999);
   end if;
 end if;
 
