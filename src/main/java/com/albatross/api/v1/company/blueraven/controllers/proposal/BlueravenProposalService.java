@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.aurora.*;
 import com.albatross.api.config.AppProperties;
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -45,6 +47,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,7 +108,7 @@ public class BlueravenProposalService {
      return closerAppointmentStart - 450 mins so that both mobile and web,
      who were both already subtracting 30 mins, would change to 8 hours without requiring a
      mobile release */
-    return sqlCache.getBySql(ProposalQuery.getProjectById, params, ProposalProjectDetails.class);
+    return sqlCache.getBySql(ProposalQuery.getProjectById, params, new ProposalProjectDetailsMapper<>(ProposalProjectDetails.class, om));
   }
 
   public void syncDesign(Long ppsId, String designId) {
@@ -1008,5 +1011,22 @@ public class BlueravenProposalService {
   public void setProcessingErrorMessage(Long proposalId, String errorMessage, Long modifiedBy) {
     sqlCache.updateBySql(ProposalQuery.setProcessingErrorMessage,
       Map.of("id", proposalId, "errorMsg", errorMessage, "modifiedById", modifiedBy));
+  }
+
+  public static class ProposalProjectDetailsMapper<T> extends BeanPropertyRowMapper<T> {
+      private final ObjectMapper objectMapper;
+
+      public ProposalProjectDetailsMapper(Class<T> mappedClass, ObjectMapper objectMapper){
+          super(mappedClass);
+          this.objectMapper = objectMapper;
+      }
+
+      @Override
+      protected void initBeanWrapper(BeanWrapper bw) {
+          TypeReference<List<CustomFieldValue>> cfvRef = new TypeReference<>() {
+          };
+          bw.registerCustomEditor(
+                  List.class, "availableModules", new JsonCollectionDeserializer(cfvRef, objectMapper));
+      }
   }
 }

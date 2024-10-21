@@ -29,7 +29,20 @@ public class ProposalQuery {
            pd.contact_mobile_phone as mobile,
            case when pd.closer_appointment_start is not null then
                       pd.closer_appointment_start - interval '450 minutes' end as closer_appointment_start,
-           pd.closer_appointment_end
+           pd.closer_appointment_end,
+           pd.ahj as ahjId,
+           coalesce((
+           	                SELECT array_to_json(array_agg(row_to_json(modules)))
+           	                FROM (
+           		                     select cf.field_name as "fieldName",
+           		                            cfv.text_value as "textValue"
+           		                     from brs.feat_db_ahj_design_custom_field_value cfv
+           			                          inner join brs.feat_db_ahj_design d on d.id = cfv.ahj_design_id
+           			                          inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
+           			                          inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+           		                     where d.ahj_id = pd.ahj
+           			                   and cfv.custom_field_group_assignment_id in (491,492,493) --whatever those fields are
+           	                     ) modules), '[]') AS "availableModules"
     from brs.project_details pd
     where pd.archived is false
       and pd.project_id = :id
