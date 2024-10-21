@@ -447,6 +447,7 @@ on conflict do nothing;
 
 
 --proposal template object categories
+drop table brs.object_category_proposal_template;
 create table if not exists brs.object_category_proposal_template
 (
   object_category_id   bigint                                    not null references flow.object_category (id),
@@ -454,14 +455,14 @@ create table if not exists brs.object_category_proposal_template
   date_created         timestamp without time zone DEFAULT now() not null,
   created_by_id        integer references flow."user" (id),
 
-  primary key (object_category_id, proposal_template_id)
+  primary key (object_category_id)
 );
-CREATE INDEX if not exists ocpt_proposal_template_id_ix on brs.object_category_proposal_template (proposal_template_id);
 
 insert into brs.object_category_proposal_template (object_category_id, proposal_template_id)
 select oc.id, pt.id
 from brs.proposal_template pt
        cross join flow.object_category oc
+where pt.id = 1
 on conflict do nothing;
 
 
