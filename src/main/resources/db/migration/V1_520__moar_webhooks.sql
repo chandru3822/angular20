@@ -11,8 +11,8 @@ insert into flow.message_queue_topics (topic) values ('webhook:project_milestone
 
 do $$
   begin
-    if !exists(
-      select column_name
+    if exists(
+      select *
       from information_schema.columns
       where
         table_schema = 'flow' and
@@ -34,8 +34,8 @@ alter table if exists flow.message_queue
 
 do $$
   begin
-    if !exists(
-      select column_name
+    if exists(
+      select *
       from information_schema.columns
       where
         table_schema = 'flow' and
