@@ -1,69 +1,84 @@
 <template>
-  <SidePanelExpansionPanel :header="header" :section-expanded="sectionExpanded" @click="toggleCollapseExpand" id="qa-project-children-expansion">
+  <SidePanelExpansionPanel
+    :header="header"
+    :section-expanded="sectionExpanded"
+    @click="toggleCollapseExpand"
+    id="qa-project-children-expansion"
+  >
     <template v-slot:tool-btn>
       <a-btn
-          variant="text"
-          size="small"
-          color="primary"
-          id="qa-child-projects-button"
-          class="pa-2 mx-2"
-          @click.native.stop
-          :to="`/project/${projectId}/children`"
-          prepend-icon="mdi-format-list-bulleted"
+        variant="text"
+        size="small"
+        color="primary"
+        id="qa-child-projects-button"
+        class="pa-2 mx-2"
+        @click.native.stop
+        :to="`/project/${projectId}/children`"
+        prepend-icon="mdi-format-list-bulleted"
       ></a-btn>
     </template>
     <template v-slot:expanded-content>
-      <v-card outlined v-for="(project, idx) in childProjects"
-             :key="idx"
-              class="mb-2 pa-2 elevation-0 body-large"
-              @click="goToProject(project.id)">
+      <v-card
+        outlined
+        v-for="(project, idx) in childProjects"
+        :key="idx"
+        class="mb-2 pa-2 elevation-0 body-large"
+        @click="goToProject(project.id)"
+      >
         {{ project.projectName }}
       </v-card>
 
       <v-menu
-          v-model="childProjectMenuOpen"
-          v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
-          bottom
-          offset-y
-          :close-on-content-click="false"
+        v-model="childProjectMenuOpen"
+        v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+        bottom
+        offset-y
+        :close-on-content-click="false"
       >
         <template v-slot:activator="{ on: menu }">
           <a-btn
-              :activation-handler="{ ...menu }"
-              variant="outlined"
-              id="qa-add-child-project-button"
-              color="primary"
-              class="one-hunned mt-2"
-              text="Add Child Projects"
-              prepend-icon="add"
+            :activation-handler="{ ...menu }"
+            variant="outlined"
+            id="qa-add-child-project-button"
+            color="primary"
+            class="one-hunned mt-2"
+            text="Add Child Projects"
+            prepend-icon="add"
           ></a-btn>
         </template>
         <v-card class="pa-5 body-large">
           <v-form ref="addChildForm">
             Select a process to be used
-            <a-select v-model="selectedProcess"
-                      :items="childCompanyProcesses"
-                      label="Process"
-                      id="qa-process-selector"
-                      placeholder="Select one..."
-                      item-title="childProcessName"
-                      return-object
-                      class="mt-2 qa-process-selector"
+            <a-select
+              v-model="selectedProcess"
+              :items="childCompanyProcesses"
+              label="Process"
+              id="qa-process-selector"
+              placeholder="Select one..."
+              item-title="childProcessName"
+              return-object
+              class="mt-2 qa-process-selector"
             ></a-select>
             <a-text-field
-                type="number"
-                label="How many to add?"
-                :rules="projectCountRule"
-                placeholder=""
-                v-model.number="projectsToAddCount"></a-text-field>
+              type="number"
+              label="How many to add?"
+              :rules="projectCountRule"
+              placeholder=""
+              v-model.number="projectsToAddCount"
+            ></a-text-field>
             <a-btn
-                variant="text"
-                color="primary"
-                class="body-medium"
-                :disabled="!selectedProcess || !selectedProcess.childCompanyProcessId || projectsToAddCount == null || projectsToAddCount < 1"
-                @click="addChildProjects"
-                id="qa-add-project-button"
-                text="Add Projects"
+              variant="text"
+              color="primary"
+              class="body-medium"
+              :disabled="
+                !selectedProcess ||
+                !selectedProcess.childCompanyProcessId ||
+                projectsToAddCount == null ||
+                projectsToAddCount < 1
+              "
+              @click="addChildProjects"
+              id="qa-add-project-button"
+              text="Add Projects"
             ></a-btn>
           </v-form>
         </v-card>
@@ -72,31 +87,24 @@
   </SidePanelExpansionPanel>
 </template>
 <script setup>
-
 import {
   getProjectPath,
-  getRequest,
   handleHidingGlobalLoader,
-  logError,
-  postRequest,
-  putRequest
+  postRequest
 } from '@/helpers/helpers'
-import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
 import { useProjectStore } from '@/stores/ProjectStore.js'
-
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+
+import { toRefs, computed, ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router/composables'
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
- const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
   childProjects: Array,
@@ -112,9 +120,11 @@ const addChildForm = ref(null)
 
 const maxChildProjectCount = ref(300)
 const projectCountRule = ref([
-  v => !!v || "This field is required",
-  v => ( v && v >= 0 ) || "Amount must be greater than 0",
-  v => ( v && v <= maxChildProjectCount.value ) || `Amount can not be above ${maxChildProjectCount.value}`,
+  (v) => !!v || 'This field is required',
+  (v) => (v && v >= 0) || 'Amount must be greater than 0',
+  (v) =>
+    (v && v <= maxChildProjectCount.value) ||
+    `Amount can not be above ${maxChildProjectCount.value}`
 ])
 
 const projectId = computed(() => {
@@ -122,27 +132,29 @@ const projectId = computed(() => {
 })
 
 const header = computed(() => {
-  return childProjects?.length > 0 ? childProjects.value[0].objectCategory + ' Projects' : 'Child Projects'
+  return childProjects?.length > 0
+    ? childProjects.value[0].objectCategory + ' Projects'
+    : 'Child Projects'
 })
 
 const userPositionIds = computed(() => {
-  return userStore.details.userPositions.map(p => p.positionId)
+  return userStore.details.userPositions.map((p) => p.positionId)
 })
 
-onMounted(async() => {
-  selectedProcess.value = childCompanyProcesses.value?.length === 1 ? childCompanyProcesses.value[0] : {}
+onMounted(async () => {
+  selectedProcess.value =
+    childCompanyProcesses.value?.length === 1
+      ? childCompanyProcesses.value[0]
+      : {}
 })
 
-const sectionExpanded = computed(()  => {
+const sectionExpanded = computed(() => {
   return projectStore.projectChildrenDropdown
-})
-const isMobile = computed(() => {
-  return vuetify.breakpoint.smAndDown
 })
 
 const goToProject = (pId) => {
   let path = `/project/${pId}/${defaultProjectPage.value}`
-  let routerData = router.resolve({path})
+  let routerData = router.resolve({ path })
   window.open(routerData.href, '_blank')
 }
 
@@ -156,9 +168,7 @@ const resetMenu = () => {
   selectedProcess.value = null
 }
 
-
-
-const addChildProjects = async() => {
+const addChildProjects = async () => {
   if (addChildForm.value.validate()) {
     appStore.loading = true
     try {
@@ -166,8 +176,14 @@ const addChildProjects = async() => {
         childCompanyProcessId: selectedProcess.value.childCompanyProcessId,
         childProjectCount: projectsToAddCount.value
       }
-      const {data, status} = await postRequest(`/projectProcessStep/project/${projectId.value}/addChildren`, params)
-      appStore.showSnack('SUCCESS', `Added ${projectsToAddCount.value} projects.`)
+      const { data, status } = await postRequest(
+        `/projectProcessStep/project/${projectId.value}/addChildren`,
+        params
+      )
+      appStore.showSnack(
+        'SUCCESS',
+        `Added ${projectsToAddCount.value} projects.`
+      )
       resetMenu()
       //reload the screen because i dont want to have to pass it all back to the various screens they could be active on
       window.location.reload()
@@ -180,7 +196,6 @@ const addChildProjects = async() => {
     }
   }
 }
-
 </script>
 
 <style lang="scss" scoped>
@@ -190,7 +205,7 @@ const addChildProjects = async() => {
 }
 
 .active-tab {
-  background-color: var(--v-primary-lighten9) ;
+  background-color: var(--v-primary-lighten9);
 }
 
 .active-tab-button {
@@ -198,7 +213,6 @@ const addChildProjects = async() => {
   padding: 10px;
   margin-bottom: 10px;
 }
-
 </style>
 
 <style lang="scss">

@@ -106,27 +106,30 @@ order by cpst.display_order
 
 
   public final static String getCompanyStatusesForProjectId = """
-    select cpst.id,
-           cpst.project_status_type,
-           cpst.display_order,
-           cpst.description,
-           cpst.icon_tag,
-           cpst.is_default,
-           cpst.is_milestone,
-           pst.id                                                  as "projectStatusTypeId",
-           cpst.archived,
-           pst.project_status_type                                 as "rootProjectStatusType",
-           (select coalesce(array_to_json(array_agg(occpst.object_category_id)), '[]')
-            from flow.object_category_company_project_status_type occpst
-            where occpst.company_project_status_type_id = cpst.id and occpst.archived is false) as "objectCategoryIds"
-    from flow.company_project_status_type cpst
-             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
-             inner join flow.object_category_company_project_status_type occpst2
-                        on cpst.id = occpst2.company_project_status_type_id
-    where cpst.company_id = :companyId
-      and cpst.archived is not true
-      and occpst2.object_category_id = (select object_category_id from flow.project where id = :projectId)
-    order by cpst.display_order
+select cpst.id,
+       cpst.project_status_type,
+       cpst.display_order,
+       cpst.description,
+       cpst.icon_tag,
+       cpst.is_default,
+       cpst.is_milestone,
+       pst.id                           as "projectStatusTypeId",
+       cpst.archived,
+       pst.project_status_type          as "rootProjectStatusType",
+       (select coalesce(array_to_json(array_agg(occpst.object_category_id)), '[]')
+        from flow.object_category_company_project_status_type occpst
+        where occpst.company_project_status_type_id = cpst.id
+          and occpst.archived is false) as "objectCategoryIds"
+from flow.company_project_status_type cpst
+         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+         inner join flow.object_category_company_project_status_type occpst
+                    on cpst.id = occpst.company_project_status_type_id
+                        and
+                       occpst.object_category_id = (select object_category_id from flow.project where id = :projectId)
+                        and occpst.archived is false
+where cpst.company_id = :companyId
+  and cpst.archived is false
+order by cpst.display_order
     """;
 
   //language=PostgreSQL

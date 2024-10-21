@@ -378,10 +378,14 @@ public class UserService {
           // Remove user from any SMS teams they've been added to via User
           smsTeamService.deleteUserByUserId(userId, null, null);
         }
-        // Remove all teams from this User's conversation
-        messagingService.removeAllTeamsFromThread(null, null, userId, user.trueUserId());
+        // Remove all teams and owners from this User's conversation
+        Long threadId = messagingService.removeAllTeamsFromThread(null, null, userId, user.trueUserId());
+        messagingService.removeAllUsersFromThread(null, null, userId, user.trueUserId());
         try {
-          messagingService.markSmsThreadNotificationsAsRead(null, null, userId, null, user.trueUserId());
+          if(null != threadId) {
+            //by not sending a user id this will remove all unread notifications for this thread
+            messagingService.markSmsThreadNotificationsAsRead(threadId, null, null, user.trueUserId());
+          }
         } catch (SQLException e) {
           throw new RuntimeException(e);
         }

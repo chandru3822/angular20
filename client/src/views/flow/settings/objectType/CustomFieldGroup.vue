@@ -212,9 +212,7 @@
                   >
                   </a-select>
                   <span v-else>
-                    {{
-                      getObjectCategoryById(item.objectCategoryId)?.name ?? ''
-                    }}
+                    {{ getObjectCategoryById(item.objectCategoryIds) }}
                   </span>
                 </td>
                 <td>
@@ -796,10 +794,8 @@ const props = defineProps({
 const { isProject } = toRefs(props)
 
 const addNew = ref(false)
-const ownerPositionsChanged = ref(false)
 const objectType = ref({})
 const objectTypeLoading = ref(false)
-const ownerWhiteListedPositions = ref([])
 const deleteError = ref(false)
 const deleteHeader = ref(null)
 const deleteText = ref(null)
@@ -808,8 +804,6 @@ const positions = ref([])
 const positionsLoading = ref(false)
 const newFieldType = ref('native')
 const selectedIndex = ref(null)
-const fieldOrderChanged = ref(false)
-const groupOrderChanged = ref(false)
 const whiteListedPositions = ref([])
 const whiteListedPositionsChanged = ref(null)
 const customFieldGroupAssignmentReadOnly = ref(null)
@@ -920,17 +914,6 @@ watch(
   }
 )
 
-const selectAll = (f) => {
-  return f.whiteListedPositions?.length === positions.value?.length
-}
-const selectSome = (f) => {
-  return f.whiteListedPositions?.length > 0 && !selectAll(f)
-}
-
-const selectAllOwner = () => {
-  return ownerWhiteListedPositions.value?.length === positions.value?.length
-}
-
 const getObjectCategories = async () => {
   try {
     if (requiresObjectCategory.value) {
@@ -947,8 +930,11 @@ const getObjectCategories = async () => {
   }
 }
 
-const getObjectCategoryById = (id) =>
-  objectCategories.value.find((o) => o.id === id)
+const getObjectCategoryById = (ids) =>
+  ids
+    .map((o) => objectCategories.value.find((c) => c.id === o))
+    .map((o) => o.name)
+    .join(', ')
 
 const getObjectTypeTabs = async () => {
   appStore.loading = true

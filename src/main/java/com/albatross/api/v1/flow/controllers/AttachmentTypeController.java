@@ -270,38 +270,19 @@ public class AttachmentTypeController {
   //these endpoints are for the non-admin side of things
   @GetMapping(value = "/combined/project")
   public List<ObjectTypeAttachmentType> getCombinedTypesForProject(@RequestParam Boolean focused,
+                                                                   @RequestParam(required=false) Long projectId,
                                                                    @RequestParam(required = false) Long ppsId,
                                                                    @RequestParam(required = false) Long ppsEventId) {
-    return attachmentTypeService.getCombinedTypesForProject(ppsId, ppsEventId, focused);
+    return attachmentTypeService.getCombinedTypesForProject(projectId, ppsId, ppsEventId, focused);
   }
 
-  @GetMapping(value = "/objectType/project")
-  public List<ObjectTypeAttachmentType> getAssignedTypesForProject(@RequestParam Boolean allowUpload,
+  @GetMapping(value = "/objectType/{objectType}")
+  public List<ObjectTypeAttachmentType> getAssignedTypesForProject(@PathVariable String objectType,
+                                                                   @RequestParam Boolean allowUpload,
                                                                    @RequestParam Boolean focused,
                                                                    @RequestParam Boolean linkable,
                                                                    @RequestParam(required = false) Long objectCategoryId) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.PROJECT, allowUpload, focused, linkable, objectCategoryId);
+    ObjectType type = ObjectType.valueOf(objectType.toUpperCase());
+    return attachmentTypeService.getAssignedTypes(type, allowUpload, focused, linkable, objectCategoryId);
   }
-
-  @GetMapping(value = "/objectType/contact")
-  public List<ObjectTypeAttachmentType> getAssignedTypesForContact(@RequestParam Boolean allowUpload,
-                                                                   @RequestParam Boolean focused,
-                                                                   @RequestParam Boolean linkable) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.CONTACT, allowUpload, focused, linkable, null);
-  }
-
-  @GetMapping(value = "/objectType/user")
-  public List<ObjectTypeAttachmentType> getAssignedTypesForUser(@RequestParam Boolean allowUpload,
-                                                                @RequestParam Boolean focused,
-                                                                @RequestParam Boolean linkable) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.USER, allowUpload, focused, linkable, null);
-  }
-
-  @GetMapping(value = "/objectType/org")
-  public List<ObjectTypeAttachmentType> getAssignedTypesForOrg(@RequestParam Boolean allowUpload,
-                                                               @RequestParam Boolean focused,
-                                                               @RequestParam Boolean linkable) {
-    return attachmentTypeService.getAssignedTypes(ObjectType.ORGANIZATION, allowUpload, focused, linkable, null);
-  }
-
 }

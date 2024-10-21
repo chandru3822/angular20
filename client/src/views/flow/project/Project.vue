@@ -74,9 +74,9 @@
               label="State"
               hide-details
             />
-            <a class="edit-state-link" @click="editState = true"
-              >Click here to edit state</a
-            >
+            <a class="edit-state-link" @click="editState = true">
+              Click here to edit state
+            </a>
           </div>
           <a-autocomplete
             v-else
@@ -377,9 +377,9 @@
       <template v-slot:header>
         <v-toolbar-title class="title-large albatross-header-1 align-center">
           <div>
-            <router-link :to="`/project/${project.id}/status`">{{
-              project.projectName
-            }}</router-link>
+            <router-link :to="`/project/${project.id}/status`">
+              {{ project.projectName }}
+            </router-link>
             <span
               v-if="
                 projectStore &&
@@ -467,9 +467,9 @@
                     :milestone="milestone"
                     :current-status-id="project.companyProjectStatusTypeId"
                   ></StatusTrackerIcon>
-                  <span class="ml-2 label-large active-status">{{
-                    milestone.projectStatusType
-                  }}</span>
+                  <span class="ml-2 label-large active-status">
+                    {{ milestone.projectStatusType }}
+                  </span>
                 </div>
                 <div>
                   <div v-for="field in milestone.assignedFields">
@@ -516,12 +516,12 @@
                 )
               "
             >
-              <span class="detail-label label-small pr-2"
-                ><v-icon small>mdi-phone</v-icon></span
-              >
-              <span v-if="project.phone" class="detail-item body-medium">{{
-                formatPhoneNumber(project.phone)
-              }}</span>
+              <span class="detail-label label-small pr-2">
+                <v-icon small>mdi-phone</v-icon>
+              </span>
+              <span v-if="project.phone" class="detail-item body-medium">
+                {{ formatPhoneNumber(project.phone) }}
+              </span>
               <span v-else class="d-inline-block detail-item body-medium"
                 >N/A</span
               >
@@ -539,9 +539,9 @@
               <span class="detail-label label-small pr-2">
                 <v-icon small>mdi-cellphone</v-icon>
               </span>
-              <span v-if="project.mobile" class="detail-item body-medium">{{
-                formatPhoneNumber(project.mobile)
-              }}</span>
+              <span v-if="project.mobile" class="detail-item body-medium">
+                {{ formatPhoneNumber(project.mobile) }}
+              </span>
               <span v-else class="d-inline-block detail-item body-medium"
                 >N/A</span
               >
@@ -551,18 +551,18 @@
               :class="{ clickable: !!project.email }"
               @click="copyToClipBoard(project.email, 'Email address')"
             >
-              <span class="detail-label label-small pr-2"
-                ><v-icon small>mdi-email</v-icon></span
-              >
+              <span class="detail-label label-small pr-2">
+                <v-icon small>mdi-email</v-icon>
+              </span>
               <span
                 v-if="project.email"
                 class="detail-item body-medium body-medium"
               >
                 {{ project.email }}
               </span>
-              <span v-else class="d-inline-block detail-item body-medium"
-                >N/A</span
-              >
+              <span v-else class="d-inline-block detail-item body-medium">
+                N/A
+              </span>
             </div>
             <a-btn
               variant="outlined"
@@ -698,7 +698,6 @@ const userStore = useUserStore()
 const notificationStore = useNotificationStore()
 const projectStore = useProjectStore()
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 
 const vuetify = vueInstance.$vuetify
 

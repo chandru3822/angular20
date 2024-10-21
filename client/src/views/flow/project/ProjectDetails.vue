@@ -46,8 +46,9 @@
                 ></a-btn>
               </template>
               <v-list dense class="pa-3">
-                <template v-for="(item, index) in attachmentTypes">
+                <template>
                   <v-list-item
+                    v-for="(item, index) in attachmentTypes"
                     :key="index"
                     @click="
                       ;[(menuOpen = false), selectFile(item.attachmentTypeId)]

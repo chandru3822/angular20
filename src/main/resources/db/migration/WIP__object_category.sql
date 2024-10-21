@@ -127,29 +127,31 @@ insert into flow.object_category(object_category, object_category_code, date_cre
           2
    where not exists (select id from flow.object_category oc where oc.object_category_code = 'PRIMARY_HOMEOWNER'));
 
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Secondary Homeowner (spouse or co-owner of home,may also be a co-borrower)',
-          'SECONDARY_HOMEOWNER',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          2
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'SECONDARY_HOMEOWNER'));
+--per carlin - not using these V1 pls remove
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Secondary Homeowner (spouse or co-owner of home,may also be a co-borrower)',
+--           'SECONDARY_HOMEOWNER',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           2
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'SECONDARY_HOMEOWNER'));
 
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'New Homeowner (someone who buys a home with a BRS system and may or may not assume the loan',
-          'NEW_HOMEOWNER',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          2
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'NEW_HOMEOWNER'));
+--per carlin - not using these V1 pls remove
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'New Homeowner (someone who buys a home with a BRS system and may or may not assume the loan',
+--           'NEW_HOMEOWNER',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           2
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'NEW_HOMEOWNER'));
 
 
 alter table flow.process
@@ -365,7 +367,7 @@ insert into flow.object_category_custom_field_group(object_category_id, custom_f
      where cfg.company_object_type_id = 2
        and cfg.archived is false
        and oc.object_type_id = 2
-       and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER','SECONDARY_HOMEOWNER','NEW_HOMEOWNER','PRIMARY_HOMEOWNER'))
+       and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER','PRIMARY_HOMEOWNER'))
 on conflict do nothing;
 
 
@@ -445,6 +447,7 @@ on conflict do nothing;
 
 
 --proposal template object categories
+drop table brs.object_category_proposal_template;
 create table if not exists brs.object_category_proposal_template
 (
   object_category_id   bigint                                    not null references flow.object_category (id),
@@ -452,14 +455,14 @@ create table if not exists brs.object_category_proposal_template
   date_created         timestamp without time zone DEFAULT now() not null,
   created_by_id        integer references flow."user" (id),
 
-  primary key (object_category_id, proposal_template_id)
+  primary key (object_category_id)
 );
-CREATE INDEX if not exists ocpt_proposal_template_id_ix on brs.object_category_proposal_template (proposal_template_id);
 
 insert into brs.object_category_proposal_template (object_category_id, proposal_template_id)
 select oc.id, pt.id
 from brs.proposal_template pt
        cross join flow.object_category oc
+where pt.id = 1
 on conflict do nothing;
 
 
@@ -634,6 +637,14 @@ update flow.company_process
 set allow_contact_initiate = true
 where process_id != 27;
 
+--add the flow.copy_from_parent_to_child to company_process (i added the db_function record in prod so it doesn't get lost on data dump)
+insert into flow.company_function(company_function_name, db_function_id, archived, company_id)
+select df.display_name, df.id, df.archived, 3 from flow.db_function df
+where df.function_name = 'flow.copy_from_parent_to_child'
+  and not exists (select cf.id from flow.company_function cf
+                            inner join flow.db_function df2 on cf.db_function_id = df2.id
+                            where df.function_name = 'flow.copy_from_parent_to_child');
+
 CREATE TABLE if not exists flow.company_process_child_company_process
 (
   id                       bigserial NOT NULL,
@@ -677,3 +688,16 @@ alter table flow.project
 CREATE INDEX if not exists c_nw_project_idx ON flow.project (nw_migration_id);
 
 CREATE INDEX if not exists lov_name_idx ON flow.list_of_value (name);
+
+
+drop trigger if exists list_of_value_name_change_trg on flow.list_of_value;
+
+alter table flow.list_of_value
+    alter column name type varchar(500) using name::varchar(500);
+
+CREATE TRIGGER list_of_value_name_change_trg
+    after update
+    ON flow.list_of_value
+    FOR EACH ROW
+    when(old.name != new.name)
+EXECUTE PROCEDURE flow.list_of_value_name_change();
