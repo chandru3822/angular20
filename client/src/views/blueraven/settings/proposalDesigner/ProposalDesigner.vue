@@ -549,7 +549,7 @@ const getObjectCategories = async () => {
 
 const getProposalHint = (item) => {
   if (!item?.objectCategories || item.objectCategories?.length < 1) {
-    return ''
+    return 'No object categories selected'
   }
   return item.objectCategories
     .map((category) => {
