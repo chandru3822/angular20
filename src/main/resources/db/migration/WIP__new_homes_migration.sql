@@ -5695,16 +5695,57 @@ with update_data as (
   group by u.first_name,u.last_name
   having count(1) = 1),
      update_for_reals as (
-       select u.id,spu.id as sunpower_id,u.first_name,u.last_name
+       select u.id,array_agg(spu.id) as sunpower_id,u.first_name,u.last_name
        from flow.user u
               join flow.user_position upos on upos.user_id = u.id
               inner join update_data ud on ud.first_name = u.first_name and ud.last_name = u.last_name
               inner join brs.sp_user spu on u.first_name like spu.first_name  and u.last_name like spu.last_name and spu.is_active is true
-       where upos.position_id in (804,803,802))
+       where upos.position_id in (804,803,802)
+       GROUP BY u.id, u.first_name, u.last_name)
+
 update flow."user" u2
-set nh_migration_id = sunpower_id
+set nh_migration_id = array[sunpower_id[1]]
 from update_for_reals ufr
 where ufr.id = u2.id;
+
+update flow.user set nh_migration_id = array['0052T00000CBXsKQAX','0052T00000DYVcfQAH'], date_modified = now(), modified_by_id = 2384850 where id = 2495163;
+update flow.user set nh_migration_id = array['0052T00000CBXstQAH','0052T00000DAZQLQA5'], date_modified = now(), modified_by_id = 2384850 where id = 2495139;
+update flow.user set nh_migration_id = array['0052T00000CDHixQAH','0053400000ALxuZAAT'], date_modified = now(), modified_by_id = 2384850 where id = 2495258;
+update flow.user set nh_migration_id = array['0052T00000CDOTGQA5','0052T00000Da4QXQAZ','0052T00000DdRADQA3'], date_modified = now(), modified_by_id = 2384850 where id = 2495237;
+update flow.user set nh_migration_id = array['0052T00000CSltqQAD','0052T00000DdRQQQA3'], date_modified = now(), modified_by_id = 2384850 where id = 2495201;
+update flow.user set nh_migration_id = array['0052T00000DdTVDQA3','0052T00000Dl78cQAB'], date_modified = now(), modified_by_id = 2384850 where id = 2495275;
+update flow.user set nh_migration_id = array['0052T00000DNmomQAD','0052T00000CBHiYQAX'], date_modified = now(), modified_by_id = 2384850 where id = 2495118;
+update flow.user set nh_migration_id = array['0052T00000DNScCQAX','0052T00000DdUiXQAV'], date_modified = now(), modified_by_id = 2384850 where id = 2495155;
+update flow.user set nh_migration_id = array['0052T00000Dtv2aQAB','00534000003hSNQAA2'], date_modified = now(), modified_by_id = 2384850 where id = 2495138;
+update flow.user set nh_migration_id = array['0052T00000DYTYlQAP','0052T00000CC1CyQAL'], date_modified = now(), modified_by_id = 2384850 where id = 2495181;
+update flow.user set nh_migration_id = array['005340000089hWzAAI','00534000009KCXIAA4'], date_modified = now(), modified_by_id = 2384850 where id = 2495190;
+update flow.user set nh_migration_id = array['00534000009ihhMAAQ','00534000008A9o8AAC'], date_modified = now(), modified_by_id = 2384850 where id = 2495262;
+update flow.user set nh_migration_id = array['0052T00000CBXsjQAH'], date_modified = now(), modified_by_id = 2384850 where id = 2495135;
+update flow.user set nh_migration_id = array['0052T00000CBXsZQAX'], date_modified = now(), modified_by_id = 2384850 where id = 2495141;
+update flow.user set nh_migration_id = array['0052T00000DA7cEQAT'], date_modified = now(), modified_by_id = 2384850 where id = 2495152;
+update flow.user set nh_migration_id = array['0052T00000DNPKtQAP'], date_modified = now(), modified_by_id = 2384850 where id = 2495166;
+update flow.user set nh_migration_id = array['0052T00000DYhsTQAT'], date_modified = now(), modified_by_id = 2384850 where id = 2495161;
+update flow.user set nh_migration_id = array['00534000003hNVUAA2'], date_modified = now(), modified_by_id = 2384850 where id = 2495268;
+update flow.user set nh_migration_id = array['0053400000BahY0AAJ'], date_modified = now(), modified_by_id = 2384850 where id = 2495168;
+update flow.user set nh_migration_id = array['0052T00000CB7R8QAL'], date_modified = now(), modified_by_id = 2384850 where id = 2495120;
+update flow.user set nh_migration_id = array['0052T00000DAoEAQA1'], date_modified = now(), modified_by_id = 2384850 where id = 2495158;
+update flow.user set nh_migration_id = array['0052T00000CDNPrQAP'], date_modified = now(), modified_by_id = 2384850 where id = 2495185;
+update flow.user set nh_migration_id = array['0053400000BaeVcAAJ'], date_modified = now(), modified_by_id = 2384850 where id = 2495127;
+update flow.user set nh_migration_id = array['00534000003hQvQAAU'], date_modified = now(), modified_by_id = 2384850 where id = 2495265;
+update flow.user set nh_migration_id = array['0052T00000DciNHQAZ'], date_modified = now(), modified_by_id = 2384850 where id = 2495271;
+update flow.user set nh_migration_id = array['00580000005GNkXAAW'], date_modified = now(), modified_by_id = 2384850 where id = 2495124;
+update flow.user set nh_migration_id = array['0052T00000DNM6UQAX'], date_modified = now(), modified_by_id = 2384850 where id = 2495191;
+update flow.user set nh_migration_id = array['0052T00000DZYvxQAH'], date_modified = now(), modified_by_id = 2384850 where id = 2495175;
+update flow.user set nh_migration_id = array['0052T00000DUWPoQAP'], date_modified = now(), modified_by_id = 2384850 where id = 2495148;
+update flow.user set nh_migration_id = array['0052T00000DtQPiQAN'], date_modified = now(), modified_by_id = 2384850 where id = 2495187;
+update flow.user set nh_migration_id = array['0053400000BecB0AAJ'], date_modified = now(), modified_by_id = 2384850 where id = 2495170;
+update flow.user set nh_migration_id = array['0052T00000CSih8QAD'], date_modified = now(), modified_by_id = 2384850 where id = 2495244;
+update flow.user set nh_migration_id = array['0052T00000DA268QAD'], date_modified = now(), modified_by_id = 2384850 where id = 2495144;
+update flow.user set nh_migration_id = array['0052T00000CB47AQAT'], date_modified = now(), modified_by_id = 2384850 where id = 2495215;
+update flow.user set nh_migration_id = array['0052T00000CSoqaQAD'], date_modified = now(), modified_by_id = 2384850 where id = 2495212;
+update flow.user set nh_migration_id = array['0052T00000CBAfIQAX'], date_modified = now(), modified_by_id = 2384850 where id = 2495241;
+update flow.user set nh_migration_id = array['0052T00000DtxRIQAZ','0052T00000DNPdWQAX'], date_modified = now(), modified_by_id = 2384850 where id = 2495229;
+update flow.user set nh_migration_id = array['0052T00000DUZyAQAX'], date_modified = now(), modified_by_id = 2384850 where id = 2495145;
 
 
 DO --10 seconds
@@ -8835,7 +8876,7 @@ $do$
 
   BEGIN
     for x in  select q.module_c,
-                     q.Module_Brand_c,
+                   --  q.Module_Brand_c,
                      q.module_quantity_c,
                      q.inverter_model_c,
                      q.inverter_quantity_c,
@@ -8849,35 +8890,35 @@ $do$
                      q.ach_opt_in_c,
                      q.apr_type_c,
                      q.date_sent_to_my_sun_power_c,
-                     q.total_sales_price_c,
-                     q.non_ach_total_sales_price_c,
+                    -- q.total_sales_price_c,
+                    -- q.non_ach_total_sales_price_c,
                      q.applied_rebate_rate_c,
-                     q.Voluntary_Loan_Payment_c,
+                    -- q.Voluntary_Loan_Payment_c,
                      q.external_proposal_url_c,
                      q.selected_quote_in_my_sun_power_c,
                      q.quote_selected_date_c,
                      q.quote_number,
-                     q.Leesee_Co_Leesee_c,
+                    -- q.Leesee_Co_Leesee_c,
                      q.lessee_c,
                      q.lessee_2_c,
                      q.lease_number_c,
                      q.consolidated_lease_number_dup_c,
                      q.final_lease_number_c,
                      q.description,
-                     q.Total_Lease_Payments_Pre_NSHP_Rebate_c,
-                     q.RoundOff_First_Monthly_Payment_c,
-                     q.RoundOff_Total_Monthly_Payments_c,
-                     q.RoundOff_First_Monthly_Payment_Base_Amo_c,
-                     q.RoundOff_First_Monthly_Payment_Estimate_c,
-                     q.Final_First_Base_Monthly_Pay_c,
-                     q.Final_Total_Yearly_Page_2_c,
-                     q.Final_Total_Yearly_Page_4_c,
+--                      q.Total_Lease_Payments_Pre_NSHP_Rebate_c,
+--                      q.RoundOff_First_Monthly_Payment_c,
+--                      q.RoundOff_Total_Monthly_Payments_c,
+--                      q.RoundOff_First_Monthly_Payment_Base_Amo_c,
+--                      q.RoundOff_First_Monthly_Payment_Estimate_c,
+--                      q.Final_First_Base_Monthly_Pay_c,
+--                      q.Final_Total_Yearly_Page_2_c,
+--                      q.Final_Total_Yearly_Page_4_c,
                      q.system_production_year_1_c,
                      q.system_price_c,
                      q.storage_price_c,
-                     q.Installation_Fee_c,
-                     q.Total_of_Payments_c,
-                     q.Monthly_Payments_with_Estimated_Tax_c,
+--                      q.Installation_Fee_c,
+--                      q.Total_of_Payments_c,
+--                      q.Monthly_Payments_with_Estimated_Tax_c,
                      q.dealer_fees_c,
                      q.storage_commission_c,
                      q.adder_fee_c,
@@ -8890,7 +8931,7 @@ $do$
                      q.lease_doc_sent_out_for_signature_c,
                      q.lease_doc_signed_c,
                      q.lease_doc_signed_date_c,
-                     q.Termination_Lease_doc_Date_c,
+                     --q.Termination_Lease_doc_Date_c,
                      q.total_energy_c,
                      q.proposal_document_link_c,
                      q.power_used_before_solar_k_wh_year_c,
@@ -8910,8 +8951,8 @@ $do$
                      q.full_pre_payment_amount_estimated_paymen_c,
                      q.full_pre_payment_amount_estimated_tax_on_c,
                      q.full_prepayment_of_lease_amount_c,
-                     q.System_Size_c,
-                     q.Net_Cost_c,
+--                      q.System_Size_c,
+                    -- q.Net_Cost_c,
                     p.id as project_id,
                       lov1.id as lov1_inverter_brand_c,
                      lov2.id as lov2_mounting_description_c,
@@ -8942,7 +8983,7 @@ $do$
                 case when x.is_last_row is true then true else false end, null, null, null);
 
         perform flow.set_project_cfv(x.project_id , 2384850,29291,x.module_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,27998,x.Module_Brand_c::text , true);
+      --  perform flow.set_project_cfv(x.project_id , 2384850,27998,x.Module_Brand_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29293,x.module_quantity_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29294,x.inverter_model_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29295,x.lov1_inverter_brand_c::text , true);
@@ -8959,37 +9000,37 @@ $do$
         perform flow.set_project_cfv(x.project_id , 2384850,29306,x.ach_opt_in_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29307,x.apr_type_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29308,x.date_sent_to_my_sun_power_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29309,x.total_sales_price_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29310,x.non_ach_total_sales_price_c::text , true);
+       -- perform flow.set_project_cfv(x.project_id , 2384850,29309,x.total_sales_price_c::text , true);
+       -- perform flow.set_project_cfv(x.project_id , 2384850,29310,x.non_ach_total_sales_price_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29311,x.applied_rebate_rate_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29312,x.Voluntary_Loan_Payment_c::text , true);
+     --   perform flow.set_project_cfv(x.project_id , 2384850,29312,x.Voluntary_Loan_Payment_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29313,x.external_proposal_url_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29314,x.selected_quote_in_my_sun_power_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29315,x.lov4_non_backup_storage_acknowledged_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29316,x.quote_selected_date_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29317,x.quote_number::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29318,x.lov5_credit_bureau_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29319,x.Leesee_Co_Leesee_c::text , true);
+      --  perform flow.set_project_cfv(x.project_id , 2384850,29319,x.Leesee_Co_Leesee_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29320,x.lessee_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29321,x.lessee_2_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29322,x.lease_number_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29323,x.consolidated_lease_number_dup_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29324,x.final_lease_number_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29325,x.description::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29326,x.Total_Lease_Payments_Pre_NSHP_Rebate_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29327,x.RoundOff_First_Monthly_Payment_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29328,x.RoundOff_Total_Monthly_Payments_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29329,x.RoundOff_First_Monthly_Payment_Base_Amo_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29330,x.RoundOff_First_Monthly_Payment_Estimate_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29331,x.Final_First_Base_Monthly_Pay_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29332,x.Final_Total_Yearly_Page_2_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29333,x.Final_Total_Yearly_Page_4_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29326,x.Total_Lease_Payments_Pre_NSHP_Rebate_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29327,x.RoundOff_First_Monthly_Payment_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29328,x.RoundOff_Total_Monthly_Payments_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29329,x.RoundOff_First_Monthly_Payment_Base_Amo_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29330,x.RoundOff_First_Monthly_Payment_Estimate_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29331,x.Final_First_Base_Monthly_Pay_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29332,x.Final_Total_Yearly_Page_2_c::text , true);
+--         perform flow.set_project_cfv(x.project_id , 2384850,29333,x.Final_Total_Yearly_Page_4_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29334,x.system_production_year_1_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29335,x.system_price_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29336,x.storage_price_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29337,x.Installation_Fee_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29338,x.Total_of_Payments_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29339,x.Monthly_Payments_with_Estimated_Tax_c::text , true);
+       -- perform flow.set_project_cfv(x.project_id , 2384850,29337,x.Installation_Fee_c::text , true);
+       -- perform flow.set_project_cfv(x.project_id , 2384850,29338,x.Total_of_Payments_c::text , true);
+       -- perform flow.set_project_cfv(x.project_id , 2384850,29339,x.Monthly_Payments_with_Estimated_Tax_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29340,x.dealer_fees_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29341,x.storage_commission_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29342,x.adder_fee_c::text , true);
@@ -9003,7 +9044,7 @@ $do$
         perform flow.set_project_cfv(x.project_id , 2384850,29350,x.lease_doc_sent_out_for_signature_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29351,x.lease_doc_signed_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29352,x.lease_doc_signed_date_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29353,x.Termination_Lease_doc_Date_c::text , true);
+       -- perform flow.set_project_cfv(x.project_id , 2384850,29353,x.Termination_Lease_doc_Date_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29354,x.total_energy_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29355,x.proposal_document_link_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29356,x.power_used_before_solar_k_wh_year_c::text , true);
@@ -9023,8 +9064,8 @@ $do$
         perform flow.set_project_cfv(x.project_id , 2384850,29370,x.full_pre_payment_amount_estimated_paymen_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29371,x.full_pre_payment_amount_estimated_tax_on_c::text , true);
         perform flow.set_project_cfv(x.project_id , 2384850,29372,x.full_prepayment_of_lease_amount_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29373,x.System_Size_c::text , true);
-        perform flow.set_project_cfv(x.project_id , 2384850,29374,x.Net_Cost_c::text , true);
+        --perform flow.set_project_cfv(x.project_id , 2384850,29373,x.System_Size_c::text , true);
+       -- perform flow.set_project_cfv(x.project_id , 2384850,29374,x.Net_Cost_c::text , true);
 
   end loop;
 
@@ -9057,6 +9098,7 @@ $do$
                     dac.cancellation_reason_c,
                     dac.hold_notes_c,
                     dac.id,
+                    dac.ENVELOPE_STATUS_C,
                     p.id as project_id,
                     lov1.id as lov1_cancellation_reason_c,
                     lov2.id as lov2_contract_type_c,
@@ -9074,25 +9116,38 @@ $do$
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3799, null, case when x.docu_sign_envelope_c = 'Cancelled' then 3
-                                              when x.status = 'Draft', null, now(), now(), 2384850, 2384850, false,
+        values (x.project_id, 3799, null, case when x.ENVELOPE_STATUS_C = 'Waiting for Co-Signer' then 1779
+                                               when x.ENVELOPE_STATUS_C = 'Waiting for Countersignature' then 1780
+                                               when x.ENVELOPE_STATUS_C = 'In Review' then 1775
+                                               when x.ENVELOPE_STATUS_C = 'Loan App Submitted' then 1785
+                                               when x.ENVELOPE_STATUS_C = 'Draft' then 1777
+                                               when x.ENVELOPE_STATUS_C = 'Expired' then 1784
+                                               when x.ENVELOPE_STATUS_C = 'Waiting for Counter-Signature' then 1780
+                                               when x.ENVELOPE_STATUS_C = 'Signed' then 1782
+                                               when x.ENVELOPE_STATUS_C = 'On Hold' then 1781
+                                               when x.ENVELOPE_STATUS_C = 'Out for Signature' then 1778
+                                               when x.ENVELOPE_STATUS_C = 'Loan App Signed' then 1782
+                                               when x.ENVELOPE_STATUS_C = 'Cancelled' then 3
+                                               when x.ENVELOPE_STATUS_C = 'Cancelled / Declined' then 3
+                                                 else 3 end
+                                           , null, now(), now(), 2384850, 2384850, false,
                 case when x.is_last_row is true then true else false end, null, null, null);
-        perform flow.set_pps_cfv(x.project_id , 2384850,,x.Name::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29379,x.contract_number_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,,x.Name::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29379,x.contract_number_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29380,x.docu_sign_envelope_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29381,x.docu_sign_status_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29382,x.lender_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29382,x.lender_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29383,x.lov2_contract_type_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29384,x.finance_type_c::text , true);
+    --    perform flow.set_pps_cfv(x.project_id , 2384850,29384,x.finance_type_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29385,x.document_url_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29386,x.storage_only_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29386,x.storage_only_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29387,x.ready_to_sign_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29388,x.owner_id::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29389,x.reviewer_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29390,x.record_type_id::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29391,x.Date_Sent_Formula_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29392,x.Date_Completed_Formula_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29393,x.Last_Status_Update_Formula_c::text , true);
+    --    perform flow.set_pps_cfv(x.project_id , 2384850,29391,x.Date_Sent_Formula_c::text , true);
+    --    perform flow.set_pps_cfv(x.project_id , 2384850,29392,x.Date_Completed_Formula_c::text , true);
+    --    perform flow.set_pps_cfv(x.project_id , 2384850,29393,x.Last_Status_Update_Formula_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29394,x.adhoc_create_lda_requested_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29395,x.migrated_from_adobe_c::text , true);
         v_on_hold_reason_s_c = null;
@@ -9106,7 +9161,7 @@ $do$
                         from brs.ds_agreement_c d
                         where id = x.id
                       ) AS subquery) as foo
-                 inner join flow.list_of_value lov on lov.name = foo.on_hold_reason_s_c and lov.parent_id = ;
+                 inner join flow.list_of_value lov on lov.name = foo.on_hold_reason_s_c and lov.parent_id =25846 ;
           perform flow.set_pps_cfv(x.project_id , 2384850,29396,v_on_hold_reason_s_c::text , true);
         end if;
         v_sub_category_c = null;
@@ -9120,7 +9175,7 @@ $do$
                         from brs.ds_agreement_c d
                         where id = x.id
                       ) AS subquery) as foo
-                 inner join flow.list_of_value lov on lov.name = foo.sub_category_c and lov.parent_id = ;
+                 inner join flow.list_of_value lov on lov.name = foo.sub_category_c and lov.parent_id = 25848;
           perform flow.set_pps_cfv(x.project_id , 2384850,29397,v_sub_category_c::text , true);
         end if;
         perform flow.set_pps_cfv(x.project_id , 2384850,29398,x.notes_c::text , true);
@@ -9205,7 +9260,7 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29414,x.Addendum_Countersigned_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29415,x.Addendum_Sent_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29416,x.Addendum_Signed_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29417,x.Annual_Escalation_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29417,x.Annual_Escalation_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29418,x.annual_prod_report_yr_1_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29419,x.annual_prod_report_yr_2_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29420,x.annual_prod_report_yr_3_c::text , true);
@@ -9213,9 +9268,9 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29422,x.Approved_Install_Docs_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29423,x.Auto_Amendment_Hold_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29424,x.Award_Amount_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29425,x.Base_Mon_Pymnt_Yr1_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29426,x.Base_Monthly_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29427,x.Base_PrePaid_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29425,x.Base_Mon_Pymnt_Yr1_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29426,x.Base_Monthly_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29427,x.Base_PrePaid_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29428,x.Batch_01_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29429,x.Batch_02_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29430,x.Batch_03_Date_c::text , true);
@@ -9244,34 +9299,34 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29472,x.Cmpltd_ICF_Rcvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29473,x.Cond_Fin_LW_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29474,x.Cond_Fin_LW_Rcvd_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29475,x.Cond_Fin_LW_Rcvd_YN_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29475,x.Cond_Fin_LW_Rcvd_YN_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29476,x.Cond_Prog_LW_Rcvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29477,x.Cond_Prog_LW_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29478,x.Cnfrmd_ICF_Rcvd_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29479,x.Lease_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29479,x.Lease_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29480,x.Cost_Basis_Amount_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29481,x.Create_Lease_Summary_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29482,x.Credit_Check_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29483,x.Credit_Check_Status_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29482,x.Credit_Check_Date_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29483,x.Credit_Check_Status_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29484,x.Current_Stage_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29485,x.Customer_Promise_Date_Inverter_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29486,x.Customer_Promise_Date_Mounting_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29487,x.Customer_Promise_Date_PV_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29488,x.Date_Countersigned_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29488,x.Date_Countersigned_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29489,x.Date_Countersigned_old_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29490,x.Date_in_PTO_Letter_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29491,x.Date_Lease_Document_signed_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29492,x.Date_of_Commissioning_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29493,x.Date_Tranche_1_Submitted_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29494,x.Date_Tranche_2_Submitted_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29495,x.Date_Tranche_3_Submitted_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29493,x.Date_Tranche_1_Submitted_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29494,x.Date_Tranche_2_Submitted_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29495,x.Date_Tranche_3_Submitted_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29496,x.Note_to_Dealer_Install_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29497,x.Dealer_Lease_Contact_Email_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29498,x.Dealer_Lease_Contact_Name_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29499,x.Dealer_Fee_PO_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29500,x.Dealer_Fee_Total_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29500,x.Dealer_Fee_Total_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29501,x.Dealer_Fee_Total_old_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29502,x.Dealer_Name_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29502,x.Dealer_Name_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29503,x.Dealer_Rebate_Reservation_Confirmation_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29504,x.Des_Plan_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29505,x.lov3_DevCo_c::text , true);
@@ -9279,26 +9334,26 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29507,x.Devco_Batch_2_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29508,x.Devco_Batch_3_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29509,x.Devco_Batch_4_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29510,x.Docs_Gen_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29511,x.Down_Payment_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29512,x.Early_Buyout_Date_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29510,x.Docs_Gen_Date_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29511,x.Down_Payment_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29512,x.Early_Buyout_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29513,x.Early_Buyout_Price_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29514,x.Email_1_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29515,x.Email_2_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29514,x.Email_1_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29515,x.Email_2_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29516,x.End_Customer_Account_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29517,x.Energy_Start_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29518,x.EV_Charger_Commission_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29519,x.EV_Charger_Model_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29520,x.EV_Charger_Price_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29521,x.EV_Charger_Quantity_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29522,x.EV_Outlet_Model_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29523,x.EV_Outlet_Price_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29524,x.EV_Outlet_Quantity_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29525,x.Expected_Rebate_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29518,x.EV_Charger_Commission_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29519,x.EV_Charger_Model_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29520,x.EV_Charger_Price_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29521,x.EV_Charger_Quantity_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29522,x.EV_Outlet_Model_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29523,x.EV_Outlet_Price_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29524,x.EV_Outlet_Quantity_c::text , true);
+     --   perform flow.set_pps_cfv(x.project_id , 2384850,29525,x.Expected_Rebate_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29526,x.Expected_Rebate_old_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29527,x.Expected_Release_of_NTP_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29527,x.Expected_Release_of_NTP_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29528,x.Expiration_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29529,x.Fair_Market_Value_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29529,x.Fair_Market_Value_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29530,x.Fair_Market_Value_acctg_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29531,x.Final_Permits_Entered_By_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29532,x.Fin_Permits_Rcvd_c::text , true);
@@ -9306,47 +9361,47 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29534,x.Financier_Change_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29535,x.Financing_Completion_Payment_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29536,x.Financing_Prepayment_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29537,x.FinancingType_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29537,x.FinancingType_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29538,x.Fin_Permits_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29539,x.Install_Acculmage_Confirmed_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29540,x.First_Name_1_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29541,x.First_Name_2_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29540,x.First_Name_1_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29541,x.First_Name_2_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29542,x.FMV_Purchase_Price_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29543,x.FMV_Rate_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29544,x.Revised_Items_Rcvd_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29545,x.Full_Prepaid_Lease_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29546,x.Full_Prepayment_Amt_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29545,x.Full_Prepaid_Lease_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29546,x.Full_Prepayment_Amt_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29547,x.Guarantee_Start_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29548,x.Hold_Back_Hannon_Mezz_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29549,x.Holdback_NTP_B_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29550,x.Hold_Back_Sr_Debt_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29551,x.Hold_Back_Sunpower_Mezz_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29552,x.Hold_Back_TE_Cash_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29553,x.Home_Phone_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29553,x.Home_Phone_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29554,x.Incentive_Interconnect_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29555,x.PIS_Estimation_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29556,x.Inspection_Waiver_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29557,x.Inspection_Waiver_Received_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29558,x.Install_Doc_Count_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29559,x.Install_Documents_Remaining_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29558,x.Install_Doc_Count_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29559,x.Install_Documents_Remaining_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29560,x.Dealer_Fee_90_PO_Receipt_Complete_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29561,x.Dealer_Fee_90_PO_Receipt_Number_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29562,x.Install_Inv_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29563,x.Install_Inv_Amount_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29564,x.Install_Inv_Number_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29565,x.Install_Inv_Rcvd_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29566,x.Install_URL_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29566,x.Install_URL_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29567,x.Install_Pymnt_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29568,x.Payment_Date_Installation_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29569,x.Install_Pymnt_Sent_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29570,x.Integration_History_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29571,x.Interconnect_Documents_Remaining_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29571,x.Interconnect_Documents_Remaining_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29572,x.Interconnection_Acculmaged_Confirmed_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29573,x.Interconnection_Email_Sent_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29574,x.Interconnect_URL_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29574,x.Interconnect_URL_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29575,x.Payment_Date_Interconnect_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29576,x.Intrcnct_Pymnt_Sent_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29577,x.Intrcnct_Doc_Count_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29577,x.Intrcnct_Doc_Count_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29578,x.Dealer_Fee_10_PO_Receipt_Complete_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29579,x.Dealer_Fee_10_PO_Receipt_Number_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29580,x.Intrcnct_Inv_Apprvd_c::text , true);
@@ -9356,29 +9411,29 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29584,x.Intrcnct_Ltr_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29585,x.Intrcnct_Ltr_Rcvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29586,x.Intrcnct_Pymnt_Apprvd_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29587,x.Inverter_Brand_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29588,x.Inverter_Brand_2_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29589,x.Inverter_Model_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29590,x.Inverter_Model_2_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29591,x.Inverter_Qty_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29592,x.Inverter_Qty_2_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29587,x.Inverter_Brand_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29588,x.Inverter_Brand_2_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29589,x.Inverter_Model_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29590,x.Inverter_Model_2_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29591,x.Inverter_Qty_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29592,x.Inverter_Qty_2_c::text , true);
         --perform flow.set_pps_cfv(x.project_id , 2384850,,x.Inverter_Model_3_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29593,x.Invoice_Admin_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29594,x.invoice_admin_2_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29595,x.Invoice_Document_Email_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29596,x.LastCommaFirst_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29596,x.LastCommaFirst_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29597,x.Last_Install_Doc_Submission_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29598,x.Last_Interconnect_Doc_Submission_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29599,x.Last_Name_1_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29600,x.Last_Name_2_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29599,x.Last_Name_1_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29600,x.Last_Name_2_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29601,x.lov5_Lease_1_or_2_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29602,x.lov6_Lease_Change_Hold_Disposition_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29603,x.Lease_Change_Notes_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29604,x.Lease_Cost_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29605,x.Lease_Cost_AU_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29606,x.Lease_Phase_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29607,x.Lease_Stage_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29608,x.Lease_Type_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29605,x.Lease_Cost_AU_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29606,x.Lease_Phase_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29607,x.Lease_Stage_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29608,x.Lease_Type_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29609,x.lov7_Mosaic_Status_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29610,x.Mat_Inv_Amount_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29611,x.Mat_Inv_Apprvd_c::text , true);
@@ -9388,22 +9443,22 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29615,x.Mat_Pymnt_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29616,x.Mat_Pymnt_Sent_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29617,x.Mat_Pymnt_Submitted_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29618,x.Module_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29619,x.Module_Qty_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29620,x.Monitoring_Type_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29621,x.Multiple_Meters_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29618,x.Module_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29619,x.Module_Qty_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29620,x.Monitoring_Type_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29621,x.Multiple_Meters_c::text , true);
         --perform flow.set_pps_cfv(x.project_id , 2384850,,x.New_Homeowner_Account_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29622,x.New_Homeowner_Contact_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29622,x.New_Homeowner_Contact_c::text , true);
         --perform flow.set_pps_cfv(x.project_id , 2384850,,x.New_Homeowner_Primary_Contact_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29623,x.New_Home_Owner_Email_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29624,x.New_Home_Owner_Phone_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29623,x.New_Home_Owner_Email_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29624,x.New_Home_Owner_Phone_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29625,x.Note_to_Dealer_Final_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29626,x.Note_to_Dealer_Origination_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29627,x.Notice_to_Proceed_Sent_c::text , true);
        -- perform flow.set_pps_cfv(x.project_id , 2384850,,x.Opportunity_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29628,x.lov8_Oracle_Cancellation_Status_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29629,x.LPS_Notes_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29630,x.Partial_prepayment_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29630,x.Partial_prepayment_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29631,x.Partner_Account_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29632,x.Partner_Oracle_Vendor_Email_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29633,x.Payment_Received_c::text , true);
@@ -9420,14 +9475,14 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29644,x.Preflight_Batch_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29645,x.Preflight_Batch_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29646,x.Preflight_Response_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29647,x.Presentment_1_Payment_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29648,x.Presentment_2_Payment_Date_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29647,x.Presentment_1_Payment_Date_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29648,x.Presentment_2_Payment_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29649,x.Pricing_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29650,x.Proj_Admin_Status_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29651,x.Projected_Interconnect_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29652,x.Project_Type_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29652,x.Project_Type_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29653,x.Proj_Install_Compete_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29654,x.PSR_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29654,x.PSR_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29655,x.PTO_Letter_Issuance_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29656,x.PTO_Ltr_Rcvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29657,x.PTO_Ltr_Apprvd_c::text , true);
@@ -9440,16 +9495,16 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29664,x.Purchase_TE_Cash_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29665,x.Pymnt_Cert_Month_c::text , true);
         --perform flow.set_pps_cfv(x.project_id , 2384850,,x.Quote_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29666,x.Racking_Model_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29667,x.Racking_Qty_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29666,x.Racking_Model_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29667,x.Racking_Qty_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29668,x.lov9_Reason_for_Cancellation_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29669,x.lov10_Rebate_Authority_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29670,x.Rebate_Reserved_c::text , true);
         --perform flow.set_pps_cfv(x.project_id , 2384850,,x.Residential_Project_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29671,x.rev_rec_entry_date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29672,x.RSM_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29672,x.RSM_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29673,x.Sales_Tax_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29674,x.Sales_Tax_Formula_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29674,x.Sales_Tax_Formula_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29675,x.Settlement_Hannon_Mezz_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29676,x.Settlement_NTP_B_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29677,x.Settlement_Price_c::text , true);
@@ -9458,7 +9513,7 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29680,x.Settlement_TE_Cash_c::text , true);
        -- perform flow.set_pps_cfv(x.project_id , 2384850,,x.Size_KW_c::text , true);
        -- perform flow.set_pps_cfv(x.project_id , 2384850,,x.Size_Wdc_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29681,x.SLA_Interconnect_Status_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29681,x.SLA_Interconnect_Status_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29682,x.SMS_ID_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29683,x.SMS_Installation_Checklist_Approv_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29684,x.SMS_Installation_Checklist_Received_c::text , true);
@@ -9474,31 +9529,31 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29694,x.SREC_Financiers_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29784,x.lov12_Stage_c::text , true);
        -- perform flow.set_pps_cfv(x.project_id , 2384850,,x.Status_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29695,x.Storage_Model_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29696,x.Storage_Count_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29697,x.Storage_Commission_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29698,x.Storage_Expansion_Model_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29699,x.Storage_Expansion_Quantity_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29700,x.Storage_Price_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29701,x.Storage_Size_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29702,x.Storage_System_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29695,x.Storage_Model_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29696,x.Storage_Count_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29697,x.Storage_Commission_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29698,x.Storage_Expansion_Model_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29699,x.Storage_Expansion_Quantity_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29700,x.Storage_Price_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29701,x.Storage_Size_c::text , true);
+--         perform flow.set_pps_cfv(x.project_id , 2384850,29702,x.Storage_System_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29703,x.Substitute_Report_Submitted_Date_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29704,x.Sales_order_number_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29705,x.System_Price_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29705,x.System_Price_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29706,x.TAN_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29707,x.Tot_Monthly_Payments_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29707,x.Tot_Monthly_Payments_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29708,x.Tranche_1_Batch_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29709,x.lov13_Tranche_1_Response_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29710,x.Tranche_1_Response_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29711,x.Tranche_1_Type_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29710,x.Tranche_1_Response_Date_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29711,x.Tranche_1_Type_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29712,x.Tranche_2_Batch_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29713,x.lov14_Tranche_2_Response_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29714,x.Tranche_2_Response_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29715,x.Tranche_2_Type_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29714,x.Tranche_2_Response_Date_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29715,x.Tranche_2_Type_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29716,x.Tranche_3_Batch_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29717,x.lov15_Tranche_3_Response_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29718,x.Tranche_3_Response_Date_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29719,x.Tranche_3_Type_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29718,x.Tranche_3_Response_Date_c::text , true);
+      --  perform flow.set_pps_cfv(x.project_id , 2384850,29719,x.Tranche_3_Type_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29720,x.Tranche_Notes_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29721,x.lov16_Tranching_Status_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29722,x.Uncond_Fin_LW_Approved_c::text , true);
@@ -9507,7 +9562,7 @@ $do$
         perform flow.set_pps_cfv(x.project_id , 2384850,29725,x.Warr_SNs_Rcvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29726,x.Warr_SNs_Apprvd_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29727,x.Wattage_c::text , true);
-        perform flow.set_pps_cfv(x.project_id , 2384850,29728,x.Watts_c::text , true);
+       -- perform flow.set_pps_cfv(x.project_id , 2384850,29728,x.Watts_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29729,x.Welcome_Call_Complete_c::text , true);
         perform flow.set_pps_cfv(x.project_id , 2384850,29730,x.With_SH_Inventory_c::text , true);
 
