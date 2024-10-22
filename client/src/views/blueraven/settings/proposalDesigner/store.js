@@ -359,7 +359,6 @@ export default defineStore('proposalStore', () => {
 
       const { data } = await deleteRequest(
         `/proposal/template/${templateId}/blocks/${selectedId.value}`,
-        {},
         'blueraven'
       )
       if (data) {
@@ -385,7 +384,7 @@ export default defineStore('proposalStore', () => {
       )
       tags.value = [...data]
     } catch (e) {
-      console.log({wtf: e})
+      console.log({ wtf: e })
       tags.value = []
     }
   }
