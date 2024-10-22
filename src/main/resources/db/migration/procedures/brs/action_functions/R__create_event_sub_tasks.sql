@@ -48,20 +48,20 @@ BEGIN
               null, null, 1)
       returning id into v_project_process_step_event_id;
 
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28896, x.name::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28898, x.comment_c::text,true);
-    --  perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28903, x.assigned_to_c::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28899, x.start_date_time_c::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28900, x.due_date_c::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28905, x.ip_owner_c::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28907, x.first_complete_end_date_time_c::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28908, x.end_date_time_c::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28896, x.name::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28898, x.comment_c::text,true);
+    --  perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28903, x.assigned_to_c::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28899, x.start_date_time_c::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28900, x.due_date_c::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28905, x.ip_owner_c::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28907, x.first_complete_end_date_time_c::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28908, x.end_date_time_c::text,true);
 
 
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28897, x.lov1_project_priority_c_id::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28904, x.lov2_role_assignment_c_id::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28906, x.lov3_task_path_type_c_id::text,true);
-      perform flow.set_pps_event_cfv(v_project_process_step_event_id, 2384850, 28909, x.lov4_reason_levels_c_id::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28897, x.lov1_project_priority_c_id::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28904, x.lov2_role_assignment_c_id::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28906, x.lov3_task_path_type_c_id::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28909, x.lov4_reason_levels_c_id::text,true);
 
     end loop;
 
