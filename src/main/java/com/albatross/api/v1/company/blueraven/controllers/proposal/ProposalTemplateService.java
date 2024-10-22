@@ -8,10 +8,7 @@ import com.albatross.api.pdf.PdfService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalTemplateBlockMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalTemplateMapper;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTag;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplateBlock;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalTemplateQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
@@ -21,6 +18,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
@@ -80,7 +78,7 @@ public class ProposalTemplateService {
         .build();
   }
 
-  public List<ProposalTemplate> getTemplates(){
+  public List<ProposalTemplate> getTemplates() {
     return sqlCache.queryBySql(ProposalTemplateQuery.listTemplates, Map.of(), new ProposalTemplateMapper(objectMapper));
   }
 
@@ -366,7 +364,7 @@ public class ProposalTemplateService {
           return ((Long) m.get("id")).intValue();
         }
         return (Integer) m.get("id");
-      }).collect(Collectors.toSet());
+      }).collect(toSet());
 
     return getTemplateBlocks(updated);
   }
@@ -374,7 +372,7 @@ public class ProposalTemplateService {
   @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE, key = "#templateId")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<Integer> archiveBlockFromTemplate(Long templateId, Integer blockId, Long currentUserId) {
-    HashMap<String, Object> getParams = new HashMap<>();
+    Map<String, Object> getParams = new HashMap<>();
     getParams.put("parentId", blockId);
     getParams.put("templateId", templateId);
     //delete the block and any of its children
@@ -393,10 +391,25 @@ public class ProposalTemplateService {
     return idsToDelete;
   }
 
-  @Cacheable(value = CachingConfig.PROPOSAL_TEMPLATE)
+  @Cacheable(value = CachingConfig.PROPOSAL_TEMPLATE_TAGS, key = "#templateId")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
-  public List<ProposalTag> getAvailableTags() {
-    return sqlCache.queryBySql(ProposalTemplateQuery.availableTags, Map.of(), new BeanPropertyRowMapper<>(ProposalTag.class));
+  public List<ProposalTag> getAvailableTags(@NonNull Long templateId) {
+//    TODO: figure out better way to not hardcode these values
+    if (templateId == 1L) {
+      return sqlCache.queryBySql(ProposalTemplateQuery.availableTags, Map.of("templateId", templateId), new BeanPropertyRowMapper<>(ProposalTag.class));
+    }else if (templateId == 2L) {
+      return sqlCache.queryBySql(ProposalTemplateQuery.availableTagsNH, Map.of("templateId", templateId), new BeanPropertyRowMapper<>(ProposalTag.class));
+    }
+    throw new ApiException("Unsupported template");
+  }
+
+  public List<ProposalTemplateObjectCategory> getObjectCategories() {
+    return sqlCache.queryBySql(ProposalTemplateQuery.getObjectCategories, Map.of(), new BeanPropertyRowMapper<>(ProposalTemplateObjectCategory.class));
+  }
+
+  public void updateTemplateObjectCategories(Long templateId, List<Long> categories, Long currentUserId) {
+    Map<String, Object> params = Map.of("templateId", templateId, "objectCategoryIds", categories, "modifiedById", currentUserId);
+    sqlCache.updateBySql(ProposalTemplateQuery.updateObjectCategories, params);
   }
 
   public Resource generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws Exception {

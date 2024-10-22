@@ -207,13 +207,13 @@ public class BlueravenProposalService {
 
             //then create the new pps and update the monthly usage data on Aurora
             Long ppsId = handleNewPpsForAuroraDesign(projectId, auroraDesignWrappedDTO.getId(), values, designedByAurora);
-              if(auroraDesignWrappedDTO != null && auroraDesignWrappedDTO.getProjectId() != null){
-                  com.albatross.api.v1.flow.model.CustomFieldValue calcMethodField = values.stream().filter(cfg -> cfg.getCustomFieldGroupAssignmentId() != null && cfg.getCustomFieldGroupAssignmentId().equals(23803L)).findFirst().orElse(null);
-                  if(calcMethodField != null) {
-                      Long calcMethodValue = calcMethodField.getIntValue();
-                      updateEnergyUsage(ppsId, auroraDesignWrappedDTO.getProjectId(), monthlyInputs, calcMethodValue);
-                  }
+            if (auroraDesignWrappedDTO != null && auroraDesignWrappedDTO.getProjectId() != null) {
+              com.albatross.api.v1.flow.model.CustomFieldValue calcMethodField = values.stream().filter(cfg -> cfg.getCustomFieldGroupAssignmentId() != null && cfg.getCustomFieldGroupAssignmentId().equals(23803L)).findFirst().orElse(null);
+              if (calcMethodField != null) {
+                Long calcMethodValue = calcMethodField.getIntValue();
+                updateEnergyUsage(ppsId, auroraDesignWrappedDTO.getProjectId(), monthlyInputs, calcMethodValue);
               }
+            }
             return auroraDesignWrappedDTO;
           } else {
             throw new RuntimeException("Error: Unable to duplicate DESIGN for project: " + designSummary.getProjectId().get());
@@ -303,35 +303,36 @@ public class BlueravenProposalService {
 
 
   public void updateEnergyUsage(
-          Long ppsId,
-          String auroraProjectId,
-          List<Double> monthlyInputs,
-          Long calcMethodValue
-          ){
-      Optional<String> auroraUserId = getAuroraUserId();
+    Long ppsId,
+    String auroraProjectId,
+    List<Double> monthlyInputs,
+    Long calcMethodValue
+  ) {
+    Optional<String> auroraUserId = getAuroraUserId();
 
-          //update the monthly inputs on Aurora
-          AuroraConsumptionProfileDTO consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
-          if(calcMethodValue.equals(20851L)){
-              //calculate by square footage then we're done b/c we've already updated the annual energy
-              return;
-          }
-          //combine all the monthly_energy values from the consumptionProfile
-          Double sum = 0.0;
-          for(int i = 0; i < consumptionProfile.getMonthlyEnergy().size(); i++){
-              sum+= consumptionProfile.getMonthlyEnergy().get(i);
-          }
-          //otherwise put the sum in the estimated annual energy consumption custom field
-          com.albatross.api.v1.flow.model.CustomFieldValue customFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
-          customFieldValue.setCustomFieldGroupAssignmentId(22573L);
-          customFieldValue.setIntValue(Math.round(sum));
+    //update the monthly inputs on Aurora
+    AuroraConsumptionProfileDTO consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
+    if (calcMethodValue.equals(20851L)) {
+      //calculate by square footage then we're done b/c we've already updated the annual energy
+      return;
+    }
+    //combine all the monthly_energy values from the consumptionProfile
+    Double sum = 0.0;
+    for (int i = 0; i < consumptionProfile.getMonthlyEnergy().size(); i++) {
+      sum += consumptionProfile.getMonthlyEnergy().get(i);
+    }
+    //otherwise put the sum in the estimated annual energy consumption custom field
+    com.albatross.api.v1.flow.model.CustomFieldValue customFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
+    customFieldValue.setCustomFieldGroupAssignmentId(22573L);
+    customFieldValue.setIntValue(Math.round(sum));
 
-          List<com.albatross.api.v1.flow.model.CustomFieldValue> cfgs = new ArrayList<>();
-          cfgs.add(customFieldValue);
+    List<com.albatross.api.v1.flow.model.CustomFieldValue> cfgs = new ArrayList<>();
+    cfgs.add(customFieldValue);
 
-          customFieldValueService.updateCustomFieldValues(cfgs, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
+    customFieldValueService.updateCustomFieldValues(cfgs, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
 
   }
+
   public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(String auroraUserId, Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, List<Double> monthlyInputs) {
     //this function needs to:
     //try/catch creating an aurora project
@@ -350,13 +351,13 @@ public class BlueravenProposalService {
           AuroraDesignWrappedDTO auroraDesign = auroraProxy.createDesign(auroraProject.getId(), nameFieldValue.get().getTextValue());
           if (null != auroraDesign.getId()) {
             Long ppsId = handleNewPpsForAuroraDesign(projectId, auroraDesign.getId(), values, true);
-              if(auroraDesign.getProjectId() != null){
-                  com.albatross.api.v1.flow.model.CustomFieldValue calcMethodField = values.stream().filter(cfg -> cfg.getCustomFieldGroupAssignmentId() != null && cfg.getCustomFieldGroupAssignmentId().equals(23803L)).findFirst().orElse(null);
-                  if(calcMethodField != null) {
-                      Long calcMethodValue = calcMethodField.getIntValue();
-                      updateEnergyUsage(ppsId, auroraDesign.getProjectId(), monthlyInputs, calcMethodValue);
-                  }
+            if (auroraDesign.getProjectId() != null) {
+              com.albatross.api.v1.flow.model.CustomFieldValue calcMethodField = values.stream().filter(cfg -> cfg.getCustomFieldGroupAssignmentId() != null && cfg.getCustomFieldGroupAssignmentId().equals(23803L)).findFirst().orElse(null);
+              if (calcMethodField != null) {
+                Long calcMethodValue = calcMethodField.getIntValue();
+                updateEnergyUsage(ppsId, auroraDesign.getProjectId(), monthlyInputs, calcMethodValue);
               }
+            }
             return auroraDesign;
           } else {
             throw new RuntimeException("Error: Unable to create DESIGN for project: " + projectId);
@@ -407,7 +408,7 @@ public class BlueravenProposalService {
     autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
 
     //return the project process step id
-      return ppsId;
+    return ppsId;
   }
 
   public List<ProposalDesign> getProposalDesigns(@NonNull Long projectId) {
@@ -787,23 +788,26 @@ public class BlueravenProposalService {
       .orElseThrow(() -> new ApiException("No published proposals available"));
   }
 
-  public Optional<ProposalTemplate> getProposalTemplate(Long proposalId, Long templateId, ProposalGeneratedType generatedType, boolean isDebug) {
-    try {
-      Map<String, Object> context = getCalculatedProposalValues(proposalId, generatedType, false);
-      return Optional.of(proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug));
-    } catch (ApiException apiException) {
-      throw apiException;
-    } catch (Exception e) {
-      log.error("[Proposal] Unknown error generating proposal", e);
-      throw new ApiException("Error generating proposal template");
-    }
+  public Optional<ProposalTemplate> getProposalTemplate(Long proposalId, ProposalGeneratedType generatedType, boolean isDebug) {
+    return getSimpleProposal(proposalId)
+      .flatMap(proposal -> {
+        try {
+          Map<String, Object> context = getCalculatedProposalValues(proposal.getId(), proposal.getProposalTemplateId(), generatedType, false);
+          return Optional.of(proposalTemplateService.getTemplateById(proposal.getProposalTemplateId(), context, generatedType, isDebug));
+        } catch (ApiException apiException) {
+          throw apiException;
+        } catch (Exception e) {
+          log.error("[Proposal] Unknown error generating proposal", e);
+          throw new ApiException("Error generating proposal template");
+        }
+      });
   }
 
   public Optional<ProposalResource> generateProposalPDF(Long proposalId) {
     return getSimpleProposal(proposalId)
       .flatMap(proposal -> {
         try {
-          final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
+          final var context = getCalculatedProposalValues(proposal.getId(), proposal.getProposalTemplateId(), ProposalGeneratedType.PRINT, false);
           Resource pdf = proposalTemplateService.generatePdf(proposal.getProposalTemplateId(), context, false);
           return Optional.of(new ProposalResource(pdf, proposal, context));
         } catch (ApiException apiException) {
@@ -816,17 +820,24 @@ public class BlueravenProposalService {
   }
 
   private Map<String, Object> getCalculatedProposalValues(
-    @NonNull Long proposalId, ProposalGeneratedType proposalGeneratedType, boolean insertPropLogHistory) {
+    @NonNull Long proposalId, Long templateId, ProposalGeneratedType proposalGeneratedType, boolean insertPropLogHistory) {
 
     Map<String, Object> context = new HashMap<>();
 
     try {
       Map<String, Object> params = Map.of(
         "proposalId", proposalId,
-        "insertPropLogHistory", insertPropLogHistory,
-        "currentUserId", securityService.getCurrentUser().trueUserId());
+        "insertPropLogHistory", insertPropLogHistory);
 
-      context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
+      //todo figure out a better way to not hardcode these values
+      if (templateId == 1L) {
+        context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
+      } else if (templateId == 2L) {
+        context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValuesNH, params);
+      } else {
+        throw new ApiException("Unsupported template");
+      }
+
     } catch (DataAccessException dataAccessException) {
       String errorMessage = dataAccessException.getCause().getMessage().split("\n")[0];
       errorMessage = errorMessage.replace("ERROR: ", "").trim();
@@ -860,7 +871,7 @@ public class BlueravenProposalService {
     Proposal unlockedProposal = getSimpleProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
 
     //insert values immediately in to proposal log history
-    getCalculatedProposalValues(unlockedProposal.getId(), ProposalGeneratedType.PRINT, true);
+    getCalculatedProposalValues(unlockedProposal.getId(), unlockedProposal.getProposalTemplateId(), ProposalGeneratedType.PRINT, true);
 
     sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", unlockedProposal.getId(), "modifiedById", currentUser.getTrueUserId()));
     return getProposal(unlockedProposal.getId(), currentUser.getId());

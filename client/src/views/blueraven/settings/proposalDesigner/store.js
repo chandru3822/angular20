@@ -376,13 +376,16 @@ export default defineStore('proposalStore', () => {
 
   const fetchTags = async () => {
     try {
+      const templateId = currentTemplate.value.id
+
       const { data } = await getRequest(
-        '/proposal/template/tags',
+        `/proposal/template/${templateId}/tags`,
         'blueraven',
         []
       )
       tags.value = [...data]
     } catch (e) {
+      console.log({wtf: e})
       tags.value = []
     }
   }

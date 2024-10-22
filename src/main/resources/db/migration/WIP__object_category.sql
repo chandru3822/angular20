@@ -361,13 +361,13 @@ on conflict do nothing;
 
 insert into flow.object_category_custom_field_group(object_category_id, custom_field_group_id, created_by_id,
                                                     modified_by_id)
-    (select oc.id, cfg.id, 2384850, 2384850
-     from flow.custom_field_group cfg
-              cross join flow.object_category as oc
-     where cfg.company_object_type_id = 2
-       and cfg.archived is false
-       and oc.object_type_id = 2
-       and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER','PRIMARY_HOMEOWNER'))
+  (select oc.id, cfg.id, 2384850, 2384850
+   from flow.custom_field_group cfg
+          cross join flow.object_category as oc
+   where cfg.company_object_type_id = 2
+     and cfg.archived is false
+     and oc.object_type_id = 2
+     and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER', 'PRIMARY_HOMEOWNER'))
 on conflict do nothing;
 
 
@@ -444,25 +444,27 @@ insert into flow.object_category_company_project_status_type(object_category_id,
 on conflict do nothing;
 
 
-
-
 --proposal template object categories
-drop table brs.object_category_proposal_template;
+drop table if exists brs.object_category_proposal_template;
 create table if not exists brs.object_category_proposal_template
 (
   object_category_id   bigint                                    not null references flow.object_category (id),
   proposal_template_id bigint                                    not null references brs.proposal_template (id),
   date_created         timestamp without time zone DEFAULT now() not null,
+  date_modified        timestamp without time zone DEFAULT now() not null,
   created_by_id        integer references flow."user" (id),
+  modified_by_id       integer references flow."user" (id),
 
   primary key (object_category_id)
 );
+
 
 insert into brs.object_category_proposal_template (object_category_id, proposal_template_id)
 select oc.id, pt.id
 from brs.proposal_template pt
        cross join flow.object_category oc
 where pt.id = 1
+and oc.object_type_id = 1
 on conflict do nothing;
 
 
@@ -639,11 +641,13 @@ where process_id != 27;
 
 --add the flow.copy_from_parent_to_child to company_process (i added the db_function record in prod so it doesn't get lost on data dump)
 insert into flow.company_function(company_function_name, db_function_id, archived, company_id)
-select df.display_name, df.id, df.archived, 3 from flow.db_function df
+select df.display_name, df.id, df.archived, 3
+from flow.db_function df
 where df.function_name = 'flow.copy_from_parent_to_child'
-  and not exists (select cf.id from flow.company_function cf
-                            inner join flow.db_function df2 on cf.db_function_id = df2.id
-                            where df.function_name = 'flow.copy_from_parent_to_child');
+  and not exists (select cf.id
+                  from flow.company_function cf
+                         inner join flow.db_function df2 on cf.db_function_id = df2.id
+                  where df.function_name = 'flow.copy_from_parent_to_child');
 
 CREATE TABLE if not exists flow.company_process_child_company_process
 (
@@ -693,11 +697,11 @@ CREATE INDEX if not exists lov_name_idx ON flow.list_of_value (name);
 drop trigger if exists list_of_value_name_change_trg on flow.list_of_value;
 
 alter table flow.list_of_value
-    alter column name type varchar(500) using name::varchar(500);
+  alter column name type varchar(500) using name::varchar(500);
 
 CREATE TRIGGER list_of_value_name_change_trg
-    after update
-    ON flow.list_of_value
-    FOR EACH ROW
-    when(old.name != new.name)
+  after update
+  ON flow.list_of_value
+  FOR EACH ROW
+  when (old.name != new.name)
 EXECUTE PROCEDURE flow.list_of_value_name_change();

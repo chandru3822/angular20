@@ -522,6 +522,10 @@ where p.id = :proposalId
     select calc.* from brs.get_calculated_proposal_values(:proposalId::bigint, :insertPropLogHistory::boolean) calc
     """;
 
+  public final static String getCalculatedProposalValuesNH = """
+    select calc.* from brs.get_calculated_proposal_values_nh(:proposalId::bigint, :insertPropLogHistory::boolean) calc
+    """;
+
   //language=PostgreSQL
   public final static String getAttachments = """
     select a.id as id, a.attachment_type_id, a.uuid

@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CachingConfig {
   public static final String PROPOSAL_TEMPLATE = "proposalTemplate";
+  public static final String PROPOSAL_TEMPLATE_TAGS = "proposalTemplateTags";
   public static final String NOTIFICATION = "notification";
   public static final String ATTACHMENT = "attachment";
 
@@ -30,6 +31,13 @@ public class CachingConfig {
     return builder -> builder
       .withCacheConfiguration(
         PROPOSAL_TEMPLATE,
+        RedisCacheConfiguration.defaultCacheConfig()
+          .serializeValuesWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(
+              new GenericJackson2JsonRedisSerializer()))
+          .entryTtl(Duration.ofMinutes(5L)))
+      .withCacheConfiguration(
+        PROPOSAL_TEMPLATE_TAGS,
         RedisCacheConfiguration.defaultCacheConfig()
           .serializeValuesWith(
             RedisSerializationContext.SerializationPair.fromSerializer(

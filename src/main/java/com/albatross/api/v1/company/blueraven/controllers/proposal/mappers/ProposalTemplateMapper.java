@@ -1,6 +1,8 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal.mappers;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.convert.JsonObjectDeserializer;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalObjectCategory;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplateBlock;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTheme;
@@ -25,13 +27,22 @@ public class ProposalTemplateMapper extends BeanPropertyRowMapper<ProposalTempla
 
     final TypeReference<ProposalTheme> proposalThemeTypeReference = new TypeReference<>() {
     };
+
+    final TypeReference<List<ProposalObjectCategory>> proposalObjectCategoryTypeReference = new TypeReference<>() {
+    };
+
     final TypeReference<List<ProposalTemplateBlock>> blockTypeReference = new TypeReference<>() {
     };
+
     bw.registerCustomEditor(
       ProposalTheme.class,
       "theme",
       new JsonObjectDeserializer<>(proposalThemeTypeReference, objectMapper));
     bw.registerCustomEditor(
       List.class, "blocks", new JsonObjectDeserializer<>(blockTypeReference, objectMapper));
+    bw.registerCustomEditor(
+      List.class,
+      "objectCategories",
+      new JsonCollectionDeserializer<>(proposalObjectCategoryTypeReference, objectMapper));
   }
 }

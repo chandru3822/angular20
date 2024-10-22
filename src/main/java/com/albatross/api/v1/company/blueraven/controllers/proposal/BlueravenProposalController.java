@@ -278,12 +278,9 @@ public class BlueravenProposalController {
   @GetMapping(value = "/{proposalId}/template")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public Optional<ProposalTemplate> getProposalTemplate(@PathVariable Long proposalId,
-                                                        @Parameter(hidden = true) @RequestParam(defaultValue = "1") Long templateId,
                                                         @Parameter(hidden = true) @RequestParam(value = "type", defaultValue = "MOBILE") ProposalGeneratedType proposalGeneratedType,
                                                         @Parameter(hidden = true) @RequestParam(value = "debug", defaultValue = "false") boolean isDebug) {
-    return proposalService.getSimpleProposal(proposalId)
-      .flatMap(proposal ->
-        proposalService.getProposalTemplate(proposal.getId(), templateId, proposalGeneratedType, isDebug));
+    return proposalService.getProposalTemplate(proposalId, proposalGeneratedType, isDebug);
   }
 
   @Timed

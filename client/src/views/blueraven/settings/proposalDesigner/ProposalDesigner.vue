@@ -1,118 +1,188 @@
 <template>
   <div id="designer">
     <div class="toolbar">
-      <div>
-        <a-select
-          class="d-inline-block"
-          label="Template"
-          dense
-          attach
-          v-model="currentTemplate"
-          :hint="`${currentTemplate?.templateName} ${currentTemplate?.objectCategory ? ', ' + currentTemplate?.objectCategory : ''}`"
-          :items="templates"
-          item-value="id"
-          item-title="templateName"
-          return-object
-          @input="(t) => store.fetchTemplate(t.id)"
-        >
-        </a-select>
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <a-btn
-              v-bind="attrs"
-              :activation-handler="on"
-              @click="save"
-              :disabled="!isSaveable"
-              variant="text"
-              icon
-              color="unset"
-              :prepend-icon="isSaveable ? 'cloud' : 'mdi-cloud-outline'"
-            ></a-btn>
-          </template>
-          <span>Save</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <a-btn
-              v-bind="attrs"
-              :activation-handler="on"
-              @click="store.undo"
-              :disabled="!store.canUndo"
-              variant="text"
-              icon
-              color="unset"
-              prepend-icon="undo"
-            ></a-btn>
-          </template>
-          <span>Undo</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <a-btn
-              v-bind="attrs"
-              :activation-handler="on"
-              @click="store.redo"
-              :disabled="!store.canRedo"
-              variant="text"
-              icon
-              color="unset"
-              prepend-icon="redo"
-            ></a-btn>
-          </template>
-          <span>Redo</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <a-btn
-              v-bind="attrs"
-              :activation-handler="on"
-              @click="store.reset"
-              :disabled="!(store.canRedo || store.canUndo)"
-              icon
-              variant="text"
-              color="unset"
-              prepend-icon="mdi-nuke"
-            ></a-btn>
-          </template>
-          <span>Reset</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <a-btn
-              v-bind="attrs"
-              :activation-handler="on"
-              @click="downloadPreview"
-              :disabled="isSaveable"
-              icon
-              variant="text"
-              color="unset"
-              prepend-icon="mdi-file-pdf-box"
-            ></a-btn>
-          </template>
-          <span>Generate PDF Preview</span>
-        </v-tooltip>
+      <div class="toolbar-container">
+        <div>
+          <a-select
+            class="d-inline-block"
+            label="Template"
+            dense
+            attach
+            v-model="currentTemplate"
+            :items="templates"
+            item-value="id"
+            item-title="templateName"
+            return-object
+            @input="selectTemplate"
+          >
+          </a-select>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <a-btn
+                v-bind="attrs"
+                :activation-handler="on"
+                @click="save"
+                :disabled="!isSaveable"
+                variant="text"
+                icon
+                color="unset"
+                :prepend-icon="isSaveable ? 'cloud' : 'mdi-cloud-outline'"
+              ></a-btn>
+            </template>
+            <span>Save</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <a-btn
+                v-bind="attrs"
+                :activation-handler="on"
+                @click="store.undo"
+                :disabled="!store.canUndo"
+                variant="text"
+                icon
+                color="unset"
+                prepend-icon="undo"
+              ></a-btn>
+            </template>
+            <span>Undo</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <a-btn
+                v-bind="attrs"
+                :activation-handler="on"
+                @click="store.redo"
+                :disabled="!store.canRedo"
+                variant="text"
+                icon
+                color="unset"
+                prepend-icon="redo"
+              ></a-btn>
+            </template>
+            <span>Redo</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <a-btn
+                v-bind="attrs"
+                :activation-handler="on"
+                @click="store.reset"
+                :disabled="!(store.canRedo || store.canUndo)"
+                icon
+                variant="text"
+                color="unset"
+                prepend-icon="mdi-nuke"
+              ></a-btn>
+            </template>
+            <span>Reset</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <a-btn
+                v-bind="attrs"
+                :activation-handler="on"
+                @click="downloadPreview"
+                :disabled="isSaveable"
+                icon
+                variant="text"
+                color="unset"
+                prepend-icon="mdi-file-pdf-box"
+              ></a-btn>
+            </template>
+            <span>Generate PDF Preview</span>
+          </v-tooltip>
+        </div>
+        <div>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <a-btn
+                v-bind="attrs"
+                :activation-handler="on"
+                @click="
+                  ;[
+                    (addBlock = !addBlock),
+                    (tabs = addBlock ? 0 : tabs),
+                    selectNode(undefined)
+                  ]
+                "
+                variant="text"
+                icon
+                color="primary"
+                :prepend-icon="addBlock ? 'close' : 'mdi-toy-brick-plus'"
+              ></a-btn>
+            </template>
+            <span>Add Block</span>
+          </v-tooltip>
+        </div>
       </div>
-      <div>
-        <v-tooltip bottom>
-          <template #activator="{ on, attrs }">
-            <a-btn
-              v-bind="attrs"
-              :activation-handler="on"
-              @click="
-                ;[
-                  (addBlock = !addBlock),
-                  (tabs = addBlock ? 0 : tabs),
-                  selectNode(undefined)
-                ]
-              "
-              variant="text"
-              icon
-              color="primary"
-              :prepend-icon="addBlock ? 'close' : 'mdi-toy-brick-plus'"
-            ></a-btn>
-          </template>
-          <span>Add Block</span>
-        </v-tooltip>
+      <div class="d-flex align-center">
+        <a-btn
+          icon
+          variant="text"
+          size="small"
+          color="primary"
+          class="mr-2"
+          prepend-icon="mdi-pencil"
+          @click="toggleObjectCategoryEdit(currentTemplate)"
+        ></a-btn>
+        <span
+          v-if="!editObjectCategories"
+          class="font-size-12 grey--text text--darken-1"
+        >
+          {{ getProposalHint(currentTemplate) }}
+        </span>
+        <div class="d-flex align-center justify-around flex-fill" v-else>
+          <a-select
+            attach
+            v-model="editableItem.objectCategories"
+            :items="objectCategories"
+            label="Object Category"
+            item-title="objectCategory"
+            item-value="id"
+            item-subtitle="kaleb"
+            autocomplete="off"
+            multiple
+          >
+            <template v-slot:item="{ active, item, attrs, on }">
+              <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
+                <v-list-item-action>
+                  <v-checkbox :input-value="active"></v-checkbox>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>
+                    <v-row no-gutters align="center">
+                      <span>{{ item.objectCategory }}</span>
+                      <v-spacer></v-spacer>
+                      <v-chip
+                        v-if="item.templateId"
+                        :color="
+                          item?.templateId === currentTemplate?.id
+                            ? 'primary'
+                            : 'default'
+                        "
+                        small
+                      >
+                        {{ item.templateName }}
+                      </v-chip>
+                    </v-row>
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </a-select>
+
+          <a-btn
+            variant="text"
+            color="primary"
+            class="ml-3"
+            @click="toggleObjectCategoryEdit(currentTemplate)"
+          >
+            cancel
+          </a-btn>
+          <a-btn @click="saveObjectCategories(editableItem.objectCategories)">
+            save
+          </a-btn>
+        </div>
       </div>
     </div>
 
@@ -336,7 +406,7 @@ import AddComponentWidget from './panel/AddComponentWidget.vue'
 import LocationSelectorWidget from './panel/LocationSelectorWidget.vue'
 
 import ProposalTemplate from './ProposalTemplate'
-import { apiRequest } from '@/helpers/helpers'
+import { apiRequest, getRequest, postRequest } from '@/helpers/helpers'
 import { Editor } from '@tiptap/vue-2'
 import { getExtensions } from '@/views/blueraven/settings/proposalDesigner/blocks/text/utils'
 
@@ -370,10 +440,11 @@ const historyKeyListener = function (e) {
 onMounted(async () => {
   document.addEventListener('keydown', historyKeyListener)
   await Promise.allSettled([
-    store.fetchTags(),
     store.loadTemplates(),
-    store.fetchTemplate()
+    store.fetchTemplate(),
+    getObjectCategories()
   ])
+  await store.fetchTags()
 })
 
 onBeforeUnmount(() =>
@@ -406,6 +477,8 @@ const activeEditor = ref(undefined)
 const viewportEl = ref(null)
 const sortById = ref(true)
 const expandAll = ref(true)
+const editObjectCategories = ref(false)
+const objectCategories = ref([])
 
 const editor = {}
 Object.defineProperty(editor, 'current', {
@@ -422,6 +495,68 @@ const pages = computed(() =>
 )
 const isSaveable = computed(() => store.modifiedBlocks?.length > 0)
 const tags = computed(() => store.tags?.map((t) => t.tagName))
+
+const selectTemplate = async (tmpl) => {
+  await store.fetchTemplate(tmpl.id)
+  await store.fetchTags()
+
+  editObjectCategories.value = false
+}
+
+const editableItem = ref({})
+const toggleObjectCategoryEdit = (editable) => {
+  if (!editObjectCategories.value) {
+    editableItem.value = structuredClone(editable)
+  } else {
+    editableItem.value = {}
+  }
+  editObjectCategories.value = !editObjectCategories.value
+}
+
+const saveObjectCategories = async (ids) => {
+  const currentTemplateId = currentTemplate.value?.id
+
+  await postRequest(
+    `/proposal/template/${currentTemplateId}/objectCategories`,
+    {
+      objectCategoryIds: ids
+    },
+    'blueraven'
+  )
+
+  await getObjectCategories()
+  currentTemplate.value.objectCategories = objectCategories?.value?.filter(
+    (oc) => ids.includes(oc.id)
+  )
+  editableItem.value = {}
+  editObjectCategories.value = false
+}
+
+const getObjectCategories = async () => {
+  try {
+    const { data } = await getRequest(
+      `/proposal/template/objectCategories`,
+      'blueraven'
+    )
+    objectCategories.value = data?.sort((a, b) =>
+      a.objectCategory.localeCompare(b.objectCategory)
+    )
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Object Categories')
+  }
+}
+
+const getProposalHint = (item) => {
+  if (!item?.objectCategories || item.objectCategories?.length < 1) {
+    return ''
+  }
+  return item.objectCategories
+    .map((category) => {
+      return category.objectCategory
+    })
+    .join(', ')
+}
 
 const updateValue = (value) => {
   store.setValue({
@@ -562,8 +697,11 @@ watch(selectedId, async () => {
   z-index: 100;
   background-color: white;
   padding: 10px;
-  display: flex;
-  justify-content: space-between;
+
+  & .toolbar-container {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 .proposal-designer {
@@ -591,7 +729,7 @@ watch(selectedId, async () => {
 
 .tabs-scrollable {
   overflow: auto;
-  height: calc(100vh - 165px);
+  height: calc(100vh - 250px);
 }
 
 .sticky-header {
