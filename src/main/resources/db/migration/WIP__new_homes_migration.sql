@@ -5476,6 +5476,94 @@
 --   FINAL_PERMITS_ENTERED_BY_C                 VARCHAR(18),
 --   REV_REC_ENTRY_DATE_C                       TIMESTAMPTZ
 -- );
+-- drop table if exists brs.FEE_DISTRIBUTION_C;
+-- create table if not exists brs.FEE_DISTRIBUTION_C
+-- (
+--   ID                                     VARCHAR(18),
+--   IS_DELETED                             BOOLEAN,
+--   NAME                                   VARCHAR(240),
+--   CURRENCY_ISO_CODE                      VARCHAR(9),
+--   RECORD_TYPE_ID                         VARCHAR(18),
+--   CREATED_DATE                           TIMESTAMPTZ,
+--   CREATED_BY_ID                          VARCHAR(18),
+--   LAST_MODIFIED_DATE                     TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                    VARCHAR(18),
+--   SYSTEM_MODSTAMP                        TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID                 VARCHAR(18),
+--   CONNECTION_SENT_ID                     VARCHAR(18),
+--   PARTNER_NAME_C                         VARCHAR(18),
+--   SPLIT_PERCENTAGE_C                     double precision,
+--   MODULE_CONFIGURATION_C                 VARCHAR(18),
+--   STATE_C                                VARCHAR(765),
+--   MAX_FIT_REDUCTION_C                    numeric(6, 2),
+--   AC_PRE_PLUMB_C                         numeric(18, 2),
+--   AC_ROUGH_WIRE_C                        numeric(18, 2),
+--   AC_WIRE_INSTALLATION_AFTER_PRE_PLUMB_C numeric(18, 2),
+--   COMP_INSET_ON_TILE_ROOF_C              numeric(18, 2),
+--   COMP_SHINGLE_ROOF_C                    numeric(18, 2),
+--   CUSTOM_C                               numeric(18, 2),
+--   EFFECTIVE_END_DATE_C                   DATE,
+--   EFFECTIVE_START_DATE_C                 DATE,
+--   OVER_TILE_ROOF_C                       numeric(18, 2),
+--   PERMITTING_LABOR_ONLY_C                numeric(18, 2),
+--   X_3_STORY_ROOF_C                       numeric(18, 2),
+--   PANEL_C                                numeric(18, 2),
+--   PRE_COE_COMMISSIONING_C                numeric(18, 2),
+--   STORAGE_BASE_FIXED_FEE_C               VARCHAR(765),
+--   STORAGE_EXPANSION_FEE_C                VARCHAR(765),
+--   STORAGE_ONLY_C                         BOOLEAN,
+--   STORAGE_INSTALL_C                      numeric(18, 2),
+--   _FIVETRAN_DELETED                      BOOLEAN,
+--   _FIVETRAN_SYNCED                       TIMESTAMPTZ,
+--   SELLING_PRICE_MAX_C                    double precision,
+--   SELLING_PRICE_MIN_C                    double precision,
+--   DEAL_TYPE_C                            VARCHAR(765),
+--   NON_STANDARD_WORK_RATE_C               numeric(18, 4),
+--   MPU_RATE_C                             numeric(18, 4),
+--   BASE_RATE_C                            numeric(18, 4),
+--   PRODUCT_CATEGORY_C                     VARCHAR(765),
+--   SITE_SURVEY_RATE_C                     numeric(18, 4),
+--   PERMIT_RATE_C                          numeric(18, 4),
+--   MSP_DISTANCE_TO_CHARGER_RATE_C         numeric(18, 4),
+--   STORAGE_CONFIGURATION_GROUP_C          VARCHAR(18),
+--   SITE_AUDIT_C                           numeric(18, 2),
+--   ADDITIONAL_ESS_EXPANSION_UNIT_C        numeric(14, 2),
+--   INTERCONNECTION_C                      numeric(14, 2),
+--   SMALL_SYSTEM_SIZE_4_K_W_C              numeric(14, 2),
+--   MAIN_SERVICE_PANEL_UPGRADE_C           numeric(14, 2),
+--   ENERGY_STORAGE_SYSTEM_C                numeric(14, 2),
+--   NON_BACKUP_STORAGE_C                   numeric(14, 2),
+--   DESIGN_AND_ENGINEERING_C               numeric(18, 2),
+--   EXTERIOR_SERVICE_MSP_REPLACEMENT_C     numeric(14, 2),
+--   RANK_C                                 VARCHAR(765),
+--   COMMISION_C                            double precision,
+--   OTHER_ROOF_C                           numeric(18, 2),
+--   MIXED_INSTALL_C                        numeric(18, 2),
+--   LOYALTY_PROGRAM_W_USD_C                double precision,
+--   EV_CHARGING_STATION_C                  numeric(16, 2),
+--   MODULE_SKIRT_C                         numeric(16, 2),
+--   FLAT_ROOF_TILT_UP_INSTALL_C            numeric(18, 2),
+--   STORAGE_SIZE_C                         VARCHAR(765),
+--   STEEP_ROOF_C                           numeric(18, 2),
+--   FLAT_ROOF_INSTALL_C                    numeric(18, 2),
+--   FIXED_FEE_C                            numeric(18, 2),
+--   NSHP_W_USD_C                           double precision,
+--   LANDSCAPE_PANEL_ADDER_C                numeric(14, 2),
+--   RIGHT_SIZE_W_USD_C                     double precision,
+--   ONE_ROOF_INSTALL_C                     numeric(18, 2),
+--   STORAGE_ROUGH_WIRE_C                   numeric(18, 2),
+--   FRONT_EDGE_SKIRT_ADDER_C               numeric(14, 2),
+--   NYC_PERMITTING_FEE_ADDER_C             numeric(14, 2),
+--   BASE_PRICE_W_USD_C                     double precision,
+--   FLAT_ROOF_ADDER_C                      numeric(16, 2),
+--   PARTNER_ROLE_C                         VARCHAR(765),
+--   STORAGE_INSTALLATION_C                 numeric(18, 2),
+--   METAL_STANDING_SEAM_INSTALL_C          numeric(18, 2),
+--   ROOF_PITCH_9_12_C                      numeric(16, 2),
+--   STEEP_ROOF_ADDER_C                     numeric(14, 2),
+--   CRITTER_GUARD_ADDER_C                  numeric(16, 2)
+-- );
+
 
 
 
@@ -5681,8 +5769,11 @@
 -- CREATE INDEX if not exists lease_payment_c_Tranching_Status_c ON brs.lease_payment_c (Tranching_Status_c);
 -- CREATE INDEX if not exists lease_payment_c_account_c ON brs.lease_payment_c (account_c);
 
+-- CREATE INDEX if not exists ALLIANCE_PARTNER_C_partner_account_c ON brs.ALLIANCE_PARTNER_C (partner_account_c);
+-- CREATE INDEX if not exists ALLIANCE_PARTNER_C_record_type_id ON brs.ALLIANCE_PARTNER_C (record_type_id);
 
-
+--  CREATE INDEX if not exists fee_distribution_c_partner_name_c ON brs.fee_distribution_c (partner_name_c);
+--  CREATE INDEX if not exists fee_distribution_c_record_type_id ON brs.fee_distribution_c (record_type_id);
 
 SET session_replication_role = replica;
 with update_data as (
@@ -5822,7 +5913,6 @@ $do$
                    inner join flow.list_of_value lov on lov.name = foo.available_lender_c and lov.parent_id = 25717;
             perform flow.set_contact_cfv(v_contact_id , 2384850,28813,v_lov_available_lender_c::text, true);
           end if;
-         -- perform flow.set_contact_cfv(v_contact_id, 2384850, 28813, x.lov_available_lender_c::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28814, x.cash_partner_c::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28815, x.contact_name_c::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28816, x.credit_check_c::text,true);
@@ -5832,7 +5922,7 @@ $do$
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28820, x.description::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28821, x.i_supplier_c::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28822, x.legal_business_name_c::text,true);
-          --perform flow.set_contact_cfv(v_contact_id, 2384850, 28823, x.owner_id::text,true);
+          perform flow.set_contact_cfv(v_contact_id, 2384850, 28823, flow.get_user_id_nh(x.owner_id::text)::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28826, x.rlcpa_notes_c::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28831, x.shipping_city::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28832, x.shipping_postal_code::text,true);
@@ -5877,7 +5967,6 @@ $do$
                     c.field_manager_c,
                     c.sr_builder_operation_manager_c,
                     c.utility_c,
-                    c.sr_community_account_manager_c,
                     c.ahj_c,
                     c.builder_initial_submitter_c,
                     c.tract_number_c,
@@ -6043,18 +6132,18 @@ $do$
         if v_project_id is not null then
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27998,x.community_id_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27999,x.number_of_homes_reserved_c::text , true);
-          --perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28005,x.sr_community_account_manager_c::text , true);
+       --todo ask carlin not a user  text perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28005,flow.get_user_id_nh(sr_community_account_manager_c::text)::text, true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28011,x.proposal_link_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27979,x.l33_community_type_c_id::text , true);
-          --perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27980,x.account_manager_c::text , true);
+  --todo lookup to contact?        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27980,flow.get_user_id_nh(x.account_manager_c::text)::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27981,x.expected_community_construction_start_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27982,x.grand_opening_date_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27983,x.number_of_homes_in_community_c::text , true);
      --TODO check this dup with below     perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27996,x.my_sun_power_c::text , true);
-         -- perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27988,x.field_manager_c::text , true);
-         -- perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27989,x.sr_builder_operation_manager_c::text , true);
+          perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27988,flow.get_user_id_nh(x.field_manager_c::text)::text , true);
+      --todo lookup to contact?    perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27989,flow.get_user_id_nh(x.sr_builder_operation_manager_c::text)::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28006,x.utility_c::text , true);
-          --perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28005,x.sr_community_account_manager_c::text , true);
+      --todo ahj lookup  --  perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28005,flow.get_user_id_nh(x.sr_community_account_manager_c::text)::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28007,x.ahj_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28010,x.builder_initial_submitter_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28008,x.tract_number_c::text , true);
@@ -6297,7 +6386,7 @@ $do$
                     case when u.is_last_row is true then  true else false end, null, null, null)
             returning id into v_project_process_step_campaign_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28116, u.lov1_sales_status_c_id::text, true);
-            --perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28117, x.owner_id, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28117, flow.get_user_id_nh(x.owner_id::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28118, u.end_date::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28119, u.short_description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28120, u.description::text, true);
@@ -6332,7 +6421,6 @@ $do$
                     null, null, 1)
             returning id into v_project_process_step_pricing_event_id;
 
-            --  perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28099, y.CREATED_BY_ID, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_pricing_event_id, 2384850, 28732, s.active_c::text,true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_pricing_event_id, 2384850, 28572, s.cash_incentive_fee_c::text,true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_pricing_event_id, 2384850, 28574, s.lov1_code_year_c::text,true);
@@ -6368,7 +6456,6 @@ $do$
                     null, null, 1)
             returning id into v_project_process_step_visits_events_id;
 
-            --  perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28099, y.CREATED_BY_ID, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_visits_events_id, 2384850, 28114, t.lov1_role_c_id::text,true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_visits_events_id, 2384850, 28115, t.visit_notes_c::text,true);
 
@@ -6401,7 +6488,7 @@ $do$
                     null, null, 1)
             returning id into v_project_process_step_plan_event_id;
 
-            --  perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28099, y.CREATED_BY_ID, true);
+            perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28099, flow.get_user_id_nh(y.CREATED_BY_ID::text)::text, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28098, y.NAME::text, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28100, y.ADDITIONAL_COST_FOR_STORAGE_C::text, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28101, y.BASE_SQUARE_FOOTAGE_C::text,true);
@@ -6499,14 +6586,14 @@ $do$
                       null, null, 1)
               returning id into v_project_process_step_event_design_id;
 
-              --  perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28740, z.project_designer_c, true);
+              perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28740, flow.get_user_id_nh(z.project_designer_c::text)::text, true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28428, z.revision_of_c::text,true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28429, z.lov7_reason_level_1_c_id::text,true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28430, z.lov8_reason_level_2_c_id::text,true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28739, z.lov1_mppp_revision_needed_c_id::text, true);
-              -- perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28427, z., true);
+      --todo ask carlin        -- perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28427, z., true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28741,z.lov2_nh_urgent_request_type_c_id::text, true);
-              --perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28742, z.ownr, true);
+        --todo can't find it      --perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28742, z.owner, true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28743,z.lov3_incoming_request_had_all_information_c_id::text, true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28744,z.missing_information_c::text, true);
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28745,z.date_design_must_be_completed_c::text, true);
@@ -6546,51 +6633,53 @@ $do$
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28768,z.notes_from_requester_c::text, true);
             end loop;
 
---           for w in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c
---                    from brs.alliance_partner_c apc
---                    where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
---                      and apc.RECORD_TYPE_ID = '01234000000UQPYAA4'
---                      and apc.community_c = x.community_id
---                   order by apc.role_c ,apc.created_date desc
---           loop
---             case when w.role_c = 'Builder' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28877,w.partner_account_c::text, true);
---                  when w.role_c = 'Builder HERS Rater' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28878,w.partner_account_c::text, true);
---                  when w.role_c = 'Commissioning Partner' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28879,w.partner_account_c::text, true);
---                  when w.role_c = 'Customer Service Partner' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28880,w.partner_account_c::text, true);
---                  when w.role_c = 'Dealer' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28881,w.partner_account_c::text, true);
---                  when w.role_c = 'Design Partner' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28882,w.partner_account_c::text, true);
---                  when w.role_c = 'DRIP' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28883,w.partner_account_c::text, true);
---                  when w.role_c = 'EV Electrician' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28884,w.partner_account_c::text, true);
---                  when w.role_c = 'Field Service Representative' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28886,w.partner_account_c::text, true);
---                  when w.role_c = 'Inspection Partner' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28887,w.partner_account_c::text, true);
---                  when w.role_c = 'IP' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28888,w.partner_account_c::text, true);
---                  when w.role_c = 'MPU Electrician' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28889,w.partner_account_c::text, true);
---                  when w.role_c = 'Permitting Partner' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28890,w.partner_account_c::text, true);
---                  when w.role_c = 'PV HERS Provider' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28891,w.partner_account_c::text, true);
---                  when w.role_c = 'Roofer' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28892,w.partner_account_c::text, true);
---                  when w.role_c = 'Storage IP' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28893,w.partner_account_c::text, true);
---                  when w.role_c = 'T24 Energy Consultant' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28894,w.partner_account_c::text, true);
---                  when w.role_c = 'TPS' then
---                    perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28895,w.partner_account_c::text, true);
---             end case;
---           end loop;
+          for w in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c,
+                                                    o.id as org_id
+                   from brs.alliance_partner_c apc
+                   inner join flow.org o on o.nh_migration_id = apc.partner_account_c
+                   where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
+                     and apc.RECORD_TYPE_ID = '01234000000UQPYAA4'
+                     and apc.community_c = x.community_id
+                  order by apc.role_c ,apc.created_date desc
+          loop
+            case when w.role_c = 'Builder' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28877,w.org_id::text, true);
+                 when w.role_c = 'Builder HERS Rater' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28878,w.org_id::text, true);
+                 when w.role_c = 'Commissioning Partner' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28879,w.org_id::text, true);
+                 when w.role_c = 'Customer Service Partner' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28880,w.org_id::text, true);
+                 when w.role_c = 'Dealer' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28881,w.org_id::text, true);
+                 when w.role_c = 'Design Partner' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28882,w.org_id::text, true);
+                 when w.role_c = 'DRIP' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28883,w.org_id::text, true);
+                 when w.role_c = 'EV Electrician' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28884,w.org_id::text, true);
+                 when w.role_c = 'Field Service Representative' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28886,w.org_id::text, true);
+                 when w.role_c = 'Inspection Partner' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28887,w.org_id::text, true);
+                 when w.role_c = 'IP' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28888,w.org_id::text, true);
+                 when w.role_c = 'MPU Electrician' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28889,w.org_id::text, true);
+                 when w.role_c = 'Permitting Partner' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28890,w.org_id::text, true);
+                 when w.role_c = 'PV HERS Provider' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28891,w.org_id::text, true);
+                 when w.role_c = 'Roofer' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28892,w.org_id::text, true);
+                 when w.role_c = 'Storage IP' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28893,w.org_id::text, true);
+                 when w.role_c = 'T24 Energy Consultant' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28894,w.org_id::text, true);
+                 when w.role_c = 'TPS' then
+                   perform flow.set_project_cfv_no_checks(x.project_id , 2384850,28895,w.org_id::text, true);
+            end case;
+          end loop;
       end loop;
     raise notice '3 END = %',now();
   end
@@ -6933,7 +7022,7 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28128,x.elevation_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28129,x.enhancements_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28130,x.structural_option_c::text, true);
-       -- perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28131,x.activation_coordinator_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28131,flow.get_user_id_nh(x.activation_coordinator_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28132,x.pto_date_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28133,x.ntp_date_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28134,x.esd_date_c::text, true);
@@ -7017,7 +7106,7 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28225,x.rough_wire_wo_value_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28227,x.trench_date_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28230,x.rough_labor_pricing_c::text, true);
-        --perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28232,x.trench_completed_by_c::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28232,flow.get_user_id_nh(x.trench_completed_by_c::text)::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28235,x.pv_rough_po_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28238,x.rough_wire_promised_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28240,x.roofer_labor_pricing_c::text, true);
@@ -7030,18 +7119,18 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28256,x.ready_for_install_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28290,x.roughwire_complete_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28266,x.pv_install_complete_c::text, true);
-       -- perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28299,x.rough_wire_completed_by_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28299,flow.get_user_id_nh(x.rough_wire_completed_by_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28302,x.pv_install_completed_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28261,x.rough_wire_completed_c::text, true);
-        --perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28306,x.pv_install_completed_by_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28306,flow.get_user_id_nh(x.pv_install_completed_by_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28307,x.rough_wire_pull_date_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28308,x.trim_install_complete_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28309,x.pre_coe_commissioning_pricing_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28310,x.trim_install_completed_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28312,x.trim_install_pull_date_c::text, true);
-       -- perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28314,x.trim_install_completed_by_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28314,flow.get_user_id_nh(x.trim_install_completed_by_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28316,x.install_complete_c::text, true);
-       -- perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28318,x.install_completed_by_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28318,flow.get_user_id_nh(x.install_completed_by_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28320,x.install_completed_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28321,x.pre_coe_comm_notes_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28322,x.install_pull_date_c::text, true);
@@ -7060,11 +7149,11 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28341,x.storage_install_promised_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28342,x.storage_rough_complete_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28343,x.storage_rough_complete_date_c::text, true);
-      --  perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28344,x.storage_rough_completed_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28344,flow.get_user_id_nh(x.storage_rough_completed_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28345,x.storage_rough_complete_pull_date_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28346,x.storage_install_complete_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28347,x.storage_install_complete_date_c::text, true);
-       -- perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28348,x.storage_install_completed_by_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28348,flow.get_user_id_nh(x.storage_install_completed_by_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28349,x.storage_install_complete_pull_date_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28165,x.rebate_reservation_expiry_date_lot_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28166,x.hers_inspection_notes_c::text , true);
@@ -7143,51 +7232,53 @@ $do$
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28328,v_system_adders_c::text, true);
         end if;
 
---         for t in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c
---                  from brs.alliance_partner_c apc
---                  where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
---                    and apc.RECORD_TYPE_ID = '01234000000UQPXAA4'
---                    and apc.community_c = x.id
---                  order by apc.created_date desc
---           loop
---             case when t.role_c = 'Builder' then
---               perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28877,t.partner_account_c::text, true);
---                  when t.role_c = 'Builder HERS Rater' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28878,t.partner_account_c::text, true);
---                  when t.role_c = 'Commissioning Partner' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28879,t.partner_account_c::text, true);
---                  when t.role_c = 'Customer Service Partner' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28880,t.partner_account_c::text, true);
---                  when t.role_c = 'Dealer' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28881,t.partner_account_c::text, true);
---                  when t.role_c = 'Design Partner' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28882,t.partner_account_c::text, true);
---                  when t.role_c = 'DRIP' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28883,t.partner_account_c::text, true);
---                  when t.role_c = 'EV Electrician' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28884,t.partner_account_c::text, true);
---                  when t.role_c = 'Field Service Representative' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28886,t.partner_account_c::text, true);
---                  when t.role_c = 'Inspection Partner' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28887,t.partner_account_c::text, true);
---                  when t.role_c = 'IP' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28888,t.partner_account_c::text, true);
---                  when t.role_c = 'MPU Electrician' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28889,t.partner_account_c::text, true);
---                  when t.role_c = 'Permitting Partner' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28890,t.partner_account_c::text, true);
---                  when t.role_c = 'PV HERS Provider' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28891,t.partner_account_c::text, true);
---                  when t.role_c = 'Roofer' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28892,t.partner_account_c::text, true);
---                  when t.role_c = 'Storage IP' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28893,t.partner_account_c::text, true);
---                  when t.role_c = 'T24 Energy Consultant' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28894,t.partner_account_c::text, true);
---                  when t.role_c = 'TPS' then
---                    perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28895,t.partner_account_c::text, true);
---               end case;
---           end loop;
+        for t in select  distinct on (apc.role_c) apc.role_c,apc.partner_account_c,
+                                                  o.id as org_id
+                 from brs.alliance_partner_c apc
+                 inner join flow.org o on o.nh_migration_id = apc.partner_account_c
+                 where apc.COMMUNITY_C is not null and apc.IS_DELETED = false
+                   and apc.RECORD_TYPE_ID = '01234000000UQPXAA4'
+                   and apc.community_c = x.id
+                 order by apc.created_date desc
+          loop
+            case when t.role_c = 'Builder' then
+              perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28877,t.org_id::text, true);
+                 when t.role_c = 'Builder HERS Rater' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28878,t.org_id::text, true);
+                 when t.role_c = 'Commissioning Partner' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28879,t.org_id::text, true);
+                 when t.role_c = 'Customer Service Partner' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28880,t.org_id::text, true);
+                 when t.role_c = 'Dealer' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28881,t.org_id::text, true);
+                 when t.role_c = 'Design Partner' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28882,t.org_id::text, true);
+                 when t.role_c = 'DRIP' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28883,t.org_id::text, true);
+                 when t.role_c = 'EV Electrician' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28884,t.org_id::text, true);
+                 when t.role_c = 'Field Service Representative' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28886,t.org_id::text, true);
+                 when t.role_c = 'Inspection Partner' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28887,t.org_id::text, true);
+                 when t.role_c = 'IP' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28888,t.org_id::text, true);
+                 when t.role_c = 'MPU Electrician' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28889,t.org_id::text, true);
+                 when t.role_c = 'Permitting Partner' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28890,t.org_id::text, true);
+                 when t.role_c = 'PV HERS Provider' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28891,t.org_id::text, true);
+                 when t.role_c = 'Roofer' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28892,t.org_id::text, true);
+                 when t.role_c = 'Storage IP' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28893,t.org_id::text, true);
+                 when t.role_c = 'T24 Energy Consultant' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28894,t.org_id::text, true);
+                 when t.role_c = 'TPS' then
+                   perform flow.set_project_cfv_no_checks(x.community_project_id , 2384850,28895,t.org_id::text, true);
+              end case;
+          end loop;
       end loop;
     raise notice '4 END = %',now();
   end
@@ -7259,14 +7350,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29025, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29026, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29027, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29028, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29028, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29029, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29030, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29031, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29050, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29051, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29052, w.end_date_time_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29053, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29053, flow.get_user_id_nh(flow.get_user_id_nh(w.completed_by_c::text)::text)::text, true);
 
             perform brs.create_event_sub_tasks(w.project_task_id, 3759, v_project_process_step_id);
           when w.name = 'Obtain Builder Plot Plan' then
@@ -7280,14 +7371,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29065, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29066, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29067, w.comment_c::text, true);
-        --    perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29068, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29068, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29069, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29070, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29071, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29072, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29073, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29074, w.end_date_time_c::text, true);
-            --perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29075, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29075, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3760, v_project_process_step_id);
 
           when w.name = 'Complete Design Package' then
@@ -7300,14 +7391,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28977, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28978, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28979, w.comment_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28980, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28980, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28981, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28982, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28983, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28984, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28985, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28986, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28987, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28987, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3761, v_project_process_step_id);
           when w.name = 'Provide Stamping' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7319,14 +7410,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28977, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28978, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28979, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28980, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28980, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28981, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28982, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28983, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28984, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28985, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28986, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28987, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28987, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3762, v_project_process_step_id);
           when w.name = 'Complete BOM' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7338,14 +7429,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28955, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28956, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28957, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28958, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28958, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28959, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28960, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28961, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28962, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28963, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28964, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28965, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28965, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3763, v_project_process_step_id);
           when w.name = 'Preliminary IC Submission w/Utility' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7357,14 +7448,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29076, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29077, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29078, w.comment_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29079, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29079, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29080, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29081, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29082, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29083, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29084, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29085, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29086, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29086, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3764, v_project_process_step_id);
           when w.name = 'Upload Design' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7376,14 +7467,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29087, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29088, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29089, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29090, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29090, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29091, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29092, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29093, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29094, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29095, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29096, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29097, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29097, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3765, v_project_process_step_id);
           when w.name = 'Apply for Permit' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7395,14 +7486,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28932, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28933, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28935, w.comment_c::text, true);
-            --perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28936, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28936, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28937, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28938, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28939, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28940, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28941, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28942, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28943, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28943, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3766, v_project_process_step_id);
           when w.name = 'Designs Distributed' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7414,14 +7505,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29018, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29019, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29020, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29021, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29021, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29022, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29023, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29024, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29046, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29047, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29048, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29049, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29049, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3767, v_project_process_step_id);
           when w.name = 'Permit Pickup' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7433,14 +7524,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29098, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29099, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29100, w.comment_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29101, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29101, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29102, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29103, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29104, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29105, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29106, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29107, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29108, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29108, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3768, v_project_process_step_id);
           when w.name = 'Complete Rough Wire' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7452,14 +7543,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28988, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28989, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28990, w.comment_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28991, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28991, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28992, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28993, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28994, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28995, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28996, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29032, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29033, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29033, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3769, v_project_process_step_id);
           when w.name = 'Complete Storage Rough' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7471,14 +7562,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28997, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28998, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28999, w.comment_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29000, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29000, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29001, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29002, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29003, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29034, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29035, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29036, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29037, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29037, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3770, v_project_process_step_id);
           when w.name = 'Obtain Builder WO' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7490,14 +7581,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29109, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29110, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29111, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29112, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29112, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29113, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29114, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29115, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29116, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29117, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29118, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29119, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29119, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3771, v_project_process_step_id);
           when w.name = 'Create Material Lines & PO/SO' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7509,14 +7600,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29004, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29005, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29006, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29007, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29007, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29008, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29009, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29010, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29038, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29039, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29040, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29041, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29041, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3772, v_project_process_step_id);
           when w.name = 'Preliminary IC Approval' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7528,14 +7619,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29120, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29121, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29122, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29123, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29123, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29124, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29125, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29126, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29127, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29128, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29129, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29130, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29130, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3773, v_project_process_step_id);
           when w.name = 'Complete CF-2R in Registry' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7547,14 +7638,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28966, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28967, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28968, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28969, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28969, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28970, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28971, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28972, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28973, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28974, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28975, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28976, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28976, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3774, v_project_process_step_id);
           when w.name = 'System Installation' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7566,14 +7657,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29131, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29132, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29133, w.comment_c::text, true);
-        --    perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29134, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29134, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29135, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29136, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29137, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29138, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29139, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29140, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29141, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29141, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3775, v_project_process_step_id);
           when w.name = 'Installation Checklist Uploaded' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7585,14 +7676,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29054, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29055, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29056, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29057, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29057, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29058, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29059, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29060, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29061, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29062, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29063, w.end_date_time_c::text, true);
-        --    perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29064, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29064, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3776, v_project_process_step_id);
           when w.name = 'Storage Installation' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7604,14 +7695,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29142, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29143, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29144, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29145, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29145, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29146, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29147, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29148, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29149, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29150, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29151, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29152, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29152, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3777, v_project_process_step_id);
           when w.name = 'Storage Checklist Completed' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7623,14 +7714,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29153, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29154, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29155, w.comment_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29156, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29156, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29157, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29158, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29159, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29160, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29161, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29162, w.end_date_time_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29163, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29163, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3778, v_project_process_step_id);
           when w.name = 'Affirm AHJ Inspection Complete' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7642,14 +7733,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28910, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28911, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28912, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28913, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28913, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28914, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28915, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28916, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28917, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28918, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28919, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28920, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28920, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3779, v_project_process_step_id);
           when w.name = 'AHJ Storage Inspection' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7661,14 +7752,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28921, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28922, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28923, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28924, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28924, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28925, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28926, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28927, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28928, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28929, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28930, w.end_date_time_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28931, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28931, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3780, v_project_process_step_id);
           when w.name = 'Closure of RevRec' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7680,14 +7771,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28944, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28945, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28946, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28947, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28947, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28948, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28949, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28950, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28951, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28952, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28953, w.end_date_time_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28954, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28954, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3781, v_project_process_step_id);
           when w.name = 'Upload Final Building Permit' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7699,14 +7790,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29164, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29165, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29166, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29167, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29167, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29168, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29169, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29170, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29171, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29172, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29173, w.end_date_time_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29174, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29174, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3782, v_project_process_step_id);
           when w.name = 'Invoice Packet Complete and Sent' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7718,14 +7809,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29175, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29176, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29177, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29178, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29178, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29179, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29180, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29181, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29182, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29183, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29184, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29185, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29185, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3783, v_project_process_step_id);
           when w.name = 'Obtain HO Utility Information' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7737,14 +7828,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29186, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29187, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29188, w.comment_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29189, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29189, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29190, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29191, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29192, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29193, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29194, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29195, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29196, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29196, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3784, v_project_process_step_id);
           when w.name = 'Submit Documents for PTO' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7756,14 +7847,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29197, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29198, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29199, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29200, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29200, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29201, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29202, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29203, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29204, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29205, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29206, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29207, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29207, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3785, v_project_process_step_id);
           when w.name = 'Receive PTO from Utility' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7775,14 +7866,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29208, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29209, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29210, w.comment_c::text, true);
-         --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29211, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29211, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29212, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29213, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29214, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29215, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29216, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29217, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29218, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29218, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3786, v_project_process_step_id);
           when w.name = 'Customer System Activation' then
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -7794,14 +7885,14 @@ v_count bigint;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29011, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29012, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29013, w.comment_c::text, true);
-           -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29014, w.assigned_to_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29014, flow.get_user_id_nh(w.assigned_to_c::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29015, w.ip_owner_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29016, w.lov2_role_assignment_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29017, w.lov3_blocks_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29042, w.start_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29043, w.first_complete_end_date_time_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29044, w.end_date_time_c::text, true);
-          --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29045, w.completed_by_c::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29045, flow.get_user_id_nh(w.completed_by_c::text)::text, true);
             perform brs.create_event_sub_tasks(w.project_task_id, 3787, v_project_process_step_id);
             else
               null;
@@ -7891,8 +7982,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28800, x.first_name_c::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28801, x.govt_id_upload_time_c::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28802, x.last_name_c::text, true);
-        perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28804, x.mortgage_pre_approval_letter_upload_time_c::text,
-                                 true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28804, x.mortgage_pre_approval_letter_upload_time_c::text,true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28805, x.mortgage_pre_approval_letter_url_c::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28806, x.offer_id_c::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28807, x.phone_c::text, true);
@@ -8069,7 +8159,7 @@ $do$
                                                cancelled_date, parent_project_process_step_event_id)
         values (x.project_id, 3795, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
 
-        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29221,x.opportunity_owner_s_manager_c::text, true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29221,flow.get_user_id_nh(x.opportunity_owner_s_manager_c::text)::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29228,x.close_date::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29233,x.lead_qualification_notes_c::text, true);
         if x.appointment_date_c is not null and x.APPOINTMENT_TIME_C is not null then
@@ -8343,7 +8433,7 @@ $do$
                 case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
 
 
-        --perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29241,x.created_by_id::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29241,flow.get_user_id_nh(x.created_by_id::text)::text , true);
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29242,x.lov1_action_required_c_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29243,x.end_date_time_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29244,x.open_date_time_c::text , true);
@@ -8435,7 +8525,7 @@ $do$
         returning id into v_project_process_step__event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
-       -- perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
         v_lov_scope_of_work = null;
@@ -8568,7 +8658,7 @@ $do$
                 null, null, 1)
         returning id into v_project_process_step__event_id;
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
-        -- perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
         v_lov_scope_of_work = null;
@@ -8700,7 +8790,7 @@ $do$
                 null, null, 1)
         returning id into v_project_process_step__event_id;
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
-        -- perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
         v_lov_scope_of_work = null;
@@ -8833,7 +8923,7 @@ $do$
         returning id into v_project_process_step__event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29275, x.completed_date_c::text,true);
-        --perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29271, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29271, flow.get_user_id_nh(x.owner_id::text)::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29272, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29273, x.lov2_service_request_type_c_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29283, x.lov3_cancellation_reasons_c_id::text,true);
@@ -8951,7 +9041,7 @@ $do$
         returning id into v_project_process_step__event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29275, x.completed_date_c::text,true);
-        --perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29271, x.owner_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29271, flow.get_user_id_nh(x.owner_id::text)::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29272, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29273, x.lov2_service_request_type_c_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29283, x.lov3_cancellation_reasons_c_id::text,true);
@@ -9100,7 +9190,7 @@ $do$
                 case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
 
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29291,x.module_c::text , true);
-      --  perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,27998,x.Module_Brand_c::text , true);
+      --  perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29292,x.Module_Brand_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29293,x.module_quantity_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29294,x.inverter_model_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29295,x.lov1_inverter_brand_c::text , true);
@@ -9260,7 +9350,6 @@ $do$
                                                  else 3 end
                                            , null, now(), now(), 2384850, 2384850, false,
                 case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
-      --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,,x.Name::text , true);
       --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29379,x.contract_number_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29380,x.docu_sign_envelope_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29381,x.docu_sign_status_c::text , true);
@@ -9493,7 +9582,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29528,x.Expiration_Date_c::text , true);
        -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29529,x.Fair_Market_Value_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29530,x.Fair_Market_Value_acctg_c::text , true);
-        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29531,x.Final_Permits_Entered_By_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29531,flow.get_user_id_nh(x.Final_Permits_Entered_By_c::text)::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29532,x.Fin_Permits_Rcvd_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29533,x.lov4_Funding_Tranche_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29534,x.Financier_Change_Date_c::text , true);
@@ -9557,7 +9646,7 @@ $do$
       --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29592,x.Inverter_Qty_2_c::text , true);
         --perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,,x.Inverter_Model_3_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29593,x.Invoice_Admin_c::text , true);
-        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29594,x.invoice_admin_2_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29594,flow.get_user_id_nh(x.invoice_admin_2_c::text)::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29595,x.Invoice_Document_Email_c::text , true);
        -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29596,x.LastCommaFirst_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29597,x.Last_Install_Doc_Submission_c::text , true);
@@ -9706,6 +9795,23 @@ $do$
 
       end loop;
     raise notice '19 END = %',now();
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x        record;
+  BEGIN
+    for x in select fdc.*,o2.id as org_id
+             from brs.fee_distribution_c fdc
+             inner join flow.org o2 on o2.nh_migration_id = fdc.partner_name_c
+             where fdc.record_type_id = '01234000000HrvnAAC'
+
+      loop
+
+      end loop;
+
   end
 $do$;
 
