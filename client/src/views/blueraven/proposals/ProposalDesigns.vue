@@ -1,7 +1,7 @@
 <template>
   <v-container id="proposals-container">
     <v-row class="ml-0 mr-0">
-      <v-col cols="12">
+      <v-col cols="12" md="6">
         <router-link :to="`/proposals`">Back</router-link>
         <div class="proposal-designs-title font-weight-bold">
           {{ project.projectName }}
@@ -21,6 +21,11 @@
             Phone: {{ formatPhoneNumber(project.mobile) }}
           </span>
         </div>
+      </v-col>
+      <v-col>
+        ahj: {{project.ahjId}}
+        metro: {{project.metroAreaId}}
+        <div v-for="module in allowedModules">{{module.fieldName}}: {{module.textValue}}</div>
       </v-col>
     </v-row>
     <v-divider />
@@ -510,6 +515,7 @@ const useExistingDesign = ref(false)
 const showAIDesignRequestForm = ref(false)
 const savingNewAiDesign = ref(false)
 const pendingAuroraAdjustmentsStatusId = ref(1649)
+const allowedModules = ref(null)
 
 
 onMounted(async () => {
@@ -553,6 +559,8 @@ const hasActiveAiDesign = computed(() => {
 const firstDesignId = computed(() => {
   return designs.value?.find((d) => d.designId != null)?.designId
 })
+
+
 
 
 
@@ -764,6 +772,12 @@ const getProposalProject = async () => {
       'blueraven'
     )
     project.value = data
+    allowedModules.value = project.value.availableModules
+    if(!allowedModules.value?.length > 0 && !project.value.ahjId && !!project.value.metroAreaId){
+      //if the project doesn't have an assigned ahj, go get the allowed modules based on the metroAreaId
+      const {data} = await getRequest(`/metro/getAllowedModules/${project.value.metroAreaId}`, 'blueraven')
+     allowedModules.value = data
+    }
     handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)

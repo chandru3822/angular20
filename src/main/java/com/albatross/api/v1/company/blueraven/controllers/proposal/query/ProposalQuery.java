@@ -31,6 +31,7 @@ public class ProposalQuery {
                       pd.closer_appointment_start - interval '450 minutes' end as closer_appointment_start,
            pd.closer_appointment_end,
            pd.ahj as ahjId,
+           pd.metro_area as metroAreaId,
            coalesce((
            	                SELECT array_to_json(array_agg(row_to_json(modules)))
            	                FROM (
