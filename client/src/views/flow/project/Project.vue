@@ -504,79 +504,7 @@
             @clickEdit="showEditModal()"
             :details="overviewDetails"
           />
-          <v-card flat class="contact-snippet albatross-body-1">
-            {{ project.firstName }} {{ project.lastName }}
-            <div
-              class="flex-display mb-2"
-              :class="{ clickable: !!project.phone }"
-              @click="
-                copyToClipBoard(
-                  cleanPhoneNumberForCopying(project.phone),
-                  'Phone Number'
-                )
-              "
-            >
-              <span class="detail-label label-small pr-2">
-                <v-icon small>mdi-phone</v-icon>
-              </span>
-              <span v-if="project.phone" class="detail-item body-medium">
-                {{ formatPhoneNumber(project.phone) }}
-              </span>
-              <span v-else class="d-inline-block detail-item body-medium"
-                >N/A</span
-              >
-            </div>
-            <div
-              class="flex-display mb-2"
-              :class="{ clickable: !!project.mobile }"
-              @click="
-                copyToClipBoard(
-                  cleanPhoneNumberForCopying(project.mobile),
-                  'Mobile Phone'
-                )
-              "
-            >
-              <span class="detail-label label-small pr-2">
-                <v-icon small>mdi-cellphone</v-icon>
-              </span>
-              <span v-if="project.mobile" class="detail-item body-medium">
-                {{ formatPhoneNumber(project.mobile) }}
-              </span>
-              <span v-else class="d-inline-block detail-item body-medium"
-                >N/A</span
-              >
-            </div>
-            <div
-              class="flex-display mb-2 overview-contact-email"
-              :class="{ clickable: !!project.email }"
-              @click="copyToClipBoard(project.email, 'Email address')"
-            >
-              <span class="detail-label label-small pr-2">
-                <v-icon small>mdi-email</v-icon>
-              </span>
-              <span
-                v-if="project.email"
-                class="detail-item body-medium body-medium"
-              >
-                {{ project.email }}
-              </span>
-              <span v-else class="d-inline-block detail-item body-medium">
-                N/A
-              </span>
-            </div>
-            <a-btn
-              variant="outlined"
-              size="small"
-              custom-classes="label-medium text-transform-unset px-3 py-1"
-              :to="`/contact/${project.contactId}`"
-              target="_blank"
-            >
-              <template v-slot:default>
-                Go to contact
-                <v-icon small class="pl-2">mdi-open-in-new</v-icon>
-              </template>
-            </a-btn>
-          </v-card>
+          <ContactCard :project="project"></ContactCard>
           <v-divider v-if="project?.parentProject?.id != null" />
           <ParentProject
             v-if="project?.parentProject?.id != null"
@@ -690,6 +618,7 @@ import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import ChildProjects from '@/views/flow/project/ChildProjects.vue'
 import ParentProject from '@/views/flow/project/ParentProject.vue'
+import ContactCard from "@/views/flow/project/ContactCard.vue";
 
 const appStore = useAppStore()
 const route = useRoute()

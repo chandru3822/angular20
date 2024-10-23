@@ -376,6 +376,28 @@ public class ContactService {
     return getContact(id);
   }
 
+  public void insertContactFromChildProject(Long projectId, Contact contact) {
+    User user = securityService.getCurrentUser();
+    Long newContactId = contact.getId();
+
+    if(null == newContactId) {
+      //create the new contact
+      Map<String, Object> params = new HashMap<>();
+      params.put("firstName", contact.getFirstName());
+      params.put("lastName", contact.getLastName());
+      params.put("phone", contact.getPhone());
+      params.put("email", contact.getEmail());
+      params.put("postalCode", contact.getPostalCode());
+      params.put("userId", user.trueUserId());
+      params.put("companyId", user.getCompanyId());
+
+      //for now this just uses the default object category cuz i didnt know how to solve for configurability
+      newContactId = sqlCache.updateBySqlReturningId(ContactQuery.insertContactFromChildProject, params, "id").longValue();
+    }
+
+    projectService.updateProjectContactId(projectId, newContactId);
+  }
+
   public void updateOwner(Long id, Owner owner) {
     User currentUser = securityService.getCurrentUser();
 

@@ -198,6 +198,15 @@ select *
   """;
 
   //language=PostgreSQL
+  public final static String updateProjectContactId = """
+    update flow.project
+      set contact_id = :contactId,
+          modified_by_id = :userId,
+          date_modified = now()
+    where id = :projectId
+  """;
+
+  //language=PostgreSQL
   public final static String getChildren = """
   select
         p.id,
@@ -275,6 +284,7 @@ select
                                             p2.project_name as "projectName",
                                             p2.street1,
                                             p2.city,
+                                            p2.contact_id as "contactId",
                                             p2.postal_code as "postalCode",
                                             p2.date_created as "dateCreated",
                                             p2.object_category_id as "objectCategoryId",

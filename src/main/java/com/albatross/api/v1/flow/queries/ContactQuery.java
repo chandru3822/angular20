@@ -216,6 +216,20 @@ select c.id,
     """;
 
   //language=PostgreSQL
+  public final static String insertContactFromChildProject = """
+  insert into flow.contact(contact_type_id, first_name, last_name, postal_code,
+                           company_country_id, phone, email, created_by_id,
+                           company_id, object_category_id)
+  values (1, trim(:firstName), trim(:lastName), trim(:postalCode), 1, :phone, :email, :userId, :companyId,
+           (select id
+                from flow.object_category
+                where is_default is true
+                  and archived is false
+                  and object_type_id = 2
+                limit 1))
+    """;
+
+  //language=PostgreSQL
   public final static String getContactsToUpdateForLatLong = """
 select c.id, c.street1, c.city, c.company_state_id, st.state, st.abbreviation, c.postal_code
     from flow.contact c
