@@ -99,7 +99,12 @@ select c.id,
                         left join flow.country ctr on ctr.id = cc.country_id
                      where p.contact_id = c.id
                      and p.archived is false
-                     and p.parent_id is null
+                     and (p.parent_id is null OR
+                            not p.contact_id in (
+                                select parentP.contact_id
+                                from flow.project parentP
+                                where parentP.id = p.parent_id
+                            ))
                  ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
@@ -127,9 +132,7 @@ select c.id,
              left outer join flow.company_country cc on cc.id = c.company_country_id
              left join flow.country ctr on ctr.id = cc.country_id
     where c.id = :contactId
-      and case when :isParent then c.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
-            else c.company_id = :companyId end
+      and c.company_id = :companyId
             and c.archived is not true
     """;
 
