@@ -73,12 +73,11 @@
         </template>
       </a-btn>
     </v-card>
-    <v-menu
+    <v-dialog
         v-if="project.contactId === project.parentProject?.contactId"
         v-model="showChangeContactModal"
         content-class="square-card"
-        :close-on-content-click="false"
-        min-width="500">
+        width="500">
       <template v-slot:activator="{ on }">
         <a-btn
             :activation-handler="on"
@@ -88,6 +87,9 @@
         ></a-btn>
       </template>
       <v-card flat color="white" class="square-card">
+        <v-card-title v-if="contactSelectionType === 2">
+          New Contact
+        </v-card-title>
         <v-card-text class="pt-3">
           <div class="d-flex flex-column" v-if="contactSelectionType == null">
             <a-btn
@@ -111,7 +113,6 @@
               placeholder=" "></a-text-field>
 
           <div  v-if="contactSelectionType === 2">
-            New Contact
             <v-form ref="newContactForm">
               <a-text-field
                   id="qa-first-name-field"
@@ -119,7 +120,7 @@
                   v-model="newContact.firstName"
                   :rules="requiredRules"
                   label="First Name"
-                  class="body-large mt-4"
+                  class="body-large"
               ></a-text-field>
               <a-text-field
                   class="body-large"
@@ -172,18 +173,18 @@
               class=""
               v-if="contactSelectionType === 1"
               @click="assignContact"
-              text="Save and Assign (e)"
+              text="Save and Assign"
           ></a-btn>
           <a-btn
               color="primary"
               class=""
               v-if="contactSelectionType === 2"
               @click="validateNewContact"
-              text="Save and Assign (n)"
+              text="Save and Assign"
           ></a-btn>
         </v-card-actions>
       </v-card>
-    </v-menu>
+    </v-dialog>
   </div>
 </template>
 <script setup>
@@ -258,6 +259,11 @@ const assignContact = async () => {
   border: solid 1px var(--v-grey-lighten1);
   padding: 10px;
   margin: 0 23px 10px 23px;
+}
+
+.overview-contact-email {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 </style>
 
