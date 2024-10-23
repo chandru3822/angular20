@@ -467,6 +467,9 @@ where pt.id = 1
 and oc.object_type_id = 1
 on conflict do nothing;
 
+update brs.object_category_proposal_template
+set proposal_template_id = 2
+where object_category_id = 6;
 
 alter table flow.project
   add column if not exists parent_id bigint;
