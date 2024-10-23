@@ -72,7 +72,7 @@
               class="body-medium"
               :disabled="
                 !selectedProcess ||
-                !selectedProcess.childCompanyProcessId ||
+                !selectedProcess.id ||
                 projectsToAddCount == null ||
                 projectsToAddCount < 1
               "
@@ -173,7 +173,7 @@ const addChildProjects = async () => {
     appStore.loading = true
     try {
       let params = {
-        childCompanyProcessId: selectedProcess.value.childCompanyProcessId,
+        childCompanyProcessId: selectedProcess.value.id,
         childProjectCount: projectsToAddCount.value
       }
       const { data, status } = await postRequest(

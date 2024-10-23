@@ -632,12 +632,7 @@ set archived = false
 where object_code = 'AHJ_NEW_HOME';
 
 alter table flow.company_process
-  add column if not exists allow_contact_initiate boolean not null default false;
-
---todo @randa @keller @kaleb - we will need to verify that 27 is the "lot" process
-update flow.company_process
-set allow_contact_initiate = true
-where process_id != 27;
+  drop column if exists allow_contact_initiate;
 
 --add the flow.copy_from_parent_to_child to company_process (i added the db_function record in prod so it doesn't get lost on data dump)
 insert into flow.company_function(company_function_name, db_function_id, archived, company_id)
@@ -649,39 +644,57 @@ where df.function_name = 'flow.copy_from_parent_to_child'
                          inner join flow.db_function df2 on cf.db_function_id = df2.id
                   where df.function_name = 'flow.copy_from_parent_to_child');
 
-CREATE TABLE if not exists flow.company_process_child_company_process
+--changing how this is done
+drop table if exists flow.company_process_child_company_process;
+CREATE TABLE if not exists flow.object_category_child_object_category
 (
   id                       bigserial NOT NULL,
-  company_process_id       bigint    not null,
-  child_company_process_id bigint    not null,
+  object_category_id       bigint    not null,
+  child_object_category_id bigint    not null,
   date_created             timestamp without time zone DEFAULT now(),
   date_modified            timestamp without time zone DEFAULT now(),
   created_by_id            integer   not null,
   modified_by_id           integer,
   archived                 boolean   not null          default false,
-  CONSTRAINT flow_company_process_child_process_pk PRIMARY KEY (id),
-  CONSTRAINT flow_cpccp_company_process_id_fk FOREIGN KEY (company_process_id)
-    REFERENCES flow.company_process (id) MATCH SIMPLE
+  CONSTRAINT flow_object_type_child_object_category_pk PRIMARY KEY (id),
+  CONSTRAINT flow_otcoc_object_category_id_fk FOREIGN KEY (object_category_id)
+    REFERENCES flow.object_category (id) MATCH SIMPLE
     ON UPDATE RESTRICT ON DELETE RESTRICT,
-  CONSTRAINT flow_cpccp_child_company_process_id_fk FOREIGN KEY (child_company_process_id)
-    REFERENCES flow.company_process (id) MATCH SIMPLE
+  CONSTRAINT flow_otcoc_child_object_category_id_fk FOREIGN KEY (child_object_category_id)
+    REFERENCES flow.object_category (id) MATCH SIMPLE
     ON UPDATE RESTRICT ON DELETE RESTRICT,
-  CONSTRAINT flow_cpccp_created_by_id_fk FOREIGN KEY (created_by_id)
+  CONSTRAINT flow_otcoc_created_by_id_fk FOREIGN KEY (created_by_id)
     REFERENCES flow.user (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT flow_cpccp_modified_by_id_fk FOREIGN KEY (modified_by_id)
+  CONSTRAINT flow_otcoc_modified_by_id_fk FOREIGN KEY (modified_by_id)
     REFERENCES flow.user (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE INDEX if not exists cpccp_company_process_id_idx ON flow.company_process_child_company_process (company_process_id);
-CREATE INDEX if not exists cpccp_child_company_process_id_idx ON flow.company_process_child_company_process (child_company_process_id);
+CREATE INDEX if not exists otcoc_object_type_id_idx ON flow.object_category_child_object_category (object_category_id);
+CREATE INDEX if not exists otcoc_child_object_category_id_idx ON flow.object_category_child_object_category (child_object_category_id);
+create unique index if not exists otcoc_uniq_idx
+    on flow.object_category_child_object_category (object_category_id, child_object_category_id);
 
---todo @randa @keller @kaleb - we will need to verify that 26 is the "community" process
-insert into flow.company_process_child_company_process(company_process_id, child_company_process_id, created_by_id)
-select 26,
-       (select id from flow.company_process where allow_contact_initiate is false and archived is false limit 1),
-       2417170;
+-- add object cat/child object cat relationships
+insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
+values ((select id from flow.object_category where object_category_code = 'BUILDER_NEW_HOMES_BUILDER' and object_type_id = 2),
+        (select id from flow.object_category where object_category_code = 'COMMUNITY' and object_type_id = 1), 2417170)
+on conflict do nothing;
+
+insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
+values ((select id from flow.object_category where object_category_code = 'COMMUNITY' and object_type_id = 1),
+        (select id from flow.object_category where object_category_code = 'NEW_HOME' and object_type_id = 1), 2417170)
+on conflict do nothing;
+
+insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
+select (select id from flow.object_category where object_category_code = 'PRIMARY_HOMEOWNER' and object_type_id = 2),
+       (select id from flow.object_category where object_category_code = oc.object_category_code and object_type_id = 1), 2417170
+from flow.object_category oc
+where not oc.object_category_code in ('COMMUNITY', 'NEW_HOME', 'BUILDER_NEW_HOMES_BUILDER')
+  and oc.archived is false
+  and oc.object_type_id = 1
+on conflict do nothing;
 
 alter table flow.contact
   add column if not exists nw_migration_id VARCHAR(18);

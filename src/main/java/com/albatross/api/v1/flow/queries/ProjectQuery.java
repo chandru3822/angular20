@@ -320,16 +320,21 @@ select
                       coalesce((
        SELECT array_to_json(array_agg(row_to_json(childCompanyProcesses)))
        FROM (
-              SELECT cpccp.id,
-                     cpccp.company_process_id as "companyProcessId",
-                     cpccp.child_company_process_id as "childCompanyProcessId",
-                     pc2.process_name as "childProcessName"
-              FROM flow.company_process_child_company_process cpccp
-                inner join flow.company_process cp2 on cpccp.child_company_process_id = cp2.id
-                inner join flow.process pc2 on pc2.id = cp2.process_id
-              WHERE cpccp.company_process_id = p.company_process_id
-                AND cpccp.archived is not true
-                and cp2.archived is not true) childCompanyProcesses), '[]') AS "childCompanyProcesses",
+              select cp2.id,
+                     p2.process_name as "childProcessName"
+              from flow.company_process cp2
+                       inner join flow.process p2 on p2.id = cp2.process_id
+              where cp2.company_id = :companyId
+                and cp2.archived is not true
+                and p2.object_category_id in (
+                  select occoc.child_object_category_id
+                  from flow.object_category_child_object_category occoc
+                           inner join flow.process p3 on p3.object_category_id = occoc.object_category_id
+                           inner join flow.company_process cp3 on cp3.process_id = p3.id
+                  where occoc.archived is false
+                    and cp3.id = p.company_process_id
+              )
+              order by p2.process_name) childCompanyProcesses), '[]') AS "childCompanyProcesses",
         coalesce((
                      SELECT array_to_json(array_agg(row_to_json(wlp)))
                      FROM (

@@ -34,23 +34,68 @@ public class ProcessQuery {
              inner join flow.process on process.id = cp.process_id
              where company_id = :companyId
               and cp.archived is not true
-              and case when :contactInitialize::boolean is true then cp.allow_contact_initiate is true else true end
              order by process.process_name
+    """;
+
+
+  //language=PostgreSQL
+  public final static String getProcessesForContact = """
+             select cp.id,
+                    cp.process_id,
+                    p.process_name,
+                    cp.company_id,
+                    p.created_by_id,
+                    cp.archived,
+                    p.parent_company_id,
+                    coalesce((
+                                          SELECT array_to_json(array_agg(row_to_json(denyListPositions)))
+                                          FROM (
+                                               select dlp.id,
+                                                      dlp.position_id as "positionId",
+                                                      dlp.company_process_id as "companyProcessId",
+                                                      dlp.archived,
+                                                      dlp.deny_list_type_id as denyListTypeId,
+                                                      dlp.date_created as dateCreated,
+                                                      dlp.created_by_id as createdById,
+                                                      dlp.date_modified as dateModified,
+                                                      dlp.modified_by_id as modifiedById,
+                                                      dlt.deny_list_type as denyListType
+                                              from flow.deny_list_position dlp
+                               	                    left join flow.deny_list_type dlt on dlt.id = dlp.deny_list_type_id
+                                              where dlp.company_process_id = cp.id
+                                              and dlp.archived is not true
+                               	                )
+                               	                denyListPositions), '[]') AS "denyListPositions"
+             from flow.company_process cp
+             inner join flow.process p on p.id = cp.process_id
+             where company_id = :companyId
+              and cp.archived is not true
+              and p.object_category_id in (
+                select occoc.child_object_category_id
+                from flow.contact c
+                  inner join flow.object_category_child_object_category occoc on occoc.object_category_id = c.object_category_id
+                where c.id = :contactId
+             )
+             order by p.process_name
     """;
 
   //language=PostgreSQL
   public final static String getChildProcessesForProcess = """
-             select cpccp.id,
-                    cpccp.child_company_process_id,
+             select cp.id,
                     p.process_name
-             from flow.company_process_child_company_process cpccp
-             inner join flow.company_process cp on cpccp.child_company_process_id = cp.id
-              inner join flow.process p on p.id = cp.process_id
+             from flow.company_process cp
+                  inner join flow.process p on p.id = cp.process_id
              where company_id = :companyId
-              and cp.archived is not true
-              and cpccp.archived is not true
-              and cpccp.company_process_id = :companyProcessId
-             order by p.process_name
+               and cp.archived is not true
+               and p.object_category_id in (
+                 select occoc.child_object_category_id
+                 from flow.object_category_child_object_category occoc
+                 inner join flow.process p2 on p2.object_category_id = occoc.object_category_id
+                 inner join flow.company_process cp2 on cp2.process_id = p2.id
+                 where occoc.archived is false
+                   and cp2.id = :companyProcessId
+             )
+             order by p.process_name;
     """;
 
   //language=PostgreSQL

@@ -13,7 +13,7 @@ import java.util.Date;
 @Setter
 public class ChildCompanyProcess {
 
-  private Long id, companyProcessId, childCompanyProcessId;
+  private Long id;
   private String childProcessName;
 
 }
