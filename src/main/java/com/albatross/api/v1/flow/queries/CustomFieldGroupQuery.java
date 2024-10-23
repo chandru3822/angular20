@@ -321,6 +321,15 @@ limit 1
         where cot.object_type_id = :objectTypeId
           and cfg.archived is not true
           and cot.company_id = :companyId
+          and case when :objectCategoryId::int is not null then
+            cfg.id in (select occfg.custom_field_group_id
+                         from flow.object_category_custom_field_group occfg
+                         inner join flow.object_category oc on oc.id = occfg.object_category_id
+                         where occfg.custom_field_group_id = cfg.id
+                           and occfg.archived is false
+                         and case when :objectCategoryId::int is not null
+                          then occfg.object_category_id = :objectCategoryId::int
+                         else oc.is_default is true end) else true end
         order by cfg.group_order
     """;
 

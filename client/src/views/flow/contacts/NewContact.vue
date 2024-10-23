@@ -49,6 +49,7 @@
                 class="body-large"
                 :items="objectCategories"
                 label="Object Category"
+                @change="getCustomFieldGroups()"
                 id="qa-object-category-field"
                 item-title="name"
                 item-value="id"
@@ -254,7 +255,7 @@ onMounted(() => {
   getObjectCategories()
   getAllCompanyStates()
   getAllCountries()
-  getCustomFieldGroups()
+
 })
 
 const companyId = computed(() => {
@@ -268,6 +269,10 @@ const validate = (saveContact) => {
   }
 }
 const getCustomFieldGroups = async () => {
+  //every time this loads it needs to reset the dirty fields...im pretty sure
+  dirtyCfvs.value = []
+  customFieldGroups.value = []
+
   loadingInsertFields.value = true
   appStore.loading = true
   try {
@@ -275,7 +280,8 @@ const getCustomFieldGroups = async () => {
       `/customFieldGroup/getContactInsertFields`,
       {
         params: {
-          companyId: companyId.value
+          companyId: companyId.value,
+          objectCategoryId: contact.value.objectCategoryId
         }
       }
     )
@@ -295,6 +301,8 @@ const getObjectCategories = async () => {
   try {
     const { data, status } = await getRequest(`/objectCategory?objectTypeId=2`)
     objectCategories.value = data
+    contact.value.objectCategoryId = objectCategories.value.find(oc => oc.isDefault)?.id
+    await getCustomFieldGroups()
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
