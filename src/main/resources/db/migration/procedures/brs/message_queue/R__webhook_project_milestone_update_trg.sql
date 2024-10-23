@@ -39,42 +39,42 @@ where
 
 if v_partner_ids is not null and new.company_id = 3 then
 
-  if old.site_survey_scheduled != new.site_survey_scheduled then
+  if old.site_survey_scheduled is null and new.site_survey_scheduled is not null then
     v_label = 'Site Survey Schedule';
     v_field_key = 'site_survey_schedule';
     v_value = new.site_survey_scheduled;
 
-  elseif old.final_design_created != new.final_design_created then
+  elseif old.final_design_created is null and new.final_design_created is not null then
     v_label = 'Design Start';
     v_field_key = 'design_start';
     v_value = new.final_design_created;
 
-  elseif old.permit_submitted_to_jurisdiction != new.permit_submitted_to_jurisdiction then
+  elseif old.permit_submitted_to_jurisdiction is null and new.permit_submitted_to_jurisdiction is not null then
     v_label = 'Permit Request';
     v_field_key = 'permit_request';
     v_value = new.permit_submitted_to_jurisdiction;
 
-  elseif old.permit_approved_by_jurisdiction != new.permit_approved_by_jurisdiction then
+  elseif old.permit_approved_by_jurisdiction is null and new.permit_approved_by_jurisdiction is not null then
     v_label = 'Permit Receive';
     v_field_key = 'permit_receive';
     v_value = new.permit_approved_by_jurisdiction;
 
-  elseif old.installation_date != new.installation_date then
+  elseif old.installation_date is null and new.installation_date is not null then
     v_label = 'Install Start Date';
     v_field_key = 'install_start_date';
     v_value = new.installation_date;
 
-  elseif old.inspection_scheduled_with_jurisdiction != new.inspection_scheduled_with_jurisdiction then
+  elseif old.inspection_scheduled_with_jurisdiction is null and new.inspection_scheduled_with_jurisdiction is not null then
     v_label = 'Inspection Scheduled Date';
     v_field_key = 'inspection_scheduled_date';
     v_value = new.inspection_scheduled_with_jurisdiction;
 
-  elseif old.inspection_passed != new.inspection_passed then
+  elseif old.inspection_passed is null and new.inspection_passed is not null then
     v_label = 'Final Inspection Passed';
     v_field_key = 'final_inspection_passed';
     v_value = new.inspection_passed;
 
-  elseif old.net_meter_installed != new.net_meter_installed then
+  elseif old.net_meter_installed is null and new.net_meter_installed is not null then
     v_label = 'PTO Receive';
     v_field_key = 'pto_receive';
     v_value = new.net_meter_installed;
