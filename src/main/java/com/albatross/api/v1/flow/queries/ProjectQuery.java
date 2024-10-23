@@ -259,6 +259,7 @@ select
         p.contact_id,
         p.object_category_id,
         oc.object_category,
+        contactOc.object_category as contact_object_category,
         p.created_by_id,
         concat(u.first_name, ' ', u.last_name) as created_by,
         comp.company_name,
@@ -400,6 +401,7 @@ select
       inner join flow.project p on cp.id = p.company_process_id
       inner join flow.object_category oc on oc.id = p.object_category_id
       inner join flow.contact ct on ct.id = p.contact_id
+      inner join flow.object_category contactOc on contactOc.id = ct.object_category_id
       inner join flow.process pro on pro.id = cp.process_id
       inner join flow.company comp on cp.company_id = comp.id
       inner join flow.company_object_type cot on cot.company_id = comp.id and cot.object_type_id = 1
@@ -411,10 +413,8 @@ select
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
       where p.id = :projectId
-        and case when :isParent
-            then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
-            else cp.company_id = :companyId end
-            and p.archived is not true
+        and cp.company_id = :companyId
+        and p.archived is not true
     """;
 
   //language=PostgreSQL

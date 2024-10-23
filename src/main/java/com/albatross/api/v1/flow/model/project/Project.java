@@ -46,6 +46,7 @@ public class Project {
     email,
     rootProjectStatusType,
     objectCategory,
+    contactObjectCategory,
     ownerName;
   private String dateCreated;
   private Owner owner;

@@ -2,6 +2,7 @@
   <div>
     <v-card flat class="contact-snippet albatross-body-1">
       {{ project.firstName }} {{ project.lastName }}
+      <div class="albatross-body-3 contact-object-category">{{project.contactObjectCategory}}</div>
       <div
           class="flex-display mb-2"
           :class="{ clickable: !!project.phone }"
@@ -264,6 +265,10 @@ const assignContact = async () => {
 .overview-contact-email {
   max-width: 100%;
   overflow-wrap: anywhere;
+}
+
+.contact-object-category {
+  color: var(--v-grey-darken1);
 }
 </style>
 
