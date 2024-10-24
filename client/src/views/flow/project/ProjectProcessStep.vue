@@ -215,7 +215,7 @@
             item-value="id"
             return-object
             density="compact"
-            style="z-index: 10"
+            style="z-index: 7"
             class="mt-2"
             @input="addEvent()"
           ></a-autocomplete>
@@ -349,6 +349,7 @@
             <AttachmentsFolderList
               :object-type-id="4"
               :allow-upload="true"
+              :object-category-id="project.objectCategoryId"
               :small-title="true"
               is-card
               hide-empty
@@ -358,6 +359,7 @@
               :object-type-id="4"
               :load-linked="true"
               :small-title="true"
+              :object-category-id="project.objectCategoryId"
               is-card
               hide-empty
               title="Linked Documents"
@@ -1134,7 +1136,7 @@ const getProcessStepEvents = async () => {
   align-items: flex-start;
 }
 #pps-toolbar {
-  z-index: 11;
+  z-index: 8;
 }
 
 .cfg-name-toolbar .v-toolbar__content {
@@ -1153,7 +1155,7 @@ const getProcessStepEvents = async () => {
 }
 
 .cfg-detail-header {
-  z-index: 8;
+  z-index: 6;
 }
 
 .cfg-detail-header .v-toolbar__content {

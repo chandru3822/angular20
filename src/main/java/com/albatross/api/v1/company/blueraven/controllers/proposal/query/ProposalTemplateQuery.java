@@ -5,8 +5,6 @@ public class ProposalTemplateQuery {
   public final static String listTemplates = """
 select pt.id,
        pt.template_name,
-       oc.id                                                            as object_category_id,
-       oc.object_category,
        coalesce((select row_to_json(theme)
                  from (select t.id,
                               t.theme_name                                          as name,
@@ -17,22 +15,24 @@ select pt.id,
                                         from brs.proposal_theme_value ptv2
                                         where ptv2.proposal_theme_id = t.id), '{}') as "themeStyle"
                        from brs.proposal_theme t
-                       where t.id = pt.proposal_theme_id) theme), '{}') as theme,
+                       where t.id = pt.proposal_theme_id) theme), '{}')             as theme,
+       coalesce((select json_agg(row_to_json(category))
+                 from (select oc.id,
+                              oc.object_category as "objectCategory"
+                       from brs.object_category_proposal_template ocpt
+                                inner join flow.object_category oc on ocpt.object_category_id = oc.id
+                       where ocpt.proposal_template_id = pt.id) as category), '[]') as object_categories,
        pt.created_by_id,
        pt.date_created,
        pt.modified_by_id,
        pt.date_modified
 from brs.proposal_template pt
-         left join brs.object_category_proposal_template ocpt on pt.id = ocpt.proposal_template_id
-         left join flow.object_category oc on ocpt.object_category_id = oc.id
     """;
 
   //language=PostgreSQL
   public final static String findById = """
        select pt.id,
               pt.template_name,
-              oc.id                                                            as object_category_id,
-              oc.object_category,
               coalesce((select row_to_json(theme)
                         from (select t.id,
                                      t.theme_name                                          as name,
@@ -70,13 +70,17 @@ from brs.proposal_template pt
                                 and ptb.date_archived is null
                               order by coalesce(ptb.parent_id, ptb.id), ptb.parent_id is not null, ptb.id) blocks),
                        '[]')                                                   as blocks,
+                coalesce((select json_agg(row_to_json(category))
+                 from (select oc.id,
+                              oc.object_category as "objectCategory"
+                       from brs.object_category_proposal_template ocpt
+                                inner join flow.object_category oc on ocpt.object_category_id = oc.id
+                       where ocpt.proposal_template_id = pt.id) as category), '[]') as object_categories,
               pt.created_by_id,
               pt.date_created,
               pt.modified_by_id,
               pt.date_modified
        from brs.proposal_template pt
-                left join brs.object_category_proposal_template ocpt on pt.id = ocpt.proposal_template_id
-                left join flow.object_category oc on ocpt.object_category_id = oc.id
        where pt.id = :id
     """;
 
@@ -149,6 +153,19 @@ from brs.proposal_template pt
       and version = :version
     """;
 
+  public final static String availableTagsNH = """
+        SELECT
+        a.attname::text                                  AS tag_name,
+         pg_catalog.format_type(a.atttypid, a.atttypmod) AS tag_type
+    FROM pg_catalog.pg_attribute a
+             INNER JOIN pg_catalog.pg_type t
+                        ON a.attrelid = t.typrelid
+             INNER jOIN pg_catalog.pg_namespace n
+                        ON n.oid = t.typnamespace
+    where pg_catalog.format_type(t.oid, NULL) = 'brs.calculated_proposal_value_nh'
+    order by 1
+    """;
+
   //language=PostgreSQL
   public final static String availableTags = """
     SELECT
@@ -171,5 +188,29 @@ from brs.proposal_template pt
                         ON n.oid = t.typnamespace
     where pg_catalog.format_type(t.oid, NULL) = 'brs.excluded_proposal_value'
     order by 1
+    """;
+
+  public final static String updateObjectCategories = """
+with updates as (
+    insert into brs.object_category_proposal_template (object_category_id, proposal_template_id, created_by_id,
+                                                       modified_by_id)
+        select unnest(array [:objectCategoryIds]::int[]), :templateId, :modifiedById, :modifiedById
+        on conflict (object_category_id )
+            do update set date_modified = now(),
+                proposal_template_id = excluded.proposal_template_id
+        returning object_category_id)
+delete
+from brs.object_category_proposal_template
+where proposal_template_id = :templateId
+  and object_category_id not in (select object_category_id from updates)
+    """;
+
+  public final static String getObjectCategories = """
+select oc.id, oc.object_category, pt.id as template_id, pt.template_name
+from flow.object_category oc
+         left join brs.object_category_proposal_template ocp on ocp.object_category_id = oc.id
+         left join brs.proposal_template pt on pt.id = ocp.proposal_template_id
+where oc.object_type_id = 1
+order by oc.id
     """;
 }

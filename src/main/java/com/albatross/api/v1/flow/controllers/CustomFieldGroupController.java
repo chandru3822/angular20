@@ -161,8 +161,9 @@ public class CustomFieldGroupController {
   }
 
   @GetMapping(value = "/getContactInsertFields")
-  public List<CustomFieldGroup> getContactInsertFields (@RequestParam(required = false) Long companyId) {
-    return customFieldGroupService.getInsertFieldsByType(companyId, ObjectType.CONTACT.id);
+  public List<CustomFieldGroup> getContactInsertFields (@RequestParam(required = false) Long companyId,
+                                                        @RequestParam(required = false) Long objectCategoryId) {
+    return customFieldGroupService.getInsertFieldsByType(companyId, ObjectType.CONTACT.id, objectCategoryId);
   }
 
   @GetMapping(value = "/getUserInsertFields")

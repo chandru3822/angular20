@@ -538,13 +538,18 @@ public class CustomFieldGroupService {
   }
 
   public List<CustomFieldGroup> getInsertFieldsByType(Long companyId, Long objectTypeId) {
+    return getInsertFieldsByType(companyId, objectTypeId, null);
+  }
+
+  public List<CustomFieldGroup> getInsertFieldsByType(Long companyId, Long objectTypeId, Long objectCategoryId) {
     User user = securityService.getCurrentUser();
     Long realCompanyId = null != companyId ? companyId : user.getCompanyId();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", realCompanyId);
     params.put("objectTypeId", objectTypeId);
+    params.put("objectCategoryId", objectCategoryId);
 
-
+  //i modified this to only return insert fields if that cfg is assigned to the object category id
     List<CustomFieldGroup> results =
       sqlCache.queryBySql(
         CustomFieldGroupQuery.getInsertFieldsByType,

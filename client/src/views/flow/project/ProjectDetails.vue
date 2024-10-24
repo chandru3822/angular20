@@ -174,6 +174,7 @@
                 <AttachmentsFolderList
                   :object-type-id="1"
                   :project-id="projectId"
+                  :object-category-id="project.objectCategoryId"
                   is-card
                   :hide-empty="true"
                   title="Uploaded Documents"
@@ -184,6 +185,7 @@
                 <AttachmentsFolderList
                   :object-type-id="1"
                   :project-id="projectId"
+                  :object-category-id="project.objectCategoryId"
                   is-card
                   :hide-empty="true"
                   title="Linked Documents"

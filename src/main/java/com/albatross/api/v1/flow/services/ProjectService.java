@@ -268,6 +268,18 @@ public class ProjectService {
     return results;
   }
 
+  public void updateProjectContactId(Long projectId, Long contactId) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("contactId", contactId);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.updateBySql(ProjectQuery.updateProjectContactId, params);
+  }
+
+
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 

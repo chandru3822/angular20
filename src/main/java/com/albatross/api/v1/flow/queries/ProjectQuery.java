@@ -198,6 +198,15 @@ select *
   """;
 
   //language=PostgreSQL
+  public final static String updateProjectContactId = """
+    update flow.project
+      set contact_id = :contactId,
+          modified_by_id = :userId,
+          date_modified = now()
+    where id = :projectId
+  """;
+
+  //language=PostgreSQL
   public final static String getChildren = """
   select
         p.id,
@@ -250,6 +259,7 @@ select
         p.contact_id,
         p.object_category_id,
         oc.object_category,
+        contactOc.object_category as contact_object_category,
         p.created_by_id,
         concat(u.first_name, ' ', u.last_name) as created_by,
         comp.company_name,
@@ -275,6 +285,7 @@ select
                                             p2.project_name as "projectName",
                                             p2.street1,
                                             p2.city,
+                                            p2.contact_id as "contactId",
                                             p2.postal_code as "postalCode",
                                             p2.date_created as "dateCreated",
                                             p2.object_category_id as "objectCategoryId",
@@ -320,16 +331,21 @@ select
                       coalesce((
        SELECT array_to_json(array_agg(row_to_json(childCompanyProcesses)))
        FROM (
-              SELECT cpccp.id,
-                     cpccp.company_process_id as "companyProcessId",
-                     cpccp.child_company_process_id as "childCompanyProcessId",
-                     pc2.process_name as "childProcessName"
-              FROM flow.company_process_child_company_process cpccp
-                inner join flow.company_process cp2 on cpccp.child_company_process_id = cp2.id
-                inner join flow.process pc2 on pc2.id = cp2.process_id
-              WHERE cpccp.company_process_id = p.company_process_id
-                AND cpccp.archived is not true
-                and cp2.archived is not true) childCompanyProcesses), '[]') AS "childCompanyProcesses",
+              select cp2.id,
+                     p2.process_name as "childProcessName"
+              from flow.company_process cp2
+                       inner join flow.process p2 on p2.id = cp2.process_id
+              where cp2.company_id = :companyId
+                and cp2.archived is not true
+                and p2.object_category_id in (
+                  select occoc.child_object_category_id
+                  from flow.object_category_child_object_category occoc
+                           inner join flow.process p3 on p3.object_category_id = occoc.object_category_id
+                           inner join flow.company_process cp3 on cp3.process_id = p3.id
+                  where occoc.archived is false
+                    and cp3.id = p.company_process_id
+              )
+              order by p2.process_name) childCompanyProcesses), '[]') AS "childCompanyProcesses",
         coalesce((
                      SELECT array_to_json(array_agg(row_to_json(wlp)))
                      FROM (
@@ -385,6 +401,7 @@ select
       inner join flow.project p on cp.id = p.company_process_id
       inner join flow.object_category oc on oc.id = p.object_category_id
       inner join flow.contact ct on ct.id = p.contact_id
+      inner join flow.object_category contactOc on contactOc.id = ct.object_category_id
       inner join flow.process pro on pro.id = cp.process_id
       inner join flow.company comp on cp.company_id = comp.id
       inner join flow.company_object_type cot on cot.company_id = comp.id and cot.object_type_id = 1
@@ -396,10 +413,8 @@ select
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
       where p.id = :projectId
-        and case when :isParent
-            then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
-            else cp.company_id = :companyId end
-            and p.archived is not true
+        and cp.company_id = :companyId
+        and p.archived is not true
     """;
 
   //language=PostgreSQL

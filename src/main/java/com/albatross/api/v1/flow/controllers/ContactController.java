@@ -58,6 +58,12 @@ public class ContactController {
         return contactService.updateContact(contact);
     }
 
+  @PostMapping(value = "/createFromProject/{projectId}")
+  public void insertContactFromChildProject(@PathVariable Long projectId,
+                                            @RequestBody Contact contact) throws Exception {
+    contactService.insertContactFromChildProject(projectId, contact);
+  }
+
     //temporary
     @PostMapping(value = "/updateLatLong")
     public void updateContactLatLong(@RequestParam(required = false) Integer limit) throws Exception {

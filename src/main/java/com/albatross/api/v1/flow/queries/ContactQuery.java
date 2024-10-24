@@ -99,7 +99,12 @@ select c.id,
                         left join flow.country ctr on ctr.id = cc.country_id
                      where p.contact_id = c.id
                      and p.archived is false
-                     and p.parent_id is null
+                     and (p.parent_id is null OR
+                            not p.contact_id in (
+                                select parentP.contact_id
+                                from flow.project parentP
+                                where parentP.id = p.parent_id
+                            ))
                  ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
@@ -127,9 +132,7 @@ select c.id,
              left outer join flow.company_country cc on cc.id = c.company_country_id
              left join flow.country ctr on ctr.id = cc.country_id
     where c.id = :contactId
-      and case when :isParent then c.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
-            else c.company_id = :companyId end
+      and c.company_id = :companyId
             and c.archived is not true
     """;
 
@@ -213,6 +216,20 @@ select c.id,
                                                                                       and archived is false
                                                                                       and object_type_id = 2
                                                                                     limit 1)))
+    """;
+
+  //language=PostgreSQL
+  public final static String insertContactFromChildProject = """
+  insert into flow.contact(contact_type_id, first_name, last_name, postal_code,
+                           company_country_id, phone, email, created_by_id,
+                           company_id, object_category_id)
+  values (1, trim(:firstName), trim(:lastName), trim(:postalCode), 1, :phone, :email, :userId, :companyId,
+           (select id
+                from flow.object_category
+                where is_default is true
+                  and archived is false
+                  and object_type_id = 2
+                limit 1))
     """;
 
   //language=PostgreSQL

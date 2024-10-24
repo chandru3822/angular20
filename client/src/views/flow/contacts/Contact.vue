@@ -1024,11 +1024,7 @@ Please select the information you would like to update.`
 const getAvailableProcesses = async() => {
   try {
     processesLoading.value = true
-    let params = {
-      contactId: parseInt(contactId.value),
-      contactInitialize: true
-    }
-    const {data, status} = await getRequestWithParams(`/processes`, {params})
+    const {data, status} = await getRequest(`/processes/contact/${contactId.value}`)
     availableProcesses.value = data
     if(!userStore.isSystemAdmin) { //7 Oaks admin should be able to see all processes
       availableProcesses.value = availableProcesses.value.filter(p => {

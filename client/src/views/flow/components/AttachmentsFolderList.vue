@@ -347,6 +347,7 @@ const props = defineProps({
   activityTab: Boolean, //this tells us whether to show the search and compare buttons
   forceShowUploadBtn: Boolean,
   projectId: Number,
+  objectCategoryId: Number,
   userId: Number,
   contactId: Number,
   orgId: Number,
@@ -367,6 +368,7 @@ const {
   activityTab,
   forceShowUploadBtn,
   projectId,
+  objectCategoryId,
   userId,
   contactId,
   orgId,
@@ -552,6 +554,7 @@ const fileUploaded = (attachment, error) => {
 const loadAllPageDetails = async () => {
   //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
   let params = {}
+  params.objectCategoryId = objectCategoryId.value
   if (
     (!objectTypeId.value || objectTypeId.value === 1) &&
     !allowUpload.value &&
