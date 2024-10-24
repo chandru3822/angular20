@@ -33,12 +33,12 @@
       <v-col v-if="allowedModules?.length > 0 && !showingMore" class="mx-4">
         <span class="label-medium">{{allowedModules[0].fieldName}}: </span>
         <span class="body-medium ml-1">{{allowedModules[0].textValue}}</span>
-        <span @click="showingMore = true" class="clickable body-medium anchor text-decoration-underline ml-3">Show more modules</span></v-col>
+        <a-btn @click="showingMore = true" variant="text" class="clickable body-medium anchor text-decoration-underline ml-1">Show more modules</a-btn></v-col>
       <v-col v-else-if="allowedModules?.length > 0" class="mx-4 body-medium">
         <div v-for="(module, index) in allowedModules" >
           <span class="label-medium">{{module.fieldName}}: </span>
           <span class="body-medium ml-1">{{module.textValue}}</span>
-          <span v-if="index === allowedModules.length - 1" @click="showingMore = false" class="clickable anchor text-decoration-underline ml-3">Show less</span>
+          <a-btn v-if="index === allowedModules.length - 1" variant="text" @click="showingMore = false" class="clickable anchor text-decoration-underline ml-1">Show less</a-btn>
         </div>
       </v-col>
     </v-row>
