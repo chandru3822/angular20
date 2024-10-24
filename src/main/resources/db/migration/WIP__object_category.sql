@@ -7,125 +7,139 @@
 -- drop table if exists brs.feat_db_ahj_new_home_custom_field_value_audit;
 -- drop table if exists brs.feat_db_ahj_new_home_link;
 
-CREATE TABLE if not exists flow.object_category
-(
-  id                   bigserial,
-  object_category      CHARACTER VARYING(100)                    not null,
-  object_category_code CHARACTER VARYING(50)                     not null,
-  object_type_id       bigint                                    not null,
-  date_created         timestamp without time zone DEFAULT now() not null,
-  date_modified        timestamp without time zone DEFAULT now() not null,
-  created_by_id        integer,
-  modified_by_id       integer,
-  archived             boolean                                   not null default false,
-  CONSTRAINT object_category_pk PRIMARY KEY (id),
-  CONSTRAINT oc_object_type_id_id_fk FOREIGN KEY (object_type_id)
-    REFERENCES flow.object_type (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION
-)
-  WITH (
-    OIDS= FALSE
-  );
+-- CREATE TABLE if not exists flow.object_category
+-- (
+--   id                   bigserial,
+--   object_category      CHARACTER VARYING(100)                    not null,
+--   object_category_code CHARACTER VARYING(50)                     not null,
+--   object_type_id       bigint                                    not null,
+--   date_created         timestamp without time zone DEFAULT now() not null,
+--   date_modified        timestamp without time zone DEFAULT now() not null,
+--   created_by_id        integer,
+--   modified_by_id       integer,
+--   archived             boolean                                   not null default false,
+--   CONSTRAINT object_category_pk PRIMARY KEY (id),
+--   CONSTRAINT oc_object_type_id_id_fk FOREIGN KEY (object_type_id)
+--     REFERENCES flow.object_type (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION
+-- )
+--   WITH (
+--     OIDS= FALSE
+--   );
 
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Residential Standard',
-          'RESIDENTIAL_STANDARD',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          1
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'RESIDENTIAL_STANDARD'));
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Residential Standard',
+--           'RESIDENTIAL_STANDARD',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           1
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'RESIDENTIAL_STANDARD'));
+--
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Retrofit',
+--           'RETROFIT',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           1
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'RETROFIT'));
+--
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Battery Only',
+--           'BATTERY_ONLY',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           1
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'BATTERY_ONLY'));
+--
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Removal and Reinstallation',
+--           'REMOVAL_REINSTALLATION',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           1
+--    where not exists (select id
+--                      from flow.object_category oc
+--                      where oc.object_category_code = 'REMOVAL_REINSTALLATION'));
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Community',
+--           'COMMUNITY',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           1
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'COMMUNITY'));
+--
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'New Home',
+--           'NEW_HOME',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           1
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'NEW_HOME'));
 
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Retrofit',
-          'RETROFIT',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          1
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'RETROFIT'));
 
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Battery Only',
-          'BATTERY_ONLY',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          1
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'BATTERY_ONLY'));
-
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Removal and Reinstallation',
-          'REMOVAL_REINSTALLATION',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          1
-   where not exists (select id
-                     from flow.object_category oc
-                     where oc.object_category_code = 'REMOVAL_REINSTALLATION'));
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Community',
-          'COMMUNITY',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          1
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'COMMUNITY'));
-
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'New Home',
-          'NEW_HOME',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          1
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'NEW_HOME'));
-
-
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Builder (new homes builder)',
-          'BUILDER_NEW_HOMES_BUILDER',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          2
-   where not exists (select id
-                     from flow.object_category oc
-                     where oc.object_category_code = 'BUILDER_NEW_HOMES_BUILDER'));
-
-insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
-                                 modified_by_id, archived, object_type_id)
-  (select 'Primary Homeowner (Homeowner who is purchasing solar)',
-          'PRIMARY_HOMEOWNER',
-          now(),
-          now(),
-          2384850,
-          2384850,
-          false,
-          2
-   where not exists (select id from flow.object_category oc where oc.object_category_code = 'PRIMARY_HOMEOWNER'));
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Builder (new homes builder)',
+--           'BUILDER_NEW_HOMES_BUILDER',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           2
+--    where not exists (select id
+--                      from flow.object_category oc
+--                      where oc.object_category_code = 'BUILDER_NEW_HOMES_BUILDER'));
+--
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Primary Homeowner (Homeowner who is purchasing solar)',
+--           'PRIMARY_HOMEOWNER',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           2
+--    where not exists (select id from flow.object_category oc where oc.object_category_code = 'PRIMARY_HOMEOWNER'));
+--
+-- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
+--                                  modified_by_id, archived, object_type_id)
+--   (select 'Buyer of New Home',
+--           'LOT_OWNER',
+--           now(),
+--           now(),
+--           2384850,
+--           2384850,
+--           false,
+--           2
+--    where not exists (select id
+--                      from flow.object_category oc
+--                      where oc.object_category_code = 'LOT_OWNER'));
 
 --per carlin - not using these V1 pls remove
 -- insert into flow.object_category(object_category, object_category_code, date_created, date_modified, created_by_id,
@@ -154,48 +168,49 @@ insert into flow.object_category(object_category, object_category_code, date_cre
 --    where not exists (select id from flow.object_category oc where oc.object_category_code = 'NEW_HOMEOWNER'));
 
 
-alter table flow.process
-  add column if not exists object_category_id bigint;
+-- alter table flow.process
+--   add column if not exists object_category_id bigint;
 
-alter table flow.process
-  add CONSTRAINT process_object_category_id_fk
-    FOREIGN KEY (object_category_id)
-      REFERENCES flow.object_category (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION;
+-- alter table flow.process
+--   add CONSTRAINT process_object_category_id_fk
+--     FOREIGN KEY (object_category_id)
+--       REFERENCES flow.object_category (id) MATCH SIMPLE
+--       ON UPDATE NO ACTION ON DELETE NO ACTION;
 
-update flow.process
-set object_category_id = (select id from flow.object_category where object_category_code = 'RESIDENTIAL_STANDARD')
-where id = 1;
 
-update flow.process
-set object_category_id = (select id from flow.object_category where object_category_code = 'RETROFIT')
-where id = 18;
-
-update flow.process
-set object_category_id = (select id from flow.object_category where object_category_code = 'BATTERY_ONLY')
-where id = 20;
-
-update flow.process
-set object_category_id = (select id from flow.object_category where object_category_code = 'REMOVAL_REINSTALLATION')
-where id = 23;
-
-update flow.process
-set object_category_id = (select id from flow.object_category where object_category_code = 'COMMUNITY')
-where id = 26;
-
-update flow.process
-set object_category_id = (select id from flow.object_category where object_category_code = 'NEW_HOME')
-where id = 27;
+-- update flow.process
+-- set object_category_id = (select id from flow.object_category where object_category_code = 'RESIDENTIAL_STANDARD')
+-- where id = 1;
+--
+-- update flow.process
+-- set object_category_id = (select id from flow.object_category where object_category_code = 'RETROFIT')
+-- where id = 18;
+--
+-- update flow.process
+-- set object_category_id = (select id from flow.object_category where object_category_code = 'BATTERY_ONLY')
+-- where id = 20;
+--
+-- update flow.process
+-- set object_category_id = (select id from flow.object_category where object_category_code = 'REMOVAL_REINSTALLATION')
+-- where id = 23;
+--
+-- update flow.process
+-- set object_category_id = (select id from flow.object_category where object_category_code = 'COMMUNITY')
+-- where id = 26;
+--
+-- update flow.process
+-- set object_category_id = (select id from flow.object_category where object_category_code = 'NEW_HOME')
+-- where id = 27;
 
 -- update flow.process
 -- set object_category_id = (select id from flow.object_category where object_category_code = 'REMOVAL_REINSTALLATION')
 -- where id = 21;
 
-alter table flow.project
-  add column if not exists object_category_id bigint;
+-- alter table flow.project
+--   add column if not exists object_category_id bigint;
 
 -- DO
---$do$
+-- $do$
 --  declare
 --    x             record;
 --    v_count       bigint = 0;
@@ -227,7 +242,7 @@ alter table flow.project
 --
 --      end loop;
 -- update flow.project p
--- set object_category_id =1
+-- set object_category_id =x.object_category_id
 -- where object_category_id is null;
 --    SET session_replication_role = default;
 --   end
@@ -236,18 +251,18 @@ alter table flow.project
 -- ALTER TABLE flow.project
 --     ALTER COLUMN object_category_id SET NOT NULL;
 
-alter table flow.project
-  drop constraint if exists c_project_object_category_id_fk;
-alter table flow.project
-  add CONSTRAINT c_project_object_category_id_fk
-    FOREIGN KEY (object_category_id)
-      REFERENCES flow.object_category (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION;
+-- alter table flow.project
+--   drop constraint if exists c_project_object_category_id_fk;
+-- alter table flow.project
+--   add CONSTRAINT c_project_object_category_id_fk
+--     FOREIGN KEY (object_category_id)
+--       REFERENCES flow.object_category (id) MATCH SIMPLE
+--       ON UPDATE NO ACTION ON DELETE NO ACTION;
+--
+-- CREATE INDEX if not exists project_object_category_id_idx ON flow.project (object_category_id);
 
-CREATE INDEX if not exists project_object_category_id_idx ON flow.project (object_category_id);
-
-alter table flow.contact
-  add column if not exists object_category_id bigint;
+-- alter table flow.contact
+--   add column if not exists object_category_id bigint;
 
 -- DO
 --$do$
@@ -287,65 +302,65 @@ alter table flow.contact
 -- ALTER TABLE flow.contact
 --     ALTER COLUMN object_category_id SET NOT NULL;
 
-alter table flow.contact
-  drop constraint if exists c_contact_object_category_id_fk;
-alter table flow.contact
-  add CONSTRAINT c_contact_object_category_id_fk
-    FOREIGN KEY (object_category_id)
-      REFERENCES flow.object_category (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION;
+-- alter table flow.contact
+--   drop constraint if exists c_contact_object_category_id_fk;
+-- alter table flow.contact
+--   add CONSTRAINT c_contact_object_category_id_fk
+--     FOREIGN KEY (object_category_id)
+--       REFERENCES flow.object_category (id) MATCH SIMPLE
+--       ON UPDATE NO ACTION ON DELETE NO ACTION;
+--
+-- CREATE INDEX if not exists contact_object_category_id_idx ON flow.contact (object_category_id);
 
-CREATE INDEX if not exists contact_object_category_id_idx ON flow.contact (object_category_id);
-
-CREATE TABLE if not exists flow.contact_project_group
-(
-  id             bigserial,
-  project_id     bigint                                    not null,
-  contact_id     bigint                                    not null,
-  date_created   timestamp without time zone DEFAULT now() not null,
-  date_modified  timestamp without time zone DEFAULT now() not null,
-  created_by_id  integer,
-  modified_by_id integer,
-  archived       boolean                                   not null default false,
-  CONSTRAINT contact_project_group_pk PRIMARY KEY (id),
-  CONSTRAINT c_contact_project_group_project_id_id_fk FOREIGN KEY (project_id)
-    REFERENCES flow.project (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT c_contact_project_group_contact_id_id_fk FOREIGN KEY (contact_id)
-    REFERENCES flow.contact (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION
-)
-  WITH (
-    OIDS= FALSE
-  );
-
-CREATE INDEX if not exists contact_project_group_project_id_idx ON flow.contact_project_group (project_id);
-CREATE INDEX if not exists contact_project_group_contact_id_idx ON flow.contact_project_group (contact_id);
+-- CREATE TABLE if not exists flow.contact_project_group
+-- (
+--   id             bigserial,
+--   project_id     bigint                                    not null,
+--   contact_id     bigint                                    not null,
+--   date_created   timestamp without time zone DEFAULT now() not null,
+--   date_modified  timestamp without time zone DEFAULT now() not null,
+--   created_by_id  integer,
+--   modified_by_id integer,
+--   archived       boolean                                   not null default false,
+--   CONSTRAINT contact_project_group_pk PRIMARY KEY (id),
+--   CONSTRAINT c_contact_project_group_project_id_id_fk FOREIGN KEY (project_id)
+--     REFERENCES flow.project (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION,
+--   CONSTRAINT c_contact_project_group_contact_id_id_fk FOREIGN KEY (contact_id)
+--     REFERENCES flow.contact (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION
+-- )
+--   WITH (
+--     OIDS= FALSE
+--   );
+--
+-- CREATE INDEX if not exists contact_project_group_project_id_idx ON flow.contact_project_group (project_id);
+-- CREATE INDEX if not exists contact_project_group_contact_id_idx ON flow.contact_project_group (contact_id);
 
 
-CREATE TABLE if not exists flow.object_category_custom_field_group
-(
-  id                    bigserial,
-  object_category_id    bigint                                    not null,
-  custom_field_group_id bigint                                    not null,
-  date_created          timestamp without time zone DEFAULT now() not null,
-  date_modified         timestamp without time zone DEFAULT now() not null,
-  created_by_id         integer,
-  modified_by_id        integer,
-  archived              boolean                                   not null default false,
-  CONSTRAINT object_category_custom_field_group_pk PRIMARY KEY (id),
-  CONSTRAINT occfg_object_category_id_fk FOREIGN KEY (object_category_id)
-    REFERENCES flow.object_category (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT occfg_custom_field_group_id_id_fk FOREIGN KEY (custom_field_group_id)
-    REFERENCES flow.custom_field_group (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION
-)
-  WITH (
-    OIDS= FALSE
-  );
-
-CREATE unique INDEX if not exists occfg_object_category_id_custom_field_group_id_idx ON flow.object_category_custom_field_group (object_category_id, custom_field_group_id);
+-- CREATE TABLE if not exists flow.object_category_custom_field_group
+-- (
+--   id                    bigserial,
+--   object_category_id    bigint                                    not null,
+--   custom_field_group_id bigint                                    not null,
+--   date_created          timestamp without time zone DEFAULT now() not null,
+--   date_modified         timestamp without time zone DEFAULT now() not null,
+--   created_by_id         integer,
+--   modified_by_id        integer,
+--   archived              boolean                                   not null default false,
+--   CONSTRAINT object_category_custom_field_group_pk PRIMARY KEY (id),
+--   CONSTRAINT occfg_object_category_id_fk FOREIGN KEY (object_category_id)
+--     REFERENCES flow.object_category (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION,
+--   CONSTRAINT occfg_custom_field_group_id_id_fk FOREIGN KEY (custom_field_group_id)
+--     REFERENCES flow.custom_field_group (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION
+-- )
+--   WITH (
+--     OIDS= FALSE
+--   );
+--
+-- CREATE unique INDEX if not exists occfg_object_category_id_custom_field_group_id_idx ON flow.object_category_custom_field_group (object_category_id, custom_field_group_id);
 
 
 insert into flow.object_category_custom_field_group(object_category_id, custom_field_group_id, created_by_id,
@@ -371,29 +386,29 @@ insert into flow.object_category_custom_field_group(object_category_id, custom_f
 on conflict do nothing;
 
 
-CREATE TABLE if not exists flow.object_category_attachment_type
-(
-  id                 bigserial,
-  object_category_id bigint                                    not null,
-  attachment_type_id bigint                                    not null,
-  date_created       timestamp without time zone DEFAULT now() not null,
-  date_modified      timestamp without time zone DEFAULT now() not null,
-  created_by_id      integer,
-  modified_by_id     integer,
-  archived           boolean                                   not null default false,
-  CONSTRAINT object_category_attachment_type_pk PRIMARY KEY (id),
-  CONSTRAINT ocat_object_category_id_fk FOREIGN KEY (object_category_id)
-    REFERENCES flow.object_category (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT ocat_attachment_type_id_fk FOREIGN KEY (attachment_type_id)
-    REFERENCES flow.attachment_type (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION
-)
-  WITH (
-    OIDS= FALSE
-  );
+-- CREATE TABLE if not exists flow.object_category_attachment_type
+-- (
+--   id                 bigserial,
+--   object_category_id bigint                                    not null,
+--   attachment_type_id bigint                                    not null,
+--   date_created       timestamp without time zone DEFAULT now() not null,
+--   date_modified      timestamp without time zone DEFAULT now() not null,
+--   created_by_id      integer,
+--   modified_by_id     integer,
+--   archived           boolean                                   not null default false,
+--   CONSTRAINT object_category_attachment_type_pk PRIMARY KEY (id),
+--   CONSTRAINT ocat_object_category_id_fk FOREIGN KEY (object_category_id)
+--     REFERENCES flow.object_category (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION,
+--   CONSTRAINT ocat_attachment_type_id_fk FOREIGN KEY (attachment_type_id)
+--     REFERENCES flow.attachment_type (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION
+-- )
+--   WITH (
+--     OIDS= FALSE
+--   );
 
-CREATE unique INDEX if not exists ocat_object_category_attachment_type_idx ON flow.object_category_attachment_type (object_category_id, attachment_type_id);
+-- CREATE unique INDEX if not exists ocat_object_category_attachment_type_idx ON flow.object_category_attachment_type (object_category_id, attachment_type_id);
 
 insert into flow.object_category_attachment_type(object_category_id, attachment_type_id, created_by_id, modified_by_id)
   (select oc.id, at2.id, 2384850, 2384850
@@ -406,29 +421,29 @@ insert into flow.object_category_attachment_type(object_category_id, attachment_
 on conflict do nothing;
 
 
-CREATE TABLE if not exists flow.object_category_company_project_status_type
-(
-  id                             bigserial,
-  object_category_id             bigint                                    not null,
-  company_project_status_type_id bigint                                    not null,
-  date_created                   timestamp without time zone DEFAULT now() not null,
-  date_modified                  timestamp without time zone DEFAULT now() not null,
-  created_by_id                  integer,
-  modified_by_id                 integer,
-  archived                       boolean                                   not null default false,
-  CONSTRAINT occpst_pk PRIMARY KEY (id),
-  CONSTRAINT occpst_object_category_id_fk FOREIGN KEY (object_category_id)
-    REFERENCES flow.object_category (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT occpst_company_project_status_type_id_fk FOREIGN KEY (company_project_status_type_id)
-    REFERENCES flow.company_project_status_type (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION
-)
-  WITH (
-    OIDS= FALSE
-  );
-
-CREATE unique INDEX if not exists occpst_object_category_id_project_status_type_id_idx ON flow.object_category_company_project_status_type (object_category_id, company_project_status_type_id);
+-- CREATE TABLE if not exists flow.object_category_company_project_status_type
+-- (
+--   id                             bigserial,
+--   object_category_id             bigint                                    not null,
+--   company_project_status_type_id bigint                                    not null,
+--   date_created                   timestamp without time zone DEFAULT now() not null,
+--   date_modified                  timestamp without time zone DEFAULT now() not null,
+--   created_by_id                  integer,
+--   modified_by_id                 integer,
+--   archived                       boolean                                   not null default false,
+--   CONSTRAINT occpst_pk PRIMARY KEY (id),
+--   CONSTRAINT occpst_object_category_id_fk FOREIGN KEY (object_category_id)
+--     REFERENCES flow.object_category (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION,
+--   CONSTRAINT occpst_company_project_status_type_id_fk FOREIGN KEY (company_project_status_type_id)
+--     REFERENCES flow.company_project_status_type (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION
+-- )
+--   WITH (
+--     OIDS= FALSE
+--   );
+--
+-- CREATE unique INDEX if not exists occpst_object_category_id_project_status_type_id_idx ON flow.object_category_company_project_status_type (object_category_id, company_project_status_type_id);
 
 insert into flow.object_category_company_project_status_type(object_category_id, company_project_status_type_id,
                                                              created_by_id, modified_by_id)
@@ -445,18 +460,18 @@ on conflict do nothing;
 
 
 --proposal template object categories
-drop table if exists brs.object_category_proposal_template;
-create table if not exists brs.object_category_proposal_template
-(
-  object_category_id   bigint                                    not null references flow.object_category (id),
-  proposal_template_id bigint                                    not null references brs.proposal_template (id),
-  date_created         timestamp without time zone DEFAULT now() not null,
-  date_modified        timestamp without time zone DEFAULT now() not null,
-  created_by_id        integer references flow."user" (id),
-  modified_by_id       integer references flow."user" (id),
-
-  primary key (object_category_id)
-);
+-- drop table if exists brs.object_category_proposal_template;
+-- create table if not exists brs.object_category_proposal_template
+-- (
+--   object_category_id   bigint                                    not null references flow.object_category (id),
+--   proposal_template_id bigint                                    not null references brs.proposal_template (id),
+--   date_created         timestamp without time zone DEFAULT now() not null,
+--   date_modified        timestamp without time zone DEFAULT now() not null,
+--   created_by_id        integer references flow."user" (id),
+--   modified_by_id       integer references flow."user" (id),
+--
+--   primary key (object_category_id)
+-- );
 
 
 insert into brs.object_category_proposal_template (object_category_id, proposal_template_id)
@@ -471,171 +486,171 @@ update brs.object_category_proposal_template
 set proposal_template_id = 2
 where object_category_id = 6;
 
-alter table flow.project
-  add column if not exists parent_id bigint;
+-- alter table flow.project
+--   add column if not exists parent_id bigint;
+--
+-- alter table flow.project
+--   drop constraint if exists p_parent_id_fk;
+-- alter table flow.project
+--   add CONSTRAINT p_parent_id_fk
+--     FOREIGN KEY (parent_id)
+--       REFERENCES flow.project (id) MATCH SIMPLE
+--       ON UPDATE NO ACTION ON DELETE NO ACTION;
+--
+-- CREATE INDEX if not exists project_parent_id_idx ON flow.project (parent_id);
 
-alter table flow.project
-  drop constraint if exists p_parent_id_fk;
-alter table flow.project
-  add CONSTRAINT p_parent_id_fk
-    FOREIGN KEY (parent_id)
-      REFERENCES flow.project (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION;
+-- alter table flow.object_category
+--   add column if not exists is_default boolean not null default false;
 
-CREATE INDEX if not exists project_parent_id_idx ON flow.project (parent_id);
+-- update flow.object_category oc
+-- set is_default = true
+-- where object_category_code = 'RESIDENTIAL_STANDARD';
+--
+-- update flow.object_category oc
+-- set is_default = true
+-- where object_category_code = 'PRIMARY_HOMEOWNER';
 
-alter table flow.object_category
-  add column if not exists is_default boolean not null default false;
-
-update flow.object_category oc
-set is_default = true
-where object_category_code = 'RESIDENTIAL_STANDARD';
-
-update flow.object_category oc
-set is_default = true
-where object_category_code = 'PRIMARY_HOMEOWNER';
-
-CREATE UNIQUE INDEX if not exists unique_default_object_type_idx
-  ON flow.object_category (object_type_id)
-  WHERE is_default is TRUE AND archived is FALSE;
+-- CREATE UNIQUE INDEX if not exists unique_default_object_type_idx
+--   ON flow.object_category (object_type_id)
+--   WHERE is_default is TRUE AND archived is FALSE;
 
 -- AHJ - NEW HOME STUFF
-create table if not exists brs.feat_db_ahj_new_home
-(
-  id             bigserial               not null
-    constraint ahj_new_home_pkey
-      primary key,
-  ahj_id         bigint                  not null
-    constraint ahj_new_home_ahj_id_key
-      unique
-    constraint ahj_new_home_ahj_id_fkey
-      references brs.feat_db_ahj,
-  archived       boolean   default false not null,
-  date_created   timestamp,
-  created_by_id  bigint
-    constraint ahj_new_home_created_by_id_fkey
-      references flow."user",
-  date_modified  timestamp default now(),
-  modified_by_id bigint
-    constraint ahj_new_home_modified_by_id_fkey
-      references flow."user"
-);
+-- create table if not exists brs.feat_db_ahj_new_home
+-- (
+--   id             bigserial               not null
+--     constraint ahj_new_home_pkey
+--       primary key,
+--   ahj_id         bigint                  not null
+--     constraint ahj_new_home_ahj_id_key
+--       unique
+--     constraint ahj_new_home_ahj_id_fkey
+--       references brs.feat_db_ahj,
+--   archived       boolean   default false not null,
+--   date_created   timestamp,
+--   created_by_id  bigint
+--     constraint ahj_new_home_created_by_id_fkey
+--       references flow."user",
+--   date_modified  timestamp default now(),
+--   modified_by_id bigint
+--     constraint ahj_new_home_modified_by_id_fkey
+--       references flow."user"
+-- );
 
-create table if not exists brs.feat_db_ahj_new_home_contact
-(
-  ahj_new_home_id bigint                                 not null
-    constraint ahj_new_home_contact_ahj_new_home_id_fkey
-      references brs.feat_db_ahj_new_home
-    constraint anhc1_ahj_new_home_id_fk
-      references brs.feat_db_ahj_new_home,
-  ahj_contact_id  bigint                                 not null
-    constraint ahj_new_home_contact_ahj_contact_id_fkey
-      references brs.feat_db_contact
-    constraint anhc_ahj_contact_id_fk
-      references brs.feat_db_contact,
-  date_modified   timestamp with time zone default now() not null,
-  constraint ahj_new_home_contact_ahj_new_home_id_ahj_contact_id_key
-    primary key (ahj_new_home_id, ahj_contact_id)
-);
+-- create table if not exists brs.feat_db_ahj_new_home_contact
+-- (
+--   ahj_new_home_id bigint                                 not null
+--     constraint ahj_new_home_contact_ahj_new_home_id_fkey
+--       references brs.feat_db_ahj_new_home
+--     constraint anhc1_ahj_new_home_id_fk
+--       references brs.feat_db_ahj_new_home,
+--   ahj_contact_id  bigint                                 not null
+--     constraint ahj_new_home_contact_ahj_contact_id_fkey
+--       references brs.feat_db_contact
+--     constraint anhc_ahj_contact_id_fk
+--       references brs.feat_db_contact,
+--   date_modified   timestamp with time zone default now() not null,
+--   constraint ahj_new_home_contact_ahj_new_home_id_ahj_contact_id_key
+--     primary key (ahj_new_home_id, ahj_contact_id)
+-- );
 
-create index if not exists ahj_new_home_contact_ahj_contact_id_idx
-  on brs.feat_db_ahj_new_home_contact (ahj_contact_id);
+-- create index if not exists ahj_new_home_contact_ahj_contact_id_idx
+--   on brs.feat_db_ahj_new_home_contact (ahj_contact_id);
 
 
-create table if not exists brs.feat_db_ahj_new_home_custom_field_value
-(
-  id                               bigserial not null
-    constraint brs_ahj_new_home_custom_field_value_pk
-      primary key,
-  ahj_new_home_id                  bigint    not null
-    constraint brs_anhcfv_ahj_new_home_id_fk
-      references brs.feat_db_ahj_new_home,
-  date_value                       date,
-  custom_field_group_assignment_id bigint    not null
-    constraint brs_anhcfv_custom_field_id_fk
-      references brs.custom_field_group_assignment,
-  timestamp_value                  timestamp,
-  boolean_value                    boolean,
-  text_value                       text,
-  numeric_value                    numeric,
-  int_value                        bigint,
-  int_array_value                  bigint[],
-  date_created                     timestamp default now(),
-  date_modified                    timestamp default now(),
-  created_by_id                    bigint    not null
-    constraint brs_anhcfv_created_by_id_fk
-      references flow."user",
-  modified_by_id                   bigint
-    constraint brs_anhcfv_modified_by_id_fk
-      references flow."user",
-  rich_text_value                  text,
-  constraint anhcfv_ahj_new_home_id_cfga_id
-    unique (ahj_new_home_id, custom_field_group_assignment_id)
-);
+-- create table if not exists brs.feat_db_ahj_new_home_custom_field_value
+-- (
+--   id                               bigserial not null
+--     constraint brs_ahj_new_home_custom_field_value_pk
+--       primary key,
+--   ahj_new_home_id                  bigint    not null
+--     constraint brs_anhcfv_ahj_new_home_id_fk
+--       references brs.feat_db_ahj_new_home,
+--   date_value                       date,
+--   custom_field_group_assignment_id bigint    not null
+--     constraint brs_anhcfv_custom_field_id_fk
+--       references brs.custom_field_group_assignment,
+--   timestamp_value                  timestamp,
+--   boolean_value                    boolean,
+--   text_value                       text,
+--   numeric_value                    numeric,
+--   int_value                        bigint,
+--   int_array_value                  bigint[],
+--   date_created                     timestamp default now(),
+--   date_modified                    timestamp default now(),
+--   created_by_id                    bigint    not null
+--     constraint brs_anhcfv_created_by_id_fk
+--       references flow."user",
+--   modified_by_id                   bigint
+--     constraint brs_anhcfv_modified_by_id_fk
+--       references flow."user",
+--   rich_text_value                  text,
+--   constraint anhcfv_ahj_new_home_id_cfga_id
+--     unique (ahj_new_home_id, custom_field_group_assignment_id)
+-- );
 
-create index if not exists fki_anhcfv_ahj_new_home_id
-  on brs.feat_db_ahj_new_home_custom_field_value (ahj_new_home_id);
-create index if not exists fki_anhcfv_custom_field_group_assignment_id
-  on brs.feat_db_ahj_new_home_custom_field_value (custom_field_group_assignment_id);
+-- create index if not exists fki_anhcfv_ahj_new_home_id
+--   on brs.feat_db_ahj_new_home_custom_field_value (ahj_new_home_id);
+-- create index if not exists fki_anhcfv_custom_field_group_assignment_id
+--   on brs.feat_db_ahj_new_home_custom_field_value (custom_field_group_assignment_id);
 
-create table if not exists brs.feat_db_ahj_new_home_custom_field_value_audit
-(
-  id                                 bigserial not null
-    constraint ahj_new_home_custom_field_value_audit_pk
-      primary key,
-  ahj_new_home_custom_field_value_id bigint    not null,
-  old_value                          text,
-  new_value                          text,
-  date_modified                      timestamp,
-  modified_by_id                     bigint
-    constraint ahj_nhcfva_modified_by_id_fk
-      references flow."user"
-);
-
-create index if not exists anhcfva_ahj_new_home_custom_field_value_id_idx
-  on brs.feat_db_ahj_new_home_custom_field_value_audit (ahj_new_home_custom_field_value_id);
-
-create table if not exists brs.feat_db_ahj_new_home_link
-(
-  id              bigserial               not null
-    constraint ahj_new_home_link_pkey
-      primary key,
-  ahj_new_home_id bigint                  not null
-    constraint ahj_new_home_link_ahj_new_home_id_fkey
-      references brs.feat_db_ahj_new_home,
-  name            varchar(100)            not null,
-  link            varchar(255)            not null,
-  username        varchar(255),
-  password        varchar(255),
-  notes           text,
-  archived        boolean   default false not null,
-  date_created    timestamp,
-  created_by_id   bigint
-    constraint ahj_new_home_link_created_by_id_fkey
-      references flow."user",
-  date_modified   timestamp default now(),
-  modified_by_id  bigint
-    constraint ahj_new_home_link_modified_by_id_fkey
-      references flow."user",
-  link_type_id    bigint
-    constraint ahj_new_home_link_link_type_id_fkey
-      references brs.feat_db_link_type
-);
-
-create index if not exists ahj_new_home_link_ahj_new_home_id_idx
-  on brs.feat_db_ahj_new_home_link (ahj_new_home_id);
-
-create index if not exists ahj_new_home_link_link_type_id_idx
-  on brs.feat_db_ahj_new_home_link (link_type_id);
+-- create table if not exists brs.feat_db_ahj_new_home_custom_field_value_audit
+-- (
+--   id                                 bigserial not null
+--     constraint ahj_new_home_custom_field_value_audit_pk
+--       primary key,
+--   ahj_new_home_custom_field_value_id bigint    not null,
+--   old_value                          text,
+--   new_value                          text,
+--   date_modified                      timestamp,
+--   modified_by_id                     bigint
+--     constraint ahj_nhcfva_modified_by_id_fk
+--       references flow."user"
+-- );
+--
+-- create index if not exists anhcfva_ahj_new_home_custom_field_value_id_idx
+--   on brs.feat_db_ahj_new_home_custom_field_value_audit (ahj_new_home_custom_field_value_id);
+--
+-- create table if not exists brs.feat_db_ahj_new_home_link
+-- (
+--   id              bigserial               not null
+--     constraint ahj_new_home_link_pkey
+--       primary key,
+--   ahj_new_home_id bigint                  not null
+--     constraint ahj_new_home_link_ahj_new_home_id_fkey
+--       references brs.feat_db_ahj_new_home,
+--   name            varchar(100)            not null,
+--   link            varchar(255)            not null,
+--   username        varchar(255),
+--   password        varchar(255),
+--   notes           text,
+--   archived        boolean   default false not null,
+--   date_created    timestamp,
+--   created_by_id   bigint
+--     constraint ahj_new_home_link_created_by_id_fkey
+--       references flow."user",
+--   date_modified   timestamp default now(),
+--   modified_by_id  bigint
+--     constraint ahj_new_home_link_modified_by_id_fkey
+--       references flow."user",
+--   link_type_id    bigint
+--     constraint ahj_new_home_link_link_type_id_fkey
+--       references brs.feat_db_link_type
+-- );
+--
+-- create index if not exists ahj_new_home_link_ahj_new_home_id_idx
+--   on brs.feat_db_ahj_new_home_link (ahj_new_home_id);
+--
+-- create index if not exists ahj_new_home_link_link_type_id_idx
+--   on brs.feat_db_ahj_new_home_link (link_type_id);
 
 --I already inserted the object type in prod so that I could ensure the ID didn't change
 --I didn't want them to see it though, so just need to unarchive it in the release
-update brs.object_type
-set archived = false
-where object_code = 'AHJ_NEW_HOME';
+-- update brs.object_type
+-- set archived = false
+-- where object_code = 'AHJ_NEW_HOME';
 
-alter table flow.company_process
-  drop column if exists allow_contact_initiate;
+-- alter table flow.company_process
+--   drop column if exists allow_contact_initiate;
 
 --add the flow.copy_from_parent_to_child to company_process (i added the db_function record in prod so it doesn't get lost on data dump)
 insert into flow.company_function(company_function_name, db_function_id, archived, company_id)
@@ -648,66 +663,66 @@ where df.function_name = 'flow.copy_from_parent_to_child'
                   where df.function_name = 'flow.copy_from_parent_to_child');
 
 --changing how this is done
-drop table if exists flow.company_process_child_company_process;
-CREATE TABLE if not exists flow.object_category_child_object_category
-(
-  id                       bigserial NOT NULL,
-  object_category_id       bigint    not null,
-  child_object_category_id bigint    not null,
-  date_created             timestamp without time zone DEFAULT now(),
-  date_modified            timestamp without time zone DEFAULT now(),
-  created_by_id            integer   not null,
-  modified_by_id           integer,
-  archived                 boolean   not null          default false,
-  CONSTRAINT flow_object_type_child_object_category_pk PRIMARY KEY (id),
-  CONSTRAINT flow_otcoc_object_category_id_fk FOREIGN KEY (object_category_id)
-    REFERENCES flow.object_category (id) MATCH SIMPLE
-    ON UPDATE RESTRICT ON DELETE RESTRICT,
-  CONSTRAINT flow_otcoc_child_object_category_id_fk FOREIGN KEY (child_object_category_id)
-    REFERENCES flow.object_category (id) MATCH SIMPLE
-    ON UPDATE RESTRICT ON DELETE RESTRICT,
-  CONSTRAINT flow_otcoc_created_by_id_fk FOREIGN KEY (created_by_id)
-    REFERENCES flow.user (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT flow_otcoc_modified_by_id_fk FOREIGN KEY (modified_by_id)
-    REFERENCES flow.user (id) MATCH SIMPLE
-    ON UPDATE NO ACTION ON DELETE NO ACTION
-);
+-- drop table if exists flow.company_process_child_company_process;
+-- CREATE TABLE if not exists flow.object_category_child_object_category
+-- (
+--   id                       bigserial NOT NULL,
+--   object_category_id       bigint    not null,
+--   child_object_category_id bigint    not null,
+--   date_created             timestamp without time zone DEFAULT now(),
+--   date_modified            timestamp without time zone DEFAULT now(),
+--   created_by_id            integer   not null,
+--   modified_by_id           integer,
+--   archived                 boolean   not null          default false,
+--   CONSTRAINT flow_object_type_child_object_category_pk PRIMARY KEY (id),
+--   CONSTRAINT flow_otcoc_object_category_id_fk FOREIGN KEY (object_category_id)
+--     REFERENCES flow.object_category (id) MATCH SIMPLE
+--     ON UPDATE RESTRICT ON DELETE RESTRICT,
+--   CONSTRAINT flow_otcoc_child_object_category_id_fk FOREIGN KEY (child_object_category_id)
+--     REFERENCES flow.object_category (id) MATCH SIMPLE
+--     ON UPDATE RESTRICT ON DELETE RESTRICT,
+--   CONSTRAINT flow_otcoc_created_by_id_fk FOREIGN KEY (created_by_id)
+--     REFERENCES flow.user (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION,
+--   CONSTRAINT flow_otcoc_modified_by_id_fk FOREIGN KEY (modified_by_id)
+--     REFERENCES flow.user (id) MATCH SIMPLE
+--     ON UPDATE NO ACTION ON DELETE NO ACTION
+-- );
 
-CREATE INDEX if not exists otcoc_object_type_id_idx ON flow.object_category_child_object_category (object_category_id);
-CREATE INDEX if not exists otcoc_child_object_category_id_idx ON flow.object_category_child_object_category (child_object_category_id);
-create unique index if not exists otcoc_uniq_idx
-    on flow.object_category_child_object_category (object_category_id, child_object_category_id);
+-- CREATE INDEX if not exists otcoc_object_type_id_idx ON flow.object_category_child_object_category (object_category_id);
+-- CREATE INDEX if not exists otcoc_child_object_category_id_idx ON flow.object_category_child_object_category (child_object_category_id);
+-- create unique index if not exists otcoc_uniq_idx
+--     on flow.object_category_child_object_category (object_category_id, child_object_category_id);
 
 -- add object cat/child object cat relationships
-insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
-values ((select id from flow.object_category where object_category_code = 'BUILDER_NEW_HOMES_BUILDER' and object_type_id = 2),
-        (select id from flow.object_category where object_category_code = 'COMMUNITY' and object_type_id = 1), 2417170)
-on conflict do nothing;
+-- insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
+-- values ((select id from flow.object_category where object_category_code = 'BUILDER_NEW_HOMES_BUILDER' and object_type_id = 2),
+--         (select id from flow.object_category where object_category_code = 'COMMUNITY' and object_type_id = 1), 2417170)
+-- on conflict do nothing;
+--
+-- insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
+-- values ((select id from flow.object_category where object_category_code = 'COMMUNITY' and object_type_id = 1),
+--         (select id from flow.object_category where object_category_code = 'NEW_HOME' and object_type_id = 1), 2417170)
+-- on conflict do nothing;
+--
+-- insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
+-- select (select id from flow.object_category where object_category_code = 'PRIMARY_HOMEOWNER' and object_type_id = 2),
+--        (select id from flow.object_category where object_category_code = oc.object_category_code and object_type_id = 1), 2417170
+-- from flow.object_category oc
+-- where not oc.object_category_code in ('COMMUNITY', 'NEW_HOME', 'BUILDER_NEW_HOMES_BUILDER')
+--   and oc.archived is false
+--   and oc.object_type_id = 1
+-- on conflict do nothing;
 
-insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
-values ((select id from flow.object_category where object_category_code = 'COMMUNITY' and object_type_id = 1),
-        (select id from flow.object_category where object_category_code = 'NEW_HOME' and object_type_id = 1), 2417170)
-on conflict do nothing;
+-- alter table flow.contact
+--   add column if not exists nw_migration_id VARCHAR(18);
+-- CREATE INDEX if not exists c_nw_account_id_idx ON flow.contact (nw_migration_id);
 
-insert into flow.object_category_child_object_category(object_category_id, child_object_category_id, created_by_id)
-select (select id from flow.object_category where object_category_code = 'PRIMARY_HOMEOWNER' and object_type_id = 2),
-       (select id from flow.object_category where object_category_code = oc.object_category_code and object_type_id = 1), 2417170
-from flow.object_category oc
-where not oc.object_category_code in ('COMMUNITY', 'NEW_HOME', 'BUILDER_NEW_HOMES_BUILDER')
-  and oc.archived is false
-  and oc.object_type_id = 1
-on conflict do nothing;
+-- alter table flow.project
+--   add column if not exists nw_migration_id VARCHAR(18);
+-- CREATE INDEX if not exists c_nw_project_idx ON flow.project (nw_migration_id);
 
-alter table flow.contact
-  add column if not exists nw_migration_id VARCHAR(18);
-CREATE INDEX if not exists c_nw_account_id_idx ON flow.contact (nw_migration_id);
-
-alter table flow.project
-  add column if not exists nw_migration_id VARCHAR(18);
-CREATE INDEX if not exists c_nw_project_idx ON flow.project (nw_migration_id);
-
-CREATE INDEX if not exists lov_name_idx ON flow.list_of_value (name);
+-- CREATE INDEX if not exists lov_name_idx ON flow.list_of_value (name);
 
 
 drop trigger if exists list_of_value_name_change_trg on flow.list_of_value;
