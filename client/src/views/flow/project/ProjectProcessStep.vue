@@ -349,6 +349,7 @@
             <AttachmentsFolderList
               :object-type-id="4"
               :allow-upload="true"
+              :object-category-id="project.objectCategoryId"
               :small-title="true"
               is-card
               hide-empty
@@ -358,6 +359,7 @@
               :object-type-id="4"
               :load-linked="true"
               :small-title="true"
+              :object-category-id="project.objectCategoryId"
               is-card
               hide-empty
               title="Linked Documents"
