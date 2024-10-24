@@ -22,11 +22,6 @@
           </span>
         </div>
       </v-col>
-      <v-col>
-        ahj: {{project.ahjId}}
-        metro: {{project.metroAreaId}}
-        <div v-for="module in allowedModules">{{module.fieldName}}: {{module.textValue}}</div>
-      </v-col>
     </v-row>
     <v-divider />
     <v-toolbar flat color="transparent">
@@ -34,6 +29,19 @@
         Designs and Proposals
       </v-toolbar-title>
     </v-toolbar>
+    <v-row class="mb-4" v-if="projectLoaded">
+      <v-col v-if="allowedModules?.length > 0 && !showingMore" class="mx-4">
+        <span class="label-medium">{{allowedModules[0].fieldName}}: </span>
+        <span class="body-medium ml-1">{{allowedModules[0].textValue}}</span>
+        <span @click="showingMore = true" class="clickable body-medium anchor text-decoration-underline ml-3">Show more modules</span></v-col>
+      <v-col v-else-if="allowedModules?.length > 0" class="mx-4 body-medium">
+        <div v-for="(module, index) in allowedModules" >
+          <span class="label-medium">{{module.fieldName}}: </span>
+          <span class="body-medium ml-1">{{module.textValue}}</span>
+          <span v-if="index === allowedModules.length - 1" @click="showingMore = false" class="clickable anchor text-decoration-underline ml-3">Show less</span>
+        </div>
+      </v-col>
+    </v-row>
     <v-row class="mx-2" v-if="projectLoaded">
       <v-card
         v-for="(d, idx) in designs"
@@ -516,6 +524,7 @@ const showAIDesignRequestForm = ref(false)
 const savingNewAiDesign = ref(false)
 const pendingAuroraAdjustmentsStatusId = ref(1649)
 const allowedModules = ref(null)
+const showingMore = ref(false)
 
 
 onMounted(async () => {
