@@ -5564,6 +5564,294 @@
 --   CRITTER_GUARD_ADDER_C                  numeric(16, 2)
 -- );
 
+-- drop table if exists brs.AHJ_NAME_C;
+-- create table if not exists brs.AHJ_NAME_C
+-- (
+--     ID                                          VARCHAR(18) not null
+--         primary key,
+--     OWNER_ID                                    VARCHAR(18),
+--     IS_DELETED                                  BOOLEAN,
+--     NAME                                        VARCHAR(240),
+--     CURRENCY_ISO_CODE                           VARCHAR(9),
+--     CREATED_DATE                                TIMESTAMPTZ,
+--     CREATED_BY_ID                               VARCHAR(18),
+--     LAST_MODIFIED_DATE                          TIMESTAMPTZ,
+--     LAST_MODIFIED_BY_ID                         VARCHAR(18),
+--     SYSTEM_MODSTAMP                             TIMESTAMPTZ,
+--     LAST_VIEWED_DATE                            TIMESTAMPTZ,
+--     LAST_REFERENCED_DATE                        TIMESTAMPTZ,
+--     CONNECTION_RECEIVED_ID                      VARCHAR(18),
+--     CONNECTION_SENT_ID                          VARCHAR(18),
+--     AC_DISCONNECT_LOS_OF_INVERTER_C             VARCHAR(765),
+--     AC_DISCONNECT_LOS_OF_MSP_C                  VARCHAR(765),
+--     AHJNAME_ID_C                                VARCHAR(240),
+--     AHJ_SPECIFIC_DESIGN_FORM_NEEDED_C           VARCHAR(98304),
+--     AHJ_TYPE_C                                  VARCHAR(765),
+--     ACCESS_PERMIT_REQUIRED_C                    BOOLEAN,
+--     ACTIVE_C                                    BOOLEAN,
+--     ADDITIONAL_CERT_NEEDED_C                    VARCHAR(150),
+--     APPLICATION_SUBMITTAL_C                     VARCHAR(765),
+--     ADDRESS_C                                   VARCHAR(765),
+--     ADOPTED_AHJ_CODES_C                         VARCHAR(98304),
+--     APPOINTMENT_NEEDED_C                        VARCHAR(765),
+--     COMMUNITY_LEVEL_REVISION_RESPONSIBILITY_C   VARCHAR(765),
+--     CUSTOM_LAYOUT_C                             VARCHAR(765),
+--     ESS_PERMITTING_RESPONSIBILITY_C             VARCHAR(765),
+--     ARRAY_GROUNDING_NOTES_C                     VARCHAR(98304),
+--     ASSOCIATED_AHJ_ID_C                         double precision,
+--     BLOCKING_REQUIRED_FOR_SMART_MOUNT_C         VARCHAR(765),
+--     BUILDING_PERMIT_REQUIRED_C                  BOOLEAN,
+--     CAL_FIRE_NOTES_C                            VARCHAR(98304),
+--     CARBON_MONOXIDE_SMOKE_DETECTOR_C            VARCHAR(765),
+--     CENTER_FED_120_RULE_C                       VARCHAR(150),
+--     CHIEF_INSPECTOR_CONTACT_INFO_C              VARCHAR(765),
+--     CHIEF_INSPECTOR_NOTES_C                     VARCHAR(98304),
+--     CONDUIT_TYPE_MULTI_FAMILY_EMT_C             BOOLEAN,
+--     CONDUIT_TYPE_MULTI_FAMILY_FMC_C             BOOLEAN,
+--     CONDUIT_TYPE_MULTI_FAMILY_RGS_C             BOOLEAN,
+--     CONDUIT_TYPE_MULTI_FAMILY_ROMEX_C           BOOLEAN,
+--     CONTACT_INFO_C                              VARCHAR(765),
+--     CONTRACTOR_STAMP_REQUIRED_NH_C              BOOLEAN,
+--     CONTRACTOR_STAMP_REQUIRED_SPD_C             BOOLEAN,
+--     DC_CONTACTOR_C                              VARCHAR(765),
+--     DC_DISCONNECT_NOTES_C                       VARCHAR(98304),
+--     DC_GEC_FOR_UN_GROUNDED_SYSTEMS_C            VARCHAR(765),
+--     DC_DISCONNECT_OUTSIDE_C                     VARCHAR(765),
+--     ESS_PREFERRED_PROCESS_C                     VARCHAR(765),
+--     DESIGN_WIND_SPEED_ASCE_710_C                VARCHAR(150),
+--     ELECTRICAL_PERMIT_REQUIRED_C                BOOLEAN,
+--     ELECTRICAL_STAMP_REQUIRED_NH_C              BOOLEAN,
+--     ELECTRICAL_STAMP_REQUIRED_SPD_C             BOOLEAN,
+--     ELECTRONIC_SUBMITTAL_C                      VARCHAR(765),
+--     ELEVATION_VIEW_REQUIRED_C                   VARCHAR(765),
+--     EXACT_MEASUREMENTS_FOR_PROPERTY_LINE_C      VARCHAR(765),
+--     EXPOSURE_CATEGORY_C                         VARCHAR(765),
+--     EXTERNAL_CONDUIT_TYPE_C                     VARCHAR(765),
+--     EXPLANATION_IF_ANY_C                        VARCHAR(765),
+--     FAA_PERMIT_REQUIRED_C                       BOOLEAN,
+--     FIRE_PERMIT_REQUIRED_C                      BOOLEAN,
+--     HANDLED_AC_DISCONNECT_C                     VARCHAR(765),
+--     HISTORY_NOTES_C                             VARCHAR(98304),
+--     INCLUDE_BUILDER_SE_LETTER_C                 VARCHAR(765),
+--     INCLUDE_BUILDER_SITE_PLAN_IN_PPNH_C         VARCHAR(765),
+--     INTERNAL_CONDUIT_TYPE_C                     VARCHAR(765),
+--     LINE_SIDE_TAP_NOTES_C                       VARCHAR(98304),
+--     LINE_SIDE_TAP_C                             VARCHAR(765),
+--     LOAD_SIDE_INTERCONNECTION_NOTES_C           VARCHAR(98304),
+--     LOAD_SIDE_TAP_C                             VARCHAR(765),
+--     MASTER_PERMIT_REQ_FORMAT_C                  VARCHAR(765),
+--     NO_STAMP_REQUIRED_NH_C                      BOOLEAN,
+--     NO_STAMP_REQUIRED_SPD_C                     BOOLEAN,
+--     NON_RACK_BASED_MOUNTING_SYSTEMS_C           VARCHAR(765),
+--     NUMBER_OF_COPIES_C                          double precision,
+--     OVER_THE_COUNTER_PERMIT_C                   VARCHAR(765),
+--     PAINT_EXTERIOR_CONDUIT_C                    VARCHAR(765),
+--     AHJ_PREFERRED_PROCESS_C                     VARCHAR(765),
+--     ADDITIONAL_DOCUMENTATION_NEEDED_NH_C        VARCHAR(98304),
+--     ADDITIONAL_DOCUMENTATION_NEEDED_C           VARCHAR(98304),
+--     BUILDING_INSPECTION_WINDOW_C                VARCHAR(765),
+--     PERMIT_COST_C                               double precision,
+--     PERMIT_JURISDICTION_REF_C                   VARCHAR(765),
+--     PERMIT_STATUS_ONLINE_C                      VARCHAR(765),
+--     PERMITTING_NOTES_C                          VARCHAR(98304),
+--     PRE_INSPECTION_PRIOR_TO_PANELS_C            VARCHAR(765),
+--     RESUBMITTAL_COST_C                          double precision,
+--     REVIEW_3_P_CONTACT_C                        VARCHAR(765),
+--     REVIEW_OUT_SOURCED_3_P_C                    VARCHAR(150),
+--     ROOF_ATTACHEMENT_AND_FOOT_DETAIL_C          VARCHAR(765),
+--     LOT_LEVEL_REVISION_RESPONSIBILITY_C         VARCHAR(765),
+--     ROUGH_INSPECTION_NOTES_C                    VARCHAR(98304),
+--     ROUGH_RACKING_PRE_INSTALLATION_INSPECTION_C VARCHAR(765),
+--     STAB_LOCK_PANELS_ALLOWED_C                  VARCHAR(765),
+--     SEISMIC_SHUT_OFF_VALUE_C                    VARCHAR(765),
+--     SEISMIC_ZONE_C                              VARCHAR(150),
+--     SETBACK_C                                   VARCHAR(18),
+--     SHADING_ARC_C                               VARCHAR(765),
+--     SHOW_CONDUIT_ROUTE_ON_ROOF_C                VARCHAR(765),
+--     SITE_PLAN_PLA_CARD_C                        VARCHAR(765),
+--     SNOW_LOADS_C                                double precision,
+--     SOLAR_PERMIT_REQUIRED_C                     BOOLEAN,
+--     SPECIAL_CLEARANCE_REQUIREMENTS_C            VARCHAR(98304),
+--     SPECIAL_LABELING_NH_C                       VARCHAR(98304),
+--     SPECIAL_LABELING_C                          VARCHAR(393216),
+--     SPECIAL_NOTES_ON_AC_DISCONNECT_C            VARCHAR(98304),
+--     SPECIFIC_ROOF_RAFTER_SPACING_C              double precision,
+--     STAMPING_NOTES_NH_C                         VARCHAR(98304),
+--     STAMPING_NOTES_SPD_C                        VARCHAR(98304),
+--     STAMPING_PARTY_C                            VARCHAR(765),
+--     STATE_C                                     VARCHAR(18),
+--     STRUCTURAL_STAMP_REQUIRED_NH_C              BOOLEAN,
+--     STRUCTURAL_STAMP_REQUIRED_SPD_C             BOOLEAN,
+--     TURN_AROUND_TIME_C                          double precision,
+--     UTILITY_OVER_SIZING_NOTES_C                 VARCHAR(98304),
+--     UTILITY_C                                   VARCHAR(18),
+--     NH_PAPER_SIZE_C                             VARCHAR(4099),
+--     ONLINE_ISSUANCE_C                           VARCHAR(765),
+--     ONLINE_SUBMITTAL_LINK_C                     VARCHAR(98304),
+--     PERMIT_COST_STORAGE_C                       double precision,
+--     SPD_PAPER_SIZE_C                            VARCHAR(4099),
+--     ELECTRICAL_INSPECTION_WINDOW_C              VARCHAR(765),
+--     FINAL_PERMIT_COLLECTION_C                   VARCHAR(98304),
+--     INSPECTION_NOTES_C                          VARCHAR(98304),
+--     MPPP_COST_C                                 VARCHAR(120),
+--     MPPP_PAPER_SIZE_C                           VARCHAR(765),
+--     NH_PERMIT_NOTES_C                           VARCHAR(98304),
+--     NUMBER_OF_COPIES_FOR_MPPP_C                 VARCHAR(765),
+--     NUMBER_OF_COPIES_FOR_I_PLOT_I_PERMIT_C      VARCHAR(765),
+--     OFFICE_HOURS_C                              VARCHAR(765),
+--     PV_ROUGH_WIRE_INSPECTION_REQUIRED_C         VARCHAR(765),
+--     PAYMENT_TYPES_C                             VARCHAR(765),
+--     SPD_AHJ_SPECIFIC_DESIGN_FORM_NEEDED_C       VARCHAR(98304),
+--     SPD_NUMBER_OF_COPIES_C                      double precision,
+--     SOLAR_NOTATION_ON_HOME_PERMIT_C             VARCHAR(765),
+--     STORAGE_ROUGH_WIRE_INSPECTION_REQUIRED_C    VARCHAR(765),
+--     ZONING_REQUIRED_C                           VARCHAR(765),
+--     I_PERMIT_COST_STORAGE_ONLY_C                VARCHAR(120),
+--     I_PERMIT_COST_C                             VARCHAR(120),
+--     I_PLOT_COST_C                               VARCHAR(120),
+--     I_PLOT_I_PERMIT_PAPER_SIZE_C                VARCHAR(765),
+--     NH_PERMITTING_TURN_AROUND_TIME_C            double precision,
+--     AC_DISCONNECT_NOTES_NH_ONLY_C               VARCHAR(98304),
+--     ESS_DESIGN_REQUIREMENTS_C                   VARCHAR(98304),
+--     ESS_PERMIT_REQUIREMENTS_C                   VARCHAR(98304),
+--     IS_AC_DISCONNECT_REQUIRED_NH_ONLY_C         VARCHAR(765),
+--     EV_CHARGER_DESIGN_REQUIREMENTS_C            VARCHAR(98304),
+--     EV_CHARGER_PERMIT_REQUIREMENTS_C            VARCHAR(98304),
+--     NEW_HOMES_REGION_C                          VARCHAR(765),
+--     I_PERMIT_PAPER_SIZE_C                       VARCHAR(765),
+--     PERMIT_PICKUP_TASK_DAYS_C                   double precision,
+--     AHJREGISTRY_CODE_C                          VARCHAR(765),
+--     AHJREGISTRY_ID_C                            VARCHAR(765),
+--     AHJREGISTRY_NAME_C                          VARCHAR(765),
+--     LETTER_OF_AUTHORIZATION_REQUIRED_C          BOOLEAN,
+--     PERMIT_PAYMENT_METHOD_C                     VARCHAR(4099),
+--     CHIEF_BUILDING_OFFICIAL_EMAIL_C             VARCHAR(240),
+--     SUBMITTAL_TYPE_C                            VARCHAR(765),
+--     PERMIT_ISSUANCE_C                           VARCHAR(765),
+--     AHJ_PROCESS_CONFIRMED_DATE_C                DATE,
+--     BUILDER_LETTER_OF_AUTH_REQUIRED_C           BOOLEAN,
+--     CITY_BUSINESS_LICENSE_EXPIRATION_C          DATE,
+--     CITY_BUSINESS_LICENSE_NUMBER_C              VARCHAR(300),
+--     CONTRACTOR_LETTER_OF_AUTH_REQUIRED_C        BOOLEAN,
+--     ESS_PERMITTING_PROCESS_CONFIRMED_C          BOOLEAN,
+--     IS_SSP_REQUIRED_WITH_MPPP_C                 BOOLEAN,
+--     MF_MPPP_FORMAT_C                            VARCHAR(765),
+--     MPPP_FORMAT_C                               VARCHAR(765),
+--     MPPP_TURNAROUND_TIME_C                      VARCHAR(765),
+--     NH_PERMIT_TEAM_SUPERVISOR_C                 VARCHAR(765),
+--     _FIVETRAN_SYNCED                            TIMESTAMPTZ,
+--     _FIVETRAN_DELETED                           BOOLEAN,
+--     BUILDER_PERMITTING_TYPE_C                   VARCHAR(765),
+--     HOMEOWNER_SIGNATURE_REQUIRED_C              BOOLEAN,
+--     MPPP_SUBMITTAL_TYPE_C                       VARCHAR(765),
+--     HOMEOWNER_SIGNATURE_DOCUMENTS_C             VARCHAR(98304),
+--     MPPP_ISSUANCE_TYPE_C                        VARCHAR(765),
+--     IS_IT_IN_LINE_OF_SIGHT_OF_MSP_NH_ONLY_P_C   VARCHAR(765),
+--     CAL_FIRE_GUIDELINES_STRICTLY_ENFORCED_C     VARCHAR(765),
+--     PERMIT_JURISDICTION_WEBSITE_C               VARCHAR(765),
+--     SOLAR_APP_PARTICIPATION_C                   VARCHAR(765),
+--     HOA_APPROVAL_IS_REQ_PRIOR_TO_SUBMISSION_C   BOOLEAN,
+--     POST_INSTALLATION_DOCUMENT_REQUIRED_C       BOOLEAN,
+--     UTILITY_APPROVAL_REQ_BEFORE_SUBMISSION_C    BOOLEAN,
+--     ELIGIBLE_PROJECT_TYPES_C                    VARCHAR(4099),
+--     FIRE_JURISDICTION_C                         VARCHAR(98304),
+--     SUBMISSION_PROCESS_C                        VARCHAR(98304),
+--     REVISION_PROCESS_C                          VARCHAR(98304)
+-- );
+--
+-- drop table if exists brs.AHJ_UTILITY_C;
+--   create table if not exists  brs.AHJ_UTILITY_C
+-- (
+--     ID                                     VARCHAR(18) not null
+--         primary key,
+--     OWNER_ID                               VARCHAR(18),
+--     IS_DELETED                             BOOLEAN,
+--     NAME                                   VARCHAR(240),
+--     CURRENCY_ISO_CODE                      VARCHAR(9),
+--     CREATED_DATE                           TIMESTAMPTZ,
+--     CREATED_BY_ID                          VARCHAR(18),
+--     LAST_MODIFIED_DATE                     TIMESTAMPTZ,
+--     LAST_MODIFIED_BY_ID                    VARCHAR(18),
+--     SYSTEM_MODSTAMP                        TIMESTAMPTZ,
+--     LAST_VIEWED_DATE                       TIMESTAMPTZ,
+--     LAST_REFERENCED_DATE                   TIMESTAMPTZ,
+--     CONNECTION_RECEIVED_ID                 VARCHAR(18),
+--     CONNECTION_SENT_ID                     VARCHAR(18),
+--     AC_DISCONNECT_REQUIRED_C               BOOLEAN,
+--     AC_DISCONNECT_REQUIREMENT_NOTES_C      VARCHAR(98304),
+--     AHJ_UTILITY_ID_C                       VARCHAR(240),
+--     ADDITIONAL_UTILITY_NOTES_C             VARCHAR(98304),
+--     LAYOUT_REQUIRED_C                      BOOLEAN,
+--     LINE_DIAGRAM_REQUIRED_C                BOOLEAN,
+--     OVERSIZING_ALLOWANCE_AND_REQUIREMENT_C VARCHAR(98304),
+--     PROD_METER_REQUIRED_C                  VARCHAR(765),
+--     PRODUCTION_METER_NOTES_C               VARCHAR(98304),
+--     TURN_AROUND_TIME_C                     DOUBLE precision,
+--     UTILITY_PLACE_CARD_REQUIREMENT_C       VARCHAR(98304),
+--     STATE_C                                VARCHAR(765),
+--     ACTIVATION_TRACKER_ENABLED_C           BOOLEAN,
+--     _FIVETRAN_DELETED                      BOOLEAN,
+--     _FIVETRAN_SYNCED                       TIMESTAMPTZ,
+--     UTILITY_PRE_COMM_NOTES_C               VARCHAR(98304),
+--     PERMIT_COLLECTION_URL_C                VARCHAR(765),
+--     UTILITY_POC_C                          VARCHAR(765),
+--     ADDITIONAL_DOCUMENTS_C                 VARCHAR(765),
+--     APPLICATION_PORTAL_URL_C               VARCHAR(765),
+--     GBFS_HANDOFF_C                         BOOLEAN,
+--     FINAL_PERMIT_REQUIREMENTS_C            VARCHAR(765),
+--     ESS_URL_C                              VARCHAR(765),
+--     GBFS_PROCESS_LINK_C                    BOOLEAN,
+--     SIZE_RESTRICTIONS_C                    VARCHAR(765),
+--     INSURANCE_COPY_REQUIRED_C              BOOLEAN,
+--     IC_REQUIREMENTS_DOCUMENTED_C           BOOLEAN,
+--     INTERCONNECT_FEES_C                    numeric(17, 2),
+--     LAST_UTILITY_PROCESS_REVIEW_C          DATE,
+--     PTO_TIMELINE_C                         VARCHAR(765),
+--     PRE_APPROVAL_PROCESS_C                 VARCHAR(765),
+--     UTILITY_URL_C                          VARCHAR(765),
+--     PAYMENT_TYPE_C                         VARCHAR(765),
+--     ADDITIONAL_PERMIT_IC_NOTES_C           VARCHAR(765),
+--     DESIGN_FOLDER_C                        VARCHAR(765),
+--     ESS_REQUIREMENTS_C                     VARCHAR(765),
+--     PANEL_INVERTER_SPEC_SHEET_REQUIRED_C   BOOLEAN,
+--     BUILDER_SIGNATURE_REQUIRED_C           BOOLEAN,
+--     ESS_REQUIREMENTS_DOCUMENTED_C          VARCHAR(765),
+--     FINAL_PERMIT_COLLECTION_C              VARCHAR(765),
+--     PRE_APPROVAL_REQUIRED_C                BOOLEAN,
+--     AC_DISCO_SPEC_SHEET_REQUIRED_C         BOOLEAN,
+--     SUBMITTAL_C                            VARCHAR(765),
+--     BUYER_VS_BUILDER_SUBMITTALS_C          VARCHAR(765),
+--     SIDE_ELEVATION_REQUIRED_C              BOOLEAN
+-- );
+
+-- drop table if exists brs.AHJ_STATE_C;
+-- create table if not exists brs.AHJ_STATE_C
+-- (
+--   ID                                          VARCHAR(18) not null
+--     primary key,
+--   OWNER_ID                                    VARCHAR(18),
+--   IS_DELETED                                  BOOLEAN,
+--   NAME                                        VARCHAR(240),
+--   CURRENCY_ISO_CODE                           VARCHAR(9),
+--   CREATED_DATE                                TIMESTAMPTZ,
+--   CREATED_BY_ID                               VARCHAR(18),
+--   LAST_MODIFIED_DATE                          TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                         VARCHAR(18),
+--   SYSTEM_MODSTAMP                             TIMESTAMPTZ,
+--   LAST_VIEWED_DATE                            TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE                        TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID                      VARCHAR(18),
+--   CONNECTION_SENT_ID                          VARCHAR(18),
+--   AHJ_STATE_ID_C                              DOUBLE precision,
+--   ABBREVIATION_C                              VARCHAR(6),
+--   STATE_CONTRACTORS_LICENSE_COPY_C            VARCHAR(765),
+--   STATE_CONTRACTORS_LICENSE_EXPIRATION_DATE_C DATE,
+--   STATE_CONTRACTORS_LICENSE_NUMBER_C          VARCHAR(765),
+--   _FIVETRAN_DELETED                           BOOLEAN,
+--   _FIVETRAN_SYNCED                            TIMESTAMPTZ
+-- );
+
+
 
 
 
@@ -5841,100 +6129,107 @@ update flow.user set nh_migration_id = array['0052T00000DUZyAQAX'], date_modifie
 
 DO --10 seconds
 $do$
-  declare
-    x            record;
-    v_contact_id bigint;
-  v_object_category_id bigint;
-  v_lov_available_lender_c bigint[];
-
-  BEGIN
-    raise notice '1 START = %',now();
-    select oc.id
-      into v_object_category_id
+    declare
+        x                        record;
+        v_contact_id             bigint;
+        v_object_category_id     bigint;
+        v_lov_available_lender_c bigint[];
+        v_total bigint;
+    BEGIN
+        raise notice '1 START = %',now();
+        select oc.id
+        into v_object_category_id
         from flow.object_category oc
-      where object_category_code = 'BUILDER_NEW_HOMES_BUILDER' and object_type_id= 2;
-    for x in select lov1.id as status_c1 ,cs.id as company_state_id,
-                    a.cash_partner_c,
-                    a.contact_name_c,
-                    a.credit_check_c,
-                    a.credit_limit_c,
-                    a.credit_limit_date_c,
-                    a.default_dealer_warehouse_shipping_site_c,
-                    a.description,
-                    a.i_supplier_c,
-                    a.legal_business_name_c,
-                    a.rlcpa_notes_c,
-                    a.shipping_city,
-                    a.shipping_postal_code,
-                    a.shipping_state,
-                    a.shipping_street,
-                    a.spwr_cash_partner_c,
-                    a.website,
-                    a.id,
-                    a.name,
-                    a.last_name,
-                    a.billing_street,
-                    a.billing_city,
-                    a.billing_postal_code,
-                    a.phone,
-                    a.email_c,
-                    a.account_number,
-                    a.available_lender_c
-             from brs.account a
-                    left join flow.state s on s.abbreviation = a.billing_state
-                    left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
-                    left join flow.list_of_value lov1 on lov1.name = a.status_c and lov1.parent_id = 25722
-             where type = 'Builder'
+        where object_category_code = 'BUILDER_NEW_HOMES_BUILDER'
+          and object_type_id = 2;
+        v_total = 0;
+        for x in select lov1.id as status_c1,
+                        cs.id   as company_state_id,
+                        a.cash_partner_c,
+                        a.contact_name_c,
+                        a.credit_check_c,
+                        a.credit_limit_c,
+                        a.credit_limit_date_c,
+                        a.default_dealer_warehouse_shipping_site_c,
+                        a.description,
+                        a.i_supplier_c,
+                        a.legal_business_name_c,
+                        a.rlcpa_notes_c,
+                        a.shipping_city,
+                        a.shipping_postal_code,
+                        a.shipping_state,
+                        a.shipping_street,
+                        a.spwr_cash_partner_c,
+                        a.website,
+                        a.id,
+                        a.name,
+                        a.last_name,
+                        a.billing_street,
+                        a.billing_city,
+                        a.billing_postal_code,
+                        a.phone,
+                        a.email_c,
+                        a.account_number,
+                        a.available_lender_c,
+                        a.owner_id
+                 from brs.account a
+                          left join flow.state s on s.abbreviation = a.billing_state
+                          left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
+                          left join flow.list_of_value lov1 on lov1.name = a.status_c and lov1.parent_id = 25722
+                 where type = 'Builder'
 
-      loop
-        v_contact_id = null;
-        insert into flow.contact(contact_type_id, first_name, last_name, street1, street2, city, postal_code, phone,
-                                 email, mobile, date_created, date_modified, created_by_id, modified_by_id, company_id,
-                                 archived,
-                                 company_state_id, company_country_id, nw_migration_id,object_category_id)
-        values (1, x.name, x.LAST_NAME, x.billing_street, null, x.billing_city, x.billing_postal_code, x.phone, x.email_c,
-                x.phone, now(), now(), 2384850, 2384850, 3, false,
-                x.company_state_id, 1, x.id,v_object_category_id)
-        returning id into v_contact_id;
+            loop
+            v_contact_id = null;
+            v_total = v_total + 1;
+            insert into flow.contact(contact_type_id, first_name, last_name, street1, street2, city, postal_code, phone,
+                                     email, mobile, date_created, date_modified, created_by_id, modified_by_id,
+                                     company_id,
+                                     archived,
+                                     company_state_id, company_country_id, nw_migration_id, object_category_id)
+            values (1, x.name, x.LAST_NAME, x.billing_street, null, x.billing_city, x.billing_postal_code, x.phone,
+                    x.email_c,
+                    x.phone, now(), now(), 2384850, 2384850, 3, false,
+                    x.company_state_id, 1, x.id, v_object_category_id)
+            returning id into v_contact_id;
 
-        if v_contact_id is not null then
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28812, x.account_number::text,true);
-          v_lov_available_lender_c = null;
-          if x.available_lender_c is not null then
-            select array_agg(lov.id)
-            into v_lov_available_lender_c
-            from (
-                   SELECT unnest(string_to_array(aggregated_column, ';')) available_lender_c
-                   FROM (
-                          SELECT STRING_AGG(available_lender_c, ';') AS aggregated_column
-                          from brs.ACCOUNT A2
-                          where id = x.id
-                        ) AS subquery) as foo
-                   inner join flow.list_of_value lov on lov.name = foo.available_lender_c and lov.parent_id = 25717;
-            perform flow.set_contact_cfv(v_contact_id , 2384850,28813,v_lov_available_lender_c::text, true);
-          end if;
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28814, x.cash_partner_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28815, x.contact_name_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28816, x.credit_check_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28817, x.credit_limit_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28818, x.credit_limit_date_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28819, x.default_dealer_warehouse_shipping_site_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28820, x.description::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28821, x.i_supplier_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28822, x.legal_business_name_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28823, flow.get_user_id_nh(x.owner_id::text)::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28826, x.rlcpa_notes_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28831, x.shipping_city::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28832, x.shipping_postal_code::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28833, x.shipping_state::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28830, x.shipping_street::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28827, x.spwr_cash_partner_c::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28828, x.status_c1::text,true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28829, x.website::text,true);
-        end if;
-      end loop;
-    raise notice '1 END = %',now();
-  end
+            if v_contact_id is not null then
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28812, x.account_number::text, true);
+                v_lov_available_lender_c = null;
+                if x.available_lender_c is not null then
+                    select array_agg(lov.id)
+                    into v_lov_available_lender_c
+                    from (SELECT unnest(string_to_array(aggregated_column, ';')) available_lender_c
+                          FROM (SELECT STRING_AGG(available_lender_c, ';') AS aggregated_column
+                                from brs.ACCOUNT A2
+                                where id = x.id) AS subquery) as foo
+                             inner join flow.list_of_value lov
+                                        on lov.name = foo.available_lender_c and lov.parent_id = 25717;
+                    perform flow.set_contact_cfv(v_contact_id, 2384850, 28813, v_lov_available_lender_c::text, true);
+                end if;
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28814, x.cash_partner_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28815, x.contact_name_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28816, x.credit_check_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28817, x.credit_limit_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28818, x.credit_limit_date_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28819,
+                                             x.default_dealer_warehouse_shipping_site_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28820, x.description::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28821, x.i_supplier_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28822, x.legal_business_name_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28823, flow.get_user_id_nh(x.owner_id::text)::text,true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28826, x.rlcpa_notes_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28831, x.shipping_city::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28832, x.shipping_postal_code::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28833, x.shipping_state::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28830, x.shipping_street::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28827, x.spwr_cash_partner_c::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28828, x.status_c1::text, true);
+                perform flow.set_contact_cfv(v_contact_id, 2384850, 28829, x.website::text, true);
+            end if;
+        end loop;
+        raise notice '1 END = %',now();
+        raise notice '1 END total = %',v_total;
+    end
 $do$;
 
 
@@ -5948,8 +6243,10 @@ $do$
     v_financial_offering_c bigint[];
     v_roof_attachment_c    bigint[];
     v_count bigint;
+    v_total bigint;
   BEGIN
     v_count = 0;
+    v_total = 0;
     raise notice '2 START = %',now();
     select oc.id
     into v_object_category_id
@@ -6108,8 +6405,10 @@ $do$
                     left join flow.list_of_value l33 on l33.name = c.community_type_c and l33.parent_id =25162
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
-          commit;
+        raise notice 'v_count = %',v_count;
+          --commit;
           v_count = 0;
         end if;
         v_project_id = null;
@@ -6284,6 +6583,7 @@ $do$
 
       end loop;
     raise notice '2 END = %',now();
+    raise notice '2 END total = %',v_total;
   end
 $do$;
 
@@ -6305,6 +6605,7 @@ $do$
     v_project_process_step_campaign_id     bigint;
     v_deliver_to_c_id                      bigint[];
     v_count bigint;
+    v_total bigint;
     v_project_process_step_pricing_id  bigint;
     v_project_process_step_pricing_event_id  bigint;
       v_project_process_step_visits_id  bigint;
@@ -6312,6 +6613,7 @@ $do$
   BEGIN
     raise notice '3 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in select p.id     as project_id,
                     co.id    as community_id
              from brs.NH_COMMUNITY_C co
@@ -6320,9 +6622,10 @@ $do$
                     inner join flow.contact c2 on c2.nw_migration_id = a.id
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_plan_id = null;
@@ -6333,37 +6636,38 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3756, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+        values (x.project_id, 3756, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,x.community_id)
         returning id into v_project_process_step_plan_id;
 
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3738, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+        values (x.project_id, 3738, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,x.community_id)
         returning id into v_project_process_step_design_id;
 
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3789, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+        values (x.project_id, 3789, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,x.community_id)
         returning id into v_project_process_step_pricing_id;
 
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3757, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+        values (x.project_id, 3757, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,x.community_id)
         returning id into v_project_process_step_visits_id;
 
 
 
         for u in select
+                   c3.id as campaign_id,
                    c3.owner_id,
                    lov1.id as lov1_sales_status_c_id,
                    c3.end_date,
@@ -6381,19 +6685,20 @@ $do$
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
             values (x.project_id, 3758, null, case when u.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
-                    case when u.is_last_row is true then  true else false end, null, null, null)
+                    case when u.is_last_row is true then  true else false end, null, null, null,u.campaign_id)
             returning id into v_project_process_step_campaign_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28116, u.lov1_sales_status_c_id::text, true);
-            perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28117, flow.get_user_id_nh(x.owner_id::text)::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28117, flow.get_user_id_nh(u.owner_id::text)::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28118, u.end_date::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28119, u.short_description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28120, u.description::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28121, u.solar_cut_off_c::text, true);
         end loop;
 
-        for s in select bpc.active_c,
+        for s in select bpc.id as builder_pricing_id,
+                        bpc.active_c,
                         bpc.cash_incentive_fee_c,
                         bpc.lease_incentive_fee_c,
                         bpc.nem_3_0_lease_incentives_c,
@@ -6416,9 +6721,9 @@ $do$
                                                         company_event_status_type_id, start_time, end_time,
                                                         date_created,
                                                         date_modified, created_by_id, modified_by_id, archived,
-                                                        cancelled_date, completed_date, scheduled_date, save_version)
+                                                        cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
             values (v_project_process_step_pricing_id, 239, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
-                    null, null, 1)
+                    null, null, 1,s.builder_pricing_id)
             returning id into v_project_process_step_pricing_event_id;
 
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_pricing_event_id, 2384850, 28732, s.active_c::text,true);
@@ -6438,7 +6743,8 @@ $do$
 
           end loop;
 
-        for t in select ncvc.visit_notes_c,
+        for t in select ncvc.id as nh_visit_id,
+                        ncvc.visit_notes_c,
                         ncvc.RECENT_VISIT_DATE_C,
                         lov1.id as lov1_role_c_id
                  from brs.NH_COMMUNITY_VISIT_C ncvc
@@ -6451,9 +6757,9 @@ $do$
                                                         company_event_status_type_id, start_time, end_time,
                                                         date_created,
                                                         date_modified, created_by_id, modified_by_id, archived,
-                                                        cancelled_date, completed_date, scheduled_date, save_version)
+                                                        cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
             values (v_project_process_step_visits_id, 237, null, 3, t.RECENT_VISIT_DATE_C, null, now(), now(), 2384850, 2384850, false, null,
-                    null, null, 1)
+                    null, null, 1,t.nh_visit_id)
             returning id into v_project_process_step_visits_events_id;
 
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_visits_events_id, 2384850, 28114, t.lov1_role_c_id::text,true);
@@ -6461,7 +6767,9 @@ $do$
 
           end loop;
 
-        for y in select ptc.NAME,
+        for y in select ptc.id as plan_type_id,
+                        ptc.NAME,
+                        ptc.created_by_id,
                         ptc.ADDITIONAL_COST_FOR_STORAGE_C,
                         ptc.BASE_SQUARE_FOOTAGE_C,
                         ptc.flat_monthly_tpo_rate_c,
@@ -6483,9 +6791,9 @@ $do$
                                                         company_event_status_type_id, start_time, end_time,
                                                         date_created,
                                                         date_modified, created_by_id, modified_by_id, archived,
-                                                        cancelled_date, completed_date, scheduled_date, save_version)
+                                                        cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
             values (v_project_process_step_plan_id, 236, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
-                    null, null, 1)
+                    null, null, 1,y.plan_type_id)
             returning id into v_project_process_step_plan_event_id;
 
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28099, flow.get_user_id_nh(y.CREATED_BY_ID::text)::text, true);
@@ -6502,7 +6810,8 @@ $do$
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28110, y.sun_vault_retail_value_c::text,true);
 
           end loop;
-          for z in select dc.revision_of_c,
+          for z in select
+                          dc.revision_of_c,
                           dc.missing_information_c,
                           dc.date_design_must_be_completed_c,
                           dc.date_design_request_verified_c,
@@ -6527,6 +6836,7 @@ $do$
                           dc.notes_from_requester_c,
                           dc.status_c,
                           dc.id,
+                          dc.project_designer_c,
                           lov1.id as lov1_mppp_revision_needed_c_id,
                           lov2.id as lov2_nh_urgent_request_type_c_id,
                           lov3.id as lov3_incoming_request_had_all_information_c_id,
@@ -6559,7 +6869,7 @@ $do$
                                                           company_event_status_type_id, start_time, end_time,
                                                           date_created,
                                                           date_modified, created_by_id, modified_by_id, archived,
-                                                          cancelled_date, completed_date, scheduled_date, save_version)
+                                                          cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
               values (v_project_process_step_design_id, 240, null,
                       case
                         when z.status_c is null then 90
@@ -6583,7 +6893,7 @@ $do$
                         when z.status_c = 'Cancelled' then 104
                         when z.status_c = 'Engineering Research' then 105 end, null, null, now(), now(), 2384850, 2384850,
                       false, null,
-                      null, null, 1)
+                      null, null, 1,z.id)
               returning id into v_project_process_step_event_design_id;
 
               perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28740, flow.get_user_id_nh(z.project_designer_c::text)::text, true);
@@ -6682,6 +6992,7 @@ $do$
           end loop;
       end loop;
     raise notice '3 END = %',now();
+    raise notice '3 END total = %',v_total;
   end
 $do$;
 
@@ -6698,9 +7009,11 @@ $do$
   v_object_category_project_id bigint;
   v_system_adders_c bigint[];
   v_count bigint;
+  v_total bigint;
   BEGIN
     raise notice '4 START = %',now();
     v_count = 0;
+    v_total = 0;
     select oc.id
     into v_object_category_project_id
     from flow.object_category oc
@@ -6884,6 +7197,7 @@ $do$
                     rpc.rough_wire_completed_by_c,
                     rpc.trench_completed_by_c,
                     rpc.activation_coordinator_c,
+                    rpc.storage_rough_completed_by_c,
                     c2.id as builder_contact_id,
                     p.id as community_project_id,
                     lov1.id as  lov1_priority_c,
@@ -6973,9 +7287,10 @@ $do$
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_contact_id = null;
@@ -7149,7 +7464,7 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28341,x.storage_install_promised_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28342,x.storage_rough_complete_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28343,x.storage_rough_complete_date_c::text, true);
-        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28344,flow.get_user_id_nh(x.storage_rough_completed_c::text)::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28344,flow.get_user_id_nh(x.storage_rough_completed_by_c::text)::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28345,x.storage_rough_complete_pull_date_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28346,x.storage_install_complete_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28347,x.storage_install_complete_date_c::text, true);
@@ -7281,10 +7596,11 @@ $do$
           end loop;
       end loop;
     raise notice '4 END = %',now();
+    raise notice '4 END total = %',v_total;
   end
 $do$;
 
-
+--todo plan type for RP carlin
 DO
 $do$
   declare
@@ -7317,24 +7633,27 @@ v_count bigint;
                p.id as community_project_id,
                ptc.id as project_task_id
              from brs.PROJECT_TASK_C ptc
+              inner join brs.RESIDENTIAL_PROJECT_C RPC on rpc.id = ptc.RESIDENTIAL_PROJECT_C
             inner join flow.project p on p.nw_migration_id = ptc.residential_project_c
              left join flow.list_of_value lov1 on lov1.name = ptc.project_priority_c and  lov1.parent_id = 25516
              left join flow.list_of_value lov2 on lov2.name = ptc.role_assignment_c and lov2.parent_id = 25733
              left join flow.list_of_value lov3 on lov3.name = ptc.blocks_c and lov3.parent_id = 25741
       where
-            ptc.status_c != 'Not Started' and
+            ptc.status_c not in ('Not Started','Cancelled') and
             ptc.record_type_id = '01234000000BmbOAAS' and
             ptc.is_deleted = false and
-            upper(ptc.path_type_c) = 'STANDARD'
-      order by residential_project_c,ptc.created_date desc
+            upper(ptc.path_type_c) = 'STANDARD' and
+            rpc.STATUS_C != 'Cancelled' and   --todo revisit this
+            ptc.critical_path_c = true
+      order by residential_project_c,ptc.order_c desc
       loop
         v_count = v_count + 1;
         v_total = v_total + 1;
         v_project_process_step_id = null;
         if v_count = 5000 then
           raise notice 'v_count %',v_count;
-          raise notice 'v_total %',v_total;
-          commit;
+
+          --commit;
           v_count = 0;
         end if;
         case
@@ -7343,8 +7662,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3759, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3759, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)
             returning id into v_project_process_step_id;
 
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29025, w.description_c::text, true);
@@ -7366,8 +7685,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3760, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3760, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29065, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29066, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29067, w.comment_c::text, true);
@@ -7386,8 +7705,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3761, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3761, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28977, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28978, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28979, w.comment_c::text, true);
@@ -7405,8 +7724,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3762, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3762, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28977, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28978, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28979, w.comment_c::text, true);
@@ -7424,8 +7743,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3763, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3763, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28955, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28956, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28957, w.comment_c::text, true);
@@ -7443,8 +7762,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3764, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3764, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29076, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29077, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29078, w.comment_c::text, true);
@@ -7462,8 +7781,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3765, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3765, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29087, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29088, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29089, w.comment_c::text, true);
@@ -7481,8 +7800,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3766, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3766, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28932, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28933, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28935, w.comment_c::text, true);
@@ -7500,8 +7819,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3767, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3767, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29018, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29019, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29020, w.comment_c::text, true);
@@ -7519,8 +7838,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3768, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3768, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29098, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29099, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29100, w.comment_c::text, true);
@@ -7538,8 +7857,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3769, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3769, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28988, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28989, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28990, w.comment_c::text, true);
@@ -7557,8 +7876,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3770, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3770, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28997, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28998, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28999, w.comment_c::text, true);
@@ -7576,8 +7895,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3771, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3771, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29109, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29110, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29111, w.comment_c::text, true);
@@ -7595,8 +7914,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3772, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3772, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29004, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29005, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29006, w.comment_c::text, true);
@@ -7614,8 +7933,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3773, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3773, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29120, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29121, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29122, w.comment_c::text, true);
@@ -7633,8 +7952,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3774, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3774, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28966, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28967, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28968, w.comment_c::text, true);
@@ -7652,8 +7971,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3775, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3775, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29131, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29132, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29133, w.comment_c::text, true);
@@ -7671,8 +7990,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3776, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3776, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29054, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29055, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29056, w.comment_c::text, true);
@@ -7690,8 +8009,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3777, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3777, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29142, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29143, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29144, w.comment_c::text, true);
@@ -7709,8 +8028,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3778, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3778, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29153, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29154, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29155, w.comment_c::text, true);
@@ -7728,8 +8047,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3779, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3779, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28910, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28911, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28912, w.comment_c::text, true);
@@ -7747,8 +8066,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3780, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3780, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28921, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28922, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28923, w.comment_c::text, true);
@@ -7766,8 +8085,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3781, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3781, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28944, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28945, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28946, w.comment_c::text, true);
@@ -7785,8 +8104,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3782, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3782, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29164, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29165, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29166, w.comment_c::text, true);
@@ -7804,8 +8123,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3783, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3783, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29175, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29176, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29177, w.comment_c::text, true);
@@ -7823,8 +8142,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3784, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3784, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29186, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29187, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29188, w.comment_c::text, true);
@@ -7842,8 +8161,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3785, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3785, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29197, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29198, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29199, w.comment_c::text, true);
@@ -7861,8 +8180,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3786, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3786, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29208, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29209, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29210, w.comment_c::text, true);
@@ -7880,8 +8199,8 @@ v_count bigint;
                                                    company_process_step_status_type_id,
                                                    process_step_complete_date, date_created, date_modified, created_by_id,
                                                    modified_by_id, archived, main, parent_project_process_step_id,
-                                                   cancelled_date, parent_project_process_step_event_id)
-            values (w.community_project_id, 3787, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)returning id into v_project_process_step_id;
+                                                   cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+            values (w.community_project_id, 3787, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,w.project_task_id)returning id into v_project_process_step_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29011, w.description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29012, w.lov1_project_priority_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29013, w.comment_c::text, true);
@@ -7900,6 +8219,7 @@ v_count bigint;
 
       end loop;
     raise notice '5 END = %',now();
+    raise notice '5 END total = %',v_total;
 end
 $do$;
 
@@ -7909,11 +8229,14 @@ $do$
   declare
     x       record;
     v_count bigint;
+    v_total bigint;
     v_project_process_step_id bigint;
   BEGIN
     raise notice '6 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in select p.id             as project_id,
+                    ccrc.id as credit_check_request_id,
                     ccrc.auth_token_c,
                     ccrc.comments_c,
                     ccrc.credit_application_url_c,
@@ -7941,7 +8264,7 @@ $do$
                     lov3.id          as lov3_credit_beureu_c_id,
                     lov4.id          as lov4_lender_c_id,
                     CASE
-                      WHEN row_number() OVER (PARTITION BY account_c ORDER BY ccrc.created_date desc) = 1 THEN TRUE
+                      WHEN row_number() OVER (PARTITION BY account_c ORDER BY ccrc.credit_check_expiration_date_c desc) = 1 THEN TRUE --todo check nulls
                       ELSE FALSE END AS is_last_row
              from brs.CREDIT_CHECK_REQUEST_C ccrc
                     inner join flow.contact c on c.nw_migration_id = ccrc.account_c
@@ -7950,23 +8273,24 @@ $do$
                     left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
                     left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713
                     left join flow.list_of_value lov4 on lov4.name = ccrc.lender_c and lov4.parent_id = 25715
-             order by ccrc.account_c,ccrc.created_date
+             order by ccrc.account_c,ccrc.credit_check_expiration_date_c
       loop
         v_project_process_step_id = null;
       v_count = v_count + 1;
+      v_total = v_total + 1;
       if v_count = 5000 then
         raise notice 'v_count = %',v_count;
-        commit;
+        --commit;
         v_count = 0;
       end if;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3792, null, case when x.is_last_row is true then 1 else 2 end, null, now(), now(),
                 2384850, 2384850, false,
-                case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
+                case when x.is_last_row is true then true else false end, null, null, null,x.credit_check_request_id) returning id into v_project_process_step_id;
 
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28786, x.auth_token_c::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28788, x.comments_c::text, true);
@@ -7996,6 +8320,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28803, x.lov4_lender_c_id::text, true);
       end loop;
     raise notice '6 END = %',now();
+    raise notice '6 END total = %',v_total;
   end
 $do$;
 
@@ -8004,11 +8329,14 @@ $do$
   declare
     x record;
   v_count bigint;
+  v_total bigint;
   v_project_process_step_id bigint;
   BEGIN
     raise notice '7 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in select p.id as project_id,
+                    tcc.id as title_check_id,
                     tcc.alternate_apn_c,
                     tcc.apn_c,
                     tcc.census_block_c,
@@ -8058,18 +8386,19 @@ $do$
       loop
         v_project_process_step_id = null;
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3794, null, case when x.is_last_row is true then 1 else 2 end,
-                null, now(), now(), 2384850, 2384850, false, case when x.is_last_row is true then true else false end, null, null, null);
+                null, now(), now(), 2384850, 2384850, false, case when x.is_last_row is true then true else false end, null, null, null,x.title_check_id);
 
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,28838,x.lov1_action_taken_c_id::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,28839,x.alternate_apn_c::text, true);
@@ -8112,6 +8441,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,28876,x.vesting_code_c::text, true);
       end loop;
     raise notice '7 END = %',now();
+    raise notice '7 END total = %',v_total;
   end
 $do$;
 
@@ -8121,9 +8451,11 @@ $do$
     x record;
     v_project_process_step_id bigint;
     v_count bigint;
+    v_total bigint;
   BEGIN
     raise notice '8 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in select p.id as project_id,
                     o.id,
                     o.opportunity_owner_s_manager_c,
@@ -8146,9 +8478,10 @@ $do$
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -8156,8 +8489,8 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
-        values (x.project_id, 3795, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null);
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+        values (x.project_id, 3795, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,x.id);
 
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29221,flow.get_user_id_nh(x.opportunity_owner_s_manager_c::text)::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29228,x.close_date::text, true);
@@ -8177,6 +8510,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29238,x.lov3_reason_won_lost_c_id::text, true);
        end loop;
     raise notice '8 END = %',now();
+    raise notice '8 END total = %',v_total;
   end
 $do$;
 
@@ -8187,10 +8521,13 @@ $do$
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
     v_count bigint;
+    v_total bigint;
   BEGIN
     raise notice '9 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in select
+                    c.id as case_id,
                     c.sub_categories_c,
                     c.subject,
                     c.jira_ticket_number_c,
@@ -8200,15 +8537,17 @@ $do$
                     lov3.id as lov3_status_id
 
              from brs."case" c
-                    inner join flow.project p on c.residential_project_c = p.nw_migration_id
+                    inner join brs.residential_project_c rpc on rpc.id = c.parent_id
+                    inner join flow.project p on rpc.id = p.nw_migration_id
                     left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
                     left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_event_id = null;
@@ -8225,8 +8564,8 @@ $do$
                                                  company_process_step_status_type_id,
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
-                                                 cancelled_date, parent_project_process_step_event_id)
-          values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,x.case_id)
           returning id into v_project_process_step_id;
         end if;
 
@@ -8234,9 +8573,9 @@ $do$
                                                     company_event_status_type_id, start_time, end_time,
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
-                                                    cancelled_date, completed_date, scheduled_date, save_version)
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
         values (v_project_process_step_id, 238, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
-                null, null, 1)
+                null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
@@ -8247,6 +8586,7 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28353, x.resolution_comment_c::text, true);
       end loop;
     raise notice '9 END = %',now();
+    raise notice '9 END total = %',v_total;
   end
 $do$;
 
@@ -8257,29 +8597,32 @@ $do$
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
     v_count bigint;
+    v_total bigint;
   BEGIN
     raise notice '10 START = %',now();
     v_count = 0;
-    for x in select
+    v_total = 0;
+    for x in select c.id as case_id,
                     c.sub_categories_c,
                     c.subject,
-
                     c.jira_ticket_number_c,
                     c.resolution_comment_c, p.id as project_id,
                     lov1.id as lov1_category_c_id,
                     lov3.id as lov3_status_id
              from brs."case" c
-                   inner join flow.contact c1 on c1.nw_migration_id = c.account_id
+                    inner join brs.account a on a.id = c.parent_id
+                   inner join flow.contact c1 on c1.nw_migration_id = a.id
                    inner join flow.project p on p.contact_id = c1.id
                    left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
                    left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
-             where account_id is not null and c.residential_project_c is null
+
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_event_id = null;
@@ -8296,8 +8639,8 @@ $do$
                                                  company_process_step_status_type_id,
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
-                                                 cancelled_date, parent_project_process_step_event_id)
-          values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null)
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null, null,x.case_id)
           returning id into v_project_process_step_id;
         end if;
 
@@ -8305,9 +8648,9 @@ $do$
                                                     company_event_status_type_id, start_time, end_time,
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
-                                                    cancelled_date, completed_date, scheduled_date, save_version)
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
         values (v_project_process_step_id, 238, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
-                null, null, 1)
+                null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
@@ -8318,6 +8661,7 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28353, x.resolution_comment_c::text, true);
       end loop;
     raise notice '10 END = %',now();
+    raise notice '10 END total = %',v_total;
   end
 $do$;
 
@@ -8327,11 +8671,14 @@ $do$
     x record;
   v_project_process_step_id bigint;
     v_count bigint;
+     v_total bigint;
   BEGIN
     raise notice '11 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in
             select
+            id,
               created_date,
               created_by_id,
               action_required_c,
@@ -8356,7 +8703,8 @@ $do$
               lov7_rework_reason_3_c_ID,
               CASE WHEN row_number() OVER (PARTITION BY residential_project_c ORDER BY created_date desc ) = 1 THEN TRUE ELSE FALSE END AS is_last_row
               from (
-            select trr.created_date,
+            select trr.id,
+                   trr.created_date,
                    trr.created_by_id,
                    null as action_required_c,
                    trr.end_date_time_c,
@@ -8384,7 +8732,8 @@ $do$
                 left join flow.list_of_value lov3 on lov3.name = severity_c and lov3.parent_id = 25801
                 left join flow.list_of_value lov4 on lov4.name = rca_tag_c and lov4.parent_id = 25802
             union
-             select rrc.created_date,
+             select rrc.id,
+                    rrc.created_date,
                     rrc.created_by_id,
                     rrc.action_required_c,
                     rrc.end_date_time_c,
@@ -8418,9 +8767,10 @@ $do$
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -8428,9 +8778,9 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3796, null,  2 , null, now(), now(), 2384850, 2384850, false,
-                case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
+                case when x.is_last_row is true then true else false end, null, null, null,x.id) returning id into v_project_process_step_id;
 
 
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29241,flow.get_user_id_nh(x.created_by_id::text)::text , true);
@@ -8446,9 +8796,10 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29251,x.lov7_rework_reason_3_c_ID::text , true);
       end loop;
     raise notice '11 END = %',now();
+    raise notice '11 END total = %',v_total;
 end
 $do$;
-
+--todo this is where we left off with Derek
 DO
 $do$
   declare
@@ -8457,9 +8808,11 @@ $do$
   v_project_process_step__event_id bigint;
   v_lov_scope_of_work bigint[];
     v_count bigint;
+     v_total bigint;
   BEGIN
     raise notice '12 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in select wo.*,p.id as project_id,
                     lov1.id as  lov1_priority_id,
                     lov2.id as  lov2_service_type_c_id,
@@ -8473,14 +8826,15 @@ $do$
       left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 225812
       left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
       left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
-      where wo.record_type_id in ('0122T000000HtKlQAK','0122T000000HtKkQAK')
+      where wo.record_type_id in ('0122T000000HtKlQAK')
       and wo.residential_project_c is not null
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -8495,9 +8849,9 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3797, null,  1 , null, now(), now(), 2384850, 2384850, false,
-                true , null, null, null)
+                true , null, null, null,x.id)
         returning id into v_project_process_step_id;
         end if;
 
@@ -8505,7 +8859,7 @@ $do$
                                                     company_event_status_type_id, start_time, end_time,
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
-                                                    cancelled_date, completed_date, scheduled_date, save_version)
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
         values (v_project_process_step_id, 273, null,
           case when x.status = 'New' then 119
            when x.status = 'Assigned' then 111
@@ -8521,7 +8875,7 @@ $do$
            when x.status = 'Pending Customer' then 117
            when x.status = 'Cannot Complete' then 118 else 119 end
                  , null, null, now(), now(), 2384850, 2384850, false, null,
-                null, null, 1)
+                null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
@@ -8562,6 +8916,7 @@ $do$
 
     end loop;
     raise notice '12 END = %',now();
+    raise notice '12 END total = %',v_total;
 end
 $do$;
 
@@ -8573,8 +8928,10 @@ $do$
     v_project_process_step__event_id bigint;
     v_lov_scope_of_work bigint[];
   v_count bigint;
+  v_total bigint;
   BEGIN
     v_count = 0;
+    v_total = 0;
     raise notice '13 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
@@ -8591,6 +8948,7 @@ $do$
                     wo.description,
                     wo.intake_notes_c,
                     wo.status,
+                    wo.owner_id,
                     p.id as project_id,
                     lov1.id as  lov1_priority_id,
                     lov2.id as  lov2_service_type_c_id,
@@ -8605,15 +8963,16 @@ $do$
                     left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
                     left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
                     left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
-             where wo.record_type_id in ('0122T000000HtKlQAK', '0122T000000HtKkQAK')
+             where wo.record_type_id in ('0122T000000HtKlQAK')
                and wo.residential_project_c is null
                and wo.account_id is not null
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -8627,9 +8986,9 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
-                true, null, null, null)
+                true, null, null, null,x.id)
         returning id into v_project_process_step_id;
         end if;
 
@@ -8637,7 +8996,7 @@ $do$
                                                     company_event_status_type_id, start_time, end_time,
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
-                                                    cancelled_date, completed_date, scheduled_date, save_version)
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
         values (v_project_process_step_id, 273, null,
                 case
                   when x.status = 'New' then 119
@@ -8655,7 +9014,7 @@ $do$
                   when x.status = 'Cannot Complete' then 118
                   else 119 end
                  , null, null, now(), now(), 2384850, 2384850, false, null,
-                null, null, 1)
+                null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
@@ -8694,6 +9053,7 @@ $do$
 
       end loop;
     raise notice '13 END = %',now();
+    raise notice '13 END total = %',v_total;
   end
 $do$;
 
@@ -8705,8 +9065,10 @@ $do$
     v_project_process_step__event_id bigint;
     v_lov_scope_of_work bigint[];
     v_count bigint;
+    v_total bigint;
   BEGIN
     v_count = 0;
+    v_total = 0;
     raise notice '14 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
@@ -8723,6 +9085,7 @@ $do$
                     wo.description,
                     wo.intake_notes_c,
                     wo.status,
+                    wo.owner_id,
                     p.id as project_id,
                     lov1.id as  lov1_priority_id,
                     lov2.id as  lov2_service_type_c_id,
@@ -8738,14 +9101,15 @@ $do$
                     left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
                     left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
                     left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
-             where wo.record_type_id in ('0122T000000HtKlQAK','0122T000000HtKkQAK')
+             where wo.record_type_id in ('0122T000000HtKlQAK')
                and wo.residential_project_c is null and wo.account_id is  null and wo.case_id is not null
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -8759,9 +9123,9 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
-                true, null, null, null)
+                true, null, null, null,x.id)
         returning id into v_project_process_step_id;
         end if;
 
@@ -8769,7 +9133,7 @@ $do$
                                                     company_event_status_type_id, start_time, end_time,
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
-                                                    cancelled_date, completed_date, scheduled_date, save_version)
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
         values (v_project_process_step_id, 273, null,
                 case
                   when x.status = 'New' then 119
@@ -8787,7 +9151,7 @@ $do$
                   when x.status = 'Cannot Complete' then 118
                   else 119 end
                  , null, null, now(), now(), 2384850, 2384850, false, null,
-                null, null, 1)
+                null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
@@ -8826,9 +9190,797 @@ $do$
 
       end loop;
     raise notice '14 END = %',now();
+    raise notice '14 END total = %',v_total;
   end
 $do$;
 
+DO
+$do$
+  declare
+    x record;
+    v_project_process_step_id bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+    v_count bigint;
+    v_total bigint;
+  BEGIN
+    raise notice '12 START = %',now();
+    v_count = 0;
+    v_total = 0;
+    for x in select wo.*,p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join flow.project p on p.nw_migration_id = wo.residential_project_c
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25526
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 225812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
+             where wo.record_type_id in ('0122T000000HtKkQAK')
+               and wo.residential_project_c is not null
+
+      loop
+        v_count = v_count + 1;
+        v_total = v_total + 1;
+        if v_count = 5000 then
+          raise notice 'v_count = %',v_count;
+          --commit;
+          v_count = 0;
+        end if;
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3797, null,  1 , null, now(), now(), 2384850, 2384850, false,
+                  true , null, null, null,x.id)
+          returning id into v_project_process_step_id;
+        end if;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
+        values (v_project_process_step_id, 273, null,
+                case when x.status = 'New' then 119
+                     when x.status = 'Assigned' then 111
+                     when x.status = 'In Progress' then 106
+                     when x.status = 'Closed' then 115
+                     when x.status = 'Action Completed' then 112
+                     when x.status = 'Closed - Unresolved' then 113
+                     when x.status = 'Closed - Duplicate' then 114
+                     when x.status = 'Scheduled' then 120
+                     when x.status = 'Dispatched' then 116
+                     when x.status = 'Completed' then 3
+                     when x.status = 'Canceled' then 2
+                     when x.status = 'Pending Customer' then 117
+                     when x.status = 'Cannot Complete' then 118 else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1,x.id)
+        returning id into v_project_process_step__event_id;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        v_lov_scope_of_work = null;
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
+          perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+
+      end loop;
+    raise notice '12 END = %',now();
+    raise notice '12 END total = %',v_total;
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+    v_count bigint;
+    v_total bigint;
+  BEGIN
+    v_count = 0;
+    v_total = 0;
+    raise notice '13 START = %',now();
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.owner_id,
+                    wo.status,
+                    p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
+                    inner join flow.project p on p.nw_migration_id = rpc.id
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
+             where wo.record_type_id in ('0122T000000HtKkQAK')
+               and wo.residential_project_c is null
+               and wo.account_id is not null
+
+      loop
+        v_count = v_count + 1;
+        v_total = v_total + 1;
+        if v_count = 5000 then
+          raise notice 'v_count = %',v_count;
+          --commit;
+          v_count = 0;
+        end if;
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
+                  true, null, null, null,x.id)
+          returning id into v_project_process_step_id;
+        end if;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
+        values (v_project_process_step_id, 273, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Action Completed' then 112
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  when x.status = 'Scheduled' then 120
+                  when x.status = 'Dispatched' then 116
+                  when x.status = 'Completed' then 3
+                  when x.status = 'Canceled' then 2
+                  when x.status = 'Pending Customer' then 117
+                  when x.status = 'Cannot Complete' then 118
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1,x.id)
+        returning id into v_project_process_step__event_id;
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        v_lov_scope_of_work = null;
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
+          perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+      end loop;
+    raise notice '13 END = %',now();
+    raise notice '13 END total = %',v_total;
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+    v_count bigint;
+    v_total bigint;
+  BEGIN
+    v_count = 0;
+    v_total = 0;
+    raise notice '14 START = %',now();
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.owner_id,
+                    wo.status,
+                    p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join brs.case c on c.id = wo.case_id
+                    inner join brs.residential_project_c rpc on rpc.id = c.residential_project_c
+                    inner join flow.project p on p.nw_migration_id = rpc.id
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
+             where wo.record_type_id in ('0122T000000HtKkQAK')
+               and wo.residential_project_c is null and wo.account_id is  null and wo.case_id is not null
+
+      loop
+        v_count = v_count + 1;
+        v_total = v_total + 1;
+        if v_count = 5000 then
+          raise notice 'v_count = %',v_count;
+          --commit;
+          v_count = 0;
+        end if;
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
+                  true, null, null, null,x.id)
+          returning id into v_project_process_step_id;
+        end if;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
+        values (v_project_process_step_id, 273, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Action Completed' then 112
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  when x.status = 'Scheduled' then 120
+                  when x.status = 'Dispatched' then 116
+                  when x.status = 'Completed' then 3
+                  when x.status = 'Canceled' then 2
+                  when x.status = 'Pending Customer' then 117
+                  when x.status = 'Cannot Complete' then 118
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1,x.id)
+        returning id into v_project_process_step__event_id;
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        v_lov_scope_of_work = null;
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
+          perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+      end loop;
+    raise notice '14 END = %',now();
+    raise notice '14 END total = %',v_total;
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x record;
+    v_project_process_step_id bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+    v_count bigint;
+    v_total bigint;
+  BEGIN
+    raise notice '12 START = %',now();
+    v_count = 0;
+    v_total = 0;
+    for x in select wo.*,p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join flow.project p on p.nw_migration_id = wo.residential_project_c
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25526
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 225812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
+             where wo.record_type_id in ('01234000000BmSZAA0')
+               and wo.residential_project_c is not null
+
+      loop
+        v_count = v_count + 1;
+        v_total = v_total + 1;
+        if v_count = 5000 then
+          raise notice 'v_count = %',v_count;
+          --commit;
+          v_count = 0;
+        end if;
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3797, null,  1 , null, now(), now(), 2384850, 2384850, false,
+                  true , null, null, null,x.id)
+          returning id into v_project_process_step_id;
+        end if;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
+        values (v_project_process_step_id, 273, null,
+                case when x.status = 'New' then 119
+                     when x.status = 'Assigned' then 111
+                     when x.status = 'In Progress' then 106
+                     when x.status = 'Closed' then 115
+                     when x.status = 'Action Completed' then 112
+                     when x.status = 'Closed - Unresolved' then 113
+                     when x.status = 'Closed - Duplicate' then 114
+                     when x.status = 'Scheduled' then 120
+                     when x.status = 'Dispatched' then 116
+                     when x.status = 'Completed' then 3
+                     when x.status = 'Canceled' then 2
+                     when x.status = 'Pending Customer' then 117
+                     when x.status = 'Cannot Complete' then 118 else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1,x.id)
+        returning id into v_project_process_step__event_id;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        v_lov_scope_of_work = null;
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
+          perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+
+      end loop;
+    raise notice '12 END = %',now();
+    raise notice '12 END total = %',v_total;
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+    v_count bigint;
+    v_total bigint;
+  BEGIN
+    v_count = 0;
+    v_total = 0;
+    raise notice '13 START = %',now();
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.status,
+                    wo.owner_id,
+                    p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
+                    inner join flow.project p on p.nw_migration_id = rpc.id
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
+             where wo.record_type_id in ('01234000000BmSZAA0')
+               and wo.residential_project_c is null
+               and wo.account_id is not null
+
+      loop
+        v_count = v_count + 1;
+        v_total = v_total + 1;
+        if v_count = 5000 then
+          raise notice 'v_count = %',v_count;
+          --commit;
+          v_count = 0;
+        end if;
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
+                  true, null, null, null,x.id)
+          returning id into v_project_process_step_id;
+        end if;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
+        values (v_project_process_step_id, 273, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Action Completed' then 112
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  when x.status = 'Scheduled' then 120
+                  when x.status = 'Dispatched' then 116
+                  when x.status = 'Completed' then 3
+                  when x.status = 'Canceled' then 2
+                  when x.status = 'Pending Customer' then 117
+                  when x.status = 'Cannot Complete' then 118
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1,x.id)
+        returning id into v_project_process_step__event_id;
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        v_lov_scope_of_work = null;
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
+          perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+      end loop;
+    raise notice '13 END = %',now();
+    raise notice '13 END total = %',v_total;
+  end
+$do$;
+
+DO
+$do$
+  declare
+    x                                record;
+    v_project_process_step_id        bigint;
+    v_project_process_step__event_id bigint;
+    v_lov_scope_of_work bigint[];
+    v_count bigint;
+    v_total bigint;
+  BEGIN
+    v_count = 0;
+    v_total = 0;
+    raise notice '14 START = %',now();
+    for x in select wo.completed_date_c,
+                    wo.scope_of_work_c,
+                    wo.id,
+                    wo.requested_date_c,
+                    wo.additional_comments_c,
+                    wo.sss_sent_date_c,
+                    wo.scheduled_with_self_service_c,
+                    wo.rescheduled_with_self_service_c,
+                    wo.canceled_by_self_service_user_c,
+                    wo.follow_up_work_c,
+                    wo.follow_up_reason_details_c,
+                    wo.subject,
+                    wo.description,
+                    wo.intake_notes_c,
+                    wo.status,
+                    wo.owner_id,
+                    p.id as project_id,
+                    lov1.id as  lov1_priority_id,
+                    lov2.id as  lov2_service_type_c_id,
+                    lov3.id as  lov3_disposition_reason_c_id,
+                    lov4.id as  lov4_inspection_type_c_id,
+                    lov5.id as  lov5_follow_up_reason_c_id
+             from brs.work_order wo
+                    inner join brs.case c on c.id = wo.case_id
+                    inner join brs.residential_project_c rpc on rpc.id = c.residential_project_c
+                    inner join flow.project p on p.nw_migration_id = rpc.id
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
+                    left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
+                    left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 25812
+                    left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
+                    left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
+             where wo.record_type_id in ('01234000000BmSZAA0')
+               and wo.residential_project_c is null and wo.account_id is  null and wo.case_id is not null
+
+      loop
+        v_count = v_count + 1;
+        v_total = v_total + 1;
+        if v_count = 5000 then
+          raise notice 'v_count = %',v_count;
+          --commit;
+          v_count = 0;
+        end if;
+        v_project_process_step_id = null;
+        v_project_process_step__event_id = null;
+        select id
+        into v_project_process_step_id
+        from flow.project_process_step pps
+        where pps.project_id = x.project_id and pps.process_step_id = 3797;
+        if v_project_process_step_id is null then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (x.project_id, 3797, null, 1, null, now(), now(), 2384850, 2384850, false,
+                  true, null, null, null,x.id)
+          returning id into v_project_process_step_id;
+        end if;
+
+        insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, resource_id,
+                                                    company_event_status_type_id, start_time, end_time,
+                                                    date_created,
+                                                    date_modified, created_by_id, modified_by_id, archived,
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
+        values (v_project_process_step_id, 273, null,
+                case
+                  when x.status = 'New' then 119
+                  when x.status = 'Assigned' then 111
+                  when x.status = 'In Progress' then 106
+                  when x.status = 'Closed' then 115
+                  when x.status = 'Action Completed' then 112
+                  when x.status = 'Closed - Unresolved' then 113
+                  when x.status = 'Closed - Duplicate' then 114
+                  when x.status = 'Scheduled' then 120
+                  when x.status = 'Dispatched' then 116
+                  when x.status = 'Completed' then 3
+                  when x.status = 'Canceled' then 2
+                  when x.status = 'Pending Customer' then 117
+                  when x.status = 'Cannot Complete' then 118
+                  else 119 end
+                 , null, null, now(), now(), 2384850, 2384850, false, null,
+                null, null, 1,x.id)
+        returning id into v_project_process_step__event_id;
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, flow.get_user_id_nh(x.owner_id::text)::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
+        v_lov_scope_of_work = null;
+        if x.scope_of_work_c is not null then
+          select array_agg(lov.id)
+          into v_lov_scope_of_work
+          from (
+                 SELECT unnest(string_to_array(aggregated_column, ';')) scope_of_work_c
+                 FROM (
+                        SELECT STRING_AGG(scope_of_work_c, ';') AS aggregated_column
+                        from brs.work_order w
+                        where id = x.id
+                      ) AS subquery) as foo
+                 inner join flow.list_of_value lov on lov.name = foo.scope_of_work_c and lov.parent_id = 25810;
+          perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29256, v_lov_scope_of_work::text,true);
+        end if;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29257, x.requested_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29258, x.lov3_disposition_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29270, x.additional_comments_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29259, x.sss_sent_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29269, x.lov4_inspection_type_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29260, x.scheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29261, x.rescheduled_with_self_service_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29262, x.canceled_by_self_service_user_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29263, x.follow_up_work_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29264, x.lov5_follow_up_reason_c_id::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29265, x.follow_up_reason_details_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29266, x.subject::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29267, x.description::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29268, x.intake_notes_c::text,true);
+
+
+      end loop;
+    raise notice '14 END = %',now();
+    raise notice '14 END total = %',v_total;
+  end
+$do$;
 
 
 
@@ -8839,8 +9991,10 @@ $do$
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
     v_count bigint;
+     v_total bigint;
   BEGIN
     v_count = 0;
+    v_total = 0;
     raise notice '15 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
@@ -8864,6 +10018,7 @@ $do$
                     wo.payment_reference_c,
                     wo.customer_po_c,
                     wo.payment_date_c,
+                    wo.owner_id,
                     wo.amount_c,
                     wo.commitment_date_c,
                     p.id as project_id,
@@ -8882,9 +10037,10 @@ $do$
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -8898,9 +10054,9 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false,
-                true, null, null, null)
+                true, null, null, null,x.id)
         returning id into v_project_process_step_id;
         end if;
 
@@ -8908,7 +10064,7 @@ $do$
                                                     company_event_status_type_id, start_time, end_time,
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
-                                                    cancelled_date, completed_date, scheduled_date, save_version)
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
         values (v_project_process_step_id, 274, null,
                 case
                   when x.status = 'New' then 119
@@ -8919,7 +10075,7 @@ $do$
                   when x.status = 'Closed - Duplicate' then 114
                   else 119 end
                  , null, null, now(), now(), 2384850, 2384850, false, null,
-                null, null, 1)
+                null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29275, x.completed_date_c::text,true);
@@ -8944,6 +10100,7 @@ $do$
 
       end loop;
     raise notice '15 END = %',now();
+    raise notice '15 END total = %',v_total;
   end
 $do$;
 
@@ -8955,8 +10112,10 @@ $do$
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
   v_count bigint;
+    v_total bigint;
   BEGIN
     v_count = 0;
+    v_total = 0;
     raise notice '16 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
@@ -8980,6 +10139,7 @@ $do$
                     wo.payment_reference_c,
                     wo.customer_po_c,
                     wo.payment_date_c,
+                    wo.owner_id,
                     wo.amount_c,
                     wo.commitment_date_c,
                     p.id as project_id,
@@ -9000,9 +10160,10 @@ $do$
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -9016,9 +10177,9 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3788, null, 1, null, now(), now(), 2384850, 2384850, false,
-                true, null, null, null)
+                true, null, null, null,x.id)
         returning id into v_project_process_step_id;
           end if;
 
@@ -9026,7 +10187,7 @@ $do$
                                                     company_event_status_type_id, start_time, end_time,
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
-                                                    cancelled_date, completed_date, scheduled_date, save_version)
+                                                    cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
         values (v_project_process_step_id, 274, null,
                 case
                   when x.status = 'New' then 119
@@ -9037,7 +10198,7 @@ $do$
                   when x.status = 'Closed - Duplicate' then 114
                   else 119 end
                  , null, null, now(), now(), 2384850, 2384850, false, null,
-                null, null, 1)
+                null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29275, x.completed_date_c::text,true);
@@ -9063,6 +10224,7 @@ $do$
 
       end loop;
     raise notice '16 END = %',now();
+    raise notice '16 END total = %',v_total;
   end
 $do$;
 
@@ -9073,10 +10235,13 @@ $do$
     x record;
   v_project_process_step_id bigint;
     v_count bigint;
+    v_total bigint;
   BEGIN
     v_count = 0;
+    v_total = 0;
     raise notice '17 START = %',now();
-    for x in  select q.module_c,
+    for x in  select q.id as quote_id,
+                    q.module_c,
                    --  q.Module_Brand_c,
                      q.module_quantity_c,
                      q.inverter_model_c,
@@ -9176,106 +10341,108 @@ $do$
 
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3798, null, 1, null, now(), now(), 2384850, 2384850, false,
-                case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
+                case when x.is_last_row is true then true else false end, null, null, null,x.quote_id) returning id into v_project_process_step_id;
 
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29291,x.module_c::text , true);
-      --  perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29292,x.Module_Brand_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29293,x.module_quantity_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29294,x.inverter_model_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29295,x.lov1_inverter_brand_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29296,x.inverter_quantity_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29297,x.lov2_mounting_description_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29298,x.racking_quantity_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29299,x.lov3_monitoring_system_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29300,x.storage_model_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29301,x.storage_count_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29302,x.storage_size_k_wh_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29303,x.storage_backup_type_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29304,x.finance_charge_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29305,x.non_ach_interest_rate_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29306,x.ach_opt_in_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29307,x.apr_type_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29308,x.date_sent_to_my_sun_power_c::text , true);
-       -- perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29309,x.total_sales_price_c::text , true);
-       -- perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29310,x.non_ach_total_sales_price_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29311,x.applied_rebate_rate_c::text , true);
-     --   perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29312,x.Voluntary_Loan_Payment_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29313,x.external_proposal_url_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29314,x.selected_quote_in_my_sun_power_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29315,x.lov4_non_backup_storage_acknowledged_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29316,x.quote_selected_date_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29317,x.quote_number::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29318,x.lov5_credit_bureau_c::text , true);
-      --  perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29319,x.Leesee_Co_Leesee_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29320,x.lessee_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29321,x.lessee_2_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29322,x.lease_number_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29323,x.consolidated_lease_number_dup_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29324,x.final_lease_number_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29325,x.description::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29326,x.Total_Lease_Payments_Pre_NSHP_Rebate_c::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29327,x.RoundOff_First_Monthly_Payment_c::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29328,x.RoundOff_Total_Monthly_Payments_c::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29329,x.RoundOff_First_Monthly_Payment_Base_Amo_c::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29330,x.RoundOff_First_Monthly_Payment_Estimate_c::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29331,x.Final_First_Base_Monthly_Pay_c::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29332,x.Final_Total_Yearly_Page_2_c::text , true);
---         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29333,x.Final_Total_Yearly_Page_4_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29334,x.system_production_year_1_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29335,x.system_price_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29336,x.storage_price_c::text , true);
-       -- perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29337,x.Installation_Fee_c::text , true);
-       -- perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29338,x.Total_of_Payments_c::text , true);
-       -- perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29339,x.Monthly_Payments_with_Estimated_Tax_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29340,x.dealer_fees_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29341,x.storage_commission_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29342,x.adder_fee_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29343,x.discount_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29344,x.sun_power_discount_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29345,x.tps_fee_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29346,x.ip_fee_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29347,x.system_cost_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29348,x.lease_doc_created_date_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29349,x.lov6_lease_doc_reviewed_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29350,x.lease_doc_sent_out_for_signature_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29351,x.lease_doc_signed_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29352,x.lease_doc_signed_date_c::text , true);
-       -- perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29353,x.Termination_Lease_doc_Date_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29354,x.total_energy_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29355,x.proposal_document_link_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29356,x.power_used_before_solar_k_wh_year_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29357,x.price_to_customer_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29358,x.sent_welcome_email_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29359,x.expiration_date::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29360,x.contract_signed_date_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29361,x.quote_expiration_date_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29362,x.date_sent_to_customer_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29363,x.dealer_contractor_license_number_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29364,x.first_monthly_payment_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29365,x.first_monthly_payment_base_amount_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29366,x.first_monthly_payment_estimated_payment_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29367,x.first_monthly_payment_est_tax_on_payme_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29368,x.full_prepaid_lease_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29369,x.full_pre_payment_amount_base_amount_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29370,x.full_pre_payment_amount_estimated_paymen_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29371,x.full_pre_payment_amount_estimated_tax_on_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29372,x.full_prepayment_of_lease_amount_c::text , true);
-        --perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29373,x.System_Size_c::text , true);
-       -- perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29374,x.Net_Cost_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29291,x.module_c::text , true);
+      --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29292,x.Module_Brand_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29293,x.module_quantity_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29294,x.inverter_model_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29295,x.lov1_inverter_brand_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29296,x.inverter_quantity_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29297,x.lov2_mounting_description_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29298,x.racking_quantity_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29299,x.lov3_monitoring_system_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29300,x.storage_model_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29301,x.storage_count_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29302,x.storage_size_k_wh_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29303,x.storage_backup_type_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29304,x.finance_charge_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29305,x.non_ach_interest_rate_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29306,x.ach_opt_in_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29307,x.apr_type_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29308,x.date_sent_to_my_sun_power_c::text , true);
+       -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29309,x.total_sales_price_c::text , true);
+       -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29310,x.non_ach_total_sales_price_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29311,x.applied_rebate_rate_c::text , true);
+     --   perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29312,x.Voluntary_Loan_Payment_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29313,x.external_proposal_url_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29314,x.selected_quote_in_my_sun_power_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29315,x.lov4_non_backup_storage_acknowledged_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29316,x.quote_selected_date_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29317,x.quote_number::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29318,x.lov5_credit_bureau_c::text , true);
+      --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29319,x.Leesee_Co_Leesee_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29320,x.lessee_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29321,x.lessee_2_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29322,x.lease_number_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29323,x.consolidated_lease_number_dup_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29324,x.final_lease_number_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29325,x.description::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29326,x.Total_Lease_Payments_Pre_NSHP_Rebate_c::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29327,x.RoundOff_First_Monthly_Payment_c::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29328,x.RoundOff_Total_Monthly_Payments_c::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29329,x.RoundOff_First_Monthly_Payment_Base_Amo_c::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29330,x.RoundOff_First_Monthly_Payment_Estimate_c::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29331,x.Final_First_Base_Monthly_Pay_c::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29332,x.Final_Total_Yearly_Page_2_c::text , true);
+--         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29333,x.Final_Total_Yearly_Page_4_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29334,x.system_production_year_1_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29335,x.system_price_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29336,x.storage_price_c::text , true);
+       -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29337,x.Installation_Fee_c::text , true);
+       -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29338,x.Total_of_Payments_c::text , true);
+       -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29339,x.Monthly_Payments_with_Estimated_Tax_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29340,x.dealer_fees_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29341,x.storage_commission_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29342,x.adder_fee_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29343,x.discount_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29344,x.sun_power_discount_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29345,x.tps_fee_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29346,x.ip_fee_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29347,x.system_cost_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29348,x.lease_doc_created_date_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29349,x.lov6_lease_doc_reviewed_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29350,x.lease_doc_sent_out_for_signature_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29351,x.lease_doc_signed_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29352,x.lease_doc_signed_date_c::text , true);
+       -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29353,x.Termination_Lease_doc_Date_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29354,x.total_energy_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29355,x.proposal_document_link_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29356,x.power_used_before_solar_k_wh_year_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29357,x.price_to_customer_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29358,x.sent_welcome_email_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29359,x.expiration_date::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29360,x.contract_signed_date_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29361,x.quote_expiration_date_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29362,x.date_sent_to_customer_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29363,x.dealer_contractor_license_number_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29364,x.first_monthly_payment_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29365,x.first_monthly_payment_base_amount_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29366,x.first_monthly_payment_estimated_payment_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29367,x.first_monthly_payment_est_tax_on_payme_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29368,x.full_prepaid_lease_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29369,x.full_pre_payment_amount_base_amount_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29370,x.full_pre_payment_amount_estimated_paymen_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29371,x.full_pre_payment_amount_estimated_tax_on_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29372,x.full_prepayment_of_lease_amount_c::text , true);
+        --perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29373,x.System_Size_c::text , true);
+       -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29374,x.Net_Cost_c::text , true);
 
   end loop;
     raise notice '17 END = %',now();
+    raise notice '17 END total = %',v_total;
 end
 $do$;
 
@@ -9287,9 +10454,11 @@ $do$
     v_sub_category_c bigint[];
     v_project_process_step_id bigint;
     v_count bigint;
+    v_total bigint;
   BEGIN
     raise notice '18 START = %',now();
     v_count = 0;
+    v_total = 0;
     for x in select
                     dac.name,
                     dac.docu_sign_envelope_c,
@@ -9323,9 +10492,10 @@ $do$
               order by rpc.id,dac.created_date
       loop
         v_count = v_count + 1;
+        v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -9333,7 +10503,7 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3799, null, case when x.ENVELOPE_STATUS_C = 'Waiting for Co-Signer' then 1779
                                                when x.ENVELOPE_STATUS_C = 'Waiting for Countersignature' then 1780
                                                when x.ENVELOPE_STATUS_C = 'In Review' then 1775
@@ -9349,7 +10519,7 @@ $do$
                                                when x.ENVELOPE_STATUS_C = 'Cancelled / Declined' then 3
                                                  else 3 end
                                            , null, now(), now(), 2384850, 2384850, false,
-                case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
+                case when x.is_last_row is true then true else false end, null, null, null,x.id) returning id into v_project_process_step_id;
       --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29379,x.contract_number_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29380,x.docu_sign_envelope_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29381,x.docu_sign_status_c::text , true);
@@ -9402,6 +10572,7 @@ $do$
 
       end loop;
     raise notice '18 END = %',now();
+    raise notice '18 END total  = %',v_total;
 end
 $do$;
 
@@ -9412,8 +10583,10 @@ $do$
     x record;
   v_project_process_step_id bigint;
     v_count bigint;
+    v_total bigint;
   BEGIN
     v_count = 0;
+    v_total = 0;
     raise notice '19 START = %',now();
     for x in select lpc.*,
               p.id as project_id,
@@ -9458,9 +10631,10 @@ $do$
              order by rpc.id,lpc.created_date
       loop
         v_count = v_count + 1;
+        v_total =v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
-          commit;
+          --commit;
           v_count = 0;
         end if;
         v_project_process_step_id = null;
@@ -9468,9 +10642,9 @@ $do$
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
-                                               cancelled_date, parent_project_process_step_event_id)
+                                               cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3800, null, 1, null, now(), now(), 2384850, 2384850, false,  --todo carlin to figure out status
-                case when x.is_last_row is true then true else false end, null, null, null) returning id into v_project_process_step_id;
+                case when x.is_last_row is true then true else false end, null, null, null,x.id) returning id into v_project_process_step_id;
 
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29402,x.lov1_X1603_Financier_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29403,x.US_Cash_Grant_Submission_Date_c::text , true);
@@ -9795,6 +10969,7 @@ $do$
 
       end loop;
     raise notice '19 END = %',now();
+    raise notice '19 END total = %',v_total;
   end
 $do$;
 
@@ -9802,16 +10977,92 @@ DO
 $do$
   declare
     x        record;
+    v_total bigint;
   BEGIN
+  v_total = 0;
     for x in select fdc.*,o2.id as org_id
              from brs.fee_distribution_c fdc
              inner join flow.org o2 on o2.nh_migration_id = fdc.partner_name_c
              where fdc.record_type_id = '01234000000HrvnAAC'
 
       loop
+      v_total = v_total + 1;
+raise notice '19 Start = %',now();
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29438,x.Comp_Shingle_Roof_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29439,x.Comp_Inset_on_Tile_Roof_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29440,x.Over_Tile_Roof_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29441,x.Flat_roof_install_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29442,x.Flat_Roof_Tilt_Up_Install_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29443,x.Metal_Standing_Seam_install_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29444,x.Mixed_install_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29445,x.one_roof_install_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29783,x.Other_roof_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29446,x.AC_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29447,x.x_3_story_roof_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29448,x.Custom_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29449,x.Steep_Roof_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29450,x.Storage_Install_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29451,x.Permitting_Labor_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29452,x.Pre_COE_Commissioning_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29453,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29454,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29455,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29731,x.Panel_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29732,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29733,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29734,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29735,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29736,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29737,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29738,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29739,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29740,x.Storage_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29741,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29742,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29743,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29744,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29745,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29746,x.Storage_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29747,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29748,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29749,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29750,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29751,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29752,x.Storage_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29753,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29754,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29755,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29756,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29757,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29758,x.Storage_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29759,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29760,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29761,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29762,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29763,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29764,x.Storage_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29765,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29766,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29767,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29768,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29769,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29770,x.Storage_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29771,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29772,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29773,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29774,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29775,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29776,x.Storage_Rough_Wire_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29777,x.Deal_Type_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29778,x.Storage_Base_Fixed_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29779,x.Storage_Expansion_Fee_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29780,x.Storage_Installation_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29781,x.Storage_Only_c::text , true);
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29782,x.Storage_Rough_Wire_c::text , true);
 
       end loop;
-
+          raise notice '19 END = %',now();
+        raise notice '20 END = %',v_total;
   end
 $do$;
 
