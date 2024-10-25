@@ -106,7 +106,7 @@ BEGIN
     v_contact_email,
     v_nh_cash_price,
     v_system_size
-  from brs.get_proposal_details(p_proposal_id);
+  from brs.get_new_homes_details_nh(p_proposal_id);
 
   v_estimated_down_payment = coalesce(v_nh_cash_price::numeric, 0) * .2::numeric;
   v_estimated_itc = coalesce(v_nh_cash_price::numeric, 0) * .3::numeric;
@@ -147,8 +147,6 @@ BEGIN
   return query
     select v_proposal_id,
            v_project_id,
-           v_proposal_id,
-           v_project_id,
            v_version_id,
            v_project_process_step_id,
            v_first_year_production_estimate,
@@ -169,6 +167,8 @@ BEGIN
            v_net_system_cost,
            v_system_size,
            v_proposal_nbr;
+
+
 
 
 END

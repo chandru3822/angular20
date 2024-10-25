@@ -9193,7 +9193,7 @@ $do$
     raise notice '14 END total = %',v_total;
   end
 $do$;
-
+--todo start with Mandy
 DO
 $do$
   declare
@@ -9204,7 +9204,7 @@ $do$
     v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '12 START = %',now();
+    raise notice '21 START = %',now();
     v_count = 0;
     v_total = 0;
     for x in select wo.*,p.id as project_id,
@@ -9215,7 +9215,7 @@ $do$
                     lov5.id as  lov5_follow_up_reason_c_id
              from brs.work_order wo
                     inner join flow.project p on p.nw_migration_id = wo.residential_project_c
-                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25526
+                    left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
                     left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
                     left join flow.list_of_value lov3 on lov3.name = wo.disposition_reason_c and lov3.parent_id = 225812
                     left join flow.list_of_value lov4 on lov4.name = wo.inspection_type_c and lov4.parent_id = 25816
@@ -9309,8 +9309,8 @@ $do$
 
 
       end loop;
-    raise notice '12 END = %',now();
-    raise notice '12 END total = %',v_total;
+    raise notice '21 END = %',now();
+    raise notice '21 END total = %',v_total;
   end
 $do$;
 
@@ -9326,7 +9326,7 @@ $do$
   BEGIN
     v_count = 0;
     v_total = 0;
-    raise notice '13 START = %',now();
+    raise notice '22 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -9446,8 +9446,8 @@ $do$
 
 
       end loop;
-    raise notice '13 END = %',now();
-    raise notice '13 END total = %',v_total;
+    raise notice '22 END = %',now();
+    raise notice '22 END total = %',v_total;
   end
 $do$;
 
@@ -9463,7 +9463,7 @@ $do$
   BEGIN
     v_count = 0;
     v_total = 0;
-    raise notice '14 START = %',now();
+    raise notice '23 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -9583,8 +9583,8 @@ $do$
 
 
       end loop;
-    raise notice '14 END = %',now();
-    raise notice '14 END total = %',v_total;
+    raise notice '23 END = %',now();
+    raise notice '23 END total = %',v_total;
   end
 $do$;
 
@@ -9598,7 +9598,7 @@ $do$
     v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '12 START = %',now();
+    raise notice '24 START = %',now();
     v_count = 0;
     v_total = 0;
     for x in select wo.*,p.id as project_id,
@@ -9703,8 +9703,8 @@ $do$
 
 
       end loop;
-    raise notice '12 END = %',now();
-    raise notice '12 END total = %',v_total;
+    raise notice '24 END = %',now();
+    raise notice '24 END total = %',v_total;
   end
 $do$;
 
@@ -9720,7 +9720,7 @@ $do$
   BEGIN
     v_count = 0;
     v_total = 0;
-    raise notice '13 START = %',now();
+    raise notice '25 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -9840,8 +9840,8 @@ $do$
 
 
       end loop;
-    raise notice '13 END = %',now();
-    raise notice '13 END total = %',v_total;
+    raise notice '25 END = %',now();
+    raise notice '25 END total = %',v_total;
   end
 $do$;
 
@@ -9857,7 +9857,7 @@ $do$
   BEGIN
     v_count = 0;
     v_total = 0;
-    raise notice '14 START = %',now();
+    raise notice '26 START = %',now();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -9977,8 +9977,8 @@ $do$
 
 
       end loop;
-    raise notice '14 END = %',now();
-    raise notice '14 END total = %',v_total;
+    raise notice '26 END = %',now();
+    raise notice '26 END total = %',v_total;
   end
 $do$;
 
@@ -10326,10 +10326,10 @@ $do$
                      lov4.id as lov4_non_backup_storage_acknowledged_c,
                      lov5.id as lov5_credit_bureau_c,
                      lov6.id as lov6_lease_doc_reviewed_c,
-      CASE WHEN row_number() OVER (PARTITION BY rpc.id ORDER BY q.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
-      from brs.quote q
-      inner join brs.account a on a.id = q.account_c
-      inner join brs.residential_project_c rpc on rpc.account_c = a.id
+      CASE WHEN row_number() OVER (PARTITION BY rpc.id ORDER BY q.lease_doc_signed_date_c,q.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
+      from brs.QUOTE Q
+             inner join brs.account A on a.id = q.ACCOUNT_ID
+             inner join brs.RESIDENTIAL_PROJECT_C RPC on rpc.ACCOUNT_C = a.id
       inner join flow.project p on p.nw_migration_id = rpc.id
       left join flow.list_of_value lov1 on lov1.name = q.inverter_brand_c and lov1.parent_id = 25826
       left join flow.list_of_value lov2 on lov2.name = q.mounting_description_c and lov2.parent_id = 25828
@@ -10337,8 +10337,11 @@ $do$
       left join flow.list_of_value lov4 on lov4.name = q.non_backup_storage_acknowledged_c and lov4.parent_id = 25832
       left join flow.list_of_value lov5 on lov5.name = q.credit_bureau_c and lov5.parent_id = 25715
       left join flow.list_of_value lov6 on lov6.name = q.lease_doc_reviewed_c and lov6.parent_id = 25834
-              order by rpc.id,q.created_date --todo carlin wants to fix this
-
+              where rpc.QUOTE_C is not null and q.IS_DELETED = false
+                and rpc.RECORD_TYPE_ID = '01234000000UQPbAAO'
+                and rpc.STATUS_C != 'Cancelled'
+                and rpc.IS_DELETED = false
+              order by rpc.id,q.lease_doc_signed_date_c,q.created_date
       loop
         v_count = v_count + 1;
         v_total = v_total + 1;
@@ -10489,6 +10492,7 @@ $do$
                      inner join flow.project p on p.nw_migration_id = rpc.id
                       left join flow.list_of_value lov1 on lov1.name = dac.cancellation_reason_c and lov1.parent_id =25850
                       left join flow.list_of_value lov2 on lov2.name = dac.contract_type_c and lov2.parent_id = 25842
+
               order by rpc.id,dac.created_date
       loop
         v_count = v_count + 1;
@@ -10987,81 +10991,81 @@ $do$
 
       loop
       v_total = v_total + 1;
-raise notice '19 Start = %',now();
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29438,x.Comp_Shingle_Roof_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29439,x.Comp_Inset_on_Tile_Roof_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29440,x.Over_Tile_Roof_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29441,x.Flat_roof_install_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29442,x.Flat_Roof_Tilt_Up_Install_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29443,x.Metal_Standing_Seam_install_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29444,x.Mixed_install_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29445,x.one_roof_install_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29783,x.Other_roof_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29446,x.AC_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29447,x.x_3_story_roof_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29448,x.Custom_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29449,x.Steep_Roof_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29450,x.Storage_Install_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29451,x.Permitting_Labor_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29452,x.Pre_COE_Commissioning_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29453,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29454,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29455,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29731,x.Panel_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29732,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29733,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29734,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29735,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29736,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29737,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29738,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29739,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29740,x.Storage_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29741,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29742,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29743,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29744,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29745,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29746,x.Storage_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29747,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29748,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29749,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29750,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29751,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29752,x.Storage_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29753,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29754,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29755,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29756,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29757,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29758,x.Storage_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29759,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29760,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29761,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29762,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29763,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29764,x.Storage_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29765,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29766,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29767,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29768,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29769,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29770,x.Storage_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29771,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29772,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29773,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29774,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29775,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29776,x.Storage_Rough_Wire_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29777,x.Deal_Type_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29778,x.Storage_Base_Fixed_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29779,x.Storage_Expansion_Fee_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29780,x.Storage_Installation_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29781,x.Storage_Only_c::text , true);
-        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29782,x.Storage_Rough_Wire_c::text , true);
+raise notice '20 Start = %',now();
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29438,x.Comp_Shingle_Roof_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29439,x.Comp_Inset_on_Tile_Roof_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29440,x.Over_Tile_Roof_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29441,x.Flat_roof_install_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29442,x.Flat_Roof_Tilt_Up_Install_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29443,x.Metal_Standing_Seam_install_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29444,x.Mixed_install_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29445,x.one_roof_install_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29783,x.Other_roof_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29446,x.AC_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29447,x.x_3_story_roof_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29448,x.Custom_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29449,x.Steep_Roof_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29450,x.Storage_Install_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29451,x.Permitting_Labor_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29452,x.Pre_COE_Commissioning_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29453,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29454,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29455,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29731,x.Panel_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29732,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29733,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29734,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29735,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29736,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29737,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29738,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29739,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29740,x.Storage_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29741,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29742,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29743,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29744,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29745,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29746,x.Storage_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29747,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29748,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29749,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29750,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29751,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29752,x.Storage_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29753,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29754,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29755,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29756,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29757,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29758,x.Storage_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29759,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29760,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29761,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29762,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29763,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29764,x.Storage_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29765,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29766,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29767,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29768,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29769,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29770,x.Storage_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29771,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29772,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29773,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29774,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29775,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29776,x.Storage_Rough_Wire_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29777,x.Deal_Type_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29778,x.Storage_Base_Fixed_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29779,x.Storage_Expansion_Fee_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29780,x.Storage_Installation_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29781,x.Storage_Only_c::text );
+        perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29782,x.Storage_Rough_Wire_c::text );
 
       end loop;
-          raise notice '19 END = %',now();
+          raise notice '20 END = %',now();
         raise notice '20 END = %',v_total;
   end
 $do$;
