@@ -1,3 +1,8 @@
+alter table brs.feat_db_ahj
+    add column if not exists nh_migration_id varchar(18);
+alter table brs.feat_db_utility
+    add column if not exists nh_migration_id varchar(18);
+
 --this is for brs.ahj_name_c which inserts ahj new home data
 DO
 $do$
@@ -94,10 +99,15 @@ $do$
                          left join brs.feat_db_ahj_new_home nh on nh.ahj_id = fa.id
                 where lower(fa.name) = lower(x.name);
 
+                --if there is one, then update the migration_id
+                if (v_ahj_id is not null) then
+                    update brs.feat_db_ahj
+                        set nh_migration_id = x.id
+                    where id = v_ahj_id;
                 --if there wasn't an existing ahj then add one
-                if (v_ahj_id is null) then
-                    insert into brs.feat_db_ahj(name, created_by_id, modified_by_id, active, company_state_id)
-                    select x.name, 2384850, 2384850, true,
+                else
+                    insert into brs.feat_db_ahj(name, created_by_id, modified_by_id, active, nh_migration_id, company_state_id)
+                    select x.name, 2384850, 2384850, true, x.id,
                            (select cs.id
                             from flow.company_state cs
                                      inner join flow.state s on s.id = cs.state_id
@@ -369,10 +379,15 @@ $do$
                 from brs.feat_db_utility fa
                 where lower(fa.name) = lower(x.name);
 
-                --if there wasn't an existing ahj then add one
+                --if there is one, then update the migration_id
+                if (v_utility_id is not null) then
+                    update brs.feat_db_utility
+                    set nh_migration_id = x.id
+                    where id = v_utility_id;
+                --if there wasn't an existing utility then add one
                 if (v_utility_id is null) then
-                    insert into brs.feat_db_utility(name, created_by_id, modified_by_id, company_state_id, active)
-                    select x.name, 2384850, 2384850,
+                    insert into brs.feat_db_utility(name, created_by_id, modified_by_id, nh_migration_id, company_state_id, active)
+                    select x.name, 2384850, 2384850, x.id,
                            --in ahj_utility_c, state_c is the state abbreviation, use that to match to the company state id for company_id = 3
                            (select cs.id
                             from flow.company_state cs
