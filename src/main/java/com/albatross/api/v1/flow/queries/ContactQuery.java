@@ -5,7 +5,7 @@ public class ContactQuery {
   //language=PostgreSQL
   public final static String searchDownline = """
     select *
-    from flow.search_contacts_with_down_line(:query::character varying, :companyId::bigint,
+    from flow.search_contacts_with_down_line(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
                                                             :isParent::boolean,
                                                             :userId::bigint,
                                                             :limit::bigint, :offset::bigint)
@@ -14,14 +14,14 @@ public class ContactQuery {
   //language=PostgreSQL
   public final static String search = """
     select *
-    from flow.search_contacts(:query::character varying, :companyId::bigint,
+    from flow.search_contacts(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
                               :isParent::boolean,:limit::bigint, :offset::bigint)
     """;
 
   //language=PostgreSQL
   public final static String searchByOwner = """
     select *
-    from flow.search_contacts_by_user(:query::character varying, :companyId::bigint,
+    from flow.search_contacts_by_user(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
                                    :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint)
     """;
 
@@ -223,13 +223,7 @@ select c.id,
   insert into flow.contact(contact_type_id, first_name, last_name, postal_code,
                            company_country_id, phone, email, created_by_id,
                            company_id, object_category_id)
-  values (1, trim(:firstName), trim(:lastName), trim(:postalCode), 1, :phone, :email, :userId, :companyId,
-           (select id
-                from flow.object_category
-                where is_default is true
-                  and archived is false
-                  and object_type_id = 2
-                limit 1))
+  values (1, trim(:firstName), trim(:lastName), trim(:postalCode), 1, :phone, :email, :userId, :companyId, :objectCategoryId)
     """;
 
   //language=PostgreSQL

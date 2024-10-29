@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS flow.search_contacts(p_searchterm character varying, p_company_id bigint,
+DROP FUNCTION IF EXISTS flow.search_contacts(p_searchterm character varying, p_company_id bigint, p_object_category_ids bigint[],
                                              p_is_parent boolean,
                                              p_limit bigint, p_offset bigint);
 
 CREATE OR REPLACE FUNCTION flow.search_contacts(p_searchterm character varying,
-                                                p_company_id bigint,
+                                                p_company_id bigint, p_object_category_ids bigint[],
                                                 p_is_parent boolean,
                                                 p_limit bigint,
                                                 p_offset bigint)

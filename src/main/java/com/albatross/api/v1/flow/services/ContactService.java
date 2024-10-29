@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -65,7 +66,9 @@ public class ContactService {
 
   private final BlueravenCustomBehaviorService blueravenCustomBehaviorService;
 
-  public Page<Contact> searchContacts(String query, String overrideType, Pageable pageable) {
+  private final ObjectCategoryService objectCategoryService;
+
+  public Page<Contact> searchContacts(String query, String overrideType, List<Long> objectCategoryIds, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -96,6 +99,7 @@ public class ContactService {
     params.put("viewAll", viewAll);
     params.put("userId", user.getId());
     params.put("query", query);
+    params.put("objectCategoryIds", objectCategoryIds);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
@@ -116,6 +120,17 @@ public class ContactService {
 
     int count = 10000;
     return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+  }
+
+  public Page<Contact> searchContactsByCategoryIds(Long parentObjectCategoryId, String query, Pageable pageable) {
+    List<ObjectCategory> childCategories = objectCategoryService.getChildCategories(parentObjectCategoryId);
+    List<Long> contactObjectCategoryIds = null;
+    if(childCategories != null && !childCategories.isEmpty()) {
+      contactObjectCategoryIds = childCategories.stream().map(ObjectCategory::getId).collect(Collectors.toList());
+    }
+
+    Page<Contact> contacts = searchContacts(query, null, contactObjectCategoryIds, pageable);
+    return contacts;
   }
 
   public Contact getContact(Long contactId) {
@@ -390,6 +405,7 @@ public class ContactService {
       params.put("postalCode", contact.getPostalCode());
       params.put("userId", user.trueUserId());
       params.put("companyId", user.getCompanyId());
+      params.put("objectCategoryId", contact.getObjectCategoryId());
 
       //for now this just uses the default object category cuz i didnt know how to solve for configurability
       newContactId = sqlCache.updateBySqlReturningId(ContactQuery.insertContactFromChildProject, params, "id").longValue();

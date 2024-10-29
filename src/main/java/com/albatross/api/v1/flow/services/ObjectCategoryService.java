@@ -24,4 +24,11 @@ public class ObjectCategoryService {
 
     return sqlCache.queryBySql(ObjectCategoryQuery.getAll, params, ObjectCategory.class);
   }
+
+  public List<ObjectCategory> getChildCategories(Long parentObjectCategoryId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("parentObjectCategoryId", parentObjectCategoryId);
+
+    return sqlCache.queryBySql(ObjectCategoryQuery.getChildren, params, ObjectCategory.class);
+  }
 }

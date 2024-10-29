@@ -1,7 +1,7 @@
-DROP FUNCTION if exists flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id bigint,
+DROP FUNCTION if exists flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id bigint, p_object_category_ids bigint[],
                                                             p_is_parent boolean, p_userid bigint,
                                                             p_limit bigint, p_offset bigint);
-CREATE OR REPLACE FUNCTION flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id bigint,
+CREATE OR REPLACE FUNCTION flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id bigint, p_object_category_ids bigint[],
                                                                p_is_parent boolean, p_userid bigint,
                                                                p_limit bigint, p_offset bigint)
   RETURNS TABLE
@@ -111,6 +111,10 @@ BEGIN
             WHERE c.company_id = ANY (v_company_ids)
               and c.date_created is not null
               and c.archived is not true
+              and case
+                      when array_length(ARRAY [ p_object_category_ids ]::bigint[], 1) > 0
+                          then c.object_category_id = any (p_object_category_ids)
+                      else 1 = 1 end
               and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
               and ((c.id::text like '%' || v_clean_name_search_term || '%') or
                    (c.contact_full_name_search like '%' || v_clean_name_search_term || '%') or
@@ -169,6 +173,10 @@ BEGIN
             WHERE c.company_id = ANY (v_company_ids)
               and c.date_created is not null
               and c.archived is not true
+              and case
+                      when array_length(ARRAY [ p_object_category_ids ]::bigint[], 1) > 0
+                          then c.object_category_id = any (p_object_category_ids)
+                      else 1 = 1 end
               and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
             order by c.date_created desc
             limit p_limit offset p_offset) as limited_contacts;

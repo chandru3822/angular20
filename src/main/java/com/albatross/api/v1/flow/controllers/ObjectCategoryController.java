@@ -21,4 +21,9 @@ public class ObjectCategoryController {
   List<ObjectCategory> getObjectCategories(@RequestParam(required = false) Long objectTypeId){
     return objectCategoryService.getCategories(objectTypeId);
   }
+
+  @GetMapping(value="/{id}/children")
+  List<ObjectCategory> getChildObjectCategories(@PathVariable Long id){
+    return objectCategoryService.getChildCategories(id);
+  }
 }

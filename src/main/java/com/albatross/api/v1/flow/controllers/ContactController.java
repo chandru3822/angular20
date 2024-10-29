@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import retrofit2.http.Path;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +32,14 @@ public class ContactController {
     public ResponseEntity<Page<Contact>> searchContacts(@RequestParam String query,
                                                         @RequestParam(required = false) String overrideType,
                                                         Pageable pageable) {
-        return new ResponseEntity<>(contactService.searchContacts(query, overrideType, pageable), HttpStatus.OK);
+        return new ResponseEntity<>(contactService.searchContacts(query, overrideType, null, pageable), HttpStatus.OK);
+    }
+
+    @GetMapping(value="/categorySearch/{parentObjectCategoryId}")
+    public ResponseEntity<Page<Contact>> searchContacts(@PathVariable Long parentObjectCategoryId,
+                                                        @RequestParam String query,
+                                                        Pageable pageable) {
+      return new ResponseEntity<>(contactService.searchContactsByCategoryIds(parentObjectCategoryId, query, pageable), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{contactId}")
