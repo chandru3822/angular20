@@ -18,6 +18,7 @@ CREATE OR REPLACE FUNCTION flow.search_contacts(p_searchterm character varying,
             mobile           character varying,
             company_id       bigint,
             contact_type_id  bigint,
+            object_category_id bigint,
             contact_type     character varying,
             company_state_id bigint,
             state            character varying,
@@ -38,7 +39,7 @@ DECLARE
   v_company_ids               bigint[];
   v_clean_id_search_term      varchar;
 BEGIN
-  v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
+  v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.&- ', '')));
   v_clean_phone_search_term = trim(translate(p_searchterm, '-(). ', ''));
   v_clean_email_search_term = lower(trim(p_searchterm));
   v_clean_address_search_term = trim(lower(translate(p_searchterm, '.,', '')));
@@ -62,6 +63,7 @@ BEGIN
              limited_contacts.mobile,
              limited_contacts.company_id::bigint,
              limited_contacts.contact_type_id::bigint,
+             limited_contacts.object_category_id::bigint,
              limited_contacts.contact_type,
              limited_contacts.company_state_id::bigint,
              limited_contacts.state,
@@ -79,6 +81,7 @@ BEGIN
                    c.mobile,
                    c.company_id,
                    c.contact_type_id,
+                   c.object_category_id,
                    ct.contact_type,
                    c.company_state_id,
                    s.state,
@@ -101,6 +104,10 @@ BEGIN
             WHERE c.company_id = ANY (v_company_ids)
               and c.date_created is not null
               and c.archived is not true
+              and case
+                      when p_object_category_ids is not null and array_length(ARRAY [ p_object_category_ids ]::bigint[], 1) > 0
+                          then c.object_category_id = any (p_object_category_ids)
+                      else 1 = 1 end
               and ((c.id::text like '%' || v_clean_name_search_term || '%')
               or (c.contact_full_name_search like '%' || v_clean_name_search_term || '%')
               or (c.contact_street_search like '%' || v_clean_address_search_term || '%')
@@ -119,6 +126,7 @@ BEGIN
              limited_contacts.mobile,
              limited_contacts.company_id::bigint,
              limited_contacts.contact_type_id::bigint,
+             limited_contacts.object_category_id::bigint,
              limited_contacts.contact_type,
              limited_contacts.company_state_id::bigint,
              limited_contacts.state,
@@ -136,6 +144,7 @@ BEGIN
                    c.mobile,
                    c.company_id,
                    c.contact_type_id,
+                   c.object_category_id,
                    ct.contact_type,
                    c.company_state_id,
                    s.state,
@@ -158,6 +167,10 @@ BEGIN
             WHERE c.company_id = ANY (v_company_ids)
               and c.date_created is not null
               and c.archived is not true
+              and case
+                      when p_object_category_ids is not null and array_length(ARRAY [ p_object_category_ids ]::bigint[], 1) > 0
+                          then c.object_category_id = any (p_object_category_ids)
+                      else 1 = 1 end
             order by c.date_created desc
             limit p_limit offset p_offset) as limited_contacts;
 

@@ -36,9 +36,9 @@ public class ContactController {
     }
 
     @GetMapping(value="/categorySearch/{parentObjectCategoryId}")
-    public ResponseEntity<Page<Contact>> searchContacts(@PathVariable Long parentObjectCategoryId,
-                                                        @RequestParam String query,
-                                                        Pageable pageable) {
+    public ResponseEntity<Page<Contact>> searchContactsByCategoryIds(@PathVariable Long parentObjectCategoryId,
+                                                                     @RequestParam String query,
+                                                                     Pageable pageable) {
       return new ResponseEntity<>(contactService.searchContactsByCategoryIds(parentObjectCategoryId, query, pageable), HttpStatus.OK);
     }
 

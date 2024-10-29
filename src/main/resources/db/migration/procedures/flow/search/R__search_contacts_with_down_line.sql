@@ -37,7 +37,7 @@ DECLARE
   v_org_ids                   bigint[];
   v_position_ids              bigint[];
 BEGIN
-  v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
+  v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.&- ', '')));
   v_clean_phone_search_term = right(trim(translate(p_searchterm, '+-(). ', '')), 10);
   v_clean_email_search_term = lower(trim(p_searchterm));
   v_clean_address_search_term = trim(lower(translate(p_searchterm, '.,', '')));

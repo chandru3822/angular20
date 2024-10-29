@@ -326,7 +326,7 @@ const getContacts = async () => {
   source.value = CancelToken.source();
 
   try {
-    const {data, status} = await getRequestWithParams(`/contact/search`, {
+    const {data, status} = await getRequestWithParams(`/contact/categorySearch/${project.value.objectCategoryId}`, {
       source: source.value,
       cancelToken: source.value.token,
       params: {

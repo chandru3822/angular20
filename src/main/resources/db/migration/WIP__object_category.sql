@@ -7,6 +7,16 @@
 -- drop table if exists brs.feat_db_ahj_new_home_custom_field_value_audit;
 -- drop table if exists brs.feat_db_ahj_new_home_link;
 
+--this fixing contact searching with spaces
+alter table flow.contact
+    add contact_full_name_search_2 varchar generated always as ((
+        (lower(translate((COALESCE(first_name, ''::character varying))::text, '*,.&- '::text, ''::text)) ||
+         lower(translate((COALESCE(last_name, ''::character varying))::text, '*,.&- '::text, ''::text))))) stored;
+alter table flow.contact drop column if exists contact_full_name_search;
+ALTER TABLE flow.contact
+    RENAME COLUMN contact_full_name_search_2 TO contact_full_name_search;
+CREATE INDEX if not exists contact_full_name_search_idx ON flow.contact (contact_full_name_search);
+
 -- CREATE TABLE if not exists flow.object_category
 -- (
 --   id                   bigserial,
