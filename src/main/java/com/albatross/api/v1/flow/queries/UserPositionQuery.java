@@ -149,22 +149,40 @@ public class UserPositionQuery {
     """;
 
   public final static String getSmartlistUsers= """
-          select distinct upv.user_id::bigint as user_id,
-                       upv.user_position_id as id,
-                       concat(upv.first_name,' ',upv.last_name::text) as full_name,
-                       upv.position,
-                       upv.position_id,
-                       upv.primary_flag
-          from flow.user_positions_vw upv
-          	     inner join flow.position_feature_access_control pac on upv.position_id = pac.position_id and upv.company_id = :companyId
-          	     inner join flow.company_feature cf on cf.id = pac.company_feature_id and cf.id = 19
-          where
-          		upv.company_id = :companyId and
-          	upv.has_access is true and
-          	(upv.start_date <= now() and (upv.end_date IS NULL OR upv.end_date > now())) and
-          	upv.primary_flag is true
-          order by full_name
-          """;
+           select distinct upv.user_id::bigint as user_id,
+                           upv.user_position_id as id,
+                           concat(upv.first_name,' ',upv.last_name::text) as full_name,
+                           upv.position,
+                           upv.position_id,
+                           upv.primary_flag
+           from flow.user_positions_vw upv
+           	     inner join flow.position_feature_access_control pac on upv.position_id = pac.position_id and upv.company_id = :companyId
+           	     inner join flow.company_feature cf on cf.id = pac.company_feature_id and cf.feature_id = 19
+           where
+           		pac.enabled = true and
+           		upv.company_id = :companyId and
+           	    upv.has_access is true and
+           	    (upv.start_date <= now() and (upv.end_date IS NULL OR upv.end_date > now())) and
+           	    upv.primary_flag is true
+          union
+           select distinct u.id::bigint as user_id,
+                           upv.user_position_id as id,
+                           concat(u.first_name,' ',u.last_name::text) as full_name,
+                           upv.position,
+                           upv.position_id,
+                           upv.primary_flag
+           from flow.access_control ac
+           	     inner join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
+           	     inner join flow.company_feature cf on cf.id = ufac.company_feature_id
+           	     inner join flow."user" u on u.id = ufac.user_id
+                  inner join flow.user_positions_vw upv on u.id = upv.user_id and upv.primary_flag = true
+           where
+           	cf.has_permissions is true and
+           	ufac.enabled = true and
+           	(upv.start_date <= now() and (upv.end_date IS NULL OR upv.end_date > now())) and
+           	cf.feature_id = 19
+           """;
+
 
   //language=PostgreSQL
   public final static String getPrimaryUserPositions = """
