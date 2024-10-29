@@ -94,7 +94,7 @@ $do$
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28820, x.description::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28821, x.i_supplier_c::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28822, x.legal_business_name_c::text, true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 28823, account_owner_id::text,true);
+          perform flow.set_contact_cfv(v_contact_id, 2384850, 28823, x.account_owner_id::text,true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28826, x.rlcpa_notes_c::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28831, x.shipping_city::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28832, x.shipping_postal_code::text, true);

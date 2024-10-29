@@ -1,5 +1,6 @@
 --2 END total = 21189
 -- 2 minutes 40 seconds
+SET session_replication_role = replica;
 DO
 $do$
   declare
@@ -12,6 +13,8 @@ $do$
     v_count bigint;
     v_total bigint;
     v_contact_id bigint;
+  v_ahj_utility_c bigint;
+    v_ahjname_c bigint;
   BEGIN
     select id
     into v_contact_id
@@ -89,6 +92,7 @@ $do$
                     c.load_application_c,
                     c.load_application_received_c,
                     c.address_list_c,
+                    c.ahj_utility_c,
                     c.address_list_info_complete_c,
                     c.architecture_files_c,
                     c.architecture_files_info_complete_c,
@@ -229,10 +233,26 @@ $do$
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27988,x.nh_community_c_field_manager_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27989,x.nh_community_c_sr_builder_operation_manager_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28006,x.utility_c::text , true);
-      --todo create insert for brs    perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1049,x.ahj_utility_c::text , true);
+          if x.ahj_utility_c is not null then
+            v_ahj_utility_c = null;
+            select fdu.id
+            into v_ahj_utility_c
+            from brs.feat_db_utility fdu
+            where fdu.nh_migration_id = x.ahj_utility_c;
+             perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1049,v_ahj_utility_c::text , true);
+          end if;
+
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29868,x.sr_community_account_manager_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28007,x.ahj_c::text , true);
-          --todo create insert for brs  perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1048,x.ahjname_c::text , true);
+          if x.ahjname_c is not null then
+            v_ahjname_c = null;
+            select fda.id
+            into v_ahjname_c
+            from brs.feat_db_ahj fda
+            where fda.nh_migration_id = x.ahjname_c;
+            perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1048,v_ahjname_c::text , true);
+          end if;
+
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28010,x.builder_initial_submitter_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28008,x.tract_number_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28000,x.model_discount_c::text , true);

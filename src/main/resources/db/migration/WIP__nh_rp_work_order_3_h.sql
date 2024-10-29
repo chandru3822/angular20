@@ -1439,6 +1439,7 @@ $do$
         v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
+          raise notice 'v_total = %',v_total;
           --commit;
           v_count = 0;
         end if;

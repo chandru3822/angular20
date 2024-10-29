@@ -1,3 +1,4 @@
+SET session_replication_role = replica;
 DO
 $do$
   declare
@@ -157,11 +158,11 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28426, z.name::text,
                                                  true);
         if z.design_type is not null then
-        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28427, z.design_type, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28427, z.design_type::text, true);
         end if;
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28741,
                                                  z.lov2_nh_urgent_request_type_c_id::text, true);
-        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28742, z.design_c_owner_id, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28742, z.design_c_owner_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28743,
                                                  z.lov3_incoming_request_had_all_information_c_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28744,
