@@ -181,21 +181,21 @@ BEGIN
   from flow.project_custom_field_value v
   where project_id = any (v_project_ids);
 
-  delete
-  from flow.project_message_owner
-  where project_id = any (v_project_ids);
-
-  delete
-  from flow.project_message_owner_history
-  where project_id = any (v_project_ids);
-
-  delete
-  from flow.project_message_properties
-  where project_id = any (v_project_ids);
-
-  delete
-  from flow.project_message_team
-  where project_id = any (v_project_ids);
+--   delete
+--   from flow.project_message_owner
+--   where project_id = any (v_project_ids);
+--
+--   delete
+--   from flow.project_message_owner_history
+--   where project_id = any (v_project_ids);
+--
+--   delete
+--   from flow.project_message_properties
+--   where project_id = any (v_project_ids);
+--
+--   delete
+--   from flow.project_message_team
+--   where project_id = any (v_project_ids);
 
 
   delete

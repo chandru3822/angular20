@@ -1,7 +1,3 @@
-alter table brs.feat_db_ahj
-    add column if not exists nh_migration_id varchar(18);
-alter table brs.feat_db_utility
-    add column if not exists nh_migration_id varchar(18);
 
 --this is for brs.ahj_name_c which inserts ahj new home data
 DO
@@ -25,6 +21,7 @@ $do$
         v_ess_permitting_responsibility_c bigint;
         v_builder_permitting_type_c bigint;
         v_mppp_submittal_type_c bigint;
+      v_permit_supervisor bigint;
     BEGIN
         for x in select a.id,
                         a.name,
@@ -214,7 +211,15 @@ $do$
                             perform brs.set_feat_db_cfv_no_checks(v_ahj_new_home_id, 2384850, 1275, v_mppp_paper_size_c::text, 'AHJ_NEW_HOME');
                         end if;
                         perform brs.set_feat_db_cfv_no_checks(v_ahj_new_home_id, 2384850, 1276, x.ess_permitting_process_confirmed_c::text, 'AHJ_NEW_HOME');
-                        perform brs.set_feat_db_cfv_no_checks(v_ahj_new_home_id, 2384850, 1277, x.nh_permit_team_supervisor_c::text, 'AHJ_NEW_HOME');
+                        v_permit_supervisor = null;
+                        if x.nh_permit_team_supervisor_c is not null then
+                          select user_id
+                          into v_permit_supervisor
+                          from  brs.nh_migration_user
+                          where sp_id = x.nh_permit_team_supervisor_c;
+                          perform brs.set_feat_db_cfv_no_checks(v_ahj_new_home_id, 2384850, 1277, v_permit_supervisor::text, 'AHJ_NEW_HOME');
+                        end if;
+
                         perform brs.set_feat_db_cfv_no_checks(v_ahj_new_home_id, 2384850, 1278, x.number_of_copies_for_mppp_c::text, 'AHJ_NEW_HOME');
                         perform brs.set_feat_db_cfv_no_checks(v_ahj_new_home_id, 2384850, 1279, x.mppp_cost_c::text, 'AHJ_NEW_HOME');
                         v_mppp_issuance_type_c = null;
@@ -385,7 +390,7 @@ $do$
                     set nh_migration_id = x.id
                     where id = v_utility_id;
                 --if there wasn't an existing utility then add one
-                if (v_utility_id is null) then
+                else
                     insert into brs.feat_db_utility(name, created_by_id, modified_by_id, nh_migration_id, company_state_id, active)
                     select x.name, 2384850, 2384850, x.id,
                            --in ahj_utility_c, state_c is the state abbreviation, use that to match to the company state id for company_id = 3

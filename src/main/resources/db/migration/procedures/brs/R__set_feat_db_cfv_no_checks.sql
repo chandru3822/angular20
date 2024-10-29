@@ -35,8 +35,9 @@ BEGIN
             insert into brs.feat_db_ahj_new_home_custom_field_value(ahj_new_home_id, custom_field_group_assignment_id,
                                                                     created_by_id, modified_by_id,
                                                                     date_value, timestamp_value,
-                                                                    boolean_value, text_value,
-                                                                    numeric_value, int_value,
+                                                                    boolean_value, numeric_value,
+                                                                    text_value
+                                                                    , int_value,
                                                                     int_array_value)
             values (p_feat_db_source_id, p_cfga, p_user_id, p_user_id,
                     case when v_data_type_id = 1 then p_value_to_save::date end,
@@ -53,8 +54,8 @@ BEGIN
             insert into brs.feat_db_utility_custom_field_value(utility_id, custom_field_group_assignment_id,
                                                                     created_by_id, modified_by_id,
                                                                     date_value, timestamp_value,
-                                                                    boolean_value, text_value,
-                                                                    numeric_value, int_value,
+                                                                    boolean_value,numeric_value, text_value,
+                                                                    int_value,
                                                                     int_array_value)
             values (p_feat_db_source_id, p_cfga, p_user_id, p_user_id,
                     case when v_data_type_id = 1 then p_value_to_save::date end,

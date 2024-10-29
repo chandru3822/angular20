@@ -10,7 +10,7 @@ BEGIN
     select id
     into v_user_id
     from flow."user" u
-    where u.nh_migration_id = p_value;
+    where p_value = any(u.nh_migration_id) ;
 
     if v_user_id is null then
       v_user_id = 2495780;

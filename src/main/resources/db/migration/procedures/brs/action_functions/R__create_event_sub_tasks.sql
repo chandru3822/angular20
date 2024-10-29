@@ -19,7 +19,18 @@ BEGIN
     and pse.archived is false;
 
   for x in
-    select ptc.*,
+    select ptc.name,
+           ptc.comment_c,
+           ptc.start_date_time_c,
+      ptc.due_date_c,
+      ptc.ip_owner_c,
+      ptc.status_c,
+      ptc.first_complete_end_date_time_c,
+      ptc.end_date_time_c,
+           case when ptc.PROJECT_TASK_C_assigned_to_c is null and ptc.assigned_to_c is not null then
+                  2495780::bigint
+                else
+                  ptc.PROJECT_TASK_C_assigned_to_c end as PROJECT_TASK_C_assigned_to_c,
            lov1.id as lov1_project_priority_c_id,
            lov2.id as lov2_role_assignment_c_id,
            lov3.id as lov3_task_path_type_c_id,
@@ -50,7 +61,7 @@ BEGIN
 
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28896, x.name::text,true);
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28898, x.comment_c::text,true);
-    --  perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28903, x.assigned_to_c::text,true);
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28903, x.PROJECT_TASK_C_assigned_to_c::text,true);
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28899, x.start_date_time_c::text,true);
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28900, x.due_date_c::text,true);
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28905, x.ip_owner_c::text,true);
