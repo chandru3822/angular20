@@ -90,7 +90,7 @@
               </td>
               <td class="text-left">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/contact/${item.id}`">
-                  {{item.objectCategoryId }}
+                  {{ item.owner ? item.owner.fullName : ''}}
                 </router-link>
               </td>
               <td class="text-left">
