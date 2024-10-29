@@ -31,8 +31,10 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +57,8 @@ public class ContactService {
   private final UserPositionService userPositionService;
 
   private final ProjectProcessStepService projectProcessStepService;
+
+  private final SqlArrayService sqlArrayService;
 
   private final ObjectMapper om;
 
@@ -92,34 +96,41 @@ public class ContactService {
           List.of("VIEW_CUSTOM"));
     }
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("isParent", isParent);
-    params.put("viewAll", viewAll);
-    params.put("userId", user.getId());
-    params.put("query", query);
-    params.put("objectCategoryIds", objectCategoryIds);
-    params.put("limit", pageable.getPageSize());
-    params.put("offset", pageable.getOffset());
+    try {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("companyId", user.getCompanyId());
+      params.put("parentCompanyId", user.getHighestParentCompanyId());
+      params.put("isParent", isParent);
+      params.put("viewAll", viewAll);
+      params.put("userId", user.getId());
+      params.put("query", query);
 
-    String searchSql = ContactQuery.searchByOwner;
-    if (viewCustom) {
-      searchSql = ContactQuery.searchDownline;
-    } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
-      searchSql = ContactQuery.search;
+      params.put("objectCategoryIds", objectCategoryIds != null ? sqlArrayService.createSqlArrayOfType("int", objectCategoryIds) : null);
+
+      params.put("limit", pageable.getPageSize());
+      params.put("offset", pageable.getOffset());
+
+      String searchSql = ContactQuery.searchByOwner;
+      if (viewCustom) {
+        searchSql = ContactQuery.searchDownline;
+      } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
+        searchSql = ContactQuery.search;
+      }
+
+      List<Contact> results;
+      // move contact searching to replica to help balance DB load
+      if (searchSql.equals(ContactQuery.search)) {
+          results = sqlCacheRO.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
+      } else {
+          results = sqlCache.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
+      }
+
+      int count = 10000;
+      return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    } catch (SQLException e) {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Could not convert object category ids to sql array.", new Exception());
     }
-
-    List<Contact> results;
-    // move contact searching to replica to help balance DB load
-    if (searchSql.equals(ContactQuery.search)) {
-        results = sqlCacheRO.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
-    } else {
-        results = sqlCache.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
-    }
-
-    int count = 10000;
-    return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public Page<Contact> searchContactsByCategoryIds(Long parentObjectCategoryId, String query, Pageable pageable) {

@@ -226,8 +226,9 @@
               color="primary"
               class=""
               v-if="contactSelectionType === 1"
+              :disabled="!selectedExistingContact.id"
               @click="assignContact"
-              :text="`Save and Assign: ${selectedExistingContact.fullName}`"
+              :text="selectedExistingContact.fullName ? `Save and Assign: ${selectedExistingContact.fullName}` : `Save and Assign`"
           ></a-btn>
           <a-btn
               color="primary"
