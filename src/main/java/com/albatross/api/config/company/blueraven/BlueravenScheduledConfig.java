@@ -1,7 +1,6 @@
 package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeSyncService;
 import com.albatross.api.v1.company.blueraven.services.*;
 import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
@@ -18,8 +17,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -61,8 +58,6 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   private final KlaviyoService klaviyoService;
 
   private final MarketoService marketoService;
-
-  private final BirdEyeSyncService birdeyeSyncService;
 
   private final BlueravenProjectService blueravenProjectService;
 
@@ -165,7 +160,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
+  /*@Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
   public void syncBirdeyeResponses() {
     log.debug("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();
@@ -183,7 +178,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     birdeyeSyncService.syncReviews();
     Duration duration = Duration.between(startTime, Instant.now());
     log.debug("*** CRON: end sync surveys from BirdEye in {} ***", duration);
-  }
+  }*/
 
   @Bean
   public Executor blueravenTaskExecutor() {
