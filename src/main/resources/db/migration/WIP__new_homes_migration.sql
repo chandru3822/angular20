@@ -6167,6 +6167,7 @@
 --   CREATE INDEX if not exists PROJECT_TASK_C_critical_path_c ON brs.PROJECT_TASK_C (critical_path_c);
 
  --  CREATE INDEX if not exists case_owner_id ON brs.case (owner_id);
+   CREATE INDEX if not exists quote_c_id ON brs.quote (id);
 
 --
 -- DO

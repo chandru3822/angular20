@@ -125,7 +125,7 @@ $do$
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id,nw_migration_id)
-        values (x.project_id, 3798, null, 1, null, now(), now(), 2384850, 2384850, false,
+        values (x.project_id, 3798, null, case when x.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
                 case when x.is_last_row is true then true else false end, null, null, null,x.quote_id) returning id into v_project_process_step_id;
 
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29291,x.module_c::text , true);

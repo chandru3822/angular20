@@ -5,7 +5,6 @@ $do$
     x                         record;
     v_count                   bigint;
     v_total                   bigint;
-    v_project_process_step_id bigint;
   BEGIN
     raise notice '3 START = %',clock_timestamp();
     v_count = 0;
@@ -157,54 +156,44 @@ $do$
           v_count = 0;
         end if;
 
-        if x.is_first_row is true then
-        v_project_process_step_id = null;
-          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
-                                                 company_process_step_status_type_id,
-                                                 process_step_complete_date, date_created, date_modified, created_by_id,
-                                                 modified_by_id, archived, main, parent_project_process_step_id,
-                                                 cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (x.project_id, 3793, null, 1, null, now(), now(), 2384850, 2384850, false,
-                  true, null, null, null, x.alliance_partner_id)
-          returning id into v_project_process_step_id;
-        end if;
+
         case
           when x.role_c = 'Builder'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28877, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28877, x.org_id::text, true);
           when x.role_c = 'Builder HERS Rater'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28878, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28878, x.org_id::text, true);
           when x.role_c = 'Commissioning Partner'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28879, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28879, x.org_id::text, true);
           when x.role_c = 'Customer Service Partner'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28880, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28880, x.org_id::text, true);
           when x.role_c = 'Dealer'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28881, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28881, x.org_id::text, true);
           when x.role_c = 'Design Partner'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28882, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28882, x.org_id::text, true);
           when x.role_c = 'DRIP'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28883, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28883, x.org_id::text, true);
           when x.role_c = 'EV Electrician'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28884, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28884, x.org_id::text, true);
           when x.role_c = 'Field Service Representative'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28886, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28886, x.org_id::text, true);
           when x.role_c = 'Inspection Partner'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28887, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28887, x.org_id::text, true);
           when x.role_c = 'IP'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28888, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28888, x.org_id::text, true);
           when x.role_c = 'MPU Electrician'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28889, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28889, x.org_id::text, true);
           when x.role_c = 'Permitting Partner'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28890, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28890, x.org_id::text, true);
           when x.role_c = 'PV HERS Provider'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28891, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28891, x.org_id::text, true);
           when x.role_c = 'Roofer'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28892, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28892, x.org_id::text, true);
           when x.role_c = 'Storage IP'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28893, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28893, x.org_id::text, true);
           when x.role_c = 'T24 Energy Consultant'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28894, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28894, x.org_id::text, true);
           when x.role_c = 'TPS'
-            then perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28895, x.org_id::text, true);
+            then perform flow.set_project_cfv_no_checks(x.project_id, 2384850, 28895, x.org_id::text, true);
           else
           end case;
       end loop;

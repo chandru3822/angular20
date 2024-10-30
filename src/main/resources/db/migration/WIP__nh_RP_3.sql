@@ -361,7 +361,7 @@ $do$
           select oc.id
           into v_object_category_id
           from flow.object_category oc
-          where object_category_code = 'PRIMARY_HOMEOWNER'
+          where object_category_code = 'LOT_OWNER'
             and object_type_id = 2;
           insert into flow.contact(contact_type_id, first_name, last_name, street1, street2, city, postal_code,
                                    phone, email, mobile, date_created, date_modified,

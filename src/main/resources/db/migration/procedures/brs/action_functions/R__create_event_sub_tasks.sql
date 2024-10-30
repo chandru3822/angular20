@@ -19,7 +19,9 @@ BEGIN
     and pse.archived is false;
 
   for x in
-    select ptc.name,
+    select
+      ptc.id,
+      ptc.name,
            ptc.comment_c,
            ptc.start_date_time_c,
       ptc.due_date_c,
@@ -49,14 +51,14 @@ BEGIN
                                                   company_event_status_type_id, start_time, end_time,
                                                   date_created,
                                                   date_modified, created_by_id, modified_by_id, archived,
-                                                  cancelled_date, completed_date, scheduled_date, save_version)
+                                                  cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
       values (p_project_process_step_id, v_pse_id, null, case
                                                            when x.status_c = 'Not Started' then 90
                                                            when x.status_c = 'In Progress' then 106
                                                            when x.status_c = 'Blocked' then 109
                                                            when x.status_c = 'Completed' then 3 end, null, null, now(),
               now(), 2384850, 2384850, false, null,
-              null, null, 1)
+              null, null, 1,x.id)
       returning id into v_project_process_step_event_id;
 
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28896, x.name::text,true);

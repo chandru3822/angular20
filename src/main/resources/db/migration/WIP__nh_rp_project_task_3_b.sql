@@ -12,10 +12,11 @@ $do$
     v_total = 0;
     for w in
       select
-        distinct on (ptc.residential_project_c)
+        distinct on (ptc.residential_project_c,ptc.name)
         ptc.description_c,
         ptc.project_priority_c,
         ptc.comment_c,
+        ptc.status_c,
         ptc.assigned_to_c,
         ptc.ip_owner_c,
         ptc.role_assignment_c,
@@ -51,7 +52,7 @@ $do$
         upper(ptc.path_type_c) = 'STANDARD' and
         rpc.STATUS_C != 'Cancelled' and   --todo revisit this
         ptc.critical_path_c = true
-      order by residential_project_c,ptc.order_c desc
+      order by ptc.residential_project_c,ptc.name,ptc.order_c desc
       loop
         v_count = v_count + 1;
         v_total = v_total + 1;
