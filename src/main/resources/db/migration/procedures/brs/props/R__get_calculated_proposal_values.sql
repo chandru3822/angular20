@@ -740,7 +740,7 @@ BEGIN
 
   if v_source_id = 525 then
     v_lead_cost_adder = v_setter_lead_cost;
-  elseif v_source_id = any([16766,19099,20016,527,522,528,524]) then
+  elseif v_source_id = any(array[16766,19099,20016,527,522,528,524]) then
     v_lead_cost_adder = v_digital_lead_cost;
   else
     v_lead_cost_adder = 0;
