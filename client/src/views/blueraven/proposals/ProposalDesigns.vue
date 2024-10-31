@@ -313,13 +313,13 @@
             designs.length === 0
           "
         >
-          <a-btn variant="text" color="primary" @click="handleAIRequest(false)">
+          <a-btn variant="text" color="primary" @click="handleNewRequest(true,false)">
             <v-icon :size="60">add</v-icon>
           </a-btn>
           <div class="mt-5 primary--text">Request AI Design</div>
         </div>
         <div v-if="canEdit && designs.length > 0 && !activeDesign.projectId">
-          <a-btn variant="text" color="primary" @click="handleAIRequest(true)">
+          <a-btn variant="text" color="primary" @click="handleNewRequest(true, true)">
             <v-icon :size="60">add</v-icon>
           </a-btn>
           <div class="mt-5 primary--text">Create my own design in Aurora</div>
@@ -600,7 +600,7 @@ const handleAIRequest = async (useExisting) => {
   showAIDesignRequestForm.value = true
 }
 
-const handleNewRequest = async () => {
+const handleNewRequest = async (ai, useExisting) => {
   lockNewRequests.value = true
   const { data } = await getRequest(
     `/proposal/projects/${projectId.value}/postalCode`,
@@ -608,7 +608,11 @@ const handleNewRequest = async () => {
   )
 
   if (data?.approved) {
-    showNewDesignRequestForm.value = true
+    if(ai) {
+      handleAIRequest(useExisting)
+    } else {
+      showNewDesignRequestForm.value = true
+    }
   } else {
     showNewPostalCodeRequestForm.value = true
   }
