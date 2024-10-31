@@ -3,7 +3,7 @@ export const exec = function (expr, context = []) {
   //returns a boolean if the provided fieldId matches the value passed in
   function customFieldHasValue(fieldId, value) {
     const match = context?.find(
-      (f) => f.fieldId === fieldId && f.value === value
+      (f) => f.fieldId === fieldId && value.includes(f.value)
     )
     return match !== undefined
   }

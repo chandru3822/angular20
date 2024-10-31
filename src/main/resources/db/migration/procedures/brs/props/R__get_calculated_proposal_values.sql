@@ -190,7 +190,10 @@ create type brs.calculated_proposal_value as
   rete_incentive_applied boolean,
   rete_depreciation_incentive_amount_number numeric,
   rete_depreciation_incentive_amount varchar,
-  rete_adder  varchar
+  rete_adder  varchar,
+  setter_lead_cost numeric,
+  digital_lead_cost numeric,
+  lead_cost_adder numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -545,6 +548,9 @@ declare
   v_base_price_per_watt                                  numeric;
   v_minimum_price_per_watt numeric;
 v_closer_gen_source_ids bigint[];
+  v_setter_lead_cost numeric;
+  v_digital_lead_cost numeric;
+  v_lead_cost_adder numeric;
 BEGIN
 
   select (select string_to_array(value, ',')
@@ -727,6 +733,18 @@ BEGIN
   --raise notice 'v_rete_incentive_applied = % ',v_rete_incentive_applied;
   --raise notice 'v_rete_depreciation_incentive_amount = % ',v_rete_depreciation_incentive_amount;
   --raise notice 'v_misc_adders_array = % ',v_misc_adders_array;
+
+  select setter_lead_cost, digital_lead_cost
+  into v_setter_lead_cost, v_digital_lead_cost
+  from brs.get_lead_cost_details(v_version_id, v_postal_code);
+
+  if v_source_id = 525 then
+    v_lead_cost_adder = v_setter_lead_cost;
+  elseif v_source_id = any([16766,19099,20016,527,522,528,524]) then
+    v_lead_cost_adder = v_digital_lead_cost;
+  else
+    v_lead_cost_adder = 0;
+  end if;
 
   select dealer_redline_price
   into v_dealer_redline_price
@@ -1062,11 +1080,11 @@ BEGIN
   --raise notice 'v_max_price_adjustment = %',v_max_price_adjustment;
   if v_commission_strategy_id = 24871 then
     if v_source_id is null or not v_source_id = any (v_closer_gen_source_ids) then
-      raise exception 'The Redline strategy can only be used on self-gen projects';
+      raise exception 'The Denver Redline strategy can only be used on self-gen projects';
     else
       v_minimum_price_per_watt = (select * from brs.get_minimum_price_per_watt(v_proposal_id));
       if v_minimum_price_per_watt is null then
-        raise exception 'The Redline funding amount can not be found, please contact Rep Pay';
+        raise exception 'The Denver Redline funding amount can not be found, please contact Rep Pay';
       end if;
     end if;
     if v_base_price_per_watt is null or v_base_price_per_watt < 0 or v_base_price_per_watt < v_minimum_price_per_watt then
@@ -1077,6 +1095,9 @@ BEGIN
       v_desired_commission_amount = v_base_price_per_watt - v_minimum_price_per_watt;
       --the value from proposal_pricing or user or proposal pricing that may trump user + override amount < v_base_price_per_watt
     end if;
+  elseif v_commission_strategy_id = 26056 then
+    v_adjusted_price_per_watt = (select * from brs.get_minimum_price_per_watt(v_proposal_id)) +
+                                greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
   elsif v_commission_strategy_id = 24443 and v_dealer is not null then
     v_adjusted_price_per_watt = coalesce(v_dealer_redline_price, 0) + coalesce(v_dealer_markup, 0);
   elsif v_commission_strategy_id = 24102 then
@@ -1203,7 +1224,8 @@ BEGIN
                                                  coalesce(v_redline_utility_adder, 0) +
                                                  coalesce(v_small_system_size_adder_amount, 0) +
                                                  coalesce(v_smart_thermostat_adder, 0) +
-                                                 coalesce(v_led_light_bulbs_adder, 0)
+                                                 coalesce(v_led_light_bulbs_adder, 0) +
+                                                 coalesce(v_lead_cost_adder, 0)
                                                else 0::numeric end +
         v_total_ancillary_costs::numeric + coalesce(v_equipment_storage_adder, 0)) * v_initial_payment_factor * 18)
         /
@@ -1290,7 +1312,8 @@ BEGIN
                                                               coalesce(v_misc_adders, 0) +
                                                               coalesce(v_redline_utility_adder, 0) +
                                                               coalesce(v_promotion_cost, 0) +
-                                                              coalesce(v_small_system_size_adder_amount, 0)
+                                                              coalesce(v_small_system_size_adder_amount, 0) +
+                                                              coalesce(v_lead_cost_adder, 0)
                                                           else 0::numeric end +
                                                         v_total_ancillary_costs::numeric +
                                                         coalesce(v_equipment_storage_adder, 0)
@@ -1316,7 +1339,8 @@ BEGIN
                                              coalesce(v_redline_utility_adder, 0) +
                                              coalesce(v_small_system_size_adder_amount, 0) +
                                              coalesce(v_promotion_cost, 0) +
-                                             coalesce(v_zone_adder, 0)
+                                             coalesce(v_zone_adder, 0) +
+                                             coalesce(v_lead_cost_adder, 0)
                                          else 0::numeric end +
                                        v_total_ancillary_costs::numeric +
                                        coalesce(v_equipment_storage_adder, 0));
@@ -1333,7 +1357,8 @@ BEGIN
                                             coalesce(v_redline_utility_adder, 0) +
                                             coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) +
                                             coalesce(v_promotion_cost, 0) +
-                                            coalesce(v_zone_adder, 0)
+                                            coalesce(v_zone_adder, 0) +
+                                            coalesce(v_lead_cost_adder, 0)
                                         else 0::numeric end);
   --raise notice 'v_no_ancillary_amount_to_finance = %',v_no_ancillary_amount_to_finance;
 
@@ -2359,7 +2384,8 @@ BEGIN
                                          rete_incentive_applied,
                                          rete_depreciation_incentive_amount,
                                          rete_reamortized_monthly_payment_all_credits_to_loan,
-                                         rete_adder)
+                                         rete_adder,
+                                         setter_lead_cost, digital_lead_cost, lead_cost_adder)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2395,7 +2421,8 @@ BEGIN
                   coalesce(v_unapproved_zip_code_adder, 0) +
                   coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
                   coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) + coalesce(v_redline_utility_adder, 0) +
-                  coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0)
+                  coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
+                  coalesce(v_lead_cost_adder, 0)
               else 0::numeric end +
             v_total_ancillary_costs::numeric +
             coalesce(v_equipment_storage_adder, 0),
@@ -2485,7 +2512,10 @@ BEGIN
             v_rete_incentive_applied,
             v_rete_depreciation_incentive_amount,
             v_rete_reamortized_monthly_payment_all_credits_to_loan,
-            v_rete_adder
+            v_rete_adder,
+            v_setter_lead_cost,
+            v_digital_lead_cost,
+            v_lead_cost_adder
             );
   end if;
 
@@ -2695,7 +2725,10 @@ BEGIN
            v_rete_incentive_applied,
            v_rete_depreciation_incentive_amount,
            to_char(v_rete_depreciation_incentive_amount, '$FM9,999,999')::varchar,
-           to_char(v_rete_adder, '$FM9,999,999')::varchar;
+           to_char(v_rete_adder, '$FM9,999,999')::varchar,
+           v_setter_lead_cost,
+           v_digital_lead_cost,
+           v_lead_cost_adder;
 
 
 END
