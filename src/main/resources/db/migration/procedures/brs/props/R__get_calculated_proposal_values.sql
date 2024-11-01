@@ -1096,8 +1096,12 @@ BEGIN
       --the value from proposal_pricing or user or proposal pricing that may trump user + override amount < v_base_price_per_watt
     end if;
   elseif v_commission_strategy_id = 26056 then
-    v_adjusted_price_per_watt = (select * from brs.get_minimum_price_per_watt(v_proposal_id)) +
-                                greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
+    v_minimum_price_per_watt = (select * from brs.get_minimum_price_per_watt(v_proposal_id));
+    if v_minimum_price_per_watt is null then
+      raise exception 'Your Redline cannot be found, please contact Rep Pay';
+    end if;
+
+    v_adjusted_price_per_watt = v_minimum_price_per_watt + greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
   elsif v_commission_strategy_id = 24443 and v_dealer is not null then
     v_adjusted_price_per_watt = coalesce(v_dealer_redline_price, 0) + coalesce(v_dealer_markup, 0);
   elsif v_commission_strategy_id = 24102 then
