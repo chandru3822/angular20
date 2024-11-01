@@ -795,7 +795,6 @@ const doEventAction = async (action) => {
       companyEventStatusTypeId: selectedEvent.value.companyEventStatusTypeId,
       customFieldValues: dirtyCfvs.value
     }
-
     const {data} = await postRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${selectedEvent.value.id}/action/${action.id}/perform`, params)
 
     appStore.showSnack('SUCCESS', 'Action Completed')
@@ -806,6 +805,11 @@ const doEventAction = async (action) => {
     emit('refresh-project-status')
     emit('refresh-upcoming-pps')
     emit('refresh-upcoming-events')
+
+    if (data.uniqueBehaviorTypeId === 1) {
+      uniqueAlreadyHasValue.value = null != selectedEvent.value.startTime || null != selectedEvent.value.endTime || null != selectedEvent.value.resourceId
+      getRoundRobinNumDays()
+    }
 
     //set this because running an action also saves fields so it needs to be reset
     defaultValuesChanged.value = false
