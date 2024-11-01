@@ -738,10 +738,10 @@ BEGIN
   into v_setter_lead_cost, v_digital_lead_cost
   from brs.get_lead_cost_details(v_version_id, v_postal_code);
 
-  if v_source_id = 525 then
-    v_lead_cost_adder = v_setter_lead_cost;
-  elseif v_source_id = any(array[16766,19099,20016,527,522,528,524]) then
-    v_lead_cost_adder = v_digital_lead_cost;
+  if v_commission_strategy_id = 26056 and v_source_id = 525 then
+    v_lead_cost_adder = v_setter_lead_cost * (v_system_size * 1000);
+  elseif v_commission_strategy_id = 26056 and v_source_id = any(array[16766,19099,527,522,528]) then
+    v_lead_cost_adder = v_digital_lead_cost * (v_system_size * 1000);
   else
     v_lead_cost_adder = 0;
   end if;
@@ -1331,6 +1331,7 @@ BEGIN
   --raise notice 'v_non_solar_threshold_for_additional_fee = %',v_non_solar_threshold_for_additional_fee;
 
   --raise notice 'v_zone_adder = %',v_zone_adder;
+--   raise notice 'v_lead_cost_adder = %',v_lead_cost_adder;
   v_total_amount_to_be_financed = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
                                        case
                                          when v_dealer is null then
@@ -1348,7 +1349,7 @@ BEGIN
                                          else 0::numeric end +
                                        v_total_ancillary_costs::numeric +
                                        coalesce(v_equipment_storage_adder, 0));
-  --raise notice 'v_total_amount_to_be_financed = %',v_total_amount_to_be_financed;
+--   raise notice 'v_total_amount_to_be_financed = %',v_total_amount_to_be_financed;
 
   v_no_ancillary_amount_to_finance = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
                                       case
