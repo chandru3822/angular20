@@ -268,6 +268,9 @@ public class AttachmentTypeService {
     params.put("focused", false);
     params.put("linkable", false);
 
+    //this is probably wrong but i am fixing an error
+    params.put("objectCategoryId", null);
+
     //because we don't have to pass in any of the 3 variables, this AttachmentTypeQuery.projectGetAssignedTypes should return them all
     String sql = null != ppsEventId
       ? ProjectProcessStepEventQuery.getEventAttachmentTypes
