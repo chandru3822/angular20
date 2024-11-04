@@ -99,7 +99,8 @@ $do$
                     inner join flow.state s on s.id = cs.state_id
                      left join brs.feat_db_ahj_new_home nh on nh.ahj_id = fa.id
                 where lower(fa.name) = lower(x.name)
-                    and s.abbreviation = x.state_abbreviation_c;
+                    and s.abbreviation = x.state_abbreviation_c
+                    and fa.nh_migration_id is null;
 
                 --if there is one, then update the migration_id
                 if (v_ahj_id is not null) then
