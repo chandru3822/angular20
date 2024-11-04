@@ -85,6 +85,8 @@ $do$
                         st.abbreviation_c as state_abbreviation_c
                  from brs.ahj_name_c a
                           left join brs.ahj_state_c st on st.id = a.state_c
+                 where lower(a.name) not like '%duplicate%' and
+                       lower(a.name) not like '%delete%'
             loop
                 v_ahj_id = null;
                 v_ahj_new_home_id = null;
@@ -93,13 +95,18 @@ $do$
                 select fa.id, nh.id
                 into v_ahj_id, v_ahj_new_home_id
                 from brs.feat_db_ahj fa
-                         left join brs.feat_db_ahj_new_home nh on nh.ahj_id = fa.id
-                where lower(fa.name) = lower(x.name);
+                    inner join flow.company_state cs on cs.id = fa.company_state_id
+                    inner join flow.state s on s.id = cs.state_id
+                     left join brs.feat_db_ahj_new_home nh on nh.ahj_id = fa.id
+                where lower(fa.name) = lower(x.name)
+                    and s.abbreviation = x.state_abbreviation_c;
 
                 --if there is one, then update the migration_id
                 if (v_ahj_id is not null) then
                     update brs.feat_db_ahj
-                        set nh_migration_id = x.id
+                        set nh_migration_id = x.id,
+                            date_modified = now(),
+                            modified_by_id = 2417170
                     where id = v_ahj_id;
                 --if there wasn't an existing ahj then add one
                 else
