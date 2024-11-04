@@ -111,8 +111,8 @@ $do$
                     where id = v_ahj_id;
                 --if there wasn't an existing ahj then add one
                 else
-                    insert into brs.feat_db_ahj(name, created_by_id, modified_by_id, active, nh_migration_id, company_state_id)
-                    select x.name, 2384850, 2384850, true, x.id,
+                    insert into brs.feat_db_ahj(name, created_by_id, date_created, modified_by_id, active, nh_migration_id, company_state_id)
+                    select x.name, 2384850, now(), 2384850, true, x.id,
                            (select cs.id
                             from flow.company_state cs
                                      inner join flow.state s on s.id = cs.state_id
@@ -390,17 +390,23 @@ $do$
                 select fa.id
                 into v_utility_id
                 from brs.feat_db_utility fa
-                where lower(fa.name) = lower(x.name);
+                         inner join flow.company_state cs on cs.id = fa.company_state_id
+                         inner join flow.state s on s.id = cs.state_id
+                where lower(fa.name) = lower(x.name)
+                  and s.abbreviation = x.state_c
+                  and fa.nh_migration_id is null;
 
                 --if there is one, then update the migration_id
                 if (v_utility_id is not null) then
                     update brs.feat_db_utility
-                    set nh_migration_id = x.id
+                    set nh_migration_id = x.id,
+                        date_modified = now(),
+                        modified_by_id = 2417170
                     where id = v_utility_id;
                 --if there wasn't an existing utility then add one
                 else
-                    insert into brs.feat_db_utility(name, created_by_id, modified_by_id, nh_migration_id, company_state_id, active)
-                    select x.name, 2384850, 2384850, x.id,
+                    insert into brs.feat_db_utility(name, created_by_id, date_created, modified_by_id, nh_migration_id, company_state_id, active)
+                    select x.name, 2384850, now(), 2384850, x.id,
                            --in ahj_utility_c, state_c is the state abbreviation, use that to match to the company state id for company_id = 3
                            (select cs.id
                             from flow.company_state cs
