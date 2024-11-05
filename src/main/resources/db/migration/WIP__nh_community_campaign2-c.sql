@@ -24,11 +24,14 @@ $do$
                case when c3.campaign_owner_id is null and c3.owner_id is not null then
                       2495780::bigint
                     else
-                      c3.campaign_owner_id end as campaign_owner_id
+                      c3.campaign_owner_id end as campaign_owner_id,
+               concat(su.first_name,' ',su.email) as owner_name
              from brs.campaign c3
+               left join brs.sp_user su on su.id = c3.owner_id
                inner join brs.NH_COMMUNITY_C co on co.campaign_c = c3.id
                inner join flow.project p on p.nw_migration_id = co.id
                     left join flow.list_of_value lov1 on lov1.name = c3.sales_status_c and lov1.parent_id = 25309
+             where c3.is_deleted = false
              order by c3.nh_community_c, c3.created_date
 
       loop
@@ -51,6 +54,7 @@ $do$
             returning id into v_project_process_step_campaign_id;
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28116, u.lov1_sales_status_c_id::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28117, u.campaign_owner_id::text, true);
+            perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 29880, u.owner_name::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28118, u.end_date::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28119, u.short_description_c::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28120, u.description::text, true);

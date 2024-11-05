@@ -43,13 +43,18 @@ $do$
                p.id as project_id,
                lov1.id as lov1_cancellation_reason_c,
                lov2.id as lov2_contract_type_c,
+               concat(su.first_name,' ',su.email) as owner_id_name,
+               concat(su1.first_name,' ',su1.email) as reviewer_c_name,
                CASE WHEN row_number() OVER (PARTITION BY rpc.id ORDER BY dac.last_modified_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
              from brs.ds_agreement_c dac
+                    left join brs.sp_user su on su.id = dac.owner_id
+                    left join brs.sp_user su1 on su1.id = dac.reviewer_c
                     inner join brs.account a on a.id = dac.account_c
                     inner join brs.residential_project_c rpc on rpc.account_c = a.id
                     inner join flow.project p on p.nw_migration_id = rpc.id
                     left join flow.list_of_value lov1 on lov1.name = dac.cancellation_reason_c and lov1.parent_id =25850
                     left join flow.list_of_value lov2 on lov2.name = dac.contract_type_c and lov2.parent_id = 25842
+             where dac.is_deleted = false
              order by rpc.id,dac.last_modified_date
       loop
         v_count = v_count + 1;
@@ -131,6 +136,9 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29399,x.countersignatory_notes_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29400,x.lov1_cancellation_reason_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29401,x.hold_notes_c::text , true);
+
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30018,x.owner_id_name::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30019,x.reviewer_c_name::text , true);
 
       end loop;
     raise notice '18 END = %',clock_timestamp();

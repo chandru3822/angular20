@@ -246,6 +246,8 @@ $do$
                     lov46.id as lov46_hers_c_id,
                     lov47.id as lov47_mounting_type_c_id,
                     rpc.status_c,
+                    pcfv1.int_value as utility_id,
+                    pcfv.int_value as ahj_id,
                     rpc.name,
                     rpc.system_adders_c,
                     rpc.id,
@@ -296,12 +298,31 @@ $do$
                       when rpc.storage_configuration_group_c = 'aCv2T000000KytuSAC' then 25998
                       when rpc.storage_configuration_group_c = 'aCv2T000000KytzSAC' then 25999
                       else null end as storage_configuration_group,
-               lov45.id as lov45_microinverter_status_c_id
+               lov45.id as lov45_microinverter_status_c_id,
+                    concat(su.first_name,' ',su.email) as   install_completed_by_c_name,
+                    concat(su1.first_name,' ',su1.email) as pv_install_completed_by_c_name,
+                    concat(su2.first_name,' ',su2.email) as rough_wire_completed_by_c_name,
+                    concat(su3.first_name,' ',su3.email) as storage_install_completed_by_c_name,
+                    concat(su4.first_name,' ',su4.email) as storage_rough_completed_by_c_name,
+                    concat(su5.first_name,' ',su5.email) as trench_completed_by_c_name,
+                    concat(su6.first_name,' ',su6.email) as trim_install_completed_by_c_name,
+                    concat(su7.first_name,' ',su7.email) as activation_coordinator_c_name
              from brs.residential_project_c rpc
+                    left join brs.sp_user su on su.id =   rpc.install_completed_by_c
+                    left join brs.sp_user su1 on su1.id = rpc.pv_install_completed_by_c
+                    left join brs.sp_user su2 on su2.id = rpc.rough_wire_completed_by_c
+                    left join brs.sp_user su3 on su3.id = rpc.storage_install_completed_by_c
+                    left join brs.sp_user su4 on su4.id = rpc.storage_rough_completed_by_c
+                    left join brs.sp_user su5 on su5.id = rpc.trench_completed_by_c
+                    left join brs.sp_user su6 on su6.id = rpc.trim_install_completed_by_c
+                    left join brs.sp_user su7 on su7.id = rpc.activation_coordinator_c
+
                     inner join brs.nh_community_c ncc on ncc.id = rpc.community_c
                     left join brs.MODULE_CONFIGURATION_C mcc on mcc.id = rpc.module_configuration_c
                     left join brs.item_c ic on ic.id = mcc.item_c
                     left join flow.project p on p.nw_migration_id = ncc.id
+                    left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and pcfv.custom_field_group_assignment_id = 1048
+                    left join flow.project_custom_field_value pcfv1 on pcfv1.project_id = p.id and pcfv1.custom_field_group_assignment_id = 1049
                     left join brs.account a on a.id = ncc.builder_c
                     left join flow.contact c2 on c2.nw_migration_id = a.id
                     left join brs.account a2 on a2.id = rpc.account_c and a2.type in ('Home Owner – SSE','Home Owner','Homeowner')
@@ -347,11 +368,13 @@ $do$
                     left join flow.list_of_value lov45 on lov45.name = rpc.microinverter_status_c and lov45.parent_id = 25498
                     left join flow.list_of_value lov46 on lov46.name = rpc.hers_c and lov46.parent_id = 25434
                     left join flow.list_of_value lov47 on lov47.name = rpc.mounting_type_c and lov47.parent_id = 25258
+      where rpc.is_deleted = false
       loop
         v_count = v_count + 1;
         v_total = v_total + 1;
         if v_count = 5000 then
           raise notice 'v_count = %',v_count;
+          raise notice 'v_total = %',v_total;
           --commit;
           v_count = 0;
         end if;
@@ -390,6 +413,9 @@ $do$
                coalesce(substr(x.billing_postal_code,1,10),substr(x.builder_billing_postal_code,1,10)),x.company_state_id,1,false,null,x.id,
                v_object_category_project_id,x.community_project_id
               ) returning id into v_project_id;
+
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1048,x.ahj_id::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1049,x.utility_id::text , true);
 
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28122,x.record_type_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28675,x.project_number_c::text, true);
@@ -608,6 +634,17 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28313,x.lov45_microinverter_status_c_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28163,x.lov46_hers_c_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28052,x.lov47_mounting_type_c_id::text , true);
+
+
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29919,x.install_completed_by_c_name::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29920,x.pv_install_completed_by_c_name::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29921,x.rough_wire_completed_by_c_name::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29922,x.storage_install_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29923,x.storage_rough_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29924,x.trench_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29925,x.trim_install_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29918,x.activation_coordinator_c_name::text , true);
+
         v_system_adders_c = null;
         if x.system_adders_c is not null then
           select array_agg(lov.id)

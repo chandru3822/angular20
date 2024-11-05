@@ -56,6 +56,8 @@ $do$
                            2495780::bigint
                          else
                            dc.design_c_owner_id end as design_c_owner_id,
+                    concat(su.first_name,' ',su.email) as project_designer_c_name,
+                    concat(su1.first_name,' ',su1.email) as owner_id_name,
                     dc.owner_id,
                     lov1.id          as lov1_mppp_revision_needed_c_id,
                     lov2.id          as lov2_nh_urgent_request_type_c_id,
@@ -71,6 +73,8 @@ $do$
                       WHEN row_number() OVER (PARTITION BY co.id ORDER BY co.id) = 1 THEN TRUE
                       ELSE FALSE END AS is_first_row
              from brs.DESIGN_C DC
+                    left join brs.sp_user su on su.id = dc.project_designer_c
+                    left join brs.sp_user su1 on su1.id = dc.owner_id
                     inner join brs.NH_COMMUNITY_C co on co.id = dc.new_homes_community_c
                     inner join flow.project p on p.nw_migration_id = co.id
                     left join flow.list_of_value lov1
@@ -144,6 +148,11 @@ $do$
                 false, null,
                 null, null, 1, z.id)
         returning id into v_project_process_step_event_design_id;
+
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 29948,
+                                                 z.project_designer_c_name::text, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 29947,
+                                                 z.owner_id_name::text, true);
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_design_id, 2384850, 28740,
                                                  z.design_c_project_designer_c::text, true);

@@ -56,7 +56,7 @@ $do$
                                                     date_modified, created_by_id, modified_by_id, archived,
                                                     cancelled_date, completed_date, scheduled_date, save_version,
                                                     nw_migration_id)
-        values (v_project_process_step_visits_id, 237, null, 3, t.RECENT_VISIT_DATE_C, null, now(), now(), 2384850,
+        values (v_project_process_step_visits_id, 237, null, 3, (t.recent_visit_date_c + INTERVAL '16 hours')::timestamp, null, now(), now(), 2384850,
                 2384850, false, null,
                 null, null, 1, t.nh_visit_id)
         returning id into v_project_process_step_visits_events_id;

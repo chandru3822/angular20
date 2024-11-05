@@ -56,6 +56,7 @@ $do$
                     inner join flow.contact c on c.nw_migration_id = tcc.account_c
                     inner join flow.project p on p.contact_id = c.id
                     left join flow.list_of_value lov1 on lov1.name = tcc.action_taken_c and lov1.parent_id = 25729
+             where tcc.is_deleted = false
              order by tcc.account_c,tcc.created_date
 
       loop

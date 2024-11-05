@@ -6164,10 +6164,73 @@
 --  CREATE INDEX if not exists fee_distribution_c_record_type_id ON brs.fee_distribution_c (record_type_id);
 -- CREATE INDEX if not exists work_order_record_type_id ON brs.work_order (record_type_id);
 -- CREATE INDEX if not exists quote_account_id ON brs.quote (account_id);
---   CREATE INDEX if not exists PROJECT_TASK_C_critical_path_c ON brs.PROJECT_TASK_C (critical_path_c);
+--    CREATE INDEX if not exists PROJECT_TASK_C_critical_path_c ON brs.PROJECT_TASK_C (critical_path_c);
+--
+--    CREATE INDEX if not exists PROJECT_TASK_C_name ON brs.PROJECT_TASK_C (name);
+--
+--    CREATE INDEX if not exists case_owner_id ON brs.case (owner_id);
+--    CREATE INDEX if not exists quote_c_id ON brs.quote (id);
 
- --  CREATE INDEX if not exists case_owner_id ON brs.case (owner_id);
-   CREATE INDEX if not exists quote_c_id ON brs.quote (id);
+CREATE INDEX if not exists campaign_is_deleted ON brs.campaign (is_deleted);
+CREATE INDEX if not exists PROJECT_TASK_C_completed_by_c ON brs.PROJECT_TASK_C (completed_by_c);
+CREATE INDEX if not exists PROJECT_TASK_C_assigned_to_c ON brs.PROJECT_TASK_C (assigned_to_c);
+CREATE INDEX if not exists opportunity_opportunity_owner_s_manager_c ON brs.opportunity (opportunity_owner_s_manager_c);
+CREATE INDEX if not exists opportunity_is_deleted ON brs.opportunity (is_deleted);
+CREATE INDEX if not exists TASK_REWORK_REQUEST_C_created_by_id ON brs.TASK_REWORK_REQUEST_C (created_by_id);
+CREATE INDEX if not exists TASK_REWORK_REQUEST_C_is_deleted ON brs.TASK_REWORK_REQUEST_C (is_deleted);
+CREATE INDEX if not exists REWORK_REQUESTS_C_created_by_id ON brs.REWORK_REQUESTS_C (created_by_id);
+CREATE INDEX if not exists REWORK_REQUESTS_C_is_deleted ON brs.REWORK_REQUESTS_C (is_deleted);
+
+CREATE INDEX if not exists ds_agreement_c_owner_id ON brs.ds_agreement_c (owner_id);
+CREATE INDEX if not exists ds_agreement_c_recreviewer_c ON brs.ds_agreement_c (reviewer_c);
+CREATE INDEX if not exists ds_agreement_c_is_deleted ON brs.ds_agreement_c (is_deleted);
+
+CREATE INDEX if not exists lease_payment_c_is_deleted ON brs.lease_payment_c (is_deleted);
+CREATE INDEX if not exists lease_payment_c_Final_Permits_Entered_By_c ON brs.lease_payment_c (Final_Permits_Entered_By_c);
+CREATE INDEX if not exists lease_payment_c_invoice_admin_2_c ON brs.lease_payment_c (invoice_admin_2_c);
+
+CREATE INDEX if not exists plan_type_c_created_by_id ON brs.plan_type_c (created_by_id);
+CREATE INDEX if not exists plan_type_c_is_deleted ON brs.plan_type_c (is_deleted);
+
+CREATE INDEX if not exists case_is_deleted ON brs.case (is_deleted);
+CREATE INDEX if not exists case_created_by_id ON brs.case (created_by_id);
+
+CREATE INDEX if not exists DESIGN_C_project_designer_c ON brs.DESIGN_C (project_designer_c);
+CREATE INDEX if not exists DESIGN_C_owner_id ON brs.DESIGN_C (owner_id);
+CREATE INDEX if not exists DESIGN_C_id_deleted ON brs.DESIGN_C (is_deleted);
+
+CREATE INDEX if not exists work_order_owner_id ON brs.work_order (owner_id);
+CREATE INDEX if not exists work_order_scheduler_c ON brs.work_order (scheduler_c);
+CREATE INDEX if not exists work_order_is_deleted ON brs.work_order (is_deleted);
+
+CREATE INDEX if not exists account_owner_id ON brs.account (owner_id);
+CREATE INDEX if not exists account_is_deleted ON brs.account (is_deleted);
+
+
+CREATE INDEX if not exists residential_project_c_install_completed_by_c ON brs.residential_project_c (install_completed_by_c);
+CREATE INDEX if not exists residential_project_c_pv_install_completed_by_c ON brs.residential_project_c (pv_install_completed_by_c);
+CREATE INDEX if not exists residential_project_c_rough_wire_completed_by_c ON brs.residential_project_c (rough_wire_completed_by_c);
+CREATE INDEX if not exists residential_project_c_storage_install_completed_by_c ON brs.residential_project_c (storage_install_completed_by_c);
+CREATE INDEX if not exists residential_project_c_storage_rough_completed_by_c ON brs.residential_project_c (storage_rough_completed_by_c);
+CREATE INDEX if not exists residential_project_c_trench_completed_by_c ON brs.residential_project_c (trench_completed_by_c);
+CREATE INDEX if not exists residential_project_c_trim_install_completed_by_c ON brs.residential_project_c (trim_install_completed_by_c);
+CREATE INDEX if not exists residential_project_c_activation_coordinator_c ON brs.residential_project_c (activation_coordinator_c);
+CREATE INDEX if not exists residential_project_c_is_deleted ON brs.residential_project_c (is_deleted);
+
+
+CREATE INDEX if not exists nh_community_c_sr_builder_operation_manager_c ON brs.nh_community_c (sr_builder_operation_manager_c);
+CREATE INDEX if not exists nh_community_c_account_manager_c ON brs.nh_community_c (account_manager_c);
+CREATE INDEX if not exists nh_community_c_field_manager_c ON brs.nh_community_c (field_manager_c);
+CREATE INDEX if not exists nh_community_c_is_deleted ON brs.nh_community_c (is_deleted);
+
+CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_is_deleted ON brs.CREDIT_CHECK_REQUEST_C (is_deleted);
+CREATE INDEX if not exists title_check_c_is_deleted ON brs.title_check_c (is_deleted);
+
+
+
+
+
+
 
 --
 -- DO

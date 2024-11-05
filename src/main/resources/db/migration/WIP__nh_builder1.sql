@@ -49,12 +49,14 @@ $do$
                     case when a.account_owner_id is null and a.owner_id is not null then
                            2495780::bigint
                          else
-                           a.account_owner_id end as account_owner_id
+                           a.account_owner_id end as account_owner_id,
+                    concat(su.first_name,' ',su.email) as owner_id_name
              from brs.account a
+                    left join brs.sp_user su on su.id = a.owner_id
                     left join flow.state s on s.abbreviation = a.billing_state
                     left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
                     left join flow.list_of_value lov1 on lov1.name = a.status_c and lov1.parent_id = 25722
-             where type = 'Builder'
+             where type = 'Builder' and a.is_deleted = false
 
       loop
         v_contact_id = null;
@@ -85,6 +87,7 @@ $do$
             perform flow.set_contact_cfv(v_contact_id, 2384850, 28813, v_lov_available_lender_c::text, true);
           end if;
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28814, x.cash_partner_c::text, true);
+          perform flow.set_contact_cfv(v_contact_id, 2384850, 29911, x.owner_id_name::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28815, x.contact_name_c::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28816, x.credit_check_c::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28817, x.credit_limit_c::text, true);

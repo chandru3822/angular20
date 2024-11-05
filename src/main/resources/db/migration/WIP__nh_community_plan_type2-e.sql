@@ -26,6 +26,7 @@ $do$
                            2495780::bigint
                          else
                            ptc.plan_type_c_created_by_id end as plan_type_c_created_by_id,
+                    concat(su.first_name,' ',su.email) as plan_type_c_created_by_id_name,
                     ptc.sun_vault_retail_value_c,
                     mcc.name as mcc_name,
                     mcc.wattage_c,
@@ -40,6 +41,7 @@ $do$
                       WHEN row_number() OVER (PARTITION BY co.id ORDER BY co.id) = 1 THEN TRUE
                       ELSE FALSE END AS is_first_row
              from brs.plan_type_c ptc
+                    left join brs.sp_user su on su.id = ptc.created_by_id
                     left join brs.MODULE_CONFIGURATION_C mcc on mcc.id = ptc.module_configuration_1_c
                     left join brs.item_c ic on ic.id = mcc.item_c
                     inner join brs.NH_COMMUNITY_C co on co.id = ptc.community_c
@@ -83,6 +85,7 @@ $do$
             returning id into v_project_process_step_plan_event_id;
 
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28099, y.plan_type_c_created_by_id::text, true);
+            perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 29951, y.plan_type_c_created_by_id_name::text, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28098, y.NAME::text, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28100, y.ADDITIONAL_COST_FOR_STORAGE_C::text, true);
             perform flow.set_pps_event_cfv_no_checks(v_project_process_step_plan_event_id, 2384850, 28101, y.BASE_SQUARE_FOOTAGE_C::text,true);

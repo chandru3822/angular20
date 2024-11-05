@@ -48,6 +48,7 @@ $do$
                     left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
                     left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713
                     left join flow.list_of_value lov4 on lov4.name = ccrc.lender_c and lov4.parent_id = 25715
+             where ccrc.is_deleted = false
              order by ccrc.account_c,ccrc.credit_check_expiration_date_c
       loop
         v_project_process_step_id = null;

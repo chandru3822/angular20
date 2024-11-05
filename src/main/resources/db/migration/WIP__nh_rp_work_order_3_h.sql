@@ -159,8 +159,10 @@ $do$
                     lov2.id as  lov2_service_type_c_id,
                     lov3.id as  lov3_disposition_reason_c_id,
                     lov4.id as  lov4_inspection_type_c_id,
-                    lov5.id as  lov5_follow_up_reason_c_id
+                    lov5.id as  lov5_follow_up_reason_c_id,
+                    concat(su.first_name,' ',su.email) as owner_id_name
              from brs.work_order wo
+                    left join brs.sp_user su on su.id = wo.owner_id
                     inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
                     inner join flow.project p on p.nw_migration_id = rpc.id
                     left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
@@ -171,6 +173,7 @@ $do$
              where wo.record_type_id in ('0122T000000HtKlQAK')
                and wo.residential_project_c is null
                and wo.account_id is not null
+      and wo.is_deleted = false
 
       loop
         v_count = v_count + 1;
@@ -222,6 +225,7 @@ $do$
                 null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29252, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29930, x.owner_id_name::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29253, x.work_order_owner_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29254, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29255, x.lov2_service_type_c_id::text,true);
@@ -427,6 +431,7 @@ $do$
                     wo.intake_notes_c,
                     wo.priority,
                     wo.service_type_c,
+                    wo.work_type_id,
                     wo.disposition_reason_c,
                     wo.inspection_type_c,
                     wo.follow_up_reason_c,
@@ -439,8 +444,10 @@ $do$
                     case when wo.work_order_owner_id is null and wo.owner_id is not null then
                            2495780::bigint
                          else
-                           work_order_owner_id end as work_order_owner_id
+                           work_order_owner_id end as work_order_owner_id,
+                    concat(su.first_name,' ',su.email) as owner_id_name
              from brs.work_order wo
+                    left join brs.sp_user su on su.id = wo.owner_id
                     inner join flow.project p on p.nw_migration_id = wo.residential_project_c
                     left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
                     left join flow.list_of_value lov2 on lov2.name = wo.service_type_c and lov2.parent_id = 25809
@@ -449,6 +456,7 @@ $do$
                     left join flow.list_of_value lov5 on lov5.name = wo.follow_up_reason_c and lov5.parent_id = 25814
              where wo.record_type_id in ('0122T000000HtKkQAK')
                and wo.residential_project_c is not null
+      and wo.is_deleted = false
 
       loop
         v_count = v_count + 1;
@@ -498,8 +506,37 @@ $do$
                  , null, null, now(), now(), 2384850, 2384850, false, null,
                 null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29819,
+                                  case when x.work_type_id = '08q2T000000PBq3QAG' then 25965::text
+                                                    when x.work_type_id = '08q2T000000PBq4QAG' then 26030::text
+                                                    when x.work_type_id = '08q2T000000PBq5QAG' then 26031::text
+                                                    when x.work_type_id = '08q2T000000PBq6QAG' then 26032::text
+                                                    when x.work_type_id = '08q2T000000PBq1QAG' then 26033::text
+                                                    when x.work_type_id = '08q2T000000PBq2QAG' then 26034::text
+                                                    when x.work_type_id = '08q2T000000CbDOQA0' then 26035::text
+                                                    when x.work_type_id = '08q2T000000CbDPQA0' then 26036::text
+                                                    when x.work_type_id = '08q2T000000CbDQQA0' then 26037::text
+                                                    when x.work_type_id = '08q2T000000CbDRQA0' then 26038::text
+                                                    when x.work_type_id = '08q2T000000CbDSQA0' then 26039::text
+                                                    when x.work_type_id = '08q2T000000CbDTQA0' then 26040::text
+                                                    when x.work_type_id = '08q2T000000CbDUQA0' then 26041::text
+                                                    when x.work_type_id = '08q2T000000CbDVQA0' then 26042::text
+                                                    when x.work_type_id = '08q2T000000CbDWQA0' then 26043::text
+                                                    when x.work_type_id = '08q2T000000CbDgQAK' then 26044::text
+                                                    when x.work_type_id = '08q2T000000CbDhQAK' then 26045::text
+                                                    when x.work_type_id = '08q2T000000CbDiQAK' then 26046::text
+                                                    when x.work_type_id = '08q2T000000CbDjQAK' then 26047::text
+                                                    when x.work_type_id = '08q2T000000CbDkQAK' then 26048::text
+                                                    when x.work_type_id = '08q2T000000CbDlQAK' then 26049::text
+                                                    when x.work_type_id = '08q2T000000CbDmQAK' then 26050::text
+--                                                     when x.work_type_id = '' then 26057::text
+--                                                     when x.work_type_id = '' then 26058::text
+--                                                     when x.work_type_id = '' then 26059::text
+--                                                     when x.work_type_id = '' then 26060::text
+                                    end,true);
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29802, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29928, x.owner_id_name::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29803, x.work_order_owner_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29804, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29805, x.lov2_service_type_c_id::text,true);
@@ -1143,8 +1180,12 @@ $do$
                     wo.amount_c,
                     wo.date_action_completed_c,
                     wo.rma_c,
-                    wo.scheduler_c
+                    wo.scheduler_c,
+                    concat(su.first_name,' ',su.email) as owner_id_name,
+               concat(su1.first_name,' ',su1.email) as scheduler_c_name
              from brs.work_order wo
+                    left join brs.sp_user su on su.id = wo.owner_id
+                    left join brs.sp_user su1 on su1.id = wo.scheduler_c
                     inner join brs.case c on c.id = wo.case_id
                inner join brs.account a on a.id = c.account_id
                inner join brs.residential_project_c r on r.account_c = a.id
@@ -1156,7 +1197,8 @@ $do$
                     left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id =25822
                     left join flow.list_of_value lov6 on lov6.name = wo.response_code_c and lov6.parent_id = 25968
              where wo.record_type_id in ('01234000000BmSZAA0')
-                and wo.case_id is not null
+                and wo.case_id is not null and wo.is_deleted = false
+      and wo.is_deleted = false
 
       loop
         v_count = v_count + 1;
@@ -1208,6 +1250,8 @@ $do$
                 null, null, 1,x.id)
         returning id into v_project_process_step__event_id;
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29822, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29927, x.scheduler_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29926, x.owner_id_name::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29823, x.work_order_owner_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29824, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29825, x.lov2_service_type_c_id::text,true);
@@ -1297,15 +1341,17 @@ $do$
                     lov1.id as lov1_priority_id,
                     lov2.id as lov2_service_request_type_c_id,
                     lov3.id as lov3_cancellation_reasons_c_id,
-                    lov4.id as lov4_cancellation_details_c_id
+                    lov4.id as lov4_cancellation_details_c_id,
+                    concat(su.first_name,' ',su.email) as owner_id_name
              from brs.work_order wo
+                    left join brs.sp_user su on su.id = wo.owner_id
                     inner join brs.residential_project_c rpc on rpc.account_c = wo.account_id
                     inner join flow.project p on p.nw_migration_id = rpc.id
                     left join flow.list_of_value lov1 on lov1.name = wo.priority and lov1.parent_id = 25516
                     left join flow.list_of_value lov2 on lov2.name = wo.service_request_type_c and lov2.parent_id = 25818
                     left join flow.list_of_value lov3 on lov3.name = wo.cancellation_reasons_c and lov3.parent_id = 25820
                     left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 25822
-             where wo.record_type_id = '01234000000M5IcAAK'
+             where wo.record_type_id = '01234000000M5IcAAK' and wo.is_deleted = false
 
       loop
         v_count = v_count + 1;
@@ -1351,6 +1397,7 @@ $do$
         returning id into v_project_process_step__event_id;
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29275, x.completed_date_c::text,true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29929, x.owner_id_name::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29271, x.work_order_owner_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29272, x.lov1_priority_id::text,true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29273, x.lov2_service_request_type_c_id::text,true);
@@ -1433,6 +1480,7 @@ $do$
                     left join flow.list_of_value lov4 on lov4.name = wo.cancellation_details_c and lov4.parent_id = 25822
              where wo.record_type_id = '01234000000M5IcAAK'
                and wo.case_id is not null and wo.account_id is null
+      and wo.is_deleted = false
 
       loop
         v_count = v_count + 1;
