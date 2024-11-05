@@ -38,7 +38,7 @@
           :items="poolUsers"
           :search="search"
           :fixed-header="true"
-          :items-per-page="100"
+          :items-per-page="1000"
           :footer-props="footerProps"
           disable-sort
           class="elevation-1 square-card"
@@ -110,7 +110,7 @@ const showScoreUser = ref({})
 const showModal = ref(false)
 const dataLoading = ref(true)
 const footerProps = ref({
-  'items-per-page-options': [25, 50, 100],})
+  'items-per-page-options': [25, 50, 100, 1000],})
 const selectRerender = ref(1)
 const pool = ref({})
 const poolUsers = ref([])
