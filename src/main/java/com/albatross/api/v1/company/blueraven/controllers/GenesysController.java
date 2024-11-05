@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
+import com.albatross.api.v1.company.blueraven.services.Five9Service;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.mypurecloud.sdk.v2.ApiException;
@@ -20,6 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GenesysController {
   private final GenesysService genesysService;
+  private final Five9Service five9Service;
 
   @GetMapping(value = "/outboundCall/{phoneNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getContactUrlByPhone(@PathVariable String phoneNumber) {
@@ -135,16 +137,16 @@ public class GenesysController {
     }
   }
 
-//  @PostMapping(value = "/triggerProcessGenesysContacts")
-//  public ResponseEntity triggerProcessGenesysContacts() {
-//    try {
-//      genesysService.processGenesysContacts();
-//      return ResponseEntity.ok("Success.");
-//    } catch (Exception e) {
-//      String msg = "GENE: Error with process Genesys Contacts: {}";
-//      log.error(msg, e.getMessage());
-//      return ResponseEntity.badRequest().body("Error occurred during process Genesys Contacts");
-//    }
-//  }
+  @PostMapping(value = "/triggerProcessFive9Contacts/{offset}")
+  public ResponseEntity triggerProcessFive9Contacts(@PathVariable Long offset) {
+    try {
+      five9Service.processMissingFive9Contacts(offset);
+      return ResponseEntity.ok("Success.");
+    } catch (Exception e) {
+      String msg = "GENE: Error with process Missing Five9 Contacts: {}";
+      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error occurred during process Missing Five9 Contacts");
+    }
+  }
 
 }

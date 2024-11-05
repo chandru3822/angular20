@@ -260,4 +260,19 @@ public class Five9Query {
     WHERE p.contact_id = :contactId and ((ppse.start_time AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 45
     order by 1,2 desc) as foo
     """;
+
+  //language=PostgreSQL
+  public final static String getMissingContactIdsDigitalSalDevRetargets = """
+    select c.id
+    from flow.contact c
+      where (COALESCE((select ccfv.int_value
+                     from flow.contact_custom_field_value ccfv
+                     where ccfv.custom_field_group_assignment_id = 20977
+                       and ccfv.contact_id = c.id), 0) in
+           (1, 2, 3, 7, 40)) -- contacts with certain lead level
+        AND ((c.date_created AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= '2024-11-02'
+        AND ((c.date_created AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < '2024-11-04'
+    order by c.id
+    offset :offset limit 100
+    """;
 }

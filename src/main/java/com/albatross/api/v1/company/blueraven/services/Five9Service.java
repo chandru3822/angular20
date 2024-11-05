@@ -273,6 +273,41 @@ public class Five9Service {
     populateCronContactLists(Five9Query.getContactIdsInsideSalesPitchedNotBookedOrganic, "digitalleads_pnb_organic");
   }
 
+  public void processMissingFive9Contacts(Long offset) {
+    populateMissingCronContactLists(Five9Query.getMissingContactIdsDigitalSalDevRetargets, "digitalleads", offset);
+  }
+
+  private void populateMissingCronContactLists(String contactListQuery, String five9ContactListName, Long offset) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("offset", offset);
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    List<Contact> contacts = sqlCache.queryBySql(contactListQuery, params, Contact.class);
+    for (Contact contact : contacts) {
+      List<CustomFieldGroup> customFieldGroups =
+        customFieldValueService.getCustomFieldGroupsAndValues(
+          ObjectType.CONTACT, contact.getId());
+      List<CustomFieldValue> values = customFieldGroups.stream()
+        .flatMap(group -> group.getCustomFieldValues().stream())
+        .collect(Collectors.toList());
+
+      try {
+        final Long leadLevel = values.stream()
+          .filter(cfv -> cfv != null && cfv.getFieldName() != null)
+          .filter(cfv -> cfv.getFieldName().equals("Lead Level"))
+          .map(CustomFieldValue::getIntValue)
+          .filter(Objects::nonNull)
+          .findFirst()
+          .orElse(null);
+
+        // Lead Source is not used for the cron contact lists logic, empty string is sufficient
+        String leadSource = "";
+        handleContact(contact.getId(), values, false, five9ContactListName, leadLevel, leadSource);
+      } catch (Exception e) {
+        log.error("FIVE9: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
+      }
+    }
+  }
+
   private void populateCronContactLists(String contactListQuery, String five9ContactListName) {
     // Get list of Contact IDs that need to be put into each Genesys Contact List
     List<Contact> contacts = sqlCache.queryBySql(contactListQuery, null, Contact.class);
