@@ -46,12 +46,16 @@ $do$
                     a.account_number,
                     a.available_lender_c,
                     a.owner_id,
+                    array_to_string(
+                      ARRAY_AGG(CONCAT(spc.name, ' - ', coalesce(spc.phone,spc.MOBILE_PHONE), ' - ', spc.email, ' - ', spc.title)),
+                      '\n') as builder_contacts,
                     case when a.account_owner_id is null and a.owner_id is not null then
                            2495780::bigint
                          else
                            a.account_owner_id end as account_owner_id,
                     concat(su.first_name,' ',su.email) as owner_id_name
              from brs.account a
+                   left join brs.sp_contact spc on spc.account_id = a.id
                     left join brs.sp_user su on su.id = a.owner_id
                     left join flow.state s on s.abbreviation = a.billing_state
                     left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
@@ -87,6 +91,7 @@ $do$
             perform flow.set_contact_cfv(v_contact_id, 2384850, 28813, v_lov_available_lender_c::text, true);
           end if;
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28814, x.cash_partner_c::text, true);
+          perform flow.set_contact_cfv(v_contact_id, 2384850, 30022, x.builder_contacts::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 29911, x.owner_id_name::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28815, x.contact_name_c::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28816, x.credit_check_c::text, true);

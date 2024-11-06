@@ -107,7 +107,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3759, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3759, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                          else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
 
@@ -143,7 +147,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3760, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3760, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29065, w.description_c::text, true);
@@ -174,7 +182,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3761, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3761, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28977, w.description_c::text, true);
@@ -205,7 +217,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3762, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3762, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28977, w.description_c::text, true);
@@ -233,7 +249,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3763, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3763, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28955, w.description_c::text, true);
@@ -265,7 +285,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3764, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3764, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29076, w.description_c::text, true);
@@ -296,7 +320,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3765, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3765, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29087, w.description_c::text, true);
@@ -327,7 +355,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3766, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3766, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28932, w.description_c::text, true);
@@ -358,7 +390,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3767, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3767, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29018, w.description_c::text, true);
@@ -389,7 +425,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3768, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3768, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29098, w.description_c::text, true);
@@ -420,7 +460,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3769, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3769, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28988, w.description_c::text, true);
@@ -451,7 +495,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3770, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3770, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28997, w.description_c::text, true);
@@ -482,7 +530,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3771, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3771, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29109, w.description_c::text, true);
@@ -513,7 +565,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3772, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3772, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29004, w.description_c::text, true);
@@ -544,7 +600,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3773, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3773, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29120, w.description_c::text, true);
@@ -575,7 +635,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3774, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3774, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28966, w.description_c::text, true);
@@ -606,7 +670,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3775, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3775, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29131, w.description_c::text, true);
@@ -637,7 +705,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3776, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3776, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29054, w.description_c::text, true);
@@ -668,7 +740,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3777, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3777, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29142, w.description_c::text, true);
@@ -699,7 +775,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3778, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3778, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29153, w.description_c::text, true);
@@ -730,7 +810,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3779, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3779, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28910, w.description_c::text, true);
@@ -761,7 +845,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3780, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3780, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28921, w.description_c::text, true);
@@ -792,7 +880,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3781, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3781, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28944, w.description_c::text, true);
@@ -823,7 +915,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3782, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3782, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29164, w.description_c::text, true);
@@ -854,7 +950,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3783, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3783, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29175, w.description_c::text, true);
@@ -885,7 +985,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3784, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3784, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29186, w.description_c::text, true);
@@ -916,7 +1020,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3785, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3785, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29197, w.description_c::text, true);
@@ -947,7 +1055,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3786, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3786, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29208, w.description_c::text, true);
@@ -978,7 +1090,11 @@ $do$
                                                  process_step_complete_date, date_created, date_modified, created_by_id,
                                                  modified_by_id, archived, main, parent_project_process_step_id,
                                                  cancelled_date, parent_project_process_step_event_id, nw_migration_id)
-          values (w.community_project_id, 3787, null, 1, null, now(), now(), 2384850, 2384850, false, true, null, null,
+          values (w.community_project_id, 3787, null, case
+                                                        when w.status_c = 'In Progress' then 1
+                                                        when w.status_c = 'Blocked' then 1769
+                                                        when w.status_c = 'Completed' then 2
+                                                        else  1 end, null, now(), now(), 2384850, 2384850, false, true, null, null,
                   null, w.project_task_id)
           returning id into v_project_process_step_id;
           perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 29011, w.description_c::text, true);

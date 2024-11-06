@@ -5956,7 +5956,222 @@
 --   ITEM_COST_C                   numeric(18, 3)
 -- );
 
+-- drop table if exists brs.sp_contact;
+-- create table if not exists brs.sp_CONTACT
+-- (
+--   ID                                                 VARCHAR(18),
+--   IS_DELETED                                         BOOLEAN,
+--   MASTER_RECORD_ID                                   VARCHAR(18),
+--   ACCOUNT_ID                                         VARCHAR(18),
+--   IS_PERSON_ACCOUNT                                  BOOLEAN,
+--   LAST_NAME                                          VARCHAR(240),
+--   FIRST_NAME                                         VARCHAR(120),
+--   SALUTATION                                         VARCHAR(120),
+--   NAME                                               VARCHAR(363),
+--   RECORD_TYPE_ID                                     VARCHAR(18),
+--   OTHER_STREET                                       VARCHAR(765),
+--   OTHER_CITY                                         VARCHAR(120),
+--   OTHER_STATE                                        VARCHAR(240),
+--   OTHER_POSTAL_CODE                                  VARCHAR(60),
+--   OTHER_COUNTRY                                      VARCHAR(240),
+--   OTHER_LATITUDE                                     double precision,
+--   OTHER_LONGITUDE                                    double precision,
+--   OTHER_GEOCODE_ACCURACY                             VARCHAR(120),
+--   MAILING_STREET                                     VARCHAR(765),
+--   MAILING_CITY                                       VARCHAR(120),
+--   MAILING_STATE                                      VARCHAR(240),
+--   MAILING_POSTAL_CODE                                VARCHAR(60),
+--   MAILING_COUNTRY                                    VARCHAR(240),
+--   MAILING_LATITUDE                                   double precision,
+--   MAILING_LONGITUDE                                  double precision,
+--   MAILING_GEOCODE_ACCURACY                           VARCHAR(120),
+--   PHONE                                              VARCHAR(120),
+--   FAX                                                VARCHAR(120),
+--   MOBILE_PHONE                                       VARCHAR(120),
+--   HOME_PHONE                                         VARCHAR(120),
+--   OTHER_PHONE                                        VARCHAR(120),
+--   ASSISTANT_PHONE                                    VARCHAR(120),
+--   REPORTS_TO_ID                                      VARCHAR(18),
+--   EMAIL                                              VARCHAR(240),
+--   TITLE                                              VARCHAR(384),
+--   DEPARTMENT                                         VARCHAR(240),
+--   ASSISTANT_NAME                                     VARCHAR(120),
+--   LEAD_SOURCE                                        VARCHAR(765),
+--   BIRTHDATE                                          DATE,
+--   DESCRIPTION                                        VARCHAR(96000),
+--   CURRENCY_ISO_CODE                                  VARCHAR(9),
+--   OWNER_ID                                           VARCHAR(18),
+--   HAS_OPTED_OUT_OF_EMAIL                             BOOLEAN,
+--   DO_NOT_CALL                                        BOOLEAN,
+--   CREATED_DATE                                       TIMESTAMPTZ,
+--   CREATED_BY_ID                                      VARCHAR(18),
+--   LAST_MODIFIED_DATE                                 TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID                                VARCHAR(18),
+--   SYSTEM_MODSTAMP                                    TIMESTAMPTZ,
+--   LAST_ACTIVITY_DATE                                 DATE,
+--   LAST_CUREQUEST_DATE                                TIMESTAMPTZ,
+--   LAST_CUUPDATE_DATE                                 TIMESTAMPTZ,
+--   LAST_VIEWED_DATE                                   TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE                               TIMESTAMPTZ,
+--   EMAIL_BOUNCED_REASON                               VARCHAR(765),
+--   EMAIL_BOUNCED_DATE                                 TIMESTAMPTZ,
+--   IS_EMAIL_BOUNCED                                   BOOLEAN,
+--   PHOTO_URL                                          VARCHAR(765),
+--   JIGSAW                                             VARCHAR(60),
+--   JIGSAW_CONTACT_ID                                  VARCHAR(60),
+--   CONNECTION_RECEIVED_ID                             VARCHAR(18),
+--   CONNECTION_SENT_ID                                 VARCHAR(18),
+--   INDIVIDUAL_ID                                      VARCHAR(18),
+--   BEST_TIME_TO_CALL_C                                VARCHAR(765),
+--   INTEGRATION_ID_C                                   VARCHAR(60),
+--   IS_ENGINEER_C                                      BOOLEAN,
+--   MARKETING_OPT_IN_C                                 BOOLEAN,
+--   OVERRIDE_DUPLICATE_CHECK_C                         BOOLEAN,
+--   TERMINATED_C                                       BOOLEAN,
+--   SALES_COMMUNICATIONS_C                             BOOLEAN,
+--   COUNTRY_DOMAIN_C                                   VARCHAR(765),
+--   LMS_ROLE_C                                         VARCHAR(765),
+--   SUBSCRIPTION_C                                     VARCHAR(4099),
+--   PARTNER_PORTAL_USER_C                              VARCHAR(18),
+--   PROFILE_TEMP_C                                     VARCHAR(765),
+--   ROLE_TEMP_C                                        VARCHAR(765),
+--   HIRE_DATE_C                                        DATE,
+--   BULLETINS_OPT_OUT_C                                BOOLEAN,
+--   REFERRAL_PROGRAM_STATUS_C                          VARCHAR(765),
+--   PROMO_CODE_C                                       VARCHAR(240),
+--   AUTHORIZED_TO_ORDER_C                              BOOLEAN,
+--   CONTACT_METHOD_C                                   VARCHAR(765),
+--   DIRECT_MARKETING_OPT_OUT_C                         BOOLEAN,
+--   DO_NOT_CALL_OPT_OUT_C                              BOOLEAN,
+--   DO_NOT_MARKET_TO_BECAUSE_C                         VARCHAR(765),
+--   NEWSLETTER_OPT_OUT_C                               BOOLEAN,
+--   PHONE_DIRECT_C                                     VARCHAR(120),
+--   SEMINAR_EVENT_OPT_OUT_C                            BOOLEAN,
+--   CSAT_LAST_REPONSE_DATE_C                           TIMESTAMPTZ,
+--   CSAT_NPS_SCORE_C                                   double precision,
+--   CSAT_RANDOM_DISTRIBUTION_C                         double precision,
+--   FUSION_CONTACT_ID_C                                VARCHAR(45),
+--   CONTACT_LANGUAGE_C                                 VARCHAR(765),
+--   D_U_N_S_C                                          VARCHAR(60),
+--   PARTNER_PORTAL_REGISTRATION_C                      BOOLEAN,
+--   ORACLE_CONTACT_ID_C                                VARCHAR(765),
+--   FUNCTION_C                                         VARCHAR(765),
+--   MANAGEMENT_LEVEL_C                                 VARCHAR(765),
+--   ROLE_C                                             VARCHAR(765),
+--   ELOQUA_LEAD_SCORE_IMPLICIT_C                       double precision,
+--   ELOQUA_LEAD_SCORE_EXPLICIT_C                       double precision,
+--   ELOQUA_LEAD_RATING_COMBINED_C                      VARCHAR(6),
+--   REFERRER_C                                         BOOLEAN,
+--   REFERRER_ACCOUNT_C                                 VARCHAR(18),
+--   CPR_ID_C                                           VARCHAR(60),
+--   INCLUDE_IN_LEASE_DOC_C                             BOOLEAN,
+--   LEASE_DOC_CREATION_ALLOWED_C                       BOOLEAN,
+--   PRIMARY_C                                          BOOLEAN,
+--   IS_UPDATED_FROM_ACCOUNT_C                          BOOLEAN,
+--   SPWR_REFERENCE_C                                   VARCHAR(765),
+--   DATE_REFERENCE_LAST_UPDATED_C                      DATE,
+--   REFERENCE_SHEET_C                                  VARCHAR(765),
+--   REFERENCE_RATING_C                                 VARCHAR(765),
+--   ALLIANCE_CONTACT_C                                 BOOLEAN,
+--   LEASE_COURSE_STATUS_C                              VARCHAR(4099),
+--   CREDIT_CUSTOMER_ID_C                               VARCHAR(108),
+--   CREDIT_CUSTOMER_NUMBER_C                           VARCHAR(108),
+--   CONTACT_STATUS_C                                   VARCHAR(765),
+--   ISSUE_RESOLUTION_SURVEY_OPT_OUT_C                  BOOLEAN,
+--   BIRTH_COUNTRY_C                                    VARCHAR(72),
+--   INTERFACE_MESSAGE_C                                VARCHAR(6000),
+--   INTERFACE_STATUS_C                                 VARCHAR(765),
+--   MARITAL_STATUS_DEL_C                               VARCHAR(765),
+--   PROFESSION_C                                       VARCHAR(72),
+--   IS_OVER_21_YEARS_OF_AGE_C                          BOOLEAN,
+--   CUSTOMER_PORTAL_ACTIVATION_LINK_C                  VARCHAR(765),
+--   EMAIL_OPT_OUT_C                                    BOOLEAN,
+--   DO_NOT_SYNCH_TO_ELOQUA_C                           BOOLEAN,
+--   PHONE_US_PREFIX_C                                  VARCHAR(120),
+--   PHONE_UNFORMATTED_C                                VARCHAR(75),
+--   UTILITY_ACCOUNT_HOLDER_C                           BOOLEAN,
+--   DELEGATION_C                                       VARCHAR(18),
+--   MOBILE_US_PREFIX_C                                 VARCHAR(120),
+--   LEASE_TRANSFER_WK_C                                BOOLEAN,
+--   FUSION_CONTACT_PARTY_ID_C                          VARCHAR(45),
+--   E_INVOICE_VALID_RECIPIENT_C                        BOOLEAN,
+--   ELOQUA_CONTACT_ID_C                                VARCHAR(765),
+--   ORACLE_CONTACT_STATUS_C                            VARCHAR(765),
+--   PREFERRED_LANGUAGE_CODE_C                          VARCHAR(765),
+--   ENGAGIO_DEPARTMENT_C                               VARCHAR(384),
+--   ENGAGIO_ENGAGEMENT_MINUTES_LAST_3_MONTHS_C         double precision,
+--   ENGAGIO_ENGAGEMENT_MINUTES_LAST_7_DAYS_C           double precision,
+--   ENGAGIO_FIRST_ENGAGEMENT_DATE_C                    TIMESTAMPTZ,
+--   ENGAGIO_ROLE_C                                     VARCHAR(384),
+--   CAMPAIGN_C                                         VARCHAR(18),
+--   ISSUE_RESOLUTION_SURVEY_SENT_DATE_C                DATE,
+--   SATISFACTION_SURVEY_OPT_IN_C                       BOOLEAN,
+--   TEXT_MESSAGE_OPT_OUT_C                             BOOLEAN,
+--   ORACLE_UPDATE_C                                    BOOLEAN,
+--   CUSTOMER_PORTAL_ACTIVATION_LINK_LONG_C             VARCHAR(98304),
+--   AUTHORIZED_TO_PAY_C                                BOOLEAN,
+--   DO_NOT_SELL_MY_DATA_C                              BOOLEAN,
+--   SPD_ECEMAIL_C                                      VARCHAR(240),
+--   RINGDNA_HAS_OPTED_OUT_OF_SMS_C                     BOOLEAN,
+--   RINGDNA_100_CALL_ATTEMPTS_C                        double precision,
+--   RINGDNA_100_EMAIL_ATTEMPTS_C                       double precision,
+--   RINGDNA_100_FIRST_INBOUND_CALL_C                   TIMESTAMPTZ,
+--   RINGDNA_100_FIRST_INBOUND_MESSAGE_C                TIMESTAMPTZ,
+--   RINGDNA_100_FIRST_OUTBOUND_CALL_C                  TIMESTAMPTZ,
+--   RINGDNA_100_FIRST_OUTBOUND_MESSAGE_C               TIMESTAMPTZ,
+--   RINGDNA_100_LANGUAGES_C                            VARCHAR(300),
+--   RINGDNA_100_LAST_EMAIL_ATTEMPT_C                   TIMESTAMPTZ,
+--   RINGDNA_100_LAST_INBOUND_CALL_C                    TIMESTAMPTZ,
+--   RINGDNA_100_LAST_INBOUND_MESSAGE_C                 TIMESTAMPTZ,
+--   RINGDNA_100_LAST_OUTBOUND_CALL_C                   TIMESTAMPTZ,
+--   RINGDNA_100_LAST_OUTBOUND_MESSAGE_C                TIMESTAMPTZ,
+--   RINGDNA_100_LEVEL_C                                VARCHAR(765),
+--   RINGDNA_100_MESSAGE_ATTEMPTS_C                     double precision,
+--   RINGDNA_100_RESPONSE_TYPE_C                        VARCHAR(765),
+--   RINGDNA_100_RING_DNA_CONTEXT_C                     BOOLEAN,
+--   RINGDNA_100_TIME_TO_FIRST_DIAL_MINUTES_C           double precision,
+--   RINGDNA_100_TIME_TO_FIRST_RESPONSE_C               double precision,
+--   _FIVETRAN_SYNCED                                   TIMESTAMPTZ,
+--   RINGDNA_100_LATEST_DISPOSITION_C                   VARCHAR(765),
+--   _FIVETRAN_DELETED                                  BOOLEAN,
+--   SMS_MANAGER_C                                      VARCHAR(18),
+--   ORTOO_QRA_Q_ASSIGN_LAST_ASSIGNED_DATE_C            TIMESTAMPTZ,
+--   ORTOO_QRA_ASSIGNED_FROM_QUEUE_C                    VARCHAR(54),
+--   ORTOO_QRA_ASSIGNED_FROM_GROUP_C                    VARCHAR(54),
+--   PARTNER_CONTACT_ID_C                               VARCHAR(150),
+--   TWILIO_SF_LAST_MESSAGE_STATUS_C                    VARCHAR(765),
+--   TWILIO_SF_LAST_MESSAGE_STATUS_DATE_C               TIMESTAMPTZ,
+--   FSL_VERIFICATION_CODE_C                            VARCHAR(765),
+--   IS_PRIORITY_RECORD                                 BOOLEAN,
+--   ACTIVITY_METRIC_ID                                 VARCHAR(18),
+--   ACTIVITY_METRIC_ROLLUP_ID                          VARCHAR(18),
+--   SR_NUMBER_FOR_SSS_C                                VARCHAR(765),
+--   SPRI_LOCATION_C                                    VARCHAR(4099),
+--   CONTACT_SOURCE                                     VARCHAR(120),
+--   RDNACADENCE_PENDING_SEQUENCE_C                     VARCHAR(18),
+--   LMS_JOB_ID_C                                       VARCHAR(4099),
+--   RDNACADENCE_CADENCE_PERFORMED_C                    BOOLEAN,
+--   RDNACADENCE_CADENCE_ID_C                           VARCHAR(18),
+--   RDNACADENCE_REPLIED_TO_SEQUENCE_EMAIL_C            BOOLEAN,
+--   HAS_OPTED_OUT_OF_FAX                               BOOLEAN,
+--   RDNACADENCE_NUMBER_OF_PERFORMED_SEQUENCE_ACTIONS_C double precision,
+--   RDNACADENCE_NUMBER_OF_SEQUENCE_EMAILS_SENT_C       double precision,
+--   RDNACADENCE_IS_ACTIVATED_C                         BOOLEAN,
+--   RDNACADENCE_LANGUAGES_C                            VARCHAR(300),
+--   RDNACADENCE_PRIORITY_C                             double precision,
+--   RDNACADENCE_NUMBER_OF_DEFERRED_SEQUENCE_ACTIONS_C  double precision,
+--   RDNACADENCE_ENTRANCE_CRITERIA_MATCHED_DATE_C       TIMESTAMPTZ,
+--   RDNACADENCE_OPPORTUNITY_ID_C                       VARCHAR(60),
+--   RDNACADENCE_DRIP_SEQUENCE_PENDING_C                BOOLEAN,
+--   RDNACADENCE_NUMBER_OF_SEQUENCE_EMAILS_TO_REPLY_C   double precision,
+--   RDNACADENCE_OPENED_SEQUENCE_EMAIL_C                BOOLEAN,
+--   RDNACADENCE_NUMBER_OF_SEQUENCE_EMAILS_TO_OPENED_C  DOUBLE precision
+-- );
+--
+-- CREATE INDEX if not exists sp_contact_account_id ON brs.sp_contact (account_id);
+-- CREATE INDEX if not exists sp_contact_id ON brs.sp_contact (id);
 
+--CREATE INDEX if not exists residential_project_c_PLAN_TYPE_C ON brs.residential_project_c (PLAN_TYPE_C);
 
 
 -- CREATE INDEX if not exists case_account_id ON brs.case (account_id);
@@ -6171,60 +6386,60 @@
 --    CREATE INDEX if not exists case_owner_id ON brs.case (owner_id);
 --    CREATE INDEX if not exists quote_c_id ON brs.quote (id);
 
-CREATE INDEX if not exists campaign_is_deleted ON brs.campaign (is_deleted);
-CREATE INDEX if not exists PROJECT_TASK_C_completed_by_c ON brs.PROJECT_TASK_C (completed_by_c);
-CREATE INDEX if not exists PROJECT_TASK_C_assigned_to_c ON brs.PROJECT_TASK_C (assigned_to_c);
-CREATE INDEX if not exists opportunity_opportunity_owner_s_manager_c ON brs.opportunity (opportunity_owner_s_manager_c);
-CREATE INDEX if not exists opportunity_is_deleted ON brs.opportunity (is_deleted);
-CREATE INDEX if not exists TASK_REWORK_REQUEST_C_created_by_id ON brs.TASK_REWORK_REQUEST_C (created_by_id);
-CREATE INDEX if not exists TASK_REWORK_REQUEST_C_is_deleted ON brs.TASK_REWORK_REQUEST_C (is_deleted);
-CREATE INDEX if not exists REWORK_REQUESTS_C_created_by_id ON brs.REWORK_REQUESTS_C (created_by_id);
-CREATE INDEX if not exists REWORK_REQUESTS_C_is_deleted ON brs.REWORK_REQUESTS_C (is_deleted);
-
-CREATE INDEX if not exists ds_agreement_c_owner_id ON brs.ds_agreement_c (owner_id);
-CREATE INDEX if not exists ds_agreement_c_recreviewer_c ON brs.ds_agreement_c (reviewer_c);
-CREATE INDEX if not exists ds_agreement_c_is_deleted ON brs.ds_agreement_c (is_deleted);
-
-CREATE INDEX if not exists lease_payment_c_is_deleted ON brs.lease_payment_c (is_deleted);
-CREATE INDEX if not exists lease_payment_c_Final_Permits_Entered_By_c ON brs.lease_payment_c (Final_Permits_Entered_By_c);
-CREATE INDEX if not exists lease_payment_c_invoice_admin_2_c ON brs.lease_payment_c (invoice_admin_2_c);
-
-CREATE INDEX if not exists plan_type_c_created_by_id ON brs.plan_type_c (created_by_id);
-CREATE INDEX if not exists plan_type_c_is_deleted ON brs.plan_type_c (is_deleted);
-
-CREATE INDEX if not exists case_is_deleted ON brs.case (is_deleted);
-CREATE INDEX if not exists case_created_by_id ON brs.case (created_by_id);
-
-CREATE INDEX if not exists DESIGN_C_project_designer_c ON brs.DESIGN_C (project_designer_c);
-CREATE INDEX if not exists DESIGN_C_owner_id ON brs.DESIGN_C (owner_id);
-CREATE INDEX if not exists DESIGN_C_id_deleted ON brs.DESIGN_C (is_deleted);
-
-CREATE INDEX if not exists work_order_owner_id ON brs.work_order (owner_id);
-CREATE INDEX if not exists work_order_scheduler_c ON brs.work_order (scheduler_c);
-CREATE INDEX if not exists work_order_is_deleted ON brs.work_order (is_deleted);
-
-CREATE INDEX if not exists account_owner_id ON brs.account (owner_id);
-CREATE INDEX if not exists account_is_deleted ON brs.account (is_deleted);
-
-
-CREATE INDEX if not exists residential_project_c_install_completed_by_c ON brs.residential_project_c (install_completed_by_c);
-CREATE INDEX if not exists residential_project_c_pv_install_completed_by_c ON brs.residential_project_c (pv_install_completed_by_c);
-CREATE INDEX if not exists residential_project_c_rough_wire_completed_by_c ON brs.residential_project_c (rough_wire_completed_by_c);
-CREATE INDEX if not exists residential_project_c_storage_install_completed_by_c ON brs.residential_project_c (storage_install_completed_by_c);
-CREATE INDEX if not exists residential_project_c_storage_rough_completed_by_c ON brs.residential_project_c (storage_rough_completed_by_c);
-CREATE INDEX if not exists residential_project_c_trench_completed_by_c ON brs.residential_project_c (trench_completed_by_c);
-CREATE INDEX if not exists residential_project_c_trim_install_completed_by_c ON brs.residential_project_c (trim_install_completed_by_c);
-CREATE INDEX if not exists residential_project_c_activation_coordinator_c ON brs.residential_project_c (activation_coordinator_c);
-CREATE INDEX if not exists residential_project_c_is_deleted ON brs.residential_project_c (is_deleted);
-
-
-CREATE INDEX if not exists nh_community_c_sr_builder_operation_manager_c ON brs.nh_community_c (sr_builder_operation_manager_c);
-CREATE INDEX if not exists nh_community_c_account_manager_c ON brs.nh_community_c (account_manager_c);
-CREATE INDEX if not exists nh_community_c_field_manager_c ON brs.nh_community_c (field_manager_c);
-CREATE INDEX if not exists nh_community_c_is_deleted ON brs.nh_community_c (is_deleted);
-
-CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_is_deleted ON brs.CREDIT_CHECK_REQUEST_C (is_deleted);
-CREATE INDEX if not exists title_check_c_is_deleted ON brs.title_check_c (is_deleted);
+-- CREATE INDEX if not exists campaign_is_deleted ON brs.campaign (is_deleted);
+-- CREATE INDEX if not exists PROJECT_TASK_C_completed_by_c ON brs.PROJECT_TASK_C (completed_by_c);
+-- CREATE INDEX if not exists PROJECT_TASK_C_assigned_to_c ON brs.PROJECT_TASK_C (assigned_to_c);
+-- CREATE INDEX if not exists opportunity_opportunity_owner_s_manager_c ON brs.opportunity (opportunity_owner_s_manager_c);
+-- CREATE INDEX if not exists opportunity_is_deleted ON brs.opportunity (is_deleted);
+-- CREATE INDEX if not exists TASK_REWORK_REQUEST_C_created_by_id ON brs.TASK_REWORK_REQUEST_C (created_by_id);
+-- CREATE INDEX if not exists TASK_REWORK_REQUEST_C_is_deleted ON brs.TASK_REWORK_REQUEST_C (is_deleted);
+-- CREATE INDEX if not exists REWORK_REQUESTS_C_created_by_id ON brs.REWORK_REQUESTS_C (created_by_id);
+-- CREATE INDEX if not exists REWORK_REQUESTS_C_is_deleted ON brs.REWORK_REQUESTS_C (is_deleted);
+--
+-- CREATE INDEX if not exists ds_agreement_c_owner_id ON brs.ds_agreement_c (owner_id);
+-- CREATE INDEX if not exists ds_agreement_c_recreviewer_c ON brs.ds_agreement_c (reviewer_c);
+-- CREATE INDEX if not exists ds_agreement_c_is_deleted ON brs.ds_agreement_c (is_deleted);
+--
+-- CREATE INDEX if not exists lease_payment_c_is_deleted ON brs.lease_payment_c (is_deleted);
+-- CREATE INDEX if not exists lease_payment_c_Final_Permits_Entered_By_c ON brs.lease_payment_c (Final_Permits_Entered_By_c);
+-- CREATE INDEX if not exists lease_payment_c_invoice_admin_2_c ON brs.lease_payment_c (invoice_admin_2_c);
+--
+-- CREATE INDEX if not exists plan_type_c_created_by_id ON brs.plan_type_c (created_by_id);
+-- CREATE INDEX if not exists plan_type_c_is_deleted ON brs.plan_type_c (is_deleted);
+--
+-- CREATE INDEX if not exists case_is_deleted ON brs.case (is_deleted);
+-- CREATE INDEX if not exists case_created_by_id ON brs.case (created_by_id);
+--
+-- CREATE INDEX if not exists DESIGN_C_project_designer_c ON brs.DESIGN_C (project_designer_c);
+-- CREATE INDEX if not exists DESIGN_C_owner_id ON brs.DESIGN_C (owner_id);
+-- CREATE INDEX if not exists DESIGN_C_id_deleted ON brs.DESIGN_C (is_deleted);
+--
+-- CREATE INDEX if not exists work_order_owner_id ON brs.work_order (owner_id);
+-- CREATE INDEX if not exists work_order_scheduler_c ON brs.work_order (scheduler_c);
+-- CREATE INDEX if not exists work_order_is_deleted ON brs.work_order (is_deleted);
+--
+-- CREATE INDEX if not exists account_owner_id ON brs.account (owner_id);
+-- CREATE INDEX if not exists account_is_deleted ON brs.account (is_deleted);
+--
+--
+-- CREATE INDEX if not exists residential_project_c_install_completed_by_c ON brs.residential_project_c (install_completed_by_c);
+-- CREATE INDEX if not exists residential_project_c_pv_install_completed_by_c ON brs.residential_project_c (pv_install_completed_by_c);
+-- CREATE INDEX if not exists residential_project_c_rough_wire_completed_by_c ON brs.residential_project_c (rough_wire_completed_by_c);
+-- CREATE INDEX if not exists residential_project_c_storage_install_completed_by_c ON brs.residential_project_c (storage_install_completed_by_c);
+-- CREATE INDEX if not exists residential_project_c_storage_rough_completed_by_c ON brs.residential_project_c (storage_rough_completed_by_c);
+-- CREATE INDEX if not exists residential_project_c_trench_completed_by_c ON brs.residential_project_c (trench_completed_by_c);
+-- CREATE INDEX if not exists residential_project_c_trim_install_completed_by_c ON brs.residential_project_c (trim_install_completed_by_c);
+-- CREATE INDEX if not exists residential_project_c_activation_coordinator_c ON brs.residential_project_c (activation_coordinator_c);
+-- CREATE INDEX if not exists residential_project_c_is_deleted ON brs.residential_project_c (is_deleted);
+--
+--
+-- CREATE INDEX if not exists nh_community_c_sr_builder_operation_manager_c ON brs.nh_community_c (sr_builder_operation_manager_c);
+-- CREATE INDEX if not exists nh_community_c_account_manager_c ON brs.nh_community_c (account_manager_c);
+-- CREATE INDEX if not exists nh_community_c_field_manager_c ON brs.nh_community_c (field_manager_c);
+-- CREATE INDEX if not exists nh_community_c_is_deleted ON brs.nh_community_c (is_deleted);
+--
+-- CREATE INDEX if not exists CREDIT_CHECK_REQUEST_C_is_deleted ON brs.CREDIT_CHECK_REQUEST_C (is_deleted);
+-- CREATE INDEX if not exists title_check_c_is_deleted ON brs.title_check_c (is_deleted);
 
 
 
