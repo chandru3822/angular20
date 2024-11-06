@@ -130,7 +130,7 @@
     <!--    end dialog -->
     <!--    modal to prompt contact address update -->
     <ConfirmationDialog
-      v-if="projectContact && contactLoading === false"
+      v-if="addressUpdateModalObjectCategoryIds.includes(project.objectCategoryId) && projectContact && contactLoading === false"
       :open-dialog="
         !showEditProjectModal && (projectAddressChanged || projectNameChanged)
       "
@@ -631,6 +631,8 @@ const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
 
 const editState = ref(false)
+//keeping this an array cuz they keep changing it
+const addressUpdateModalObjectCategoryIds = [1]
 const tempProject = ref({})
 const updateEventKey = ref(0)
 const updatePpsKey = ref(0)

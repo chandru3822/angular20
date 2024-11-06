@@ -153,7 +153,7 @@
       <span class="bold error-text">WARNING:</span> This cannot be undone. Are you sure you want to delete this contact?
     </ConfirmationDialog>
     <!--    modal to prompt contact address update -->
-    <ConfirmationDialog v-if="contact?.projects?.length > 0"  :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
+    <ConfirmationDialog v-if="addressUpdateModalObjectCategoryIds.includes(contact.objectCategoryId) && contact?.projects?.length > 0"  :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
                         @cancel="cancelUpdateProject" @confirm="updateProjectInfo"
     >
       <template v-slot:title>Update Project Information</template>
@@ -633,6 +633,8 @@ const store = vueInstance.$store
 
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
+//keeping this an array cuz they keep changing it
+const addressUpdateModalObjectCategoryIds = [8]
 const states = ref([])
 const countries = ref([])
 const showEditModal = ref(false)
