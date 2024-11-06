@@ -244,14 +244,14 @@
               >
                 <template v-slot:activator="{ on: menu }">
                   <v-tooltip top
-                             :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
+                             :disabled="(null != contact.firstName || null != contact.lastName) && ((null != contact.owner && null != contact.owner.userId) || contact.objectCategoryId === 7)">
                     <template v-slot:activator="{ on: tooltip }">
                       <div v-on="{ ...tooltip }" class="d-inline-block">
                         <a-btn
                             :activation-handler="{ ...menu }"
                             variant="text"
                             small
-                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                            :disabled="(!contact.firstName && !contact.lastName) || ((!contact.owner || !contact.owner.userId) && contact.objectCategoryId !== 7)"
                             color="primary"
                             id="qa-create-project-button"
                             class="px-0"
@@ -261,7 +261,7 @@
                       </div>
                     </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
-                    <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                    <span v-else-if="(!contact.owner || !contact.owner.userId) && contact.objectCategoryId !== 7">Requires Owner</span>
                   </v-tooltip>
                 </template>
                 <v-card class="pa-5 body-large">
