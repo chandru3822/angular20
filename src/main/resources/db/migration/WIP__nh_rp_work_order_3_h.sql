@@ -120,7 +120,7 @@ SET session_replication_role = replica;
 --     raise notice '12 END total = %',v_total;
 --   end
 -- $do$;
-
+SET session_replication_role = replica;
 DO
 $do$
   declare
@@ -403,6 +403,7 @@ $do$;
 --   end
 -- $do$;
 --todo start with Mandy
+SET session_replication_role = replica;
 DO
 $do$
   declare
@@ -1126,7 +1127,7 @@ $do$;
 --     raise notice '25 END total = %',v_total;
 --   end
 -- $do$;
-
+SET session_replication_role = replica;
 DO
 $do$
   declare
@@ -1295,7 +1296,7 @@ $do$
 $do$;
 
 
-
+SET session_replication_role = replica;
 DO
 $do$
   declare
@@ -1423,7 +1424,7 @@ $do$
   end
 $do$;
 
-
+SET session_replication_role = replica;
 DO
 $do$
   declare

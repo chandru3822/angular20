@@ -9,6 +9,7 @@ $do$
     v_object_category_id     bigint;
     v_lov_available_lender_c bigint[];
     v_total bigint;
+    v_builder_contacts text;
   BEGIN
     raise notice '1 START = %',clock_timestamp();
     select oc.id
@@ -46,16 +47,14 @@ $do$
                     a.account_number,
                     a.available_lender_c,
                     a.owner_id,
-                    array_to_string(
-                      ARRAY_AGG(CONCAT(spc.name, ' - ', coalesce(spc.phone,spc.MOBILE_PHONE), ' - ', spc.email, ' - ', spc.title)),
-                      '\n') as builder_contacts,
+
                     case when a.account_owner_id is null and a.owner_id is not null then
                            2495780::bigint
                          else
                            a.account_owner_id end as account_owner_id,
                     concat(su.first_name,' ',su.email) as owner_id_name
              from brs.account a
-                   left join brs.sp_contact spc on spc.account_id = a.id
+
                     left join brs.sp_user su on su.id = a.owner_id
                     left join flow.state s on s.abbreviation = a.billing_state
                     left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
@@ -77,6 +76,15 @@ $do$
         returning id into v_contact_id;
 
         if v_contact_id is not null then
+          v_builder_contacts = null;
+          select array_to_string(
+                   ARRAY_AGG(CONCAT(spc.name, ' - ', coalesce(spc.phone,spc.MOBILE_PHONE), ' - ', spc.email, ' - ', spc.title)),
+                   '\n')
+            into v_builder_contacts
+              from  brs.sp_contact spc
+            where spc.account_id = x.id;
+
+
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28812, x.account_number::text, true);
           v_lov_available_lender_c = null;
           if x.available_lender_c is not null then
@@ -91,7 +99,9 @@ $do$
             perform flow.set_contact_cfv(v_contact_id, 2384850, 28813, v_lov_available_lender_c::text, true);
           end if;
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28814, x.cash_partner_c::text, true);
-          perform flow.set_contact_cfv(v_contact_id, 2384850, 30022, x.builder_contacts::text, true);
+          if v_builder_contacts is not null then
+            perform flow.set_contact_cfv(v_contact_id, 2384850, 30022, v_builder_contacts::text, true);
+          end if;
           perform flow.set_contact_cfv(v_contact_id, 2384850, 29911, x.owner_id_name::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28815, x.contact_name_c::text, true);
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28816, x.credit_check_c::text, true);

@@ -296,14 +296,14 @@ $do$
                          else
                            rpc.residential_project_c_storage_install_completed_by_c end as residential_project_c_storage_install_completed_by_c,
                     case
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytBSAS' then 26002
-                      when rpc.storage_configuration_group_c = 'aCv2T000000Kyt6SAC' then 26001
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytfSAC' then 26003
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytGSAS' then 26000
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytkSAC' then 25996
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytpSAC' then 25997
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytuSAC' then 25998
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytzSAC' then 25999
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytBSAS' then 26002::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000Kyt6SAC' then 26001::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytfSAC' then 26003::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytGSAS' then 26000::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytkSAC' then 25996::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytpSAC' then 25997::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytuSAC' then 25998::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytzSAC' then 25999::text
                       else null end as storage_configuration_group,
                lov45.id as lov45_microinverter_status_c_id,
                     concat(su.first_name,' ',su.email) as   install_completed_by_c_name,
@@ -316,7 +316,7 @@ $do$
                     concat(su7.first_name,' ',su7.email) as activation_coordinator_c_name,
                     pt.name as plan_type_name
              from brs.residential_project_c rpc
-                    left join brs.plan_type pt on pt.id = rpc.PLAN_TYPE_C
+                    left join brs.plan_type_c pt on pt.id = rpc.PLAN_TYPE_C
                     left join brs.sp_user su on su.id =   rpc.install_completed_by_c
                     left join brs.sp_user su1 on su1.id = rpc.pv_install_completed_by_c
                     left join brs.sp_user su2 on su2.id = rpc.rough_wire_completed_by_c
@@ -657,19 +657,19 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30023,x.lov48_evse_count_c_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30024,x.ev_charger_retail_amount_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30025,x.scheduled_ev_installation_date_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30021,case when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPEQAY' then 26020
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hP9QAI' then 26021
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPOQAY' then 26021
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPJQAY' then 26022
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000001ObZQAU' then 26023
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000RSg0QAG' then 26024
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCIQA4' then 26025
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCSQA4' then 26025
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCXQA4' then 26026
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000N9IyQAK' then 26027
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPYQAY' then 26028
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPsQAI' then 26028
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPnQAI' then 26029 else null end, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30021,case when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPEQAY' then 26020::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hP9QAI' then 26021::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPOQAY' then 26021::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPJQAY' then 26022::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000001ObZQAU' then 26023::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000RSg0QAG' then 26024::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCIQA4' then 26025::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCSQA4' then 26025::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCXQA4' then 26026::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000N9IyQAK' then 26027::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPYQAY' then 26028::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPsQAI' then 26028::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPnQAI' then 26029::text else null end, true);
 
 
         v_system_adders_c = null;

@@ -12,54 +12,36 @@ $do$
     v_count = 0;
     v_total = 0;
     for x in select
-               c.id as case_id,
+               case_id,
                c.sub_categories_c,
                c.subject,
                c.jira_ticket_number_c,
                c.resolution_comment_c,
-               p.id as project_id,
-               lov1.id as lov1_category_c_id,
-               lov3.id as lov3_status_id,
+               project_id,
+               lov1_category_c_id,
+               lov3_status_id,
                c.record_type_id,
-               c.case_number as case_number,
+               case_number,
                c.owner_id,
                c.ORIGIN,
                c.created_date,
                c.closed_date,
-               lov4.id as lov4_resolution_c_id,
+               lov4_resolution_c_id,
                c.description,
                c.commitment_date_c,
                c.created_by_id,
-               lov5.id as lov5_case_differentiator_c_id,
-               lov6.id as lov6_location_c_id,
+               lov5_case_differentiator_c_id,
+               lov6_location_c_id,
                c.requested_due_date_c,
                c.shipper_tracking_number_c,
-               lov7.id as lov7_type_id,
-               lov8.id as lov8_origin_id,
-               lov9.id as lov9_sub_categories_id,
-               case when c.case_created_by_id is null and c.created_by_id is not null then
-                      2495780::bigint
-                    else
-                      c.case_created_by_id end as case_created_by_id,
-               case when c.case_owner_id is null and c.owner_id is not null then
-                      2495780::bigint
-                    else
-                      c.case_owner_id end as case_owner_id,
-               concat(su.first_name,' ',su.email) as created_by_id_name,
-               concat(su1.first_name,' ',su1.email) as owner_id_name
-             from brs."case" c
-                    left join brs.sp_user su on su.id = c.created_by_id
-                    left join brs.sp_user su1 on su1.id = c.owner_id
-                    inner join flow.project p on c.residential_project_c = p.nw_migration_id
-                    left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
-                    left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
-                    left join flow.list_of_value lov4 on lov4.name = c.resolution_c and lov4.parent_id =25939
-                    left join flow.list_of_value lov5 on lov5.name = c.case_differentiator_c and lov5.parent_id =25960
-                    left join flow.list_of_value lov6 on lov6.name = c.location_c and lov6.parent_id =25962
-                    left join flow.list_of_value lov7 on lov7.name = c.type and lov7.parent_id =25931
-                    left join flow.list_of_value lov8 on lov8.name = c.origin and lov8.parent_id =25935
-                    left join flow.list_of_value lov9 on lov9.name = c.sub_categories_c and lov9.parent_id =26061
-            where c.is_deleted = false
+               lov7_type_id,
+               lov8_origin_id,
+               lov9_sub_categories_id,
+               case_created_by_id,
+               case_owner_id,
+               created_by_id_name,
+              owner_id_name
+             from brs.sp_case_vw1 c
       loop
         v_count = v_count + 1;
         v_total = v_total + 1;
@@ -157,54 +139,36 @@ $do$
     raise notice '10 START = %',clock_timestamp();
     v_count = 0;
     v_total = 0;
-    for x in select c.id as case_id,
+    for x in select case_id,
                     c.sub_categories_c,
                     c.subject,
                     c.jira_ticket_number_c,
-                    c.resolution_comment_c, p.id as project_id,
-                    lov1.id as lov1_category_c_id,
-                    lov3.id as lov3_status_id,
+                    c.resolution_comment_c,
+                    c.project_id,
+                    lov1_category_c_id,
+                    lov3_status_id,
                     c.record_type_id,
-                    c.case_number as case_number,
+                    case_number,
                     c.owner_id,
                     c.ORIGIN,
                     c.created_date,
                     c.closed_date,
-                    lov4.id as lov4_resolution_c_id,
+                    lov4_resolution_c_id,
                     c.description,
                     c.commitment_date_c,
                     c.created_by_id,
-                    lov5.id as lov5_case_differentiator_c_id,
-                    lov6.id as lov6_location_c_id,
+                    lov5_case_differentiator_c_id,
+                    lov6_location_c_id,
                     c.requested_due_date_c,
                     c.shipper_tracking_number_c,
-                    lov7.id as lov7_type_id,
-                    lov8.id as lov8_origin_id,
-                    lov9.id as lov9_sub_categories_id,
-                    case when c.case_created_by_id is null and c.created_by_id is not null then
-                           2495780::bigint
-                         else
-                           c.case_created_by_id end as case_created_by_id,
-                    case when c.case_owner_id is null and c.owner_id is not null then
-                           2495780::bigint
-                         else
-                           c.case_owner_id end as case_owner_id,
-                    concat(su.first_name,' ',su.email) as created_by_id_name,
-                    concat(su1.first_name,' ',su1.email) as owner_id_name
-             from brs."case" c
-                    left join brs.sp_user su on su.id = c.created_by_id
-                    left join brs.sp_user su1 on su1.id = c.owner_id
-                    inner join flow.contact c1 on c1.nw_migration_id = c.account_id
-                    inner join flow.project p on p.contact_id = c1.id
-                    left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
-                    left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
-                    left join flow.list_of_value lov4 on lov4.name = c.resolution_c and lov4.parent_id =25939
-                    left join flow.list_of_value lov5 on lov5.name = c.case_differentiator_c and lov5.parent_id =25960
-                    left join flow.list_of_value lov6 on lov6.name = c.location_c and lov6.parent_id =25962
-                    left join flow.list_of_value lov7 on lov7.name = c.type and lov7.parent_id =25931
-                    left join flow.list_of_value lov8 on lov8.name = c.origin and lov8.parent_id =25935
-                    left join flow.list_of_value lov9 on lov9.name = c.sub_categories_c and lov9.parent_id =26061
-             where c.account_id is not null and c.residential_project_c is null and c.is_deleted = false
+                    lov7_type_id,
+                    lov8_origin_id,
+                    lov9_sub_categories_id,
+                     case_created_by_id,
+                     case_owner_id,
+                    created_by_id_name,
+                    owner_id_name
+             from brs.sp_case_vw c
 
       loop
         v_count = v_count + 1;
