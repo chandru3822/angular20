@@ -89,8 +89,9 @@ public class DisclosureFormService {
 
         var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
 
+        // based on feedback from IL Shrines (greenhouse), the rec customer payment should always be zero since BR discounts the customer's systems upfront
         body.setExpectedRecValue(srecValue.toString());
-        body.setRecCustomerPayment(srec.getSrecValue().toString());
+        body.setRecCustomerPayment("0");
 
         if (isFinanced) {
             body.setFinalAmountOwed("0");
