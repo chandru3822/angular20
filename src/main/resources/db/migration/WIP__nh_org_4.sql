@@ -3,17 +3,12 @@ DO
 $do$
   declare
     x        record;
-    v_total bigint;
   BEGIN
-    v_total = 0;
     for x in select fdc.*,o2.id as org_id
              from brs.fee_distribution_c fdc
                     inner join flow.org o2 on o2.nh_migration_id = fdc.partner_name_c
              where fdc.record_type_id = '01234000000HrvnAAC'
-
       loop
-        v_total = v_total + 1;
-        raise notice '20 Start = %',clock_timestamp();
         perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29438,x.Comp_Shingle_Roof_c::text );
         perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29439,x.Comp_Inset_on_Tile_Roof_c::text );
         perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29440,x.Over_Tile_Roof_c::text );
@@ -87,8 +82,6 @@ $do$
         perform flow.set_org_cfv_no_checks(x.org_id, 2384850,29782,x.Storage_Rough_Wire_c::text );
 
       end loop;
-    raise notice '20 END = %',clock_timestamp();
-    raise notice '20 END = %',v_total;
   end
 $do$;
 
@@ -106,6 +99,46 @@ insert into brs.new_homes_details( project_id, contact_id, company_id, date_modi
           left join flow.company_state as cs on cs.id = p.company_state_id
           left join flow.state s on s.id = cs.state_id
    where p.nw_migration_id is not null);
+
+
+
+insert into flow.work_queue_cycle( project_process_step_id, company_process_step_status_type_id, process_step_work_queue_type_process_step_status_type_id,
+                                   date_entered_queue, created_by_id, modified_by_id, date_modified)
+with configs as (
+  select pswqtpsst.id as process_step_work_queue_type_process_step_status_type_id,
+         pswqt.id as process_step_work_queue_type_id,
+         pswqt.process_step_id,
+         pswqt.work_queue_type_id,
+         coalesce(cpsst.id,0) as company_process_status_type_id,
+         coalesce(psst.id,0) as process_step_status_type_id,
+         coalesce(cpst.id, 0) as company_project_status_type_id,
+         coalesce(pst.id,0) as project_status_type_id
+  from flow.process_step_work_queue_type_process_step_status_type pswqtpsst
+         inner join flow.process_step_work_queue_type pswqt  on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
+         inner join flow.work_queue_type wqt on pswqt.work_queue_type_id = wqt.id and wqt.archived is false
+         inner join flow.process_step ps on pswqt.process_step_id = ps.id and ps.archived is false and ps.company_id = 3
+         left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqt.id = pswqtpst.process_step_work_queue_type_id and pswqtpst.archived is false
+         left join flow.company_process_step_status_type cpsst on pswqtpsst.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
+         left join flow.process_step_status_type psst on pswqtpsst.process_step_status_type_id = psst.id and psst.archived is false
+         left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id and cpst.archived is false
+         left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id and pst.archived is false
+  where  pswqtpsst.archived is false
+)
+select pps.id,cpsst.id,t.process_step_work_queue_type_process_step_status_type_id,now(),2350555,2350555,now()
+from flow.project p
+       inner join flow.project_process_step pps on p.id = pps.project_id and pps.archived is false
+       inner join flow.process_step ps on pps.process_step_id = ps.id and ps.archived is false and ps.company_id = 3 and ps.id != 1
+       inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+       inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+       inner join configs t on t.process_step_id = pps.process_step_id
+where (t.project_status_type_id = cpst.project_status_type_id or t.company_project_status_type_id = cpst.id) and
+  (t.process_step_status_type_id = cpsst.process_step_status_type_id or t.company_process_status_type_id = cpsst.id)
+  and p.archived is not true
+  and not exists (select wqc.id
+                  from flow.work_queue_cycle wqc
+                  where wqc.project_process_step_id = pps.id and
+                    wqc.process_step_work_queue_type_process_step_status_type_id = t.process_step_work_queue_type_process_step_status_type_id and
+                    wqc.date_exited_queue is null);
 
 SET session_replication_role = default;
 
