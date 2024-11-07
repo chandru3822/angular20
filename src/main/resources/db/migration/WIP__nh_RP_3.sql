@@ -8,11 +8,9 @@ $do$
     v_project_id bigint;
     v_object_category_project_id bigint;
     v_system_adders_c bigint[];
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '4 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property START = %',clock_timestamp();
     v_total = 0;
     select oc.id
     into v_object_category_project_id
@@ -379,14 +377,6 @@ $do$
                     left join flow.list_of_value lov48 on lov48.name = rpc.evse_count_c and lov48.parent_id = 26283
       where rpc.is_deleted = false
       loop
-        v_count = v_count + 1;
-        v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          raise notice 'v_total = %',v_total;
-          --commit;
-          v_count = 0;
-        end if;
         v_contact_id = null;
         v_object_category_id = null;
         if x.homeowner_id is not null then
@@ -687,7 +677,7 @@ $do$
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28328,v_system_adders_c::text, true);
         end if;
        end loop;
-    raise notice '4 END = %',clock_timestamp();
-    raise notice '4 END total = %',v_total;
+    raise notice 'Residential Property END = %',clock_timestamp();
+    raise notice 'Residential Property Total = %',v_total;
   end
 $do$;

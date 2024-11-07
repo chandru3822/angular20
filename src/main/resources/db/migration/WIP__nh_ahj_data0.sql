@@ -1,5 +1,3 @@
-
---this is for brs.ahj_name_c which inserts ahj new home data
 DO
 $do$
     declare
@@ -22,7 +20,10 @@ $do$
         v_builder_permitting_type_c bigint;
         v_mppp_submittal_type_c bigint;
       v_permit_supervisor bigint;
+      v_total bigint;
     BEGIN
+      raise notice 'Start AHJ  = %',clock_timestamp();
+      v_total = 0;
         for x in select a.id,
                         a.name,
                         a.address_c,
@@ -90,6 +91,7 @@ $do$
             loop
                 v_ahj_id = null;
                 v_ahj_new_home_id = null;
+                v_total = v_total + 1;
 
                 --check if there is an existing ahj by name and new home
                 select fa.id, nh.id
@@ -333,6 +335,8 @@ $do$
                     end if;
                 end if;
             end loop;
+      raise notice 'End AHJ  = %',clock_timestamp();
+      raise notice 'AHJ Total  = %',v_total;
     end
 $do$;
 
@@ -346,7 +350,11 @@ $do$
         v_submittal_c bigint;
         v_payment_type_c bigint;
         v_buyer_vs_builder_submittals_c bigint;
+      v_total bigint;
     BEGIN
+      raise notice 'Start Utility  = %',clock_timestamp();
+      v_total = v_total + 1;
+
         for x in select a.id,
                         a.name,
                         a.state_c,
@@ -487,6 +495,8 @@ $do$
 
                 end if;
             end loop;
+        raise notice 'End Utility  = %',clock_timestamp();
+        raise notice 'Utility Total  = %',v_total;
     end
 $do$;
 

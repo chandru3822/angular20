@@ -108,3 +108,6 @@ insert into brs.new_homes_details( project_id, contact_id, company_id, date_modi
    where p.nw_migration_id is not null);
 
 SET session_replication_role = default;
+
+
+

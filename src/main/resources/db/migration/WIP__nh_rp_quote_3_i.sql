@@ -4,12 +4,10 @@ $do$
   declare
     x record;
     v_project_process_step_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    v_count = 0;
     v_total = 0;
-    raise notice '17 START = %',clock_timestamp();
+    raise notice 'Residential Property Quote START = %',clock_timestamp();
     for x in  select q.id as quote_id,
                      q.module_c,
                      --  q.Module_Brand_c,
@@ -113,13 +111,7 @@ $do$
                 and rpc.IS_DELETED = false
               order by rpc.id,q.lease_doc_signed_date_c,q.created_date
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -214,7 +206,7 @@ $do$
         -- perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29374,x.Net_Cost_c::text , true);
 
       end loop;
-    raise notice '17 END = %',clock_timestamp();
-    raise notice '17 END total = %',v_total;
+    raise notice 'Residential Property Quote END = %',clock_timestamp();
+    raise notice 'Residential Property Quote Total = %',v_total;
   end
 $do$;

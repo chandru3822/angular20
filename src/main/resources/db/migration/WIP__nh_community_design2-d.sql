@@ -6,11 +6,9 @@ $do$
     v_project_process_step_event_design_id bigint;
     v_project_process_step_design_id       bigint;
     v_deliver_to_c_id                      bigint[];
-    v_count                                bigint;
     v_total                                bigint;
   BEGIN
-    raise notice '3 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'NH Community Design START = %',clock_timestamp();
     v_total = 0;
     for z in select dc.revision_of_c,
                     dc.missing_information_c,
@@ -95,13 +93,7 @@ $do$
              where dc.is_deleted = false
              order by co.id
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
 
         if z.is_first_row is true then
           v_project_process_step_design_id = null;
@@ -237,7 +229,7 @@ $do$
                                                  z.notes_from_requester_c::text, true);
       end loop;
 
-    raise notice '3 END = %',clock_timestamp();
-    raise notice '3 END total = %',v_total;
+    raise notice 'NH Community Design END = %',clock_timestamp();
+    raise notice 'NH Community Design Total = %',v_total;
   end
 $do$;

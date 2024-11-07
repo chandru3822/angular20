@@ -4,12 +4,10 @@ $do$
   declare
     x record;
     v_project_process_step_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    v_count = 0;
     v_total = 0;
-    raise notice '19 START = %',clock_timestamp();
+    raise notice 'Residential Property Lease Payment START = %',clock_timestamp();
     for x in select
 
                lpc.US_Cash_Grant_Submission_Date_c,
@@ -268,14 +266,7 @@ $do$
              where lpc.is_deleted = false
              order by rpc.id,lpc.created_date
       loop
-        v_count = v_count + 1;
         v_total =v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          raise notice 'v_total = %',v_total;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
@@ -610,7 +601,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29730,x.With_SH_Inventory_c::text , true);
 
       end loop;
-    raise notice '19 END = %',clock_timestamp();
-    raise notice '19 END total = %',v_total;
+    raise notice 'Residential Property Lease Payment END = %',clock_timestamp();
+    raise notice 'Residential Property Lease Payment Total = %',v_total;
   end
 $do$;

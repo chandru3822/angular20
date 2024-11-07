@@ -4,11 +4,9 @@ $do$
   declare
     x record;
     v_project_process_step_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '8 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Opportunity START = %',clock_timestamp();
     v_total = 0;
     v_project_process_step_id = null;
     for x in select p.id as project_id,
@@ -39,13 +37,7 @@ $do$
             where o.is_deleted = false
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
@@ -73,7 +65,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29238,x.lov3_reason_won_lost_c_id::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30016,x.opportunity_owner_s_manager_c_name::text, true);
       end loop;
-    raise notice '8 END = %',clock_timestamp();
-    raise notice '8 END total = %',v_total;
+    raise notice 'Residential Property Opportunity END = %',clock_timestamp();
+    raise notice 'Residential Property Opportunity Total = %',v_total;
   end
 $do$;

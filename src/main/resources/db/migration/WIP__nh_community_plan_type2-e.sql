@@ -5,12 +5,10 @@ $do$
     y                                      record;
     v_project_process_step_plan_id              bigint;
     v_project_process_step_plan_event_id        bigint;
-    v_count bigint;
     v_total bigint;
     v_system_wattage numeric;
   BEGIN
-    raise notice '3 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'NH Community Plan Type START = %',clock_timestamp();
     v_total = 0;
     for y in select ptc.id as plan_type_id,
                     ptc.NAME,
@@ -52,13 +50,7 @@ $do$
              where ptc.is_deleted = false
              order by co.id
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
 
         if y.is_first_row is true then
           v_project_process_step_plan_id = null;
@@ -108,7 +100,7 @@ $do$
             end if;
           end loop;
 
-    raise notice '3 END = %',clock_timestamp();
-    raise notice '3 END total = %',v_total;
+    raise notice 'NH Community Plan Type END = %',clock_timestamp();
+    raise notice 'NH Community Plan Type Total = %',v_total;
   end
 $do$;

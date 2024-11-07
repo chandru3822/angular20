@@ -5,11 +5,9 @@ $do$
     x                               record;
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '9 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Cases 1 START = %',clock_timestamp();
     v_total = 0;
     for x in select
                case_id,
@@ -43,13 +41,8 @@ $do$
               owner_id_name
              from brs.sp_case_vw1 c
       loop
-        v_count = v_count + 1;
+
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_event_id = null;
         v_project_process_step_id = null;
 
@@ -121,8 +114,8 @@ $do$
 
 
       end loop;
-    raise notice '9 END = %',clock_timestamp();
-    raise notice '9 END total = %',v_total;
+    raise notice 'Residential Property Cases 1 END = %',clock_timestamp();
+    raise notice 'Residential Property Cases 1 Total = %',v_total;
   end
 $do$;
 
@@ -133,11 +126,9 @@ $do$
     x                               record;
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '10 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Cases 2 START = %',clock_timestamp();
     v_total = 0;
     for x in select case_id,
                     c.sub_categories_c,
@@ -171,14 +162,8 @@ $do$
              from brs.sp_case_vw c
 
       loop
-        v_count = v_count + 1;
+
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          raise notice 'v_total = %',v_total;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_event_id = null;
         v_project_process_step_id = null;
 
@@ -247,7 +232,7 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29801, x.shipper_tracking_number_c::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29851, x.lov7_type_id::text, true);
       end loop;
-    raise notice '10 END = %',clock_timestamp();
-    raise notice '10 END total = %',v_total;
+    raise notice 'Residential Property Cases 2 END = %',clock_timestamp();
+    raise notice 'Residential Property Cases 2 Total = %',v_total;
   end
 $do$;
