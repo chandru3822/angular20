@@ -32,7 +32,9 @@ with project as (select pd.project_id,
                                 pd.closer_appointment_start - interval '450 minutes' end as closer_appointment_start,
                         pd.closer_appointment_end,
                         pd.ahj                                                           as ahj_id,
-                        pd.metro_area                                                    as metro_area_id
+                        pd.metro_area                                                    as metro_area_id,
+                        --this should be added to the data views but i'll just do this for now
+                        (select object_category_id from flow.project p where p.id = pd.project_id) as object_category_id
                  from brs.project_details pd
                  where pd.archived is false
                    and pd.project_id = :id
@@ -47,7 +49,9 @@ with project as (select pd.project_id,
                         null                          as closer_appointment_start,
                         null                          as closer_appointment_end,
                         pd.nh_ahj                     as ahj_id,
-                        pd.metro_area                 as metro_area_id
+                        pd.metro_area                 as metro_area_id,
+                        --this should be added to the data views but i'll just do this for now
+                        (select object_category_id from flow.project p where p.id = pd.project_id) as object_category_id
                  from brs.new_homes_details pd
                  where pd.archived is false
                    and pd.project_id = :id)
@@ -62,6 +66,7 @@ select p.project_id,
        closer_appointment_end,
        ahj_id,
        metro_area_id,
+       object_category_id,
        coalesce((SELECT array_to_json(array_agg(row_to_json(modules)))
                  FROM (select cf.field_name  as "fieldName",
                               cfv.text_value as "textValue"

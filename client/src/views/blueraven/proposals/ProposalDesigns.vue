@@ -607,7 +607,8 @@ const handleNewRequest = async (ai, useExisting) => {
     'blueraven'
   )
 
-  if (data?.approved) {
+  //per lowry dont show unapproved zip message if it is a New Home project
+  if (data?.approved || project.value.objectCategoryId === 6) {
     if(ai) {
       handleAIRequest(useExisting)
     } else {
