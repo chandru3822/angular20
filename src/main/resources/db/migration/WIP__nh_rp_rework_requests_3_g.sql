@@ -4,11 +4,9 @@ $do$
   declare
     x record;
     v_project_process_step_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '11 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Re-Work Requests START = %',clock_timestamp();
     v_total = 0;
     for x in
       select
@@ -113,13 +111,8 @@ $do$
       order by residential_project_c,created_date
 
       loop
-        v_count = v_count + 1;
+
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
@@ -143,7 +136,7 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,29251,x.lov7_rework_reason_3_c_ID::text , true);
         perform flow.set_project_cfv_no_checks(v_project_process_step_id , 2384850,30017,x.created_by_id_name::text , true);
       end loop;
-    raise notice '11 END = %',clock_timestamp();
-    raise notice '11 END total = %',v_total;
+    raise notice 'Residential Property Re-Work Requests END = %',clock_timestamp();
+    raise notice 'Residential Property Re-Work Requests Total = %',v_total;
   end
 $do$;
