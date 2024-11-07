@@ -4,12 +4,9 @@ $do$
   declare
     u record;
     v_project_process_step_campaign_id     bigint;
-    v_count bigint;
     v_total bigint;
-
   BEGIN
-    raise notice '3 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'NH Community Campaign START = %',clock_timestamp();
     v_total = 0;
     for u in select
                c3.id as campaign_id,
@@ -35,13 +32,7 @@ $do$
              order by c3.nh_community_c, c3.created_date
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
 
             v_project_process_step_campaign_id = null;
             insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -60,7 +51,7 @@ $do$
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28120, u.description::text, true);
             perform flow.set_pps_cfv_no_checks(v_project_process_step_campaign_id, 2384850, 28121, u.solar_cut_off_c::text, true);
          end loop;
-    raise notice '3 END = %',clock_timestamp();
-    raise notice '3 END total = %',v_total;
+    raise notice 'NH Community Campaign END = %',clock_timestamp();
+    raise notice 'NH Community Campaign Total = %',v_total;
   end
 $do$;

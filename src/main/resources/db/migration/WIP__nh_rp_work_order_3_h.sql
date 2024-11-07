@@ -1,4 +1,4 @@
-SET session_replication_role = replica;
+
 -- DO
 -- $do$
 --   declare
@@ -128,12 +128,10 @@ $do$
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
     v_lov_scope_of_work bigint[];
-    v_count bigint;
     v_total bigint;
   BEGIN
-    v_count = 0;
     v_total = 0;
-    raise notice '13 START = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 1 START = %',clock_timestamp();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -176,13 +174,7 @@ $do$
       and wo.is_deleted = false
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
         select id
@@ -261,11 +253,12 @@ $do$
 
 
       end loop;
-    raise notice '13 END = %',clock_timestamp();
-    raise notice '13 END total = %',v_total;
+    raise notice 'Residential Property Work Order 1 END = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 1 Total = %',v_total;
   end
 $do$;
---todo this is where I left off
+
+
 -- DO
 -- $do$
 --   declare
@@ -402,7 +395,8 @@ $do$;
 --     raise notice '14 END total = %',v_total;
 --   end
 -- $do$;
---todo start with Mandy
+
+
 SET session_replication_role = replica;
 DO
 $do$
@@ -410,12 +404,9 @@ $do$
     x record;
     v_project_process_step_id bigint;
     v_project_process_step__event_id bigint;
-    v_lov_scope_of_work bigint[];
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '21 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Work Order 2 START = %',clock_timestamp();
     v_total = 0;
     for x in select wo.completed_date_c,
                     wo.status,
@@ -460,13 +451,7 @@ $do$
       and wo.is_deleted = false
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
         select id
@@ -574,8 +559,8 @@ $do$
 
 
       end loop;
-    raise notice '21 END = %',clock_timestamp();
-    raise notice '21 END total = %',v_total;
+    raise notice 'Residential Property Work Order 2 END = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 2 Total = %',v_total;
   end
 $do$;
 
@@ -1135,12 +1120,10 @@ $do$
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
     v_lov_reason_code bigint[];
-    v_count bigint;
     v_total bigint;
   BEGIN
-    v_count = 0;
     v_total = 0;
-    raise notice '26 START = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 3 START = %',clock_timestamp();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -1202,13 +1185,7 @@ $do$
       and wo.is_deleted = false
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
         select id
@@ -1290,8 +1267,8 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29842, x.lov6_response_code_c_id::text,true);
 
       end loop;
-    raise notice '26 END = %',clock_timestamp();
-    raise notice '26 END total = %',v_total;
+    raise notice 'Residential Property Work Order 3 END = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 3 Total = %',v_total;
   end
 $do$;
 
@@ -1303,12 +1280,10 @@ $do$
     x                                record;
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    v_count = 0;
     v_total = 0;
-    raise notice '15 START = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 4 START = %',clock_timestamp();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -1355,13 +1330,7 @@ $do$
              where wo.record_type_id = '01234000000M5IcAAK' and wo.is_deleted = false
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
         select id
@@ -1419,8 +1388,8 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step__event_id, 2384850, 29289, x.amount_c::text,true);
 
       end loop;
-    raise notice '15 END = %',clock_timestamp();
-    raise notice '15 END total = %',v_total;
+    raise notice 'Residential Property Work Order 4 END = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 4 Total = %',v_total;
   end
 $do$;
 
@@ -1431,12 +1400,10 @@ $do$
     x                                record;
     v_project_process_step_id        bigint;
     v_project_process_step__event_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    v_count = 0;
     v_total = 0;
-    raise notice '16 START = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 5 START = %',clock_timestamp();
     for x in select wo.completed_date_c,
                     wo.scope_of_work_c,
                     wo.id,
@@ -1484,14 +1451,7 @@ $do$
       and wo.is_deleted = false
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          raise notice 'v_total = %',v_total;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         v_project_process_step__event_id = null;
         select id
@@ -1549,8 +1509,8 @@ $do$
 
 
       end loop;
-    raise notice '16 END = %',clock_timestamp();
-    raise notice '16 END total = %',v_total;
+    raise notice 'Residential Property Work Order 5 END = %',clock_timestamp();
+    raise notice 'Residential Property Work Order 5 Total = %',v_total;
   end
 $do$;
 

@@ -3,12 +3,10 @@ DO
 $do$
   declare
     w                         record;
-    v_count                   bigint;
     v_total                   bigint;
     v_project_process_step_id bigint;
   BEGIN
-    raise notice '5 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Project Tasks START = %',clock_timestamp();
     v_total = 0;
     for w in
       select distinct on (ptc.residential_project_c,ptc.name) ptc.description_c,
@@ -56,8 +54,8 @@ $do$
         and ptc.is_deleted = false
         and upper(ptc.path_type_c) = 'STANDARD'
         and rpc.STATUS_C != 'Cancelled'
-        and --todo revisit this
-        ptc.critical_path_c = true
+        --and ptc.critical_path_c = false
+       -- and  rpc.id not in ('a6l2T000003jKbuQAE','a6l2T000005DSlGQAW')
         and ptc.name in ('Input Promise Dates',
                          'Obtain Builder Plot Plan',
                          'Complete Design Package',
@@ -87,18 +85,11 @@ $do$
                          'Submit Documents for PTO',
                          'Receive PTO from Utility',
                          'Customer System Activation')
-      order by ptc.residential_project_c, ptc.name, ptc.order_c desc
+      order by ptc.residential_project_c, ptc.name, ptc.order_c desc,ptc.created_date desc
       loop
-        v_count = v_count + 1;
+
         v_total = v_total + 1;
         v_project_process_step_id = null;
-        if v_count = 5000 then
-          raise notice 'v_count %',v_count;
-          raise notice 'v_total %',v_total;
-
-          --commit;
-          v_count = 0;
-        end if;
 
 
         if w.name = 'Input Promise Dates' then
@@ -1120,7 +1111,7 @@ $do$
           perform brs.create_event_sub_tasks(w.project_task_id, 3787, v_project_process_step_id);
         end if;
     end loop;
-    raise notice '5 END = %',clock_timestamp();
-    raise notice '5 END total = %',v_total;
+    raise notice 'Residential Property Project Tasks END = %',clock_timestamp();
+    raise notice 'Residential Property Project Tasks Total = %',v_total;
   end
 $do$;

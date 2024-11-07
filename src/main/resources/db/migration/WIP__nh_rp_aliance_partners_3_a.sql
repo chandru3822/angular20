@@ -3,11 +3,9 @@ DO
 $do$
   declare
     x                         record;
-    v_count                   bigint;
     v_total                   bigint;
   BEGIN
-    raise notice '3 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Alliance Partners START = %',clock_timestamp();
     v_total = 0;
     for x in select distinct on (p.id,apc.role_c) apc.role_c,
                                                   o.id   as org_id,
@@ -148,13 +146,7 @@ $do$
                                              '0013400001XcRU1AAN')
              order by p.id,apc.role_c, apc.created_date desc
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
 
 
         case
@@ -197,8 +189,8 @@ $do$
           else
           end case;
       end loop;
-    raise notice '3 END = %',clock_timestamp();
-    raise notice '3 END total = %',v_total;
+    raise notice 'Residential Property Alliance Partners END = %',clock_timestamp();
+    raise notice 'Residential Property Alliance Partners Total = %',v_total;
   end
 $do$;
 

@@ -1,6 +1,4 @@
 SET session_replication_role = replica;
-
--- 1 END total = 450  --14 seconds
 DO
 $do$
   declare
@@ -11,7 +9,7 @@ $do$
     v_total bigint;
     v_builder_contacts text;
   BEGIN
-    raise notice '1 START = %',clock_timestamp();
+    raise notice 'Start NH Builder = %',clock_timestamp();
     select oc.id
     into v_object_category_id
     from flow.object_category oc
@@ -123,7 +121,7 @@ $do$
           perform flow.set_contact_cfv(v_contact_id, 2384850, 28829, x.website::text, true);
         end if;
       end loop;
-    raise notice '1 END = %',clock_timestamp();
-    raise notice '1 END total = %',v_total;
+    raise notice 'NH Builder END = %',clock_timestamp();
+    raise notice 'NH Builder Total = %',v_total;
   end
 $do$;

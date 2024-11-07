@@ -10,20 +10,19 @@ $do$
     v_community_adder_c    bigint[];
     v_financial_offering_c bigint[];
     v_roof_attachment_c    bigint[];
-    v_count bigint;
     v_total bigint;
     v_contact_id bigint;
   v_ahj_utility_c bigint;
     v_ahjname_c bigint;
   BEGIN
+    raise notice 'NH Community START = %',clock_timestamp();
     select id
     into v_contact_id
     from flow.contact c3
     where c3.nw_migration_id = '0012T00001r4xVhQAI';
 
-    v_count = 0;
     v_total = 0;
-    raise notice '2 START = %',clock_timestamp();
+
     select oc.id
     into v_object_category_id
     from flow.object_category oc
@@ -204,13 +203,7 @@ $do$
                     left join flow.list_of_value l33 on l33.name = c.community_type_c and l33.parent_id =25162
                     where c.is_deleted = false
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_id = null;
         v_community_adder_c = null;
         v_financial_offering_c = null;
@@ -403,7 +396,7 @@ $do$
         end if;
 
       end loop;
-    raise notice '2 END = %',clock_timestamp();
-    raise notice '2 END total = %',v_total;
+    raise notice 'NH Community END = %',clock_timestamp();
+    raise notice 'NH Community Total = %',v_total;
   end
 $do$;
