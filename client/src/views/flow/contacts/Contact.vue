@@ -367,7 +367,7 @@
                       </div>
                     </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
-                    <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                    <span v-else-if="(!contact.owner || !contact.owner.userId) && contact.objectCategoryId !== 7">Requires Owner</span>
                   </v-tooltip>
                 </template>
                 <v-card class="pa-5 body-large">
@@ -1027,7 +1027,6 @@ const getAvailableProcesses = async() => {
   try {
     processesLoading.value = true
     const {data, status} = await getRequest(`/processes/contact/${contactId.value}`)
-    availableProcesses.value = data
     if(!userStore.isSystemAdmin) { //7 Oaks admin should be able to see all processes
       availableProcesses.value = availableProcesses.value.filter(p => {
         for (let id of userPositionIds.value) {
@@ -1036,8 +1035,10 @@ const getAvailableProcesses = async() => {
           }
         }
       })
+    } else {
+      availableProcesses.value = data
     }
-    selectedProcess.value = data?.length === 1 ? data[0] : {}
+    selectedProcess.value = availableProcesses.value?.length === 1 ? availableProcesses.value[0] : {}
     processesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
