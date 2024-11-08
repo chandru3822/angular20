@@ -1028,7 +1028,7 @@ const getAvailableProcesses = async() => {
     processesLoading.value = true
     const {data, status} = await getRequest(`/processes/contact/${contactId.value}`)
     if(!userStore.isSystemAdmin) { //7 Oaks admin should be able to see all processes
-      availableProcesses.value = availableProcesses.value.filter(p => {
+      availableProcesses.value = data?.filter(p => {
         for (let id of userPositionIds.value) {
           if (!p.denyListPositions.find(dlp => dlp.positionId === id)) {
             return p;
