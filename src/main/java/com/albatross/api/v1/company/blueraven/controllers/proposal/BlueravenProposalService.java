@@ -466,9 +466,12 @@ public class BlueravenProposalService {
 
     final Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
 
-    final ProposalPostalCodeStatus proposalPostalCodeStatus = getPostalCodeApprovalStatus(project.getId());
-    if (!proposalPostalCodeStatus.isApproved()) {
-      throw new UnapprovedPostalCodeProposalException();
+    //per lowry dont show unapproved zip message if it is a New Home project
+    if(project.getObjectCategoryId() != 6) {
+        final ProposalPostalCodeStatus proposalPostalCodeStatus = getPostalCodeApprovalStatus(project.getId());
+        if (!proposalPostalCodeStatus.isApproved()) {
+          throw new UnapprovedPostalCodeProposalException();
+        }
     }
 
     // create new "create proposal design" step (active, cancel others)
