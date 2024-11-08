@@ -183,6 +183,9 @@ const minMonthsFilled = computed(() => {
 
 // Square Footage Option
 const calculateUsage = (field) => {
+  if(!field.textValue){
+    return
+  }
   const squareFootage = Number(field.textValue)
   const yearlyConsumptionField = props.aiRequestFields.find(cf => cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION)
   //pass in the correct enum to the energyUsage function; this works because they all use the same names
@@ -313,7 +316,7 @@ const xcelEnergyMNValues = Object.freeze({
                 </CustomValueInput>
             </div>
               <div v-else-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION && calcEnergyBySqFtg">
-                <div class="label-large">Energy Usage</div>
+                <div class="label-large">Estimated Energy Usage</div>
                 <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
                 <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{monthlyUsage[0]?.usage}} kWh</span></div>
               </div>
