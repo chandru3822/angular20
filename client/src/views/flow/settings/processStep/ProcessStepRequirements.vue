@@ -97,7 +97,7 @@
                               selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></a-autocomplete>
-            <a-select attach
+            <a-autocomplete attach
                       v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12"
                       v-model="selectedDataView"
                       :items="dataViews"
@@ -106,7 +106,7 @@
                       return-object
                       item-title="displayName"
                       @input="[getDataViewFields()]"
-            ></a-select>
+            ></a-autocomplete>
             <a-autocomplete
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12 &&
                       selectedDataView.id != null && availableDataViewFields.length > 0"
@@ -123,7 +123,7 @@
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></a-autocomplete>
             <!-- if it is a function -->
-            <a-select
+            <a-autocomplete
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
                 v-model="selectedFunction"
                 :items="availableFunctions"
@@ -131,7 +131,7 @@
                 item-title="companyFunctionName"
                 returnObject
                 @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"
-            ></a-select>
+            ></a-autocomplete>
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
               <v-card flat>
