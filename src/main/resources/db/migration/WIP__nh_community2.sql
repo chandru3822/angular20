@@ -10,20 +10,19 @@ $do$
     v_community_adder_c    bigint[];
     v_financial_offering_c bigint[];
     v_roof_attachment_c    bigint[];
-    v_count bigint;
     v_total bigint;
     v_contact_id bigint;
   v_ahj_utility_c bigint;
     v_ahjname_c bigint;
   BEGIN
+    raise notice 'NH Community START = %',clock_timestamp();
     select id
     into v_contact_id
     from flow.contact c3
     where c3.nw_migration_id = '0012T00001r4xVhQAI';
 
-    v_count = 0;
     v_total = 0;
-    raise notice '2 START = %',clock_timestamp();
+
     select oc.id
     into v_object_category_id
     from flow.object_category oc
@@ -156,8 +155,15 @@ $do$
                     case when c.nh_community_c_sr_builder_operation_manager_c is null and c.sr_builder_operation_manager_c is not null then
                            2495780::bigint
                          else
-                           c.nh_community_c_sr_builder_operation_manager_c end as nh_community_c_sr_builder_operation_manager_c
+                           c.nh_community_c_sr_builder_operation_manager_c end as nh_community_c_sr_builder_operation_manager_c,
+                    concat(su.first_name,' ',su.email) as field_manager_c_name,
+                    concat(su1.first_name,' ',su1.email) as account_manager_c_name,
+                    concat(su2.first_name,' ',su2.email) as sr_builder_operation_manager_c_name
              from brs.NH_COMMUNITY_C c
+                    left join brs.sp_user su on su.id = c.field_manager_c
+                    left join brs.sp_user su1 on su1.id = c.account_manager_c
+                    left join brs.sp_user su2 on su2.id = c.sr_builder_operation_manager_c
+
                     left join brs.account a on a.id = c.builder_c
                     left join flow.contact c2 on c2.nw_migration_id = a.id
                     left join flow.state s on s.abbreviation = c.state_c
@@ -195,15 +201,9 @@ $do$
                     left join flow.list_of_value l31 on l31.name = c.rebate_program_c and l31.parent_id =25276
                     left join flow.list_of_value l32 on l32.name = c.rebate_payable_to_c and l32.parent_id =25278
                     left join flow.list_of_value l33 on l33.name = c.community_type_c and l33.parent_id =25162
-                    where c.is_deleted is false
+                    where c.is_deleted = false
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_id = null;
         v_community_adder_c = null;
         v_financial_offering_c = null;
@@ -222,6 +222,10 @@ $do$
                                     when x.community_status_c = 'Closed' then 227  end,x.company_state_id,x.city_location_c,x.zip_code_c,1,false,v_object_category_id,x.id) returning id into v_project_id;
 
         if v_project_id is not null then
+          perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29896,x.field_manager_c_name::text , true);
+          perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29901,x.account_manager_c_name::text , true);
+          perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29905,x.sr_builder_operation_manager_c_name::text , true);
+
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27998,x.community_id_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,27999,x.number_of_homes_reserved_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28011,x.proposal_link_c::text , true);
@@ -392,7 +396,7 @@ $do$
         end if;
 
       end loop;
-    raise notice '2 END = %',clock_timestamp();
-    raise notice '2 END total = %',v_total;
+    raise notice 'NH Community END = %',clock_timestamp();
+    raise notice 'NH Community Total = %',v_total;
   end
 $do$;

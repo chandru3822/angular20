@@ -8,11 +8,9 @@ $do$
     v_project_id bigint;
     v_object_category_project_id bigint;
     v_system_adders_c bigint[];
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '4 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property START = %',clock_timestamp();
     v_total = 0;
     select oc.id
     into v_object_category_project_id
@@ -120,6 +118,10 @@ $do$
                     rpc.trench_date_promised_c,
                     rpc.rough_wire_wo_date_receipt_c,
                     rpc.trench_started_c,
+                    rpc.customer_street_text_c,
+                    ncc.state_c,
+                    ncc.city_location_c,
+                    ncc.zip_code_c,
                     rpc.rough_wire_wo_value_c,
                     rpc.trench_date_c,
                     rpc.rough_labor_pricing_c,
@@ -245,7 +247,12 @@ $do$
                     lov44.id as lov44_manufacturer_c_id,
                     lov46.id as lov46_hers_c_id,
                     lov47.id as lov47_mounting_type_c_id,
+                    lov48.id as lov48_evse_count_c_id,
+                    rpc.ev_charger_retail_amount_c,
+                    rpc.scheduled_ev_installation_date_c,
                     rpc.status_c,
+                    pcfv1.int_value as utility_id,
+                    pcfv.int_value as ahj_id,
                     rpc.name,
                     rpc.system_adders_c,
                     rpc.id,
@@ -287,25 +294,45 @@ $do$
                          else
                            rpc.residential_project_c_storage_install_completed_by_c end as residential_project_c_storage_install_completed_by_c,
                     case
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytBSAS' then 26002
-                      when rpc.storage_configuration_group_c = 'aCv2T000000Kyt6SAC' then 26001
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytfSAC' then 26003
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytGSAS' then 26000
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytkSAC' then 25996
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytpSAC' then 25997
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytuSAC' then 25998
-                      when rpc.storage_configuration_group_c = 'aCv2T000000KytzSAC' then 25999
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytBSAS' then 26002::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000Kyt6SAC' then 26001::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytfSAC' then 26003::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytGSAS' then 26000::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytkSAC' then 25996::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytpSAC' then 25997::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytuSAC' then 25998::text
+                      when rpc.storage_configuration_group_c = 'aCv2T000000KytzSAC' then 25999::text
                       else null end as storage_configuration_group,
-               lov45.id as lov45_microinverter_status_c_id
+               lov45.id as lov45_microinverter_status_c_id,
+                    concat(su.first_name,' ',su.email) as   install_completed_by_c_name,
+                    concat(su1.first_name,' ',su1.email) as pv_install_completed_by_c_name,
+                    concat(su2.first_name,' ',su2.email) as rough_wire_completed_by_c_name,
+                    concat(su3.first_name,' ',su3.email) as storage_install_completed_by_c_name,
+                    concat(su4.first_name,' ',su4.email) as storage_rough_completed_by_c_name,
+                    concat(su5.first_name,' ',su5.email) as trench_completed_by_c_name,
+                    concat(su6.first_name,' ',su6.email) as trim_install_completed_by_c_name,
+                    concat(su7.first_name,' ',su7.email) as activation_coordinator_c_name,
+                    pt.name as plan_type_name
              from brs.residential_project_c rpc
+                    left join brs.plan_type_c pt on pt.id = rpc.PLAN_TYPE_C
+                    left join brs.sp_user su on su.id =   rpc.install_completed_by_c
+                    left join brs.sp_user su1 on su1.id = rpc.pv_install_completed_by_c
+                    left join brs.sp_user su2 on su2.id = rpc.rough_wire_completed_by_c
+                    left join brs.sp_user su3 on su3.id = rpc.storage_install_completed_by_c
+                    left join brs.sp_user su4 on su4.id = rpc.storage_rough_completed_by_c
+                    left join brs.sp_user su5 on su5.id = rpc.trench_completed_by_c
+                    left join brs.sp_user su6 on su6.id = rpc.trim_install_completed_by_c
+                    left join brs.sp_user su7 on su7.id = rpc.activation_coordinator_c
                     inner join brs.nh_community_c ncc on ncc.id = rpc.community_c
                     left join brs.MODULE_CONFIGURATION_C mcc on mcc.id = rpc.module_configuration_c
                     left join brs.item_c ic on ic.id = mcc.item_c
                     left join flow.project p on p.nw_migration_id = ncc.id
+                    left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and pcfv.custom_field_group_assignment_id = 1048
+                    left join flow.project_custom_field_value pcfv1 on pcfv1.project_id = p.id and pcfv1.custom_field_group_assignment_id = 1049
                     left join brs.account a on a.id = ncc.builder_c
                     left join flow.contact c2 on c2.nw_migration_id = a.id
                     left join brs.account a2 on a2.id = rpc.account_c and a2.type in ('Home Owner – SSE','Home Owner','Homeowner')
-                    left join flow.state s on s.abbreviation = a2.billing_state
+                    left join flow.state s on s.abbreviation = ncc.state_c
                     left join flow.company_state cs on cs.state_id = s.id and cs.company_id = 3
                     left join flow.list_of_value lov1 on lov1.name =   rpc.priority_c and lov1.parent_id =25516
                     left join flow.list_of_value lov2 on lov2.name =   rpc.cancellation_justification_c and lov2.parent_id =25520
@@ -319,8 +346,8 @@ $do$
                     left join flow.list_of_value lov10 on lov10.name = rpc.smart_thermostat_c and lov10.parent_id =25532
                     left join flow.list_of_value lov11 on lov11.name = rpc.thermostat_manufacturer_c and lov11.parent_id =25522
                     left join flow.list_of_value lov12 on lov12.name = rpc.thermostat_model_c and lov12.parent_id =25518
-                    left join flow.list_of_value lov13 on lov13.name = rpc.installation_type_c and lov13.parent_id =25514
-                    left join flow.list_of_value lov14 on lov14.name = rpc.roof_type_c and lov14.parent_id =25512
+                    left join flow.list_of_value lov13 on lov13.name = rpc.installation_type_c and lov13.parent_id =25266
+                    left join flow.list_of_value lov14 on lov14.name = rpc.roof_type_c and lov14.parent_id =25264
                     left join flow.list_of_value lov15 on lov15.name = rpc.type_of_design_c and lov15.parent_id =25510
                     left join flow.list_of_value lov16 on lov16.name = rpc.roof_1_pitch_c and lov16.parent_id =25508
                     left join flow.list_of_value lov17 on lov17.name = rpc.proposed_solar_breaker_installed_in_msp_c and lov17.parent_id =25506
@@ -347,14 +374,9 @@ $do$
                     left join flow.list_of_value lov45 on lov45.name = rpc.microinverter_status_c and lov45.parent_id = 25498
                     left join flow.list_of_value lov46 on lov46.name = rpc.hers_c and lov46.parent_id = 25434
                     left join flow.list_of_value lov47 on lov47.name = rpc.mounting_type_c and lov47.parent_id = 25258
+                    left join flow.list_of_value lov48 on lov48.name = rpc.evse_count_c and lov48.parent_id = 26283
+      where rpc.is_deleted = false
       loop
-        v_count = v_count + 1;
-        v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_contact_id = null;
         v_object_category_id = null;
         if x.homeowner_id is not null then
@@ -368,7 +390,7 @@ $do$
                                    created_by_id, modified_by_id, company_id, archived,
                                    company_state_id,
                                    company_country_id, nw_migration_id, object_category_id)
-          values (1, x.account_name, null, x.billing_street, null, x.billing_city, substr(x.billing_postal_code,1,10), x.phone, x.email_c,
+          values (1, x.account_name, null, x.customer_street_text_c, null, x.city_location_c, substr(x.zip_code_c,1,10), x.phone, x.email_c,
                   x.phone, now(), now(), 2384850, 2384850, 3, false,
                   x.company_state_id, 1, x.homeowner_id,v_object_category_id) returning id into v_contact_id;
         end if;
@@ -386,10 +408,13 @@ $do$
                     when x.status_c = 'Pending Cancellation' then 229
                     when x.status_c = 'Cancelled' then 225
                     when x.status_c = 'Completed' then 228 end,
-               coalesce(x.billing_street,x.builder_billing_street),null,coalesce(x.billing_city,x.builder_billing_city),
-               coalesce(substr(x.billing_postal_code,1,10),substr(x.builder_billing_postal_code,1,10)),x.company_state_id,1,false,null,x.id,
+              x.customer_street_text_c,null,x.city_location_c,
+               x.zip_code_c,x.company_state_id,1,false,null,x.id,
                v_object_category_project_id,x.community_project_id
               ) returning id into v_project_id;
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29874,x.plan_type_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1048,x.ahj_id::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1049,x.utility_id::text , true);
 
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28122,x.record_type_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28675,x.project_number_c::text, true);
@@ -580,8 +605,8 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28229,x.lov10_smart_thermostat_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28233,x.lov11_thermostat_manufacturer_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28236,x.lov12_thermostat_model_c::text, true);
-        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28239,x.lov13_installation_type_c::text, true);
-        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28249,x.lov14_roof_type_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28056,x.lov13_installation_type_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28055,x.lov14_roof_type_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28250,x.lov15_type_of_design_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28258,x.lov16_roof_1_pitch_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28259,x.lov17_proposed_solar_breaker_installed_in_msp_c::text, true);
@@ -608,6 +633,35 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28313,x.lov45_microinverter_status_c_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28163,x.lov46_hers_c_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28052,x.lov47_mounting_type_c_id::text , true);
+
+
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29919,x.install_completed_by_c_name::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29920,x.pv_install_completed_by_c_name::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29921,x.rough_wire_completed_by_c_name::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29922,x.storage_install_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29923,x.storage_rough_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29924,x.trench_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29925,x.trim_install_completed_by_c_name::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29918,x.activation_coordinator_c_name::text , true);
+
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30023,x.lov48_evse_count_c_id::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30024,x.ev_charger_retail_amount_c::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30025,x.scheduled_ev_installation_date_c::text , true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30021,case when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPEQAY' then 26020::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hP9QAI' then 26021::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPOQAY' then 26021::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPJQAY' then 26022::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000001ObZQAU' then 26023::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000RSg0QAG' then 26024::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCIQA4' then 26025::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCSQA4' then 26025::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCXQA4' then 26026::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000N9IyQAK' then 26027::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPYQAY' then 26028::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPsQAI' then 26028::text
+                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPnQAI' then 26029::text else null end, true);
+
+
         v_system_adders_c = null;
         if x.system_adders_c is not null then
           select array_agg(lov.id)
@@ -623,7 +677,7 @@ $do$
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28328,v_system_adders_c::text, true);
         end if;
        end loop;
-    raise notice '4 END = %',clock_timestamp();
-    raise notice '4 END total = %',v_total;
+    raise notice 'Residential Property END = %',clock_timestamp();
+    raise notice 'Residential Property Total = %',v_total;
   end
 $do$;

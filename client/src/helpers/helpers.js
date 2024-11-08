@@ -83,15 +83,15 @@ export function getAttachmentSourceId(projectId, ppsId, ppseId, userId, contactI
   //this is a very specific function that is only called by attachment functions to know which id to use as "source"
   //note: the order of these checks is important
   let sourceId, secondaryId;
-  if(null != ppseId) {
+  if(null != ppseId && !isNaN(ppseId)) {
     sourceId = ppseId
     secondaryId = ppsId
   } else {
-    sourceId = null != ppsId ? ppsId :
-      null != projectId ? projectId :
-        null != userId ? userId :
-          null != contactId ? contactId :
-            null != orgId ? orgId : null
+    sourceId = null != ppsId  && !isNaN(ppsId) ? ppsId :
+      null != projectId && !isNaN(projectId) ? projectId :
+        null != userId && !isNaN(userId) ? userId :
+          null != contactId && !isNaN(contactId) ? contactId :
+            null != orgId && !isNaN(contactId) ? orgId : null
   }
   return { sourceId, secondaryId }
 }

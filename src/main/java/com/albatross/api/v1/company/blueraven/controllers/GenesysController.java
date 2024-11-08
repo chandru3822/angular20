@@ -135,16 +135,16 @@ public class GenesysController {
     }
   }
 
-//  @PostMapping(value = "/triggerProcessGenesysContacts")
-//  public ResponseEntity triggerProcessGenesysContacts() {
-//    try {
-//      genesysService.processGenesysContacts();
-//      return ResponseEntity.ok("Success.");
-//    } catch (Exception e) {
-//      String msg = "GENE: Error with process Genesys Contacts: {}";
-//      log.error(msg, e.getMessage());
-//      return ResponseEntity.badRequest().body("Error occurred during process Genesys Contacts");
-//    }
-//  }
+  //@PostMapping(value = "/triggerProcessFive9Contacts/{offset}")
+  //public ResponseEntity triggerProcessFive9Contacts(@PathVariable Long offset) {
+    //try {
+      //five9Service.processMissingFive9Contacts(offset);
+      //return ResponseEntity.ok("Success.");
+    //} catch (Exception e) {
+      //String msg = "GENE: Error with process Missing Five9 Contacts: {}";
+  //    log.error(msg, e.getMessage());
+    //  return ResponseEntity.badRequest().body("Error occurred during process Missing Five9 Contacts");
+    //}
+  //}
 
 }

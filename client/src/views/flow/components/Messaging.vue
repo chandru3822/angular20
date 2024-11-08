@@ -693,7 +693,9 @@ a.chatLink {
   width: 100%;
   margin: 5px 30px 5px 0;
   position: absolute;
-  text-align: right;
-  bottom: 20px;
+  //text-align: right;
+  top: 5px;
+  left: 10px;
+  z-index: 1;
 }
 </style>

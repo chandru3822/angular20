@@ -3,13 +3,11 @@ DO
 $do$
   declare
     s                                       record;
-    v_count                                 bigint;
     v_total                                 bigint;
     v_project_process_step_pricing_id       bigint;
     v_project_process_step_pricing_event_id bigint;
   BEGIN
-    raise notice '3 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'NH Community Builder START = %',clock_timestamp();
     v_total = 0;
     for s in select bpc.id                                                                                         as builder_pricing_id,
                     bpc.active_c,
@@ -45,14 +43,7 @@ $do$
                     left join flow.list_of_value lov2 on lov2.name = bpc.storage_size_c and lov2.parent_id = 25562
                     order by ncc.id
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
-
         if s.is_first_row is true then
           v_project_process_step_pricing_id = null;
           insert into flow.project_process_step (project_id, process_step_id, user_position_id,
@@ -102,7 +93,7 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_pricing_event_id, 2384850, 28583,
                                                  s.wrap_insurance_percent_c::text, true);
       end loop;
-    raise notice '3 END = %',clock_timestamp();
-    raise notice '3 END total = %',v_total;
+    raise notice 'NH Community Builder END = %',clock_timestamp();
+    raise notice 'NH Community Builder Total = %',v_total;
   end
 $do$;

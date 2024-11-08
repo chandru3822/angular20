@@ -3,12 +3,10 @@ DO
 $do$
   declare
     x       record;
-    v_count bigint;
     v_total bigint;
     v_project_process_step_id bigint;
   BEGIN
-    raise notice '6 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Credit Check START = %',clock_timestamp();
     v_total = 0;
     for x in select p.id             as project_id,
                     ccrc.id as credit_check_request_id,
@@ -48,16 +46,13 @@ $do$
                     left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
                     left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713
                     left join flow.list_of_value lov4 on lov4.name = ccrc.lender_c and lov4.parent_id = 25715
+             where ccrc.is_deleted = false
              order by ccrc.account_c,ccrc.credit_check_expiration_date_c
       loop
         v_project_process_step_id = null;
-        v_count = v_count + 1;
+
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
+
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -94,7 +89,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28795, x.lov3_credit_beureu_c_id::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id, 2384850, 28803, x.lov4_lender_c_id::text, true);
       end loop;
-    raise notice '6 END = %',clock_timestamp();
-    raise notice '6 END total = %',v_total;
+    raise notice 'Residential Property Credit Check END = %',clock_timestamp();
+    raise notice 'Residential Property Credit Check Total = %',v_total;
   end
 $do$;

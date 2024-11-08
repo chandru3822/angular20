@@ -1,5 +1,3 @@
-
---this is for brs.ahj_name_c which inserts ahj new home data
 DO
 $do$
     declare
@@ -22,7 +20,10 @@ $do$
         v_builder_permitting_type_c bigint;
         v_mppp_submittal_type_c bigint;
       v_permit_supervisor bigint;
+      v_total bigint;
     BEGIN
+      raise notice 'Start AHJ  = %',clock_timestamp();
+      v_total = 0;
         for x in select a.id,
                         a.name,
                         a.address_c,
@@ -85,26 +86,35 @@ $do$
                         st.abbreviation_c as state_abbreviation_c
                  from brs.ahj_name_c a
                           left join brs.ahj_state_c st on st.id = a.state_c
+                 where lower(a.name) not like '%duplicate%' and
+                       lower(a.name) not like '%delete%'
             loop
                 v_ahj_id = null;
                 v_ahj_new_home_id = null;
+                v_total = v_total + 1;
 
                 --check if there is an existing ahj by name and new home
                 select fa.id, nh.id
                 into v_ahj_id, v_ahj_new_home_id
                 from brs.feat_db_ahj fa
-                         left join brs.feat_db_ahj_new_home nh on nh.ahj_id = fa.id
-                where lower(fa.name) = lower(x.name);
+                    inner join flow.company_state cs on cs.id = fa.company_state_id
+                    inner join flow.state s on s.id = cs.state_id
+                     left join brs.feat_db_ahj_new_home nh on nh.ahj_id = fa.id
+                where lower(fa.name) = lower(x.name)
+                    and s.abbreviation = x.state_abbreviation_c
+                    and fa.nh_migration_id is null;
 
                 --if there is one, then update the migration_id
                 if (v_ahj_id is not null) then
                     update brs.feat_db_ahj
-                        set nh_migration_id = x.id
+                        set nh_migration_id = x.id,
+                            date_modified = now(),
+                            modified_by_id = 2417170
                     where id = v_ahj_id;
                 --if there wasn't an existing ahj then add one
                 else
-                    insert into brs.feat_db_ahj(name, created_by_id, modified_by_id, active, nh_migration_id, company_state_id)
-                    select x.name, 2384850, 2384850, true, x.id,
+                    insert into brs.feat_db_ahj(name, created_by_id, date_created, modified_by_id, active, nh_migration_id, company_state_id)
+                    select x.name, 2384850, now(), 2384850, true, x.id,
                            (select cs.id
                             from flow.company_state cs
                                      inner join flow.state s on s.id = cs.state_id
@@ -325,6 +335,8 @@ $do$
                     end if;
                 end if;
             end loop;
+      raise notice 'End AHJ  = %',clock_timestamp();
+      raise notice 'AHJ Total  = %',v_total;
     end
 $do$;
 
@@ -338,7 +350,11 @@ $do$
         v_submittal_c bigint;
         v_payment_type_c bigint;
         v_buyer_vs_builder_submittals_c bigint;
+      v_total bigint;
     BEGIN
+      raise notice 'Start Utility  = %',clock_timestamp();
+      v_total = v_total + 1;
+
         for x in select a.id,
                         a.name,
                         a.state_c,
@@ -382,17 +398,23 @@ $do$
                 select fa.id
                 into v_utility_id
                 from brs.feat_db_utility fa
-                where lower(fa.name) = lower(x.name);
+                         inner join flow.company_state cs on cs.id = fa.company_state_id
+                         inner join flow.state s on s.id = cs.state_id
+                where lower(fa.name) = lower(x.name)
+                  and s.abbreviation = x.state_c
+                  and fa.nh_migration_id is null;
 
                 --if there is one, then update the migration_id
                 if (v_utility_id is not null) then
                     update brs.feat_db_utility
-                    set nh_migration_id = x.id
+                    set nh_migration_id = x.id,
+                        date_modified = now(),
+                        modified_by_id = 2417170
                     where id = v_utility_id;
                 --if there wasn't an existing utility then add one
                 else
-                    insert into brs.feat_db_utility(name, created_by_id, modified_by_id, nh_migration_id, company_state_id, active)
-                    select x.name, 2384850, 2384850, x.id,
+                    insert into brs.feat_db_utility(name, created_by_id, date_created, modified_by_id, nh_migration_id, company_state_id, active)
+                    select x.name, 2384850, now(), 2384850, x.id,
                            --in ahj_utility_c, state_c is the state abbreviation, use that to match to the company state id for company_id = 3
                            (select cs.id
                             from flow.company_state cs
@@ -473,6 +495,8 @@ $do$
 
                 end if;
             end loop;
+        raise notice 'End Utility  = %',clock_timestamp();
+        raise notice 'Utility Total  = %',v_total;
     end
 $do$;
 

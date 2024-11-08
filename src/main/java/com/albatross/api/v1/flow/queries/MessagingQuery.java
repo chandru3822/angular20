@@ -469,7 +469,7 @@ select u.user_id, outbound_message from users u
     where notification_topic_id = :notificationTopicId
       and case when :userId::int is not null then user_id = :userId else true end
       and (metadata->>'threadId')::bigint = :threadId
-      and case when :smsTeamId:int is not null then (metadata->>'smsTeamId')::bigint = :smsTeamId else true end
+      and case when :smsTeamId::bigint is not null then (metadata->>'smsTeamId')::bigint = :smsTeamId::bigint else true end
       and message_read_tsz is null
     """;
 

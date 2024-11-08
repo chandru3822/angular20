@@ -111,7 +111,7 @@ export const useUserStore = defineStore('user', {
       )
     },
     userHasFeatureAccessLevel(featureCode, accessCode) {
-      // this function only returns true if the user a specific access level to a specific feature (or is a system admin)
+      // this function only returns true if the user (via user permissions or position permissions) a specific access level to a specific feature (or is a system admin)
       if (this.isSystemAdmin) {
         return true
       }

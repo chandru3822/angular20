@@ -428,7 +428,10 @@ limit 1
   public final static String projectGetAvailableTypes = """
       select at.id,
                    at.attachment_type,
-                   at.archived
+                   at.archived,
+                   (select coalesce(array_to_json(array_agg(ocat.object_category_id)), '[]')
+                    from flow.object_category_attachment_type ocat
+                    where ocat.attachment_type_id = at.id and ocat.archived is false)                    as object_category_ids
             from flow.attachment_type at
             where at.archived is not true
               and at.company_id = :companyId
@@ -509,7 +512,10 @@ order by at.attachment_type
   public final static String contactGetAvailableTypes = """
     select at.id,
                  at.attachment_type,
-                 at.archived
+                 at.archived,
+                 (select coalesce(array_to_json(array_agg(ocat.object_category_id)), '[]')
+                    from flow.object_category_attachment_type ocat
+                    where ocat.attachment_type_id = at.id and ocat.archived is false)                    as object_category_ids
           from flow.attachment_type at
           where at.archived is not true
             and at.company_id = :companyId
@@ -581,6 +587,7 @@ order by at.attachment_type
       order by at.attachment_type
     """;
 
+    //language=PostgreSQL
   public final static String contactAddType = """
 with cfg as (
     insert into flow.contact_attachment_type
@@ -595,15 +602,16 @@ with cfg as (
          insert
              into flow.object_category_attachment_type
                  (object_category_id, attachment_type_id, created_by_id, modified_by_id)
-                 select t.id, cfg.id, cfg.created_by_id, cfg.modified_by_id
+                 select t.id, cfg.attachment_type_id, cfg.created_by_id, cfg.modified_by_id
                  from cfg
                           cross join (select unnest(:objectCategoryIds) as id) t
                  on conflict (object_category_id, attachment_type_id) do update
                      set modified_by_id = excluded.modified_by_id,
                          date_modified = now()
                  returning *)
-select distinct attachment_type_id
-from object_categories
+select cfg.id --this needs to return project_attachment_type.id, not the attachment_type_id, and this is dumb
+from object_categories oc
+inner join cfg on cfg.attachment_type_id = oc.attachment_type_id and cfg.archived is false
 limit 1
     """;
 
@@ -622,6 +630,18 @@ limit 1
                where company_id = :companyId and archived is false))
     """;
 
+    //language=PostgreSQL
+    public final static String archiveUnusedObjectCategories = """
+        update flow.object_category_attachment_type ocat
+            set archived = true,
+                modified_by_id = :createdById,
+                date_modified = now()
+        from flow.object_category oc
+        where oc.id = ocat.object_category_id
+            and ocat.object_category_id not in (select unnest(:objectCategoryIds))
+              and oc.object_type_id = :objectTypeId;
+  """;
+
   //language=PostgreSQL
   public final static String projectAddType = """
 with cfg as (
@@ -637,15 +657,17 @@ with cfg as (
          insert
              into flow.object_category_attachment_type
                  (object_category_id, attachment_type_id, created_by_id, modified_by_id)
-                 select t.id, cfg.id, cfg.created_by_id, cfg.modified_by_id
+                 select t.id, cfg.attachment_type_id, cfg.created_by_id, cfg.modified_by_id
                  from cfg
                           cross join (select unnest(:objectCategoryIds) as id) t
                  on conflict (object_category_id, attachment_type_id) do update
                      set modified_by_id = excluded.modified_by_id,
-                         date_modified = now()
+                         date_modified = now(),
+                         archived = false
                  returning *)
-select distinct attachment_type_id
-from object_categories
+select cfg.id --this needs to return project_attachment_type.id, not the attachment_type_id, and this is dumb
+from object_categories oc
+inner join cfg on cfg.attachment_type_id = oc.attachment_type_id and cfg.archived is false
 limit 1
     """;
 

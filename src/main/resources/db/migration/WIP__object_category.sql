@@ -373,27 +373,27 @@ CREATE INDEX if not exists contact_full_name_search_idx ON flow.contact (contact
 -- CREATE unique INDEX if not exists occfg_object_category_id_custom_field_group_id_idx ON flow.object_category_custom_field_group (object_category_id, custom_field_group_id);
 
 
-insert into flow.object_category_custom_field_group(object_category_id, custom_field_group_id, created_by_id,
-                                                    modified_by_id)
-  (select oc.id, cfg.id, 2384850, 2384850
-   from flow.custom_field_group cfg
-          cross join flow.object_category as oc
-   where cfg.company_object_type_id = 1
-     and cfg.archived is false
-     and oc.object_type_id = 1
-     and oc.object_category_code in ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'RETROFIT', 'RESIDENTIAL_STANDARD'))
-on conflict do nothing;
-
-insert into flow.object_category_custom_field_group(object_category_id, custom_field_group_id, created_by_id,
-                                                    modified_by_id)
-  (select oc.id, cfg.id, 2384850, 2384850
-   from flow.custom_field_group cfg
-          cross join flow.object_category as oc
-   where cfg.company_object_type_id = 2
-     and cfg.archived is false
-     and oc.object_type_id = 2
-     and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER', 'PRIMARY_HOMEOWNER'))
-on conflict do nothing;
+-- insert into flow.object_category_custom_field_group(object_category_id, custom_field_group_id, created_by_id,
+--                                                     modified_by_id)
+--   (select oc.id, cfg.id, 2384850, 2384850
+--    from flow.custom_field_group cfg
+--           cross join flow.object_category as oc
+--    where cfg.company_object_type_id = 1
+--      and cfg.archived is false
+--      and oc.object_type_id = 1
+--      and oc.object_category_code in ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'RETROFIT', 'RESIDENTIAL_STANDARD'))
+-- on conflict do nothing;
+--
+-- insert into flow.object_category_custom_field_group(object_category_id, custom_field_group_id, created_by_id,
+--                                                     modified_by_id)
+--   (select oc.id, cfg.id, 2384850, 2384850
+--    from flow.custom_field_group cfg
+--           cross join flow.object_category as oc
+--    where cfg.company_object_type_id = 2
+--      and cfg.archived is false
+--      and oc.object_type_id = 2
+--      and oc.object_category_code in ('BUILDER_NEW_HOMES_BUILDER', 'PRIMARY_HOMEOWNER'))
+-- on conflict do nothing;
 
 
 -- CREATE TABLE if not exists flow.object_category_attachment_type
@@ -420,15 +420,15 @@ on conflict do nothing;
 
 -- CREATE unique INDEX if not exists ocat_object_category_attachment_type_idx ON flow.object_category_attachment_type (object_category_id, attachment_type_id);
 
-insert into flow.object_category_attachment_type(object_category_id, attachment_type_id, created_by_id, modified_by_id)
-  (select oc.id, at2.id, 2384850, 2384850
-   from flow.attachment_type at2
-          cross join flow.object_category as oc
-   where at2.company_id = 3
-     and at2.archived is false
-     and oc.object_type_id = 1
-     and oc.object_category_code in ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'RETROFIT', 'RESIDENTIAL_STANDARD'))
-on conflict do nothing;
+-- insert into flow.object_category_attachment_type(object_category_id, attachment_type_id, created_by_id, modified_by_id)
+--   (select oc.id, at2.id, 2384850, 2384850
+--    from flow.attachment_type at2
+--           cross join flow.object_category as oc
+--    where at2.company_id = 3
+--      and at2.archived is false
+--      and oc.object_type_id = 1
+--      and oc.object_category_code in ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'RETROFIT', 'RESIDENTIAL_STANDARD'))
+-- on conflict do nothing;
 
 
 -- CREATE TABLE if not exists flow.object_category_company_project_status_type
@@ -455,18 +455,18 @@ on conflict do nothing;
 --
 -- CREATE unique INDEX if not exists occpst_object_category_id_project_status_type_id_idx ON flow.object_category_company_project_status_type (object_category_id, company_project_status_type_id);
 
-insert into flow.object_category_company_project_status_type(object_category_id, company_project_status_type_id,
-                                                             created_by_id, modified_by_id)
-  (select oc.id, cpst.id, 2384850, 2384850
-   from flow.company_project_status_type as cpst
-          cross join flow.object_category as oc
-   where cpst.company_id = 3
-     and cpst.archived is false
-     and oc.object_type_id = 1
-     and oc.object_category_code in
-         ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'COMMUNITY', 'RETROFIT', 'RESIDENTIAL_STANDARD', 'NEW_HOME',
-          'BUILDER_NEW_HOMES_BUILDER'))
-on conflict do nothing;
+-- insert into flow.object_category_company_project_status_type(object_category_id, company_project_status_type_id,
+--                                                              created_by_id, modified_by_id)
+--   (select oc.id, cpst.id, 2384850, 2384850
+--    from flow.company_project_status_type as cpst
+--           cross join flow.object_category as oc
+--    where cpst.company_id = 3
+--      and cpst.archived is false
+--      and oc.object_type_id = 1
+--      and oc.object_category_code in
+--          ('REMOVAL_REINSTALLATION', 'BATTERY_ONLY', 'COMMUNITY', 'RETROFIT', 'RESIDENTIAL_STANDARD', 'NEW_HOME',
+--           'BUILDER_NEW_HOMES_BUILDER'))
+-- on conflict do nothing;
 
 
 --proposal template object categories
@@ -484,17 +484,17 @@ on conflict do nothing;
 -- );
 
 
-insert into brs.object_category_proposal_template (object_category_id, proposal_template_id)
-select oc.id, pt.id
-from brs.proposal_template pt
-       cross join flow.object_category oc
-where pt.id = 1
-and oc.object_type_id = 1
-on conflict do nothing;
-
-update brs.object_category_proposal_template
-set proposal_template_id = 2
-where object_category_id = 6;
+-- insert into brs.object_category_proposal_template (object_category_id, proposal_template_id)
+-- select oc.id, pt.id
+-- from brs.proposal_template pt
+--        cross join flow.object_category oc
+-- where pt.id = 1
+-- and oc.object_type_id = 1
+-- on conflict do nothing;
+--
+-- update brs.object_category_proposal_template
+-- set proposal_template_id = 2
+-- where object_category_id = 6;
 
 -- alter table flow.project
 --   add column if not exists parent_id bigint;
@@ -663,14 +663,14 @@ where object_category_id = 6;
 --   drop column if exists allow_contact_initiate;
 
 --add the flow.copy_from_parent_to_child to company_process (i added the db_function record in prod so it doesn't get lost on data dump)
-insert into flow.company_function(company_function_name, db_function_id, archived, company_id)
-select df.display_name, df.id, df.archived, 3
-from flow.db_function df
-where df.function_name = 'flow.copy_from_parent_to_child'
-  and not exists (select cf.id
-                  from flow.company_function cf
-                         inner join flow.db_function df2 on cf.db_function_id = df2.id
-                  where df.function_name = 'flow.copy_from_parent_to_child');
+-- insert into flow.company_function(company_function_name, db_function_id, archived, company_id)
+-- select df.display_name, df.id, df.archived, 3
+-- from flow.db_function df
+-- where df.function_name = 'flow.copy_from_parent_to_child'
+--   and not exists (select cf.id
+--                   from flow.company_function cf
+--                          inner join flow.db_function df2 on cf.db_function_id = df2.id
+--                   where df.function_name = 'flow.copy_from_parent_to_child');
 
 --changing how this is done
 -- drop table if exists flow.company_process_child_company_process;
@@ -734,15 +734,15 @@ where df.function_name = 'flow.copy_from_parent_to_child'
 
 -- CREATE INDEX if not exists lov_name_idx ON flow.list_of_value (name);
 
-
-drop trigger if exists list_of_value_name_change_trg on flow.list_of_value;
-
-alter table flow.list_of_value
-  alter column name type varchar(500) using name::varchar(500);
-
-CREATE TRIGGER list_of_value_name_change_trg
-  after update
-  ON flow.list_of_value
-  FOR EACH ROW
-  when (old.name != new.name)
-EXECUTE PROCEDURE flow.list_of_value_name_change();
+--
+-- drop trigger if exists list_of_value_name_change_trg on flow.list_of_value;
+--
+-- alter table flow.list_of_value
+--   alter column name type varchar(500) using name::varchar(500);
+--
+-- CREATE TRIGGER list_of_value_name_change_trg
+--   after update
+--   ON flow.list_of_value
+--   FOR EACH ROW
+--   when (old.name != new.name)
+-- EXECUTE PROCEDURE flow.list_of_value_name_change();

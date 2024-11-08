@@ -33,11 +33,13 @@ BEGIN
                   2495780::bigint
                 else
                   ptc.PROJECT_TASK_C_assigned_to_c end as PROJECT_TASK_C_assigned_to_c,
+      concat(su.first_name,' ',su.email) as assigned_to_c_name,
            lov1.id as lov1_project_priority_c_id,
            lov2.id as lov2_role_assignment_c_id,
            lov3.id as lov3_task_path_type_c_id,
            lov4.id as lov4_reason_levels_c_id
     from brs.project_task_c ptc
+           left join brs.sp_user su on su.id = ptc.assigned_to_c
     left join flow.list_of_value lov1 on lov1.name = ptc.project_priority_c and lov1.parent_id = 25516
     left join flow.list_of_value lov2 on lov2.name = ptc.role_assignment_c  and lov2.parent_id = 25733
     left join flow.list_of_value lov3 on lov3.name = ptc.task_path_type_c and lov3.parent_id = 25735
@@ -61,6 +63,7 @@ BEGIN
               null, null, 1,x.id)
       returning id into v_project_process_step_event_id;
 
+      perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29931, x.assigned_to_c_name::text,true);
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28896, x.name::text,true);
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28898, x.comment_c::text,true);
       perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28903, x.PROJECT_TASK_C_assigned_to_c::text,true);

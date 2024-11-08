@@ -607,7 +607,8 @@ const handleNewRequest = async (ai, useExisting) => {
     'blueraven'
   )
 
-  if (data?.approved) {
+  //per lowry dont show unapproved zip message if it is a New Home project
+  if (data?.approved || project.value.objectCategoryId === 6) {
     if(ai) {
       handleAIRequest(useExisting)
     } else {
@@ -687,7 +688,7 @@ const syncAuroraDesignDetails = async () => {
       //sync updates the pps status to complete and grabs assets from Aurora and uploads them to our side
       // let designId = "ba92c16d-b674-464d-a220-3dd0a0b4daf8" <--use to test a design that for sure has the right asset you need
       await postRequest(
-        `/proposal/pps/${activeDesign.value.projectProcessStepId}/design/${activeDesign.value?.designId}/sync`,
+        `/proposal/pps/${activeDesign.value.projectProcessStepId}/design/${activeDesign.value?.designId}/${activeDesign.value.auroraProjectId}/sync`,
         {},
         'blueraven'
       )

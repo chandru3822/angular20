@@ -188,7 +188,7 @@ public class AttachmentTypeService {
       case EVENT -> AttachmentTypeQuery.eventGetAvailableTypes;
       default -> throw new ApiException("Unsupported attachment type");
     };
-    return sqlCache.queryBySql(sql, params, ObjectTypeAttachmentType.class);
+    return sqlCache.queryBySql(sql, params, new ObjectTypeAttachmentTypeMapper<>(ObjectTypeAttachmentType.class, om));
   }
 
   public Optional<ObjectTypeAttachmentType> addType(ObjectTypeAttachmentType objectTypeAttachmentType, ObjectType objectType) {
@@ -203,8 +203,16 @@ public class AttachmentTypeService {
       params.put("objectCategoryIds", sqlArrayService.createSqlArrayOfType("int", objectTypeAttachmentType.getObjectCategoryIds()));
 
       Long id = switch (objectType) {
-        case PROJECT -> sqlCache.queryForObjectBySql(AttachmentTypeQuery.projectAddType, params, Long.class);
-        case CONTACT -> sqlCache.queryForObjectBySql(AttachmentTypeQuery.contactAddType, params, Long.class);
+        case PROJECT -> {
+            params.put("objectTypeId", 1);
+            sqlCache.updateBySql(AttachmentTypeQuery.archiveUnusedObjectCategories, params);
+            yield sqlCache.queryForObjectBySql(AttachmentTypeQuery.projectAddType, params, Long.class);
+        }
+        case CONTACT -> {
+            params.put("objectTypeId", 2);
+            sqlCache.updateBySql(AttachmentTypeQuery.archiveUnusedObjectCategories, params);
+            yield sqlCache.queryForObjectBySql(AttachmentTypeQuery.contactAddType, params, Long.class);
+        }
         case USER -> sqlCache.updateBySqlReturningId(AttachmentTypeQuery.userAddType, params, "id").longValue();
         case ORGANIZATION -> sqlCache.updateBySqlReturningId(AttachmentTypeQuery.orgAddType, params, "id").longValue();
         case EVENT -> sqlCache.updateBySqlReturningId(AttachmentTypeQuery.eventAddType, params, "id").longValue();
@@ -267,6 +275,9 @@ public class AttachmentTypeService {
     params.put("allowUpload", false);
     params.put("focused", false);
     params.put("linkable", false);
+
+    //this is probably wrong but i am fixing an error
+    params.put("objectCategoryId", null);
 
     //because we don't have to pass in any of the 3 variables, this AttachmentTypeQuery.projectGetAssignedTypes should return them all
     String sql = null != ppsEventId

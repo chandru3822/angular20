@@ -5,71 +5,46 @@ $do$
     x                               record;
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
-    v_count bigint;
     v_total bigint;
-    v_owner_id bigint;
-    v_created_by_id bigint;
   BEGIN
-    raise notice '9 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Cases 1 START = %',clock_timestamp();
     v_total = 0;
     for x in select
-               c.id as case_id,
+               case_id,
                c.sub_categories_c,
                c.subject,
                c.jira_ticket_number_c,
                c.resolution_comment_c,
-               p.id as project_id,
-               lov1.id as lov1_category_c_id,
-               lov3.id as lov3_status_id,
+               project_id,
+               lov1_category_c_id,
+               lov3_status_id,
                c.record_type_id,
-               c.case_number as case_number,
+               case_number,
                c.owner_id,
                c.ORIGIN,
                c.created_date,
                c.closed_date,
-               lov4.id as lov4_resolution_c_id,
+               lov4_resolution_c_id,
                c.description,
                c.commitment_date_c,
                c.created_by_id,
-               lov5.id as lov5_case_differentiator_c_id,
-               lov6.id as lov6_location_c_id,
+               lov5_case_differentiator_c_id,
+               lov6_location_c_id,
                c.requested_due_date_c,
                c.shipper_tracking_number_c,
-               lov7.id as lov7_type_id,
-               lov8.id as lov8_origin_id,
-               case when c.case_created_by_id is null and c.created_by_id is not null then
-                      2495780::bigint
-                    else
-                      c.case_created_by_id end as case_created_by_id,
-               case when c.case_owner_id is null and c.owner_id is not null then
-                      2495780::bigint
-                    else
-                      c.case_owner_id end as case_owner_id
-
-             from brs."case" c
-                    inner join flow.project p on c.residential_project_c = p.nw_migration_id
-                    left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
-                    left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
-                    left join flow.list_of_value lov4 on lov4.name = c.resolution_c and lov4.parent_id =25939
-                    left join flow.list_of_value lov5 on lov5.name = c.case_differentiator_c and lov5.parent_id =25960
-                    left join flow.list_of_value lov6 on lov6.name = c.location_c and lov6.parent_id =25962
-                    left join flow.list_of_value lov7 on lov7.name = c.type and lov7.parent_id =25931
-                    left join flow.list_of_value lov8 on lov8.name = c.origin and lov8.parent_id =25935
-
-
+               lov7_type_id,
+               lov8_origin_id,
+               lov9_sub_categories_id,
+               case_created_by_id,
+               case_owner_id,
+               created_by_id_name,
+              owner_id_name
+             from brs.sp_case_vw1 c
       loop
-        v_count = v_count + 1;
+
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_event_id = null;
         v_project_process_step_id = null;
-
-
 
         select id
         into v_project_process_step_id
@@ -96,8 +71,11 @@ $do$
                 null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29949, x.created_by_id_name::text, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29950, x.owner_id_name::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29237, x.sub_categories_c::text, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29878, x.lov9_sub_categories_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28350, x.subject::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28731, x.lov3_status_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28352, x.jira_ticket_number_c::text, true);
@@ -105,20 +83,20 @@ $do$
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29786,
                                                  case when x.record_type_id = '01280000000379rAAA' then 25928::text
-                                                      when x.record_type_id = '01280000000379vAAA' then 25929::text
-                                                   --                                                                                                        when x.record_type_id = '01280000000379uAAA' then 25930::text
---                                                                                                        when x.record_type_id = '01234000000M4kLAAS' then 25983::text
---                                                                                                        when x.record_type_id = '01280000000Q1s0AAC' then 25984::text
---                                                                                                        when x.record_type_id = '01280000000Q7JmAAK' then 25985::text
---                                                                                                        when x.record_type_id = '0122T000000BqOYQA0' then 25986::text
---                                                                                                        when x.record_type_id = '0122T000000HtNdQAK' then 25987::text
---                                                                                                        when x.record_type_id = '01234000000UQNbAAO' then 25988::text
---                                                                                                        when x.record_type_id = '01234000000QEUwAAO' then 25989::text
---                                                                                                        when x.record_type_id = '012800000003M3lAAE' then 25990::text
+                                                                   when x.record_type_id = '01280000000379vAAA' then 25929::text
+                                                                   when x.record_type_id = '01280000000379uAAA' then 25930::text
+                                                                   when x.record_type_id = '01234000000M4kLAAS' then 25983::text
+                                                                   when x.record_type_id = '01280000000Q1s0AAC' then 25984::text
+                                                                   when x.record_type_id = '01280000000Q7JmAAK' then 25985::text
+                                                                   when x.record_type_id = '0122T000000BqOYQA0' then 25986::text
+                                                                   when x.record_type_id = '0122T000000HtNdQAK' then 25987::text
+                                                                   when x.record_type_id = '01234000000UQNbAAO' then 25988::text
+                                                                   when x.record_type_id = '01234000000QEUwAAO' then 25989::text
+                                                                   when x.record_type_id = '012800000003M3lAAE' then 25990::text
                                                       else null end, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29787, x.case_number::text, true);
-          perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29788, x.case_owner_id::text, true);
-          perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29797, x.case_created_by_id::text, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29788, x.case_owner_id::text, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29797, x.case_created_by_id::text, true);
 
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29790, x.lov8_origin_id::text, true);
@@ -136,8 +114,8 @@ $do$
 
 
       end loop;
-    raise notice '9 END = %',clock_timestamp();
-    raise notice '9 END total = %',v_total;
+    raise notice 'Residential Property Cases 1 END = %',clock_timestamp();
+    raise notice 'Residential Property Cases 1 Total = %',v_total;
   end
 $do$;
 
@@ -148,64 +126,44 @@ $do$
     x                               record;
     v_project_process_step_id       bigint;
     v_project_process_step_event_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '10 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Cases 2 START = %',clock_timestamp();
     v_total = 0;
-    for x in select c.id as case_id,
+    for x in select case_id,
                     c.sub_categories_c,
                     c.subject,
                     c.jira_ticket_number_c,
-                    c.resolution_comment_c, p.id as project_id,
-                    lov1.id as lov1_category_c_id,
-                    lov3.id as lov3_status_id,
+                    c.resolution_comment_c,
+                    c.project_id,
+                    lov1_category_c_id,
+                    lov3_status_id,
                     c.record_type_id,
-                    c.case_number as case_number,
+                    case_number,
                     c.owner_id,
                     c.ORIGIN,
                     c.created_date,
                     c.closed_date,
-                    lov4.id as lov4_resolution_c_id,
+                    lov4_resolution_c_id,
                     c.description,
                     c.commitment_date_c,
                     c.created_by_id,
-                    lov5.id as lov5_case_differentiator_c_id,
-                    lov6.id as lov6_location_c_id,
+                    lov5_case_differentiator_c_id,
+                    lov6_location_c_id,
                     c.requested_due_date_c,
                     c.shipper_tracking_number_c,
-                    lov7.id as lov7_type_id,
-                    lov8.id as lov8_origin_id,
-                    case when c.case_created_by_id is null and c.created_by_id is not null then
-                           2495780::bigint
-                         else
-                           c.case_created_by_id end as case_created_by_id,
-                    case when c.case_owner_id is null and c.owner_id is not null then
-                           2495780::bigint
-                         else
-                           c.case_owner_id end as case_owner_id
-             from brs."case" c
-                    inner join flow.contact c1 on c1.nw_migration_id = c.account_id
-                    inner join flow.project p on p.contact_id = c1.id
-                    left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id =25546
-                    left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id =25684
-                    left join flow.list_of_value lov4 on lov4.name = c.resolution_c and lov4.parent_id =25939
-                    left join flow.list_of_value lov5 on lov5.name = c.case_differentiator_c and lov5.parent_id =25960
-                    left join flow.list_of_value lov6 on lov6.name = c.location_c and lov6.parent_id =25962
-                    left join flow.list_of_value lov7 on lov7.name = c.type and lov7.parent_id =25931
-                    left join flow.list_of_value lov8 on lov8.name = c.origin and lov8.parent_id =25935
-             where c.account_id is not null and c.residential_project_c is null
+                    lov7_type_id,
+                    lov8_origin_id,
+                    lov9_sub_categories_id,
+                     case_created_by_id,
+                     case_owner_id,
+                    created_by_id_name,
+                    owner_id_name
+             from brs.sp_case_vw c
 
       loop
-        v_count = v_count + 1;
+
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          raise notice 'v_total = %',v_total;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_event_id = null;
         v_project_process_step_id = null;
 
@@ -234,8 +192,12 @@ $do$
                 null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29949, x.created_by_id_name::text, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29950, x.owner_id_name::text, true);
+
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28351, x.lov1_category_c_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29237, x.sub_categories_c::text, true);
+        perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29878, x.lov9_sub_categories_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28350, x.subject::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28731, x.lov3_status_id::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 28352, x.jira_ticket_number_c::text, true);
@@ -243,16 +205,16 @@ $do$
 
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29786,
                                                  case when x.record_type_id = '01280000000379rAAA' then 25928::text
-                                                      when x.record_type_id = '01280000000379vAAA' then 25929::text
-                                                   --                                                                                                        when x.record_type_id = '01280000000379uAAA' then 25930::text
---                                                                                                        when x.record_type_id = '01234000000M4kLAAS' then 25983::text
---                                                                                                        when x.record_type_id = '01280000000Q1s0AAC' then 25984::text
---                                                                                                        when x.record_type_id = '01280000000Q7JmAAK' then 25985::text
---                                                                                                        when x.record_type_id = '0122T000000BqOYQA0' then 25986::text
---                                                                                                        when x.record_type_id = '0122T000000HtNdQAK' then 25987::text
---                                                                                                        when x.record_type_id = '01234000000UQNbAAO' then 25988::text
---                                                                                                        when x.record_type_id = '01234000000QEUwAAO' then 25989::text
---                                                                                                        when x.record_type_id = '012800000003M3lAAE' then 25990::text
+                                                                                                       when x.record_type_id = '01280000000379vAAA' then 25929::text
+                                                                                                       when x.record_type_id = '01280000000379uAAA' then 25930::text
+                                                                                                       when x.record_type_id = '01234000000M4kLAAS' then 25983::text
+                                                                                                       when x.record_type_id = '01280000000Q1s0AAC' then 25984::text
+                                                                                                       when x.record_type_id = '01280000000Q7JmAAK' then 25985::text
+                                                                                                       when x.record_type_id = '0122T000000BqOYQA0' then 25986::text
+                                                                                                       when x.record_type_id = '0122T000000HtNdQAK' then 25987::text
+                                                                                                       when x.record_type_id = '01234000000UQNbAAO' then 25988::text
+                                                                                                       when x.record_type_id = '01234000000QEUwAAO' then 25989::text
+                                                                                                       when x.record_type_id = '012800000003M3lAAE' then 25990::text
                                                       else null end, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29787, x.case_number::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29788, x.case_owner_id::text, true);
@@ -270,7 +232,7 @@ $do$
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29801, x.shipper_tracking_number_c::text, true);
         perform flow.set_pps_event_cfv_no_checks(v_project_process_step_event_id, 2384850, 29851, x.lov7_type_id::text, true);
       end loop;
-    raise notice '10 END = %',clock_timestamp();
-    raise notice '10 END total = %',v_total;
+    raise notice 'Residential Property Cases 2 END = %',clock_timestamp();
+    raise notice 'Residential Property Cases 2 Total = %',v_total;
   end
 $do$;

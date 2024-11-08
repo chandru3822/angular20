@@ -153,7 +153,7 @@
       <span class="bold error-text">WARNING:</span> This cannot be undone. Are you sure you want to delete this contact?
     </ConfirmationDialog>
     <!--    modal to prompt contact address update -->
-    <ConfirmationDialog v-if="contact?.projects?.length > 0"  :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
+    <ConfirmationDialog v-if="addressUpdateModalObjectCategoryIds.includes(contact.objectCategoryId) && contact?.projects?.length > 0"  :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
                         @cancel="cancelUpdateProject" @confirm="updateProjectInfo"
     >
       <template v-slot:title>Update Project Information</template>
@@ -244,14 +244,14 @@
               >
                 <template v-slot:activator="{ on: menu }">
                   <v-tooltip top
-                             :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
+                             :disabled="(null != contact.firstName || null != contact.lastName) && ((null != contact.owner && null != contact.owner.userId) || contact.objectCategoryId === 7)">
                     <template v-slot:activator="{ on: tooltip }">
                       <div v-on="{ ...tooltip }" class="d-inline-block">
                         <a-btn
                             :activation-handler="{ ...menu }"
                             variant="text"
                             small
-                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                            :disabled="(!contact.firstName && !contact.lastName) || ((!contact.owner || !contact.owner.userId) && contact.objectCategoryId !== 7)"
                             color="primary"
                             id="qa-create-project-button"
                             class="px-0"
@@ -261,7 +261,7 @@
                       </div>
                     </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
-                    <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                    <span v-else-if="(!contact.owner || !contact.owner.userId) && contact.objectCategoryId !== 7">Requires Owner</span>
                   </v-tooltip>
                 </template>
                 <v-card class="pa-5 body-large">
@@ -367,7 +367,7 @@
                       </div>
                     </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
-                    <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                    <span v-else-if="(!contact.owner || !contact.owner.userId) && contact.objectCategoryId !== 7">Requires Owner</span>
                   </v-tooltip>
                 </template>
                 <v-card class="pa-5 body-large">
@@ -633,6 +633,8 @@ const store = vueInstance.$store
 
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
+//keeping this an array cuz they keep changing it
+const addressUpdateModalObjectCategoryIds = [8]
 const states = ref([])
 const countries = ref([])
 const showEditModal = ref(false)
@@ -1025,17 +1027,18 @@ const getAvailableProcesses = async() => {
   try {
     processesLoading.value = true
     const {data, status} = await getRequest(`/processes/contact/${contactId.value}`)
-    availableProcesses.value = data
     if(!userStore.isSystemAdmin) { //7 Oaks admin should be able to see all processes
-      availableProcesses.value = availableProcesses.value.filter(p => {
+      availableProcesses.value = data?.filter(p => {
         for (let id of userPositionIds.value) {
           if (!p.denyListPositions.find(dlp => dlp.positionId === id)) {
             return p;
           }
         }
       })
+    } else {
+      availableProcesses.value = data
     }
-    selectedProcess.value = data?.length === 1 ? data[0] : {}
+    selectedProcess.value = availableProcesses.value?.length === 1 ? availableProcesses.value[0] : {}
     processesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)

@@ -4,18 +4,15 @@ $do$
   declare
     x record;
     v_project_process_step_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    v_count = 0;
     v_total = 0;
-    raise notice '19 START = %',clock_timestamp();
+    raise notice 'Residential Property Lease Payment START = %',clock_timestamp();
     for x in select
 
                lpc.US_Cash_Grant_Submission_Date_c,
                lpc.X_1603_Notes_c,
                lpc.X_1603_Placed_In_Service_Submission_Date_c,
-
                lpc.X_1603_Status_Date_c,
                lpc.Acceptance_Rcvd_c,
                lpc.Acceptance_Apprvd_c,
@@ -81,7 +78,6 @@ $do$
                lpc.Dealer_Fee_Total_old_c,
                lpc.Dealer_Rebate_Reservation_Confirmation_c,
                lpc.Des_Plan_Apprvd_c,
-
                lpc.Devco_Batch_1_c,
                lpc.Devco_Batch_2_c,
                lpc.Devco_Batch_3_c,
@@ -91,9 +87,8 @@ $do$
                lpc.Expected_Rebate_old_c,
                lpc.Expiration_Date_c,
                lpc.Fair_Market_Value_acctg_c,
-               lpc.lease_payment_c_Final_Permits_Entered_By_c,
+              -- lpc.lease_payment_c_Final_Permits_Entered_By_c,
                lpc.Fin_Permits_Rcvd_c,
-
                lpc.Financier_Change_Date_c,
                lpc.Financing_Completion_Payment_c,
                lpc.Financing_Prepayment_c,
@@ -136,15 +131,12 @@ $do$
                lpc.Intrcnct_Ltr_Rcvd_c,
                lpc.Intrcnct_Pymnt_Apprvd_c,
                lpc.Invoice_Admin_c,
-               lpc.lease_payment_c_invoice_admin_2_c,
+               --lpc.lease_payment_c_invoice_admin_2_c,
                lpc.Invoice_Document_Email_c,
                lpc.Last_Install_Doc_Submission_c,
                lpc.Last_Interconnect_Doc_Submission_c,
-
-
                lpc.Lease_Change_Notes_c,
                lpc.Lease_Cost_c,
-
                lpc.Mat_Inv_Amount_c,
                lpc.Mat_Inv_Apprvd_c,
                lpc.Mat_Inv_Lien_Waiver_c,
@@ -156,7 +148,6 @@ $do$
                lpc.Note_to_Dealer_Final_c,
                lpc.Note_to_Dealer_Origination_c,
                lpc.Notice_to_Proceed_Sent_c,
-
                lpc.LPS_Notes_c,
                lpc.Partner_Oracle_Vendor_Email_c,
                lpc.Payment_Received_c,
@@ -188,8 +179,6 @@ $do$
                lpc.purchase_sun_power_mezz_c,
                lpc.Purchase_TE_Cash_c,
                lpc.Pymnt_Cert_Month_c,
-
-
                lpc.Rebate_Reserved_c,
                lpc.rev_rec_entry_date_c,
                lpc.Sales_Tax_c,
@@ -208,15 +197,12 @@ $do$
                lpc.SP_Invoice_Rcvd_c,
                lpc.spvt_case_to_sun_power_c,
                lpc.spvt_measurement_date_c,
-
                lpc.SPVT_Result_Pass_Date_c,
                lpc.SREC_Financier_c,
                lpc.SREC_Financiers_c,
-
                lpc.Substitute_Report_Submitted_Date_c,
                lpc.Sales_order_number_c,
                lpc.TAN_c,
-
                lpc.Tranche_Notes_c,
                lpc.id,
                lpc.Uncond_Fin_LW_Approved_c,
@@ -230,11 +216,11 @@ $do$
                     case when lpc.lease_payment_c_invoice_admin_2_c is null and lpc.invoice_admin_2_c is not null then
                            2495780::bigint
                          else
-                           lease_payment_c_invoice_admin_2_c end as lease_payment_c_invoice_admin_2_c,
+                           lpc.lease_payment_c_invoice_admin_2_c end as lease_payment_c_invoice_admin_2_c,
                     case when lpc.lease_payment_c_Final_Permits_Entered_By_c is null and lpc.Final_Permits_Entered_By_c is not null then
                            2495780::bigint
                          else
-                           lease_payment_c_Final_Permits_Entered_By_c end as lease_payment_c_Final_Permits_Entered_By_c,
+                           lpc.lease_payment_c_Final_Permits_Entered_By_c end as lease_payment_c_Final_Permits_Entered_By_c,
                     p.id as project_id,
                     lov1.id as lov1_X1603_Financier_c,
                     lov2.id as lov2_X1603_Status_c,
@@ -252,8 +238,12 @@ $do$
                     lov14.id as lov14_Tranche_2_Response_c,
                     lov15.id as lov15_Tranche_3_Response_c,
                     lov16.id as lov16_Tranching_Status_c,
+               concat(su.first_name,' ',su.email) as invoice_admin_2_c_name,
+               concat(su1.first_name,' ',su1.email) as Final_Permits_Entered_By_c_name,
                     CASE WHEN row_number() OVER (PARTITION BY rpc.id ORDER BY lpc.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
              from brs.LEASE_PAYMENT_C lpc
+                    left join brs.sp_user su on su.id = lpc.invoice_admin_2_c
+                    left join brs.sp_user su1 on su1.id = lpc.Final_Permits_Entered_By_c
                     inner join brs.account a on a.id = lpc.account_c
                     inner join brs.residential_project_c rpc on rpc.account_c = a.id
                     inner join flow.project p on p.nw_migration_id = rpc.id
@@ -273,24 +263,21 @@ $do$
                     left join flow.list_of_value lov14 on lov14.name = lpc.Tranche_2_Response_c  and lov14.parent_id =25885
                     left join flow.list_of_value lov15 on lov15.name = lpc.Tranche_3_Response_c  and lov15.parent_id =25887
                     left join flow.list_of_value lov16 on lov16.name = lpc.Tranching_Status_c  and lov16.parent_id =25889
+             where lpc.is_deleted = false
              order by rpc.id,lpc.created_date
       loop
-        v_count = v_count + 1;
         v_total =v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          raise notice 'v_total = %',v_total;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id,nw_migration_id)
-        values (x.project_id, 3800, null, 1, null, now(), now(), 2384850, 2384850, false,  --todo carlin to figure out status
+        values (x.project_id, 3800, null, case when x.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,  --todo carlin to figure out status
                 case when x.is_last_row is true then true else false end, null, null, null,x.id) returning id into v_project_process_step_id;
+
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29956,x.invoice_admin_2_c_name::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29953,x.Final_Permits_Entered_By_c_name::text , true);
 
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29402,x.lov1_X1603_Financier_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29403,x.US_Cash_Grant_Submission_Date_c::text , true);
@@ -614,7 +601,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29730,x.With_SH_Inventory_c::text , true);
 
       end loop;
-    raise notice '19 END = %',clock_timestamp();
-    raise notice '19 END total = %',v_total;
+    raise notice 'Residential Property Lease Payment END = %',clock_timestamp();
+    raise notice 'Residential Property Lease Payment Total = %',v_total;
   end
 $do$;

@@ -46,7 +46,7 @@ const calcEnergyBySqFtg = computed(() => {
 })
 
 const validateAIRequest = async () => {
-  const valid = aiForm.value.validate() && monthlyUsage.value?.length > 0 && minMonthsFilled.value && !monthsOverFilled()
+  const valid = aiForm.value.validate() && validMonthlyData()
   if (valid) {
     //all checks for how to create the design are handled by backend now
     emit('save', monthlyUsageFlattened.value)
@@ -67,14 +67,10 @@ const monthlyUsageFlattened = computed(() =>{
       populated.push(monthlyUsage.value[0].usage)
     }
   }
-  /* If we're inputting monthly values from the utility bill, we need to flatten them to an array of numbers (they're currently an object)
-    in order January-December.  Since they could have been added in any order, we need to sort them before we flatten them.
+  /* If we're inputting monthly values from the utility bill, they want us to do it in Aurora, not here.
    */
   else {
-    for(let i = 0; i < 12; i++){
-      const usageForMonth = monthlyUsage.value.find( mu => mu.monthId === i + 1)
-      populated.push(usageForMonth ? usageForMonth.usage : null)
-    }
+   return null
   }
 return populated
 })
@@ -135,6 +131,14 @@ const maxMonthsFilled = (() => {
   }
 })
 
+const validMonthlyData = (() => {
+  if(calcEnergyBySqFtg.value){
+    return monthlyUsage.value?.length > 0
+  } else {
+    return true
+  }
+})
+
 const monthsOverFilled = (() => {
   //if the calculation method hasn't been selected yet, there is no max months
   if(!calculatedBy.value?.intValue){
@@ -179,6 +183,9 @@ const minMonthsFilled = computed(() => {
 
 // Square Footage Option
 const calculateUsage = (field) => {
+  if(!field.textValue){
+    return
+  }
   const squareFootage = Number(field.textValue)
   const yearlyConsumptionField = props.aiRequestFields.find(cf => cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION)
   //pass in the correct enum to the energyUsage function; this works because they all use the same names
@@ -309,28 +316,14 @@ const xcelEnergyMNValues = Object.freeze({
                 </CustomValueInput>
             </div>
               <div v-else-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION && calcEnergyBySqFtg">
-                <div class="label-large">Energy Usage</div>
+                <div class="label-large">Estimated Energy Usage</div>
                 <div class="body-large"><span class="label-medium">Annual: </span><span v-if="!!cf.intValue">{{cf.intValue}} kWh</span></div>
                 <div class="body-large"><span class="label-medium">Monthly: </span><span v-if="!!cf.intValue">{{monthlyUsage[0]?.usage}} kWh</span></div>
               </div>
               <div v-else-if="cf.customFieldGroupAssignmentId === ProposalCFGAIDs.ESTIMATED_ANNUAL_CONSUMPTION && calculatedByIsSet && !calcEnergyBySqFtg">
                 <v-card class="label-medium pa-0" flat>
-                  <v-card-title class="pa-0">Enter usage from utility bill
-                  </v-card-title>
-                  <div v-if="showMinMonthsError && !minMonthsFilled" class="error--text">Pleas enter at least {{minMonths}} months of usage data.</div>
-                <v-row class="pt-0">
-                  <v-col v-for="(month, index) in months" :key="index" cols="3" class="pt-0">
-                    <a-text-field
-                        density="dense"
-                        type="number"
-                        :label="`${month.name}`"
-                        @change="addMonthUsage($event, month.id)"
-                        :disabled="savingNewAiDesign ||(disabledMonthIds.length > 0 && disabledMonthIds.indexOf(month.id) >= 0)"
-                        :rules="[ minMonthsFilled || '']"
-                    />
-                  </v-col>
-                </v-row>
-                  <div v-if="monthsOverFilled()" class="error-text mt-n4 pb-2">You have entered data for more months than indicated in the yearly consumption calculation field.  Please remove some month data or update the yearly consumption calculation field.</div>
+                 <v-card-title class="pa-0">Please Enter Usage through Aurora.</v-card-title>
+                  <v-card-text class="pa-0">You will be redirected to Aurora after saving.</v-card-text>
                 </v-card>
 
               </div>

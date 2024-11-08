@@ -255,6 +255,30 @@ public class AuroraProxy {
     }
   }
 
+  public AuroraConsumptionProfileDTO getConsumptionProfile(String auroraUserId, String auroraProjectId) {
+        //todo: call the retrieve consumption profile endpoint from aurora
+      try {
+          ResponseEntity<AuroraConsumptionProfileDTO> res = client
+                  .get()
+                  .uri("/tenants/%s/projects/%s/consumption_profile".formatted(tenantId, auroraProjectId))
+                  .header("Authorization", "Bearer " + tokenV2022)
+                  .retrieve()
+                  .toEntity(AuroraConsumptionProfileDTO.class)
+                  .timeout(Duration.ofSeconds(30))
+                  .onErrorMap(Exception.class, e -> e)
+                  .block();
+
+          if (res != null && res.getStatusCode() != HttpStatus.OK) {
+              throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
+          }
+          return res.getBody();
+      } catch (Exception e) {
+          String msg = "AURORA: Failed to get consumption profile";
+          log.debug(msg, e);
+          throw new RuntimeException(msg, e);
+      }
+  }
+
     public AuroraConsumptionProfileDTO updateAuroraDesignWithMonthlyEnergyUsage(String auroraUserId, String auroraProjectId, List<Double> monthlyInputs)  {
         AuroraUpdateConsumptionProfileDTO acp = new AuroraUpdateConsumptionProfileDTO();
         acp.setMonthlyEnergy(monthlyInputs);

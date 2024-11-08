@@ -551,13 +551,13 @@ public class CloserDashboardService {
       triumvirate.getCurrentQuarterStart(),
       today,
       triumvirate.getLastQuarterStart(),
-      triumvirate.getLastQuarterStart().plusDays(ChronoUnit.DAYS.between(triumvirate.getCurrentQuarterStart(), today)), "the same timeframe last period"));
+      triumvirate.getLastQuarterStart().plusDays(ChronoUnit.DAYS.between(triumvirate.getCurrentQuarterStart(), today)), "the same timeframe last quarter"));
 
     ranges.add(new CloserDashboardDateRange(10, "Year to Date", "YEAR_TO_DATE",
       currentYearStart,
       today,
       previousYearStart,
-      previousYearStart.plusDays(ChronoUnit.DAYS.between(currentYearStart, today)), "the same timeframe last period"));
+      previousYearStart.plusDays(ChronoUnit.DAYS.between(currentYearStart, today)), "the same timeframe last year"));
 
     if(isAdmin) {
       CloserDashboardDateRange periodRange = new CloserDashboardDateRange();

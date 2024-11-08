@@ -3,13 +3,11 @@ DO
 $do$
   declare
     t                                       record;
-    v_count                                 bigint;
     v_total                                 bigint;
     v_project_process_step_visits_id        bigint;
     v_project_process_step_visits_events_id bigint;
   BEGIN
-    raise notice '3 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'NH Community Visits START = %',clock_timestamp();
     v_total = 0;
     for t in select ncvc.id          as nh_visit_id,
                     ncvc.visit_notes_c,
@@ -27,14 +25,7 @@ $do$
              where ncvc.is_deleted = false
               order by co.id
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
-
 
         if t.is_first_row is true then
           v_project_process_step_visits_id = null;
@@ -56,7 +47,7 @@ $do$
                                                     date_modified, created_by_id, modified_by_id, archived,
                                                     cancelled_date, completed_date, scheduled_date, save_version,
                                                     nw_migration_id)
-        values (v_project_process_step_visits_id, 237, null, 3, t.RECENT_VISIT_DATE_C, null, now(), now(), 2384850,
+        values (v_project_process_step_visits_id, 237, null, 3, (t.recent_visit_date_c + INTERVAL '16 hours')::timestamp, null, now(), now(), 2384850,
                 2384850, false, null,
                 null, null, 1, t.nh_visit_id)
         returning id into v_project_process_step_visits_events_id;
@@ -69,7 +60,7 @@ $do$
       end loop;
 
 
-    raise notice '3 END = %',clock_timestamp();
-    raise notice '3 END total = %',v_total;
+    raise notice 'NH Community Visits END = %',clock_timestamp();
+    raise notice 'NH Community Visits Total = %',v_total;
   end
 $do$;

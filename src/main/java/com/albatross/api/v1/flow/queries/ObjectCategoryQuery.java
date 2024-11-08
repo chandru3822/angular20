@@ -8,9 +8,9 @@ public class ObjectCategoryQuery {
       object_category as name,
       object_category_code as code,
       is_default
-    from flow.object_category
+    from flow.object_category oc
       where archived is false
-        and case when :objectTypeId is null then true else object_type_id = :objectTypeId end
+        and case when :objectTypeId::int is null then true else object_type_id = :objectTypeId::int end
     """;
 
   //language=PostgreSQL

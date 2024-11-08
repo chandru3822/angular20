@@ -4,11 +4,9 @@ $do$
   declare
     x record;
     v_project_process_step_id bigint;
-    v_count bigint;
     v_total bigint;
   BEGIN
-    raise notice '8 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Opportunity START = %',clock_timestamp();
     v_total = 0;
     v_project_process_step_id = null;
     for x in select p.id as project_id,
@@ -27,22 +25,19 @@ $do$
                     case when o.opportunity_opportunity_owner_s_manager_c is null and o.opportunity_owner_s_manager_c is not null then
                            2495780::bigint
                          else
-                           o.opportunity_opportunity_owner_s_manager_c end as opportunity_opportunity_owner_s_manager_c
+                           o.opportunity_opportunity_owner_s_manager_c end as opportunity_opportunity_owner_s_manager_c,
+                    concat(su.first_name,' ',su.email) as opportunity_owner_s_manager_c_name
              from brs.opportunity o
+                    left join brs.sp_user su on su.id = o.opportunity_owner_s_manager_c
                     inner join brs.residential_project_c rpc on rpc.opportunity_c = o.id
                     inner join flow.project p on rpc.id = p.nw_migration_id
                     left join flow.list_of_value lov1 on lov1.name = o.stage_name and lov1.parent_id = 25746
                     left join flow.list_of_value lov2 on lov2.name = o.sub_stage_c and lov1.parent_id =25796
                     left join flow.list_of_value lov3 on lov3.name = o.reason_won_lost_c and lov1.parent_id =25798
+            where o.is_deleted = false
 
       loop
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         v_project_process_step_id = null;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
@@ -68,8 +63,9 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29222,x.lov1_stage_name_id::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29236,x.lov2_sub_stage_c_id::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29238,x.lov3_reason_won_lost_c_id::text, true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30016,x.opportunity_owner_s_manager_c_name::text, true);
       end loop;
-    raise notice '8 END = %',clock_timestamp();
-    raise notice '8 END total = %',v_total;
+    raise notice 'Residential Property Opportunity END = %',clock_timestamp();
+    raise notice 'Residential Property Opportunity Total = %',v_total;
   end
 $do$;

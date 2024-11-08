@@ -3,12 +3,11 @@ DO
 $do$
   declare
     x record;
-    v_count bigint;
     v_total bigint;
     v_project_process_step_id bigint;
   BEGIN
-    raise notice '7 START = %',clock_timestamp();
-    v_count = 0;
+    raise notice 'Residential Property Title Check START = %',clock_timestamp();
+
     v_total = 0;
     for x in select p.id as project_id,
                     tcc.id as title_check_id,
@@ -56,17 +55,12 @@ $do$
                     inner join flow.contact c on c.nw_migration_id = tcc.account_c
                     inner join flow.project p on p.contact_id = c.id
                     left join flow.list_of_value lov1 on lov1.name = tcc.action_taken_c and lov1.parent_id = 25729
+             where tcc.is_deleted = false
              order by tcc.account_c,tcc.created_date
 
       loop
         v_project_process_step_id = null;
-        v_count = v_count + 1;
         v_total = v_total + 1;
-        if v_count = 5000 then
-          raise notice 'v_count = %',v_count;
-          --commit;
-          v_count = 0;
-        end if;
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
@@ -116,7 +110,7 @@ $do$
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,28875,x.township_range_section_c::text, true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,28876,x.vesting_code_c::text, true);
       end loop;
-    raise notice '7 END = %',clock_timestamp();
-    raise notice '7 END total = %',v_total;
+    raise notice 'Residential Property Title Check END = %',clock_timestamp();
+    raise notice 'Residential Property Title Check Total = %',v_total;
   end
 $do$;
