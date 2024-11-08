@@ -1,6 +1,7 @@
 -- drop function if exists flow.get_cfv_value_as_text(bigint, bigint, bigint, bigint);
 drop function if exists flow.get_cfv_value_as_text(p_project_id bigint, p_ppse_id bigint, p_cfga_id bigint);
-  CREATE OR REPLACE FUNCTION flow.get_cfv_value_as_text(p_project_id bigint, p_ppse_id bigint, p_cfga_id bigint)
+drop function if exists flow.get_cfv_value_as_text(p_project_id bigint, p_ppse_id bigint, p_cfga_id bigint, p_org_id bigint);
+  CREATE OR REPLACE FUNCTION flow.get_cfv_value_as_text(p_project_id bigint, p_ppse_id bigint, p_cfga_id bigint, p_org_id bigint default null)
   returns text AS
 $BODY$
 declare
@@ -60,6 +61,19 @@ BEGIN
         inner join flow.project_process_step pps on cfv.project_process_step_id = pps.id and pps.main is true and pps.archived is false
         inner join flow.project p on pps.project_id = p.id and p.id = p_project_id
       where cfv.custom_field_group_assignment_id = p_cfga_id;
+    elseif (v_cfga_object_type_id = 5 && p_org_id is not null) then
+        --get the value from org cfv
+        select coalesce(text_value,
+                        boolean_value::text,
+                        date_value::text,
+                        timestamp_value::text,
+                        numeric_value::text,
+                        int_value::text,
+                        int_array_value::text)
+        into v_cfga_value
+        from flow.organization_custom_field_value cfv
+        where cfv.custom_field_group_assignment_id = p_cfga_id
+          and cfv.org_id = p_org_id;
     elseif (v_cfga_object_type_id = 6) then
       --get the value from event cfv
       select coalesce(text_value,
