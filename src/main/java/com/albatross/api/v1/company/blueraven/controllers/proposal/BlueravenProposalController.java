@@ -82,11 +82,12 @@ public class BlueravenProposalController {
   }
 
 
-  @PostMapping(value = "/pps/{ppsId}/design/{designId}/sync")
+  @PostMapping(value = "/pps/{ppsId}/design/{designId}/{auroraProjectId}/sync")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public void syncDesign(@PathVariable Long ppsId,
-                         @PathVariable String designId) {
-    proposalService.syncDesign(ppsId, designId);
+                         @PathVariable String designId,
+                         @PathVariable String auroraProjectId) {
+    proposalService.syncDesign(ppsId, designId, auroraProjectId);
   }
 
   @GetMapping(value = "/projects/{projectId}/designs")

@@ -111,7 +111,7 @@ public class BlueravenProposalService {
     return sqlCache.getBySql(ProposalQuery.getProjectById, params, new ProposalProjectDetailsMapper<>(ProposalProjectDetails.class, om));
   }
 
-  public void syncDesign(Long ppsId, String designId) {
+  public void syncDesign(Long ppsId, String designId, String auroraProjectId) {
     try {
       //set the process step status
       projectProcessStepService.setStatus(
@@ -144,6 +144,9 @@ public class BlueravenProposalService {
           }
         }
       }
+
+      //update the energy usage
+        updateEnergyUsage(ppsId, auroraProjectId, null, null);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -312,10 +315,14 @@ public class BlueravenProposalService {
     Long calcMethodValue
   ) {
     Optional<String> auroraUserId = getAuroraUserId();
-
-    //update the monthly inputs on Aurora
-    AuroraConsumptionProfileDTO consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
-    if (calcMethodValue.equals(20851L)) {
+      AuroraConsumptionProfileDTO consumptionProfile;
+    if(monthlyInputs != null && monthlyInputs.size() > 0) {
+        //update the monthly inputs on Aurora
+        consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
+    } else {
+        consumptionProfile = auroraProxy.getConsumptionProfile(auroraUserId.get(), auroraProjectId);
+    }
+    if ((calcMethodValue != null && calcMethodValue.equals(20851L) )|| consumptionProfile == null) {
       //calculate by square footage then we're done b/c we've already updated the annual energy
       return;
     }
