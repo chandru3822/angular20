@@ -29,7 +29,7 @@
             <a-btn
               variant="text"
               color="primary"
-              @click="getAvailableAttachmentTypes"
+              @click="[newType = {}, getAvailableAttachmentTypes()]"
               v-if="userCanAdd"
               :prepend-icon="addNewType ? 'close' : 'add'"
               :text="
@@ -52,9 +52,11 @@
             item-title="attachmentType"
             item-value="id"
             attach
+            @input="setNewTypeObjectCategoryIds(newType.attachmentTypeId)"
           ></a-autocomplete>
 
           <v-select
+              :disabled="!newType.attachmentTypeId"
             :items="objectCategories"
             v-if="requiresObjectCategory"
             v-model="newType.objectCategoryIds"
@@ -288,6 +290,10 @@ const updateType = async (item) => {
 const visibleHeaders = computed(() => {
   return headers.value.filter((header) => header.show === true)
 })
+
+const setNewTypeObjectCategoryIds = (attachmentTypeId) => {
+  newType.value.objectCategoryIds = availableAttachmentTypes.value.find(a => a.id === attachmentTypeId)?.objectCategoryIds || []
+}
 
 const getAttachmentTypeUrl = (attachmentTypeId) => {
   switch (props.objectTypeValue) {
