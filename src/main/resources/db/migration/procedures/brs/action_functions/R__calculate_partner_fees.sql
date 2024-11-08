@@ -14,6 +14,7 @@ declare
     v_custom_distance_adder                           numeric := 0;
     v_3_story_roof                                    numeric := 0;
     v_steep_roof                                      numeric := 0;
+    v_storage_install                                 numeric := 0;
 
 --cfga ids determined by nested ifs
     v_cfga_to_use_for_module_installation_cost        bigint;
@@ -41,7 +42,7 @@ declare
     v_alliance_permitting_partner_cfga_id              bigint := 28890;
     v_alliance_ip_partner_cfga_id                      bigint := 28888;
     v_permitting_labor_only_org_cfga_id                bigint := 29451;
-    v_installation_type_cfga_id                        bigint := 28239;
+    v_installation_type_cfga_id                        bigint := 28056;
     v_number_of_panels_cfga_id                         bigint := 28218;
     v_alliance_partner_roofer_cfga_id                  bigint := 28892;
     v_nh_comp_install_org_cfga_id                      bigint := 29438;
@@ -58,7 +59,8 @@ declare
     v_system_adders_cfga_id                            bigint := 28328;
     v_3_story_roof_fee_org_cfga_id                     bigint := 29447;
     v_steep_roof_fee_org_cfga_id                       bigint := 29449;
-    v_nh_roof_type_cfga_id                             bigint := 28249;
+    v_nh_storage_install_fee_cfga_id                   bigint := 29450;
+    v_nh_roof_type_cfga_id                             bigint := 28055;
     v_nh_roofer_$_panel_org_cfga_id                    bigint := 29731;
     v_nh_alliance_storage_ip_cfga_id                   bigint := 28893;
     v_nh_storage_configuration_group_cfga_id           bigint := 29876;
@@ -124,19 +126,19 @@ declare
 
 BEGIN
     --once kalebs script has run, come back and hard code these instead of selecting into them cuz that is slow af
-    select id into v_comp_install_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Comp Install'));
-    select id into v_over_tile_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Over Tile'));
-    select id into v_inset_install_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Inset Install'));
-    select id into v_flat_roof_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Flat Roof Install'));
-    select id into v_mixed_install_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Mixed Install'));
-    select id into v_one_roof_install_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('OneRoof install'));
-    select id into v_metal_standing_seam_install_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Metal Standing Seam Install'));
-    select id into v_flat_roof_tilt_up_install_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Flat Roof Tilt Up Install'));
-    select id into v_other_install_lov_id from flow.list_of_value where archived is false and parent_id = 25514 and trim(lower(name)) = trim(lower('Other'));
+    select id into v_comp_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Comp Install'));
+    select id into v_over_tile_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Over Tile'));
+    select id into v_inset_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Inset Install'));
+    select id into v_flat_roof_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Flat Roof Install'));
+    select id into v_mixed_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Mixed Install'));
+    select id into v_one_roof_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('OneRoof install'));
+    select id into v_metal_standing_seam_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Metal Standing Seam Install'));
+    select id into v_flat_roof_tilt_up_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Flat Roof Tilt Up Install'));
+    select id into v_other_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Other'));
     select id into v_sunpower_lov_id from flow.list_of_value where archived is false and parent_id = 25238 and trim(lower(name)) = trim(lower('Sunpower'));
     select id into v_3_story_roof_lov_id from flow.list_of_value where archived is false and parent_id = 25442 and trim(lower(name)) = trim(lower('3+ Story Roof'));
     select id into v_steep_roof_lov_id from flow.list_of_value where archived is false and parent_id = 25442 and trim(lower(name)) = trim(lower('Custom Home Adder – Steep Roof'));
-    select id into v_tile_lov_id from flow.list_of_value where archived is false and parent_id = 25512 and trim(lower(name)) = trim(lower('Tile'));
+    select id into v_tile_lov_id from flow.list_of_value where archived is false and parent_id = 25264 and trim(lower(name)) = trim(lower('Tile'));
     select id into v_enphase_battery_system_5_kWh_non_backup_lov_id from flow.list_of_value where archived is false and parent_id = 25995 and trim(lower(name)) = trim(lower('Enphase Battery System 5 kWh Non-Backup'));
     select id into v_enphase_battery_system_10_kWh_non_backup_lov_id from flow.list_of_value where archived is false and parent_id = 25995 and trim(lower(name)) = trim(lower('Enphase Battery System 10 kWh Non-Backup'));
     select id into v_enphase_battery_system_10_kWh_backup_lov_id from flow.list_of_value where archived is false and parent_id = 25995 and trim(lower(name)) = trim(lower('Enphase Battery System 10 kWh Backup'));
@@ -155,15 +157,24 @@ BEGIN
     into v_installation_type_value;
     select flow.get_cfv_value_as_text(p_project_id, null, v_number_of_panels_cfga_id)::bigint
     into v_number_of_panels_value;
+    select flow.get_cfv_value_as_text(p_project_id, null, v_nh_storage_configuration_group_cfga_id)::bigint
+    into v_nh_storage_configuration_group_value;
+
+    raise notice 'v_installation_type_value = %', v_installation_type_value::text;
+    raise notice 'v_number_of_panels_value = %', v_number_of_panels_value::text;
 
     if (v_alliance_ip_partner_value is not null) then
         select flow.get_cfv_value_as_text(p_project_id, null, v_alliance_permitting_partner_cfga_id)::bigint
         into v_alliance_permitting_partner_value;
+
+        raise notice 'v_alliance_ip_partner_value = %', v_alliance_ip_partner_value::text;
+        raise notice 'v_alliance_permitting_partner_value = %', v_alliance_permitting_partner_value::text;
         if (v_alliance_permitting_partner_value = v_alliance_ip_partner_value) then
             --v_permitting_labor_only_value stays as ::text since we get and save, we don't do anything with it
             select flow.get_cfv_value_as_text(p_project_id, null, v_permitting_labor_only_org_cfga_id, v_alliance_permitting_partner_value)
             into v_permitting_labor_only_value;
 
+            raise notice 'v_permitting_labor_only_value = %', v_permitting_labor_only_value::text;
             perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint,
                                          v_nh_permit_cost_actual_cfga_id::bigint,
                                          v_permitting_labor_only_value::text, false);
@@ -220,11 +231,20 @@ BEGIN
             select flow.get_cfv_value_as_text(p_project_id, null, v_steep_roof_fee_org_cfga_id, v_alliance_ip_partner_value)::numeric into v_steep_roof;
         end if;
 
+        if(v_nh_storage_configuration_group_value is not null) then
+            select flow.get_cfv_value_as_text(p_project_id, null, v_nh_storage_install_fee_cfga_id, v_alliance_ip_partner_value)::numeric into v_storage_install;
+        end if;
+
         v_calculated_nh_trim_labor_pricing_to_save =
-                    v_module_installation_cost + v_custom_distance_adder + v_3_story_roof + v_steep_roof;
+                    v_module_installation_cost + v_custom_distance_adder + v_3_story_roof + v_steep_roof + v_storage_install;
+        raise notice 'v_module_installation_cost = %', v_module_installation_cost::text;
+        raise notice 'v_custom_distance_adder = %', v_custom_distance_adder::text;
+        raise notice 'v_3_story_roof = %', v_3_story_roof::text;
+        raise notice 'v_steep_roof = %', v_steep_roof::text;
+        raise notice 'v_calculated_nh_trim_labor_pricing_to_save = %', v_calculated_nh_trim_labor_pricing_to_save::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_trim_labor_pricing_cfga_id::bigint,
                                      v_calculated_nh_trim_labor_pricing_to_save::text, false);
-
+        raise notice 'v_ac_rough_wire = %', v_ac_rough_wire::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_rough_labor_pricing_cfga_id::bigint,
                                      v_ac_rough_wire::text, false);
 
@@ -239,6 +259,9 @@ BEGIN
 
             v_roofer_labor_pricing_calculated_value = v_number_of_panels_value * v_nh_roofer_$_panel_value;
         end if;
+        raise notice 'v_number_of_panels_value = %', v_number_of_panels_value::text;
+        raise notice 'v_nh_roofer_$_panel_value = %', v_nh_roofer_$_panel_value::text;
+        raise notice 'v_roofer_labor_pricing_calculated_value = %', v_roofer_labor_pricing_calculated_value::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_roofer_labor_pricing_cfga_id::bigint,
                                      v_roofer_labor_pricing_calculated_value::text, false);
     end if;
@@ -246,8 +269,6 @@ BEGIN
     select flow.get_cfv_value_as_text(p_project_id, null, v_nh_alliance_storage_ip_cfga_id)::bigint
     into v_nh_alliance_storage_ip_value;
     if (v_nh_alliance_storage_ip_value is not null) then
-        select flow.get_cfv_value_as_text(p_project_id, null, v_nh_storage_configuration_group_cfga_id)::bigint
-        into v_nh_storage_configuration_group_value;
 
         if (v_nh_storage_configuration_group_value = v_enphase_battery_system_5_kWh_non_backup_lov_id) then
             v_cfga_to_use_for_storage_rough_pricing = v_en_5_non_backup_rough_wire_fee_org_cfga_id;
@@ -283,10 +304,11 @@ BEGIN
             select flow.get_cfv_value_as_text(p_project_id, null, v_cfga_to_use_for_storage_trim_pricing, v_nh_alliance_storage_ip_value)::numeric
             into v_storage_trim_pricing_calculated_value;
         end if;
-
+        raise notice 'v_storage_rough_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value, 0)::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint,
                                      v_nh_storage_rough_pricing_cfga_id::bigint,
                                      coalesce(v_storage_rough_pricing_calculated_value, 0)::text, false);
+        raise notice 'v_storage_trim_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value,0)::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_storage_trim_pricing_cfga_id::bigint,
                                      coalesce(v_storage_trim_pricing_calculated_value, 0)::text, false);
     end if;
