@@ -466,7 +466,7 @@ public class BlueravenProposalService {
 
     final Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
 
-    //per lowry dont show unapproved zip message if it is a New Home project
+    //per lowry don't show unapproved zip message if it is a New Home project
     if(project.getObjectCategoryId() != 6) {
         final ProposalPostalCodeStatus proposalPostalCodeStatus = getPostalCodeApprovalStatus(project.getId());
         if (!proposalPostalCodeStatus.isApproved()) {
