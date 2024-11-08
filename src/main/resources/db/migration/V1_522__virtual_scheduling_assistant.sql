@@ -24,5 +24,7 @@ CREATE TABLE if not exists flow.virtual_resource_slot_capacity
 	CONSTRAINT flow_vrsc_modified_by_id_fk FOREIGN KEY (modified_by_id)
 	REFERENCES flow.user (id) MATCH SIMPLE
 	                          ON UPDATE NO ACTION ON DELETE NO ACTION
+    CONSTRAINT flow_vrsc_org_id_start_time_end_time_id_key
+        UNIQUE(org_id, start_time, end_time)
 	);
 
