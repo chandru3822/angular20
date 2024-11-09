@@ -48,6 +48,8 @@ with project as (select pd.project_id,
                         pd.contact_mobile_phone       as mobile,
                         null                          as closer_appointment_start,
                         null                          as closer_appointment_end,
+                        pd.nh_ahj                     as ahj_id,
+                        pd.metro_area                 as metro_area_id,
                         --this should be added to the data views but i'll just do this for now
                         (select object_category_id from flow.project p where p.id = pd.project_id) as object_category_id
                  from brs.new_homes_details pd
