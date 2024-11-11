@@ -61,7 +61,7 @@ BEGIN
         inner join flow.project_process_step pps on cfv.project_process_step_id = pps.id and pps.main is true and pps.archived is false
         inner join flow.project p on pps.project_id = p.id and p.id = p_project_id
       where cfv.custom_field_group_assignment_id = p_cfga_id;
-    elseif (v_cfga_object_type_id = 5 && p_org_id is not null) then
+    elseif (v_cfga_object_type_id = 5 and p_org_id is not null) then
         --get the value from org cfv
         select coalesce(text_value,
                         boolean_value::text,
