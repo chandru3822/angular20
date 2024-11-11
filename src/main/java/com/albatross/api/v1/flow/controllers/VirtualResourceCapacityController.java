@@ -5,10 +5,7 @@ import com.albatross.api.v1.flow.services.VirtualResourceCapacityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,12 +17,26 @@ public class VirtualResourceCapacityController {
 
     private final VirtualResourceCapacityService virtualResourceCapacityService;
 
-    @GetMapping(value="/capacityForRange")
-    public List<VirtualResourceCapacitySchedule> getCapacityForRange(
+    @GetMapping(value="/capacityScheduleForRange")
+    public List<VirtualResourceCapacitySchedule> getCapacityScheduleForRange(
             @RequestParam Long orgId,
             @RequestParam String startTime,
             @RequestParam String endTime){
-        return virtualResourceCapacityService.getCapacityForRange(orgId, startTime, endTime);
+        return virtualResourceCapacityService.getCapacitySchedule(orgId, startTime, endTime);
+    }
+
+    @PostMapping(value="/maxCapacityList")
+    public void updateMaxCapacity(
+            @RequestParam List<VirtualResourceCapacitySchedule> resourceCapacitySchedules){
+        virtualResourceCapacityService.updateMaxCapacity(resourceCapacitySchedules);
+    }
+
+    @PostMapping("/duplicateWeek")
+    public List<VirtualResourceCapacitySchedule> duplicatePreviousWeek(
+            @RequestParam Long orgId,
+            @RequestParam String currentWeekStartTime,
+            @RequestParam String currentWeekEndTime){
+        return virtualResourceCapacityService.duplicatePreviousWeek(orgId, currentWeekStartTime, currentWeekEndTime);
     }
 
 }

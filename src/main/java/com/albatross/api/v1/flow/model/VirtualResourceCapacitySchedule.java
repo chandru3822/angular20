@@ -4,13 +4,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 @EqualsAndHashCode(callSuper = false)
 @Data
 @NoArgsConstructor
 public class VirtualResourceCapacitySchedule {
-    private Long id, companyId, orgId, maxCapacity;
-    private Date startTime, endTime;
+    private Long id, companyId, orgId, maxCapacity, currentlyBooked;
+    private String startTime, endTime;
     private Boolean archived;
 }
