@@ -30,7 +30,7 @@ inner join flow.project p on p.id = m.project_id
 inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
 inner join flow.project_custom_field_value pcfv on pcfv.project_id = m.project_id and
                                                    pcfv.custom_field_group_assignment_id = 27972
-inner join flow.project_custom_field_value pcfv2 on pcfv2.project_id = m.project_id and
+left join flow.project_custom_field_value pcfv2 on pcfv2.project_id = m.project_id and
                                                     pcfv2.custom_field_group_assignment_id = 28736
 
 where
