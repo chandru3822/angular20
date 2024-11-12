@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.company.blueraven.services.queries.GoodleapQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import jakarta.annotation.PostConstruct;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -20,12 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -48,7 +46,21 @@ public class GoodleapService {
 
   private final String DEFAULT_NEW_USER_PASSWORD = "Solar101!";
 
-  private final Long FINANCIAL_AGREEMENT_SIGNED_CFGAID = 19505L;
+  private final Long DESIGN_AND_FINANCING_PSID = 3355L;
+  private final Long DESIGN_FINANCIAL_AGREEMENT_SIGNED_CFGAID = 19505L;
+  private final Long DESIGN_COUNTER_SIGNED_CFGAID = 19506L;
+
+  private final Long RETROFIT_DESIGN_AND_FINANCING_PSID = 3392L;
+  private final Long RETROFIT_FINANCIAL_AGREEMENT_SIGNED_CFGAID = 20912L;
+  private final Long RETROFIT_COUNTER_SIGNED_CFGAID = 20913L;
+
+  private final Long BATTERY_DESIGN_AND_FINANCING_PSID = 3587L;
+  private final Long BATTERY_FINANCIAL_AGREEMENT_SIGNED_CFGAID = 24922L;
+  private final Long BATTERY_COUNTER_SIGNED_CFGAID = 24925L;
+
+  private final Long LEASE_DESIGN_AND_FINANCING_PSID = 3620L;
+  private final Long LEASE_FINANCIAL_AGREEMENT_SIGNED_CFGAID = 25449L;
+  private final Long LEASE_COUNTER_SIGNED_CFGAID = 25452L;
 
   private final Long SALES_DEV_USER_ID = 2371412L;
 
@@ -218,11 +230,21 @@ public class GoodleapService {
         throw new RuntimeException("Unable to generate loan application for project ID: " + pd.getProjectId());
       }
 
+      setApplicationCreatedDate(pd.getProjectId(), pd.getProposalNbr());
       JSONObject data = new JSONObject(response.getBody());
       return data.getString("link");
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage());
     }
+  }
+
+  private void setApplicationCreatedDate(Long projectId, Long proposalNbr) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNbr", proposalNbr);
+
+    sqlCache.updateBySql(
+      GoodleapQuery.setApplicationCreatedDate, params);
   }
 
   public JSONArray getApplicationStipulations(Long projectId) {
@@ -398,45 +420,92 @@ public class GoodleapService {
     return "";
   }
 
-  public String updateFinancialAgreementSigned(String proposalId, String timestamp) {
-    String errorMsg = "";
+  public void updateFinancialAgreementSignedValue(Long projectId, String timestampValue) {
     Map<String, Object> params = new HashMap<>();
-    params.put("proposalId", proposalId);
-    Optional<Long> projectId =
-      sqlCache.getBySql(
-        GoodleapQuery.getProjectIdForProposalId, params, new SingleColumnRowMapper<>(Long.class));
-    if (projectId.isPresent()) {
-      errorMsg = updateFinancialAgreementSignedForProjectId(projectId.get(), timestamp);
-    }
-    else {
-      errorMsg = "No Project ID found for Proposal ID: "  + proposalId;
-    }
+    Instant instant = Instant.parse(timestampValue);
+    params.put("projectId", projectId);
+    params.put("dateValue", instant.toString());
 
-    return errorMsg;
+    sqlCache.updateBySql(
+      GoodleapQuery.setFinancialAgreementSigned, params);
   }
 
-  public String updateFinancialAgreementSignedForProjectId(Long projectId, String timestamp) {
-    String errorMsg = "";
+  // Used to find proposals w/ plh.financial_agreement_signed or plh.countersigned updates
+  // Pushes those values to project custom fields
+  public void updateWebhookFinancialFields() {
+    // Get a list of countersigned updates per project
+    List<ProposalFinancialFields> projectCountersignedUpdates =
+      sqlCache.queryBySql(
+        GoodleapQuery.getFinancialAgreementSignedUpdates,
+        null,
+        ProposalFinancialFields.class);
+
+    for (ProposalFinancialFields projectFinancialField : projectCountersignedUpdates) {
+      // Update Design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getFinancialAgreementSigned().toString(),
+        DESIGN_AND_FINANCING_PSID, DESIGN_FINANCIAL_AGREEMENT_SIGNED_CFGAID);
+      // Update Retrofit design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getFinancialAgreementSigned().toString(),
+        RETROFIT_DESIGN_AND_FINANCING_PSID, RETROFIT_FINANCIAL_AGREEMENT_SIGNED_CFGAID);
+      // Update Retrofit design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getFinancialAgreementSigned().toString(),
+        BATTERY_DESIGN_AND_FINANCING_PSID, BATTERY_FINANCIAL_AGREEMENT_SIGNED_CFGAID);
+      // Update Lease design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getFinancialAgreementSigned().toString(),
+        LEASE_DESIGN_AND_FINANCING_PSID, LEASE_FINANCIAL_AGREEMENT_SIGNED_CFGAID);
+    }
+
+    List<ProposalFinancialFields> projectFinancialAgreementSignedUpdates =
+      sqlCache.queryBySql(
+        GoodleapQuery.getCountersignedUpdates,
+        null,
+        ProposalFinancialFields.class);
+
+    for (ProposalFinancialFields projectFinancialField : projectFinancialAgreementSignedUpdates) {
+      // Update Design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getCountersigned().toString(),
+        DESIGN_AND_FINANCING_PSID, DESIGN_COUNTER_SIGNED_CFGAID);
+      // Update Retrofit design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getCountersigned().toString(),
+        RETROFIT_DESIGN_AND_FINANCING_PSID, RETROFIT_COUNTER_SIGNED_CFGAID);
+      // Update Battery design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getCountersigned().toString(),
+        BATTERY_DESIGN_AND_FINANCING_PSID, BATTERY_COUNTER_SIGNED_CFGAID);
+      // Update Lease design and financing
+      updateCfgaValue(projectFinancialField.getProjectId(), projectFinancialField.getCountersigned().toString(),
+        LEASE_DESIGN_AND_FINANCING_PSID, LEASE_COUNTER_SIGNED_CFGAID);
+    }
+  }
+
+  public Optional<Long> getPpsId(Long projectId , Long psId) {
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    Optional<Long> designAndFinancingPpsId =
+    params.put("psId", psId);
+    return
       sqlCache.getBySql(
-        GoodleapQuery.getDesignAndFinancingPpsId, params, new SingleColumnRowMapper<>(Long.class));
-    if (designAndFinancingPpsId.isPresent()) {
-      Instant instant = Instant.parse(timestamp);
-      LocalDate localDate = instant.atZone(ZoneId.of("UTC")).toLocalDate();
+        GoodleapQuery.getPpsId, params, new SingleColumnRowMapper<>(Long.class));
+  }
+
+  public String updateCfgaValue(Long projectId, String timestampValue, Long psId, Long cfgaId) {
+    String errorMsg = "";
+    Optional<Long> ppsId = getPpsId(projectId, psId);
+    if (ppsId.isPresent()) {
+      Map<String, Object> params = new HashMap<>();
+      DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+      LocalDateTime localDateTime = LocalDateTime.parse(timestampValue, inputFormatter);
+      LocalDate localDate = localDateTime.toLocalDate();
       String formattedDate = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
       params.put("dateValue", formattedDate);
       // Sales Dev Lead's user ID
       params.put("leadOwnerUserId", SALES_DEV_USER_ID);
-      params.put("projectProcessStepId", designAndFinancingPpsId.get());
-      params.put("customFieldGroupAssignmentId", FINANCIAL_AGREEMENT_SIGNED_CFGAID);
+      params.put("projectProcessStepId", ppsId.get());
+      params.put("customFieldGroupAssignmentId", cfgaId);
 
       sqlCache.updateBySql(
         GoodleapQuery.upsertCustomFieldValue, params);
     }
     else {
-      errorMsg = "No Design and Financing Project Process Step found for Project ID: " + projectId;
+      errorMsg = String.format("No Process Step (psId=%s) found for Project ID: %s", psId, projectId);
     }
 
     return errorMsg;
@@ -478,5 +547,11 @@ public class GoodleapService {
     public NotFoundException(String message) {
       super(message);
     }
+  }
+
+  @Data
+  private static class ProposalFinancialFields {
+    Long projectId;
+    Date financialAgreementSigned, countersigned;
   }
 }

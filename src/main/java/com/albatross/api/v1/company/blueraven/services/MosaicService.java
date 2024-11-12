@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.time.Instant;
 import java.util.*;
 
 @Slf4j
@@ -25,8 +26,6 @@ import java.util.*;
 public class MosaicService {
 
   private final SqlCache sqlCache;
-
-  private final GoodleapService goodleapService;
 
   private String accessToken;
 
@@ -300,18 +299,67 @@ public class MosaicService {
     return "";
   }
 
-  public String updateFinancialAgreementSigned(String mosaicApplicationId, String timestamp) {
-    String errorMsg = "";
+  public Optional<Long> getProjectIdFromMosaicApplicationId(String mosaicApplicationId) {
     Map<String, Object> params = new HashMap<>();
     params.put("mosaicApplicationId", mosaicApplicationId);
-    Optional<Long> projectId =
+    return
       sqlCache.getBySql(
         MosaicQuery.getProjectIdFromMosaicApplicationId, params, new SingleColumnRowMapper<>(Long.class));
+  }
+
+  public String updateFinancialAgreementSigned(String mosaicApplicationId, String timestamp) {
+    String errorMsg = "";
+    Optional<Long> projectId = getProjectIdFromMosaicApplicationId(mosaicApplicationId);
+    Map<String, Object> params = new HashMap<>();
     if (projectId.isPresent()) {
-      errorMsg = goodleapService.updateFinancialAgreementSignedForProjectId(projectId.get(), timestamp);
+      Instant instant = Instant.parse(timestamp);
+      params.put("projectId", projectId.get());
+      params.put("dateValue", instant.toString());
+      sqlCache.updateBySql(MosaicQuery.setFinancialAgreementSigned, params);
     }
     else {
-      errorMsg = "No Project ID found for Mosaic ApplicationId ID: "  + mosaicApplicationId;
+      try {
+        HttpResponse res = GET("/v2/applications/" + mosaicApplicationId, null);
+        JSONObject respJson = res.getJSON();
+        if (res.getResponseCode() != 200) {
+          return errorMsg;
+        }
+        Instant instant = Instant.parse(timestamp);
+        params.put("projectId", Long.parseLong(respJson.getString("externalId")));
+        params.put("dateValue", instant.toString());
+        sqlCache.updateBySql(MosaicQuery.setFinancialAgreementSigned, params);
+      } catch (Exception e) {
+        errorMsg = "No project found for Mosaic ApplicationId ID: "  + mosaicApplicationId;
+      }
+    }
+
+    return errorMsg;
+  }
+
+  public String updateCountersigned(String mosaicApplicationId, String timestamp) {
+    String errorMsg = "";
+    Map<String, Object> params = new HashMap<>();
+    Optional<Long> projectId = getProjectIdFromMosaicApplicationId(mosaicApplicationId);
+    if (projectId.isPresent()) {
+      Instant instant = Instant.parse(timestamp);
+      params.put("projectId", projectId.get());
+      params.put("dateValue", instant.toString());
+      sqlCache.updateBySql(MosaicQuery.setCountersigned, params);
+    }
+    else {
+      try {
+        HttpResponse res = GET("/v2/applications/" + mosaicApplicationId, null);
+        JSONObject respJson = res.getJSON();
+        if (res.getResponseCode() != 200) {
+          return errorMsg;
+        }
+        Instant instant = Instant.parse(timestamp);
+        params.put("projectId", Long.parseLong(respJson.getString("externalId")));
+        params.put("dateValue", instant.toString());
+        sqlCache.updateBySql(MosaicQuery.setCountersigned, params);
+      } catch (Exception e) {
+        errorMsg = "No project found for Mosaic ApplicationId ID: "  + mosaicApplicationId;
+      }
     }
 
     return errorMsg;
@@ -407,7 +455,7 @@ public class MosaicService {
       JSONObject respJson = res.getJSON();
       if (res.getResponseCode() != 200) {
         StringBuilder errorMessage = new StringBuilder();
-        errorMessage.append("%s\n".formatted("Error creating Mosaic loan application: "));
+        errorMessage.append("%s\n".formatted("Error checking Mosaic loan application status: "));
         JSONArray errors = respJson.getJSONArray("errors");
         for (int i = 0; i < errors.length(); i++) {
           String currErrorMsg = "";
