@@ -207,6 +207,18 @@ const router = new Router({
               return accessDenied()
             }
           }
+        },{
+          path: '/capacityCalendar',
+          name: 'capacityCalendar',
+          meta: { title: 'Albatross - Scheduling Capacity Calendar' },
+          props: true,
+          component: () => {
+            if (userStore.userHasFeature('SCHEDULING_CAPACITY_CALENDAR')) {
+              return import('./views/blueraven/capacityCalendar/CapacityCalendar.vue')
+            } else {
+              return accessDenied()
+            }
+          }
         },
         {
           path: '/users',

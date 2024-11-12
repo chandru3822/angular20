@@ -28,3 +28,23 @@ CREATE TABLE if not exists flow.virtual_resource_slot_capacity
         UNIQUE(org_id, start_time, end_time)
 	);
 
+
+insert into flow.feature(feature_name, feature_code, feature_path)
+	(select 'Scheduling Capacity Calendar', 'SCHEDULING_CAPACITY_CALENDAR', '/capacityCalendar'  where not exists(select id from flow.feature where feature_code = 'SCHEDULING_CAPACITY_CALENDAR'));
+
+insert into flow.company_feature(feature_name, company_id, feature_id, home_page, show_in_tools)
+	(select 'Scheduling Capacity Calendar', 3, (select id from flow.feature where feature_code = 'SCHEDULING_CAPACITY_CALENDAR'), false, true
+		 where not exists(select id from flow.company_feature where feature_name = 'Scheduling Capacity Calendar' and company_id = 3));
+
+insert into flow.feature_access_control(feature_id, access_control_id, created_by_id)
+	(select (select id from flow.feature where feature_code = 'SCHEDULING_CAPACITY_CALENDAR'), ac.id, 2350555
+	 from flow.access_control ac
+	 where not exists (
+		 select fac.id
+		 from flow.feature_access_control fac
+		 where feature_id = (select id from flow.feature where feature_code = 'SCHEDULING_CAPACITY_CALENDAR')
+		   and access_control_id = ac.id
+	 )
+	   and ac.id in (1, 2)
+	);
+
