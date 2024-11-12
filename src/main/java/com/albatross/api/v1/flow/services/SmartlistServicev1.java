@@ -4249,7 +4249,8 @@ public class SmartlistServicev1 {
    * @return a sql string snippet
    */
   private String joinPPsEventTable(String ppsEventTable, String ppsTable, Long processStepEventId, Boolean isWorkQueue) {
-    var join = String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true ", ppsEventTable, ppsEventTable, ppsTable, ppsEventTable, processStepEventId, ppsEventTable);
+    String ppsTableFormatted = Objects.equals(ppsTable, "flow.project_process_step") ? ppsTable : "\"" + ppsTable + "\"";
+    var join = String.format(" left join flow.project_process_step_event \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".process_step_event_id = %s and \"%s\".archived is not true ", ppsEventTable, ppsEventTable, ppsTableFormatted, ppsEventTable, processStepEventId, ppsEventTable);
 
     if (isWorkQueue) {
       join += String.format("and \"%s\".process_step_event_id != flow.process_step_event.id ", ppsEventTable);
