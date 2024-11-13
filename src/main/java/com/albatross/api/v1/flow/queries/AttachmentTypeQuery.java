@@ -638,6 +638,7 @@ limit 1
                 date_modified = now()
         from flow.object_category oc
         where oc.id = ocat.object_category_id
+            and ocat.attachment_type_id = :attachmentTypeId
             and ocat.object_category_id not in (select unnest(:objectCategoryIds))
               and oc.object_type_id = :objectTypeId;
   """;
