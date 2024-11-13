@@ -304,13 +304,13 @@ BEGIN
             select flow.get_cfv_value_as_text(p_project_id, null, v_cfga_to_use_for_storage_trim_pricing, v_nh_alliance_storage_ip_value)::numeric
             into v_storage_trim_pricing_calculated_value;
         end if;
-        raise notice 'v_storage_rough_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value, 0)::text;
+        raise notice 'v_storage_rough_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value::int, 0::int)::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint,
                                      v_nh_storage_rough_pricing_cfga_id::bigint,
-                                     coalesce(v_storage_rough_pricing_calculated_value, 0)::text, false);
-        raise notice 'v_storage_trim_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value,0)::text;
+                                     coalesce(v_storage_rough_pricing_calculated_value::int, 0::int)::text, false);
+        raise notice 'v_storage_trim_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value::int,0::int)::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_storage_trim_pricing_cfga_id::bigint,
-                                     coalesce(v_storage_trim_pricing_calculated_value, 0)::text, false);
+                                     coalesce(v_storage_trim_pricing_calculated_value::int, 0::int)::text, false);
     end if;
 END
 $BODY$
