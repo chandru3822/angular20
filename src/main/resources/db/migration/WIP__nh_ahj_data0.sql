@@ -353,7 +353,7 @@ $do$
       v_total bigint;
     BEGIN
       raise notice 'Start Utility  = %',clock_timestamp();
-      v_total = v_total + 1;
+
 
         for x in select a.id,
                         a.name,
@@ -393,7 +393,7 @@ $do$
                  from brs.ahj_utility_c a
             loop
                 v_utility_id = null;
-
+                v_total = v_total + 1;
                 --check if there is an existing utility by name
                 select fa.id
                 into v_utility_id

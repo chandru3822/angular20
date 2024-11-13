@@ -18,6 +18,7 @@ $do$
                project_id,
                lov1_category_c_id,
                lov3_status_id,
+               c.status,
                c.record_type_id,
                case_number,
                c.owner_id,
@@ -67,7 +68,28 @@ $do$
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
                                                     cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
-        values (v_project_process_step_id, 238, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
+        values (v_project_process_step_id, 238, null, CASE
+                                                        WHEN x.status = 'Closed' THEN 115
+                                                        WHEN x.status = 'Open to Work' THEN 121
+                                                        WHEN x.status = 'Waiting for Customer Response' THEN 129
+                                                        WHEN x.status = 'In Progress' THEN 106
+                                                        WHEN x.status = 'Pending SunPower Action' THEN 124
+                                                        WHEN x.status = 'Completed' THEN 3
+                                                        WHEN x.status = 'Pending Partner Action' THEN 125
+                                                        WHEN x.status = 'Pending Customer Action' THEN 123
+                                                        WHEN x.status = 'Pending Other SPWR Team Action' THEN 130
+                                                        WHEN x.status = 'Cancelled' THEN 4
+                                                        WHEN x.status = 'Sent to Inspector' THEN 134
+                                                        WHEN x.status = 'Assigned' THEN 111
+                                                        WHEN x.status = 'Rejected' THEN 95
+                                                        WHEN x.status = 'Incomplete' THEN 135
+                                                        WHEN x.status = 'New' THEN 119
+                                                        WHEN x.status = 'Waiting for Partner Response' THEN 136
+                                                        WHEN x.status = 'Pending 3rd Party Contractor Action' THEN 122
+                                                        WHEN x.status = 'Approved' THEN 96
+                                                        WHEN x.status = 'Not Started' THEN 90
+                                                        WHEN x.status = 'Pending' THEN 7
+                                                        ELSE 115 end, null, null, now(), now(), 2384850, 2384850, false, null,
                 null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 
@@ -138,6 +160,7 @@ $do$
                     c.project_id,
                     lov1_category_c_id,
                     lov3_status_id,
+                    c.status,
                     c.record_type_id,
                     case_number,
                     c.owner_id,
@@ -188,7 +211,28 @@ $do$
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
                                                     cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
-        values (v_project_process_step_id, 238, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
+        values (v_project_process_step_id, 238, null, CASE
+                                                        WHEN x.status = 'Closed' THEN 115
+                                                        WHEN x.status = 'Open to Work' THEN 121
+                                                        WHEN x.status = 'Waiting for Customer Response' THEN 129
+                                                        WHEN x.status = 'In Progress' THEN 106
+                                                        WHEN x.status = 'Pending SunPower Action' THEN 124
+                                                        WHEN x.status = 'Completed' THEN 3
+                                                        WHEN x.status = 'Pending Partner Action' THEN 125
+                                                        WHEN x.status = 'Pending Customer Action' THEN 123
+                                                        WHEN x.status = 'Pending Other SPWR Team Action' THEN 130
+                                                        WHEN x.status = 'Cancelled' THEN 4
+                                                        WHEN x.status = 'Sent to Inspector' THEN 134
+                                                        WHEN x.status = 'Assigned' THEN 111
+                                                        WHEN x.status = 'Rejected' THEN 95
+                                                        WHEN x.status = 'Incomplete' THEN 135
+                                                        WHEN x.status = 'New' THEN 119
+                                                        WHEN x.status = 'Waiting for Partner Response' THEN 136
+                                                        WHEN x.status = 'Pending 3rd Party Contractor Action' THEN 122
+                                                        WHEN x.status = 'Approved' THEN 96
+                                                        WHEN x.status = 'Not Started' THEN 90
+                                                        WHEN x.status = 'Pending' THEN 7
+                                                        ELSE 115 end, null, null, now(), now(), 2384850, 2384850, false, null,
                 null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 

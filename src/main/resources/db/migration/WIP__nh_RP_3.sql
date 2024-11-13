@@ -377,6 +377,7 @@ $do$
                     left join flow.list_of_value lov48 on lov48.name = rpc.evse_count_c and lov48.parent_id = 26283
       where rpc.is_deleted = false
       loop
+        v_total = v_total + 1;
         v_contact_id = null;
         v_object_category_id = null;
         if x.homeowner_id is not null then
