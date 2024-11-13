@@ -144,7 +144,7 @@ $default-text: rgba(0,0,0,0.87);
   --fc-today-bg-color: var(--v-primary-lighten9);
   --fc-event-bg-color: var(--v-primary-lighten3);
 }
-.fc-button-primary.fc-prev-button, .fc-button-primary.fc-customToday-button, .fc-button-primary.fc-next-button, .fc-button-primary.fc-button-active {
+.fc-button-primary.fc-prev-button, .fc-button-primary.fc-customToday-button, .fc-button-primary.fc-next-button, .fc-button-primary.fc-button-active, .fc-button-primary.fc-customCurrentWeek-button, .fc-button-primary.fc-customEdit-button {
   color: white !important;
   background-color: var(--v-primary-base) !important;
   border-color: var(--v-primary-base) !important;
