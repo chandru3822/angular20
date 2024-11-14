@@ -5,8 +5,6 @@ CREATE OR REPLACE FUNCTION brs.calculate_partner_fees(p_project_id bigint,
     returns void AS
 $BODY$
 
-    --todo: org =
-
 declare
 --other values we save for use later on
     v_module_installation_cost_field_value            numeric := 0;
@@ -160,21 +158,21 @@ BEGIN
     select flow.get_cfv_value_as_text(p_project_id, null, v_nh_storage_configuration_group_cfga_id)::bigint
     into v_nh_storage_configuration_group_value;
 
-    raise notice 'v_installation_type_value = %', v_installation_type_value::text;
-    raise notice 'v_number_of_panels_value = %', v_number_of_panels_value::text;
+--     raise notice 'v_installation_type_value = %', v_installation_type_value::text;
+--     raise notice 'v_number_of_panels_value = %', v_number_of_panels_value::text;
 
     if (v_alliance_ip_partner_value is not null) then
         select flow.get_cfv_value_as_text(p_project_id, null, v_alliance_permitting_partner_cfga_id)::bigint
         into v_alliance_permitting_partner_value;
 
-        raise notice 'v_alliance_ip_partner_value = %', v_alliance_ip_partner_value::text;
-        raise notice 'v_alliance_permitting_partner_value = %', v_alliance_permitting_partner_value::text;
+--         raise notice 'v_alliance_ip_partner_value = %', v_alliance_ip_partner_value::text;
+--         raise notice 'v_alliance_permitting_partner_value = %', v_alliance_permitting_partner_value::text;
         if (v_alliance_permitting_partner_value = v_alliance_ip_partner_value) then
             --v_permitting_labor_only_value stays as ::text since we get and save, we don't do anything with it
             select flow.get_cfv_value_as_text(p_project_id, null, v_permitting_labor_only_org_cfga_id, v_alliance_permitting_partner_value)
             into v_permitting_labor_only_value;
 
-            raise notice 'v_permitting_labor_only_value = %', v_permitting_labor_only_value::text;
+--             raise notice 'v_permitting_labor_only_value = %', v_permitting_labor_only_value::text;
             perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint,
                                          v_nh_permit_cost_actual_cfga_id::bigint,
                                          v_permitting_labor_only_value::text, true);
@@ -199,7 +197,7 @@ BEGIN
         end if;
 
         if (v_cfga_to_use_for_module_installation_cost is not null) then
-            raise notice 'v_module_installation_cost_field_value = %', v_module_installation_cost_field_value;
+--             raise notice 'v_module_installation_cost_field_value = %', v_module_installation_cost_field_value;
 
             select flow.get_cfv_value_as_text(p_project_id, null, v_cfga_to_use_for_module_installation_cost, v_alliance_ip_partner_value)::numeric
             into v_module_installation_cost_field_value;
@@ -233,7 +231,7 @@ BEGIN
             select flow.get_cfv_value_as_text(p_project_id, null, v_steep_roof_fee_org_cfga_id, v_alliance_ip_partner_value)::numeric into v_steep_roof;
         end if;
 
-        raise notice 'v_nh_storage_configuration_group_value = %', v_nh_storage_configuration_group_value::text;
+--         raise notice 'v_nh_storage_configuration_group_value = %', v_nh_storage_configuration_group_value::text;
         if(v_nh_storage_configuration_group_value is not null) then
             select flow.get_cfv_value_as_text(p_project_id, null, v_nh_storage_install_fee_cfga_id, v_alliance_ip_partner_value)::numeric into v_storage_install;
         end if;
@@ -241,15 +239,15 @@ BEGIN
         --NOTE: these values have to be coalesced because sometimes the value is null and 10 + null = null which breaks stuff
         v_calculated_nh_trim_labor_pricing_to_save =
                     coalesce(v_module_installation_cost, 0) + coalesce(v_custom_distance_adder, 0) + coalesce(v_3_story_roof, 0) + coalesce(v_steep_roof, 0) + coalesce(v_storage_install, 0);
-        raise notice 'v_module_installation_cost = %', v_module_installation_cost::text;
-        raise notice 'v_custom_distance_adder = %', v_custom_distance_adder::text;
-        raise notice 'v_3_story_roof = %', v_3_story_roof::text;
-        raise notice 'v_steep_roof = %', v_steep_roof::text;
-        raise notice 'v_storage_install = %', v_storage_install::text;
-        raise notice 'v_calculated_nh_trim_labor_pricing_to_save = %', v_calculated_nh_trim_labor_pricing_to_save::text;
+--         raise notice 'v_module_installation_cost = %', v_module_installation_cost::text;
+--         raise notice 'v_custom_distance_adder = %', v_custom_distance_adder::text;
+--         raise notice 'v_3_story_roof = %', v_3_story_roof::text;
+--         raise notice 'v_steep_roof = %', v_steep_roof::text;
+--         raise notice 'v_storage_install = %', v_storage_install::text;
+--         raise notice 'v_calculated_nh_trim_labor_pricing_to_save = %', v_calculated_nh_trim_labor_pricing_to_save::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_trim_labor_pricing_cfga_id::bigint,
                                      v_calculated_nh_trim_labor_pricing_to_save::text, true);
-        raise notice 'v_ac_rough_wire = %', v_ac_rough_wire::text;
+--         raise notice 'v_ac_rough_wire = %', v_ac_rough_wire::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_rough_labor_pricing_cfga_id::bigint,
                                      v_ac_rough_wire::text, true);
 
@@ -264,9 +262,9 @@ BEGIN
 
             v_roofer_labor_pricing_calculated_value = v_number_of_panels_value * v_nh_roofer_$_panel_value;
         end if;
-        raise notice 'v_number_of_panels_value = %', v_number_of_panels_value::text;
-        raise notice 'v_nh_roofer_$_panel_value = %', v_nh_roofer_$_panel_value::text;
-        raise notice 'v_roofer_labor_pricing_calculated_value = %', v_roofer_labor_pricing_calculated_value::text;
+--         raise notice 'v_number_of_panels_value = %', v_number_of_panels_value::text;
+--         raise notice 'v_nh_roofer_$_panel_value = %', v_nh_roofer_$_panel_value::text;
+--         raise notice 'v_roofer_labor_pricing_calculated_value = %', v_roofer_labor_pricing_calculated_value::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_roofer_labor_pricing_cfga_id::bigint,
                                      v_roofer_labor_pricing_calculated_value::text, true);
     end if;
@@ -309,11 +307,11 @@ BEGIN
             select flow.get_cfv_value_as_text(p_project_id, null, v_cfga_to_use_for_storage_trim_pricing, v_nh_alliance_storage_ip_value)::numeric
             into v_storage_trim_pricing_calculated_value;
         end if;
-        raise notice 'v_storage_rough_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value::int, 0::int)::text;
+--         raise notice 'v_storage_rough_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value::int, 0::int)::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint,
                                      v_nh_storage_rough_pricing_cfga_id::bigint,
                                      coalesce(v_storage_rough_pricing_calculated_value::int, 0::int)::text, true);
-        raise notice 'v_storage_trim_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value::int,0::int)::text;
+--         raise notice 'v_storage_trim_pricing_calculated_value = %', coalesce(v_permitting_labor_only_value::int,0::int)::text;
         perform flow.set_project_cfv(p_project_id::bigint, p_user_id::bigint, v_nh_storage_trim_pricing_cfga_id::bigint,
                                      coalesce(v_storage_trim_pricing_calculated_value::int, 0::int)::text, true);
     end if;
