@@ -223,7 +223,7 @@ BEGIN
         select flow.get_cfv_value_as_text(p_project_id, null, v_system_adders_cfga_id)::bigint[]
         into v_system_adders_value;
         if (v_system_adders_value is not null and v_3_story_roof_lov_id = any (v_system_adders_value)) then
-            select flow.get_cfv_value_as_text(p_project_id, null, v_3_story_roof_fee_org_cfga_id)::numeric
+            select flow.get_cfv_value_as_text(p_project_id, null, v_3_story_roof_fee_org_cfga_id, v_alliance_ip_partner_value)::numeric
             into v_3_story_roof;
         end if;
 
@@ -271,6 +271,8 @@ BEGIN
 
     select flow.get_cfv_value_as_text(p_project_id, null, v_nh_alliance_storage_ip_cfga_id)::bigint
     into v_nh_alliance_storage_ip_value;
+--     raise notice 'v_nh_alliance_storage_ip_value = %', v_nh_alliance_storage_ip_value::text;
+
     if (v_nh_alliance_storage_ip_value is not null) then
 
         if (v_nh_storage_configuration_group_value = v_enphase_battery_system_5_kWh_non_backup_lov_id) then
@@ -299,10 +301,12 @@ BEGIN
             v_cfga_to_use_for_storage_trim_pricing = v_tesla_54_backup_storage_install_fee_org_cfga_id;
         end if;
 
+--         raise notice 'v_cfga_to_use_for_storage_rough_pricing = %', v_cfga_to_use_for_storage_rough_pricing;
         if (v_cfga_to_use_for_storage_rough_pricing is not null) then
             select flow.get_cfv_value_as_text(p_project_id, null, v_cfga_to_use_for_storage_rough_pricing, v_nh_alliance_storage_ip_value)::numeric
             into v_storage_rough_pricing_calculated_value;
         end if;
+--         raise notice 'v_cfga_to_use_for_storage_trim_pricing = %', v_cfga_to_use_for_storage_trim_pricing;
         if (v_cfga_to_use_for_storage_trim_pricing is not null) then
             select flow.get_cfv_value_as_text(p_project_id, null, v_cfga_to_use_for_storage_trim_pricing, v_nh_alliance_storage_ip_value)::numeric
             into v_storage_trim_pricing_calculated_value;
