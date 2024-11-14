@@ -174,6 +174,7 @@ public class ProjectService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
     params.put("searchColumn", searchColumn);
+    params.put("partnerIds", user.getPartnerIds());
 
     String searchSql = ProjectQuery.searchByOwner;
     if (viewCustom) {

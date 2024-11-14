@@ -129,7 +129,8 @@ select *
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
                                                             :includeCommissionDetails::boolean,
-                                                            :searchColumn::character varying)
+                                                            :searchColumn::character varying,
+                                                            array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
@@ -143,7 +144,8 @@ select *
                                   :companyProjectStatusTypeId::bigint,
                                   :sortColumn::character varying,
                                   :sortDirection::character varying,
-                                  :searchColumn::character varying)
+                                  :searchColumn::character varying,
+                                  array[ :partnerIds ]::bigint[])
     """;
 
 
@@ -155,7 +157,8 @@ select *
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
                                                             :includeCommissionDetails::boolean,
-                                                            :searchColumn::character varying)
+                                                            :searchColumn::character varying,
+                                                            array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL

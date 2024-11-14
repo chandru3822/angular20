@@ -175,6 +175,9 @@ public class UserPositionService {
           List.class,
           "hierarchy",
           new JsonCollectionDeserializer(userOrgHierarchyRef, objectMapper));
+
+      TypeReference<List<Long>> partnerIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, new JsonCollectionDeserializer(partnerIdsRef, objectMapper));
     }
   }
 }

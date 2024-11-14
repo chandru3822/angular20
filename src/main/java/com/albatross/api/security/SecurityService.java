@@ -161,7 +161,13 @@ public class SecurityService implements UserDetailsService {
     params.put("id", id);
     // note: i had to change this query a bunch cuz if it was a 7oaks employee it was not returning
     // the company's api path or aws bucket even when in that context
-    return sqlCache.getBySql(UserQuery.findUserById, params, new UserService.UserMapper<>(User.class, om)).orElse(null);
+    var user = sqlCache.getBySql(UserQuery.findUserById, params, new UserService.UserMapper<>(User.class, om)).orElse(null);
+    if (user != null) {
+      user.setPartnerIds(user.getUserPositions().stream()
+                             .flatMap(up -> up.getPartnerIds().stream())
+                             .toList());
+    }
+    return user;
   }
 
   public UserAccountDetails getCurrentUserDetails() {
