@@ -119,6 +119,7 @@ declare
     --once kalebs script has run, come back and hard code these instead of selecting into them cuz that is slow af
     v_comp_install_lov_id                             bigint;
     v_over_tile_lov_id                                bigint;
+    v_over_tile_install_lov_id                                bigint;
     v_inset_install_lov_id                            bigint;
     v_flat_roof_lov_id                                bigint;
     v_mixed_install_lov_id                            bigint;
@@ -143,6 +144,7 @@ BEGIN
     --once kalebs script has run, come back and hard code these instead of selecting into them cuz that is slow af
     select id into v_comp_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Comp Install'));
     select id into v_over_tile_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Over Tile'));
+    select id into v_over_tile_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Over tile install'));
     select id into v_inset_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Inset Install'));
     select id into v_flat_roof_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Flat Roof Install'));
     select id into v_mixed_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Mixed Install'));
@@ -200,7 +202,8 @@ BEGIN
             v_cfga_to_use_for_module_installation_cost = v_nh_comp_install_org_cfga_id;
         elseif (v_installation_type_value = v_inset_install_lov_id AND v_alliance_partner_roofer_value is null) then
             v_cfga_to_use_for_module_installation_cost = v_nh_inset_install_org_cfga_id;
-        elseif (v_installation_type_value = v_over_tile_lov_id) then
+        elseif (v_installation_type_value = v_over_tile_lov_id
+                OR v_installation_type_value = v_over_tile_install_lov_id) then
             v_cfga_to_use_for_module_installation_cost = v_nh_over_tile_install_org_cfga_id;
         elsif (v_installation_type_value = v_flat_roof_lov_id) then
             v_cfga_to_use_for_module_installation_cost = v_nh_flat_roof_install_org_cfga_id;
@@ -217,10 +220,11 @@ BEGIN
         end if;
 
         if (v_cfga_to_use_for_module_installation_cost is not null) then
---             raise notice 'v_module_installation_cost_field_value = %', v_module_installation_cost_field_value;
 
             select flow.get_cfv_value_as_text(p_project_id, null, v_cfga_to_use_for_module_installation_cost, v_alliance_ip_partner_value)::numeric
             into v_module_installation_cost_field_value;
+
+--             raise notice 'v_module_installation_cost_field_value = %', v_module_installation_cost_field_value;
 
             v_module_installation_cost = coalesce(v_module_installation_cost_field_value, 0) * coalesce(v_number_of_panels_value, 0);
         end if;

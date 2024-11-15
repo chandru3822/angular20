@@ -189,6 +189,9 @@ $do$
                     rpc.interconnection_notes_c,
                     rpc.adders_value_quote_c,
                     rpc.rebate_claim_expiry_date_c,
+                    rpc.price_discrepancy_c,
+                    rpc.system_size_discrepancy_c,
+                    rpc.deal_type_discrepancy_c,
                     rpc.gate_code_c,
                     rpc.roof_material_c,
                     rpc.hoa_name_c,
@@ -492,6 +495,11 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28285,x.wo_storage_price_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28286,x.module_count_discrepancy_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28287,x.builder_wo_value_c::text, true);
+
+
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30083,x.price_discrepancy_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30084,x.system_size_discrepancy_c::text, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30150,x.deal_type_discrepancy_c::text , true);
 
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28288,x.builder_wo_storage_price_c::text, true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28289,x.additional_builder_services_wo_c::text, true);

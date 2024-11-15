@@ -35,6 +35,7 @@ $do$
                     dc.notes_from_requester_c,
                     dc.status_c,
                     dc.id,
+                    dc.record_type_id,
                     case when dc.design_c_project_designer_c is null and dc.project_designer_c is not null then
                            2495780::bigint
                          else
@@ -125,6 +126,7 @@ $do$
                   when z.status_c = 'Pending Information' then 93
                   when z.status_c = 'Under Review' then 94
                   when z.status_c = 'Rejected' then 95
+                  when z.status_c = 'Approved' and z.record_type_id = '01234000000YN8CAAW' then 20
                   when z.status_c = 'Approved' then 96
                   when z.status_c = 'For Plotting' then 97
                   when z.status_c = 'Reference Only' then 98
