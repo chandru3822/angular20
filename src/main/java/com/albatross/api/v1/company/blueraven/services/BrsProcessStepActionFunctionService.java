@@ -340,7 +340,7 @@ public class BrsProcessStepActionFunctionService {
       String manufacturer = null;
       String inverter = null;
       String panelName = null;
-      String storageType = design.get("storage_selected_operating_mode").toString();
+      String storageType = design.get("storage_selected_operating_mode").toString().replace("\"", "");
 
 
       if (!arrays.isEmpty()) {
@@ -458,6 +458,8 @@ public class BrsProcessStepActionFunctionService {
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } else if (paramName.contains("Storage Type")) {
             params.put("textValue", storageType);
+            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+
         }
       }
     } catch (Exception e) {
