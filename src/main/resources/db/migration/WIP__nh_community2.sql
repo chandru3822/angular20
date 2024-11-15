@@ -69,6 +69,8 @@ $do$
                     c.permit_ahj_fees_c,
                     c.permitting_notes_c,
                     c.master_permit_c,
+                    c.owner_id,
+                    c.nh_community_c_owner_id,
                     c.builder_permitting_complete_c,
                     c.cash_pv_module_qty_c,
                     c.right_sized_c,
@@ -258,6 +260,7 @@ $do$
             perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1048,v_ahjname_c::text , true);
           end if;
 
+          perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30060,x.nh_community_c_owner_id::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29879,x.name::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28010,x.builder_initial_submitter_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28008,x.tract_number_c::text , true);
@@ -395,7 +398,19 @@ $do$
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28085,x.sequence_sheet_info_complete_c::text, true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28087,x.site_plan_c::text, true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28088,x.site_plan_info_complete_c::text, true);
-        end if;
+
+         if  x.community_status_c not in ('Construction Complete','Closed') then
+           insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                  company_process_step_status_type_id,
+                                                  process_step_complete_date, date_created, date_modified, created_by_id,
+                                                  modified_by_id, archived, main, parent_project_process_step_id,
+                                                  cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+           values (v_project_id, 3755, null,  1 , null, now(), now(), 2384850, 2384850, false,
+                    true , null, null, null,x.id);
+         end if;
+
+      end if;
+
 
       end loop;
     raise notice 'NH Community END = %',clock_timestamp();

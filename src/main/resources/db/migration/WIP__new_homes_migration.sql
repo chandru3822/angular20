@@ -6812,6 +6812,9 @@ create table if not exists brs.CONTACT
 -- CREATE INDEX if not exists sp_contact_account_id ON brs.sp_contact (account_id);
 -- CREATE INDEX if not exists sp_contact_id ON brs.sp_contact (id);
 
+--  CREATE INDEX if not exists account_contact_relation_contact_id ON brs.account_contact_relation (contact_id);
+-- CREATE INDEX if not exists account_contact_relation_account_id ON brs.account_contact_relation (account_id);
+
 --CREATE INDEX if not exists residential_project_c_PLAN_TYPE_C ON brs.residential_project_c (PLAN_TYPE_C);
 -- CREATE INDEX if not exists residential_project_c_record_type_id ON brs.residential_project_c (record_type_id);
 --

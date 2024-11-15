@@ -9,6 +9,7 @@ $do$
     v_object_category_project_id bigint;
     v_system_adders_c bigint[];
     v_total bigint;
+  v_ap_contacts text;
   BEGIN
     raise notice 'Residential Property START = %',clock_timestamp();
     v_total = 0;
@@ -184,6 +185,7 @@ $do$
                     rpc.utility_application_id_c,
                     rpc.t_24_notes_c,
                     rpc.utility_account_number_c,
+                    rpc.account_c,
                     rpc.utility_meter_number_c,
                     rpc.hers_certificate_received_c,
                     rpc.interconnection_notes_c,
@@ -253,6 +255,7 @@ $do$
                     lov48.id as lov48_evse_count_c_id,
                     rpc.ev_charger_retail_amount_c,
                     rpc.scheduled_ev_installation_date_c,
+                    rpc.storage_configuration_c,
                     rpc.status_c,
                     pcfv1.int_value as utility_id,
                     pcfv.int_value as ahj_id,
@@ -416,6 +419,18 @@ $do$
                x.zip_code_c,x.company_state_id,1,false,null,x.id,
                v_object_category_project_id,x.community_project_id
               ) returning id into v_project_id;
+
+        v_ap_contacts = null;
+        select string_agg(concat(sc.name,' ',sc.email,' ',sc.phone,' ',sc.mobile_phone,' ',sc.mailing_street,' ',sc.mailing_city,' ',sc.mailing_state,' ',sc.mailing_postal_code),E'\n')::text
+        into v_ap_contacts
+        from brs.account_contact_relation acr
+        inner join brs.sp_contact sc on sc.id = acr.contact_id
+        where acr.account_id = x.account_c;
+
+        if v_ap_contacts is not null then
+         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30151,v_ap_contacts::text , true);
+        end if;
+
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29874,x.plan_type_name::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1048,x.ahj_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1049,x.utility_id::text , true);
@@ -656,19 +671,20 @@ $do$
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30023,x.lov48_evse_count_c_id::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30024,x.ev_charger_retail_amount_c::text , true);
         perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30025,x.scheduled_ev_installation_date_c::text , true);
-        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30021,case when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPEQAY' then 26020::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hP9QAI' then 26021::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPOQAY' then 26021::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPJQAY' then 26022::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000001ObZQAU' then 26023::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000RSg0QAG' then 26024::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCIQA4' then 26025::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCSQA4' then 26025::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000NQCXQA4' then 26026::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T000000N9IyQAK' then 26027::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPYQAY' then 26028::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPsQAI' then 26028::text
-                                                                                 when x.scheduled_ev_installation_date_c::text = 'a772T0000008hPnQAI' then 26029::text else null end, true);
+        perform flow.set_project_cfv_no_checks(v_project_id , 2384850,30021,
+                                                              case when x.storage_configuration_c::text = 'a772T0000008hPEQAY' then 26020::text
+                                                                                 when x.storage_configuration_c::text = 'a772T0000008hP9QAI' then 26021::text
+                                                                                 when x.storage_configuration_c::text = 'a772T0000008hPOQAY' then 26021::text
+                                                                                 when x.storage_configuration_c::text = 'a772T0000008hPJQAY' then 26022::text
+                                                                                 when x.storage_configuration_c::text = 'a772T0000001ObZQAU' then 26023::text
+                                                                                 when x.storage_configuration_c::text = 'a772T000000RSg0QAG' then 26024::text
+                                                                                 when x.storage_configuration_c::text = 'a772T000000NQCIQA4' then 26025::text
+                                                                                 when x.storage_configuration_c::text = 'a772T000000NQCSQA4' then 26025::text
+                                                                                 when x.storage_configuration_c::text = 'a772T000000NQCXQA4' then 26026::text
+                                                                                 when x.storage_configuration_c::text = 'a772T000000N9IyQAK' then 26027::text
+                                                                                 when x.storage_configuration_c::text = 'a772T0000008hPYQAY' then 26028::text
+                                                                                 when x.storage_configuration_c::text = 'a772T0000008hPsQAI' then 26028::text
+                                                                                 when x.storage_configuration_c::text = 'a772T0000008hPnQAI' then 26029::text else null end, true);
 
 
         v_system_adders_c = null;
@@ -685,6 +701,17 @@ $do$
                  inner join flow.list_of_value lov on lov.name = foo.system_adders_c and lov.parent_id = 25442;
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28328,v_system_adders_c::text, true);
         end if;
+
+        if x.status_c not in ('Completed') then
+          insert into flow.project_process_step (project_id, process_step_id, user_position_id,
+                                                 company_process_step_status_type_id,
+                                                 process_step_complete_date, date_created, date_modified, created_by_id,
+                                                 modified_by_id, archived, main, parent_project_process_step_id,
+                                                 cancelled_date, parent_project_process_step_event_id,nw_migration_id)
+          values (v_project_id, 3801, null,  1 , null, now(), now(), 2384850, 2384850, false,
+                  true , null, null, null,x.id);
+        end if;
+
        end loop;
     raise notice 'Residential Property END = %',clock_timestamp();
     raise notice 'Residential Property Total = %',v_total;

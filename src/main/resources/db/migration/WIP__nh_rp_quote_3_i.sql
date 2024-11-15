@@ -95,8 +95,10 @@ $do$
                      lov4.id as lov4_non_backup_storage_acknowledged_c,
                      lov5.id as lov5_credit_bureau_c,
                      lov6.id as lov6_lease_doc_reviewed_c,
-                     CASE WHEN row_number() OVER (PARTITION BY rpc.id ORDER BY q.lease_doc_signed_date_c,q.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
+                     lpc.id as lp_status_id,
+                     lpc.status_c as lp_status
               from brs.QUOTE Q
+                     inner join brs.lease_payment_c lpc on lpc.quote_c = q.id
                      inner join brs.account A on a.id = q.account_id
                      inner join brs.RESIDENTIAL_PROJECT_C RPC on rpc.ACCOUNT_C = a.id
                      inner join flow.project p on p.nw_migration_id = rpc.id
@@ -118,8 +120,10 @@ $do$
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id,nw_migration_id)
-        values (x.project_id, 3798, null, case when x.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
-                case when x.is_last_row is true then true else false end, null, null, null,x.quote_id) returning id into v_project_process_step_id;
+        values (x.project_id, 3798, null, case when x.lp_status_id is not null and
+                                                    x.lp_status = 'Active' then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
+                                        case when x.lp_status_id is not null and
+                                      x.lp_status = 'Active' then true else false end, null, null, null,x.quote_id) returning id into v_project_process_step_id;
 
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30076,x.quote_type_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29291,x.module_c::text , true);
