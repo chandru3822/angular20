@@ -119,13 +119,15 @@ declare
     --once kalebs script has run, come back and hard code these instead of selecting into them cuz that is slow af
     v_comp_install_lov_id                             bigint;
     v_over_tile_lov_id                                bigint;
-    v_over_tile_install_lov_id                                bigint;
+    v_over_tile_install_lov_id                        bigint;
     v_inset_install_lov_id                            bigint;
+    v_comp_inset_on_tile_lov_id                       bigint;
     v_flat_roof_lov_id                                bigint;
     v_mixed_install_lov_id                            bigint;
     v_one_roof_install_lov_id                         bigint;
     v_metal_standing_seam_install_lov_id              bigint;
     v_flat_roof_tilt_up_install_lov_id                bigint;
+    v_flat_roof_tilt_up_lov_id                        bigint;
     v_other_install_lov_id                            bigint;
     v_sunpower_lov_id                                 bigint;
     v_3_story_roof_lov_id                             bigint;
@@ -146,11 +148,13 @@ BEGIN
     select id into v_over_tile_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Over Tile'));
     select id into v_over_tile_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Over tile install'));
     select id into v_inset_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Inset Install'));
+    select id into v_comp_inset_on_tile_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Comp Inset on Tile'));
     select id into v_flat_roof_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Flat Roof Install'));
     select id into v_mixed_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Mixed Install'));
     select id into v_one_roof_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('OneRoof install'));
     select id into v_metal_standing_seam_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Metal Standing Seam Install'));
     select id into v_flat_roof_tilt_up_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Flat Roof Tilt Up Install'));
+    select id into v_flat_roof_tilt_up_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Flat Roof tilt-up'));
     select id into v_other_install_lov_id from flow.list_of_value where archived is false and parent_id = 25266 and trim(lower(name)) = trim(lower('Other'));
     select id into v_sunpower_lov_id from flow.list_of_value where archived is false and parent_id = 25238 and trim(lower(name)) = trim(lower('Sunpower'));
     select id into v_3_story_roof_lov_id from flow.list_of_value where archived is false and parent_id = 25442 and trim(lower(name)) = trim(lower('3+ Story Roof'));
@@ -198,7 +202,7 @@ BEGIN
         end if;
 
         if (v_installation_type_value = v_comp_install_lov_id
-            OR (v_installation_type_value = v_inset_install_lov_id AND v_alliance_partner_roofer_value is not null)) then
+            OR ((v_installation_type_value = v_inset_install_lov_id OR v_installation_type_value = v_comp_inset_on_tile_lov_id) AND v_alliance_partner_roofer_value is not null)) then
             v_cfga_to_use_for_module_installation_cost = v_nh_comp_install_org_cfga_id;
         elseif (v_installation_type_value = v_inset_install_lov_id AND v_alliance_partner_roofer_value is null) then
             v_cfga_to_use_for_module_installation_cost = v_nh_inset_install_org_cfga_id;
@@ -213,7 +217,8 @@ BEGIN
             v_cfga_to_use_for_module_installation_cost = v_nh_one_roof_install_org_cfga_id;
         elsif (v_installation_type_value = v_metal_standing_seam_install_lov_id) then
             v_cfga_to_use_for_module_installation_cost = v_nh_metal_standing_seam_install_org_cfga_id;
-        elsif (v_installation_type_value = v_flat_roof_tilt_up_install_lov_id) then
+        elsif (v_installation_type_value = v_flat_roof_tilt_up_install_lov_id
+            OR v_installation_type_value = v_flat_roof_tilt_up_lov_id) then
             v_cfga_to_use_for_module_installation_cost = v_nh_flat_roof_tilt_up_install_org_cfga_id;
         elsif (v_installation_type_value = v_other_install_lov_id) then
             v_cfga_to_use_for_module_installation_cost = v_nh_other_install_org_cfga_id;
