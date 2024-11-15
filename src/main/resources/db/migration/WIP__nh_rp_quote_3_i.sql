@@ -85,6 +85,7 @@ $do$
                      q.full_pre_payment_amount_estimated_paymen_c,
                      q.full_pre_payment_amount_estimated_tax_on_c,
                      q.full_prepayment_of_lease_amount_c,
+                     q.quote_type_c,
 --                      q.System_Size_c,
                      -- q.Net_Cost_c,
                      p.id as project_id,
@@ -120,6 +121,7 @@ $do$
         values (x.project_id, 3798, null, case when x.is_last_row is true then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
                 case when x.is_last_row is true then true else false end, null, null, null,x.quote_id) returning id into v_project_process_step_id;
 
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30076,x.quote_type_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29291,x.module_c::text , true);
         --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29292,x.Module_Brand_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29293,x.module_quantity_c::text , true);

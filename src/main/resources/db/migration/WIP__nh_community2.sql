@@ -90,6 +90,7 @@ $do$
                     c.builder_hers_rater_c,
                     c.load_application_c,
                     c.load_application_received_c,
+                    c.community_name_c,
                     c.address_list_c,
                     c.ahj_utility_c,
                     c.address_list_info_complete_c,
@@ -257,6 +258,7 @@ $do$
             perform flow.set_project_cfv_no_checks(v_project_id , 2384850,1048,v_ahjname_c::text , true);
           end if;
 
+          perform flow.set_project_cfv_no_checks(v_project_id , 2384850,29879,x.name::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28010,x.builder_initial_submitter_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28008,x.tract_number_c::text , true);
           perform flow.set_project_cfv_no_checks(v_project_id , 2384850,28000,x.model_discount_c::text , true);
