@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,11 +29,12 @@ public class VirtualResourceCapacityService {
         params.put("rangeStart", startTime);
         params.put("rangeEnd", endTime);
 
-        return sqlCache.queryBySql(
+        List<VirtualResourceCapacitySchedule> results =  sqlCache.queryBySql(
                 CapacityQuery.getForRange,
                 params,
                 VirtualResourceCapacitySchedule.class
         );
+        return null == results ? new ArrayList<VirtualResourceCapacitySchedule>() : results;
     }
 
     public Long getCurrentBookedCountForCapacityScheduleRow(Long orgId, String startTime, String endTime){
@@ -48,10 +50,13 @@ public class VirtualResourceCapacityService {
 
     public List<VirtualResourceCapacitySchedule> getCapacitySchedule(Long orgId, String rangeStartTime, String rangeEndTime){
         List<VirtualResourceCapacitySchedule> capacitySchedules = getCapacityForRange(orgId, rangeStartTime, rangeEndTime);
-        for (VirtualResourceCapacitySchedule cs: capacitySchedules) {
-            cs.setCurrentlyBooked(getCurrentBookedCountForCapacityScheduleRow(orgId, cs.getStartTime(), cs.getEndTime()));
+        if(capacitySchedules != null) {
+            for (VirtualResourceCapacitySchedule cs : capacitySchedules) {
+                cs.setCurrentlyBooked(getCurrentBookedCountForCapacityScheduleRow(orgId, cs.getStartTime(), cs.getEndTime()));
+            }
+            return capacitySchedules;
         }
-        return capacitySchedules;
+        return null;
     }
 
     public void updateMaxCapacity(List<VirtualResourceCapacitySchedule> resourceCapacitySchedules){

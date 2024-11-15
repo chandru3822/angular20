@@ -13,24 +13,30 @@ import * as constants from "constants";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import moment from "moment";
+import {getRequestWithParams} from "@/helpers/helpers.js";
+import {useAppStore} from "@/stores/AppStore.js";
 
+const appStore = useAppStore()
 const capacityCalendar = ref(null)
 
 const calendarOptions = ref({
   initialView:'timeGridWeek',
-  events:[
-    {
-      id: 'a',
-      title: 'my event',
-      start: '2024-11-12T15:00:00.000+00:00',
-      end: '2024-11-12T15:30:00.000+00:00'
-    },
-    {
-      id: 'b',
-      title: 'my event',
-      start: '2024-11-13T15:00:00.000+00:00',
-      end: '2024-11-13T15:30:00.000+00:00'
-    },
+  // events:[
+  //   {
+  //     id: 'a',
+  //     title: 'my event',
+  //     start: '2024-11-12T15:00:00.000+00:00',
+  //     end: '2024-11-12T15:30:00.000+00:00'
+  //   },
+  //   {
+  //     id: 'b',
+  //     title: 'my event',
+  //     start: '2024-11-13T15:00:00.000+00:00',
+  //     end: '2024-11-13T15:30:00.000+00:00'
+  //   },
+  // ],
+  eventSources:[
+    (info, successCallback, failureCallback) => getCapacitySchedule(info, successCallback, failureCallback)
   ],
   eventColor: 'transparent',
   eventDisplay:'background',
@@ -66,6 +72,24 @@ const getDateLabel = (date) => {
   const endDate = moment(date, "hh:mm").add(30, 'minutes').format("h:mma").toString()
   dateText += `-${endDate}`
   return dateText
+}
+
+const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
+  try{
+    let params = {
+      orgId:4548,
+      startTime:moment.utc(info.start),
+      endTime: moment.utc(info.end),
+    }
+    debugger
+    const {data} = await getRequestWithParams(
+        '/virtualResourceCapacity/capacityScheduleForRange', {params: params})
+    console.log(data)
+  } catch(e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Capacity Calendar')
+    appStore.loading = false
+  }
 }
 
 onMounted(async () => {

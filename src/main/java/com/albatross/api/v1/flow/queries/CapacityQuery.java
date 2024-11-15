@@ -10,8 +10,8 @@ public class CapacityQuery {
               vrsc.start_time,
               vrsc.end_time
             FROM flow.virtual_resource_slot_capacity vrsc
-            WHERE vrsc.start_time > :rangeStart and
-            	      vrsc.start_time < :rangeEnd and
+            WHERE vrsc.start_time > :rangeStart::timestamp without time zone and
+            	      vrsc.start_time < :rangeEnd::timestamp without time zone and
             	      vrsc.org_id = :orgId and
             	      vrsc.archived = false
             """;
