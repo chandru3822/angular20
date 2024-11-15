@@ -462,7 +462,8 @@ public class BrsProcessStepActionFunctionService {
             Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
             List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
             String finalStorageType;
-            if(storageType.equals("Energy arbitrage")) {
+            if(storageType.equals("energy_arbitrage") || storageType.equals("energy arbitrage")) {
+                //(right now it's energy_arbitrage but just in case it changes to a space instead)
                 finalStorageType = "Grid-Tied";
                 //we're using a different name than Aurora is for this one; I don't know why
             } else {
