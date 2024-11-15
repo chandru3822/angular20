@@ -340,6 +340,8 @@ public class BrsProcessStepActionFunctionService {
       String manufacturer = null;
       String inverter = null;
       String panelName = null;
+      String storageType = design.get("storage_selected_operating_mode").toString();
+
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
@@ -454,6 +456,8 @@ public class BrsProcessStepActionFunctionService {
         } else if (paramName.contains("Panel Name")) {
           params.put("textValue", panelName);
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Storage Type")) {
+            params.put("textValue", storageType);
         }
       }
     } catch (Exception e) {
