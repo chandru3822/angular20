@@ -457,9 +457,30 @@ public class BrsProcessStepActionFunctionService {
           params.put("textValue", panelName);
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } else if (paramName.contains("Storage Type")) {
-            params.put("textValue", storageType);
-            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-
+            final long companyId = Long.parseLong(systemValues.get("companyId").toString());
+            final String sql = "select id from flow.custom_field cf where field_name = 'Storage Type' and company_id = " + companyId;
+            Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
+            List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
+            String finalStorageType;
+            if(storageType.equals("Energy arbitrage")) {
+                finalStorageType = "Grid-Tied";
+                //we're using a different name than Aurora is for this one; I don't know why
+            } else {
+                finalStorageType = storageType;
+            }
+            final Long storageTypeLovId = values.stream()
+                    .filter(i -> Objects.equals(i.getName().toLowerCase(), finalStorageType.toLowerCase()))
+                    .map(ListOfValue::getId)
+                    .findFirst()
+                    .orElse(null);
+            if (storageTypeLovId != null) {
+                params.put("intValue", storageTypeLovId);
+                sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+            } else {
+                if(!ignoreAuroraErrors) {
+                    throw new RuntimeException("Unable to find list item for given storage type");
+                }
+            }
         }
       }
     } catch (Exception e) {
