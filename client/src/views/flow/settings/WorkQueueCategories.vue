@@ -110,7 +110,7 @@
                                              @click="saveHiddenAndWhiteList(item)" prepend-icon="save" text="SAVE HIDDEN"/>
                                     </v-card>
                 </template>
-                <template #item.icons="{ item }" class="text-right">
+                <template #item.icons="{ item, index }" class="text-right">
                   <div v-if="userCanEdit" class="item-icons">
                     <a-btn v-if="selectedWorkQueueCategoryId  === item.id"
                                      class="clickable"
@@ -124,7 +124,7 @@
                                      size="small" variant="text"
                                      color="primary"
                                      prepend-icon="edit"
-                                     @click="selectedWorkQueueCategoryId = item.id; selectedWorkQueueCategoryDisplayOrder = item.displayOrder"
+                                     @click="selectedWorkQueueCategoryId = item.id; selectedWorkQueueCategoryIndex = index"
                     />
                     <a-btn
                       :disabled="!userCanDelete"
@@ -136,7 +136,7 @@
                   </div>
                 </template>
           </v-data-table>
-          <ConfirmationDialog :open-dialog="!!categoryToDelete" @confirm="[deleteCategory, categoryToDelete.archived = true]" @close-dialog="categoryToDelete=null">
+          <ConfirmationDialog :open-dialog="!!categoryToDelete" @confirm="[deleteCategory(), categoryToDelete.archived = true]" @close-dialog="categoryToDelete=null">
             Are you sure you want to delete this work queue category: <strong>{{ categoryToDeleteName }}</strong>?
           </ConfirmationDialog>
         </v-container>
@@ -191,7 +191,8 @@
   const showColor = ref(false)
   const newCategory = ref({ color: '#ffffff'})
   const selectedWorkQueueCategoryId = ref(null)
-  const selectedWorkQueueCategoryDisplayOrder = ref(null)
+  //I changed this from displayOrder to Index because displayOrder starts at 1, and we needed the index which starts at 0
+  const selectedWorkQueueCategoryIndex = ref(null)
   const expanded = ref([])
   const categoryToDelete = ref(null)
   const headers = ref([
@@ -222,16 +223,18 @@
     return categoryToDelete.value ? categoryToDelete.value.workQueueCategory : ''
   })
   const workQueueCategoriesHiddenSelectedEventListener = (e) => {
-    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenWhiteListedPositions = e;
-    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged = true;
+    workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hiddenWhiteListedPositions = e;
+    workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hiddenPositionsChanged = true;
   }
   const workQueueCategoriesHiddenAllowEventListener = (e) => {
-    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenAllow = (e === 0);
-    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged = true;
+    workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hiddenAllow = (e === 0);
+    workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hiddenPositionsChanged = true;
   }
   const workQueueCategoriesHiddenCheckboxEventListener = (e) => {
-    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hidden = e;
-    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged = true;
+    console.log('displayOrder',selectedWorkQueueCategoryIndex.value)
+    console.log('cats',workQueueCategories.value)
+    workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hidden = e;
+    workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hiddenPositionsChanged = true;
   }
   const selectAllHidden = (wqc) => {
     return wqc.hiddenWhiteListedPositions?.length === positions.value?.length
@@ -279,10 +282,10 @@
   const saveHiddenAndWhiteList = async (item) => {
     appStore.loading = true
     try {
-      const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged ?? false}`, workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value])
+      const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hiddenPositionsChanged ?? false}`, workQueueCategories.value[selectedWorkQueueCategoryIndex.value])
       hiddenPositionsChanged.value = false
-      if (!workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hidden) {
-        workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenWhiteListedPositions = []
+      if (!workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hidden) {
+        workQueueCategories.value[selectedWorkQueueCategoryIndex.value].hiddenWhiteListedPositions = []
       }
       appStore.showSnack('SUCCESS', 'Saved Successfully')
 
@@ -315,6 +318,7 @@
   const deleteCategory = async () => {
     const typeId = categoryToDelete.value.id
     appStore.loading = true
+    console.log('made it here', typeId)
     try {
       const {status} = await deleteRequest(`/workQueueCategory/${typeId}`)
       appStore.showSnack('SUCCESS', 'Successfully Deleted Work Queue Category')
