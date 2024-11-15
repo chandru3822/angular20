@@ -25,6 +25,8 @@ public class VirtualResourceCapacityController {
         return virtualResourceCapacityService.getCapacitySchedule(orgId, startTime, endTime);
     }
 
+    //todo: getBookedForRange function
+
     @PostMapping(value="/maxCapacityList")
     public void updateMaxCapacity(
             @RequestParam List<VirtualResourceCapacitySchedule> resourceCapacitySchedules){

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +38,28 @@ public class VirtualResourceCapacityService {
         );
         return null == results ? new ArrayList<VirtualResourceCapacitySchedule>() : results;
     }
+    public List<VirtualResourceCapacitySchedule> getBookedForRange(Long orgId, String startTime, String endTime) {
+        // Define a formatter for the input string format
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+        // Parse the input strings into OffsetDateTime
+        OffsetDateTime start = OffsetDateTime.parse(startTime, formatter);
+        OffsetDateTime end = OffsetDateTime.parse(endTime, formatter);
+
+        List<VirtualResourceCapacitySchedule> bookedForRange = new ArrayList<VirtualResourceCapacitySchedule>();
+        // Loop through every half-hour interval, get the count, and add it to the bookedForRange list
+        while (start.isBefore(end)) {
+            VirtualResourceCapacitySchedule bookedFor30MinInterval = new VirtualResourceCapacitySchedule();
+            bookedFor30MinInterval.setStartTime(start.toString());
+            OffsetDateTime intervalEnd = start.plusMinutes(30);
+            bookedFor30MinInterval.setEndTime(intervalEnd.toString());
+            Long intervalCount = getCurrentBookedCountForCapacityScheduleRow(orgId, start.toString(), intervalEnd.toString());
+            bookedFor30MinInterval.setCurrentlyBooked(intervalCount);
+            bookedForRange.add(bookedFor30MinInterval);
+            start = intervalEnd;
+        }
+        return bookedForRange;
+    }
 
     public Long getCurrentBookedCountForCapacityScheduleRow(Long orgId, String startTime, String endTime){
         HashMap<String, Object> params = new HashMap<>();
@@ -45,7 +69,6 @@ public class VirtualResourceCapacityService {
         params.put("endTime", endTime);
 
         return sqlCache.queryForObjectBySql(CapacityQuery.getOrgEventCount, params, Long.class);
-
     }
 
     public List<VirtualResourceCapacitySchedule> getCapacitySchedule(Long orgId, String rangeStartTime, String rangeEndTime){
