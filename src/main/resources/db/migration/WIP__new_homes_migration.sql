@@ -6778,8 +6778,9 @@ create table if not exists brs.CONTACT
   RDNACADENCE_NUMBER_OF_SEQUENCE_EMAILS_TO_OPENED_C  DOUBLE precision
 );
 
+CREATE INDEX if not exists DS_Agreement_c_name ON brs.DS_Agreement_c (name);
+CREATE INDEX if not exists attachment_name ON brs.attachment (name);
 
---
 -- CREATE INDEX if not exists DS_Agreement_c_Envelope_Status_c ON brs.DS_Agreement_c (Envelope_Status_c);
 -- CREATE INDEX if not exists SFDC_CONTENT_VERSION_ARCHIVE_LINKS_archive_link ON brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS (substr(ARCHIVE_LINK, 64));
 

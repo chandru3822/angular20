@@ -3,12 +3,12 @@ CREATE INDEX if not exists sunpower_s3_files_archive_link ON sunpower_migration.
 CREATE INDEX if not exists sunpower_s3_files_aws_file_name ON sunpower_migration.sunpower_s3_files USING GIN ((metadata ->> 'aws_file_name') gin_trgm_ops);
 
 --todo delete this it's not for migration
-CREATE INDEX if not exists attachment_nw_migration_id ON flow.attachment (nw_migration_id);
-delete from  flow.project_attachment pa
-where pa.attachment_id in (select id from flow.attachment a where nw_migration_id is not null);
-
-delete from flow.attachment a
-where nw_migration_id is not null;
+-- CREATE INDEX if not exists attachment_nw_migration_id ON flow.attachment (nw_migration_id);
+-- delete from  flow.project_attachment pa
+-- where pa.attachment_id in (select id from flow.attachment a where nw_migration_id is not null);
+--
+-- delete from flow.attachment a
+-- where nw_migration_id is not null;
 
 
 
@@ -40,7 +40,8 @@ with insert_attachment as (
              inner join flow.project p on p.nw_migration_id = rp.id
              inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' =substr(l.ARCHIVE_LINK,64)
      where a.Envelope_Status_c = 'Signed'  and  cd.title like '%Completed%'
-       and rp.record_type_id = '01234000000UQPbAAO')returning *
+       and rp.record_type_id = '01234000000UQPbAAO'
+     and a.name is not null)returning *
 )
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id,ia.project_migration_id,2384850,2384850
@@ -69,7 +70,8 @@ with insert_attachment as (
             inner JOIN brs.NH_COMMUNITY_C nh_comm ON nh_comm.id = nh_contract.nh_community_c
             inner join flow.project p on p.nw_migration_id = nh_comm.id
             inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' = archive.archive_link
-     WHERE archive.attachment_id = attachment.id ) returning * )
+     WHERE archive.attachment_id = attachment.id
+     and attachment.name is not null) returning * )
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id,ia.project_migration_id,2384850,2384850
    from insert_attachment ia);
@@ -125,7 +127,8 @@ with insert_attachment as (
              inner join flow.project p on p.nw_migration_id = rp.id
              inner join sunpower_migration.sunpower_s3_files ss3f
                         on metadata ->> 'aws_file_name' = doc.aws_file_name_c
-      WHERE rp.record_type_id = '01234000000UQPbAAO')returning *)
+      WHERE rp.record_type_id = '01234000000UQPbAAO' and
+            doc.aws_file_name_c is not null)returning *)
 insert
 into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id, ia.project_migration_id, 2384850, 2384850
@@ -167,7 +170,8 @@ with insert_attachment as (
              inner join flow.project p on p.nw_migration_id = rp.id
              inner join sunpower_migration.sunpower_s3_files ss3f
                         on metadata ->> 'aws_file_name' = icd.aws_file_name_c
-      WHERE rp.record_type_id = '01234000000UQPbAAO')returning *)
+      WHERE rp.record_type_id = '01234000000UQPbAAO' and
+            icd.aws_file_name_c is not null)returning *)
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id, ia.project_migration_id, 2384850, 2384850
    from insert_attachment ia);
@@ -198,7 +202,8 @@ with insert_attachment as (
               inner join flow.project p on p.nw_migration_id = rp.id
               inner join sunpower_migration.sunpower_s3_files ss3f
                          on metadata ->> 'archive_link' = archive.archive_link
-      WHERE rp.record_type_id = '01234000000UQPbAAO')returning *)
+      WHERE rp.record_type_id = '01234000000UQPbAAO' and
+        attachment.name is not null)returning *)
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id, ia.project_migration_id, 2384850, 2384850
    from insert_attachment ia);
@@ -229,7 +234,8 @@ with insert_attachment as (
               inner join flow.project p on p.nw_migration_id = rp.id
               inner join sunpower_migration.sunpower_s3_files ss3f
                          on metadata ->> 'archive_link' = archive.archive_link
-      WHERE rp.record_type_id = '01234000000UQPbAAO')returning *)
+      WHERE rp.record_type_id = '01234000000UQPbAAO' and
+        attachment.name is not null)returning *)
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id, ia.project_migration_id, 2384850, 2384850
    from insert_attachment ia);
@@ -275,7 +281,8 @@ with insert_attachment as (
       WHERE icd.link_to_attachment_c is not null AND icd.aws_file_name_c is null
         AND icd.residential_project_c is not null
         AND rp.record_type_id = '01234000000UQPbAAO'
-        AND icd.link_to_attachment_c LIKE 'https://sunpower.my.salesforce.com/servlet/servlet.FileDownload?file=%')returning *)
+        AND icd.link_to_attachment_c LIKE 'https://sunpower.my.salesforce.com/servlet/servlet.FileDownload?file=%' and
+        icd.aws_file_name_c is not null)returning *)
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id, ia.project_migration_id, 2384850, 2384850
    from insert_attachment ia);
