@@ -456,7 +456,7 @@ public class BrsProcessStepActionFunctionService {
         } else if (paramName.contains("Panel Name")) {
           params.put("textValue", panelName);
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-        } else if (paramName.contains("Storage Type")) {
+        } else if (paramName.contains("Storage Type") && !storageType.equals("null")) {
             final long companyId = Long.parseLong(systemValues.get("companyId").toString());
             final String sql = "select id from flow.custom_field cf where field_name = 'Storage Type' and company_id = " + companyId;
             Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
