@@ -354,7 +354,7 @@ $do$
     BEGIN
       raise notice 'Start Utility  = %',clock_timestamp();
 
-
+      v_total = 0;
         for x in select a.id,
                         a.name,
                         a.state_c,

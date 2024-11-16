@@ -340,6 +340,8 @@ public class BrsProcessStepActionFunctionService {
       String manufacturer = null;
       String inverter = null;
       String panelName = null;
+      String storageType = design.get("storage_selected_operating_mode").toString().replace("\"", "");
+
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
@@ -454,6 +456,32 @@ public class BrsProcessStepActionFunctionService {
         } else if (paramName.contains("Panel Name")) {
           params.put("textValue", panelName);
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Storage Type") && !storageType.equals("null")) {
+            final long companyId = Long.parseLong(systemValues.get("companyId").toString());
+            final String sql = "select id from flow.custom_field cf where field_name = 'Storage Type' and company_id = " + companyId;
+            Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
+            List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
+            String finalStorageType;
+            if(storageType.equals("energy_arbitrage") || storageType.equals("energy arbitrage")) {
+                //(right now it's energy_arbitrage but just in case it changes to a space instead)
+                finalStorageType = "Grid-Tied";
+                //we're using a different name than Aurora is for this one; I don't know why
+            } else {
+                finalStorageType = storageType;
+            }
+            final Long storageTypeLovId = values.stream()
+                    .filter(i -> Objects.equals(i.getName().toLowerCase(), finalStorageType.toLowerCase()))
+                    .map(ListOfValue::getId)
+                    .findFirst()
+                    .orElse(null);
+            if (storageTypeLovId != null) {
+                params.put("intValue", storageTypeLovId);
+                sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+            } else {
+                if(!ignoreAuroraErrors) {
+                    throw new RuntimeException("Unable to find list item for given storage type");
+                }
+            }
         }
       }
     } catch (Exception e) {

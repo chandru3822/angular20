@@ -77,7 +77,7 @@ $do$
           v_builder_contacts = null;
           select array_to_string(
                    ARRAY_AGG(CONCAT(spc.name, ' - ', coalesce(spc.phone,spc.MOBILE_PHONE), ' - ', spc.email, ' - ', spc.title)),
-                   '\n')
+                   E'\n')
             into v_builder_contacts
               from  brs.sp_contact spc
             where spc.account_id = x.id;
