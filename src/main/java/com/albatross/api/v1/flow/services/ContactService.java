@@ -109,6 +109,7 @@ public class ContactService {
 
       params.put("limit", pageable.getPageSize());
       params.put("offset", pageable.getOffset());
+      params.put("partnerIds", user.getPartnerIds());
 
       String searchSql = ContactQuery.searchByOwner;
       if (viewCustom) {

@@ -8,21 +8,22 @@ public class ContactQuery {
     from flow.search_contacts_with_down_line(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
                                                             :isParent::boolean,
                                                             :userId::bigint,
-                                                            :limit::bigint, :offset::bigint)
+                                                            :limit::bigint, :offset::bigint,
+                                                            :partnerIds::bigint[])
     """;
 
   //language=PostgreSQL
   public final static String search = """
     select *
     from flow.search_contacts(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
-                              :isParent::boolean,:limit::bigint, :offset::bigint)
+                              :isParent::boolean,:limit::bigint, :offset::bigint, array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
   public final static String searchByOwner = """
     select *
     from flow.search_contacts_by_user(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
-                                   :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint)
+                                   :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint, array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
