@@ -1,7 +1,7 @@
 SET session_replication_role = replica;
 CREATE INDEX if not exists sunpower_s3_files_archive_link ON sunpower_migration.sunpower_s3_files USING GIN ((metadata ->> 'archive_link') gin_trgm_ops);
 CREATE INDEX if not exists sunpower_s3_files_aws_file_name ON sunpower_migration.sunpower_s3_files USING GIN ((metadata ->> 'aws_file_name') gin_trgm_ops);
-
+create index if not exists sunpower_s3_files_can_ignore on sunpower_migration.sunpower_s3_files(can_ignore);
 --todo delete this it's not for migration
 -- CREATE INDEX if not exists attachment_nw_migration_id ON flow.attachment (nw_migration_id);
 -- delete from  flow.project_attachment pa
@@ -36,7 +36,7 @@ with insert_attachment as (
              left join brs.ACCOUNT acct on acct.id = a.account_c
              inner join brs.RESIDENTIAL_PROJECT_C rp on rp.account_c = acct.id
              inner join flow.project p on p.nw_migration_id = rp.id
-             inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' =substr(l.ARCHIVE_LINK,64)
+             inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' =substr(l.ARCHIVE_LINK,64) and ss3f.can_ignore is false
      where a.Envelope_Status_c = 'Signed'  and  cd.title like '%Completed%'
        and rp.record_type_id = '01234000000UQPbAAO'
      and a.name is not null)returning *
@@ -67,7 +67,7 @@ with insert_attachment as (
             JOIN brs.NH_CONTRACTS_C nh_contract ON nh_contract.attachment_id_c = attachment.ID
             inner JOIN brs.NH_COMMUNITY_C nh_comm ON nh_comm.id = nh_contract.nh_community_c
             inner join flow.project p on p.nw_migration_id = nh_comm.id
-            inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' = archive.archive_link
+            inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
      WHERE archive.attachment_id = attachment.id
      and attachment.name is not null) returning * )
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
@@ -124,7 +124,7 @@ with insert_attachment as (
              JOIN brs.RESIDENTIAL_PROJECT_C rp ON rp.id = doc.residential_project_c
              inner join flow.project p on p.nw_migration_id = rp.id
              inner join sunpower_migration.sunpower_s3_files ss3f
-                        on metadata ->> 'aws_file_name' = doc.aws_file_name_c
+                        on metadata ->> 'archive_link' = doc.aws_file_name_c and ss3f.can_ignore is false
       WHERE rp.record_type_id = '01234000000UQPbAAO' and
             doc.aws_file_name_c is not null)returning *)
 insert
@@ -167,7 +167,7 @@ with insert_attachment as (
              JOIN brs.RESIDENTIAL_PROJECT_C rp ON rp.id = icd.residential_project_c
              inner join flow.project p on p.nw_migration_id = rp.id
              inner join sunpower_migration.sunpower_s3_files ss3f
-                        on metadata ->> 'aws_file_name' = icd.aws_file_name_c
+                        on metadata ->> 'archive_link' = icd.aws_file_name_c and ss3f.can_ignore is false
       WHERE rp.record_type_id = '01234000000UQPbAAO' and
             icd.aws_file_name_c is not null)returning *)
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
@@ -199,7 +199,7 @@ with insert_attachment as (
               LEFT JOIN brs.RESIDENTIAL_PROJECT_C rp ON rp.account_c = acct.id
               inner join flow.project p on p.nw_migration_id = rp.id
               inner join sunpower_migration.sunpower_s3_files ss3f
-                         on metadata ->> 'archive_link' = archive.archive_link
+                         on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
       WHERE rp.record_type_id = '01234000000UQPbAAO' and
         attachment.name is not null)returning *)
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
@@ -230,108 +230,165 @@ with insert_attachment as (
              INNER JOIN brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = RIGHT(icd.link_to_attachment_c,18)
              inner join flow.project p on p.nw_migration_id = rp.id
              inner join sunpower_migration.sunpower_s3_files ss3f
-                        on metadata ->> 'archive_link' = archive.archive_link
+                        on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
       WHERE icd.link_to_attachment_c is not null AND icd.aws_file_name_c is null
         AND icd.residential_project_c is not null
         AND rp.record_type_id = '01234000000UQPbAAO'
-        AND icd.link_to_attachment_c LIKE 'https://sunpower.my.salesforce.com/servlet/servlet.FileDownload?file=%')returning *)
+        AND icd.link_to_attachment_c LIKE 'https://sunpower.my.salesforce.com/servlet/servlet.FileDownload?file=%'
+      and icd.name is not null)returning *)
 insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
   (select ia.id, ia.project_migration_id, 2384850, 2384850
    from insert_attachment ia);
 
 
 
--- START NEW SCENARIOS
--- SCENARIO 1: DOCUMENT_C - gocanvas only----todo gocanvas
-SELECT doc.name as display_name
-     , doc.name as file_name
-     , doc.url_c
-     , doc.id as migration_id
-     , doc.residential_project_c
-FROM SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.DOCUMENT_C doc
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
-WHERE
-  rp.record_type_id = '01234000000UQPbAAO'
-  AND doc.aws_file_name_c is null
-  AND doc.url_c is not null
-  AND doc.url_c LIKE 'https://www.gocanvas.com%';
+
 
 
 --  SCENARIO 2: ICDs with a different attachment link format - not gocanvas
+with insert_attachment as (
+  insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
+                               s3_key, size, date_created, created_by_id, modified_by_id,
+                               uuid, display_name, nw_migration_id, project_migration_id)
+    (
 SELECT
-  RIGHT(icd.link_to_attachment_c,18),
-  icd.link_to_attachment_c,
-  rp.id as migration_project_id,
-  icd.id as icd_id,
-  icd.name as display_name,
+  56,
+  3,
   icd.file_name_c,
-  archive.archive_link
-FROM SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.INVOICE_COMPLIANCE_DOCUMENT_C icd
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.RESIDENTIAL_PROJECT_C rp ON icd.residential_project_c = rp.id
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_ARCHIVE.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = RIGHT(icd.link_to_attachment_c,18)
+  ss3f.content_type,
+  ss3f.albatross_s3_key,
+  ss3f.size,
+  now(),
+  2384850,
+  2384850,
+  uuid_generate_v4(),
+  icd.name as display_name,
+  icd.id as icd_id,
+  p.id
+FROM brs.INVOICE_COMPLIANCE_DOCUMENT_C icd
+       INNER JOIN brs.RESIDENTIAL_PROJECT_C rp ON icd.residential_project_c = rp.id
+       INNER JOIN brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = RIGHT(icd.link_to_attachment_c,18)
+       inner join flow.project p on p.nw_migration_id = rp.id
+       inner join sunpower_migration.sunpower_s3_files ss3f
+                  on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
 WHERE icd.link_to_attachment_c is not null AND icd.aws_file_name_c is null
   AND icd.residential_project_c is not null
   AND rp.record_type_id = '01234000000UQPbAAO'
   AND icd.link_to_attachment_c NOT LIKE 'https://www.gocanvas.com/submission_files/%'
   AND icd.link_to_attachment_c NOT LIKE 'https://sunpower.my.salesforce.com/servlet/servlet.FileDownload?file=%'
-  AND icd.link_to_attachment_c LIKE 'https://sunpower1.force.com/servlet/servlet.FileDownload?%'
+  AND icd.link_to_attachment_c LIKE 'https://sunpower1.force.com/servlet/servlet.FileDownload?%')returning *)
+insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+  (select ia.id, ia.project_migration_id, 2384850, 2384850
+   from insert_attachment ia);
+
+
 
 
 -- SCENARIO 3: DOCUMENT_C - AgreementIds
+with insert_attachment as (
+  insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
+                               s3_key, size, date_created, created_by_id, modified_by_id,
+                               uuid, display_name, nw_migration_id, project_migration_id)
+    (
 SELECT
-  RIGHT(doc.url_c,18) as agreement_id
-     , doc.name
-     , doc.url_c
-     , doc.residential_project_c
-     , doc.project_task_c
-     , doc.aws_file_name_c
-     , dsa.name
-     , archive.archive_link
-FROM SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.DOCUMENT_C doc
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.echosign_dev_1_sign_agreement_c dsa ON dsa.id = RIGHT(doc.url_c, 18)
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.attachment a ON a.parent_id = RIGHT(doc.url_c, 18)
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_ARCHIVE.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = a.id
+  56,
+  3,
+   doc.name,
+  ss3f.content_type,
+  ss3f.albatross_s3_key,
+  ss3f.size,
+  now(),
+  2384850,
+  2384850,
+  uuid_generate_v4(),
+  doc.name,
+  doc.id,
+  p.id
+FROM brs.DOCUMENT_C doc
+       INNER JOIN brs.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
+       INNER JOIN brs.echosign_dev_1_sign_agreement_c dsa ON dsa.id = RIGHT(doc.url_c, 18)
+       INNER JOIN brs.attachment a ON a.parent_id = RIGHT(doc.url_c, 18)
+       INNER JOIN brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = a.id
+       inner join flow.project p on p.nw_migration_id = rp.id
+       inner join sunpower_migration.sunpower_s3_files ss3f
+                  on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
 WHERE
   rp.record_type_id = '01234000000UQPbAAO'
   AND doc.aws_file_name_c is null
   AND doc.url_c is not null
   AND doc.url_c NOT LIKE 'https://www.gocanvas.com%'
-  AND doc.url_c LIKE 'https://sunpower.my.salesforce.com/apex/echosign_dev1__SignedAgreementDocLink?agreementId=%'
+  AND doc.url_c LIKE 'https://sunpower.my.salesforce.com/apex/echosign_dev1__SignedAgreementDocLink?agreementId=%')returning *)
+insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+  (select ia.id, ia.project_migration_id, 2384850, 2384850
+   from insert_attachment ia);
 
 
 -- SCENARIO 4: documents - content versions na101
-SELECT doc.name
-     , doc.url_c
-     , doc.residential_project_c
-     , doc.project_task_c
-     , doc.aws_file_name_c
-     , archive.archive_link
-FROM SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.DOCUMENT_C doc
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
-       LEFT JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.CONTENT_DOCUMENT cd ON cd.id = RIGHT(doc.url_c,18)
-       LEFT JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.CONTENT_VERSION cv ON cv.ID = cd.latest_published_version_id
-       LEFT JOIN SUNPOWER_DATAWAREHOUSE.SFDC_ARCHIVE.SFDC_CONTENT_VERSION_ARCHIVE_LINKS archive ON archive.content_version_id = cv.id
+with insert_attachment as (
+  insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
+                               s3_key, size, date_created, created_by_id, modified_by_id,
+                               uuid, display_name, nw_migration_id, project_migration_id)
+    (
+SELECT
+  56,
+  3,
+  doc.name,
+  ss3f.content_type,
+  ss3f.albatross_s3_key,
+  ss3f.size,
+  now(),
+  2384850,
+  2384850,
+  uuid_generate_v4(),
+  doc.name,
+  doc.id,
+  p.id
+FROM brs.DOCUMENT_C doc
+       INNER JOIN brs.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
+       LEFT JOIN brs.CONTENT_DOCUMENT cd ON cd.id = RIGHT(doc.url_c,18)
+       LEFT JOIN brs.CONTENT_VERSION cv ON cv.ID = cd.latest_published_version_id
+       LEFT JOIN brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS archive ON archive.content_version_id = cv.id
+       inner join flow.project p on p.nw_migration_id = rp.id
+       inner join sunpower_migration.sunpower_s3_files ss3f
+                  on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
 WHERE
   rp.record_type_id = '01234000000UQPbAAO'
   AND doc.aws_file_name_c is null
   AND doc.url_c is not null
   AND doc.url_c NOT LIKE 'https://www.gocanvas.com%'
-  AND doc.url_c LIKE 'https://na101.salesforce.com/%'
+  AND doc.url_c LIKE 'https://na101.salesforce.com/%')returning *)
+insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+  (select ia.id, ia.project_migration_id, 2384850, 2384850
+   from insert_attachment ia);
 
 
 -- SCENARIO 5: some other random salesfore link
-SELECT doc.name
-     , doc.url_c
-     , doc.residential_project_c
-     , doc.project_task_c
-     , doc.aws_file_name_c
-     , archive.archive_link
-FROM SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.DOCUMENT_C doc
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
-       LEFT JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.CONTENT_DOCUMENT cd ON cd.id = RIGHT(doc.url_c,18)
-       LEFT JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.CONTENT_VERSION cv ON cv.ID = cd.latest_published_version_id
-       LEFT JOIN SUNPOWER_DATAWAREHOUSE.SFDC_ARCHIVE.SFDC_CONTENT_VERSION_ARCHIVE_LINKS archive ON archive.content_version_id = cv.id
+with insert_attachment as (
+  insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
+                               s3_key, size, date_created, created_by_id, modified_by_id,
+                               uuid, display_name, nw_migration_id, project_migration_id)
+    (
+SELECT 56,
+       3,
+       doc.name,
+       ss3f.content_type,
+       ss3f.albatross_s3_key,
+       ss3f.size,
+       now(),
+       2384850,
+       2384850,
+       uuid_generate_v4(),
+       doc.name,
+       doc.id,
+       p.id
+FROM brs.DOCUMENT_C doc
+       INNER JOIN brs.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
+       LEFT JOIN brs.CONTENT_DOCUMENT cd ON cd.id = RIGHT(doc.url_c,18)
+       LEFT JOIN brs.CONTENT_VERSION cv ON cv.ID = cd.latest_published_version_id
+       LEFT JOIN brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS archive ON archive.content_version_id = cv.id
+       inner join flow.project p on p.nw_migration_id = rp.id
+       inner join sunpower_migration.sunpower_s3_files ss3f
+                  on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
 WHERE
   rp.record_type_id = '01234000000UQPbAAO'
   AND doc.aws_file_name_c is null
@@ -340,18 +397,38 @@ WHERE
   AND doc.url_c NOT LIKE 'https://na101.salesforce.com/%'
   AND doc.url_c NOT LIKE 'https://sunpower.my.salesforce.com/apex/echosign_dev1__SignedAgreementDocLink?agreementId=%'
   AND doc.url_c LIKE 'https://sunpower.my.salesforce.com/%'
+and archive.archive_link is not null)returning *)
+insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+  (select ia.id, ia.project_migration_id, 2384850, 2384850
+   from insert_attachment ia);
+
 
 
 -- SCENARIO 6: another salesforce attachment url format
-SELECT doc.name
-     , doc.url_c
-     , doc.residential_project_c
-     , doc.project_task_c
-     , doc.aws_file_name_c
-     , archive.archive_link
-FROM SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.DOCUMENT_C doc
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_ARCHIVE.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = RIGHT(doc.url_c,18)
+with insert_attachment as (
+  insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
+                               s3_key, size, date_created, created_by_id, modified_by_id,
+                               uuid, display_name, nw_migration_id, project_migration_id)
+    (
+SELECT 56,
+       3,
+       doc.name,
+       ss3f.content_type,
+       ss3f.albatross_s3_key,
+       ss3f.size,
+       now(),
+       2384850,
+       2384850,
+       uuid_generate_v4(),
+       doc.name,
+       doc.id,
+       p.id
+FROM brs.DOCUMENT_C doc
+       INNER JOIN brs.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
+       INNER JOIN brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = RIGHT(doc.url_c,18)
+       inner join flow.project p on p.nw_migration_id = rp.id
+       inner join sunpower_migration.sunpower_s3_files ss3f
+                  on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
 WHERE
   rp.record_type_id = '01234000000UQPbAAO'
   AND doc.aws_file_name_c is null
@@ -360,20 +437,44 @@ WHERE
   AND doc.url_c NOT LIKE 'https://na101.salesforce.com/%'
   AND doc.url_c NOT LIKE 'https://sunpower.my.salesforce.com/apex/echosign_dev1__SignedAgreementDocLink?agreementId=%'
   AND doc.url_c NOT LIKE 'https://sunpower.my.salesforce.com/%'
-  AND doc.url_c LIKE 'https://sunpower1.force.com/servlet/servlet.FileDownload?file=%'
+  AND doc.url_c LIKE 'https://sunpower1.force.com/servlet/servlet.FileDownload?file=%')returning *)
+insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+  (select ia.id, ia.project_migration_id, 2384850, 2384850
+   from insert_attachment ia);
 
 
 -- SCENARIO 10: files directly attached to RP
-SELECT a.name
-     , a.id
-     , rp.id
-     , archive.archive_link
-FROM SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.ATTACHMENT a
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_STAGING.RESIDENTIAL_PROJECT_C rp ON rp.id = a.parent_id
-       INNER JOIN SUNPOWER_DATAWAREHOUSE.SFDC_ARCHIVE.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = a.id
+with insert_attachment as (
+  insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
+                               s3_key, size, date_created, created_by_id, modified_by_id,
+                               uuid, display_name, nw_migration_id, project_migration_id)
+    (
+SELECT
+      56,
+      3,
+      a.name,
+      ss3f.content_type,
+      ss3f.albatross_s3_key,
+      ss3f.size,
+      now(),
+      2384850,
+      2384850,
+      uuid_generate_v4(),
+      a.name,
+      a.id,
+      p.id
+FROM brs.ATTACHMENT a
+       INNER JOIN brs.RESIDENTIAL_PROJECT_C rp ON rp.id = a.parent_id
+       INNER JOIN brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive ON archive.attachment_id = a.id
+       inner join flow.project p on p.nw_migration_id = rp.id
+       inner join sunpower_migration.sunpower_s3_files ss3f
+                  on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
 WHERE
   rp.record_type_id = '01234000000UQPbAAO'
-  AND a.is_deleted = false;
+  AND a.is_deleted = false)returning *)
+insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+  (select ia.id, ia.project_migration_id, 2384850, 2384850
+   from insert_attachment ia);
 
 
 
@@ -382,9 +483,7 @@ WHERE
 create table brs.gocanvas_link_records as (
 
   (SELECT
-    icd.link_to_attachment_c,
-    rp.id as migration_project_id,
-    icd.id as icd_id,
+    icd.link_to_attachment_c as link_to_attachment_c,
     icd.name as display_name,
     p.id as project_id
   FROM brs.INVOICE_COMPLIANCE_DOCUMENT_C icd
@@ -393,10 +492,24 @@ create table brs.gocanvas_link_records as (
   WHERE icd.link_to_attachment_c is not null AND icd.aws_file_name_c is null
     AND icd.residential_project_c is not null
     AND rp.record_type_id = '01234000000UQPbAAO'
-    AND icd.link_to_attachment_c LIKE 'https://www.gocanvas.com/submission_files/%')
-
+    AND icd.link_to_attachment_c LIKE 'https://www.gocanvas.com/submission_files/%'
+  union
+   SELECT doc.name as link_to_attachment_c,
+          doc.name as display_name,
+          p.id as project_id
+   FROM brs.DOCUMENT_C doc
+          INNER JOIN brs.RESIDENTIAL_PROJECT_C rp ON doc.residential_project_c = rp.id
+          inner join flow.project p on p.nw_migration_id = rp.id
+   WHERE
+     rp.record_type_id = '01234000000UQPbAAO'
+     AND doc.aws_file_name_c is null
+     AND doc.url_c is not null
+     AND doc.url_c LIKE 'https://www.gocanvas.com%'
+  )
 );
 
+
+create index if not exists gocanvas_link_records_project_id on brs.gocanvas_link_records(project_id);
 DO
 $do$
     declare
@@ -419,7 +532,5 @@ $do$
 
     end
 $do$;
-
-
 
 
