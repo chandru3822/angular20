@@ -307,8 +307,29 @@ create table brs.gocanvas_link_records as (
 
 );
 
-prod cfga id 30142
-stage cfga id 30103
+DO
+$do$
+    declare
+        x record;
+        v_link_text text;
+    BEGIN
+        for x in    select distinct project_id
+                    from brs.gocanvas_link_records
+            loop
+                v_link_text = null;
+
+                select string_agg(concat(display_name, ' = ', link_to_attachment_c),E'\n')::text
+                into v_link_text
+                from brs.gocanvas_link_records glr
+                where glr.project_id = x.project_id;
+
+                perform flow.set_project_cfv(x.project_id::bigint, 2384850::bigint, 30142::bigint,
+                                             v_link_text::text, true);
+            end loop;
+
+    end
+$do$;
+
 
 
 
