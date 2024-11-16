@@ -95,8 +95,10 @@ $do$
                      lov4.id as lov4_non_backup_storage_acknowledged_c,
                      lov5.id as lov5_credit_bureau_c,
                      lov6.id as lov6_lease_doc_reviewed_c,
+                     lov7.id as lov7_quote_type_c_id,
                      lpc.id as lp_status_id,
-                     lpc.status_c as lp_status
+                     lpc.status_c as lp_status,
+                     lpc.is_deleted as lpc_is_deleted
               from brs.QUOTE Q
                      inner join brs.lease_payment_c lpc on lpc.quote_c = q.id
                      inner join brs.account A on a.id = q.account_id
@@ -108,24 +110,42 @@ $do$
                      left join flow.list_of_value lov4 on lov4.name = q.non_backup_storage_acknowledged_c and lov4.parent_id = 25832
                      left join flow.list_of_value lov5 on lov5.name = q.credit_bureau_c and lov5.parent_id = 25715
                      left join flow.list_of_value lov6 on lov6.name = q.lease_doc_reviewed_c and lov6.parent_id = 25834
+                     left join flow.list_of_value lov7 on lov7.name = q.quote_type_c and lov7.parent_id = 26325
               where rpc.QUOTE_C is not null and q.IS_DELETED = false
                 and rpc.RECORD_TYPE_ID = '01234000000UQPbAAO'
                 and rpc.STATUS_C != 'Cancelled'
                 and rpc.IS_DELETED = false
+              and rpc.id not in (
+                'a6l2T00000089HJQAY',
+                'a6l2T00000089LGQAY',
+                'a6l2T000000A3fRQAS',
+                'a6l2T000001Wn7JQAS',
+                'a6l2T000003j7rPQAQ',
+                'a6l2T000003jGBcQAM',
+                'a6l2T000003jGEqQAM',
+                'a6l2T0000055YePQAU',
+                'a6l2T00000564LKQAY',
+                'a6l2T0000057IGlQAM',
+                'a6l2T0000057rnNQAQ',
+                'a6l2T0000057rouQAA',
+                'a6l34000000Cm6mAAC'
+                )
               order by rpc.id,q.lease_doc_signed_date_c,q.created_date
       loop
         v_total = v_total + 1;
+
         insert into flow.project_process_step (project_id, process_step_id, user_position_id,
                                                company_process_step_status_type_id,
                                                process_step_complete_date, date_created, date_modified, created_by_id,
                                                modified_by_id, archived, main, parent_project_process_step_id,
                                                cancelled_date, parent_project_process_step_event_id,nw_migration_id)
         values (x.project_id, 3798, null, case when x.lp_status_id is not null and
-                                                    x.lp_status = 'Active' then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
+                                                    x.lp_status = 'Active' and x.lp_status != 'Cancelled' and x.lpc_is_deleted is false then 1 else 2 end, null, now(), now(), 2384850, 2384850, false,
                                         case when x.lp_status_id is not null and
-                                      x.lp_status = 'Active' then true else false end, null, null, null,x.quote_id) returning id into v_project_process_step_id;
+                                      x.lp_status = 'Active' and x.lp_status != 'Cancelled' and x.lpc_is_deleted is false then true else false end, null, null, null,x.quote_id) returning id into v_project_process_step_id;
+       -- raise notice 'x.project_id %',x.project_id;
 
-        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30076,x.quote_type_c::text , true);
+        perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,30076,x.lov7_quote_type_c_id::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29291,x.module_c::text , true);
         --  perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29292,x.Module_Brand_c::text , true);
         perform flow.set_pps_cfv_no_checks(v_project_process_step_id , 2384850,29293,x.module_quantity_c::text , true);
