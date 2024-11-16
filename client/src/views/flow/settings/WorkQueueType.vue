@@ -345,7 +345,6 @@
           </template>
           <template #item.sortDesc="{ item }">
             <a-btn
-              v-model="item.sortDesc"
               @click="item.sortDesc = !item.sortDesc"
               :disabled="!editSortColumns"
               variant="text"
