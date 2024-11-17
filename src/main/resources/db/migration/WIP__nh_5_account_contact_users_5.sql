@@ -17,8 +17,8 @@ $do$
                      where acr.account_id = x.nh_migration_id
                 loop
                     v_new_user_id = null;
-                    insert into flow."user"(first_name, last_name, nh_migration_id, email, password, phone_number, created_by_id, modified_by_id, username, uuid, expiry_date, phone_extension)
-                    values(y.first_name, y.last_name, y.email, y.id, (with password as (select public.crypt('solar321', public.gen_salt('bf', 10)) as value)
+                    insert into flow."user"(first_name, last_name,email, nh_migration_id,  password, phone_number, created_by_id, modified_by_id, username, uuid, expiry_date, phone_extension)
+                    values(y.first_name, y.last_name, y.email, array[y.id], (with password as (select public.crypt('solar321', public.gen_salt('bf', 10)) as value)
                                                                 select *
                                                                 from password), y.phone, 2417170, 2417170, y.email, null, null, null)
                     returning id into v_new_user_id;
