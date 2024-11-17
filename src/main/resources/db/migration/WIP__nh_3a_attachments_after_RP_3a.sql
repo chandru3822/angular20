@@ -494,7 +494,7 @@ create table brs.gocanvas_link_records as (
     AND rp.record_type_id = '01234000000UQPbAAO'
     AND icd.link_to_attachment_c LIKE 'https://www.gocanvas.com/submission_files/%'
   union
-   SELECT doc.name as link_to_attachment_c,
+   SELECT doc.url_c as link_to_attachment_c,
           doc.name as display_name,
           p.id as project_id
    FROM brs.DOCUMENT_C doc
