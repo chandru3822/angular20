@@ -5,6 +5,7 @@ $do$
   declare
     x        record;
     y        record;
+    v_existing_user_id        int;
     v_new_user_id        int;
   BEGIN
     for x in select o.nh_migration_id, o.id as org_id
@@ -16,21 +17,31 @@ $do$
                               inner join brs.sp_contact sc on sc.id = acr.contact_id
                      where acr.account_id = x.nh_migration_id
                 loop
+                    v_existing_user_id = null;
                     v_new_user_id = null;
-                    insert into flow."user"(first_name, last_name,email, nh_migration_id,  password, phone_number, created_by_id, modified_by_id, username, uuid, expiry_date, phone_extension)
-                    values(y.first_name, y.last_name, y.email, array[y.id], (with password as (select public.crypt('solar321', public.gen_salt('bf', 10)) as value)
-                                                                select *
-                                                                from password), y.phone, 2417170, 2417170, y.email, null, null, null)
-                    returning id into v_new_user_id;
 
-                    insert into flow.user_company(company_id, user_id, modified_by_id, is_default)
-                    values(3, v_new_user_id, 2417170, true);
+                    select id into v_existing_user_id
+                        from flow.user
+                    where email = y.email;
 
-                    insert into flow.company_user_status(user_id, user_status_type_id, created_by_id, modified_by_id)
-                    values(v_new_user_id, 9, 2417170, 2417170);
+                    if(v_existing_user_id is null) then
 
-                    insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, primary_flag, created_by_id, modified_by_id)
-                    values(v_new_user_id, 809, current_date::date, null, x.org_id, true, 2417170, 2417170);
+
+                        insert into flow."user"(first_name, last_name,email, nh_migration_id,  password, phone_number, created_by_id, modified_by_id, username, uuid, expiry_date, phone_extension)
+                        values(left(y.first_name, 50), left(y.last_name, 50), y.email, array[y.id], (with password as (select public.crypt('solar321', public.gen_salt('bf', 10)) as value)
+                                                                    select *
+                                                                    from password), y.phone, 2417170, 2417170, y.email, null, null, null)
+                        returning id into v_new_user_id;
+
+                        insert into flow.user_company(company_id, user_id, modified_by_id, is_default)
+                        values(3, v_new_user_id, 2417170, true);
+
+                        insert into flow.company_user_status(user_id, user_status_type_id, created_by_id, modified_by_id)
+                        values(v_new_user_id, 9, 2417170, 2417170);
+
+                        insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, primary_flag, created_by_id, modified_by_id)
+                        values(v_new_user_id, 809, current_date::date, null, x.org_id, true, 2417170, 2417170);
+                    end if;
                 end loop;
 
       end loop;
