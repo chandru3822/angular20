@@ -1,78 +1,78 @@
 SET session_replication_role = replica;
-CREATE INDEX if not exists sunpower_s3_files_archive_link ON sunpower_migration.sunpower_s3_files USING GIN ((metadata ->> 'archive_link') gin_trgm_ops);
-CREATE INDEX if not exists sunpower_s3_files_aws_file_name ON sunpower_migration.sunpower_s3_files USING GIN ((metadata ->> 'aws_file_name') gin_trgm_ops);
-create index if not exists sunpower_s3_files_can_ignore on sunpower_migration.sunpower_s3_files(can_ignore);
---todo delete this it's not for migration
--- CREATE INDEX if not exists attachment_nw_migration_id ON flow.attachment (nw_migration_id);
--- delete from  flow.project_attachment pa
--- where pa.attachment_id in (select id from flow.attachment a where nw_migration_id is not null);
+-- CREATE INDEX if not exists sunpower_s3_files_archive_link ON sunpower_migration.sunpower_s3_files USING GIN ((metadata ->> 'archive_link') gin_trgm_ops);
+-- CREATE INDEX if not exists sunpower_s3_files_aws_file_name ON sunpower_migration.sunpower_s3_files USING GIN ((metadata ->> 'aws_file_name') gin_trgm_ops);
+-- create index if not exists sunpower_s3_files_can_ignore on sunpower_migration.sunpower_s3_files(can_ignore);
+-- --todo delete this it's not for migration
+-- -- CREATE INDEX if not exists attachment_nw_migration_id ON flow.attachment (nw_migration_id);
+-- -- delete from  flow.project_attachment pa
+-- -- where pa.attachment_id in (select id from flow.attachment a where nw_migration_id is not null);
+-- --
+-- -- delete from flow.attachment a
+-- -- where nw_migration_id is not null;
 --
--- delete from flow.attachment a
--- where nw_migration_id is not null;
-
-with insert_attachment as (
-  insert into flow.attachment(attachment_type_id, company_id, filename, content_type,
-                              s3_key, size, date_created, created_by_id, modified_by_id,
-                              uuid, display_name,nw_migration_id,project_migration_id)
-    (SELECT 1024,  --49163
-            3,
-            a.name,
-            ss3f.content_type,
-            ss3f.albatross_s3_key,
-            ss3f.size,
-            now(),
-            2384850,
-            2384850,
-            uuid_generate_v4(),
-            a.name,
-            a.id,
-            p.id
-     from  brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS l
-             join brs.CONTENT_VERSION cv on cv.ID  = l.CONTENT_VERSION_ID
-             left join brs.CONTENT_DOCUMENT cd on cd.ID = cv.CONTENT_DOCUMENT_ID
-             left join brs.CONTENT_DOCUMENT_LINK cdl on cdl.CONTENT_DOCUMENT_ID = cd.ID
-             left join brs.DS_Agreement_c a on a.id = cdl.LINKED_ENTITY_ID
-             left join brs.QUOTE q on q.id = a.quote_c
-             left join brs.ACCOUNT acct on acct.id = a.account_c
-             inner join brs.RESIDENTIAL_PROJECT_C rp on rp.account_c = acct.id
-             inner join flow.project p on p.nw_migration_id = rp.id
-             inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' =substr(l.ARCHIVE_LINK,64) and ss3f.can_ignore is false
-     where a.Envelope_Status_c = 'Signed'  and  cd.title like '%Completed%'
-       and rp.record_type_id = '01234000000UQPbAAO'
-     and a.name is not null)returning *
-)
-insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
-  (select ia.id,ia.project_migration_id,2384850,2384850
-   from insert_attachment ia);
-
-with insert_attachment as (
-  insert into flow.attachment(attachment_type_id, company_id, filename, content_type,
-                              s3_key, size, date_created, created_by_id, modified_by_id,
-                              uuid, display_name,nw_migration_id,project_migration_id)
-    (SELECT 1000, --3656
-            3,
-            attachment.name,
-            ss3f.content_type,
-            ss3f.albatross_s3_key,
-            ss3f.size,
-            now(),
-            2384850,
-            2384850,
-            uuid_generate_v4(),
-            attachment.name,
-            attachment.id,
-            p.id
-     FROM brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive
-            JOIN brs.ATTACHMENT attachment ON attachment.id = archive.attachment_id
-            JOIN brs.NH_CONTRACTS_C nh_contract ON nh_contract.attachment_id_c = attachment.ID
-            inner JOIN brs.NH_COMMUNITY_C nh_comm ON nh_comm.id = nh_contract.nh_community_c
-            inner join flow.project p on p.nw_migration_id = nh_comm.id
-            inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
-     WHERE archive.attachment_id = attachment.id
-     and attachment.name is not null) returning * )
-insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
-  (select ia.id,ia.project_migration_id,2384850,2384850
-   from insert_attachment ia);
+-- with insert_attachment as (
+--   insert into flow.attachment(attachment_type_id, company_id, filename, content_type,
+--                               s3_key, size, date_created, created_by_id, modified_by_id,
+--                               uuid, display_name,nw_migration_id,project_migration_id)
+--     (SELECT 1024,  --49163
+--             3,
+--             a.name,
+--             ss3f.content_type,
+--             ss3f.albatross_s3_key,
+--             ss3f.size,
+--             now(),
+--             2384850,
+--             2384850,
+--             uuid_generate_v4(),
+--             a.name,
+--             a.id,
+--             p.id
+--      from  brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS l
+--              join brs.CONTENT_VERSION cv on cv.ID  = l.CONTENT_VERSION_ID
+--              left join brs.CONTENT_DOCUMENT cd on cd.ID = cv.CONTENT_DOCUMENT_ID
+--              left join brs.CONTENT_DOCUMENT_LINK cdl on cdl.CONTENT_DOCUMENT_ID = cd.ID
+--              left join brs.DS_Agreement_c a on a.id = cdl.LINKED_ENTITY_ID
+--              left join brs.QUOTE q on q.id = a.quote_c
+--              left join brs.ACCOUNT acct on acct.id = a.account_c
+--              inner join brs.RESIDENTIAL_PROJECT_C rp on rp.account_c = acct.id
+--              inner join flow.project p on p.nw_migration_id = rp.id
+--              inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' =substr(l.ARCHIVE_LINK,64) and ss3f.can_ignore is false
+--      where a.Envelope_Status_c = 'Signed'  and  cd.title like '%Completed%'
+--        and rp.record_type_id = '01234000000UQPbAAO'
+--      and a.name is not null)returning *
+-- )
+-- insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+--   (select ia.id,ia.project_migration_id,2384850,2384850
+--    from insert_attachment ia);
+--
+-- with insert_attachment as (
+--   insert into flow.attachment(attachment_type_id, company_id, filename, content_type,
+--                               s3_key, size, date_created, created_by_id, modified_by_id,
+--                               uuid, display_name,nw_migration_id,project_migration_id)
+--     (SELECT 1000, --3656
+--             3,
+--             attachment.name,
+--             ss3f.content_type,
+--             ss3f.albatross_s3_key,
+--             ss3f.size,
+--             now(),
+--             2384850,
+--             2384850,
+--             uuid_generate_v4(),
+--             attachment.name,
+--             attachment.id,
+--             p.id
+--      FROM brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive
+--             JOIN brs.ATTACHMENT attachment ON attachment.id = archive.attachment_id
+--             JOIN brs.NH_CONTRACTS_C nh_contract ON nh_contract.attachment_id_c = attachment.ID
+--             inner JOIN brs.NH_COMMUNITY_C nh_comm ON nh_comm.id = nh_contract.nh_community_c
+--             inner join flow.project p on p.nw_migration_id = nh_comm.id
+--             inner join sunpower_migration.sunpower_s3_files ss3f on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
+--      WHERE archive.attachment_id = attachment.id
+--      and attachment.name is not null) returning * )
+-- insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+--   (select ia.id,ia.project_migration_id,2384850,2384850
+--    from insert_attachment ia);
 
 with insert_attachment as (
   insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
@@ -174,37 +174,37 @@ insert into flow.project_attachment(attachment_id, project_id, created_by_id, mo
   (select ia.id, ia.project_migration_id, 2384850, 2384850
    from insert_attachment ia);
 
-with insert_attachment as (
-  insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
-                               s3_key, size, date_created, created_by_id, modified_by_id,
-                               uuid, display_name, nw_migration_id, project_migration_id)
-    (
-      SELECT  --9382
-        56,
-        3,
-        attachment.name,
-        ss3f.content_type,
-        ss3f.albatross_s3_key,
-        ss3f.size,
-        now(),
-        2384850,
-        2384850,
-        uuid_generate_v4(),
-        attachment.name,
-        attachment.id,
-        p.id
-      FROM  brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive
-              JOIN brs.ATTACHMENT attachment ON attachment.id = archive.attachment_id
-              JOIN brs.ACCOUNT acct ON acct.id = attachment.parent_id
-              LEFT JOIN brs.RESIDENTIAL_PROJECT_C rp ON rp.account_c = acct.id
-              inner join flow.project p on p.nw_migration_id = rp.id
-              inner join sunpower_migration.sunpower_s3_files ss3f
-                         on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
-      WHERE rp.record_type_id = '01234000000UQPbAAO' and
-        attachment.name is not null)returning *)
-insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
-  (select ia.id, ia.project_migration_id, 2384850, 2384850
-   from insert_attachment ia);
+-- with insert_attachment as (
+--   insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
+--                                s3_key, size, date_created, created_by_id, modified_by_id,
+--                                uuid, display_name, nw_migration_id, project_migration_id)
+--     (
+--       SELECT  --9382
+--         56,
+--         3,
+--         attachment.name,
+--         ss3f.content_type,
+--         ss3f.albatross_s3_key,
+--         ss3f.size,
+--         now(),
+--         2384850,
+--         2384850,
+--         uuid_generate_v4(),
+--         attachment.name,
+--         attachment.id,
+--         p.id
+--       FROM  brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS archive
+--               JOIN brs.ATTACHMENT attachment ON attachment.id = archive.attachment_id
+--               JOIN brs.ACCOUNT acct ON acct.id = attachment.parent_id
+--               LEFT JOIN brs.RESIDENTIAL_PROJECT_C rp ON rp.account_c = acct.id
+--               inner join flow.project p on p.nw_migration_id = rp.id
+--               inner join sunpower_migration.sunpower_s3_files ss3f
+--                          on metadata ->> 'archive_link' = archive.archive_link and ss3f.can_ignore is false
+--       WHERE rp.record_type_id = '01234000000UQPbAAO' and
+--         attachment.name is not null)returning *)
+-- insert into flow.project_attachment(attachment_id, project_id, created_by_id, modified_by_id)
+--   (select ia.id, ia.project_migration_id, 2384850, 2384850
+--    from insert_attachment ia);
 
 with insert_attachment as (
   insert into flow.attachment (attachment_type_id, company_id, filename, content_type,
