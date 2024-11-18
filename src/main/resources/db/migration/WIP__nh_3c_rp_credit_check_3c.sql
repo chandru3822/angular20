@@ -37,11 +37,11 @@ $do$
                     lov3.id          as lov3_credit_beureu_c_id,
                     lov4.id          as lov4_lender_c_id,
                     CASE
-                      WHEN row_number() OVER (PARTITION BY account_c ORDER BY ccrc.credit_check_expiration_date_c desc) = 1 THEN TRUE --todo check nulls
+                      WHEN row_number() OVER (PARTITION BY ccrc.account_c ORDER BY ccrc.credit_check_expiration_date_c desc) = 1 THEN TRUE --todo check nulls
                       ELSE FALSE END AS is_last_row
              from brs.CREDIT_CHECK_REQUEST_C ccrc
-                    inner join flow.contact c on c.nw_migration_id = ccrc.account_c
-                    inner join flow.project p on p.contact_id = c.id
+                    inner join brs.residential_project_c rpc on rpc.account_c = ccrc.account_c
+                    inner join flow.project p on p.nw_migration_id = rpc.id
                     left join flow.list_of_value lov1 on lov1.name = ccrc.application_type_c and lov1.parent_id = 25709
                     left join flow.list_of_value lov2 on lov2.name = ccrc.bureau_c and lov2.parent_id = 25711
                     left join flow.list_of_value lov3 on lov3.name = ccrc.credit_beureu_c and lov3.parent_id = 25713

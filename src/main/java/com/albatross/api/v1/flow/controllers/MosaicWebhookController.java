@@ -19,13 +19,16 @@ public class MosaicWebhookController {
 
   private final String CONTRACT_SIGNED_EVENT = "event.offer.ContractSigned";
 
+  private final String CONTRACT_COUNTER_SIGNED_EVENT = "event.offer.ContractCountersigned";
+
   @ResponseStatus(HttpStatus.ACCEPTED)
   @PostMapping(value = "/webhook/offer")
   public ResponseEntity handleOffer(@RequestBody EventWrapper eventWrapper) {
+    String errorMsg = "";
     String msg = "";
     if (eventWrapper.getData() == null) {
-      msg = "MOSAIC: Data is missing";
-      log.error(msg);
+      errorMsg = "MOSAIC: Data is missing";
+      log.error(errorMsg);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
     }
 
@@ -34,20 +37,31 @@ public class MosaicWebhookController {
       String mosaicApplicationId = eventWrapper.getData().getAttributes().getApplicationId();
       String eventTime = eventWrapper.getData().getAttributes().getEventTime();
       try {
-        msg = mosaicService.updateFinancialAgreementSigned(mosaicApplicationId, eventTime);
+        errorMsg = mosaicService.updateFinancialAgreementSigned(mosaicApplicationId, eventTime);
       } catch (Exception e) {
-        msg = e.getMessage();
+        errorMsg = e.getMessage();
       }
+      msg = "Financial Agreement Signed date successfully updated";
+    }
+    else if (eventType.equals(CONTRACT_COUNTER_SIGNED_EVENT)) {
+      String mosaicApplicationId = eventWrapper.getData().getAttributes().getApplicationId();
+      String eventTime = eventWrapper.getData().getAttributes().getEventTime();
+      try {
+        errorMsg = mosaicService.updateCountersigned(mosaicApplicationId, eventTime);
+      } catch (Exception e) {
+        errorMsg = e.getMessage();
+      }
+      msg = "Countersign date successfully updated";
     }
     else {
       return ResponseEntity.ok("Unsupported event type: " + eventType);
     }
 
-    if (msg.isBlank()) {
-      return ResponseEntity.ok("Financial Agreement Signed date successfully updated");
+    if (errorMsg.isBlank()) {
+      return ResponseEntity.ok(msg);
     }
     else {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + errorMsg);
     }
   }
 

@@ -140,6 +140,36 @@ where (t.project_status_type_id = cpst.project_status_type_id or t.company_proje
                     wqc.process_step_work_queue_type_process_step_status_type_id = t.process_step_work_queue_type_process_step_status_type_id and
                     wqc.date_exited_queue is null);
 
+insert into flow.work_queue_cycle(
+  date_entered_queue, created_by_id, modified_by_id,
+  project_process_step_event_id, process_step_event_work_queue_type_event_status_type_id,
+  company_event_status_type_id, date_modified)
+  (select now(),2350555,2350555,
+          ppse.id,t.process_step_event_work_queue_type_event_status_type_id,cest.id,now()
+   from flow.project p
+          inner join flow.project_process_step pps on p.id = pps.project_id and pps.archived is false
+          inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id and ppse.archived is false
+          inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+          inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+          inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+          inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+          inner join lateral (select * from flow.get_event_work_queue_type_configs(pse.id) as t)as t on true
+   where (t.project_status_type_id = cpst.project_status_type_id or t.company_project_status_type_id = cpst.id) and
+     (t.process_step_status_type_id = cpsst.process_step_status_type_id or t.company_process_status_type_id = cpsst.id) and
+     (t.event_status_type_id = cest.event_status_type_id or t.company_event_status_type_id = cest.id)
+     and t.event_id = pse.event_id and t.process_step_id = pps.process_step_id
+     and p.archived is not true --and pse.id = 3
+     and not exists (select wqc.id
+                     from flow.work_queue_cycle wqc
+                     where wqc.project_process_step_event_id = ppse.id and
+                       wqc.process_step_event_work_queue_type_event_status_type_id = t.process_step_event_work_queue_type_event_status_type_id and
+                       wqc.date_exited_queue is null));
+
+
+
+
+
+
 SET session_replication_role = default;
 
 

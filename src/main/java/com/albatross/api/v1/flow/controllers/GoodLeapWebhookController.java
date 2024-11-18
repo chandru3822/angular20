@@ -23,14 +23,15 @@ public class GoodLeapWebhookController {
   public ResponseEntity handleEvent(@RequestBody EventWrapper eventWrapper) {
     String msg = "";
     if (eventWrapper.getReferenceNumber() == null) {
-      msg = "GOODLEAP: Application ID is missing";
+      msg = "GOODLEAP: Reference Number is missing";
       log.error(msg);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
     }
 
     if (eventWrapper.getEvent().equals(CONTRACT_SIGNED_EVENT)) {
       try {
-        msg = goodleapService.updateFinancialAgreementSigned(eventWrapper.getApplicationId(), eventWrapper.getTimestamp());
+        goodleapService.updateFinancialAgreementSignedValue(Long.parseLong(eventWrapper.getReferenceNumber()),
+                                                          eventWrapper.getTimestamp());
       } catch (Exception e) {
         msg = e.getMessage();
       }

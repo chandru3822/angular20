@@ -222,9 +222,17 @@ public class WorkQueueTypeService {
   }
 
   public void updateTypeDisplayOrders(List<WorkQueueType> types) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.trueUserId());
+
     for (WorkQueueType type : types) {
-      // save each display_order (i guess i can just call the full update - will do the same thing)
-      updateType(type);
+      // save each display_order
+      params.put("displayOrder", type.getDisplayOrder());
+      params.put("id", type.getId());
+
+      sqlCache.updateBySql(WorkQueueTypeQuery.updateTypeDisplayOrder, params);
     }
   }
 

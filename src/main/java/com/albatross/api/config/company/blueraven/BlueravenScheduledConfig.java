@@ -43,6 +43,9 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.processGetTheReferralContacts.enabled:false}")
   private Boolean updateGetTheReferralContacts;
 
+  @Value(value = "${app.cron.blueraven.processWebhookFinancialFields.enabled:false}")
+  private Boolean updateWebhookFinancialFields;
+
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
@@ -50,6 +53,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   private Boolean processMetroPostalCodes;
 
   private final Five9Service five9Service;
+
+  private final GoodleapService goodleapService;
 
   private final GenesysService genesysService;
 
@@ -137,6 +142,16 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       log.info("*** CRON: start processing Klaviyo contacts ***");
       klaviyoService.processKlaviyoContacts();
       log.info("*** CRON: end processing Klaviyo contacts ***");
+    }
+  }
+
+  //    every  day at 3 am - mtn
+  @Scheduled(cron = "0 0 9 * * *", zone = "UTC")
+  public void updateWebhookFinancialFields() {
+    if (updateWebhookFinancialFields) {
+      log.info("*** CRON: start processing webhook financial fields ***");
+      goodleapService.updateWebhookFinancialFields();
+      log.info("*** CRON: end processing webhook financial fields ***");
     }
   }
 

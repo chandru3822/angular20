@@ -49,7 +49,7 @@ BEGIN
 
   --we are not doing this on events for now
   if v_from_company_data_type_id != v_to_company_data_type_id or
-     v_to_object_type_id = 6 or v_from_data_type_id = 6 or
+     v_to_object_type_id = 6 or
      (coalesce(v_to_list_of_value_id, 0) != coalesce(v_from_list_of_value_id, 0)) then
     return false;
   else

@@ -5,6 +5,7 @@ import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.EnfinQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.MosaicQuery;
 import com.albatross.api.v1.flow.enums.State;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,6 @@ import java.util.Optional;
 public class EnFinService {
 
   private final SqlCache sqlCache;
-  private final GoodleapService goodleapService;
 
   private String accessToken;
 
@@ -222,10 +222,39 @@ public class EnFinService {
         EnfinQuery.getProjectIdFromEnfinApplicationId, params, new SingleColumnRowMapper<>(Long.class));
     if (projectId.isPresent()) {
       Instant now = Instant.now();
-      msg = goodleapService.updateFinancialAgreementSignedForProjectId(projectId.get(), DateTimeFormatter.ISO_INSTANT.format(now));
+      params.put("projectId", projectId.get());
+      params.put("dateValue", DateTimeFormatter.ISO_INSTANT.format(now));
+      sqlCache.updateBySql(EnfinQuery.setFinancialAgreementSigned, params);
     }
     else {
-      msg = "No Project ID found for EnFin ApplicationId ID: "  + enfinApplicationId;
+      JSONObject projectDetails = new JSONObject();
+      projectDetails.put("appId", enfinApplicationId);
+      projectDetails.put("organizationName", "Blue Raven Solar");
+      try {
+        HttpResponse res = POST("apexrest/enfin/getProjectInformation", IOUtils.toInputStream(projectDetails.toString(), (Charset) null));
+        JSONObject respJson = res.getJSON();
+        String status = respJson.getString("status");
+        if (!status.equals("SUCCESS")) {
+          return "No project found in EnFin for ApplicationId ID: "  + enfinApplicationId;
+        }
+        JSONObject applicantDetails = respJson.getJSONObject("applicantDetails");
+        String email = applicantDetails.getString("email");
+        params.put("email", email);
+        projectId =
+          sqlCache.getBySql(
+            EnfinQuery.getProjectIdFromEmail, params, new SingleColumnRowMapper<>(Long.class));
+        if (projectId.isPresent()) {
+          Instant now = Instant.now();
+          params.put("projectId", projectId.get());
+          params.put("dateValue", DateTimeFormatter.ISO_INSTANT.format(now));
+          sqlCache.updateBySql(MosaicQuery.setFinancialAgreementSigned, params);
+        }
+        else {
+          msg = "No project found for EnFin ApplicationId ID: "  + enfinApplicationId;
+        }
+      } catch (Exception e) {
+        msg = "No project found in EnFin for ApplicationId ID: "  + enfinApplicationId;
+      }
     }
 
     return msg;

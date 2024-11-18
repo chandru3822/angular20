@@ -52,8 +52,9 @@ $do$
                     lov1.id as lov1_action_taken_c_id,
                     CASE WHEN row_number() OVER (PARTITION BY tcc.account_c ORDER BY tcc.created_date desc) = 1 THEN TRUE ELSE FALSE END AS is_last_row
              from brs.title_check_c tcc
-                    inner join flow.contact c on c.nw_migration_id = tcc.account_c
-                    inner join flow.project p on p.contact_id = c.id
+               inner join brs.residential_project_c rpc on rpc.account_c = tcc.account_c
+                    --inner join flow.contact c on c.nw_migration_id = tcc.account_c
+                    inner join flow.project p on p.nw_migration_id = rpc.id
                     left join flow.list_of_value lov1 on lov1.name = tcc.action_taken_c and lov1.parent_id = 25729
              where tcc.is_deleted = false
              order by tcc.account_c,tcc.created_date

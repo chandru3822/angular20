@@ -196,6 +196,16 @@ public class WorkQueueTypeQuery {
        order by process_step_name
     """;
 
+
+  //language=PostgreSQL
+  public final static String updateTypeDisplayOrder = """
+    update flow.work_queue_type
+         set modified_by_id = :modifiedById,
+             date_modified = now(),
+             display_order = :displayOrder
+         where id = :id
+    """;
+
   //language=PostgreSQL
   public final static String updateType = """
     update flow.work_queue_type

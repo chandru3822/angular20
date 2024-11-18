@@ -6167,12 +6167,601 @@
 --   RDNACADENCE_OPENED_SEQUENCE_EMAIL_C                BOOLEAN,
 --   RDNACADENCE_NUMBER_OF_SEQUENCE_EMAILS_TO_OPENED_C  DOUBLE precision
 -- );
+
+-- drop table if exists brs.DFSLE_ENVELOPE_C;
+-- create table if not exists brs.DFSLE_ENVELOPE_C
+-- (
+--   ID                             VARCHAR(18) not null
+--     primary key,
+--   OWNER_ID                       VARCHAR(18),
+--   IS_DELETED                     BOOLEAN,
+--   NAME                           VARCHAR(240),
+--   CURRENCY_ISO_CODE              VARCHAR(9),
+--   RECORD_TYPE_ID                 VARCHAR(18),
+--   CREATED_DATE                   TIMESTAMPTZ,
+--   CREATED_BY_ID                  VARCHAR(18),
+--   LAST_MODIFIED_DATE             TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID            VARCHAR(18),
+--   SYSTEM_MODSTAMP                TIMESTAMPTZ,
+--   LAST_VIEWED_DATE               TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE           TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID         VARCHAR(18),
+--   CONNECTION_SENT_ID             VARCHAR(18),
+--   DFSLE_DOCU_SIGN_ID_C           VARCHAR(108),
+--   DFSLE_EMAIL_MESSAGE_C          VARCHAR(30000),
+--   DFSLE_EMAIL_SUBJECT_C          VARCHAR(765),
+--   DFSLE_ENVELOPE_CONFIGURATION_C VARCHAR(18),
+--   DFSLE_EXPIRE_AFTER_DAYS_C      double precision,
+--   DFSLE_EXPIRE_WARN_DAYS_C       double precision,
+--   DFSLE_EXPIRES_C                BOOLEAN,
+--   DFSLE_OPTIONS_C                VARCHAR(393216),
+--   DFSLE_REMIND_AFTER_DAYS_C      double precision,
+--   DFSLE_REMIND_FREQUENCY_DAYS_C  double precision,
+--   DFSLE_REMIND_C                 BOOLEAN,
+--   DFSLE_SENDER_PERMISSIONS_C     VARCHAR(393216),
+--   DFSLE_SENT_C                   TIMESTAMPTZ,
+--   DFSLE_SOURCE_ID_C              VARCHAR(54),
+--   DFSLE_UPDATE_CHATTER_C         BOOLEAN,
+--   DFSLE_SENDER_C                 VARCHAR(18),
+--   DFSLE_TRANSACTION_ID_C         VARCHAR(108),
+--   _FIVETRAN_SYNCED               TIMESTAMPTZ,
+--   _FIVETRAN_DELETED              BOOLEAN,
+--   DATE_SENT_C                    TIMESTAMPTZ,
+--   DFSLE_CUSTOM_FIELDS_C          VARCHAR(393216),
+--   DFSLE_DFSTEMPLATE_ID_C         VARCHAR(54),
+--   DS_AGREEMENT_C                 VARCHAR(18)
+-- );
+--
+-- drop table if exists brs.DFSLE_DOCUMENT_C;
+-- create table if not exists brs.DFSLE_DOCUMENT_C
+-- (
+--   ID                     VARCHAR(18) not null
+--     primary key,
+--   IS_DELETED             BOOLEAN,
+--   NAME                   VARCHAR(240),
+--   CURRENCY_ISO_CODE      VARCHAR(9),
+--   CREATED_DATE           TIMESTAMPTZ,
+--   CREATED_BY_ID          VARCHAR(18),
+--   LAST_MODIFIED_DATE     TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID    VARCHAR(18),
+--   SYSTEM_MODSTAMP        TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID VARCHAR(18),
+--   CONNECTION_SENT_ID     VARCHAR(18),
+--   DFSLE_ENVELOPE_C       VARCHAR(18),
+--   DFSLE_EXTENSION_C      VARCHAR(60),
+--   DFSLE_LAST_MODIFIED_C  TIMESTAMPTZ,
+--   DFSLE_READ_ONLY_C      BOOLEAN,
+--   DFSLE_REQUIRED_C       BOOLEAN,
+--   DFSLE_SEQUENCE_C       double precision,
+--   DFSLE_SIZE_C           double precision,
+--   DFSLE_SOURCE_ID_C      VARCHAR(120),
+--   DFSLE_TYPE_C           VARCHAR(765),
+--   DFSLE_FULL_NAME_C      VARCHAR(765),
+--   DFSLE_IS_REPLACEMENT_C BOOLEAN,
+--   DFSLE_OPTIONS_C        VARCHAR(393216),
+--   DFSLE_REPLACEMENT_C    VARCHAR(18),
+--   _FIVETRAN_DELETED      BOOLEAN,
+--   _FIVETRAN_SYNCED       TIMESTAMPTZ
+-- );
+--
+-- drop table if exists brs.content_version;
+-- create table if not exists  brs.CONTENT_VERSION
+-- (
+--   ID                            VARCHAR(18) not null
+--     primary key,
+--   CONTENT_DOCUMENT_ID           VARCHAR(18),
+--   RECORD_TYPE_ID                VARCHAR(18),
+--   IS_LATEST                     BOOLEAN,
+--   CONTENT_URL                   VARCHAR(3999),
+--   CONTENT_BODY_ID               VARCHAR(18),
+--   VERSION_NUMBER                VARCHAR(60),
+--   TITLE                         VARCHAR(765),
+--   DESCRIPTION                   VARCHAR(3000),
+--   REASON_FOR_CHANGE             VARCHAR(3000),
+--   SHARING_OPTION                VARCHAR(120),
+--   SHARING_PRIVACY               VARCHAR(120),
+--   PATH_ON_CLIENT                VARCHAR(1500),
+--   RATING_COUNT                  numeric,
+--   IS_DELETED                    BOOLEAN,
+--   CONTENT_MODIFIED_DATE         TIMESTAMPTZ,
+--   CONTENT_MODIFIED_BY_ID        VARCHAR(18),
+--   POSITIVE_RATING_COUNT         numeric,
+--   NEGATIVE_RATING_COUNT         numeric,
+--   FEATURED_CONTENT_BOOST        numeric,
+--   FEATURED_CONTENT_DATE         DATE,
+--   CURRENCY_ISO_CODE             VARCHAR(9),
+--   OWNER_ID                      VARCHAR(18),
+--   CREATED_BY_ID                 VARCHAR(18),
+--   CREATED_DATE                  TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID           VARCHAR(18),
+--   LAST_MODIFIED_DATE            TIMESTAMPTZ,
+--   SYSTEM_MODSTAMP               TIMESTAMPTZ,
+--   TAG_CSV                       VARCHAR(2000),
+--   FILE_TYPE                     VARCHAR(60),
+--   PUBLISH_STATUS                VARCHAR(120),
+--   CONTENT_SIZE                  numeric,
+--   FILE_EXTENSION                VARCHAR(120),
+--   FIRST_PUBLISH_LOCATION_ID     VARCHAR(18),
+--   ORIGIN                        VARCHAR(120),
+--   NETWORK_ID                    VARCHAR(18),
+--   CONTENT_LOCATION              VARCHAR(120),
+--   TEXT_PREVIEW                  VARCHAR(765),
+--   EXTERNAL_DOCUMENT_INFO_1      VARCHAR(3000),
+--   EXTERNAL_DOCUMENT_INFO_2      VARCHAR(3000),
+--   EXTERNAL_DATA_SOURCE_ID       VARCHAR(18),
+--   CHECKSUM                      VARCHAR(150),
+--   IS_MAJOR_VERSION              BOOLEAN,
+--   IS_ASSET_ENABLED              BOOLEAN,
+--   VERSION_DATA_URL              VARCHAR(765),
+--   CATEGORY_C                    VARCHAR(765),
+--   TOPIC_C                       VARCHAR(765),
+--   VERTICAL_C                    VARCHAR(765),
+--   VARIABLE_CONTENT_DETAIL_C     VARCHAR(765),
+--   ADMINISTRATOR_C               VARCHAR(18),
+--   UPDATE_DUE_C                  DATE,
+--   UPDATE_FREQUENCY_C            VARCHAR(765),
+--   SOURCE_LINK_C                 VARCHAR(1500),
+--   DMS_SOURCE_LINK_C             VARCHAR(765),
+--   SYSTEM_MODEL_C                VARCHAR(765),
+--   SME_C                         VARCHAR(18),
+--   SUBJECT_MATTER_EXPERT_C       VARCHAR(765),
+--   DFSLE_GENERATED_FILE_FORMAT_C VARCHAR(765),
+--   DFSLE_GENERATED_FILE_NAME_C   VARCHAR(765),
+--   DFSLE_GENERATED_FILE_SUFFIX_C VARCHAR(765),
+--   DFSLE_RULE_C                  VARCHAR(393216),
+--   _FIVETRAN_DELETED             BOOLEAN,
+--   _FIVETRAN_SYNCED              TIMESTAMPTZ
+-- );
+--
+-- drop table if exists brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS;
+-- create table if not exists brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS
+-- (
+--   CONTENT_VERSION_ID VARCHAR(200) not null
+--     primary key,
+--   ARCHIVE_LINK       VARCHAR(5000)
+-- );
+--
+-- drop table if exists brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS;
+-- create table if not exists brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS
+-- (
+--   ATTACHMENT_ID VARCHAR(200)
+--     primary key,
+--   ARCHIVE_LINK  VARCHAR(5000)
+-- );
+--
+-- drop table if exists brs.ATTACHMENT;
+-- create table if not exists brs.ATTACHMENT
+-- (
+--   ID                     VARCHAR(18),
+--   IS_DELETED             BOOLEAN,
+--   PARENT_ID              VARCHAR(18),
+--   NAME                   VARCHAR(765),
+--   IS_PRIVATE             BOOLEAN,
+--   CONTENT_TYPE           VARCHAR(360),
+--   BODY_LENGTH            numeric,
+--   OWNER_ID               VARCHAR(18),
+--   CREATED_DATE           TIMESTAMPTZ,
+--   CREATED_BY_ID          VARCHAR(18),
+--   LAST_MODIFIED_DATE     TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID    VARCHAR(18),
+--   SYSTEM_MODSTAMP        TIMESTAMPTZ,
+--   DESCRIPTION            VARCHAR(1500),
+--   IS_PARTNER_SHARED      BOOLEAN,
+--   CONNECTION_RECEIVED_ID VARCHAR(18),
+--   CONNECTION_SENT_ID     VARCHAR(18),
+--   _FIVETRAN_SYNCED       TIMESTAMPTZ,
+--   _FIVETRAN_DELETED      BOOLEAN
+-- );
+--
+-- drop table if exists brs.NH_CONTRACTS_C;
+-- create table if not exists  brs.NH_CONTRACTS_C
+-- (
+--   ID                     VARCHAR(18),
+--   OWNER_ID               VARCHAR(18),
+--   IS_DELETED             BOOLEAN,
+--   NAME                   VARCHAR(240),
+--   CURRENCY_ISO_CODE      VARCHAR(9),
+--   CREATED_DATE           TIMESTAMPTZ,
+--   CREATED_BY_ID          VARCHAR(18),
+--   LAST_MODIFIED_DATE     TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID    VARCHAR(18),
+--   SYSTEM_MODSTAMP        TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID VARCHAR(18),
+--   CONNECTION_SENT_ID     VARCHAR(18),
+--   ATTACHMENT_ID_C        VARCHAR(54),
+--   ATTACHMENT_TITLE_C     VARCHAR(765),
+--   DOCUMENT_TYPE_C        VARCHAR(765),
+--   NH_COMMUNITY_C         VARCHAR(18),
+--   URL_TRACKABLE_C        VARCHAR(765),
+--   _FIVETRAN_DELETED      BOOLEAN,
+--   _FIVETRAN_SYNCED       TIMESTAMPTZ
+-- );
+--
+-- drop table if exists brs.DOCUMENT_C;
+-- create table if not exists brs.DOCUMENT_C
+-- (
+--   ID                            VARCHAR(18),
+--   OWNER_ID                      VARCHAR(18),
+--   IS_DELETED                    BOOLEAN,
+--   NAME                          VARCHAR(240),
+--   CURRENCY_ISO_CODE             VARCHAR(9),
+--   RECORD_TYPE_ID                VARCHAR(18),
+--   CREATED_DATE                  TIMESTAMPTZ,
+--   CREATED_BY_ID                 VARCHAR(18),
+--   LAST_MODIFIED_DATE            TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID           VARCHAR(18),
+--   SYSTEM_MODSTAMP               TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID        VARCHAR(18),
+--   CONNECTION_SENT_ID            VARCHAR(18),
+--   URL_C                         VARCHAR(765),
+--   DOCUMENT_TYPE_C               VARCHAR(765),
+--   OPPORTUNITY_DOCUMENT_C        VARCHAR(300),
+--   RESIDENTIAL_PROJECT_C         VARCHAR(18),
+--   PROJECT_TASK_C                VARCHAR(18),
+--   ACCESS_C                      VARCHAR(765),
+--   BUCKET_NAME_C                 VARCHAR(366),
+--   CONTENT_TYPE_C                VARCHAR(300),
+--   FILE_NAME_C                   VARCHAR(765),
+--   FILE_TYPE_C                   VARCHAR(765),
+--   ROOF_DESIGN_C                 VARCHAR(18),
+--   FINANCIAL_PAYMENT_C           VARCHAR(18),
+--   INVOICE_DOCUMENT_DATA_C       VARCHAR(18),
+--   ENERGY_SUMMARY_C              VARCHAR(18),
+--   DOCUMENT_STATUS_C             VARCHAR(765),
+--   DOCUMENT_UPLOADED_BY_C        VARCHAR(18),
+--   ROOF_DETAIL_C                 VARCHAR(18),
+--   DOCUMENT_LINKS_C              VARCHAR(393216),
+--   ESTIMATE_C                    VARCHAR(18),
+--   ACCESS_LEVEL_C                VARCHAR(765),
+--   COMMENT_C                     VARCHAR(765),
+--   DESIGN_REQUEST_C              VARCHAR(18),
+--   AWS_FILE_NAME_C               VARCHAR(765),
+--   AGREEMENT_TEXT_C              VARCHAR(60),
+--   _FIVETRAN_DELETED             BOOLEAN,
+--   _FIVETRAN_SYNCED              TIMESTAMPTZ,
+--   EXTERNAL_DOCUMENT_URL_C       VARCHAR(765),
+--   INTERCONNECTION_APPLICATION_C VARCHAR(18),
+--   DESIGN_C                      VARCHAR(18),
+--   EXTERNAL_DOCUMENT_ID_C        VARCHAR(765),
+--   QUOTE_C                       VARCHAR(18),
+--   OPPORTUNITY_C                 VARCHAR(18),
+--   MODULE_CONFIGURATION_C        VARCHAR(18),
+--   BOS_CONFIGURATION_C           VARCHAR(18),
+--   MILESTONE_C                   VARCHAR(18),
+--   ITEM_C                        VARCHAR(18),
+--   ACCOUNT_C                     VARCHAR(18),
+--   INVERTER_CONFIGURATION_C      VARCHAR(18),
+--   CREDIT_APPLICATION_C          VARCHAR(18),
+--   MONITORING_CONFIGURATION_C    VARCHAR(18),
+--   TYPE_C                        VARCHAR(765),
+--   EXTENSION_C                   VARCHAR(765)
+-- );
+--
+-- drop table if exists brs.INVOICE_COMPLIANCE_DOCUMENT_C;
+-- create table if not exists brs.INVOICE_COMPLIANCE_DOCUMENT_C
+-- (
+--   ID                             VARCHAR(18),
+--   OWNER_ID                       VARCHAR(18),
+--   IS_DELETED                     BOOLEAN,
+--   NAME                           VARCHAR(240),
+--   CURRENCY_ISO_CODE              VARCHAR(9),
+--   CREATED_DATE                   TIMESTAMPTZ,
+--   CREATED_BY_ID                  VARCHAR(18),
+--   LAST_MODIFIED_DATE             TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID            VARCHAR(18),
+--   SYSTEM_MODSTAMP                TIMESTAMPTZ,
+--   LAST_ACTIVITY_DATE             DATE,
+--   LAST_VIEWED_DATE               TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE           TIMESTAMPTZ,
+--   CONNECTION_RECEIVED_ID         VARCHAR(18),
+--   CONNECTION_SENT_ID             VARCHAR(18),
+--   APPROVED_NOTIFICATION_C        BOOLEAN,
+--   DOCUMENT_OWNER_C               VARCHAR(765),
+--   DOCUMENT_SUBMITTED_C           DATE,
+--   DOCUMENTS_IN_FILE_C            VARCHAR(765),
+--   FINANCIAL_PAYMENT_C            VARCHAR(18),
+--   FINANCING_TYPE_C               VARCHAR(765),
+--   INVOICE_DOCUMENT_EMAIL_C       VARCHAR(240),
+--   INVOICE_TYPE_C                 VARCHAR(765),
+--   LINK_TO_ATTACHMENT_C           VARCHAR(765),
+--   NOT_REQUIRED_FOR_APPROVAL_C    BOOLEAN,
+--   NOTES_TO_APPROVER_C            VARCHAR(765),
+--   NOTES_TO_PARTNER_C             VARCHAR(765),
+--   ORACLE_VENDOR_EMAIL_C          VARCHAR(240),
+--   FILE_NAME_C                    VARCHAR(765),
+--   PROJECT_TASK_C                 VARCHAR(18),
+--   PARTNER_COMMENTS_C             VARCHAR(765),
+--   PROGRAM_C                      VARCHAR(765),
+--   RE_SUBMITTED_C                 BOOLEAN,
+--   RESIDENTIAL_PROJECT_C          VARCHAR(18),
+--   VIA_DOCUSIGN_C                 BOOLEAN,
+--   RESPONSIBLE_PARTNER_C          VARCHAR(18),
+--   SHARED_WITH_C                  VARCHAR(4099),
+--   STATUS_C                       VARCHAR(765),
+--   TYPE_C                         VARCHAR(765),
+--   INVOICE_DOCUMENT_DATA_C        VARCHAR(18),
+--   DOCUMENT_SUBMITTED_DATE_TIME_C TIMESTAMPTZ,
+--   RESPONSE_DATE_TIME_C           TIMESTAMPTZ,
+--   AWS_FILE_NAME_C                VARCHAR(765),
+--   _FIVETRAN_SYNCED               TIMESTAMPTZ,
+--   ICD_NOTE_C                     VARCHAR(765),
+--   _FIVETRAN_DELETED              BOOLEAN,
+--   UPDATE_SHARING_C               BOOLEAN,
+--   MOSAIC_STATUS_C                VARCHAR(765)
+-- );
+--
+-- drop table if exists brs.CONTENT_DOCUMENT;
+-- create table if not exists brs.CONTENT_DOCUMENT
+-- (
+--   ID                          VARCHAR(18) not null
+--     primary key,
+--   CREATED_BY_ID               VARCHAR(18),
+--   CREATED_DATE                TIMESTAMPTZ,
+--   LAST_MODIFIED_BY_ID         VARCHAR(18),
+--   LAST_MODIFIED_DATE          TIMESTAMPTZ,
+--   IS_ARCHIVED                 BOOLEAN,
+--   ARCHIVED_BY_ID              VARCHAR(18),
+--   ARCHIVED_DATE               DATE,
+--   IS_DELETED                  BOOLEAN,
+--   OWNER_ID                    VARCHAR(18),
+--   SYSTEM_MODSTAMP             TIMESTAMPTZ,
+--   TITLE                       VARCHAR(765),
+--   PUBLISH_STATUS              VARCHAR(120),
+--   LATEST_PUBLISHED_VERSION_ID VARCHAR(18),
+--   PARENT_ID                   VARCHAR(18),
+--   LAST_VIEWED_DATE            TIMESTAMPTZ,
+--   LAST_REFERENCED_DATE        TIMESTAMPTZ,
+--   DESCRIPTION                 VARCHAR(3000),
+--   CONTENT_SIZE                numeric,
+--   FILE_TYPE                   VARCHAR(60),
+--   FILE_EXTENSION              VARCHAR(120),
+--   SHARING_OPTION              VARCHAR(120),
+--   SHARING_PRIVACY             VARCHAR(120),
+--   CONTENT_MODIFIED_DATE       TIMESTAMPTZ,
+--   CONTENT_ASSET_ID            VARCHAR(18),
+--   _FIVETRAN_DELETED           BOOLEAN,
+--   _FIVETRAN_SYNCED            TIMESTAMPTZ,
+--   IS_INTERNAL_ONLY            BOOLEAN
+-- );
+--
+-- drop table if exists brs.CONTENT_DOCUMENT_LINK;
+-- create table if not exists brs.CONTENT_DOCUMENT_LINK
+-- (
+--   ID                  VARCHAR(18) not null
+--     primary key,
+--   LINKED_ENTITY_ID    VARCHAR(18),
+--   CONTENT_DOCUMENT_ID VARCHAR(18),
+--   IS_DELETED          BOOLEAN,
+--   SYSTEM_MODSTAMP     TIMESTAMPTZ,
+--   SHARE_TYPE          VARCHAR(120),
+--   VISIBILITY          VARCHAR(120),
+--   _FIVETRAN_DELETED   BOOLEAN,
+--   _FIVETRAN_SYNCED    TIMESTAMPTZ
+-- );
+--
+
+drop table if exists brs.ACCOUNT_CONTACT_RELATION;
+create table if not exists brs.ACCOUNT_CONTACT_RELATION
+(
+  ID                        VARCHAR(18) not null
+    primary key,
+  ACCOUNT_ID                VARCHAR(18),
+  CONTACT_ID                VARCHAR(18),
+  ROLES                     VARCHAR(4099),
+  IS_DIRECT                 BOOLEAN,
+  IS_ACTIVE                 BOOLEAN,
+  START_DATE                DATE,
+  END_DATE                  DATE,
+  CURRENCY_ISO_CODE         VARCHAR(9),
+  IS_DELETED                BOOLEAN,
+  CREATED_DATE              TIMESTAMPTZ,
+  CREATED_BY_ID             VARCHAR(18),
+  LAST_MODIFIED_DATE        TIMESTAMPTZ,
+  LAST_MODIFIED_BY_ID       VARCHAR(18),
+  SYSTEM_MODSTAMP           TIMESTAMPTZ,
+  FUSION_CONTACT_ID_C       VARCHAR(45),
+  FUSION_CONTACT_PARTY_ID_C VARCHAR(54),
+  _FIVETRAN_DELETED         BOOLEAN,
+  _FIVETRAN_SYNCED          TIMESTAMPTZ
+);
+
+drop table if exists brs.ECHOSIGN_DEV_1_SIGN_AGREEMENT_C;
+create table if not exists brs.ECHOSIGN_DEV_1_SIGN_AGREEMENT_C
+(
+  ID                                                    VARCHAR(18) not null
+    primary key,
+  OWNER_ID                                              VARCHAR(18),
+  IS_DELETED                                            BOOLEAN,
+  NAME                                                  VARCHAR(240),
+  CURRENCY_ISO_CODE                                     VARCHAR(9),
+  RECORD_TYPE_ID                                        VARCHAR(18),
+  CREATED_DATE                                          TIMESTAMPTZ,
+  CREATED_BY_ID                                         VARCHAR(18),
+  LAST_MODIFIED_DATE                                    TIMESTAMPTZ,
+  LAST_MODIFIED_BY_ID                                   VARCHAR(18),
+  SYSTEM_MODSTAMP                                       TIMESTAMPTZ,
+  LAST_VIEWED_DATE                                      TIMESTAMPTZ,
+  LAST_REFERENCED_DATE                                  TIMESTAMPTZ,
+  CONNECTION_RECEIVED_ID                                VARCHAR(18),
+  CONNECTION_SENT_ID                                    VARCHAR(18),
+  ECHOSIGN_DEV_1_AUTO_UPDATE_C                          BOOLEAN,
+  ECHOSIGN_DEV_1_CC_C                                   VARCHAR(765),
+  ECHOSIGN_DEV_1_CONTRACT_C                             VARCHAR(18),
+  ECHOSIGN_DEV_1_DATE_SENT_C                            TIMESTAMPTZ,
+  ECHOSIGN_DEV_1_DATE_SIGNED_C                          TIMESTAMPTZ,
+  ECHOSIGN_DEV_1_DATE_VIEWED_C                          TIMESTAMPTZ,
+  ECHOSIGN_DEV_1_ENCODED_PASSWORD_C                     VARCHAR(765),
+  ECHOSIGN_DEV_1_ERROR_MESSAGE_C                        VARCHAR(765),
+  ECHOSIGN_DEV_1_LAST_EVENT_ID_C                        VARCHAR(300),
+  ECHOSIGN_DEV_1_MESSAGE_C                              VARCHAR(96000),
+  ECHOSIGN_DEV_1_MORE_RECIPIENTS_C                      VARCHAR(765),
+  ECHOSIGN_DEV_1_OPPORTUNITY_C                          VARCHAR(18),
+  ECHOSIGN_DEV_1_PASSWORD_PROTECT_PDF_C                 BOOLEAN,
+  ECHOSIGN_DEV_1_PASSWORD_PROTECT_SIGN_C                BOOLEAN,
+  ECHOSIGN_DEV_1_RECIPIENT_2_C                          VARCHAR(18),
+  ECHOSIGN_DEV_1_RECIPIENT_3_C                          VARCHAR(18),
+  ECHOSIGN_DEV_1_RECIPIENT_4_C                          VARCHAR(18),
+  ECHOSIGN_DEV_1_RECIPIENT_LEAD_2_C                     VARCHAR(18),
+  ECHOSIGN_DEV_1_RECIPIENT_LEAD_3_C                     VARCHAR(18),
+  ECHOSIGN_DEV_1_RECIPIENT_LEAD_4_C                     VARCHAR(18),
+  ECHOSIGN_DEV_1_RECIPIENT_LEAD_C                       VARCHAR(18),
+  ECHOSIGN_DEV_1_RECIPIENT_C                            VARCHAR(18),
+  ECHOSIGN_DEV_1_REMIND_RECIPIENT_C                     VARCHAR(765),
+  ECHOSIGN_DEV_1_SENDER_SIGNS_C                         BOOLEAN,
+  ECHOSIGN_DEV_1_SIGNATURE_ORDER_C                      VARCHAR(765),
+  ECHOSIGN_DEV_1_SIGNATURE_TYPE_C                       VARCHAR(765),
+  ECHOSIGN_DEV_1_SIGNED_PDF_C                           VARCHAR(765),
+  ECHOSIGN_DEV_1_STATUS_C                               VARCHAR(765),
+  SUN_POWER_ACCOUNT_C                                   VARCHAR(18),
+  PARTNER_APPLICATION_C                                 VARCHAR(18),
+  SUN_POWER_OPPORTUNITY_C                               VARCHAR(18),
+  APPROVED_BY_PARTNER_C                                 BOOLEAN,
+  CREATED_BY_PARTNER_PORATL_USER_C                      VARCHAR(765),
+  ORACLE_VENDOR_EMAIL_FIELD_VALUE_C                     VARCHAR(240),
+  QUOTE_C                                               VARCHAR(18),
+  READY_TO_SEND_C                                       BOOLEAN,
+  REVIEWER_C                                            VARCHAR(18),
+  READY_TO_SIGN_C                                       BOOLEAN,
+  REVIEWED_REJECT_DOCUMENT_C                            BOOLEAN,
+  REASON_FOR_REJECTION_C                                VARCHAR(96000),
+  SIGNED_WITHIN_5_DAYS_C                                VARCHAR(765),
+  VALIDATION_STATUS_C                                   VARCHAR(765),
+  ECHOSIGN_DEV_1_ACCOUNT_C                              VARCHAR(18),
+  ECHOSIGN_DEV_1_ADDITIONAL_OPTIONS_C                   VARCHAR(765),
+  ECHOSIGN_DEV_1_ADDITIONAL_RECIPIENT_1_USER_C          VARCHAR(18),
+  ECHOSIGN_DEV_1_ADDITIONAL_RECIPIENT_2_USER_C          VARCHAR(18),
+  ECHOSIGN_DEV_1_ADDITIONAL_RECIPIENT_3_USER_C          VARCHAR(18),
+  ECHOSIGN_DEV_1_AGREEMENT_LOCALE_C                     VARCHAR(765),
+  ECHOSIGN_DEV_1_ATTACHMENT_ID_ORDER_C                  VARCHAR(765),
+  ECHOSIGN_DEV_1_AUTHORING_C                            BOOLEAN,
+  ECHOSIGN_DEV_1_BACKGROUND_ACTION_C                    VARCHAR(765),
+  ECHOSIGN_DEV_1_DATA_MAPPING_ERROR_C                   VARCHAR(393216),
+  ECHOSIGN_DEV_1_DATA_MAPPING_RESULT_C                  VARCHAR(765),
+  ECHOSIGN_DEV_1_DAYS_UNTIL_SIGNING_DEADLINE_C          double precision,
+  ECHOSIGN_DEV_1_DOCUMENT_KEY_C                         VARCHAR(765),
+  ECHOSIGN_DEV_1_ENABLE_AUTOMATIC_REMINDERS_C           BOOLEAN,
+  ECHOSIGN_DEV_1_ENABLE_HOSTED_SIGNING_C                BOOLEAN,
+  ECHOSIGN_DEV_1_ENABLE_REVISIONS_C                     BOOLEAN,
+  ECHOSIGN_DEV_1_LEGACY_RECORD_ID_C                     VARCHAR(54),
+  ECHOSIGN_DEV_1_MERGE_MAPPING_ERROR_C                  VARCHAR(393216),
+  ECHOSIGN_DEV_1_MERGE_MAPPING_RESULT_C                 VARCHAR(765),
+  ECHOSIGN_DEV_1_MERGE_MAPPING_C                        VARCHAR(18),
+  ECHOSIGN_DEV_1_MERGE_C                                VARCHAR(98304),
+  ECHOSIGN_DEV_1_PASSWORD_C                             VARCHAR(525),
+  ECHOSIGN_DEV_1_PREFER_FAX_C                           BOOLEAN,
+  ECHOSIGN_DEV_1_PROCESS_TEMPLATE_C                     VARCHAR(18),
+  ECHOSIGN_DEV_1_REBUILD_RECIPIENT_LIST_C               BOOLEAN,
+  ECHOSIGN_DEV_1_RECIPIENT_ADDRESSES_C                  VARCHAR(765),
+  ECHOSIGN_DEV_1_RECIPIENT_SIGNING_ORDER_C              VARCHAR(765),
+  ECHOSIGN_DEV_1_RECIPIENT_USER_C                       VARCHAR(18),
+  ECHOSIGN_DEV_1_RETURN_URL_TEXT_C                      VARCHAR(240),
+  ECHOSIGN_DEV_1_RETURN_URL_C                           VARCHAR(765),
+  ECHOSIGN_DEV_1_SENDER_USER_C                          VARCHAR(18),
+  ECHOSIGN_DEV_1_SYNC_DATA_MAPPING_C                    BOOLEAN,
+  ECHOSIGN_DEV_1_TRIGGER_PROCESS_TEMPLATE_C             BOOLEAN,
+  AGREEMENT_NAME_C                                      VARCHAR(765),
+  APPROVED_C                                            BOOLEAN,
+  AGG_CREATED_THROUGH_C                                 VARCHAR(765),
+  PROPOSAL_DESIGN_REVIEW_PASSED_C                       BOOLEAN,
+  AGREEMENT_STATUS_HISTORY_C                            VARCHAR(98304),
+  CANCELLATION_REASON_C                                 VARCHAR(765),
+  DELIVERY_RECEIPT_RECORD_DATE_C                        DATE,
+  DEMAND_PREALABLE_REQUEST_DATE_C                       DATE,
+  DEMAND_PREALABLE_STATUS_C                             VARCHAR(765),
+  TPO_REPRESENT_NAME_C                                  VARCHAR(72),
+  TOWN_HALL_ADDRESS_C                                   VARCHAR(765),
+  UNDER_WRITING_C                                       VARCHAR(765),
+  UNDERWRITING_APPROVAL_EMAIL_C                         VARCHAR(765),
+  WELCOME_CALL_C                                        VARCHAR(765),
+  WELCOME_EMAIL_C                                       VARCHAR(765),
+  INSTALLER_EMAIL_C                                     VARCHAR(240),
+  DOCUMENT_URL_C                                        VARCHAR(765),
+  AMENDMENT_TYPE_C                                      VARCHAR(765),
+  COUNTER_SIGNED_DATE_C                                 DATE,
+  ECHOSIGN_LINK_C                                       VARCHAR(765),
+  SPECTRUM_CONTRACT_ID_C                                VARCHAR(60),
+  TERMINATION_DATE_DEL_C                                DATE,
+  ECHOSIGN_DEV_1_ATTACHMENT_SERVICE_INVOCATION_COUNT_C  VARCHAR(765),
+  ECHOSIGN_DEV_1_CANCEL_DELETE_NOTIFY_SIGNER_C          BOOLEAN,
+  ECHOSIGN_DEV_1_CANCEL_DELETE_REASON_C                 VARCHAR(765),
+  ECHOSIGN_DEV_1_EXTERNAL_SIGNERS_VERIFICATION_METHOD_C VARCHAR(765),
+  ECHOSIGN_DEV_1_INTERNAL_SIGNERS_VERIFICATION_METHOD_C VARCHAR(765),
+  ECHOSIGN_DEV_1_ON_LOAD_ACTION_C                       VARCHAR(765),
+  ECHOSIGN_DEV_1_POST_SIGN_REDIRECT_DELAY_C             double precision,
+  ECHOSIGN_DEV_1_POST_SIGN_REDIRECT_URL_C               VARCHAR(765),
+  ECHOSIGN_DEV_1_SENDER_SIGNS_ONLY_C                    BOOLEAN,
+  ECHOSIGN_DEV_1_SIGNATURE_FLOW_C                       VARCHAR(765),
+  ECHOSIGN_DEV_1_SIGNING_DEADLINE_C                     DATE,
+  ECHOSIGN_DEV_1_SIGNING_URL_C                          VARCHAR(765),
+  SUBMIT_FOR_APPROVAL_C                                 BOOLEAN,
+  STATE_C                                               VARCHAR(765),
+  CHANGE_ORDER_TYPE_C                                   VARCHAR(765),
+  NOTES_C                                               VARCHAR(98304),
+  ON_HOLD_REASON_S_C                                    VARCHAR(4099),
+  CREDIT_APPLICATION_C                                  VARCHAR(18),
+  HOMEOWNER_DATA_C                                      VARCHAR(18),
+  REVIEW_STATUS_C                                       VARCHAR(765),
+  REJECTION_COMMENTS_C                                  VARCHAR(765),
+  SIGNED_PROPOSAL_C                                     VARCHAR(765),
+  ECHOSIGN_DEV_1_AGREEMENT_TYPE_C                       VARCHAR(18),
+  ECHOSIGN_DEV_1_EXTERNAL_PASSWORD_C                    VARCHAR(525),
+  ECHOSIGN_DEV_1_FILL_SIGN_C                            BOOLEAN,
+  ECHOSIGN_DEV_1_INTERNAL_PASSWORD_C                    VARCHAR(525),
+  ECHOSIGN_DEV_1_SENDER_RECORDED_C                      VARCHAR(765),
+  PRIMARY_CONTRACT_C                                    VARCHAR(18),
+  ACH_STATUS_C                                          VARCHAR(765),
+  _FIVETRAN_SYNCED                                      TIMESTAMPTZ,
+  _FIVETRAN_DELETED                                     BOOLEAN
+);
+
+
+CREATE INDEX if not exists echosign_dev_1_sign_agreement_c_id ON brs.echosign_dev_1_sign_agreement_c (id);
+CREATE INDEX if not exists DOCUMENT_C_link_to_attachment_c_url_c_18 ON brs.DOCUMENT_C (RIGHT(url_c, 18));
+
+CREATE INDEX if not exists DS_Agreement_c_name ON brs.DS_Agreement_c (name);
+CREATE INDEX if not exists attachment_name ON brs.attachment (name);
+
+-- CREATE INDEX if not exists DS_Agreement_c_Envelope_Status_c ON brs.DS_Agreement_c (Envelope_Status_c);
+-- CREATE INDEX if not exists SFDC_CONTENT_VERSION_ARCHIVE_LINKS_archive_link ON brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS (substr(ARCHIVE_LINK, 64));
+
+--  CREATE INDEX if not exists CONTENT_DOCUMENT_id ON brs.CONTENT_DOCUMENT (id);
+-- CREATE INDEX if not exists CONTENT_DOCUMENT_TITLE ON brs.CONTENT_DOCUMENT (TITLE);
+-- CREATE INDEX if not exists CONTENT_VERSION_CONTENT_DOCUMENT_ID ON brs.CONTENT_VERSION (CONTENT_DOCUMENT_ID);
+-- CREATE INDEX if not exists CONTENT_DOCUMENT_LINK_CONTENT_DOCUMENT_ID ON brs.CONTENT_DOCUMENT_LINK (CONTENT_DOCUMENT_ID);
+--
+--  CREATE INDEX if not exists INVOICE_COMPLIANCE_DOCUMENT_C_link_to_attachment_c_123 ON brs.INVOICE_COMPLIANCE_DOCUMENT_C (RIGHT(link_to_attachment_c, 18));
+-- CREATE INDEX if not exists INVOICE_COMPLIANCE_DOCUMENT_C_aws_file_name_c ON brs.INVOICE_COMPLIANCE_DOCUMENT_C (aws_file_name_c);
+-- CREATE INDEX if not exists INVOICE_COMPLIANCE_DOCUMENT_C_residential_project_c ON brs.INVOICE_COMPLIANCE_DOCUMENT_C (residential_project_c);
+-- CREATE INDEX if not exists DOCUMENT_C_residential_project_c ON brs.DOCUMENT_C (residential_project_c);
+-- CREATE INDEX if not exists NH_CONTRACTS_C_nh_community_c ON brs.NH_CONTRACTS_C (nh_community_c);
+-- CREATE INDEX if not exists NH_CONTRACTS_C_attachment_id_c ON brs.NH_CONTRACTS_C (attachment_id_c);
+
+--CREATE INDEX if not exists INVOICE_COMPLIANCE_DOCUMENT_C_link_to_attachment_c ON brs.INVOICE_COMPLIANCE_DOCUMENT_C (link_to_attachment_c);
+-- --
+-- --
+-- CREATE INDEX if not exists SFDC_ATTACHMENTS_ARCHIVE_LINKS_ATTACHMENT_ID ON brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS (ATTACHMENT_ID);
+-- CREATE INDEX if not exists ATTACHMENT_id ON brs.ATTACHMENT (id);
+--
+-- CREATE INDEX if not exists SFDC_CONTENT_VERSION_ARCHIVE_LINKS_CONTENT_VERSION_ID ON brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS (CONTENT_VERSION_ID);
+-- CREATE INDEX if not exists CONTENT_VERSION_id ON brs.CONTENT_VERSION (id);
+-- CREATE INDEX if not exists ds_agreement_c_DOCU_SIGN_DFSLE_SOURCE_ID_C ON brs.DFSLE_DOCUMENT_C (DFSLE_SOURCE_ID_C);
+-- CREATE INDEX if not exists ds_agreement_c_DOCU_SIGN_ENVELOPE_C ON brs.DFSLE_DOCUMENT_C (DFSLE_ENVELOPE_C);
+-- CREATE INDEX if not exists ds_agreement_c_DOCU_SIGN_ENVELOPE_C ON brs.ds_agreement_c (DOCU_SIGN_ENVELOPE_C);
+--  CREATE INDEX if not exists DFSLE_ENVELOPE_C_id ON brs.DFSLE_ENVELOPE_C (id);
+
 --
 -- CREATE INDEX if not exists sp_contact_account_id ON brs.sp_contact (account_id);
 -- CREATE INDEX if not exists sp_contact_id ON brs.sp_contact (id);
 
---CREATE INDEX if not exists residential_project_c_PLAN_TYPE_C ON brs.residential_project_c (PLAN_TYPE_C);
+--  CREATE INDEX if not exists account_contact_relation_contact_id ON brs.account_contact_relation (contact_id);
+-- CREATE INDEX if not exists account_contact_relation_account_id ON brs.account_contact_relation (account_id);
 
+--CREATE INDEX if not exists residential_project_c_PLAN_TYPE_C ON brs.residential_project_c (PLAN_TYPE_C);
+-- CREATE INDEX if not exists residential_project_c_record_type_id ON brs.residential_project_c (record_type_id);
+--
+-- CREATE INDEX if not exists DOCUMENT_C_aws_file_name_c ON brs.DOCUMENT_C (aws_file_name_c);
+
+--CREATE INDEX if not exists SFDC_ATTACHMENTS_ARCHIVE_LINKS_archive_link ON brs.SFDC_ATTACHMENTS_ARCHIVE_LINKS (archive_link);
 
 -- CREATE INDEX if not exists case_account_id ON brs.case (account_id);
 -- CREATE INDEX if not exists REWORK_REQUESTS_C_residential_project_c ON brs.REWORK_REQUESTS_C (residential_project_c);

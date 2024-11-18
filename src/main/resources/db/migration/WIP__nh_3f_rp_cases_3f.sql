@@ -1,3 +1,129 @@
+
+drop materialized view if exists brs.sp_case_vw;
+create materialized view brs.sp_case_vw as
+(
+select c.id                                   as case_id,
+       c.account_id,
+       c.sub_categories_c,
+       c.subject,
+       c.status,
+       c.jira_ticket_number_c,
+       c.resolution_comment_c,
+       p.id                                   as project_id,
+       lov1.id                                as lov1_category_c_id,
+       lov3.id                                as lov3_status_id,
+       c.record_type_id,
+       c.case_number                          as case_number,
+       c.owner_id,
+       c.ORIGIN,
+       c.created_date,
+       c.closed_date,
+       lov4.id                                as lov4_resolution_c_id,
+       c.description,
+       c.commitment_date_c,
+       c.created_by_id,
+       lov5.id                                as lov5_case_differentiator_c_id,
+       lov6.id                                as lov6_location_c_id,
+       c.requested_due_date_c,
+       c.shipper_tracking_number_c,
+       lov7.id                                as lov7_type_id,
+       lov8.id                                as lov8_origin_id,
+       lov9.id                                as lov9_sub_categories_id,
+       case
+         when c.case_created_by_id is null and c.created_by_id is not null then
+           2495780::bigint
+         else
+           c.case_created_by_id end       as case_created_by_id,
+       case
+         when c.case_owner_id is null and c.owner_id is not null then
+           2495780::bigint
+         else
+           c.case_owner_id end            as case_owner_id,
+       concat(su.first_name, ' ', su.email)   as created_by_id_name,
+       concat(su1.first_name, ' ', su1.email) as owner_id_name
+from brs."case" c
+       left join brs.sp_user su on su.id = c.created_by_id
+       left join brs.sp_user su1 on su1.id = c.owner_id
+       inner join brs.residential_project_c rpc on rpc.account_c = c.account_id
+       inner join flow.project p on rpc.id = p.nw_migration_id
+       left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id = 25546
+       left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id = 25684
+       left join flow.list_of_value lov4 on lov4.name = c.resolution_c and lov4.parent_id = 25939
+       left join flow.list_of_value lov5 on lov5.name = c.case_differentiator_c and lov5.parent_id = 25960
+       left join flow.list_of_value lov6 on lov6.name = c.location_c and lov6.parent_id = 25962
+       left join flow.list_of_value lov7 on lov7.name = c.type and lov7.parent_id = 25931
+       left join flow.list_of_value lov8 on lov8.name = c.origin and lov8.parent_id = 25935
+       left join flow.list_of_value lov9 on lov9.name = c.sub_categories_c and lov9.parent_id = 26061
+where c.account_id is not null
+  and c.residential_project_c is null
+  and c.is_deleted = false
+  );
+
+create index on brs.sp_case_vw (project_id);
+create index on brs.sp_case_vw (case_id);
+
+-- CREATE INDEX idx_project_process_step ON flow.project_process_step (project_id, process_step_id);
+
+drop materialized view if exists brs.sp_case_vw1;
+create materialized view brs.sp_case_vw1 as
+(
+select c.id                                   as case_id,
+       c.sub_categories_c,
+       c.subject,
+       c.jira_ticket_number_c,
+       c.resolution_comment_c,
+       c.status,
+       p.id                                   as project_id,
+       lov1.id                                as lov1_category_c_id,
+       lov3.id                                as lov3_status_id,
+       c.record_type_id,
+       c.case_number                          as case_number,
+       c.owner_id,
+       c.ORIGIN,
+       c.created_date,
+       c.closed_date,
+       lov4.id                                as lov4_resolution_c_id,
+       c.description,
+       c.commitment_date_c,
+       c.created_by_id,
+       lov5.id                                as lov5_case_differentiator_c_id,
+       lov6.id                                as lov6_location_c_id,
+       c.requested_due_date_c,
+       c.shipper_tracking_number_c,
+       lov7.id                                as lov7_type_id,
+       lov8.id                                as lov8_origin_id,
+       lov9.id                                as lov9_sub_categories_id,
+       case
+         when c.case_created_by_id is null and c.created_by_id is not null then
+           2495780::bigint
+         else
+           c.case_created_by_id end       as case_created_by_id,
+       case
+         when c.case_owner_id is null and c.owner_id is not null then
+           2495780::bigint
+         else
+           c.case_owner_id end            as case_owner_id,
+       concat(su.first_name, ' ', su.email)   as created_by_id_name,
+       concat(su1.first_name, ' ', su1.email) as owner_id_name
+from brs."case" c
+       left join brs.sp_user su on su.id = c.created_by_id
+       left join brs.sp_user su1 on su1.id = c.owner_id
+       inner join flow.project p on c.residential_project_c = p.nw_migration_id
+       left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id = 25546
+       left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id = 25684
+       left join flow.list_of_value lov4 on lov4.name = c.resolution_c and lov4.parent_id = 25939
+       left join flow.list_of_value lov5 on lov5.name = c.case_differentiator_c and lov5.parent_id = 25960
+       left join flow.list_of_value lov6 on lov6.name = c.location_c and lov6.parent_id = 25962
+       left join flow.list_of_value lov7 on lov7.name = c.type and lov7.parent_id = 25931
+       left join flow.list_of_value lov8 on lov8.name = c.origin and lov8.parent_id = 25935
+       left join flow.list_of_value lov9 on lov9.name = c.sub_categories_c and lov9.parent_id = 26061
+where c.is_deleted = false
+  );
+
+create index on brs.sp_case_vw1 (project_id);
+create index on brs.sp_case_vw1 (case_id);
+create index on brs.sp_case_vw1 (status);
+
 SET session_replication_role = replica;
 DO
 $do$
@@ -18,6 +144,7 @@ $do$
                project_id,
                lov1_category_c_id,
                lov3_status_id,
+               c.status,
                c.record_type_id,
                case_number,
                c.owner_id,
@@ -67,7 +194,28 @@ $do$
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
                                                     cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
-        values (v_project_process_step_id, 238, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
+        values (v_project_process_step_id, 238, null, CASE
+                                                        WHEN x.status = 'Closed' THEN 115
+                                                        WHEN x.status = 'Open to Work' THEN 121
+                                                        WHEN x.status = 'Waiting for Customer Response' THEN 129
+                                                        WHEN x.status = 'In Progress' THEN 106
+                                                        WHEN x.status = 'Pending SunPower Action' THEN 124
+                                                        WHEN x.status = 'Completed' THEN 3
+                                                        WHEN x.status = 'Pending Partner Action' THEN 125
+                                                        WHEN x.status = 'Pending Customer Action' THEN 123
+                                                        WHEN x.status = 'Pending Other SPWR Team Action' THEN 130
+                                                        WHEN x.status = 'Cancelled' THEN 4
+                                                        WHEN x.status = 'Sent to Inspector' THEN 134
+                                                        WHEN x.status = 'Assigned' THEN 111
+                                                        WHEN x.status = 'Rejected' THEN 95
+                                                        WHEN x.status = 'Incomplete' THEN 135
+                                                        WHEN x.status = 'New' THEN 119
+                                                        WHEN x.status = 'Waiting for Partner Response' THEN 136
+                                                        WHEN x.status = 'Pending 3rd Party Contractor Action' THEN 122
+                                                        WHEN x.status = 'Approved' THEN 96
+                                                        WHEN x.status = 'Not Started' THEN 90
+                                                        WHEN x.status = 'Pending' THEN 7
+                                                        ELSE 115 end, null, null, now(), now(), 2384850, 2384850, false, null,
                 null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 
@@ -138,6 +286,7 @@ $do$
                     c.project_id,
                     lov1_category_c_id,
                     lov3_status_id,
+                    c.status,
                     c.record_type_id,
                     case_number,
                     c.owner_id,
@@ -188,7 +337,28 @@ $do$
                                                     date_created,
                                                     date_modified, created_by_id, modified_by_id, archived,
                                                     cancelled_date, completed_date, scheduled_date, save_version,nw_migration_id)
-        values (v_project_process_step_id, 238, null, 3, null, null, now(), now(), 2384850, 2384850, false, null,
+        values (v_project_process_step_id, 238, null, CASE
+                                                        WHEN x.status = 'Closed' THEN 115
+                                                        WHEN x.status = 'Open to Work' THEN 121
+                                                        WHEN x.status = 'Waiting for Customer Response' THEN 129
+                                                        WHEN x.status = 'In Progress' THEN 106
+                                                        WHEN x.status = 'Pending SunPower Action' THEN 124
+                                                        WHEN x.status = 'Completed' THEN 3
+                                                        WHEN x.status = 'Pending Partner Action' THEN 125
+                                                        WHEN x.status = 'Pending Customer Action' THEN 123
+                                                        WHEN x.status = 'Pending Other SPWR Team Action' THEN 130
+                                                        WHEN x.status = 'Cancelled' THEN 4
+                                                        WHEN x.status = 'Sent to Inspector' THEN 134
+                                                        WHEN x.status = 'Assigned' THEN 111
+                                                        WHEN x.status = 'Rejected' THEN 95
+                                                        WHEN x.status = 'Incomplete' THEN 135
+                                                        WHEN x.status = 'New' THEN 119
+                                                        WHEN x.status = 'Waiting for Partner Response' THEN 136
+                                                        WHEN x.status = 'Pending 3rd Party Contractor Action' THEN 122
+                                                        WHEN x.status = 'Approved' THEN 96
+                                                        WHEN x.status = 'Not Started' THEN 90
+                                                        WHEN x.status = 'Pending' THEN 7
+                                                        ELSE 115 end, null, null, now(), now(), 2384850, 2384850, false, null,
                 null, null, 1,x.case_id)
         returning id into v_project_process_step_event_id;
 
