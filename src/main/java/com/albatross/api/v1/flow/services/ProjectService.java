@@ -289,7 +289,7 @@ public class ProjectService {
       "companyId", user.getCompanyId(),
       "isParent", user.isParentCompany(),
       "parentCompanyId", user.getHighestParentCompanyId(),
-      "partnerIds", user.getPartnerIds()
+      "partnerIds", (user.getPartnerIds() == null) ? List.of() : user.getPartnerIds()
     );
     // for now I limit the # of child projects returned to 3. the frontend only shows 3 and if they want to see more they load via a different query
     // there can be hundreds of child projects

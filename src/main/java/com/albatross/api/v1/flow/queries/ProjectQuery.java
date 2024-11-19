@@ -421,7 +421,7 @@ select
         and cp.company_id = :companyId
         and p.archived is not true
         and case
-            when array[ :partnerIds ]::bigint[] is not null and array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+            when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
               pcfv.int_array_value && array[ :partnerIds ]::bigint[]
             else true
         end

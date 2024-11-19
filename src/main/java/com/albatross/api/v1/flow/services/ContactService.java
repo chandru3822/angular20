@@ -158,7 +158,7 @@ public class ContactService {
     params.put("contactId", contactId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-    params.put("partnerIds", user.getPartnerIds());
+    params.put("partnerIds", (user.getPartnerIds() == null) ? List.of() : user.getPartnerIds());
     Optional<Contact> contact =
       sqlCache.getBySql(ContactQuery.getById, params, new ContactMapper<>(Contact.class, om));
 
