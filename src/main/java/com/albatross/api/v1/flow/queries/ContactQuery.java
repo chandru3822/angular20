@@ -109,7 +109,7 @@ select c.id,
                                 where parentP.id = p.parent_id
                             ))
                      and case
-                         when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+                         when :partnerIds is not null and array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
                            pcfv.int_array_value && array[ :partnerIds ]::bigint[]
                          else true
                      end
@@ -145,7 +145,7 @@ select c.id,
       and c.company_id = :companyId
       and c.archived is not true
       and case
-            when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+            when :partnerIds is not null and array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
               ccfv.int_array_value && array[ :partnerIds ]::bigint[]
             else true
         end
