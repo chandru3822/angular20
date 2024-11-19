@@ -45,7 +45,7 @@ public class ContactLeadService {
   public Contact saveContactLead(ContactLead cl) {
     HubspotLead hubspotLead = new HubspotLead();
     User currentUser = securityService.getCurrentUser();
-
+log.error("ZZ__here 1");
     log.debug("CONTACTLEAD: Received new contact information from a Contact Lead. {}", cl.toString());
 
     String formattedZip = null != cl.getZip() ? cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)) : null;
@@ -84,7 +84,7 @@ public class ContactLeadService {
 
     Long contactId;
     String leadSourceVal = "";
-
+    log.error("ZZ__here 2");
     String state = cl.getState();
     String stateValue =
         state == null
@@ -115,7 +115,7 @@ public class ContactLeadService {
         log.error("CONTACT: Exception when attempting to get geo location.");
       }
     }
-
+    log.error("ZZ__here 3");
     // these will just insert as null unless a valid geo location was found from above
     params.put("latitude", latitude);
     params.put("longitude", longitude);
@@ -129,7 +129,7 @@ public class ContactLeadService {
       contactId = sqlCache.updateBySqlReturningId(ContactLeadQuery.insertContactNoState, params, "id").longValue();
     }
     hubspotLead.setContactId(contactId);
-
+    log.error("ZZ__here 4");
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     // handles saving 'Lead Source' custom field
     if (cl.getLeadSource() != null) {
@@ -341,7 +341,7 @@ public class ContactLeadService {
       gclidValue.setTextValue(cl.getGclid());
       cfvList.add(gclidValue);
     }
-
+    log.error("ZZ__here 5");
     // handles saving 'Referral Generation Representative' custom field
     if (cl.getReferralGenerationRepresentative() != null) {
       // Get Referral Generation Representative list of values
@@ -373,7 +373,7 @@ public class ContactLeadService {
       .map(CustomFieldValue::getIntValue)
       .findFirst()
       .orElse(null);
-
+    log.error("ZZ__here 6");
     if (DIGITAL_LEAD_SOURCES.contains(leadSourceVal)) {
       try {
         klaviyoService.handleContact(contactId, cfvList, false);
@@ -403,6 +403,7 @@ public class ContactLeadService {
         log.error(msg, e.getMessage());
       }
     }
+    log.error("ZZ__here 7");
     return contactService.getContact(contactId);
   }
 
