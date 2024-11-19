@@ -290,8 +290,8 @@ public class BlueravenProposalService {
     //if we dont have it stored locally try to find it from aurora then save it locally
     if (auroraUserId.isEmpty()) {
       try {
-        AuroraUserListDTO users = auroraProxy.getUserList();
-        Optional<AuroraUser> matchingUser = users.getUsers().stream().filter(u -> u.getEmail().equalsIgnoreCase(currentUser.getEmail())).findFirst();
+        AuroraUserListDTO users = auroraProxy.getUsersByEmail(currentUser.getEmail().toLowerCase(), currentUser.getUsername().toLowerCase());
+        Optional<AuroraUser> matchingUser = users.getUsers().stream().findFirst();
         if (matchingUser.isPresent()) {
           //if an aurora user id was found, save it locally
           params.put("auroraUserId", matchingUser.get().getId());

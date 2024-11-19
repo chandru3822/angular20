@@ -2,6 +2,18 @@
   <div v-if="loadComplete">
     <v-row class="toolbar-z-index-override">
       <v-col
+          v-if="testingEnvs.includes(VITE_ENV)"
+          cols="12"
+          style="font-size: 18px; text-align: center; background-color: orange; color: white;"
+      >
+        THIS IS A TESTING ENVIRONMENT - YOU SHOULD BE WORKING IN PRODUCTION
+        <v-btn
+            href="https://albatross.myblueraven.com"
+        >
+          CLICK HERE
+        </v-btn>
+      </v-col>
+      <v-col
           v-if="userIsMasquerading"
           cols="12"
           style="font-size: 18px; text-align: center; background-color: var(--v-error-base); color: white;"
@@ -169,6 +181,8 @@ const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
  const vuetify = vueInstance.$vuetify
+const { VITE_ENV } = import.meta.env
+const testingEnvs = ['stage', 'uat']
 
 const loadComplete = ref(false)
 const clearingMasquerade = ref(false)
