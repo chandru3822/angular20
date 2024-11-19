@@ -15,6 +15,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import moment from "moment";
 import {getRequestWithParams} from "@/helpers/helpers.js";
 import {useAppStore} from "@/stores/AppStore.js";
+import cloneDeep from "lodash.clonedeep";
 
 const appStore = useAppStore()
 const capacityCalendar = ref(null)
@@ -75,6 +76,7 @@ const getDateLabel = (date) => {
 }
 
 const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
+  appStore.loading = true
   try{
     let params = {
       orgId:4548,
@@ -85,9 +87,14 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
     const {data} = await getRequestWithParams(
         '/virtualResourceCapacity/capacityScheduleForRange', {params: params})
     console.log(data)
+    let events = cloneDeep(data)
+    events.forEach((event, index) => event.id = index);
+    successCallback(events)
+    appStore.loading = false
   } catch(e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Capacity Calendar')
+    failureCallback(e)
     appStore.loading = false
   }
 }

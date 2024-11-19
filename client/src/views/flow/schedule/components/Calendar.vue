@@ -1629,7 +1629,6 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       let events = cloneDeep(data)
       events = events.concat(availabilityData)
       successCallback(events)
-      console.log(events)
       calendarLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)

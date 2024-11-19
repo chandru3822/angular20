@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VirtualResourceCapacitySchedule {
     private Long id, companyId, orgId, maxCapacity, currentlyBooked;
-    private String startTime, endTime;
+    private String start, end;
     private Boolean archived;
 }
