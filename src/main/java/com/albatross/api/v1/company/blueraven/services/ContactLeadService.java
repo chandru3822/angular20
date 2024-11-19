@@ -401,7 +401,6 @@ public class ContactLeadService {
         log.error(msg, e.getMessage());
       }
     }
-    log.error(contactService.getContact(contactId).toString());
     return contactService.getContact(contactId);
   }
 
