@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -48,6 +49,16 @@ public class UserPositionService {
 
     return sqlCache.queryBySql(
       UserPositionQuery.getAvailableSalesOrgs, params, Org.class);
+  }
+
+  public List<Long> getUserPositionIdsForOrgPosition(Long positionId, Long orgId){
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("positionId", positionId);
+      params.put("orgId", orgId);
+
+      return sqlCache.queryBySql(
+              UserPositionQuery.getUserPositionIdsForOrgPosition, params, new SingleColumnRowMapper<>(Long.class)
+      );
   }
 
   public List<UserPosition> getAllActiveUserPositions(Long userId) {

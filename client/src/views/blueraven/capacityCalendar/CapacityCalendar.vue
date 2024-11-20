@@ -83,10 +83,9 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
       startTime:moment.utc(info.start),
       endTime: moment.utc(info.end),
     }
-    debugger
+
     const {data} = await getRequestWithParams(
         '/virtualResourceCapacity/capacityScheduleForRange', {params: params})
-    console.log(data)
     let events = cloneDeep(data)
     events.forEach((event, index) => event.id = index);
     successCallback(events)
@@ -149,7 +148,7 @@ onMounted(async () => {
 <style lang="scss">
 #scheduling-capacity-calendar-container {
   .fc-timegrid-slots tr:nth-child(2 n + 1) > td {
-  background-color: rgba(68, 134, 195, .1) //using rgba instead of primary-lighten9 because if you use a color with 100% opacity, the column lines are covered up
+  background-color: rgba(68, 134, 195, .09) //using rgba instead of primary-lighten9 because if you use a color with 100% opacity, the column lines are covered up
 }
   .fc-col-header-cell-cushion{
     padding:4px 0 0 0;
@@ -163,7 +162,7 @@ onMounted(async () => {
     padding: 12px;
   }
   .capacity-col {
-    border-right: var(--v-grey-lighten1) solid 1px;
+    border-right: var(--v-grey-lighten2) solid 1px;
   }
 
   th{

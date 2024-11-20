@@ -2,6 +2,8 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.ScheduleController;
+import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.VirtualResourceCapacitySchedule;
 import com.albatross.api.v1.flow.queries.CapacityQuery;
@@ -10,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +28,8 @@ public class VirtualResourceCapacityService {
 
     private final SqlCache sqlCache;
     private final SecurityService securityService;
+    private final ScheduleService scheduleService;
+    private final UserPositionService userPositionService;
 
 
     public List<VirtualResourceCapacitySchedule> getCapacityForRange(Long orgId, String startTime, String endTime){
@@ -40,6 +46,17 @@ public class VirtualResourceCapacityService {
         return null == results ? new ArrayList<VirtualResourceCapacitySchedule>() : results;
     }
     public List<VirtualResourceCapacitySchedule> getBookedForRange(Long orgId, String startTime, String endTime) {
+        ScheduleController.EventSearchParams esp = new ScheduleController.EventSearchParams();
+        esp.setOrgIds(List.of(orgId));
+        List<Long> userPositionIds = userPositionService.getUserPositionIdsForOrgPosition(761L, orgId); //todo: get prod position Id or pass it in with params
+        esp.setUserPositionIds(userPositionIds);
+        esp.setStartTime(startTime);
+        esp.setEndTime(endTime);
+        esp.setIncludeCancelledEvents(false);
+        esp.setIncludeCancelledProjects(false);
+
+        List<ScheduleEvent> events = scheduleService.getEventsForCompanyByOrgAndUser(esp);
+
         // Define a formatter for the input string format
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
 
@@ -47,19 +64,53 @@ public class VirtualResourceCapacityService {
         LocalDateTime start = LocalDateTime.parse(startTime, formatter);
         LocalDateTime end = LocalDateTime.parse(endTime, formatter);
 
+        // Define the time range of a single day (6 AM to 10 PM)
+        LocalTime startOfDay = LocalTime.of(6, 0); //6am
+        LocalTime endOfDay = LocalTime.of(22, 0); //10pm
+
         List<VirtualResourceCapacitySchedule> bookedForRange = new ArrayList<VirtualResourceCapacitySchedule>();
+
         // Loop through every half-hour interval, get the count, and add it to the bookedForRange list
         while (start.isBefore(end)) {
-            VirtualResourceCapacitySchedule bookedFor30MinInterval = new VirtualResourceCapacitySchedule();
-            bookedFor30MinInterval.setStart(start.toString());
-            LocalDateTime intervalEnd = start.plusMinutes(30);
-            bookedFor30MinInterval.setEnd(intervalEnd.toString());
-            Long intervalCount = getCurrentBookedCountForCapacityScheduleRow(orgId, start.toString(), intervalEnd.toString());
-            bookedFor30MinInterval.setCurrentlyBooked(intervalCount);
-            bookedForRange.add(bookedFor30MinInterval);
-            start = intervalEnd;
+            LocalDateTime intervalStart = start.with(startOfDay); //set the current interval start to the beginning of the range start day
+            LocalDateTime currentDayEnd = start.with(endOfDay); //save the ending of the range start day
+
+            //if the current interval start is before the range start, set the current interval start to the range start
+            if(intervalStart.isBefore(start)){
+                intervalStart = start;
+            }
+            //if the end of the current day is after the range end, set the end of the current day to the range end
+            if(currentDayEnd.isAfter(end)) {
+                currentDayEnd = end;
+            }
+
+            //get booked counts for half-hour intervals between 6am and 10pm
+            while(intervalStart.isBefore(currentDayEnd)) {
+                VirtualResourceCapacitySchedule bookedFor30MinInterval = new VirtualResourceCapacitySchedule();
+                bookedFor30MinInterval.setStart(intervalStart.toString());
+                LocalDateTime intervalEnd = intervalStart.plusMinutes(30);
+                bookedFor30MinInterval.setEnd(intervalEnd.toString());
+                Long intervalCount = countEventsInInterval(events, intervalStart, intervalEnd);
+                bookedFor30MinInterval.setCurrentlyBooked(intervalCount);
+                bookedForRange.add(bookedFor30MinInterval);
+                intervalStart = intervalEnd;
+            }
+
+            //move to the next day
+            start = start.plusDays(1).with(LocalTime.MIDNIGHT);
         }
          return bookedForRange;
+    }
+
+    public Long countEventsInInterval(List<ScheduleEvent> events, LocalDateTime start, LocalDateTime end){
+        List<ScheduleEvent> eventsInInterval = events.stream().filter(event -> {
+            LocalDateTime eventStart = event.getStart().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
+            LocalDateTime eventEnd = event.getEnd().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
+            return (eventStart.isAfter(start) && eventStart.isBefore(end)) ||
+                    (eventEnd.isAfter(start) && eventEnd.isBefore(end)) ||
+                    (start.isAfter(eventStart) && start.isBefore(eventEnd));
+        }).toList();
+        return (long) eventsInInterval.size();
     }
 
     public Long getCurrentBookedCountForCapacityScheduleRow(Long orgId, String startTime, String endTime){
