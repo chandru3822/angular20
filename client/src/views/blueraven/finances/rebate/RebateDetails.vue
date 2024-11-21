@@ -34,72 +34,76 @@
 
       <!-- if edit mode enabled then show inputs -->
       <dd v-if="editMailing" class="edit-mail-div">
-        <div class="addr-inputs">
-          <a-text-field
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        type="text"
-                        label="Street 1:"
-                        v-model="rebateDetails.mailing_street1">
-          </a-text-field>
-          <a-text-field
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        type="text"
-                        label="Street 2:"
-                        v-model="rebateDetails.mailing_street2">
-          </a-text-field>
-          <a-text-field
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        type="text"
-                        label="City:"
-                        v-model="rebateDetails.mailing_city">
-          </a-text-field>
-          <a-autocomplete attach v-model="rebateDetails.mailing_state_id"
+        <v-form ref="mailingForm">
+          <div class="addr-inputs">
+            <a-text-field
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-                          :items="states"
-                          label="State"
-                          item-title="state"
-                          item-value="id"
-          ></a-autocomplete>
-          <a-text-field
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        type="text"
-                        label="Postal Code:"
-                        v-model="rebateDetails.mailing_postal_code">
-          </a-text-field>
-          <div class="d-flex justify-end">
-            <a-btn
-                class="my-2"
-                variant="text"
-                color="primary"
-                size="small"
-                @click="cancelMailingEdit()"
-                text="Cancel"
-            ></a-btn>
-            <a-btn
-                class="my-2"
-                variant="text"
-                color="error"
-                size="small"
-                @click="saveMailingAddress(true)"
-                v-if="mailingDetails.mailingStreet1 != null && userCanEdit"
-                text="Remove"
-            ></a-btn>
-            <a-btn
-                class="my-2 ml-2"
-                color="primary"
-                size="small"
-                @click="saveMailingAddress(false)"
-                v-if="userCanEdit"
-                :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code"
-                text="Save"
-            ></a-btn>
+                          type="text"
+                          label="Street 1:"
+                          v-model="rebateDetails.mailing_street1">
+            </a-text-field>
+            <a-text-field
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          type="text"
+                          label="Street 2:"
+                          v-model="rebateDetails.mailing_street2">
+            </a-text-field>
+            <a-text-field
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          type="text"
+                          label="City:"
+                          v-model="rebateDetails.mailing_city">
+            </a-text-field>
+            <a-autocomplete attach v-model="rebateDetails.mailing_state_id"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            :items="states"
+                            label="State"
+                            item-title="state"
+                            item-value="id"
+            ></a-autocomplete>
+            <a-text-field
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          :maxlength="10"
+                          :rules="postalCodeRules"
+                          type="text"
+                          label="Postal Code:"
+                          v-model="rebateDetails.mailing_postal_code">
+            </a-text-field>
+            <div class="d-flex justify-end">
+              <a-btn
+                  class="my-2"
+                  variant="text"
+                  color="primary"
+                  size="small"
+                  @click="cancelMailingEdit()"
+                  text="Cancel"
+              ></a-btn>
+              <a-btn
+                  class="my-2"
+                  variant="text"
+                  color="error"
+                  size="small"
+                  @click="saveMailingAddress(true)"
+                  v-if="mailingDetails.mailingStreet1 != null && userCanEdit"
+                  text="Remove"
+              ></a-btn>
+              <a-btn
+                  class="my-2 ml-2"
+                  color="primary"
+                  size="small"
+                  @click="validateMailingAddressForm(false)"
+                  v-if="userCanEdit"
+                  :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code"
+                  text="Save"
+              ></a-btn>
+            </div>
           </div>
-        </div>
+        </v-form>
       </dd>
 
       <div v-if="!editMailing && (rebateDetails.mailing_street1 != null || rebateDetails.mailing_city != null || rebateDetails.mailing_state != null || rebateDetails.mailing_postal_code != null)">
@@ -315,6 +319,7 @@ import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import constants from "@/helpers/constants.js";
 
 
 const appStore = useAppStore()
@@ -323,6 +328,8 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const mailingForm = ref(null)
+const postalCodeRules = ref(constants.POSTAL_CODE_RULES)
 
 const userCanAdd = computed(() => {
   return userStore.userHasFeatureAccessLevel('REBATES', 'ADD')
@@ -412,6 +419,13 @@ const canEditPayment = (p) => {
   }
   return disabled || !userCanEdit.value
 }
+
+const validateMailingAddressForm = async(removeAddress) => {
+  if (mailingForm.value.validate()) {
+    await saveMailingAddress(removeAddress)
+  }
+}
+
 const saveMailingAddress = async(removeAddress) => {
   if (removeAddress) {
     editMailing.value = false
