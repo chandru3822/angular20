@@ -239,7 +239,7 @@ const lockingProposal = ref(false)
 const confirmEmailRef = ref(null)
 
 const isNewHome = computed(() => {
-  return proposal.value.objectCategoryId == 6
+  return proposal.value.objectCategoryId === 6
 })
 
 const isCreditCheckRequired = computed(() => {
