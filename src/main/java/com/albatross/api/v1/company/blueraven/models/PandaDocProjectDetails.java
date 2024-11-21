@@ -10,7 +10,7 @@ import java.util.StringJoiner;
 public class PandaDocProjectDetails {
     private String state, utilityCompany, financier;
     private Integer companyId;
-    private Long projectId, proposalNbr, proposalLogHistoryId;
+    private Long projectId, proposalNbr, proposalLogHistoryId, objectCategoryId;
     private Double financedPvPricePerWattToCustomer, dealerFee,
       firstYearAvoidedBill, monthlySolarCosts, eighteenPlusPaymentItcOnly, batteryManufacturersWarranty;
     private String closerFirstName, closerLastName, closerEmail, closerPhone;
@@ -18,7 +18,7 @@ public class PandaDocProjectDetails {
     private String mailingState, city, phone, postalCode, mailingStreet1, mailingStreet2, country,
         projectName, optionalDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
         loanTerm, interestRate, financialOption, loanType, loanAmount, totalCost, solarRebate, itc, stateTaxCredit, systemCost,
-        leadSource, storageBrand, inverterCustomGetting, panelModel, storageName;
+        leadSource, storageBrand, inverterCustomGetting, panelModel, storageName, builder, communityName, lotNumber, planType;
 
     private Boolean isBatteryOnly;
 

@@ -65,7 +65,7 @@
               <stateful-btn
                 class="text-capitalize mt-1"
                 :successful="proposal.creditCheckSubmitted"
-                :disabled="!(proposal.locked && isCreditCheckRequired)"
+                :disabled="!(proposal.locked && isCreditCheckRequired && !isNewHome)"
                 @click="submitCreditCheck"
               >
                 Check Credit
@@ -114,7 +114,7 @@
               <stateful-btn
                 class="text-capitalize"
                 :successful="proposal.financeDocsSent"
-                :disabled="!(proposal.locked && valid && isCreditCheckRequired)"
+                :disabled="!(proposal.locked && valid && isCreditCheckRequired && !isNewHome)"
                 @click="sendDocs('FINANCE_DOCS')"
               >
                 Send Finance Documents
@@ -237,6 +237,10 @@ const menu = ref(false)
 const rules = ref([(v) => !!v || 'Value is required'])
 const lockingProposal = ref(false)
 const confirmEmailRef = ref(null)
+
+const isNewHome = computed(() => {
+  return proposal.value.objectCategoryId == 6
+})
 
 const isCreditCheckRequired = computed(() => {
   // find financial field custom group
