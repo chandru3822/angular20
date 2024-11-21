@@ -19,6 +19,7 @@ import cloneDeep from "lodash.clonedeep";
 
 const appStore = useAppStore()
 const capacityCalendar = ref(null)
+const editMode = ref(false);
 
 const calendarOptions = ref({
   initialView:'timeGridWeek',
@@ -54,7 +55,11 @@ const calendarOptions = ref({
       text:'Current Week'
     },
     customEdit:{
-      text:'Edit'
+      text:'Edit',
+      click: function(mouseEvent, htmlElement) {
+        editMode.value = !editMode.value
+        htmlElement.childNodes[0].nodeValue = editMode.value ? 'Save' : 'Edit'
+      }
     }
   },
   dayHeaderFormat:{ weekday: 'short', month: 'short', day: 'numeric', omitCommas: true },
@@ -65,6 +70,7 @@ const calendarOptions = ref({
   slotLabelInterval:"00:30:00",
   slotLabelClassNames:["text-left", "pa-4"],
   slotMinTime:"06:00:00",
+  slotMaxTime:"22:00:00",
   allDaySlot: false
 })
 
@@ -87,7 +93,14 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
     const {data} = await getRequestWithParams(
         '/virtualResourceCapacity/capacityScheduleForRange', {params: params})
     let events = cloneDeep(data)
-    events.forEach((event, index) => event.id = index);
+
+    events.forEach((event, index) => {
+      event.id = index
+      event.extendedProps = {
+        maxCapacity: event.maxCapacity,
+        currentlyBooked: event.currentlyBooked
+      }
+    });
     successCallback(events)
     appStore.loading = false
   } catch(e) {
@@ -120,11 +133,24 @@ onMounted(async () => {
       </div>
       </div>
     </template>
-    <template v-slot:eventContent>
-      <div class="capacity-booked-grid">
-        <div class="capacity-col label-medium grey--text text--darken-2 d-flex justify-center align-center">0</div>
-        <div class="booked-col label-medium grey--text text--darken-2 d-flex justify-center align-center">0</div>
+    <template v-slot:eventContent="{event}">
+      <div v-if="!editMode" class="capacity-booked-grid">
+        <div class="capacity-col label-medium grey--text text--darken-2 d-flex justify-center align-center">
+          {{ event.extendedProps.maxCapacity || 0}}
+        </div>
+        <div class="booked-col label-medium grey--text text--darken-2 d-flex justify-center align-center">
+          {{ event.extendedProps.currentlyBooked }}
+        </div>
       </div>
+      <div v-else class="capacity-booked-grid">
+        <div class="capacity-col edit-mode label-medium grey--text text--darken-2 d-flex justify-center align-center">
+          <a-text-field :value="event.extendedProps.maxCapacity" :placeholder="0"></a-text-field>
+        </div>
+      <div class="booked-col edit-mode label-medium grey--text text--darken-2 d-flex justify-center align-center">
+        {{ event.extendedProps.currentlyBooked }}
+      </div>
+      </div>
+
     </template>
   </FullCalendar>
 </div>
@@ -164,9 +190,23 @@ onMounted(async () => {
   .capacity-col {
     border-right: var(--v-grey-lighten2) solid 1px;
   }
+  .capacity-col.edit-mode, .booked-col.edit-mode {
+    padding: unset;
+    overflow:hidden;
+  }
+  .capacity-col.edit-mode {
+    margin-bottom: -4px;
+  }
 
   th{
     background-color: var(--v-grey-lighten3);
+  }
+
+  #scheduling-capacity-calendar > div.fc-view-harness > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div.fc-timegrid-col-bg > div > div > div > div > div {
+    max-width: 30px;
+  }
+  #scheduling-capacity-calendar > div.fc-view-harness > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div.fc-timegrid-col-bg > div > div > div > div > div > div > div.v-input__slot > div > input {
+    text-align: center;
   }
 }
 </style>
