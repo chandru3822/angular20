@@ -47,10 +47,12 @@ public class VirtualResourceCapacityController {
         return virtualResourceCapacityService.getBookedForRange(orgId, startTime, endTime);
     }
 
-    @PostMapping(value="/maxCapacityList")
+    @PutMapping(value="/maxCapacityList")
     public void updateMaxCapacity(
-            @RequestParam List<VirtualResourceCapacitySchedule> resourceCapacitySchedules){
-        virtualResourceCapacityService.updateMaxCapacity(resourceCapacitySchedules);
+            @RequestParam Long orgId,
+            @RequestBody List<VirtualResourceCapacitySchedule> resourceCapacitySchedules
+            ){
+        virtualResourceCapacityService.updateMaxCapacity(resourceCapacitySchedules, orgId);
     }
 
     @PostMapping("/duplicateWeek")

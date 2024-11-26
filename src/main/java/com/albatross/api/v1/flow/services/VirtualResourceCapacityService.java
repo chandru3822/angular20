@@ -11,8 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -58,46 +59,29 @@ public class VirtualResourceCapacityService {
         List<ScheduleEvent> events = scheduleService.getEventsForCompanyByOrgAndUser(esp);
 
         // Define a formatter for the input string format
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
-
-        // Parse the input strings into OffsetDateTime
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        // Parse the input strings into LocalDateTime
         LocalDateTime start = LocalDateTime.parse(startTime, formatter);
         LocalDateTime end = LocalDateTime.parse(endTime, formatter);
 
-        // Define the time range of a single day (6 AM to 10 PM)
-        LocalTime startOfDay = LocalTime.of(6, 0); //6am
-        LocalTime endOfDay = LocalTime.of(22, 0); //10pm
+
 
         List<VirtualResourceCapacitySchedule> bookedForRange = new ArrayList<VirtualResourceCapacitySchedule>();
 
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
         // Loop through every half-hour interval, get the count, and add it to the bookedForRange list
         while (start.isBefore(end)) {
-            LocalDateTime intervalStart = start.with(startOfDay); //set the current interval start to the beginning of the range start day
-            LocalDateTime currentDayEnd = start.with(endOfDay); //save the ending of the range start day
-
-            //if the current interval start is before the range start, set the current interval start to the range start
-            if(intervalStart.isBefore(start)){
-                intervalStart = start;
-            }
-            //if the end of the current day is after the range end, set the end of the current day to the range end
-            if(currentDayEnd.isAfter(end)) {
-                currentDayEnd = end;
-            }
 
             //get booked counts for half-hour intervals between 6am and 10pm
-            while(intervalStart.isBefore(currentDayEnd)) {
                 VirtualResourceCapacitySchedule bookedFor30MinInterval = new VirtualResourceCapacitySchedule();
-                bookedFor30MinInterval.setStart(intervalStart.toString());
-                LocalDateTime intervalEnd = intervalStart.plusMinutes(30);
-                bookedFor30MinInterval.setEnd(intervalEnd.toString());
-                Long intervalCount = countEventsInInterval(events, intervalStart, intervalEnd);
+                bookedFor30MinInterval.setStart(outputFormatter.format(start.atZone(ZoneId.of("GMT"))));
+                LocalDateTime intervalEnd = start.plusMinutes(30);
+                bookedFor30MinInterval.setEnd(outputFormatter.format(intervalEnd.atZone(ZoneId.of("GMT"))));
+                Long intervalCount = countEventsInInterval(events, start, intervalEnd);
                 bookedFor30MinInterval.setCurrentlyBooked(intervalCount);
                 bookedForRange.add(bookedFor30MinInterval);
-                intervalStart = intervalEnd;
-            }
-
-            //move to the next day
-            start = start.plusDays(1).with(LocalTime.MIDNIGHT);
+                start = intervalEnd;
         }
          return bookedForRange;
     }
@@ -143,19 +127,27 @@ public class VirtualResourceCapacityService {
         return null;
     }
 
-    public void updateMaxCapacity(List<VirtualResourceCapacitySchedule> resourceCapacitySchedules){
+    public void updateMaxCapacity(List<VirtualResourceCapacitySchedule> resourceCapacitySchedules, Long orgId){
         User user = securityService.getCurrentUser();
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", user.getId());
         params.put("companyId", user.getCompanyId());
+        params.put("orgId", orgId);
+
 
         for (VirtualResourceCapacitySchedule capacity: resourceCapacitySchedules) {
-            params.put("orgId", capacity.getOrgId());
             params.put("maxCapacity", capacity.getMaxCapacity());
-            params.put("startTime", capacity.getStart());
-            params.put("endTime", capacity.getEnd());
+
+            params.put("startTime", stringToTimestamp(capacity.getStart()));
+            params.put("endTime", stringToTimestamp(capacity.getEnd()));
             sqlCache.updateBySql(CapacityQuery.upsertMaxCapacity, params);
         }
+    }
+
+    public Timestamp stringToTimestamp(String dateTimeString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTimeString, formatter);
+        return Timestamp.valueOf(localDateTime);
     }
 
     public List<VirtualResourceCapacitySchedule> duplicatePreviousWeek(Long orgId, String currentWeekStartTime, String currentWeekEndTime){

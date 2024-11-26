@@ -13,13 +13,14 @@ import * as constants from "constants";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import moment from "moment";
-import {getRequestWithParams} from "@/helpers/helpers.js";
+import {getRequestWithParams, putRequestWithRequestParams} from "@/helpers/helpers.js";
 import {useAppStore} from "@/stores/AppStore.js";
 import cloneDeep from "lodash.clonedeep";
 
 const appStore = useAppStore()
 const capacityCalendar = ref(null)
-const editMode = ref(false);
+const editMode = ref(false)
+const capacityScheduleChanged = ref([])
 
 const calendarOptions = ref({
   initialView:'timeGridWeek',
@@ -57,6 +58,9 @@ const calendarOptions = ref({
     customEdit:{
       text:'Edit',
       click: function(mouseEvent, htmlElement) {
+        if(editMode.value === true){
+          saveCapacities()
+        }
         editMode.value = !editMode.value
         htmlElement.childNodes[0].nodeValue = editMode.value ? 'Save' : 'Edit'
       }
@@ -86,16 +90,19 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
   try{
     let params = {
       orgId:4548,
-      startTime:moment.utc(info.start),
-      endTime: moment.utc(info.end),
+      startTime: info.start,
+      endTime: info.end
     }
+    debugger
 
     const {data} = await getRequestWithParams(
         '/virtualResourceCapacity/capacityScheduleForRange', {params: params})
     let events = cloneDeep(data)
-
+debugger
     events.forEach((event, index) => {
       event.id = index
+      event.start = moment.utc(event.start).format()
+      event.end = moment.utc(event.end).format()
       event.extendedProps = {
         maxCapacity: event.maxCapacity,
         currentlyBooked: event.currentlyBooked
@@ -111,6 +118,31 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
   }
 }
 
+const addInputToChangedSchedule = (input) => {
+  debugger
+  const duplicate = capacityScheduleChanged.value.find(s => s.id === input.id)
+  if(duplicate){
+    capacityScheduleChanged.value = capacityScheduleChanged.value.filter(s => s.id !== input.id);
+  }
+  capacityScheduleChanged.value.push(input);
+}
+
+const saveCapacities = async() => {
+  debugger
+  appStore.loading = true
+  try {
+    let params = {
+      orgId: 4548
+    }
+
+    const {data} = await putRequestWithRequestParams('/virtualResourceCapacity/maxCapacityList', capacityScheduleChanged.value, params, null)
+    appStore.loading = false
+  } catch(e){
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Saving Schedule')
+    appStore.loading = false
+  }
+}
 onMounted(async () => {
   const calendarApi = capacityCalendar.value.getApi()
   calendarApi.render()
@@ -144,7 +176,7 @@ onMounted(async () => {
       </div>
       <div v-else class="capacity-booked-grid">
         <div class="capacity-col edit-mode label-medium grey--text text--darken-2 d-flex justify-center align-center">
-          <a-text-field :value="event.extendedProps.maxCapacity" :placeholder="0"></a-text-field>
+          <a-text-field :value="event.extendedProps.maxCapacity" type="number" placeholder="0" @input="v => addInputToChangedSchedule({id: event.id, start: moment.utc(event.start).toString(), end: moment.utc(event.end).toString(), maxCapacity:Number(v)  })"></a-text-field>
         </div>
       <div class="booked-col edit-mode label-medium grey--text text--darken-2 d-flex justify-center align-center">
         {{ event.extendedProps.currentlyBooked }}
@@ -203,7 +235,7 @@ onMounted(async () => {
   }
 
   #scheduling-capacity-calendar > div.fc-view-harness > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div.fc-timegrid-col-bg > div > div > div > div > div {
-    max-width: 30px;
+    max-width: 50px;
   }
   #scheduling-capacity-calendar > div.fc-view-harness > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div.fc-timegrid-col-bg > div > div > div > div > div > div > div.v-input__slot > div > input {
     text-align: center;
