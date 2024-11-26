@@ -74,6 +74,11 @@ public class ProjectController {
     return projectService.getProject(projectId);
   }
 
+  @PostMapping(value = "/{projectId}/resetContact")
+  public void resetProjectContactToParent(@PathVariable Long projectId) {
+    projectService.resetProjectContactToParent(projectId);
+  }
+
   @Data
   public static class ChildProjectRequest {
     private Long childProjectCount, childCompanyProcessId;
