@@ -67,6 +67,11 @@ public class CapacityQuery {
     public final static String upsertMaxCapacity = """
         insert into flow.virtual_resource_slot_capacity(company_id, org_id, max_capacity, start_time, end_time, date_modified, created_by_id, modified_by_id)
         VALUES (:companyId, :orgId, :maxCapacity, :startTime, :endTime, now(), :userId, :userId)
-         on conflict (company_id, org_id, start_time, end_time) do update set archived = false
-         """;
+         on conflict (company_id, org_id, start_time, end_time) 
+         do update 
+         set archived = false,
+            max_capacity=:maxCapacity,
+            date_modified=now(),
+            modified_by_id=:userId         
+       """;
 }

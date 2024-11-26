@@ -1328,7 +1328,6 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
 
 //calendar event functions
 const getAvailability = async (info) => {
-  debugger
   try {
     let params = {
       orgIds:

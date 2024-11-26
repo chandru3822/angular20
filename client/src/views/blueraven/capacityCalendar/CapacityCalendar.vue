@@ -57,11 +57,13 @@ const calendarOptions = ref({
     },
     customEdit:{
       text:'Edit',
-      click: function(mouseEvent, htmlElement) {
+      click: async function(mouseEvent, htmlElement) {
         if(editMode.value === true){
-          saveCapacities()
+          await saveCapacities()
         }
-        editMode.value = !editMode.value
+        else {
+          editMode.value = true
+        }
         htmlElement.childNodes[0].nodeValue = editMode.value ? 'Save' : 'Edit'
       }
     }
@@ -93,12 +95,10 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
       startTime: info.start,
       endTime: info.end
     }
-    debugger
 
     const {data} = await getRequestWithParams(
         '/virtualResourceCapacity/capacityScheduleForRange', {params: params})
     let events = cloneDeep(data)
-debugger
     events.forEach((event, index) => {
       event.id = index
       event.start = moment.utc(event.start).format()
@@ -119,7 +119,6 @@ debugger
 }
 
 const addInputToChangedSchedule = (input) => {
-  debugger
   const duplicate = capacityScheduleChanged.value.find(s => s.id === input.id)
   if(duplicate){
     capacityScheduleChanged.value = capacityScheduleChanged.value.filter(s => s.id !== input.id);
@@ -128,7 +127,6 @@ const addInputToChangedSchedule = (input) => {
 }
 
 const saveCapacities = async() => {
-  debugger
   appStore.loading = true
   try {
     let params = {
@@ -136,6 +134,9 @@ const saveCapacities = async() => {
     }
 
     const {data} = await putRequestWithRequestParams('/virtualResourceCapacity/maxCapacityList', capacityScheduleChanged.value, params, null)
+    const calendarApi = capacityCalendar.value.getApi()
+    calendarApi.refetchEvents()
+    editMode.value = false
     appStore.loading = false
   } catch(e){
     console.error('*** ERROR ***', e)
