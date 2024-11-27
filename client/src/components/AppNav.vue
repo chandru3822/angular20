@@ -2,16 +2,23 @@
   <div v-if="loadComplete">
     <v-row class="toolbar-z-index-override">
       <v-col
-          v-if="testingEnvs.includes(VITE_ENV)"
+          v-if="testingEnvs.includes(VITE_ENV) && showTestBanner"
           cols="12"
           style="font-size: 18px; text-align: center; background-color: orange; color: white;"
       >
+        <a-btn variant="outlined" color="white"
+               icon
+               @click="testBannerOn = !testBannerOn"
+               class="mr-5"
+               prepend-icon="close">
+        </a-btn>
         THIS IS A TESTING ENVIRONMENT - YOU SHOULD BE WORKING IN PRODUCTION
-        <v-btn
+        <v-btn class="ml-5"
             href="https://albatross.myblueraven.com"
         >
-          CLICK HERE
+          Go To Prod
         </v-btn>
+
       </v-col>
       <v-col
           v-if="userIsMasquerading"
@@ -185,6 +192,7 @@ const { VITE_ENV } = import.meta.env
 const testingEnvs = ['stage', 'uat']
 
 const loadComplete = ref(false)
+const testBannerOn = ref(true)
 const clearingMasquerade = ref(false)
 const selectedCompany = ref({})
 const menuOpen = ref(false)
@@ -228,6 +236,12 @@ const tabs = ref([{
     feature: 'SMS_INBOX',
     show: true
   }])
+
+const showTestBanner = computed(() => {
+  //as a 7oaks user i dont want to see this message all the time
+  return !userStore.isSystemAdmin && testBannerOn.value
+  // return testBannerOn.value
+})
 
 
 onMounted(() => {

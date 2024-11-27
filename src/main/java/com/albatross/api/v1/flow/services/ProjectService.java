@@ -280,6 +280,16 @@ public class ProjectService {
   }
 
 
+  public void resetProjectContactToParent(Long projectId) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.updateBySql(ProjectQuery.resetProjectContactToParent, params);
+  }
+
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 

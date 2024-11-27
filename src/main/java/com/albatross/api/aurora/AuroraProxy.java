@@ -103,6 +103,28 @@ public class AuroraProxy {
     }
   }
 
+  public AuroraUserListDTO getUsersByEmail(String personalEmail, String userNameEmail) throws IOException {
+        try {
+            ResponseEntity<AuroraUserListDTO> res = client
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                    .path("/tenants/%s/users".formatted(tenantId))
+                    .queryParam("email[]", personalEmail, userNameEmail)
+                    .build())
+                    .header("Authorization", "Bearer " + tokenV2022)
+                    .retrieve()
+                    .toEntity(AuroraUserListDTO.class)
+                    .timeout(Duration.ofSeconds(30))
+                    .onErrorMap(Exception.class, e -> e)
+                    .block();
+            return res.getBody();
+           } catch (Exception e) {
+        String msg = "AURORA: Failed to find user";
+        log.debug(msg, e);
+        throw new IOException(msg, e);
+    }
+  }
+
   public AuroraUserListDTO getUserList() throws IOException {
     try {
       ResponseEntity<AuroraUserListDTO> res = client

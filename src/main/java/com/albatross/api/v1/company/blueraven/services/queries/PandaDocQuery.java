@@ -60,7 +60,8 @@ public class PandaDocQuery {
       plh.first_year_avoided_bill,
       plh.monthly_solar_costs,
       plh.eighteen_plus_payment_itc_only,
-      plh.battery_manufacturers_warranty
+      plh.battery_manufacturers_warranty,
+      p.object_category_id
     FROM flow.project p
            JOIN brs.project_details pd on p.id = pd.project_id
            JOIN brs.proposal_log_history plh on p.id = plh.project_id
@@ -72,6 +73,21 @@ public class PandaDocQuery {
            JOIN flow.company_process cp on cp.id = p.company_process_id
            left JOIN flow.process pr on pr.id = cp.process_id
     WHERE p.id = :projectId and plh.proposal_nbr = :proposalNbr
+    """;
+
+  //language=PostgreSQL
+  public final static String getNewHomesProjectDetails = """
+    SELECT
+      concat(c.first_name, ' ', c.last_name) as "builder",
+      pcfv1.text_value AS "communityName",
+      pcfv2.text_value AS "lotNumber",
+      pcfv3.text_value AS "planType"
+    FROM flow.project p
+           LEFT JOIN flow.contact c ON c.id = (select contact_id from flow.project where id = p.parent_id)
+           LEFT JOIN flow.project_custom_field_value pcfv1 ON pcfv1.project_id = :projectId AND pcfv1.custom_field_group_assignment_id = 29879
+           LEFT JOIN flow.project_custom_field_value pcfv2 ON pcfv2.project_id = :projectId AND pcfv2.custom_field_group_assignment_id = 28127
+           LEFT JOIN flow.project_custom_field_value pcfv3 ON pcfv3.project_id = :projectId AND pcfv3.custom_field_group_assignment_id = 29874
+    WHERE p.id = :projectId
     """;
 
   //language=PostgreSQL

@@ -74,6 +74,19 @@
         </template>
       </a-btn>
     </v-card>
+    <a-btn
+        v-if="showResetButton"
+        color="primary"
+        class="ml-7 mb-3"
+        @click="showResetContactModal = true"
+        text="Reset Contact"
+    ></a-btn>
+    <ConfirmationDialog :open-dialog="showResetContactModal" @confirm="resetContact"
+                        @close-dialog="showResetContactModal=false">
+      <template v-slot:title class="albatross-body-1"> Confirm </template>
+      <template v-slot:yes class="albatross-body-1"> Confirm </template>
+      Are you sure you want to reset the contact on this project back to the same contact that is assigned to the parent?
+    </ConfirmationDialog>
     <v-dialog
         v-if="project.contactId === project.parentProject?.contactId"
         v-model="showChangeContactModal"
@@ -254,13 +267,16 @@ import {
 } from '@/helpers/helpers'
 import {useProjectStore} from '@/stores/ProjectStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {useRouter} from 'vue-router/composables'
 import constants from "@/helpers/constants.js"
 import debounce from "lodash.debounce";
 import axios from "axios";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
+const userStore = useUserStore()
 const router = useRouter()
 
 const props = defineProps({
@@ -284,6 +300,7 @@ const existingContacts = ref([])
 const newContactForm = ref(null)
 const selectedExistingContact = ref(null)
 const showChangeContactModal = ref(false)
+const showResetContactModal = ref(false)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const contactPhoneRule = ref([() => (newContact.value.phone != null && newContact.value.phone !== '') || "Phone is required",v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"])
 const emailRules = ref(constants.EMAIL_RULES)
@@ -293,6 +310,12 @@ const headers = ref([
   { text: 'State', value: 'state', show: true },
   { text: 'Date Created', value: 'dateCreated', show: true },
 ])
+
+const showResetButton = computed(() => {
+  //this is a temporary solution so that kevin can fix some data instead of me. will add a better solution when they define it.
+  return  project.value?.parentProject && project.value?.parentProject?.id !== null && project.value?.contactId !== project.value?.parentProject?.contactId
+            && (userStore.isSystemAdmin || userStore.details.id === 2415534)
+})
 
 const copyToClipBoard = (textValue, label) => {
   if (textValue) {
@@ -372,6 +395,20 @@ const assignContact = async () => {
       params.id = selectedExistingContact.value.id
     }
     await postRequest(`/contact/createFromProject/${project.value.id}`, params)
+
+    window.location.reload()
+  } catch (e) {
+    appStore.loading = false
+    logError(e)
+  } finally {
+    newContact.value = {}
+  }
+}
+
+const resetContact = async () => {
+  appStore.loading = true
+  try {
+    await postRequest(`/project/${project.value.id}/resetContact`, {})
 
     window.location.reload()
   } catch (e) {

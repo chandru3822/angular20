@@ -29,6 +29,10 @@ BEGIN
          left join flow.timezone t on ct.timezone_id = t.id
   where p.id = p_project_id;
 
+  if(p_remote is true) then
+      v_round_robin_id = 31; --this is the Inside Sales round robin. there can only every be one unless we make a lot of changes
+  end if;
+
   create temp table exclude_by_appointment as (select foo.user_id, foo.lead_limit, foo.appointment_count
                                                from (select rru.user_id,
                                                             lead_limit  as lead_limit,
