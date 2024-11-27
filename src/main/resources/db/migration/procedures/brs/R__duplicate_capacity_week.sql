@@ -25,23 +25,30 @@ update flow.virtual_resource_slot_capacity vrsc
 set archived = true,
     modified_by_id = p_current_user_id,
     date_modified = now()
-where ((start_time between p_current_week_start_time and p_current_week_end_time)
-   OR (end_time between p_current_week_start_time and p_current_week_end_time))
-    AND org_id = p_org_id
-    AND company_id = p_company_id;
+where ((start_time between c and p_current_week_end_time)
+	OR (end_time between p_current_week_start_time and p_current_week_end_time))
+  AND org_id = p_org_id
+  AND company_id = p_company_id;
 
 --then upsert here (upsert = insert but on conflict do an update instead)
 insert into flow.virtual_resource_slot_capacity(company_id, org_id, max_capacity, start_time, end_time, date_modified, created_by_id, modified_by_id)
-select p_company_id, vrsc.org_id, vrsc.max_capacity, vrsc.start_time + interval '1 week', vrsc.end_time + interval '1 week', now(), p_current_user_id, p_current_user_id
-from flow.virtual_resource_slot_capacity vrsc
-where ((start_time between v_previous_week_start_time and v_previous_week_end_time)
-   OR (end_time between v_previous_week_start_time and v_previous_week_end_time))
-	AND org_id = p_org_id
-	AND company_id = p_company_id
-on conflict (company_id, org_id, start_time, end_time) do update set
-	archived = false,
-	                                              max_capacity = vrsc.max_capacity,
-	                                              date_modified = now(),
-	                                              modified_by_id = now();
+select
+	p_company_id, p_org_id,
+	(select vrsc.max_capacity from flow.virtual_resource_slot_capacity vrsc
+	 where ((vrsc.start_time between v_previous_week_start_time and v_previous_week_end_time)
+		 OR (vrsc.end_time between v_previous_week_start_time and v_previous_week_end_time))
+	   AND vrsc.org_id = p_org_id
+	   AND vrsc.company_id = p_company_id),
+	p_current_week_start_time,
+	p_current_week_end_time, now(),
+	p_current_user_id,
+	p_current_user_id
+	on conflict (company_id, org_id, start_time, end_time)
+do update
+		   set
+			   archived = false,
+		   max_capacity = excluded.max_capacity,
+		   date_modified = now(),
+		   modified_by_id = excluded.modified_by_id;
 END;
 $$
