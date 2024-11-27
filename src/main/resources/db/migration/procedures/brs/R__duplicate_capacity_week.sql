@@ -21,7 +21,7 @@ BEGIN
     v_previous_week_end_time = p_current_week_end_time - interval '1 week';
 
     --archive any records from the current week
-update flow.virtual_resource_slot_capacity
+update flow.virtual_resource_slot_capacity vrsc
 set archived = true,
     modified_by_id = p_current_user_id,
     date_modified = now()
