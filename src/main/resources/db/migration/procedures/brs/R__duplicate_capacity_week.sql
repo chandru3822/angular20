@@ -34,18 +34,11 @@ BEGIN
 	insert into flow.virtual_resource_slot_capacity(company_id, org_id, max_capacity, start_time, end_time, date_modified, created_by_id, modified_by_id)
 	select
 		p_company_id, p_org_id,
-		( case when
 		(select vrsc.max_capacity from flow.virtual_resource_slot_capacity vrsc
 		 where ((vrsc.start_time between v_previous_week_start_time and v_previous_week_end_time)
 			 OR (vrsc.end_time between v_previous_week_start_time and v_previous_week_end_time))
 		   AND vrsc.org_id = p_org_id
-		   AND vrsc.company_id = p_company_id) is not null then
-		    (select vrsc.max_capacity from flow.virtual_resource_slot_capacity vrsc
-		     where ((vrsc.start_time between v_previous_week_start_time and v_previous_week_end_time)
-			     OR (vrsc.end_time between v_previous_week_start_time and v_previous_week_end_time))
-			   AND vrsc.org_id = p_org_id
-			   AND vrsc.company_id = p_company_id) end
-		),
+		   AND vrsc.company_id = p_company_id),
 		p_current_week_start_time,
 		p_current_week_end_time, now(),
 		p_current_user_id,
