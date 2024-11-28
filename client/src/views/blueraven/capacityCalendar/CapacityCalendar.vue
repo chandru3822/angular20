@@ -47,9 +47,9 @@ const calendarOptions = ref({
       dayGridPlugin, timeGridPlugin
   ],
   headerToolbar:{
-    left: 'prev,customCurrentWeek,next customDuplicateWeek',
+    right: 'prev,customCurrentWeek,next',
     center: 'title',
-    right: 'customCancel customEdit'
+    left: ''
   },
   customButtons:{
     customCurrentWeek:{
@@ -152,6 +152,7 @@ const saveCapacities = async() => {
     const {data} = await putRequestWithRequestParams('/virtualResourceCapacity/maxCapacityList', capacityScheduleChanged.value, params, null)
     const calendarApi = capacityCalendar.value.getApi()
     calendarApi.refetchEvents()
+    appStore.showSnack('SUCCESS', 'Scheduled Saved')
     editMode.value = false
     appStore.loading = false
   } catch(e){
@@ -161,11 +162,18 @@ const saveCapacities = async() => {
   }
 }
 
+const clickEditSaveBtn = async function() {
+  if (editMode.value === true) {
+    await saveCapacities()
+  } else {
+    editMode.value = true
+  }
+}
+
 const duplicateWeek = async () => {
   const calendarApi = capacityCalendar.value.getApi()
   const start = calendarApi.view.activeStart
   const end = calendarApi.view.activeEnd
-  debugger
   try {
     let params = {
       orgId: 4548,
@@ -194,6 +202,12 @@ onMounted(async () => {
 
 <template>
 <div id="scheduling-capacity-calendar-container" class="one-hunned height-one-hunned pa-6">
+  <v-row class="pa-3">
+    <a-btn v-if="editMode" variant="outlined" @click="duplicateWeek()">Auto Fill (Duplicate from Previous Week)</a-btn>
+    <v-spacer/>
+    <a-btn v-if="editMode" variant="outlined" class="mr-3" @click="editMode = false">Cancel</a-btn>
+    <a-btn @click="clickEditSaveBtn">{{editMode ? 'Save' : 'Edit'}}</a-btn>
+  </v-row>
   <FullCalendar ref="capacityCalendar" id="scheduling-capacity-calendar" :options="calendarOptions">
     <template v-slot:slotLabelContent="{date}">
       {{getDateLabel(date)}}
