@@ -43,6 +43,11 @@ BEGIN
 		p_current_week_end_time, now(),
 		p_current_user_id,
 		p_current_user_id
+	where exists (select vrsc.max_capacity from flow.virtual_resource_slot_capacity vrsc
+	              where ((vrsc.start_time between v_previous_week_start_time and v_previous_week_end_time)
+		              OR (vrsc.end_time between v_previous_week_start_time and v_previous_week_end_time))
+		            AND vrsc.org_id = p_org_id
+		            AND vrsc.company_id = p_company_id)
 	on conflict (company_id, org_id, start_time, end_time)
 		do update
 		set
