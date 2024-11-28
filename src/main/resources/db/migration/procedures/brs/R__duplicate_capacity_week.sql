@@ -38,6 +38,7 @@ BEGIN
 		OR (end_time between v_previous_week_start_time and v_previous_week_end_time))
 	  AND org_id = p_org_id
 	  AND company_id = p_company_id
+	  AND archived = false
 	on conflict (company_id, org_id, start_time, end_time)
 		do update
 		set
