@@ -153,6 +153,7 @@ $default-text: rgba(0,0,0,0.87);
 .fc-button-primary{
   color: var(--v-primary-base) !important;
   background-color: white !important;
+  border-color: var(--v-primary-base) !important;
 }
 
 .fc-button-primary:hover {

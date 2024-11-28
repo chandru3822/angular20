@@ -144,8 +144,12 @@ public class VirtualResourceCapacityService {
         }
     }
 
-    public Timestamp stringToTimestamp(String dateTimeString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
+    public Timestamp stringToTimestamp(String dateTimeString){
+        return stringToTimestamp(dateTimeString, "EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
+    }
+
+    public Timestamp stringToTimestamp(String dateTimeString, String pattern) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
         LocalDateTime localDateTime = LocalDateTime.parse(dateTimeString, formatter);
         return Timestamp.valueOf(localDateTime);
     }
@@ -156,8 +160,8 @@ public class VirtualResourceCapacityService {
         params.put("orgId", orgId);
         params.put("userId", user.getId());
         params.put("companyId", user.getCompanyId());
-        params.put("currentWeekStart", currentWeekStartTime);
-        params.put("currentWeekEnd", currentWeekEndTime);
+        params.put("currentWeekStart", stringToTimestamp(currentWeekStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+        params.put("currentWeekEnd", stringToTimestamp(currentWeekEndTime, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         sqlCache.executeSql(CapacityQuery.duplicateCapacityWeek, params);
         //return getCapcitySchedule for the new week (this will include the existing bookings)

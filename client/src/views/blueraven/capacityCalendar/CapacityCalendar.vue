@@ -13,7 +13,7 @@ import * as constants from "constants";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import moment from "moment";
-import {getRequestWithParams, putRequestWithRequestParams} from "@/helpers/helpers.js";
+import {getRequestWithParams, putRequestWithRequestParams, postRequestWithRequestParams} from "@/helpers/helpers.js";
 import {useAppStore} from "@/stores/AppStore.js";
 import cloneDeep from "lodash.clonedeep";
 
@@ -47,13 +47,23 @@ const calendarOptions = ref({
       dayGridPlugin, timeGridPlugin
   ],
   headerToolbar:{
-    left: 'prev,customCurrentWeek,next',
+    left: 'prev,customCurrentWeek,next customDuplicateWeek',
     center: 'title',
-    right: 'customEdit'
+    right: 'customCancel customEdit'
   },
   customButtons:{
     customCurrentWeek:{
-      text:'Current Week'
+      text:'Current Week',
+      click: () => {
+        let calendarApi = capacityCalendar.value.getApi()
+        calendarApi.gotoDate(new Date())
+      }
+    },
+    customDuplicateWeek:{
+      text:'Auto Fill (Duplicate from Previous Week)',
+      click: () => {
+        duplicateWeek()
+      }
     },
     customEdit:{
       text:'Edit',
@@ -65,6 +75,12 @@ const calendarOptions = ref({
           editMode.value = true
         }
         htmlElement.childNodes[0].nodeValue = editMode.value ? 'Save' : 'Edit'
+      }
+    },
+    customCancel:{
+      text:'Cancel',
+      click: () => {
+        editMode.value = false
       }
     }
   },
@@ -144,6 +160,31 @@ const saveCapacities = async() => {
     appStore.loading = false
   }
 }
+
+const duplicateWeek = async () => {
+  const calendarApi = capacityCalendar.value.getApi()
+  const start = calendarApi.view.activeStart
+  const end = calendarApi.view.activeEnd
+  debugger
+  try {
+    let params = {
+      orgId: 4548,
+      currentWeekStartTime: start,
+      currentWeekEndTime: end
+    }
+    const {data} = await postRequestWithRequestParams('/virtualResourceCapacity/duplicateWeek', null, params);
+    calendarApi.refetchEvents()
+    editMode.value = false
+    appStore.loading = false
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Duplicating Week')
+    appStore.loading = false
+  }
+
+}
+
 onMounted(async () => {
   const calendarApi = capacityCalendar.value.getApi()
   calendarApi.render()

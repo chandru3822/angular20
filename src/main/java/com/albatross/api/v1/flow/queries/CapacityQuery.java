@@ -60,7 +60,7 @@ public class CapacityQuery {
 
     //language=PostgreSQL
     public final static String duplicateCapacityWeek = """
-    select from brs.duplicate_capacity_week(:userId, :companyId, :orgId, :currentWeekStart, :currentWeekEnd)
+    select * from brs.duplicate_capacity_week(:userId, :companyId, :orgId, :currentWeekStart, :currentWeekEnd)
     """;
 
     //language=PostgreSQL
