@@ -175,6 +175,7 @@ const duplicateWeek = async () => {
     const {data} = await postRequestWithRequestParams('/virtualResourceCapacity/duplicateWeek', null, params);
     calendarApi.refetchEvents()
     editMode.value = false
+    appStore.showSnack('SUCCESS', 'Week Duplicated')
     appStore.loading = false
 
   } catch (e) {
