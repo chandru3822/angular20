@@ -42,10 +42,7 @@ BEGIN
   from flow.project_process_step pps
   where id = p_project_process_step_id;
 
-  --if it is a virtual appt then default it to 55 mins re: sean mcnees
-  if(p_remote) then
-      v_appointment_length = 55;
-  end if;
+
 
   if v_process_step_id != 1 then
     insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
@@ -66,7 +63,12 @@ BEGIN
                         on pczu.round_robin_id = pcz.id and pczu.round_robin_user_type_id = 1 and
                            pczu.archived is false
     where p.id = p_project_id;
-
+  --if it is a virtual appt then default it to 55 mins re: sean mcnees
+  if(p_remote) then
+    v_appointment_length = 55;
+    v_round_robin_id = 31;
+    v_uses_total_lead_allocation = false;
+  end if;
 
   if array_length(p_users, 1) < 2 then
     select p_users[1]
