@@ -8,7 +8,7 @@
 *
 */
 import FullCalendar from "@fullcalendar/vue";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import * as constants from "constants";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -47,9 +47,9 @@ const calendarOptions = ref({
       dayGridPlugin, timeGridPlugin
   ],
   headerToolbar:{
-    right: 'prev,customCurrentWeek,next',
+    left: 'customDuplicateWeek prev,customCurrentWeek,next',
     center: 'title',
-    left: ''
+    right: 'customCancel customEdit'
   },
   customButtons:{
     customCurrentWeek:{
@@ -60,7 +60,7 @@ const calendarOptions = ref({
       }
     },
     customDuplicateWeek:{
-      text:'Auto Fill (Duplicate from Previous Week)',
+      text:'Auto Fill (Duplicate Previous Week)',
       click: () => {
         duplicateWeek()
       }
@@ -73,8 +73,9 @@ const calendarOptions = ref({
         }
         else {
           editMode.value = true
+
+
         }
-        htmlElement.childNodes[0].nodeValue = editMode.value ? 'Save' : 'Edit'
       }
     },
     customCancel:{
@@ -95,6 +96,35 @@ const calendarOptions = ref({
   slotMaxTime:"22:00:00",
   allDaySlot: false
 })
+
+watch(editMode, () =>{
+  console.log('editMode', editMode.value)
+  switchCalendarEditMode()
+})
+
+const switchCalendarEditMode = () => {
+  if(editMode.value){
+    //hide the calendar nav buttons
+    document.getElementsByClassName('fc-prev-button')[0]?.classList.add('hidden')
+    document.getElementsByClassName('fc-customCurrentWeek-button')[0]?.classList.add('hidden')
+    document.getElementsByClassName('fc-next-button')[0]?.classList.add('hidden')
+
+    //show the cancel and duplicate week buttons
+    document.getElementsByClassName('fc-customDuplicateWeek-button')[0]?.classList.remove('hidden')
+    document.getElementsByClassName('fc-customCancel-button')[0]?.classList.remove('hidden')
+  } else {
+    //show the calendar nav buttons
+    document.getElementsByClassName('fc-prev-button')[0]?.classList.remove('hidden')
+    document.getElementsByClassName('fc-customCurrentWeek-button')[0]?.classList.remove('hidden')
+    document.getElementsByClassName('fc-next-button')[0]?.classList.remove('hidden')
+
+    //hide the cancel and duplicate week buttons
+    document.getElementsByClassName('fc-customDuplicateWeek-button')[0]?.classList.add('hidden')
+    document.getElementsByClassName('fc-customCancel-button')[0]?.classList.add('hidden')
+  }
+  document.getElementsByClassName('fc-customEdit-button')[0].childNodes[0].nodeValue = editMode.value ? 'Save' : 'Edit'
+
+}
 
 const getDateLabel = (date) => {
   let dateText = `${moment(date, "hh:mm").format("h:mma").toString()}`
@@ -197,17 +227,12 @@ const duplicateWeek = async () => {
 onMounted(async () => {
   const calendarApi = capacityCalendar.value.getApi()
   calendarApi.render()
+  switchCalendarEditMode()
 })
 </script>
 
 <template>
 <div id="scheduling-capacity-calendar-container" class="one-hunned height-one-hunned pa-6">
-  <v-row class="pa-3">
-    <a-btn v-if="editMode" variant="outlined" @click="duplicateWeek()">Auto Fill (Duplicate from Previous Week)</a-btn>
-    <v-spacer/>
-    <a-btn v-if="editMode" variant="outlined" class="mr-3" @click="editMode = false">Cancel</a-btn>
-    <a-btn @click="clickEditSaveBtn">{{editMode ? 'Save' : 'Edit'}}</a-btn>
-  </v-row>
   <FullCalendar ref="capacityCalendar" id="scheduling-capacity-calendar" :options="calendarOptions">
     <template v-slot:slotLabelContent="{date}">
       {{getDateLabel(date)}}
@@ -296,6 +321,10 @@ onMounted(async () => {
   }
   #scheduling-capacity-calendar > div.fc-view-harness > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div.fc-timegrid-col-bg > div > div > div > div > div > div > div.v-input__slot > div > input {
     text-align: center;
+  }
+
+  .hidden{
+    display: none;
   }
 }
 </style>
