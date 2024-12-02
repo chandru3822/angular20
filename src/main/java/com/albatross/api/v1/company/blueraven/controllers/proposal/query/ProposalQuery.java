@@ -332,6 +332,7 @@ from project p
            pv.version,
            pps.project_id,
            prj.project_name,
+           prj.object_category_id,
            cs.state_id,
            c.email,
            p.project_process_step_id,

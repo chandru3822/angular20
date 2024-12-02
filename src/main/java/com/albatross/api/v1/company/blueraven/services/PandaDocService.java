@@ -54,6 +54,8 @@ public class PandaDocService {
 
   @Autowired @Lazy private InstallAgreementService installAgreementService;
 
+  private final Long NEW_HOMES_OBJECT_CATEGORY_ID = 6L;
+
   /**
    * Get the necessary information about a project to determine which PandaDoc template to use when
    * generating the document.
@@ -808,6 +810,25 @@ public class PandaDocService {
                     : result.get("custom_fields.Total Cash Down Payment").toString());
         tokens.put("Deal.NV Progress Payment", Math.round(progressPayment));
         tokens.put("Proposal.NV Progress Payment", Math.round(progressPayment));
+
+        if (deets.getObjectCategoryId().equals(NEW_HOMES_OBJECT_CATEGORY_ID)) {
+          HashMap<String, Object> params = new HashMap<>();
+          params.put("projectId", deets.getProjectId());
+          Optional<PandaDocProjectDetails> newHomeProjectDetails =
+            sqlCache.getBySql(PandaDocQuery.getNewHomesProjectDetails, params, PandaDocProjectDetails.class);
+
+          tokens.put("NH.customerName", deets.getProjectName());
+          tokens.put("NH.customerStreetAddress", joinIfPresent(" ", deets.getMailingStreet1(), deets.getMailingStreet2()));
+          tokens.put("NH.customerCity", deets.getCity());
+          tokens.put("NH.customerPostalCode", deets.getPostalCode());
+          tokens.put("NH.systemSize", result.get("custom_fields.System Size"));
+          if (newHomeProjectDetails.isPresent()) {
+            tokens.put("NH.builder", newHomeProjectDetails.get().getBuilder());
+            tokens.put("NH.communityName", newHomeProjectDetails.get().getCommunityName());
+            tokens.put("NH.lotNumber", newHomeProjectDetails.get().getLotNumber());
+            tokens.put("NH.planType", newHomeProjectDetails.get().getPlanType());
+          }
+        }
       }
     } catch (EmptyResultDataAccessException e) {
       log.warn("PANDADOC Error getting proposal log values", e);
