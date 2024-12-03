@@ -32,6 +32,13 @@ public class UserPositionQuery {
       from brs.get_available_sales_orgs(:orgId::bigint,:positionId::bigint);
     """;
 
+    //language=PostgreSQL
+    public final static String getUserPositionIdsForOrgPosition = """
+        select upv.user_position_id 
+            from flow.user_positions_vw upv 
+            where position_id = :positionId and org_id=:orgId
+    """;
+
 
   //language=PostgreSQL
   public final static String getAllActive = """

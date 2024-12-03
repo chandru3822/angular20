@@ -51,6 +51,7 @@ public class ScheduleService {
     if (null != esp.getUserPositionIds()) {
       //this part can be taken out as soon as the new mobile version has been adopted - check with kory
       //BACKWARDS: 2/16/21
+        //the VirtualResourceCapacityService is now using this 11/20/24
       combined = esp.getUserPositionIds();
     } else {
       HashMap<String, Object> p2 = new HashMap<>();

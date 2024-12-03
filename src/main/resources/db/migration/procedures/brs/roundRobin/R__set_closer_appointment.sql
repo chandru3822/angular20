@@ -34,12 +34,15 @@ declare
   v_user_already_assigned_to_another_project_id bigint;
   v_set_closer_appointment_audit_id             bigint;
   v_uses_total_lead_allocation          boolean;
+  v_appointment_length          integer = 90;
 BEGIN
 
   select process_step_id
   into v_process_step_id
   from flow.project_process_step pps
   where id = p_project_process_step_id;
+
+
 
   if v_process_step_id != 1 then
     insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
@@ -60,7 +63,12 @@ BEGIN
                         on pczu.round_robin_id = pcz.id and pczu.round_robin_user_type_id = 1 and
                            pczu.archived is false
     where p.id = p_project_id;
-
+  --if it is a virtual appt then default it to 55 mins re: sean mcnees
+  if(p_remote) then
+    v_appointment_length = 55;
+    v_round_robin_id = 31;
+    v_uses_total_lead_allocation = false;
+  end if;
 
   if array_length(p_users, 1) < 2 then
     select p_users[1]
@@ -151,7 +159,7 @@ BEGIN
            inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
            inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
       and pst4.id in (1, 4)
-    where (ppse.start_time,  ppse.end_time) overlaps ( p_appointment_start_time,(p_appointment_start_time + (90 || 'minutes')::interval)::timestamp) --todo: come back and use user default_appointment_length
+    where (ppse.start_time,  ppse.end_time) overlaps ( p_appointment_start_time,(p_appointment_start_time + (v_appointment_length || 'minutes')::interval)::timestamp) --todo: come back and use user default_appointment_length
       and ppse.resource_id = v_user_position_id;
 
     if  v_user_already_assigned_to_another_project_id < 1 then
@@ -164,7 +172,7 @@ BEGIN
             resource_id = v_user_position_id,
             start_time = p_appointment_start_time,
             end_time = (p_appointment_start_time +
-                        (90 || 'minutes')::interval)::timestamp --todo: come back and use user default_appointment_length
+                        (v_appointment_length || 'minutes')::interval)::timestamp --todo: come back and use user default_appointment_length
             where id = p_project_process_step_event_id;
 
 
@@ -195,7 +203,7 @@ BEGIN
                           v_user_id::bigint,
                           p_appointment_start_time::timestamp,
                           (p_appointment_start_time +
-                           (90 || 'minutes')::interval)::timestamp, --todo: come back and use user default_appointment_length
+                           (v_appointment_length || 'minutes')::interval)::timestamp, --todo: come back and use user default_appointment_length
                           v_user_full_name,
                           v_user_email,
                           v_user_position_id;
