@@ -1100,8 +1100,8 @@ BEGIN
     if v_minimum_price_per_watt is null then
       raise exception 'Your Redline cannot be found, please contact Rep Pay';
     end if;
-
-    v_adjusted_price_per_watt = v_minimum_price_per_watt + greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
+    v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
+    v_adjusted_price_per_watt = v_minimum_price_per_watt + v_desired_commission_amount;
   elsif v_commission_strategy_id = 24443 and v_dealer is not null then
     v_adjusted_price_per_watt = coalesce(v_dealer_redline_price, 0) + coalesce(v_dealer_markup, 0);
   elsif v_commission_strategy_id = 24102 then
