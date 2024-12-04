@@ -89,10 +89,12 @@ public class BlueravenProposalService {
   private final AuroraProxy auroraProxy;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
+    var user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
+    params.put("partnerIds", user.getPartnerIds());
 
     List<ProposalProject> results =
       sqlCache.queryBySql(ProposalQuery.getProjects, params, ProposalProject.class);
