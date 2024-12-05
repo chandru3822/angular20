@@ -233,7 +233,9 @@ select *
   //language=PostgreSQL
   public final static String resetProjectContactToParent = """
     update flow.project p
-      set contact_id = (select pp.contact_id from flow.project pp where pp.id = p.parent_id)
+      set contact_id = (select pp.contact_id from flow.project pp where pp.id = p.parent_id),
+          date_modified = now(),
+          modified_by_id = :userId
     where p.id = :projectId
   """;
 
