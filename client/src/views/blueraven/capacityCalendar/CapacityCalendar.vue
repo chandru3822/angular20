@@ -12,6 +12,7 @@ import {onMounted, ref, watch} from "vue";
 import constants from '@/helpers/constants'
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import scrollGridPlugin from "@fullcalendar/scrollgrid";
 import moment from "moment";
 import {getRequestWithParams, putRequestWithRequestParams, postRequestWithRequestParams} from "@/helpers/helpers.js";
 import {useAppStore} from "@/stores/AppStore.js";
@@ -30,7 +31,7 @@ const dialogShowMore = ref(false)
 
 const calendarOptions = ref({
   plugins:[
-    dayGridPlugin, timeGridPlugin
+    dayGridPlugin, timeGridPlugin, scrollGridPlugin
   ],
   schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   initialView:'timeGridWeek',
@@ -87,10 +88,11 @@ const calendarOptions = ref({
     minute:'2-digit'
   },
   slotLabelInterval:"00:30:00",
-  slotLabelClassNames:["text-left", "pa-4"],
+  slotLabelClassNames:["text-left", "pr-2"],
   slotMinTime:"06:00:00",
   slotMaxTime:"22:00:00",
-  allDaySlot: false
+  allDaySlot: false,
+  dayMinWidth:160,
 })
 
 watch(editMode, () =>{
@@ -322,16 +324,23 @@ onMounted(async () => {
   .fc-timegrid-slots tr:nth-child(2 n + 1) > td {
   background-color: rgba(68, 134, 195, .09) //using rgba instead of primary-lighten9 because if you use a color with 100% opacity, the column lines are covered up
 }
+  //controls the height of each row
+  .fc-timegrid-slot, .fc-timegrid-slot-label {
+    height: 54px !important;
+  }
   .fc-col-header-cell-cushion{
     padding:4px 0 0 0;
   }
   th.fc-col-header-cell.fc-day > div > a {
     display:block;
-    height:fit-content;
+    //height:fit-content;
   }
 
-  .capacity-col, .booked-col{
-    padding: 12px;
+  .capacity-booked-grid-header {
+
+    .capacity-col, .booked-col {
+      padding: 12px;
+    }
   }
   .capacity-col {
     border-right: var(--v-grey-lighten2) solid 1px;
