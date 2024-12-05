@@ -29,6 +29,8 @@ const dialogBodyText = ref('The following time slot is currently overbooked, wit
 const dialogBodyDates = ref([])
 const dialogShowMore = ref(false)
 
+const virtualConsultingOrgId = 4548; //this is the prod id
+
 const calendarOptions = ref({
   plugins:[
     dayGridPlugin, timeGridPlugin, scrollGridPlugin
@@ -135,7 +137,7 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
   appStore.loading = true
   try{
     let params = {
-      orgId:4548,
+      orgId: virtualConsultingOrgId,
       startTime: info.start,
       endTime: info.end
     }
@@ -200,7 +202,7 @@ const saveCapacities = async() => {
   appStore.loading = true
   try {
     let params = {
-      orgId: 4548
+      orgId: virtualConsultingOrgId
     }
     const {data} = await putRequestWithRequestParams('/virtualResourceCapacity/maxCapacityList', capacityScheduleChanged.value, params, null)
     const calendarApi = capacityCalendar.value.getApi()
@@ -236,7 +238,7 @@ const duplicateWeek = async () => {
   const end = calendarApi.view.activeEnd
   try {
     let params = {
-      orgId: 4548,
+      orgId: virtualConsultingOrgId,
       currentWeekStartTime: start,
       currentWeekEndTime: end
     }
