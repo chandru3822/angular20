@@ -9,7 +9,7 @@
 */
 import FullCalendar from "@fullcalendar/vue";
 import {onMounted, ref, watch} from "vue";
-import * as constants from "constants";
+import constants from '@/helpers/constants'
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import moment from "moment";
@@ -29,29 +29,18 @@ const dialogBodyDates = ref([])
 const dialogShowMore = ref(false)
 
 const calendarOptions = ref({
+  plugins:[
+    dayGridPlugin, timeGridPlugin
+  ],
+  schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   initialView:'timeGridWeek',
-  // events:[
-  //   {
-  //     id: 'a',
-  //     title: 'my event',
-  //     start: '2024-11-12T15:00:00.000+00:00',
-  //     end: '2024-11-12T15:30:00.000+00:00'
-  //   },
-  //   {
-  //     id: 'b',
-  //     title: 'my event',
-  //     start: '2024-11-13T15:00:00.000+00:00',
-  //     end: '2024-11-13T15:30:00.000+00:00'
-  //   },
-  // ],
+  //events
   eventSources:[
     (info, successCallback, failureCallback) => getCapacitySchedule(info, successCallback, failureCallback)
   ],
   eventColor: 'transparent',
   eventDisplay:'background',
-  plugins:[
-      dayGridPlugin, timeGridPlugin
-  ],
+  //headers
   headerToolbar:{
     left: 'customDuplicateWeek prev,customCurrentWeek,next',
     center: 'title',
@@ -92,6 +81,7 @@ const calendarOptions = ref({
     }
   },
   dayHeaderFormat:{ weekday: 'short', month: 'short', day: 'numeric', omitCommas: true },
+  //slots
   slotLabelFormat:{
     hour:'numeric',
     minute:'2-digit'
@@ -363,6 +353,7 @@ onMounted(async () => {
     background-color: var(--v-grey-lighten3);
   }
 
+  //selects the input field in edit mode to limit the width
   #scheduling-capacity-calendar > div.fc-view-harness > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div.fc-timegrid-col-bg > div > div > div > div > div {
     max-width: 50px;
   }
