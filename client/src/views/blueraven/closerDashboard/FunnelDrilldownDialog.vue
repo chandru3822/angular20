@@ -25,6 +25,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'export'])
+const show = computed(() => {
+  return props.value
+})
 
 const funnelDrilldownSearch = ref('')
 const funnelDrilldownRowCount = ref(0)
@@ -51,20 +54,16 @@ const showTotalSystemSize = computed(() => {
   return funnelDrilldownRowCount.value > 0
 })
 
-watch(props.funnelDrilldownData, () =>{
-  debugger
-})
-
 </script>
 
 <template>
   <v-dialog
-      v-model="value"
+      v-model="show"
       @input="$emit('close')"
   >
     <v-card id="funnel-drilldown">
       <v-card-title class="mb-1">
-        <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+        <span class="title-large">{{ funnelDrilldownTitle }}</span>
         <v-spacer></v-spacer>
         <a-btn
             color="primary"
@@ -83,7 +82,7 @@ watch(props.funnelDrilldownData, () =>{
       <v-card-title
           v-if="funnelDrilldownData.length > 0"
           id="funnel-drilldown-search"
-          class="pt-2"
+          class="pt-2 d-flex justify-space-between"
       >
         <a-text-field
             v-model="funnelDrilldownSearch"
@@ -93,7 +92,8 @@ watch(props.funnelDrilldownData, () =>{
             variant="outlined"
             density="compact"
         ></a-text-field>
-        <span id="funnel-drilldown-row-count">
+        <v-spacer/>
+        <span class="body-medium">
               Records:
               {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
             </span>
@@ -102,7 +102,7 @@ watch(props.funnelDrilldownData, () =>{
       <v-card-text>
         <v-data-table
             id="funnel-drilldown-table"
-            class="elevation-1"
+            class="elevation-1 table-striped"
             :class="{ 'mt-6': funnelDrilldownData.length === 0 }"
             :headers="visibleFunnelDrilldownHeaders()"
             fixed-header
@@ -135,7 +135,7 @@ watch(props.funnelDrilldownData, () =>{
 <!--                    'text-decoration': item.cancelled_date ? 'line-through' : ''-->
 <!--                  }"-->
 <!--            >-->
-              <template #item.count="{item, index}" style="{text-align: center; width: 25px}">
+              <template #item.count="{item, index}" style="{text-align: center}" class="px-0">
                 {{ index + 1 }}
               </template>
 
