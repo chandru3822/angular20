@@ -2169,318 +2169,17 @@
       <!--  APPOINTMENTS TO FDC PIPELINE END-->
 
       <!--       FUNNEL DRILLDOWN START -->
-      <v-dialog
-        v-model="funnelDrilldownDialog"
-        @input="closeFunnelDrilldownDialog"
-      >
-        <v-card id="funnel-drilldown">
-          <v-card-title class="mb-1">
-            <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
-            <v-spacer></v-spacer>
-            <a-btn
-              color="primary"
-              class="mr-4 mb-2"
-              @click="exportDrilldownCsv()"
-              text="Export"
-            ></a-btn>
-            <a
-              class="close-modal-x pb-3"
-              title="Close"
-              @click="closeFunnelDrilldownDialog"
-              >×</a
-            >
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-title
-            v-if="funnelDrilldownData.length > 0"
-            id="funnel-drilldown-search"
-            class="pt-2"
-          >
-            <a-text-field
-              v-model="funnelDrilldownSearch"
-              placeholder="Type to filter..."
-              single-line
-              hide-details
-              variant="outlined"
-              density="compact"
-            ></a-text-field>
-            <span id="funnel-drilldown-row-count">
-              Records:
-              {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
-            </span>
-          </v-card-title>
-
-          <v-card-text>
-            <v-data-table
-              id="funnel-drilldown-table"
-              class="elevation-1"
-              :class="{ 'mt-6': funnelDrilldownData.length === 0 }"
-              :mobile-breakpoint="0"
-              :headers="visibleFunnelDrilldownHeaders()"
-              fixed-header
-              :items="funnelDrilldownData"
-              @current-items="filteredFunnelDrilldownItems"
-              :search="funnelDrilldownSearch"
-              :height="
-                funnelDrilldownRowCount > 0
-                  ? constants.IS_MOBILE
-                    ? 'calc(100vh - 250px)'
-                    : 'calc(100vh - 395px)'
-                  : '105px'
-              "
-              dense
-              multi-sort
-              :sort-by="[]"
-              :sort-desc="[]"
-              :loading="funnelDrilldownLoading"
-              :items-per-page="500"
-              :footer-props="footerProps"
-            >
-              <template
-                v-if="funnelDrilldownData.length > 0"
-                #item="{ item, index }"
-              >
-                <tr
-                  :class="[
-                    'text-sm-left',
-                    'row-hover',
-                    { 'shaded-row': !(index % 2) }
-                  ]"
-                  :style="{
-                    'text-decoration': item.cancelled_date ? 'line-through' : ''
-                  }"
-                >
-                  <td style="text-align: center">
-                    {{ index + 1 }}
-                  </td>
-                  <td>{{ item.owner_name || '' }}</td>
-                  <td>{{ item.office || '' }}</td>
-                  <td>{{ item.state || '' }}</td>
-                  <td>{{ item.metro_area || '' }}</td>
-                  <td>{{ item.status_type || '' }}</td>
-                  <td class="customer-name">{{ item.customer_name || '' }}</td>
-                  <td>
-                    <router-link
-                      text
-                      v-if="
-                        item.project_id && userStore.userHasFeature('PROJECTS')
-                      "
-                      :to="`/project/${item.project_id}/status`"
-                    >
-                      {{ item.project_id }}
-                    </router-link>
-                    <div v-else>{{ item.project_id || '' }}</div>
-                  </td>
-                  <td v-if="selectedFunnel.funnel_type_id === 1">
-                    <router-link
-                      text
-                      v-if="
-                        item.project_id &&
-                        item.project_process_step_id &&
-                        item.project_process_step_event_id &&
-                        userStore.userHasFeature('EVENTS')
-                      "
-                      :to="`/project/${item.project_id}/processStep/${item.project_process_step_id}/event/${item.project_process_step_event_id}`"
-                    >
-                      {{ item.project_process_step_event_id }}
-                    </router-link>
-                    <div v-else>
-                      {{ item.project_process_step_event_id || '' }}
-                    </div>
-                  </td>
-                  <!--                <td :class="item.stage">{{ item.stage || '' }}</td>-->
-                  <td :class="item.source_name_class">
-                    {{ item.source_name || '' }}
-                  </td>
-                  <td :class="item.system_size_class">
-                    {{ item.system_size || '' }}
-                  </td>
-                  <td :class="item.financier_class">
-                    {{ item.financier || '' }}
-                  </td>
-                  <td>
-                    {{
-                      item.appointment_date
-                        | formatDate('timestamp', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td>
-                    {{ item.cancelled_date | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="funnelDrilldownHeaders[14].show">
-                    {{
-                      item.date_created | formatDate('timestamp', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.appointment_outcome_class"
-                    v-if="funnelDrilldownHeaders[15].show"
-                  >
-                    {{ item.appointment_outcome || '' }}
-                  </td>
-                  <td
-                    :class="item.credit_decision_date_class"
-                    v-if="funnelDrilldownHeaders[16].show"
-                  >
-                    {{
-                      item.credit_decision_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.credit_check_class"
-                    v-if="funnelDrilldownHeaders[17].show"
-                  >
-                    {{ item.credit_check || '' }}
-                  </td>
-                  <td
-                    :class="item.installation_agreement_signed_date_class"
-                    v-if="funnelDrilldownHeaders[18].show"
-                  >
-                    {{
-                      item.installation_agreement_signed_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.site_survey_verified_date_class"
-                    v-if="funnelDrilldownHeaders[19].show"
-                  >
-                    {{
-                      item.site_survey_verified_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.site_survey_completed_date_class"
-                    v-if="funnelDrilldownHeaders[20].show"
-                  >
-                    {{
-                      item.site_survey_completed_date
-                        | formatDate('timestamp', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.final_design_sent_to_homeowner_date_class"
-                    v-if="funnelDrilldownHeaders[21].show"
-                  >
-                    {{
-                      item.final_design_sent_to_homeowner_date
-                        | formatDate('timestamp', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.final_design_signed_date_class"
-                    v-if="funnelDrilldownHeaders[22].show"
-                  >
-                    {{
-                      item.final_design_signed_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="
-                      item.proof_of_homeowners_insurance_obtained_date_class
-                    "
-                    v-if="funnelDrilldownHeaders[23].show"
-                  >
-                    {{
-                      item.proof_of_homeowners_insurance_obtained_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.utility_bill_verified_date_class"
-                    v-if="funnelDrilldownHeaders[24].show"
-                  >
-                    {{
-                      item.utility_bill_verified_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.financial_agreement_signed_date_class"
-                    v-if="funnelDrilldownHeaders[25].show"
-                  >
-                    {{
-                      item.financial_agreement_signed_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.cash_down_payment_class"
-                    v-if="funnelDrilldownHeaders[26].show"
-                  >
-                    {{
-                      item.cash_down_payment | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.final_design_complete_date_class"
-                    v-if="funnelDrilldownHeaders[27].show"
-                  >
-                    {{
-                      item.final_design_complete_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.substantial_completion_date_class"
-                    v-if="funnelDrilldownHeaders[28].show"
-                  >
-                    {{
-                      item.substantial_completion_date
-                        | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td
-                    :class="item.checked_in_time_date_class"
-                    v-if="funnelDrilldownHeaders[29].show"
-                  >
-                    {{
-                      item.checked_in_time
-                        | formatDate('timestamp', 'MM/DD/YYYY h:mm a')
-                    }}
-                  </td>
-                </tr>
-              </template>
-              <template v-if="showTotalSystemSize" v-slot:body.append>
-                <tr id="total-system-size-row">
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td id="total-system-size-label">Total Size:</td>
-                  <td>{{ totalSystemSize ? totalSystemSize : 0 }}</td>
-                </tr>
-              </template>
-
-              <template #no-data>
-                <div class="my-3 funnel-drilldown-no-data-msg">
-                  No data is available for the selected date range.
-                </div>
-              </template>
-
-              <template #no-results>
-                <div class="my-3 funnel-drilldown-no-data-msg">
-                  No matching records found.
-                </div>
-              </template>
-            </v-data-table>
-          </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <a-btn
-              class="text-capitalize mr-4 mb-2"
-              color="primary"
-              @click="closeFunnelDrilldownDialog"
-              text="Close"
-            ></a-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      <FunnelDrilldownDialog
+          :value="funnelDrilldownDialog"
+          :funnelDrilldownTitle="funnelDrilldownTitle"
+          :funnelDrilldownData="funnelDrilldownData"
+          :funnelDrilldownLoading="funnelDrilldownLoading"
+          :funnelDrilldownHeaders="visibleFunnelDrilldownHeaders()"
+          :selectedFunnel="selectedFunnel"
+          :totalSystemSize="totalSystemSize"
+          @close="closeFunnelDrilldownDialog"
+          @export="exportDrilldownCsv"
+      ></FunnelDrilldownDialog>
     </div>
     <v-dialog
       v-model="fdcFunnelDrilldownDialog"
@@ -2886,6 +2585,7 @@ import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
+import FunnelDrilldownDialog from "@/views/blueraven/closerDashboard/FunnelDrilldownDialog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -3110,7 +2810,7 @@ const funnelDrilldownHeaders = computed(() => {
   return [
     {
       text: '',
-      value: '',
+      value: 'count',
       show: true,
       sortable: false,
       width: 25,
@@ -5222,7 +4922,7 @@ const funnelDrilldown = async (
   customColumn
 ) => {
   appStore.loading = true
-  // selectedFunnel.value = funnel
+  selectedFunnel.value = funnel
   let sourceIds = []
   let userIds = []
   let orgIds = []
