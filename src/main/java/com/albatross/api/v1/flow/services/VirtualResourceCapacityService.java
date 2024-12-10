@@ -49,7 +49,7 @@ public class VirtualResourceCapacityService {
     public List<VirtualResourceCapacitySchedule> getBookedForRange(Long orgId, String startTime, String endTime) {
         ScheduleController.EventSearchParams esp = new ScheduleController.EventSearchParams();
         esp.setOrgIds(List.of(orgId));
-        List<Long> userPositionIds = userPositionService.getUserPositionIdsForOrgPosition(761L, orgId); //todo: get prod position Id or pass it in with params
+        List<Long> userPositionIds = userPositionService.getUserPositionIdsForOrgPosition(761L, orgId); //prod position id for "Virtual Consultant"
         esp.setUserPositionIds(userPositionIds);
         esp.setStartTime(startTime);
         esp.setEndTime(endTime);
@@ -100,7 +100,7 @@ public class VirtualResourceCapacityService {
     public Long getCurrentBookedCountForCapacityScheduleRow(Long orgId, String startTime, String endTime){
         HashMap<String, Object> params = new HashMap<>();
         params.put("orgId", orgId);
-        params.put("positionId", 761L);//todo: get prod position Id or pass it in with params
+        params.put("positionId", 761L);//prod position id for "Virtual Consultant"
         params.put("startTime", startTime);
         params.put("endTime", endTime);
 

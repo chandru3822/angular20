@@ -9,43 +9,41 @@
 */
 import FullCalendar from "@fullcalendar/vue";
 import {onMounted, ref, watch} from "vue";
-import * as constants from "constants";
+import constants from '@/helpers/constants'
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import scrollGridPlugin from "@fullcalendar/scrollgrid";
 import moment from "moment";
 import {getRequestWithParams, putRequestWithRequestParams, postRequestWithRequestParams} from "@/helpers/helpers.js";
 import {useAppStore} from "@/stores/AppStore.js";
 import cloneDeep from "lodash.clonedeep";
+import EditCapacityItem from "@/views/blueraven/capacityCalendar/EditCapacityItem.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const appStore = useAppStore()
 const capacityCalendar = ref(null)
 const editMode = ref(false)
 const capacityScheduleChanged = ref([])
+const showConfirmDialog = ref(false)
+const dialogBodyText = ref('The following time slot is currently overbooked, with bookings exceeding the allowed capacity.')
+const dialogBodyDates = ref([])
+const dialogShowMore = ref(false)
+
+const virtualConsultingOrgId = 4548; //this is the prod id
 
 const calendarOptions = ref({
+  plugins:[
+    dayGridPlugin, timeGridPlugin, scrollGridPlugin
+  ],
+  schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   initialView:'timeGridWeek',
-  // events:[
-  //   {
-  //     id: 'a',
-  //     title: 'my event',
-  //     start: '2024-11-12T15:00:00.000+00:00',
-  //     end: '2024-11-12T15:30:00.000+00:00'
-  //   },
-  //   {
-  //     id: 'b',
-  //     title: 'my event',
-  //     start: '2024-11-13T15:00:00.000+00:00',
-  //     end: '2024-11-13T15:30:00.000+00:00'
-  //   },
-  // ],
+  //events
   eventSources:[
     (info, successCallback, failureCallback) => getCapacitySchedule(info, successCallback, failureCallback)
   ],
   eventColor: 'transparent',
   eventDisplay:'background',
-  plugins:[
-      dayGridPlugin, timeGridPlugin
-  ],
+  //headers
   headerToolbar:{
     left: 'customDuplicateWeek prev,customCurrentWeek,next',
     center: 'title',
@@ -69,7 +67,7 @@ const calendarOptions = ref({
       text:'Edit',
       click: async function(mouseEvent, htmlElement) {
         if(editMode.value === true){
-          await saveCapacities()
+          startSave()
         }
         else {
           editMode.value = true
@@ -81,20 +79,22 @@ const calendarOptions = ref({
     customCancel:{
       text:'Cancel',
       click: () => {
-        editMode.value = false
+        clearEditData()
       }
     }
   },
   dayHeaderFormat:{ weekday: 'short', month: 'short', day: 'numeric', omitCommas: true },
+  //slots
   slotLabelFormat:{
     hour:'numeric',
     minute:'2-digit'
   },
   slotLabelInterval:"00:30:00",
-  slotLabelClassNames:["text-left", "pa-4"],
+  slotLabelClassNames:["text-left", "pr-2"],
   slotMinTime:"06:00:00",
   slotMaxTime:"22:00:00",
-  allDaySlot: false
+  allDaySlot: false,
+  dayMinWidth:160,
 })
 
 watch(editMode, () =>{
@@ -126,7 +126,7 @@ const switchCalendarEditMode = () => {
 
 }
 
-const getDateLabel = (date) => {
+const getTimeSlotLabel = (date) => {
   let dateText = `${moment(date, "hh:mm").format("h:mma").toString()}`
   const endDate = moment(date, "hh:mm").add(30, 'minutes').format("h:mma").toString()
   dateText += `-${endDate}`
@@ -137,7 +137,7 @@ const getCapacitySchedule = async(info, successCallback, failureCallback) =>{
   appStore.loading = true
   try{
     let params = {
-      orgId:4548,
+      orgId: virtualConsultingOrgId,
       startTime: info.start,
       endTime: info.end
     }
@@ -172,24 +172,56 @@ const addInputToChangedSchedule = (input) => {
   capacityScheduleChanged.value.push(input);
 }
 
+const startSave = () => {
+  let count = 0
+  dialogBodyDates.value
+  for(var c of capacityScheduleChanged.value){
+    if(c.maxCapacity < c.currentlyBooked){
+      count++
+      dialogBodyDates.value.push(c.start)
+    }
+  }
+  if(count > 0) {
+    showConfirmDialog.value = true
+    if(count > 1){
+      dialogBodyText.value = 'The following time slots are currently overbooked, with bookings exceeding the allowed capacity.'
+    }
+  }
+  else {
+    saveCapacities()
+  }
+}
+
+const clearEditData = () =>{
+  editMode.value = false
+  capacityScheduleChanged.value = []
+  dialogBodyDates.value = []
+}
+
 const saveCapacities = async() => {
   appStore.loading = true
   try {
     let params = {
-      orgId: 4548
+      orgId: virtualConsultingOrgId
     }
-
     const {data} = await putRequestWithRequestParams('/virtualResourceCapacity/maxCapacityList', capacityScheduleChanged.value, params, null)
     const calendarApi = capacityCalendar.value.getApi()
     calendarApi.refetchEvents()
     appStore.showSnack('SUCCESS', 'Scheduled Saved')
-    editMode.value = false
+    clearEditData()
     appStore.loading = false
   } catch(e){
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Schedule')
     appStore.loading = false
   }
+}
+
+const capacityRule = (value) => {
+  return value >= props.booked
+}
+const positiveCapacity = (value) => {
+  return value > 0
 }
 
 const clickEditSaveBtn = async function() {
@@ -206,7 +238,7 @@ const duplicateWeek = async () => {
   const end = calendarApi.view.activeEnd
   try {
     let params = {
-      orgId: 4548,
+      orgId: virtualConsultingOrgId,
       currentWeekStartTime: start,
       currentWeekEndTime: end
     }
@@ -233,9 +265,20 @@ onMounted(async () => {
 
 <template>
 <div id="scheduling-capacity-calendar-container" class="one-hunned height-one-hunned pa-6">
+  <ConfirmationDialog :open-dialog="showConfirmDialog" @close-dialog="showConfirmDialog = false"
+                      @confirm="[showConfirmDialog = false, saveCapacities()]">
+    <template v-slot:title>Do you want to save capacity change?</template>
+    <template v-slot:yes>Yes, continue to save</template>
+    <template v-slot:no>No, do not save changes</template>
+    <div class="pb-3 body-large">{{dialogBodyText}}</div>
+    <div v-for="(date, index) in dialogBodyDates" class="body-medium">
+      <span v-if="index < 5 || dialogShowMore">{{ date  | formatDate('timestamp', 'ddd MMM D') }}, {{ getTimeSlotLabel(date) }}</span>
+    </div>
+    <a-btn v-if="dialogBodyDates.length > 5" variant="text" @click="dialogShowMore=!dialogShowMore">{{dialogShowMore ? 'Show Less' : 'Show More'}}</a-btn>
+  </ConfirmationDialog>
   <FullCalendar ref="capacityCalendar" id="scheduling-capacity-calendar" :options="calendarOptions">
     <template v-slot:slotLabelContent="{date}">
-      {{getDateLabel(date)}}
+      {{ getTimeSlotLabel(date) }}
     </template>
     <template v-slot:dayHeaderContent="{date}">
       <div class="one-hunned grey--text text--darken-2">
@@ -249,21 +292,14 @@ onMounted(async () => {
     </template>
     <template v-slot:eventContent="{event}">
       <div v-if="!editMode" class="capacity-booked-grid">
-        <div class="capacity-col label-medium grey--text text--darken-2 d-flex justify-center align-center">
+        <div class="capacity-col label-medium  d-flex justify-center align-center" :class="{'error--text capacity-exceeded': event.extendedProps.maxCapacity < event.extendedProps.currentlyBooked}">
           {{ event.extendedProps.maxCapacity || 0}}
         </div>
         <div class="booked-col label-medium grey--text text--darken-2 d-flex justify-center align-center">
           {{ event.extendedProps.currentlyBooked }}
         </div>
       </div>
-      <div v-else class="capacity-booked-grid">
-        <div class="capacity-col edit-mode label-medium grey--text text--darken-2 d-flex justify-center align-center">
-          <a-text-field :value="event.extendedProps.maxCapacity" type="number" placeholder="0" @input="v => addInputToChangedSchedule({id: event.id, start: moment.utc(event.start).toString(), end: moment.utc(event.end).toString(), maxCapacity:Number(v)  })"></a-text-field>
-        </div>
-      <div class="booked-col edit-mode label-medium grey--text text--darken-2 d-flex justify-center align-center">
-        {{ event.extendedProps.currentlyBooked }}
-      </div>
-      </div>
+      <EditCapacityItem v-else :max-capacity="event.extendedProps.maxCapacity" :booked=" event.extendedProps.currentlyBooked" @input="v => addInputToChangedSchedule({id: event.id, start: moment.utc(event.start).toString(), end: moment.utc(event.end).toString(), maxCapacity:Number(v), currentlyBooked: event.extendedProps.currentlyBooked})"/>
 
     </template>
   </FullCalendar>
@@ -290,16 +326,23 @@ onMounted(async () => {
   .fc-timegrid-slots tr:nth-child(2 n + 1) > td {
   background-color: rgba(68, 134, 195, .09) //using rgba instead of primary-lighten9 because if you use a color with 100% opacity, the column lines are covered up
 }
+  //controls the height of each row
+  .fc-timegrid-slot, .fc-timegrid-slot-label {
+    height: 54px !important;
+  }
   .fc-col-header-cell-cushion{
     padding:4px 0 0 0;
   }
   th.fc-col-header-cell.fc-day > div > a {
     display:block;
-    height:fit-content;
+    //height:fit-content;
   }
 
-  .capacity-col, .booked-col{
-    padding: 12px;
+  .capacity-booked-grid-header {
+
+    .capacity-col, .booked-col {
+      padding: 12px;
+    }
   }
   .capacity-col {
     border-right: var(--v-grey-lighten2) solid 1px;
@@ -312,10 +355,16 @@ onMounted(async () => {
     margin-bottom: -4px;
   }
 
+  .capacity-col.capacity-exceeded {
+    border: var(--v-error-base) solid 2px;
+    margin: -1px;
+  }
+
   th{
     background-color: var(--v-grey-lighten3);
   }
 
+  //selects the input field in edit mode to limit the width
   #scheduling-capacity-calendar > div.fc-view-harness > div > table > tbody > tr > td > div > div > div > div.fc-timegrid-cols > table > tbody > tr > td.fc-day.fc-timegrid-col > div > div.fc-timegrid-col-bg > div > div > div > div > div {
     max-width: 50px;
   }
