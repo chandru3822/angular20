@@ -6721,6 +6721,28 @@ CREATE INDEX if not exists DOCUMENT_C_link_to_attachment_c_url_c_18 ON brs.DOCUM
 CREATE INDEX if not exists DS_Agreement_c_name ON brs.DS_Agreement_c (name);
 CREATE INDEX if not exists attachment_name ON brs.attachment (name);
 
+drop table if exists brs.CASE_COMMENT;
+create table if not exists brs.CASE_COMMENT
+(
+  ID                     VARCHAR(18) not null
+    primary key,
+  PARENT_ID              VARCHAR(18),
+  IS_PUBLISHED           BOOLEAN,
+  CREATED_BY_ID          VARCHAR(18),
+  CREATED_DATE           TIMESTAMPTZ,
+  SYSTEM_MODSTAMP        TIMESTAMPTZ,
+  LAST_MODIFIED_DATE     TIMESTAMPTZ,
+  LAST_MODIFIED_BY_ID    VARCHAR(18),
+  IS_DELETED             BOOLEAN,
+  CONNECTION_RECEIVED_ID VARCHAR(18),
+  CONNECTION_SENT_ID     VARCHAR(18),
+  _FIVETRAN_SYNCED       TIMESTAMPTZ,
+  COMMENT_BODY           VARCHAR(4000),
+  _FIVETRAN_DELETED      BOOLEAN
+);
+
+
+
 -- CREATE INDEX if not exists DS_Agreement_c_Envelope_Status_c ON brs.DS_Agreement_c (Envelope_Status_c);
 -- CREATE INDEX if not exists SFDC_CONTENT_VERSION_ARCHIVE_LINKS_archive_link ON brs.SFDC_CONTENT_VERSION_ARCHIVE_LINKS (substr(ARCHIVE_LINK, 64));
 

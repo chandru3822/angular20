@@ -259,7 +259,9 @@ BEGIN
   set commission_plan_id     = 63,
       commission_plan        = 'Redline Commission',
       commission_plan_status = 'ACTIVE',
-      date_modified          = now()
+      date_modified          = now(),
+      commission_strategy  = 24102,
+      commission_strategy_name = 'High Commission'
   where project_id = p_project_id;
 
   call brs.reset_financial_details(p_project_id);

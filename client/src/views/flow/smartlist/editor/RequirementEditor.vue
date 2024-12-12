@@ -21,16 +21,16 @@
         placeholder="Add Filter"
         variant="solo"
         hide-details
-		:class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
+        :class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
         @change="afterFieldSelected"
         @focus="onFieldFocus"
       >
         <template #append>
           <a-btn
-              icon
-              @click.native.stop="[reset(), emit('cancelled')]"
-              color="unset"
-              prepend-icon="mdi-close"
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
           ></a-btn>
         </template>
       </a-autocomplete>
@@ -53,15 +53,15 @@
         placeholder="Type or Select Name"
         variant="solo"
         hide-details
-		:class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
+        :class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
         @blur="afterPsEventSelected"
       >
         <template #append>
           <a-btn
-              icon
-              @click.native.stop="[reset(), emit('cancelled')]"
-              color="unset"
-              prepend-icon="mdi-close"
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
           ></a-btn>
         </template>
       </a-autocomplete>
@@ -82,10 +82,10 @@
       >
         <template #append v-if="isEditorInUse">
           <a-btn
-              icon
-              @click.native.stop="[reset(), emit('cancelled')]"
-              color="unset"
-              prepend-icon="mdi-close"
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
           ></a-btn>
         </template>
       </a-autocomplete>
@@ -117,10 +117,10 @@
       >
         <template #append>
           <a-btn
-              icon
-              @click.native.stop="[reset(), emit('cancelled')]"
-              color="unset"
-              prepend-icon="mdi-close"
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
           ></a-btn>
         </template>
       </v-combobox>
@@ -139,10 +139,10 @@
         class="px-2"
       >
         <a-btn
-            icon
-            @click.native.stop="[reset(), emit('cancelled')]"
-            color="unset"
-            prepend-icon="mdi-close"
+          icon
+          @click.native.stop="[reset(), emit('cancelled')]"
+          color="unset"
+          prepend-icon="mdi-close"
         ></a-btn>
       </span>
 
@@ -160,7 +160,7 @@
         :hide-details="true"
         :multiple="requirement?.allowMultiple"
         :ripple="false"
-		:class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
+        :class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
         @change="afterValueSelected(false)"
       >
         <template #item="data">
@@ -175,10 +175,10 @@
             prepend-icon="mdi-check"
           ></a-btn>
           <a-btn
-              icon
-              @click.native.stop="[reset(), emit('cancelled')]"
-              color="unset"
-              prepend-icon="mdi-close"
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
           ></a-btn>
         </template>
       </a-autocomplete>
@@ -189,7 +189,7 @@
         v-model="secondaryValue"
         placeholder="Type Value"
         variant="solo"
-		:class="{'flat': isEditorInUse}"
+        :class="{'flat': isEditorInUse}"
         hide-details
         @change="add"
       >
@@ -202,10 +202,10 @@
           >
           </a-btn>
           <a-btn
-              icon
-              @click.native.stop="[reset(), emit('cancelled')]"
-              color="unset"
-              prepend-icon="mdi-close"
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
           ></a-btn>
         </template>
       </a-text-field>
@@ -216,7 +216,7 @@
 
 <script setup>
 import { getRequest, logError, UUID } from '@/helpers/helpers'
-import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
 import { useUserStore } from '@/stores/UserStore.js'
 
@@ -238,8 +238,7 @@ const props = defineProps({
   }
 })
 
-const vueInstance = getCurrentInstance().proxy
- const userStore = useUserStore()
+const userStore = useUserStore()
 const companyId = userStore.details.companyId
 
 const availableDataTypeRequirements = ref([])
@@ -268,31 +267,31 @@ const showFieldInput = computed(() => requirement.value === null)
 const showPsEventInput = computed(() => {
   const isPsEventSmartlistField = !!requirement.value?.smartlistFieldId && [4,6].includes(requirement.value?.objectTypeId)
   return !showFieldInput.value &&
-         isPsEventSmartlistField &&
-         psEvent.value === null
+    isPsEventSmartlistField &&
+    psEvent.value === null
 })
 
 const showOperatorInput = computed(() => {
   return !showFieldInput.value &&
-         !showPsEventInput.value &&
-         (operator.value === null || !operator.value.displayValue)
+    !showPsEventInput.value &&
+    (operator.value === null || !operator.value.displayValue)
 })
 
 const showValueInput = computed(() => {
   return operator.value !== null &&
-         operator.value?.displayValue &&
-         !value.value?.displayValue
+    operator.value?.displayValue &&
+    !value.value?.displayValue
 })
 
 const showSecondaryValueInput = computed(() => {
-  return showValueInput &&
-         value.value?.secondaryRequirement &&
-         operator.value?.displayValue &&
-         value.value?.displayValue
+  return showValueInput.value &&
+    value.value?.secondaryRequirement &&
+    operator.value?.displayValue &&
+    value.value?.displayValue
 })
 
 const calculatedAvailableValues = computed(() => {
-  if (requirement.value === null || availableDataTypeRequirements.length === 0) {
+  if (requirement.value === null || availableDataTypeRequirements.value.length === 0) {
     return []
   }
 
@@ -315,32 +314,32 @@ const calculatedAvailableValues = computed(() => {
 
 const calculatedAvailableFields = computed(() => {
   return props.availableFields.map(f => {
-      let suffix = ''
+    let suffix = ''
 
-      if (f?.customFieldGroupAssignmentId) {
-        switch (f.objectTypeId) {
-          case 1:
-            suffix = `- Project`
-            break
-          case 2:
-            suffix = `- Contact`
-            break
-          case 3:
-            suffix = `- User`
-            break
-          case 4:
-            suffix = `- ${f.processStepName}`
-            break
-          case 5:
-            suffix = `- Org`
-            break
-          case 6:
-            suffix = `- ${f.eventName} - ${f.processStepName}`
-        }
+    if (f?.customFieldGroupAssignmentId) {
+      switch (f.objectTypeId) {
+        case 1:
+          suffix = `- Project`
+          break
+        case 2:
+          suffix = `- Contact`
+          break
+        case 3:
+          suffix = `- User`
+          break
+        case 4:
+          suffix = `- ${f.processStepName}`
+          break
+        case 5:
+          suffix = `- Org`
+          break
+        case 6:
+          suffix = `- ${f.eventName} - ${f.processStepName}`
       }
+    }
 
-      return {...f, calculatedName:`${f.name} ${suffix}`}
-    })
+    return {...f, calculatedName:`${f.name} ${suffix}`}
+  })
 })
 
 const calculatedAvailablePsEvents = computed(() => {
@@ -407,6 +406,8 @@ const afterFieldSelected = () => {
     [1,2].includes(requirement.value?.objectTypeId) &&
     ['Project Owner','Contact Owner'].includes(requirement.value.name)
   ) {
+    getOwnerSystemListValues()
+  } else if (requirement.value.systemListId !== null) {
     getSystemListValues()
   }
 
@@ -419,12 +420,12 @@ const afterFieldSelected = () => {
 
 const afterPsEventSelected = () => {
   if (requirement.value.objectTypeId === 4 && requirement.value.name === 'Process Step Owner') {
-    getSystemListValues()
+    getOwnerSystemListValues()
   }
 
   //@TODO: #smartlistsv2 - Maybe narrow this down
   if ([4,6].includes(requirement.value.objectTypeId)) {
-    getSystemListValues()
+    getOwnerSystemListValues()
   }
 
   focus(operatorField)
@@ -506,6 +507,34 @@ const reset = () => {
 }
 
 const getSystemListValues = async () => {
+  if (!requirement.value?.systemListId) {
+    return
+  }
+
+  try {
+    let params
+    if (requirement.value.systemListOptionIds !== null) {
+      params = {
+        subOptions: true,
+        systemListOptionIds: requirement.value.systemListOptionIds.join(',')
+      }
+    } else {
+      params = {
+        subOptions: false,
+      }
+    }
+    const {data} = await getRequestWithParams(`/systemList/${requirement.value.systemListId}/options`, {params})
+
+    requirement.value.isCustomValue = true
+    requirement.value.hasListValues = true
+    requirement.value.listOfValues = data
+  } catch (e) {
+    logError(e)
+    appStore.showSnack('ERROR', 'Unable to fetch system list values')
+  }
+}
+
+const getOwnerSystemListValues = async () => {
   if (!requirement.value?.name) {
     return
   }
@@ -734,8 +763,8 @@ onMounted(() => {
 }
 
 .flat {
-	:deep(.v-input__slot) {
-		box-shadow: none !important;
-	}
+  :deep(.v-input__slot) {
+    box-shadow: none !important;
+  }
 }
 </style>
