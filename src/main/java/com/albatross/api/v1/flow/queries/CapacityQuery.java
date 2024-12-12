@@ -32,6 +32,19 @@ public class CapacityQuery {
             """;
 
     //language=PostgreSQL
+    public final static String getBookedForRanged = """
+        select ppse.id as "ppseId",
+        cfv.timestamp_value as "startTime"
+        from flow.project_process_step_event ppse
+        join flow.project_process_step_event_custom_field_value cfv on cfv.project_process_step_event_id = ppse.id
+        where ppse.process_step_event_id = 14
+            and cfv.custom_field_group_assignment_id = 26708
+            and ppse.archived is not true
+            and ppse.cancelled_date is null
+            and cfv.timestamp_value between :startTime::timestamp and :endTime::timestamp
+    """;
+
+    //language=PostgreSQL
     public final static String getOrgEventCount = """
         select
         	COUNT(ppse.id)

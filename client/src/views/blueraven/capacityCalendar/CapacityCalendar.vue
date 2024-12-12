@@ -286,7 +286,7 @@ onMounted(async () => {
         <div>{{ date | formatDate('date', 'MMM D')}}</div>
       <div class="capacity-booked-grid-header">
         <div class="capacity-col label-small grey--text text--darken-2">Capacity</div>
-        <div class="booked-col label-small grey--text text--darken-2">Booked</div>
+        <div class="booked-col label-small grey--text text--darken-2">Scheduled</div>
       </div>
       </div>
     </template>

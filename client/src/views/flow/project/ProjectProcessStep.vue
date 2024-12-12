@@ -880,12 +880,10 @@ const getAvailableOwners = async () => {
 }
 const checkFields = async () => {
   //why is this still here?
-  debugger
   await updateFieldGroups()
 }
 const updateFieldGroups = async () => {
   appStore.loading = true
-  debugger
   // processStep.value.customFieldGroups = customFieldGroups.value
   try {
     // const {data} = await putRequest(`/projectProcessStep`, processStep.value)

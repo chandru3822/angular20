@@ -58,6 +58,10 @@
               {{ event.customFieldDisplayValue.fieldName }}:
               {{ event.customFieldDisplayValue.intValue }}
             </span>
+            <span v-else-if="event.customFieldDisplayValue.numericValue">
+              {{ event.customFieldDisplayValue.fieldName }}:
+              {{ event.customFieldDisplayValue.numericValue }}
+            </span>
             <!--else required here b/c if it has intValueAsText, it will also have intValue, but we the reverse is not true -->
             <span v-if="event.customFieldDisplayValue.intArrayValueAsText">
               {{ event.customFieldDisplayValue.fieldName }}:
