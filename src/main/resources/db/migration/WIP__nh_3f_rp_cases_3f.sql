@@ -108,7 +108,9 @@ select c.id                                   as case_id,
 from brs."case" c
        left join brs.sp_user su on su.id = c.created_by_id
        left join brs.sp_user su1 on su1.id = c.owner_id
-       inner join flow.project p on c.residential_project_c = p.nw_migration_id
+       inner join brs.temp_cases tc on tc.case_number = c.case_number
+       inner join brs.residential_project_c rpc on rpc.project_number_c = tc.rp_number
+       inner join flow.project p on rpc.id = p.nw_migration_id
        left join flow.list_of_value lov1 on lov1.name = c.category_c and lov1.parent_id = 25546
        left join flow.list_of_value lov3 on lov3.name = c.status and lov3.parent_id = 25684
        left join flow.list_of_value lov4 on lov4.name = c.resolution_c and lov4.parent_id = 25939
