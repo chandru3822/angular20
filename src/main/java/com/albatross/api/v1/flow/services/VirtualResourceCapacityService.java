@@ -2,11 +2,10 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.controllers.ScheduleController;
-import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.VirtualResourceCapacitySchedule;
 import com.albatross.api.v1.flow.queries.CapacityQuery;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,25 +45,25 @@ public class VirtualResourceCapacityService {
         );
         return null == results ? new ArrayList<VirtualResourceCapacitySchedule>() : results;
     }
-    public List<VirtualResourceCapacitySchedule> getBookedForRange(Long orgId, String startTime, String endTime) {
-        ScheduleController.EventSearchParams esp = new ScheduleController.EventSearchParams();
-        esp.setOrgIds(List.of(orgId));
-        List<Long> userPositionIds = userPositionService.getUserPositionIdsForOrgPosition(761L, orgId); //prod position id for "Virtual Consultant"
-        esp.setUserPositionIds(userPositionIds);
-        esp.setStartTime(startTime);
-        esp.setEndTime(endTime);
-        esp.setIncludeCancelledEvents(false);
-        esp.setIncludeCancelledProjects(false);
 
-        List<ScheduleEvent> events = scheduleService.getEventsForCompanyByOrgAndUser(esp);
+    @Data
+    public static class BookedEvents {
+        private Long ppseId;
+        private Timestamp startTime;
+    }
+
+    public List<VirtualResourceCapacitySchedule> getBookedForRange(Long orgId, String startTime, String endTime) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("startTime", startTime);
+        params.put("endTime", endTime);
+
+        List<BookedEvents> bookedEventStartTimes = sqlCache.queryBySql(CapacityQuery.getBookedForRanged, params,BookedEvents.class);
 
         // Define a formatter for the input string format
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         // Parse the input strings into LocalDateTime
         LocalDateTime start = LocalDateTime.parse(startTime, formatter);
         LocalDateTime end = LocalDateTime.parse(endTime, formatter);
-
-
 
         List<VirtualResourceCapacitySchedule> bookedForRange = new ArrayList<VirtualResourceCapacitySchedule>();
 
@@ -78,7 +77,7 @@ public class VirtualResourceCapacityService {
                 bookedFor30MinInterval.setStart(outputFormatter.format(start.atZone(ZoneId.of("GMT"))));
                 LocalDateTime intervalEnd = start.plusMinutes(30);
                 bookedFor30MinInterval.setEnd(outputFormatter.format(intervalEnd.atZone(ZoneId.of("GMT"))));
-                Long intervalCount = countEventsInInterval(events, start, intervalEnd);
+                Long intervalCount = countEventsInInterval(bookedEventStartTimes, start, intervalEnd);
                 bookedFor30MinInterval.setCurrentlyBooked(intervalCount);
                 bookedForRange.add(bookedFor30MinInterval);
                 start = intervalEnd;
@@ -86,13 +85,10 @@ public class VirtualResourceCapacityService {
          return bookedForRange;
     }
 
-    public Long countEventsInInterval(List<ScheduleEvent> events, LocalDateTime start, LocalDateTime end){
-        List<ScheduleEvent> eventsInInterval = events.stream().filter(event -> {
-            LocalDateTime eventStart = event.getStart().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
-            LocalDateTime eventEnd = event.getEnd().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
-            return (eventStart.isAfter(start) && eventStart.isBefore(end)) ||
-                    (eventEnd.isAfter(start) && eventEnd.isBefore(end)) ||
-                    (start.isAfter(eventStart) && start.isBefore(eventEnd));
+    public Long countEventsInInterval(List<BookedEvents> events, LocalDateTime start, LocalDateTime end){
+        List<BookedEvents> eventsInInterval = events.stream().filter(event -> {
+            LocalDateTime eventStart = event.getStartTime().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
+            return eventStart.isAfter(start) && eventStart.isBefore(end);
         }).toList();
         return (long) eventsInInterval.size();
     }
