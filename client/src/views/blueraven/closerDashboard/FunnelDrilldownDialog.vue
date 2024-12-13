@@ -19,7 +19,7 @@ const props = defineProps({
   funnelDrilldownTitle: String,
   funnelDrilldownData: Array,
   funnelDrilldownLoading: Boolean,
-  funnelDrilldownHeaders: [],
+  funnelDrilldownHeaders: Array,
   selectedFunnel: Object,
   totalSystemSize: Number
 })
@@ -135,11 +135,13 @@ const showTotalSystemSize = computed(() => {
 <!--                    'text-decoration': item.cancelled_date ? 'line-through' : ''-->
 <!--                  }"-->
 <!--            >-->
-              <template #item.count="{item, index}" style="{text-align: center}" class="px-0">
+              <template #item.count="{item, index}"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
+                        class="px-0 text-center">
                 {{ index + 1 }}
               </template>
 
-              <template #item.project_id="{item}">
+              <template #item.project_id="{item}" :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 <router-link
                     text
                     v-if="
@@ -151,7 +153,7 @@ const showTotalSystemSize = computed(() => {
                 </router-link>
                 <div v-else>{{ item.project_id || '' }}</div>
               </template>
-              <template #item.project_process_step_event_id="{item}" v-if="selectedFunnel.funnel_type_id === 1">
+              <template #item.project_process_step_event_id="{item}" v-if="selectedFunnel.funnel_type_id === 1" :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 <router-link
                     text
                     v-if="
@@ -170,28 +172,30 @@ const showTotalSystemSize = computed(() => {
               </template>
               <!--                <td :class="item.stage">{{ item.stage || '' }}</td>-->
 
-              <template #item.appointment_date="{item}">
+              <template #item.appointment_date="{item}" :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 {{
                   item.appointment_date
                       | formatDate('timestamp', 'MM/DD/YYYY')
                 }}
               </template>
-              <template #item.cancelled_date="{item}">
+              <template #item.cancelled_date="{item}" :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 {{ item.cancelled_date | formatDate('date', 'MM/DD/YYYY') }}
               </template>
-              <template #item.date_created="{item}" v-if="funnelDrilldownHeaders[14]?.show">
+              <template #item.date_created="{item}" v-if="funnelDrilldownHeaders[14]?.show" :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 {{
                   item.date_created | formatDate('timestamp', 'MM/DD/YYYY')
                 }}
               </template>
               <template #item.appointment_coutcome="{item}"
-                  :class="item.appointment_outcome_class"
+                        :class="item.appointment_outcome_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[15]?.show"
               >
                 {{ item.appointment_outcome || '' }}
               </template>
               <template #item.credit_decision_date="{item}"
-                  :class="item.credit_decision_date_class"
+                        :class="item.credit_decision_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[16]?.show"
               >
                 {{
@@ -200,13 +204,15 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.credit_check="{item}"
-                  :class="item.credit_check_class"
+                        :class="item.credit_check_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[17]?.show"
               >
                 {{ item.credit_check || '' }}
               </template>
               <template #item.installation_agreement_signed_date="{item}"
-                  :class="item.installation_agreement_signed_date_class"
+                        :class="item.installation_agreement_signed_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[18]?.show"
               >
                 {{
@@ -215,7 +221,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.site_survey_verified_date="{item}"
-                  :class="item.site_survey_verified_date_class"
+                        :class="item.site_survey_verified_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[19]?.show"
               >
                 {{
@@ -224,7 +231,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.site_survey_completed_date="{item}"
-                  :class="item.site_survey_completed_date_class"
+                        :class="item.site_survey_completed_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[20]?.show"
               >
                 {{
@@ -233,7 +241,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.final_design_sent_to_homeowner_date="{item}"
-                  :class="item.final_design_sent_to_homeowner_date_class"
+                        :class="item.final_design_sent_to_homeowner_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[21]?.show"
               >
                 {{
@@ -242,7 +251,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.final_design_signed_date="{item}"
-                  :class="item.final_design_signed_date_class"
+                        :class="item.final_design_signed_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[22]?.show"
               >
                 {{
@@ -251,9 +261,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.proof_of_homeowners_insurance_obtained_date="{item}"
-                  :class="
-                      item.proof_of_homeowners_insurance_obtained_date_class
-                    "
+                        :class="item.proof_of_homeowners_insurance_obtained_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[23]?.show"
               >
                 {{
@@ -262,7 +271,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.utility_bill_verified_date="{item}"
-                  :class="item.utility_bill_verified_date_class"
+                        :class="item.utility_bill_verified_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[24]?.show"
               >
                 {{
@@ -271,7 +281,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.financial_agreement_signed_date="{item}"
-                  :class="item.financial_agreement_signed_date_class"
+                        :class="item.financial_agreement_signed_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[25]?.show"
               >
                 {{
@@ -280,7 +291,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.cash_down_payment="{item}"
-                  :class="item.cash_down_payment_class"
+                        :class="item.cash_down_payment_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[26]?.show"
               >
                 {{
@@ -288,7 +300,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.final_design_complete_date="{item}"
-                  :class="item.final_design_complete_date_class"
+                        :class="item.final_design_complete_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[27]?.show"
               >
                 {{
@@ -297,7 +310,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.substantial_completion_date="{item}"
-                  :class="item.substantial_completion_date_class"
+                        :class="item.substantial_completion_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[28]?.show"
               >
                 {{
@@ -306,7 +320,8 @@ const showTotalSystemSize = computed(() => {
                 }}
               </template>
               <template #item.checked_in_time="{item}"
-                  :class="item.checked_in_time_date_class"
+                        :class="item.checked_in_time_date_class"
+                        :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}"
                   v-if="funnelDrilldownHeaders[29]?.show"
               >
                 {{

@@ -2174,7 +2174,7 @@
           :funnelDrilldownTitle="funnelDrilldownTitle"
           :funnelDrilldownData="funnelDrilldownData"
           :funnelDrilldownLoading="funnelDrilldownLoading"
-          :funnelDrilldownHeaders="visibleFunnelDrilldownHeaders()"
+          :funnelDrilldownHeaders="funnelDrilldownHeaders"
           :selectedFunnel="selectedFunnel"
           :totalSystemSize="totalSystemSize"
           @close="closeFunnelDrilldownDialog"
@@ -2813,7 +2813,7 @@ const funnelDrilldownHeaders = computed(() => {
       value: 'count',
       show: true,
       sortable: false,
-      width: 25,
+      width: "0.5%",
       optional: false
     }, // 0
     {
