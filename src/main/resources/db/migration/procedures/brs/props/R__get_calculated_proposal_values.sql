@@ -193,7 +193,8 @@ create type brs.calculated_proposal_value as
   rete_adder  varchar,
   setter_lead_cost numeric,
   digital_lead_cost numeric,
-  lead_cost_adder numeric
+  lead_cost_adder numeric,
+  v_grid_tied_battery boolean
 );
 
 drop type brs.excluded_proposal_value;
@@ -551,6 +552,8 @@ v_closer_gen_source_ids bigint[];
   v_setter_lead_cost numeric;
   v_digital_lead_cost numeric;
   v_lead_cost_adder numeric;
+  v_grid_tied_cash_price_storage numeric;
+  v_grid_tied_battery boolean;
 BEGIN
 
   select (select string_to_array(value, ',')
@@ -627,7 +630,8 @@ BEGIN
          qualifies_for_swr,
          rete_incentive_applied,
          rete_depreciation_incentive_amount,
-         base_price_per_watt
+         base_price_per_watt,
+         grid_tied_battery
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -697,7 +701,8 @@ BEGIN
     v_proposal_qualifies_for_swr,
     v_rete_incentive_applied,
     v_rete_depreciation_incentive_amount,
-    v_base_price_per_watt
+    v_base_price_per_watt,
+    v_grid_tied_battery
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -939,10 +944,11 @@ BEGIN
          storage_brand_id,
          nominal_power,
          battery_manufacturers_warranty,
-         battery_workmanship_warranty
+         battery_workmanship_warranty,
+         grid_tied_cash_price_storage
   into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,
     v_storage_id,v_storage_brand_id,v_nominal_power,
-    v_battery_manufacturers_warranty,v_battery_workmanship_warranty
+    v_battery_manufacturers_warranty,v_battery_workmanship_warranty,v_grid_tied_cash_price_storage
   from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
 
   if v_storage_id is not null then
@@ -1151,7 +1157,17 @@ BEGIN
   --raise notice 'v_initial_system_cost = %',v_initial_system_cost;
 
   v_equipment_storage_adder = 0;
-  v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
+  if v_grid_tied_battery is true then
+    if v_grid_tied_cash_price_storage is null and v_storage_brand is not null then
+      raise exception 'The Grid Tied option is not available for this Storage selection.';
+    else
+      v_equipment_storage_adder = coalesce(v_grid_tied_cash_price_storage,0);
+    end if;
+
+  else
+    v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
+  end if;
+
 
   --raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
 
@@ -1545,7 +1561,7 @@ BEGIN
                                                 v_battery_rebate_cap_percent_of_total,
                                                 v_battery_rebate_cap_amount,
                                                 v_battery_rebate_amount,
-                                                v_cash_price_storage,
+                                                v_equipment_storage_adder,
                                                 v_minimum_odoe_tsrf);
     if v_odoe_rebate_name is not null then
       v_rebates = coalesce(v_rebates,'{}'::jsonb) || jsonb_build_object(v_odoe_rebate_name, round(v_odoe_rebate,2));
@@ -1688,7 +1704,7 @@ BEGIN
       v_required_down_payment = coalesce(v_required_down_payment, 0) +
                                 greatest(
                                   (
-                                    (v_cash_price_storage / (1 - v_dealer_fee)) -
+                                    (v_equipment_storage_adder / (1 - v_dealer_fee)) -
                                     least(50000::numeric, (2500::numeric * v_storage_capacity))
                                     )
                                   , 0);
@@ -1698,7 +1714,7 @@ BEGIN
     v_battery_cap_down_payment =  coalesce(case
                                              when (v_number_of_batteries > 0 and v_financier_id = 722) then
                                                greatest(0,
-                                                        v_cash_price_storage -
+                                                        v_equipment_storage_adder -
                                                         50000::numeric * (1-v_dealer_fee)
                                                )
                                              else 0
@@ -1715,7 +1731,7 @@ BEGIN
 
     v_ancillary_percent_cap_down_payment = case when v_dealer_fee > 0 then coalesce((v_total_ancillary_costs -
                                                      v_non_solar_cap * (v_no_ancillary_amount_to_finance + coalesce(v_down_payment_amount,0) ) -
-                                                     v_non_solar_cap * coalesce(v_cash_price_storage,0) -
+                                                     v_non_solar_cap * coalesce(v_equipment_storage_adder,0) -
                                                      v_non_solar_cap * v_total_ancillary_costs) /
                                                     (v_non_solar_cap * (1 - v_dealer_fee) - v_non_solar_cap + 1 -
                                                      case when v_product_id = 293 then (v_non_solar_cap * v_initial_payment_factor * 18) /
@@ -1778,7 +1794,7 @@ BEGIN
     v_battery_cap_down_payment = coalesce(case
                                             when (coalesce(v_number_of_batteries,0) > 0 and v_financier_id = 722) then
                                               greatest(0,
-                                                       coalesce(v_cash_price_storage,0) -
+                                                       coalesce(v_equipment_storage_adder,0) -
                                                        50000::numeric * (1 - v_dealer_fee)
                                               )
                                             else 0
@@ -1891,9 +1907,9 @@ BEGIN
       );
   end if;
 
-  v_storage_cost_with_fees = (coalesce(v_cash_price_storage, 0)-coalesce(v_battery_cap_down_payment, 0)) / (1 - v_dealer_fee) + coalesce(v_battery_cap_down_payment, 0);
+  v_storage_cost_with_fees = (coalesce(v_equipment_storage_adder, 0)-coalesce(v_battery_cap_down_payment, 0)) / (1 - v_dealer_fee) + coalesce(v_battery_cap_down_payment, 0);
 
-  --raise notice 'v_cash_price_storage = %',v_cash_price_storage;
+  --raise notice 'v_equipment_storage_adder = %',v_equipment_storage_adder;
   --raise notice 'v_storage_cost_with_fees = %',v_storage_cost_with_fees;
 
   --raise notice 'v_storage_capacity %',v_storage_capacity;
@@ -2146,7 +2162,7 @@ BEGIN
 
   --raise notice 'v_estimated_offset = %',v_estimated_offset;
 
-  v_financed_pv_price_per_watt_to_customer = (v_total_loan_amount - ((v_total_ancillary_costs + coalesce(v_cash_price_storage,0)) / (1 - v_dealer_fee)))
+  v_financed_pv_price_per_watt_to_customer = (v_total_loan_amount - ((v_total_ancillary_costs + coalesce(v_equipment_storage_adder,0)) / (1 - v_dealer_fee)))
     / (v_system_size * 1000);
   --raise notice 'v_financed_pv_price_per_watt_to_customer = %',v_financed_pv_price_per_watt_to_customer;
   v_monthly_cost_today_avg_remaining_electrical_bill = greatest(0.00::numeric, (v_current_estimated_cost_per_kwh *
@@ -2390,7 +2406,7 @@ BEGIN
                                          rete_depreciation_incentive_amount,
                                          rete_reamortized_monthly_payment_all_credits_to_loan,
                                          rete_adder,
-                                         setter_lead_cost, digital_lead_cost, lead_cost_adder)
+                                         setter_lead_cost, digital_lead_cost, lead_cost_adder,grid_tied_battery)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2520,7 +2536,9 @@ BEGIN
             v_rete_adder,
             v_setter_lead_cost,
             v_digital_lead_cost,
-            v_lead_cost_adder
+            v_lead_cost_adder,
+            case when v_storage_brand is not null then
+                   v_grid_tied_battery end
             );
   end if;
 
@@ -2647,7 +2665,7 @@ BEGIN
            v_financier,
            v_financier_id,
            to_char(v_storage_cost_with_fees, '$FM9,999,999')::varchar,
-           to_char(v_cash_price_storage, '$FM9,999,999')::varchar,
+           to_char(v_equipment_storage_adder, '$FM9,999,999')::varchar,
            round(v_main_panel_upgrade_cost, 2),
            round(v_structural_upgrade_cost, 2),
            round(v_reroof_cost, 2),
@@ -2733,7 +2751,9 @@ BEGIN
            to_char(v_rete_adder, '$FM9,999,999')::varchar,
            v_setter_lead_cost,
            v_digital_lead_cost,
-           v_lead_cost_adder;
+           v_lead_cost_adder,
+           case when v_storage_brand is not null then
+                  v_grid_tied_battery end;
 
 
 END
