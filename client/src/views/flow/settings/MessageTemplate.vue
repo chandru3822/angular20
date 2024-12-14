@@ -169,6 +169,7 @@
                 variant="outlined"
               ></a-textarea>
 
+              <div class="select-container d-flex align-baseline">
               <a-autocomplete
                 v-model="item.teamIds"
                 :items="selectableTeams"
@@ -176,10 +177,15 @@
                 item-value="id"
                 multiple
                 label="Teams"
-                class="team-select mt-0 pb-3"
+                class="team-select mt-0 pb-3 mr-4"
               >
               </a-autocomplete>
-
+                <a-autocomplete
+                    :items="dynamicVariables"
+                    @input="insertDynamicVariable($event, item)"
+                    label="Dynamic Variables"
+                    class="team-select"></a-autocomplete>
+              </div>
               <a-btn
                 color="primary"
                 class="white--text mr-2"
@@ -276,6 +282,7 @@ const expandedItem = ref([])
 const showDeleteDialog = ref(false)
 const teams = ref([])
 const selectableTeams = ref([])
+const dynamicVariables = ref([])
 const templateToDelete = ref(null)
 const headers = ref([
   { text: 'Template Title', value: 'title', show: true },
@@ -378,6 +385,24 @@ const getTeams = async () => {
   }
 }
 
+const getDynamicVariables = async () => {
+  try{
+    const { data } = await getRequest(`/messaging/templateVariables`)
+    for(let category in data){
+      for(let variable of data[category]){
+        dynamicVariables.value.push(`${category}.${variable}`)
+      }
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error retrieving dynamic variables')
+  }
+}
+
+const insertDynamicVariable=(variable, item) => {
+  item.message+=`\${${variable}\}`
+}
+
 const getTeamsForTemplate = (template) => {
   const teamNames = selectableTeams.value
     .filter((team) => template.teamIds.includes(team.id))
@@ -389,6 +414,7 @@ const getTeamsForTemplate = (template) => {
 onMounted(async () => {
   await getTemplates()
   await getTeams()
+  await getDynamicVariables()
 })
 </script>
 
@@ -404,10 +430,19 @@ onMounted(async () => {
   width: 50%;
 }
 
+.select-container {
+  column-gap: 24px;
+}
+
 .team-select {
   @media (min-width: 961px) {
     width: 450px;
+    flex-grow: 0;
   }
+}
+
+.edit-select {
+  width: 50%;
 }
 
 .wqt-header-bar {

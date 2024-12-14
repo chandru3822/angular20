@@ -3,8 +3,12 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.controllers.MessagingController;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Contact;
+import com.albatross.api.v1.flow.model.MessageTeam;
+import com.albatross.api.v1.flow.model.TemplateInUse;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.MessageTemplateQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -16,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 @Slf4j
@@ -48,6 +53,31 @@ public class MessageTemplateService {
 
     return results;
   }
+
+  public static <T> ArrayList<String> getClassFieldsAsListOfStrings(Class<T> clazz) {
+      ArrayList<String> classFieldNames = new ArrayList<>();
+      Field[] fields = clazz.getDeclaredFields();
+      for(Field field: fields) {
+          classFieldNames.add(field.getName());
+      }
+      return classFieldNames;
+  }
+
+    public Map<String, List<String>> getTemplateVariables() {
+        ArrayList<String> contact = getClassFieldsAsListOfStrings(Contact.class);
+        ArrayList<String> project = getClassFieldsAsListOfStrings(Project.class);
+        ArrayList<String> user = getClassFieldsAsListOfStrings(User.class);
+        ArrayList<String> projectDetails = getClassFieldsAsListOfStrings(CommunicationController.ProjectDetails.class);
+        return Map.of(
+                "contact",
+                contact,
+                "project",
+                project,
+                "user",
+                user,
+                "projectDetails",
+                projectDetails);
+    }
 
   public List<com.albatross.api.v1.flow.model.MessageTemplate> getTemplatesWithTeamInfo() {
     HashMap<String, Object> params = new HashMap<>();
