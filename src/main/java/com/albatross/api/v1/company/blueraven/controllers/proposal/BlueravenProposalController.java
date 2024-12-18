@@ -131,7 +131,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN') || isBrSystemUser()")
   public Optional<Proposal> addProposal(@RequestBody Proposal proposal,
                                         @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.addProposal(proposal, details);
