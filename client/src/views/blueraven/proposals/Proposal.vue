@@ -443,9 +443,10 @@ const isFieldVisible = (field) => {
   return exec(field.visibility, ctx)
 }
 
-onMounted(() => {
-  getProposalDetails()
-  store.fetchTemplateContext({
+onMounted(async() => {
+  await getProposalDetails()
+  await loadAuroraProjectId()
+  await store.fetchTemplateContext({
     proposalId: proposalId.value
   })
   window.addEventListener('beforeunload', beforeWindowUnload.value)
@@ -755,9 +756,9 @@ const saveCustomFieldValues = async () => {
 }
 
 const inputChangeCallback = async(field, remove=false) => {
-  populateDirtyCfvs(field, remove)
-  if(field.customFieldGroupAssignmentId === 1312){
-    loadAuroraProjectId()
+  await populateDirtyCfvs(field, remove)
+  if(field.customFieldGroupAssignmentId === 1312 && (!auroraDesignId.value || !auroraProjectId.value)){
+    await loadAuroraProjectId()
   }
 }
 
