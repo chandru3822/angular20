@@ -81,7 +81,20 @@ select p.project_id,
 from project p
     """;
 
-  //language=PostgreSQL
+    //language=PostgreSQL
+    public final static String getAuroraProjectAndDesignIds = """
+        select
+        		json_value->>'project_id' as "projectId",
+        				json_value->>'design_id' as "designId"
+        from flow.project_process_step_custom_field_value ppscfv
+        	     inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
+        where
+        		pps.project_id = :projectId and
+        	pps.main is true and
+        		custom_field_group_assignment_id = 22682
+    """;
+
+    //language=PostgreSQL
   public final static String getDesignedByAuroraValue = """
     select boolean_value
     from flow.project_process_step_custom_field_value ppscfv

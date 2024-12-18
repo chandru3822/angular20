@@ -163,7 +163,7 @@
                     <CustomValueInput
                       v-if="isFieldVisible(field)"
                       :required="field.required"
-                      :callback="populateDirtyCfvs"
+                      :callback="inputChangeCallback"
                       :readonly="
                         !canEdit ||
                         proposal.locked ||
@@ -185,6 +185,11 @@
                       :custom-field-groups="sortedCustomFieldGroups"
                       :proposal-id="proposalId"
                     />
+                    <div v-if="field.customFieldGroupAssignmentId === 1312 && field.booleanValue && auroraProjectId && auroraDesignId"
+                       class="mb-4 mt-n4"
+                    ><a :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
+                        target="_blank">Aurora Storage Options</a>
+                    </div>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -399,6 +404,9 @@ const proposalFullscreenViewerEl = ref(undefined)
 const isFullscreen = ref(false)
 const viewportEl = ref(null)
 const proposalViewerEl = ref(null)
+const auroraProjectId = ref(null)
+const auroraDesignId = ref(null)
+const gridUrlIsLoading = ref(null)
 
 provide('editor', undefined)
 
@@ -745,6 +753,14 @@ const saveCustomFieldValues = async () => {
     appStore.loading = false
   }
 }
+
+const inputChangeCallback = async(field, remove=false) => {
+  populateDirtyCfvs(field, remove)
+  if(field.customFieldGroupAssignmentId === 1312){
+    loadAuroraProjectId()
+  }
+}
+
 const populateDirtyCfvs = async (field, remove = false) => {
   //some fields are for unique behavior and they dont need to be saved. this check should filter them out
   let match = dirtyCfvs.value.find(
@@ -977,6 +993,17 @@ const isConditionalFieldPopulated = ({ conditionalOnId }) => {
     return dirtyCfv.intValue !== null
   }
   return isPrepopulated
+}
+const loadAuroraProjectId = async() => {
+  try{
+    const { data } = await getRequest( `/proposal/projects/${proposal.value.projectId}/auroraProjectId`,
+        'blueraven'
+    )
+    auroraProjectId.value = data?.projectId
+    auroraDesignId.value = data?.designId
+  }catch (e) {
+    console.error('*** ERROR ***', e)
+  }
 }
 const handleStepChange = (updated) => {
   proposal.value = { ...updated }
