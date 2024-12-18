@@ -71,7 +71,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             qualifies_for_swr                       boolean,
             rete_incentive_applied                  boolean,
             rete_depreciation_incentive_amount      numeric,
-            base_price_per_watt                     numeric
+            base_price_per_watt                     numeric,
+            grid_tied_battery                       boolean
           )
 
 AS
@@ -153,7 +154,8 @@ BEGIN
            pcfv_48.boolean_value,
            pcfv26.boolean_value,
            pcfv28.numeric_value,
-           pcfv29.numeric_value
+           pcfv29.numeric_value,
+           pcfv60.boolean_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -212,6 +214,8 @@ BEGIN
                                                                pcfv28.custom_field_group_assignment_id = 866
            left join brs.proposal_custom_field_value pcfv29 on prop.id = pcfv29.proposal_id and
                                                                pcfv29.custom_field_group_assignment_id = 869 --stage --869 prod
+           left join brs.proposal_custom_field_value pcfv60 on prop.id = pcfv60.proposal_id and
+                                                               pcfv60.custom_field_group_assignment_id = 1312
            left join flow.project_process_step_custom_field_value ppscfv30
                      on pps.id = ppscfv30.project_process_step_id and
                         ppscfv30.custom_field_group_assignment_id = 22573

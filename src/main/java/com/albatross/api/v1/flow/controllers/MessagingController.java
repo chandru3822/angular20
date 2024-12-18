@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -30,6 +31,11 @@ public class MessagingController {
   public List<MessageTemplate> getTemplates() {
     return messageTemplateService.getTemplates();
   }
+
+    @GetMapping(value = "/templateVariables")
+    public Map<String, List<String>> getTemplateVariables() {
+      return messageTemplateService.getTemplateVariables();
+    }
 
   @GetMapping(value = "/availableProjects")
   public List<Project> getAvailableProjects(@RequestParam String query) {

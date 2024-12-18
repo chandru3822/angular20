@@ -88,7 +88,7 @@ public class VirtualResourceCapacityService {
     public Long countEventsInInterval(List<BookedEvents> events, LocalDateTime start, LocalDateTime end){
         List<BookedEvents> eventsInInterval = events.stream().filter(event -> {
             LocalDateTime eventStart = event.getStartTime().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
-            return eventStart.isAfter(start) && eventStart.isBefore(end);
+            return (eventStart.isEqual(start) || eventStart.isAfter(start)) && eventStart.isBefore(end);
         }).toList();
         return (long) eventsInInterval.size();
     }
