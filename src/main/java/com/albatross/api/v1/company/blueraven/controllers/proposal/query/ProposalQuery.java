@@ -90,7 +90,7 @@ from project p
         	     inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
         where
         		pps.project_id = :projectId and
-        	pps.main is true and
+        	    pps.id = :projectProcessStepId and
         		custom_field_group_assignment_id = 22682
     """;
 

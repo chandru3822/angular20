@@ -997,7 +997,7 @@ const isConditionalFieldPopulated = ({ conditionalOnId }) => {
 }
 const loadAuroraProjectId = async() => {
   try{
-    const { data } = await getRequest( `/proposal/projects/${proposal.value.projectId}/auroraProjectId`,
+    const { data } = await getRequest( `/proposal/projects/${proposal.value?.projectId}/${proposal.value?.projectProcessStepId}/auroraProjectId`,
         'blueraven'
     )
     auroraProjectId.value = data?.projectId

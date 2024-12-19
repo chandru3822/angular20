@@ -91,10 +91,10 @@ public class BlueravenProposalController {
     proposalService.syncDesign(ppsId, designId, auroraProjectId);
   }
 
-  @GetMapping(value="/projects/{projectId}/auroraProjectId")
+  @GetMapping(value="/projects/{projectId}/{ppsId}/auroraProjectId")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public Map<String, String> getAuroraProjectId(@PathVariable Long projectId) {
-      return proposalService.getAuroraProjectId(projectId);
+  public Map<String, String> getAuroraProjectId(@PathVariable Long projectId, @PathVariable Long ppsId) {
+      return proposalService.getAuroraProjectId(projectId, ppsId);
   }
 
   @GetMapping(value = "/projects/{projectId}/designs")

@@ -152,11 +152,12 @@ public class BlueravenProposalService {
     }
   }
 
-    public Map<String, String> getAuroraProjectId(Long projectId){
+  public Map<String, String> getAuroraProjectId(Long projectId, Long ppsId){
         Map<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
+        params.put("projectProcessStepId", ppsId);
         return sqlCache.queryForMapBySql(ProposalQuery.getAuroraProjectAndDesignIds, params);
-    }
+  }
 
   public Resource getResourceFromUrl(String url) {
     RestClient build = RestClient.builder()
