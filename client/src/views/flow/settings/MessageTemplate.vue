@@ -60,8 +60,9 @@
         <v-card v-if="addTemplate" class="pa-5 mb-2">
           <h3>Add Template</h3>
           <a-text-field v-model="newTemplate.title" label="Title" />
-          <a-textarea v-model="newTemplate.message" label="Message" />
-          <a-autocomplete
+          <a-textarea v-model="newTemplate.message" label="Message" variant="outlined"/>
+          <div class="select-container d-flex align-baseline">
+            <a-autocomplete
             v-model="newTemplate.teamIds"
             :items="selectableTeams"
             item-title="teamName"
@@ -69,7 +70,6 @@
             multiple
             placeholder="Select Team(s)"
             height="35px"
-            variant="outlined"
             class="team-select"
           >
             <template v-slot:selection="{ item, index }">
@@ -94,6 +94,14 @@
               >
             </template>
           </a-autocomplete>
+            <a-autocomplete
+                :items="dynamicVariables"
+                @input="insertDynamicVariable($event, newTemplate)"
+                label="Dynamic Variables"
+                clearable
+                class="team-select">
+            </a-autocomplete>
+          </div>
           <a-btn
             variant="text"
             color="primary"
@@ -184,6 +192,7 @@
                     :items="dynamicVariables"
                     @input="insertDynamicVariable($event, item)"
                     label="Dynamic Variables"
+                    clearable
                     class="team-select"></a-autocomplete>
               </div>
               <a-btn
@@ -400,7 +409,12 @@ const getDynamicVariables = async () => {
 }
 
 const insertDynamicVariable=(variable, item) => {
-  item.message+=`\${${variable}\}`
+  if(variable === null || !item.message?.length){
+    return
+  }
+  else {
+    item.message += `\${${variable}\}`
+  }
 }
 
 const getTeamsForTemplate = (template) => {
