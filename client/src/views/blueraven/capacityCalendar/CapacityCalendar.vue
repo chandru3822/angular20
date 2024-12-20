@@ -8,7 +8,7 @@
 *
 */
 import FullCalendar from "@fullcalendar/vue";
-import {onMounted, onUnmounted, ref, watch,} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch,} from "vue";
 import constants from '@/helpers/constants'
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -19,6 +19,8 @@ import {useAppStore} from "@/stores/AppStore.js";
 import cloneDeep from "lodash.clonedeep";
 import EditCapacityItem from "@/views/blueraven/capacityCalendar/EditCapacityItem.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {useUserStore} from '@/stores/UserStore.js'
+
 
 const appStore = useAppStore()
 const capacityCalendar = ref(null)
@@ -31,6 +33,11 @@ const dialogShowMore = ref(false)
 const intervalId = ref(null);
 
 const virtualConsultingOrgId = 4548; //this is the prod id
+
+const userStore = useUserStore()
+const userCanEdit  = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SCHEDULING_CAPACITY_CALENDAR', 'EDIT')
+})
 
 const calendarOptions = ref({
   plugins:[
@@ -121,6 +128,9 @@ const switchCalendarEditMode = () => {
     //hide the cancel and duplicate week buttons
     document.getElementsByClassName('fc-customDuplicateWeek-button')[0]?.classList.add('hidden')
     document.getElementsByClassName('fc-customCancel-button')[0]?.classList.add('hidden')
+  }
+  if(!userCanEdit.value){
+    document.getElementsByClassName('fc-customEdit-button')[0]?.classList.add('hidden')
   }
   document.getElementsByClassName('fc-customEdit-button')[0].childNodes[0].nodeValue = editMode.value ? 'Save' : 'Edit'
 
