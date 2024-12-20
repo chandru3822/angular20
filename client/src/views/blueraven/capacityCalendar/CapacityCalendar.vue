@@ -8,7 +8,7 @@
 *
 */
 import FullCalendar from "@fullcalendar/vue";
-import {onMounted, ref, watch} from "vue";
+import {onMounted, onUnmounted, ref, watch,} from "vue";
 import constants from '@/helpers/constants'
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -28,6 +28,7 @@ const showConfirmDialog = ref(false)
 const dialogBodyText = ref('The following time slot is currently overbooked, with bookings exceeding the allowed capacity.')
 const dialogBodyDates = ref([])
 const dialogShowMore = ref(false)
+const intervalId = ref(null);
 
 const virtualConsultingOrgId = 4548; //this is the prod id
 
@@ -98,7 +99,6 @@ const calendarOptions = ref({
 })
 
 watch(editMode, () =>{
-  console.log('editMode', editMode.value)
   switchCalendarEditMode()
 })
 
@@ -257,9 +257,20 @@ const duplicateWeek = async () => {
 }
 
 onMounted(async () => {
-  const calendarApi = capacityCalendar.value.getApi()
-  calendarApi.render()
+  const calendarApi = capacityCalendar.value?.getApi()
+  calendarApi?.render()
   switchCalendarEditMode()
+  // Set an interval to refresh the page every 5 minutes (300000 milliseconds)
+      intervalId.value = setInterval(() => {
+    if(!editMode.value) {
+      calendarApi.refetchEvents()
+    }
+
+  }, 300000); // 5 minutes
+})
+onUnmounted(() => {
+  // Clear the interval to avoid memory leaks when the component is destroyed
+  clearInterval(intervalId.value);
 })
 </script>
 

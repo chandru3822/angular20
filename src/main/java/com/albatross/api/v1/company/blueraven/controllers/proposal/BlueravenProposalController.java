@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -88,6 +89,12 @@ public class BlueravenProposalController {
                          @PathVariable String designId,
                          @PathVariable String auroraProjectId) {
     proposalService.syncDesign(ppsId, designId, auroraProjectId);
+  }
+
+  @GetMapping(value="/projects/{projectId}/{ppsId}/auroraProjectId")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public Map<String, String> getAuroraProjectId(@PathVariable Long projectId, @PathVariable Long ppsId) {
+      return proposalService.getAuroraProjectId(projectId, ppsId);
   }
 
   @GetMapping(value = "/projects/{projectId}/designs")
