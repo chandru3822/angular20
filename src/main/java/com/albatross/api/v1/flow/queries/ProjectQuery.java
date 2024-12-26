@@ -207,7 +207,7 @@ select *
   """;
 
   //language=PostgreSQL
-  public final static String getChildren = """
+  public final static String getChildrenSimple = """
   select
         p.id,
         p.project_name as "projectName",
@@ -225,9 +225,82 @@ select *
         inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
         inner join flow.object_category oc on oc.id = p.object_category_id
         inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
-     where p.parent_id = :projectId
+     where p.parent_id = :parentProjectId
      and p.archived is false
      order by p.id
+  """;
+
+  //language=PostgreSQL
+  public final static String getChildrenWithFields = """
+    select
+      p.id,
+      p.project_name as "projectName",
+      coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(cfvs)))
+                   FROM (
+                            select pcfv.id,
+                                   pcfv.date_value as "dateValue",
+                                   pcfv.timestamp_value as "timestampValue",
+                                   pcfv.boolean_value as "booleanValue",
+                                   pcfv.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                   pcfv.project_id as "projectId",
+                                   pcfv.text_value as "textValue",
+                                   pcfv.rich_text_value as "richTextValue",
+                                   pcfv.numeric_value as "numericValue",
+                                   pcfv.int_value as "intValue",
+                                   pcfv.int_array_value as "intArrayValue"
+                            from flow.project_custom_field_value pcfv
+                            where pcfv.custom_field_group_assignment_id = any (SELECT unnest(string_to_array(value, ',')::bigint[])
+                                                                               FROM flow.company_configuration_value
+                                                                               WHERE code = 'CHILD_PROJECT_CFGA_IDS')
+                              and pcfv.project_id = p.id
+                        ) cfvs), '[]') AS "customFieldValues"
+  from flow.project p
+  where p.parent_id = :parentProjectId
+    and p.archived is false
+  order by p.id
+  """;
+
+  //language=PostgreSQL
+  public final static String getChildrenHeaders = """
+    select cfga.id as custom_field_group_assignment_id,
+           cf.field_name,
+           cf.system_readonly,
+           cf.allow_now,
+           cf.sort_list_values_alphabetically,
+           cf.custom_field_sql_key,
+           cf.custom_field_sql,
+           cf.company_system_list_id,
+           array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+           cdt.has_list_values,
+           cdt.data_type_id,
+           dt.data_type,
+            coalesce((
+                               SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                               FROM (
+                                        select
+                                            lov.id,
+                                            lov.name,
+                                            lov.code,
+                                            lov.parent_id,
+                                            lov.display_order,
+                                            lov.archived
+                                        from flow.list_of_value lov
+                                        where lov.parent_id is not null
+                                          and lov.parent_id = cf.list_of_value_id
+                                          and lov.archived is not true
+                                        order by
+                                            case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                            case when cf.sort_list_values_alphabetically is false then lov.display_order end
+                                    ) listOfValues), '[]') AS "listOfValues"
+    from flow.custom_field_group_assignment cfga
+        inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+        inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+        inner join flow.data_type dt on cdt.data_type_id = dt.id
+    where cfga.id = any (SELECT unnest(string_to_array(value, ',')::bigint[])
+                   FROM flow.company_configuration_value
+                   WHERE code = 'CHILD_PROJECT_CFGA_IDS')
+    and cfga.archived is false
   """;
 
   //language=PostgreSQL

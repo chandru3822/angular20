@@ -84,9 +84,19 @@ public class ProjectController {
     private Long childProjectCount, childCompanyProcessId;
   }
 
-  @GetMapping(value = "/{projectId}/children")
-  public List<Project> getProjectChildren(@PathVariable Long projectId) {
-    return projectService.getProjectChildren(projectId);
+  @GetMapping(value = "/{parentProjectId}/children/simple")
+  public List<ChildProject> getProjectChildren(@PathVariable Long parentProjectId) {
+    return projectService.getProjectChildren(parentProjectId, true);
+  }
+
+  @GetMapping(value = "/{parentProjectId}/children/details")
+  public List<ChildProject> getProjectChildrenWithFields(@PathVariable Long parentProjectId) {
+    return projectService.getProjectChildren(parentProjectId, false);
+  }
+
+  @GetMapping(value = "/childrenHeaders")
+  public List<ChildProjectHeader> getProjectChildrenHeaders() {
+    return projectService.getProjectChildrenHeaders();
   }
 
   @GetMapping(value = "/{projectId}/statusFields")

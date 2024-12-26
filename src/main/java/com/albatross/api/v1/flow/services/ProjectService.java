@@ -61,6 +61,7 @@ public class ProjectService {
   private final MapboxApiService mapboxApiService;
   private final SqlArrayService sqlArrayService;
   private final UserPositionService userPositionService;
+  private final SystemListService systemListService;
 
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
@@ -259,11 +260,31 @@ public class ProjectService {
     return sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
   }
 
-  public List<Project> getProjectChildren(Long projectId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
+  public List<ChildProject> getProjectChildren(Long parentProjectId, Boolean isSimple) {
+    User user = securityService.getCurrentUser();
 
-    List<Project> results = sqlCache.queryBySql(ProjectQuery.getChildren, params, Project.class);
+    Map<String, Object> params = new HashMap<>();
+    params.put("parentProjectId", parentProjectId);
+
+    String sql = isSimple ? ProjectQuery.getChildrenSimple : ProjectQuery.getChildrenWithFields;
+
+    List<ChildProject> results = sqlCache.queryBySql(sql, params, new ChildProjectMapper<>(ChildProject.class, om));
+
+    return results;
+  }
+
+  public List<ChildProjectHeader> getProjectChildrenHeaders() {
+    User user = securityService.getCurrentUser();
+
+    List<ChildProjectHeader> results = sqlCache.queryBySql(ProjectQuery.getChildrenHeaders, Collections.emptyMap(), new ChildProjectHeaderMapper<>(ChildProjectHeader.class, om));
+
+    for (ChildProjectHeader header : results) {
+      if (null != header.getCompanySystemListId()) {
+        header.setHasListValues(true);
+        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(header.getCompanySystemListId(), true, header.getSystemListOptionIds(), null, user.getCompanyId());
+        header.setListOfValues(listOfValues);
+      }
+    }
 
     return results;
   }
@@ -849,6 +870,48 @@ public class ProjectService {
         List.class,
         "assignedFields",
         new JsonCollectionDeserializer(assignedFieldsRef, objectMapper));
+
+    }
+  }
+
+  private static class ChildProjectHeaderMapper<T> extends BeanPropertyRowMapper<T> {
+    public final ObjectMapper objectMapper;
+
+    public ChildProjectHeaderMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+
+      TypeReference<List<ListOfValue>> listOfValuesRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "listOfValues", new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
+
+    }
+  }
+
+
+  private static class ChildProjectMapper<T> extends BeanPropertyRowMapper<T> {
+    public final ObjectMapper objectMapper;
+
+    public ChildProjectMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomFieldValue>> customFieldValuesRef = new TypeReference<>() {};
+
+      bw.registerCustomEditor(
+        List.class,
+        "customFieldValues",
+        new JsonCollectionDeserializer(customFieldValuesRef, objectMapper));
 
     }
   }

@@ -2010,6 +2010,19 @@ const router = new Router({
           ]
         },
         {
+          name: 'projectChildrenEdit',
+          path: '/projectChildrenEdit/:projectId',
+          component: () => {
+            if (
+              userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+            ) {
+              return import('./views/flow/project/AllChildProjectsTable.vue')
+            } else {
+              return accessDenied()
+            }
+          }
+        },
+        {
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
           component: () => {
