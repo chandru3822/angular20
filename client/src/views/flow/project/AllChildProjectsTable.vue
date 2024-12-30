@@ -98,6 +98,7 @@
                                       :items="h.listOfValues"
                                       no-data-text="No Values Available"
                                       clearable
+                                      density="compact"
                                       hide-details
                                       @input="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
                                       item-title="name"
