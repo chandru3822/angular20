@@ -537,11 +537,13 @@ const projectId = computed(() => {
   return route.params.projectId
 })
 const closerApptRequirementsMet = computed(() => {
-  return (
-    //all time constraints were removed beside checking if we are before the end time
-    project.value.closerAppointmentEnd != null &&
-    moment().isBefore(moment(project.value.closerAppointmentEnd))
-  )
+  // 2024-12-20: Removing closer appointment requirement for dealers, per Jacob
+  // return (
+  //   //all time constraints were removed beside checking if we are before the end time
+  //   project.value.closerAppointmentEnd != null &&
+  //   moment().isBefore(moment(project.value.closerAppointmentEnd))
+  // )
+  return true
 })
 const canAuroraAI = computed(() => {
   return userStore.userHasFeatureAccessLevel('AURORA_AI', 'ADD')

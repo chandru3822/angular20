@@ -65,12 +65,26 @@ public class CompanyDashboardQuery {
     select * from brs.rpt_company_dashboard_drilldown(:startDate::date, :endDate::date, :milestoneTypeId::bigint);
     """;
 
+  //language=PostgreSQL
   public final static String getCompanyDashboardDrilldownHeaders = """
     select title from brs.dashboard_milestone_column where dashboard_milestone_id = :milestoneTypeId::bigint;
     """;
 
+  //language=PostgreSQL
   public final static String getCompanyDashboardPeriods = """
-    select CONCAT('Period ', min(period), ' (', min(year), '): ', to_char(min(start_date), 'MM/DD/YYYY'), ' - ', to_char(max(end_date), 'MM/DD/YYYY')) AS label, CONCAT('Period ', min(period), ' (', min(year), ')') AS short_label, min(start_date) AS start_date, max(end_date) AS end_date from brs.reporting_period where start_date >= '2019-01-01' AND start_date <= :today::date GROUP BY year, period ORDER BY start_date;
+    with t1 as (
+      select CONCAT('Period ', min(period), ' (', min(year), '): ', to_char(min(start_date), 'MM/DD/YYYY'), ' - ', to_char(max(end_date), 'MM/DD/YYYY')) AS label,
+             CONCAT('Period ', min(period), ' (', min(year), ')') AS short_label,
+             min(start_date) AS start_date,
+             max(end_date) AS end_date
+      from brs.reporting_period
+      where start_date >= '2019-01-01'
+      GROUP BY year, period
+      )
+      select *
+      from t1
+      where start_date <= :today::date
+      ORDER BY start_date
     """;
 
   public final static String getGetCompanyDashboardTriumvirate = """

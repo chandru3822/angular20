@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -90,6 +91,12 @@ public class BlueravenProposalController {
     proposalService.syncDesign(ppsId, designId, auroraProjectId);
   }
 
+  @GetMapping(value="/projects/{projectId}/{ppsId}/auroraProjectId")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public Map<String, String> getAuroraProjectId(@PathVariable Long projectId, @PathVariable Long ppsId) {
+      return proposalService.getAuroraProjectId(projectId, ppsId);
+  }
+
   @GetMapping(value = "/projects/{projectId}/designs")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public List<ProposalDesign> getProposalDesigns(@PathVariable Long projectId) {
@@ -131,7 +138,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN') || isBrSystemUser()")
   public Optional<Proposal> addProposal(@RequestBody Proposal proposal,
                                         @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.addProposal(proposal, details);
