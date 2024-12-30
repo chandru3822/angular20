@@ -48,7 +48,7 @@
 
                 <template #header="{ props: { headers } }">
                   <tr>
-                    <th v-for="header in headers" :key="header.text" class="randaTest">
+                    <th v-for="header in headers" :key="header.text" class="project-children-filter-header">
                       <div v-if="header.value === 'projectName'" class="pt-2 table-filter">
                         <a-text-field v-model="projectSearch"
                                       class="mx-2"
@@ -215,8 +215,7 @@ const saveChanges = async () => {
 
 const getChildProjectHeaders = async () => {
   try {
-    // const {data} = await getRequest(`/project/childrenHeaders`)
-    const data = constants.RANDA_TEST
+    const {data} = await getRequest(`/project/childrenHeaders`)
     data.forEach(d => {
       let header = { ...d,
         text: d.fieldName,
@@ -296,7 +295,7 @@ const getChildProjects = async () => {
   margin-left: 12px;
 }
 
-.randaTest {
+.project-children-filter-header {
   border-bottom: thin solid rgba(0, 0, 0, 0.12);
   padding-bottom: 8px;
 }
