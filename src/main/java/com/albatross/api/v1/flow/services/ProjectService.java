@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -260,15 +261,30 @@ public class ProjectService {
     return sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
   }
 
-  public List<ChildProject> getProjectChildren(Long parentProjectId, Boolean isSimple) {
+//  @Data
+//  public static class ChildField {
+//    Long projectId, customFieldGroupAssignmentId;
+//    String value;
+//  }
+
+  public void saveProjectChildrenDetails(Long parentProjectId, String fields) {
     User user = securityService.getCurrentUser();
 
+    Map<String, Object> params = new HashMap<>();
+    params.put("parentProjectId", parentProjectId);
+    params.put("fields", fields);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.queryBySql(ProjectQuery.saveProjectChildrenDetails, params, String.class);
+  }
+
+  public String getProjectChildren(Long parentProjectId, Boolean isSimple) {
     Map<String, Object> params = new HashMap<>();
     params.put("parentProjectId", parentProjectId);
 
     String sql = isSimple ? ProjectQuery.getChildrenSimple : ProjectQuery.getChildrenWithFields;
 
-    List<ChildProject> results = sqlCache.queryBySql(sql, params, new ChildProjectMapper<>(ChildProject.class, om));
+    String results = sqlCache.queryForObjectBySql(sql, params, String.class);
 
     return results;
   }

@@ -85,13 +85,19 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/{parentProjectId}/children/simple")
-  public List<ChildProject> getProjectChildren(@PathVariable Long parentProjectId) {
+  public String getProjectChildren(@PathVariable Long parentProjectId) {
     return projectService.getProjectChildren(parentProjectId, true);
   }
 
   @GetMapping(value = "/{parentProjectId}/children/details")
-  public List<ChildProject> getProjectChildrenWithFields(@PathVariable Long parentProjectId) {
+  public String getProjectChildrenWithFields(@PathVariable Long parentProjectId) {
     return projectService.getProjectChildren(parentProjectId, false);
+  }
+
+  @PutMapping(value = "/{parentProjectId}/children/details")
+  public void saveProjectChildrenDetails(@PathVariable Long parentProjectId,
+                                           @RequestBody String fields) {
+    projectService.saveProjectChildrenDetails(parentProjectId, fields);
   }
 
   @GetMapping(value = "/childrenHeaders")

@@ -11,7 +11,10 @@
                     <v-toolbar-title class="app-title">All Child Projects</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-<!--                      <a-btn text="Batch Edit in Table View" :to="`/projectChildrenEdit/${projectId}`"></a-btn>-->
+                      <a-btn variant="text" text="Cancel" :to="`/project/${projectId}/children`"></a-btn>
+                      <a-btn variant="text" color="primary" text="Save Changes"
+                             :disabled="dirtyFields?.length === 0"
+                             @click="saveChanges()"></a-btn>
                     </v-toolbar-items>
                   </v-toolbar>
                 </v-col>
@@ -43,21 +46,63 @@
                   No child projects found
                 </template>
 
-                <template #item="{ item, index }" v-if="">
+                <template #header="{ props: { headers } }">
+                  <tr>
+                    <th v-for="header in headers" :key="header.text" class="randaTest">
+                      <div v-if="header.value === 'projectName'" class="pt-2 table-filter">
+                        <a-text-field v-model="projectSearch"
+                                      class="mx-2"
+                                      :placeholder="'Search ' + header.text.toLowerCase()"
+                                      clearable
+                                      density="compact"
+                                      variant="outlined"
+                                      hide-details
+                        ></a-text-field>
+                      </div>
+                    </th>
+                  </tr>
+                </template>
+
+                <template #item="{ item, index }">
                   <tr :class="{'shaded-row': index % 2}">
-                    <td><v-checkbox v-model="item.selected" @change=""></v-checkbox></td>
                     <td class="text-left pl-4">{{item.projectName}}</td>
                     <td class="text-left pl-4" v-for="h in headers.filter(h => h.showInLoop)">
-<!--                      {{rowHasValue(item, h)}}-->
-<!--                      {{getField(item, h)}}-->
-                      <CustomValueInput :key="item.projectId"
-                                        hide-details
-                                        hide-label
-                                        hide-prepend-icon
-                                        :show-field-name="false"
-                                        :callback="populateDirtyCfvs"
-                                        :field="getField(item, h)"
-                      ></CustomValueInput>
+                      <DatetimePickerInput
+                          v-if="h.dataTypeId === 1"
+                          v-model="item[h.customFieldGroupAssignmentId]"
+                          :timezone="timezone"
+                          :type="'date'"
+                          dense="compact"
+                          :format="'MMMM DD, YYYY'"
+                          hide-details
+                          hide-prepend-icon
+                          :change-callback="() => { populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
+                      />
+                      <DatetimePickerInput
+                          v-else-if="h.dataTypeId === 2"
+                          v-model="item[h.customFieldGroupAssignmentId]"
+                          :timezone="timezone"
+                          :type="'timestamp'"
+                          :format="'MMMM DD, YYYY, h:mm A'"
+                          hide-prepend-icon
+                          hide-details
+                          dense="compact"
+                          :change-callback="() => { populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
+                      />
+                      <v-checkbox v-else-if="h.dataTypeId === 3"
+                                  @change="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
+                                  v-model="item[h.customFieldGroupAssignmentId]"></v-checkbox>
+                      <a-autocomplete attach
+                                      v-model="item[h.customFieldGroupAssignmentId]"
+                                      v-else-if="h.dataTypeId === 9"
+                                      :items="h.listOfValues"
+                                      no-data-text="No Values Available"
+                                      clearable
+                                      hide-details
+                                      @input="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
+                                      item-title="name"
+                                      item-value="id"
+                      ></a-autocomplete>
                     </td>
                   </tr>
                 </template>
@@ -75,15 +120,15 @@
 
 <script setup>
 
-import {getRequest, logError, getProjectPath} from '@/helpers/helpers'
+import {getRequest, logError, getProjectPath, putRequest} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { getCurrentInstance, toRefs, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import constants from "@/helpers/constants.js";
-import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
+import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -103,23 +148,29 @@ const projectId = computed(() => {
   return parseInt(route.params.projectId)
 })
 
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+
 const childProjects = ref([])
 const projectSearch = ref('')
+const dirtyFields = ref([])
 const menuOpen = ref(false)
 const isChildProjectsLoading = ref(false)
-const options = ref({itemsPerPage: 100})
+const options = ref({itemsPerPage: 50})
 const footerProps = ref({
-  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-options': [25, 50, 100],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 const headers = ref([
-  { text: '', value: 'selectBox', selectFilter:true, showInLoop: false, width: '50px' },
-  {text: 'Project Name', value: 'projectName', showInLoop: false, width: '125px'},
+  // { text: '', value: 'selectBox', selectFilter:true, showInLoop: false, width: '50px' },
+  {text: 'Project Name', value: 'projectName', showInLoop: false, width: 200, filter: value => {if (!projectSearch.value) {return true} else {return value.toLowerCase().includes(projectSearch.value.toLowerCase())}}},
 ])
 
 onMounted(() => {
   getChildProjectHeaders()
 })
+
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
 })
@@ -134,6 +185,34 @@ const companyId = computed(() => {
 //   window.open(routerData.href, '_blank')
 // }
 
+const populateDirtyFields = (cfgaId, projectId, value) => {
+  let matchingIndex = dirtyFields.value.findIndex((field) => field.customFieldGroupAssignmentId === cfgaId && field.projectId === projectId)
+
+  if(matchingIndex !== -1) {
+    dirtyFields.value[matchingIndex].value = value
+  } else {
+    dirtyFields.value.push({
+      customFieldGroupAssignmentId: cfgaId,
+      projectId,
+      value
+    })
+  }
+
+}
+
+const saveChanges = async () => {
+  appStore.loading = true
+  try {
+    await putRequest(`/project/${projectId.value}/children/details`, dirtyFields.value)
+    dirtyFields.value = []
+  } catch (e) {
+    logError(e)
+    appStore.showSnack('ERROR', 'Error Saving Changes')
+  } finally {
+    appStore.loading = false
+  }
+}
+
 const getChildProjectHeaders = async () => {
   try {
     // const {data} = await getRequest(`/project/childrenHeaders`)
@@ -141,7 +220,7 @@ const getChildProjectHeaders = async () => {
     data.forEach(d => {
       let header = { ...d,
         text: d.fieldName,
-        value: 'get value field name via data type here',
+        value: d.customFieldGroupAssignmentId.toString(),
         showInLoop: true,
         width: getColumnWidth(d.dataTypeId)
       }
@@ -155,37 +234,14 @@ const getChildProjectHeaders = async () => {
 
 const getColumnWidth = (dataTypeId) => {
   switch (dataTypeId) {
-    case 1: return 230
-    case 2: return 270
+    case 1: return 210
+    case 2: return 250
     case 8:
     case 9:
     case 10:
       return 200
     default: return 100
   }
-}
-
-const rowHasValue = (item, header) => {
-  let match = item.customFieldValues.find(cfv => cfv.customFieldGroupAssignmentId === header.customFieldGroupAssignmentId)
-  return match !== undefined && match?.id !== null
-}
-
-const getField = (item, header) => {
-  let value = item.customFieldValues.find(cfv => cfv.customFieldGroupAssignmentId === header.customFieldGroupAssignmentId)
-  value = value?.id ? value : {}
-  // console.log('randalogger',header)
-  let field = { ...value, ...header }
-  // if(count.value === 0) {
-  //   console.log('item', item)
-  //   console.log('header', header)
-  //   console.log('randalogger',value)
-  //   count.value++
-  // }
-  return field
-}
-
-const populateDirtyCfvs = (value) => {
-  console.log('pop dirty val', value)
 }
 
 const getChildProjects = async () => {
@@ -237,8 +293,11 @@ const getChildProjects = async () => {
   padding-left: 10px !important;
 }
 .manage-btn {
-
   margin-left: 12px;
+}
 
+.randaTest {
+  border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  padding-bottom: 8px;
 }
 </style>

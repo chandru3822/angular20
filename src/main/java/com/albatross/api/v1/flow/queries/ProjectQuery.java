@@ -207,58 +207,39 @@ select *
   """;
 
   //language=PostgreSQL
+  public final static String saveProjectChildrenDetails = """
+    select from brs.save_child_project_details(:parentProjectId::bigint, :userId::bigint, :fields::jsonb)
+  """;
+
+  //language=PostgreSQL
   public final static String getChildrenSimple = """
-  select
-        p.id,
-        p.project_name as "projectName",
-        p.street1,
-        p.city,
-        p.postal_code as "postalCode",
-        p.date_created as "dateCreated",
-        p.object_category_id as "objectCategoryId",
-        oc.object_category as "objectCategory",
-        p.company_project_status_type_id as "companyProjectStatusTypeId",
-        cpst.project_status_type_id as "projectStatusTypeId",
-        cpst.project_status_type as "projectStatusType",
-        pst.project_status_type as "rootProjectStatusType"
-      from flow.project p
-        inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
-        inner join flow.object_category oc on oc.id = p.object_category_id
-        inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
-     where p.parent_id = :parentProjectId
-     and p.archived is false
-     order by p.id
+    select coalesce(array_to_json(array_agg(row_to_json(flatten_rows))), '[]')
+        from ( select
+            p.id,
+            p.project_name as "projectName",
+            p.street1,
+            p.city,
+            p.postal_code as "postalCode",
+            p.date_created as "dateCreated",
+            p.object_category_id as "objectCategoryId",
+            oc.object_category as "objectCategory",
+            p.company_project_status_type_id as "companyProjectStatusTypeId",
+            cpst.project_status_type_id as "projectStatusTypeId",
+            cpst.project_status_type as "projectStatusType",
+            pst.project_status_type as "rootProjectStatusType"
+          from flow.project p
+            inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
+            inner join flow.object_category oc on oc.id = p.object_category_id
+            inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+         where p.parent_id = :parentProjectId
+         and p.archived is false
+         order by p.id
+     ) as flatten_rows;
   """;
 
   //language=PostgreSQL
   public final static String getChildrenWithFields = """
-    select
-      p.id,
-      p.project_name as "projectName",
-      coalesce((
-                   SELECT array_to_json(array_agg(row_to_json(cfvs)))
-                   FROM (
-                            select pcfv.id,
-                                   pcfv.date_value as "dateValue",
-                                   pcfv.timestamp_value as "timestampValue",
-                                   pcfv.boolean_value as "booleanValue",
-                                   pcfv.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
-                                   pcfv.project_id as "projectId",
-                                   pcfv.text_value as "textValue",
-                                   pcfv.rich_text_value as "richTextValue",
-                                   pcfv.numeric_value as "numericValue",
-                                   pcfv.int_value as "intValue",
-                                   pcfv.int_array_value as "intArrayValue"
-                            from flow.project_custom_field_value pcfv
-                            where pcfv.custom_field_group_assignment_id = any (SELECT unnest(string_to_array(value, ',')::bigint[])
-                                                                               FROM flow.company_configuration_value
-                                                                               WHERE code = 'CHILD_PROJECT_CFGA_IDS')
-                              and pcfv.project_id = p.id
-                        ) cfvs), '[]') AS "customFieldValues"
-  from flow.project p
-  where p.parent_id = :parentProjectId
-    and p.archived is false
-  order by p.id
+    select * from brs.get_child_project_details(:parentProjectId::bigint);
   """;
 
   //language=PostgreSQL
