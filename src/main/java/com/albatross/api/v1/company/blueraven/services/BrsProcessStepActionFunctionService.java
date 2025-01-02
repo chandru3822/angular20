@@ -80,18 +80,18 @@ public class BrsProcessStepActionFunctionService {
 
   // inverters should maybe be an enum if they start to get used anywhere else in the codebase
   private String getMappedAuroraInverter(String inverter) {
-    var inverterMap = Map.of(
-      "IQ 7+ (240V)", "Enphase IQ7+ Microinverters",
-      "IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters",
-      "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
-      "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters",
-      "IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters",
-      "IQ8A-72-2-US", "Enphase IQ8A Microinverters",
-      "IQ8M-72-M-US", "Enphase IQ8M Microinverters",
-      "IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters",
-      "GW9600A-MS (240V)", "GoodWe GW9600A-MS",
-      "Powerwall 3 (integrated inverter)", "Tesla Powerwall 3 (integrated inverter)"
-    );
+    var inverterMap = new HashMap<String, String>();
+    inverterMap.put("IQ 7+ (240V)", "Enphase IQ7+ Microinverters");
+    inverterMap.put("IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters");
+    inverterMap.put("IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters");
+    inverterMap.put("IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters");
+    inverterMap.put("IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters");
+    inverterMap.put("IQ8A-72-2-US", "Enphase IQ8A Microinverters");
+    inverterMap.put("IQ8M-72-M-US", "Enphase IQ8M Microinverters");
+    inverterMap.put("IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters");
+    inverterMap.put("GW9600A-MS (240V)", "GoodWe GW9600A-MS");
+    inverterMap.put("Powerwall 3 (integrated inverter)", "Tesla Powerwall 3 (integrated inverter)");
+    inverterMap.put("1Q8MC-72-M-US (240V)", "Enphase IQ8MC Microinverters");
     return inverterMap.getOrDefault(inverter, null);
   }
 
