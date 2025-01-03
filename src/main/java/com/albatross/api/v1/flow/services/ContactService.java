@@ -292,6 +292,7 @@ public class ContactService {
     return new ResponseEntity<>(responseBody, HttpStatus.OK);
   }
 
+  @Transactional
   public Contact updateContact(Contact contact) throws Exception {
     User currentUser = securityService.getCurrentUser();
 
@@ -399,9 +400,35 @@ public class ContactService {
       params.put("objectCategoryId", contact.getObjectCategoryId()); //TODO?
 
       id = sqlCache.updateBySqlReturningId(ContactQuery.insertContact, params, "id").longValue();
+      addPartnerIds(id);
+
     }
 
     return getContact(id);
+  }
+
+  // Adds contact partner IDs belonging to orgs of the user's positions.
+  // This is here instead of the cfvService due to circular dependencies.
+  private void addPartnerIds(Long contactId) throws SQLException {
+    var user = securityService.getCurrentUser();
+    if (!user.getPartnerIds().isEmpty()) {
+      var params = new HashMap<String, Object>();
+      //default values
+      params.put("dateValue", null);
+      params.put("textValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", null);
+      params.put("richTextValue", null);
+      params.put("jsonValue", null);
+
+      params.put("intArrayValue", sqlArrayService.createSqlArrayOfType("int", user.getPartnerIds()));
+      params.put("customFieldGroupAssignmentId", 27973L);
+      params.put("userId", user.trueUserId());
+      params.put("sourceId", contactId);
+      sqlCache.updateBySql(ObjectType.CONTACT.upsertCustomFieldValueQuery, params);
+    }
   }
 
   public void insertContactFromChildProject(Long projectId, Contact contact) {
