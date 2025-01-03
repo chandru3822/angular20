@@ -16,10 +16,10 @@ BEGIN
    from (select pd.setter_name,
                 pd.project_name,
                 pd.project_id,
-                ((pd.prioritized_closer_dashboard_start_time at time zone 'UTC') at time zone 'US/Mountain') as appointment_start_time,
+                (pd.prioritized_closer_dashboard_start_time at time zone 'UTC') as appointment_start_time,
                 pd.closer_name,
                 u.phone_number,
-                ((pd.first_time_appointment_created at time zone 'UTC') at time zone 'US/Mountain') as date_created
+                (pd.first_time_appointment_created at time zone 'UTC') as date_created
          from brs.project_details pd
                 inner join flow.user_position up on up.id = pd.setter_user_position_id
                 inner join flow.org o on o.id = up.org_id

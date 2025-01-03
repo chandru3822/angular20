@@ -692,7 +692,7 @@
                                            prepend-icon="delete"
                           />
                         </v-list-item>
-                        <v-divider v-if="cf.edit"></v-divider>
+                        <v-divider></v-divider>
                       </v-list>
                     </draggable>
                   </v-col>

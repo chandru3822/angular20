@@ -3490,7 +3490,7 @@ const funnelDrilldown = async (funnel, dateRange, funnelName) => {
   appStore.loading = true
   try {
     await postRequest(`/setterDashboard/funnelDrilldown`, requestBody, 'blueraven').then(({data}) => {
-      funnelDrilldownData.value = data
+      funnelDrilldownData.value = data?.length > 0 ? data : []
 
       if (funnelDrilldownData.value?.length > 0) {
         for (let i = 0; i < funnelDrilldownData.value.length; i++) {
