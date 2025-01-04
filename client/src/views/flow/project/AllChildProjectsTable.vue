@@ -177,8 +177,12 @@ const headers = ref([
   {text: 'Project Name', value: 'projectName', showInLoop: false, width: 200, filter: value => {if (!projectSearch.value) {return true} else {return value.toLowerCase().includes(projectSearch.value.toLowerCase())}}},
 ])
 
-onMounted(() => {
-  getChildProjectHeaders()
+onMounted(async () => {
+  isChildProjectsLoading.value = true
+  let requests = [getChildProjectHeaders(), getChildProjects()]
+  await Promise.all(requests).then(async () => {
+    isChildProjectsLoading.value = false
+  })
 })
 
 onBeforeRouteUpdate(async (to, from, next) => {
@@ -250,7 +254,6 @@ const getChildProjectHeaders = async () => {
       }
       headers.value.push(header)
     })
-    await getChildProjects()
   } catch (e) {
     logError(e)
   }
@@ -275,8 +278,6 @@ const getChildProjects = async () => {
     childProjects.value = data
   } catch (e) {
     logError(e)
-  } finally {
-    isChildProjectsLoading.value = false
   }
 }
 </script>
