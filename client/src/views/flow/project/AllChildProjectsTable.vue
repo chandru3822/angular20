@@ -116,6 +116,12 @@
       </v-expand-transition>
     </v-col>
 
+    <ConfirmationDialog :open-dialog="unsavedModal" @confirm="[goToProject()]"
+                        @close-dialog="unsavedModal = false">
+      <template v-slot:title>Unsaved Changes</template>
+      You have unsaved changes. Are you sure you want to continue without saving?
+      <template v-slot:yes>Don't Save</template>
+    </ConfirmationDialog>
   </v-row>
 </template>
 
@@ -126,10 +132,11 @@ import SpinnerInline from '@/components/SpinnerInline'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import {onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import constants from "@/helpers/constants.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -158,7 +165,9 @@ const projectSearch = ref('')
 const dirtyFields = ref([])
 const menuOpen = ref(false)
 const isChildProjectsLoading = ref(false)
-const options = ref({itemsPerPage: 50})
+const options = ref({itemsPerPage: 25})
+const unsavedModal = ref(false);
+const override = ref(false);
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
@@ -172,6 +181,22 @@ onMounted(() => {
   getChildProjectHeaders()
 })
 
+onBeforeRouteUpdate(async (to, from, next) => {
+  if (!override.value && dirtyFields.value?.length > 0) {
+    unsavedModal.value = true
+  } else {
+    next()
+  }
+})
+
+onBeforeRouteLeave(async (to, from, next) => {
+  if (!override.value && dirtyFields.value?.length > 0) {
+    unsavedModal.value = true
+  } else {
+    next()
+  }
+})
+
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
 })
@@ -179,12 +204,6 @@ const userCanEdit = computed(() => {
 const companyId = computed(() => {
   return userStore.details.companyId
 })
-
-// const goToProject = (pId) => {
-//   let path = `/project/${pId}/${defaultProjectPage.value}`
-//   let routerData = router.resolve({path})
-//   window.open(routerData.href, '_blank')
-// }
 
 const populateDirtyFields = (cfgaId, projectId, value) => {
   let matchingIndex = dirtyFields.value.findIndex((field) => field.customFieldGroupAssignmentId === cfgaId && field.projectId === projectId)
@@ -199,6 +218,11 @@ const populateDirtyFields = (cfgaId, projectId, value) => {
     })
   }
 
+}
+
+const goToProject = () => {
+  override.value = true
+  router.push({path: `/project/${projectId.value}/children`})
 }
 
 const saveChanges = async () => {
