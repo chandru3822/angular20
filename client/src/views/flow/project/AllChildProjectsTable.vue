@@ -29,6 +29,7 @@
               <v-data-table
                   :headers="headers"
                   :items="childProjects"
+                  item-key="id"
                   :fixed-header="true"
                   :options.sync="options"
                   :footer-props="footerProps"
