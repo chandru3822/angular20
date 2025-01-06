@@ -295,7 +295,7 @@
                   {{category}}
                   <v-card flat v-for="p in projects"
                           class="project-button albatross-body-1"
-                          :to="`/project/${p.id}/${defaultProjectPage}`">
+                          :to="p.ownerId === currentUserId || is7oaksAdmin ? `/project/${p.id}/${defaultProjectPage}`: ''">
                     <div class="body-large" >{{ p.projectName }} </div>
                     <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                   </v-card>
@@ -687,6 +687,7 @@ const updateProjectNameSelected = ref(true)
 const is7oaksAdmin  = computed(() => {
   return userStore.isSystemAdmin
 })
+const currentUserId = computed(() => userStore.details.id)
 const userCanEdit  = computed(() => {
   return userStore.userHasFeatureAccessLevel('CONTACTS', 'EDIT')
 })

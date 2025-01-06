@@ -18,6 +18,7 @@ public class Project {
     companyProcessId,
     companyId,
     contactId,
+    ownerId,
     statusTypeId,
     companyProjectStatusTypeId,
     projectStatusTypeId,

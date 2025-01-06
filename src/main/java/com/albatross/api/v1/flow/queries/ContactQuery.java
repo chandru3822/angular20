@@ -89,8 +89,11 @@ select c.id,
                         p.company_project_status_type_id as "companyProjectStatusTypeId",
                         cpst.project_status_type_id as "projectStatusTypeId",
                         cpst.project_status_type as "projectStatusType",
-                        pst.project_status_type as "rootProjectStatusType"
+                        pst.project_status_type as "rootProjectStatusType",
+                        u.id as "ownerId"
                       from flow.project p
+                        inner join flow.user_position up on up.id = p.user_position_id
+                        inner join flow."user" u on up.user_id = u.id
                         inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
                         inner join flow.object_category oc on oc.id = p.object_category_id
                         inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
