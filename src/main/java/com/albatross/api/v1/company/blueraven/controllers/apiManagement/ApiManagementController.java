@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/apiManagement", produces = MediaType.APPLICATION_JSON_VALUE)
-@PreAuthorize("hasRootLevelAccess()")
+@PreAuthorize("hasRootLevelAccess() || hasFeatureAccessLevel('API_MANAGEMENT_ADMIN')")
 @RequiredArgsConstructor
 public class ApiManagementController {
 

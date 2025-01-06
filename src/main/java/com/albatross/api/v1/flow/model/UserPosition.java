@@ -14,4 +14,5 @@ public class UserPosition {
     private String startDate, endDate;
     private Boolean archived, primaryFlag, scheduler, schedulable, useSlotSchedule;
     private List<UserOrgHierarchy> hierarchy;
+    private List<Long> partnerIds;
 }

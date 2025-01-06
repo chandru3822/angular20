@@ -9,6 +9,9 @@ public class ProposalQuery {
           from flow.project_process_step pps
                    inner join flow.project p on pps.project_id = p.id
                    inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+            -- filter by parnter IDs
+                   left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                     pcfv.custom_field_group_assignment_id = 27972
           where p.archived is false
             and pps.process_step_id in (3507, 3546)
             and cpsst.process_step_status_type_id in (1, 2)
@@ -16,6 +19,11 @@ public class ProposalQuery {
                     when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
                                                                      lower(p.project_name) like '%' || lower(trim(:query::text)) || '%')
                     else 1 = 1 end
+            and case
+                when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+                  pcfv.int_array_value && array[ :partnerIds ]::bigint[]
+                else true
+            end
           """;
 
   //language=PostgreSQL
@@ -162,11 +170,19 @@ from project p
           from flow.project_process_step pps
             inner join flow.project p on pps.project_id = p.id
             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+            -- filter by partner IDs
+            left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                              pcfv.custom_field_group_assignment_id = 27972
           where p.archived is false
           and pps.process_step_id in (3507, 3546)
           and cpsst.process_step_status_type_id in (1,2)
           and case when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
            lower(p.project_name) like '%' ||  lower(trim(:query::text))  || '%') else 1=1 end
+          and case
+              when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+                pcfv.int_array_value && array[ :partnerIds ]::bigint[]
+              else true
+          end
     """;
 
   //language=PostgreSQL

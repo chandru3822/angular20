@@ -8,21 +8,22 @@ public class ContactQuery {
     from flow.search_contacts_with_down_line(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
                                                             :isParent::boolean,
                                                             :userId::bigint,
-                                                            :limit::bigint, :offset::bigint)
+                                                            :limit::bigint, :offset::bigint,
+                                                            :partnerIds::bigint[])
     """;
 
   //language=PostgreSQL
   public final static String search = """
     select *
     from flow.search_contacts(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
-                              :isParent::boolean,:limit::bigint, :offset::bigint)
+                              :isParent::boolean,:limit::bigint, :offset::bigint, array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
   public final static String searchByOwner = """
     select *
     from flow.search_contacts_by_user(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
-                                   :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint)
+                                   :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint, array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
@@ -97,6 +98,8 @@ select c.id,
                         left join flow.state s on s.id = cs.state_id
                         left join flow.company_country cc on cc.id = p.company_country_id
                         left join flow.country ctr on ctr.id = cc.country_id
+                        left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                          pcfv.custom_field_group_assignment_id = 27972
                      where p.contact_id = c.id
                      and p.archived is false
                      and (p.parent_id is null OR
@@ -105,6 +108,11 @@ select c.id,
                                 from flow.project parentP
                                 where parentP.id = p.parent_id
                             ))
+                     and case
+                         when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+                           pcfv.int_array_value && array[ :partnerIds ]::bigint[]
+                         else true
+                     end
                  ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
@@ -131,9 +139,16 @@ select c.id,
               left outer join flow.state s on s.id = cs.state_id
              left outer join flow.company_country cc on cc.id = c.company_country_id
              left join flow.country ctr on ctr.id = cc.country_id
+             left join flow.contact_custom_field_value ccfv on ccfv.contact_id = c.id and
+                                                               ccfv.custom_field_group_assignment_id = 27973
     where c.id = :contactId
       and c.company_id = :companyId
-            and c.archived is not true
+      and c.archived is not true
+      and case
+            when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+              ccfv.int_array_value && array[ :partnerIds ]::bigint[]
+            else true
+        end
     """;
 
   //language=PostgreSQL
