@@ -84,7 +84,6 @@ public class ContactLeadService {
 
     Long contactId;
     String leadSourceVal = "";
-
     String state = cl.getState();
     String stateValue =
         state == null
@@ -129,7 +128,6 @@ public class ContactLeadService {
       contactId = sqlCache.updateBySqlReturningId(ContactLeadQuery.insertContactNoState, params, "id").longValue();
     }
     hubspotLead.setContactId(contactId);
-
     ArrayList<CustomFieldValue> cfvList = new ArrayList<>();
     // handles saving 'Lead Source' custom field
     if (cl.getLeadSource() != null) {

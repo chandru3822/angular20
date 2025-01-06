@@ -66,6 +66,7 @@ public class User {
   private List<UserOrgHierarchy> hierarchy;
   @JsonIgnore private String password;
   @JsonIgnore private List<String> notificationTokens;
+  @JsonIgnore private List<Long> partnerIds;
 
   @JsonIgnore
   public boolean isUnlocked() {

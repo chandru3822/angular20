@@ -24,14 +24,14 @@ public class InstallAgreementQuery {
   public final static String getProjects = """
     SELECT *
     FROM brs.get_request_for_installation_agreements(:view_all, :showCancelled, :user_id, :companyId,
-        :query, :limit, :offset)
+        :query, :limit, :offset, array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
   public final static String getProjectsCount = """
     SELECT *
     FROM brs.get_request_for_installation_agreements_count(:view_all, :showCancelled, :user_id, :companyId,
-        :query)
+        :query, array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL

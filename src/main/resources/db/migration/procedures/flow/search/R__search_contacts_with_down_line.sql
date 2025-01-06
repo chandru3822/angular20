@@ -1,9 +1,12 @@
 DROP FUNCTION if exists flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id bigint, p_object_category_ids bigint[],
                                                             p_is_parent boolean, p_userid bigint,
                                                             p_limit bigint, p_offset bigint);
+drop function if exists flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id bigint, p_object_category_ids bigint[],
+                                                            p_is_parent boolean, p_userid bigint,
+                                                            p_limit bigint, p_offset bigint, p_partner_ids bigint[]);
 CREATE OR REPLACE FUNCTION flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id bigint, p_object_category_ids bigint[],
                                                                p_is_parent boolean, p_userid bigint,
-                                                               p_limit bigint, p_offset bigint)
+                                                               p_limit bigint, p_offset bigint, p_partner_ids bigint[] default array[]::bigint[])
   RETURNS TABLE
           (
             id               bigint,
@@ -108,6 +111,8 @@ BEGIN
                    left join flow.state s on s.id = cs.state_id
                    left join flow.user_position up on up.id = c.owner_user_position_id
                    left join flow."user" u on u.id = up.user_id
+                   left join flow.contact_custom_field_value ccfv on ccfv.contact_id = c.id and
+                                                                     ccfv.custom_field_group_assignment_id = 27973
             WHERE c.company_id = ANY (v_company_ids)
               and c.date_created is not null
               and c.archived is not true
@@ -115,6 +120,11 @@ BEGIN
                       when array_length(ARRAY [ p_object_category_ids ]::bigint[], 1) > 0
                           then c.object_category_id = any (p_object_category_ids)
                       else 1 = 1 end
+              and case
+                    when array_length(p_partner_ids, 1) > 0 then
+                      ccfv.int_array_value && p_partner_ids
+                    else true
+                  end
               and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
               and ((c.id::text like '%' || v_clean_name_search_term || '%') or
                    (c.contact_full_name_search like '%' || v_clean_name_search_term || '%') or
@@ -170,6 +180,8 @@ BEGIN
                    left join flow.state s on s.id = cs.state_id
                    left join flow.user_position up on up.id = c.owner_user_position_id
                    left join flow."user" u on u.id = up.user_id
+                   left join flow.contact_custom_field_value ccfv on ccfv.contact_id = c.id and
+                                                                     ccfv.custom_field_group_assignment_id = 27973
             WHERE c.company_id = ANY (v_company_ids)
               and c.date_created is not null
               and c.archived is not true
@@ -177,6 +189,11 @@ BEGIN
                       when array_length(ARRAY [ p_object_category_ids ]::bigint[], 1) > 0
                           then c.object_category_id = any (p_object_category_ids)
                       else 1 = 1 end
+              and case
+                    when array_length(p_partner_ids, 1) > 0 then
+                      ccfv.int_array_value && p_partner_ids
+                    else true
+                  end
               and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
             order by c.date_created desc
             limit p_limit offset p_offset) as limited_contacts;

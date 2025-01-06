@@ -129,7 +129,8 @@ select *
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
                                                             :includeCommissionDetails::boolean,
-                                                            :searchColumn::character varying)
+                                                            :searchColumn::character varying,
+                                                            array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
@@ -143,7 +144,8 @@ select *
                                   :companyProjectStatusTypeId::bigint,
                                   :sortColumn::character varying,
                                   :sortDirection::character varying,
-                                  :searchColumn::character varying)
+                                  :searchColumn::character varying,
+                                  array[ :partnerIds ]::bigint[])
     """;
 
 
@@ -155,7 +157,8 @@ select *
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
                                                             :includeCommissionDetails::boolean,
-                                                            :searchColumn::character varying)
+                                                            :searchColumn::character varying,
+                                                            array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL
@@ -421,9 +424,16 @@ select
       left join flow.country c on c.id = cc.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+      left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                        pcfv.custom_field_group_assignment_id = 27972
       where p.id = :projectId
         and cp.company_id = :companyId
         and p.archived is not true
+        and case
+            when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+              pcfv.int_array_value && array[ :partnerIds ]::bigint[]
+            else true
+        end
     """;
 
   //language=PostgreSQL

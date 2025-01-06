@@ -74,6 +74,7 @@ public class InstallAgreementService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
     params.put("showCancelled", showCancelled);
+    params.put("partnerIds", user.getPartnerIds());
 
     List<InstallAgreementProject> results =
       sqlCache.queryBySql(InstallAgreementQuery.getProjects, params, InstallAgreementProject.class);

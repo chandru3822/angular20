@@ -659,6 +659,13 @@ public class UserService {
         List.class,
         "notificationTokens",
         new JsonCollectionDeserializer<>(notificationTokensRef, objectMapper));
+
+      TypeReference<List<Long>> partnerIdsRef = new TypeReference<>(){};
+      bw.registerCustomEditor(
+        List.class,
+        "partnerIds",
+        new JsonCollectionDeserializer<>(partnerIdsRef, objectMapper)
+      );
     }
   }
 }

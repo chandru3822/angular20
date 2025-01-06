@@ -49,6 +49,7 @@ public class ElectronicDocumentService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
     params.put("showCancelled", showCancelled);
+    params.put("partnerIds", user.getPartnerIds());
 
     List<InstallAgreementProject> results =
         sqlCache.queryBySql(ElectronicDocumentQuery.getProjects, params, InstallAgreementProject.class);

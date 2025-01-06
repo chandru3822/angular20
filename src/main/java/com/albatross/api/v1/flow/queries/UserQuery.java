@@ -504,6 +504,7 @@ public class UserQuery {
                                             up.primary_flag                                as "primaryFlag",
                                             p.use_slot_schedule                            as "useSlotSchedule",
                                             up.archived,
+                                            coalesce(ocfv.int_array_value, array[]::bigint[]) as "partnerIds",
                                             (select json_agg(json_build_object(
                                                                  'orgId', h.org_id,
                                                                  'orgName', h.org_name,
@@ -514,6 +515,8 @@ public class UserQuery {
                                      FROM flow.user_position up
                                             inner join flow.position p on p.id = up.position_id
                                             inner join flow.org o on o.id = up.org_id
+                                            left join flow.organization_custom_field_value ocfv on ocfv.org_id = o.id and
+                                                                                                   ocfv.custom_field_group_assignment_id = 30039
                                      WHERE up.user_id = u.id
                                        and up.archived is not true
                                        and p.company_id = coalesce(u.default_company_id, uc.company_id)
