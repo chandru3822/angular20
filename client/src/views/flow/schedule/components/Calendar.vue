@@ -1420,28 +1420,27 @@ const getAvailability = async (info) => {
     })
     props.companyHolidays.forEach((ch) => {
       if (isHolidayInRange(info.start, info.end, ch.date)) {
-        data.push({
-          allDay: true,
-          backgroundColor: 'rgba(0,0,0,.12)',
-          display:
-            currentView.value === 'resourceTimelineDay'
-              ? 'inverse-background'
-              : 'background',
-          end:
-            currentView.value === 'resourceTimelineDay'
-              ? moment
-                  .utc(new Date(ch.date))
-                  .startOf('d')
-                  .format('YYYY-MM-DDTHH:mm:ssZ')
-              : moment.utc(new Date(ch.date)).startOf('d').format('YYYY-MM-DD'),
-          start:
-            currentView.value === 'resourceTimelineDay'
-              ? moment
-                  .utc(new Date(ch.date))
-                  .startOf('d')
-                  .format('YYYY-MM-DDTHH:mm:ssZ')
-              : moment.utc(new Date(ch.date)).startOf('d').format('YYYY-MM-DD'),
-          title: 'Holiday - '.concat(ch.name)
+        //they want the holidays to start at 6am and end at 6pm on the calendar,
+        // so we calculate based on the utc offset to make sure it displays at these values in the local timezone
+        let holidayStart = 6 - moment().utcOffset()/60
+        let holidayEnd = 18 - moment().utcOffset()/60
+
+        calendarOptions.value.resources.forEach((r) => {
+          data.push({
+            backgroundColor: 'var(--v-primary-lighten9)',
+            textColor: 'var(--v-grey-darken4)',
+            display: 'auto',
+            resourceId: r.id,
+            start: moment
+                .utc(new Date(ch.date))
+                .hour(holidayStart)
+                .format('YYYY-MM-DDTHH:mm:ssZ'),
+            end: moment
+                .utc(new Date(ch.date))
+                .hour(holidayEnd)
+                .format('YYYY-MM-DDTHH:mm:ssZ'),
+            title: 'Holiday - '.concat(ch.name)
+          })
         })
       }
     })
