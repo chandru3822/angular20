@@ -13,7 +13,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_pricing(p_version_id bigint,p_utilit
                   virtual_sales_base_price numeric,
                   max_base_price_per_watt numeric,
                   annual_connection_fee numeric,
-                  redline_utility_adder numeric) AS
+                  redline_utility_adder numeric,
+                  grid_tied_battery_not_allowed boolean) AS
 $BODY$
 declare
 
@@ -33,7 +34,8 @@ BEGIN
          (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 445)') ->> 'value')::numeric as virtual_sales_base_price,
          (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 495)') ->> 'value')::numeric as max_base_price_per_watt,
          (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 307)') ->> 'value')::numeric as annual_connection_fee,
-         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 723)') ->> 'value')::numeric as redline_utility_adder
+         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 723)') ->> 'value')::numeric as redline_utility_adder,
+         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 981)') ->> 'value')::boolean as grid_tied_battery_not_allowed
       from brs.get_proposal_version_value(p_version_id, array [(85, null, p_utility_company_id, null)::ProposalFieldFilter],
                                           'PROPOSAL_PRICING');
 
