@@ -792,4 +792,17 @@ where cfga.custom_field_id = 12855
                   )
           )
     """;
+
+  public static final String filterStorageTypesByState = """
+select distinct jsonb_path_query_first(a, '$.fields[*] ? (@.fieldId == 160).intValue')::integer
+from brs.get_proposal_version_value(:proposalVersionId, null::proposalfieldfilter[], 'PROPOSAL_STORAGE_DETAILS') a
+where jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 160)')
+  and (
+    jsonb_array_length(jsonb_path_query_array(a, '$.fields[*] ? (@.fieldId == 341).intArrayValue[*] ? (@ == $stateId)',
+                                              jsonb_build_object('stateId', :stateId))) >= 1
+        or
+    jsonb_array_length(jsonb_path_query_array(a, '$.fields[*] ? (@.fieldId == 341).intArrayValue[*]')) = 0
+    );
+
+    """;
 }
