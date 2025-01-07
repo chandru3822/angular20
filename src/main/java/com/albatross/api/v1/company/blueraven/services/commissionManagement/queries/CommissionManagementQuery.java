@@ -528,6 +528,26 @@ FROM (SELECT cp.id,
     """;
 
   //language=PostgreSQL
+  public final static String getAvailableAdders = """
+    with cfgas as (
+                             SELECT string_to_array(array_to_string(array_agg(value), ','), ',')::BIGINT[] AS values
+                             FROM flow.company_configuration_value ccv
+                             WHERE code = 'PARTNER_ADDER_CFGA')
+                         select lov.id,lov.name as adder_name
+                         from flow.custom_field_group_assignment cfga
+                                  inner join cfgas c on cfga.id = any(c.values)
+                                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.archived is false
+                                  inner join flow.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.archived is false
+                         where cfga.archived is false
+                         and not exists(select pcpa.id
+                                          from brs.partner_commission_plan_adder pcpa
+                                          where pcpa.adder_id = lov.id
+                                          and pcpa.commission_plan_id = :planId
+                                          and pcpa.archived is false)
+                         order by lov.name
+    """;
+
+  //language=PostgreSQL
   public final static String updatePlanUser = """
     UPDATE brs.commission_plan_user
        SET note = :note,
