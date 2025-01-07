@@ -542,8 +542,7 @@ FROM (SELECT cp.id,
                          and not exists(select pcpa.id
                                           from brs.partner_commission_plan_adder pcpa
                                           where pcpa.adder_id = lov.id
-                                          and pcpa.commission_plan_id = :planId
-                                          and pcpa.archived is false)
+                                          and pcpa.commission_plan_id = :planId)
                          order by lov.name
     """;
 
