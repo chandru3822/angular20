@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalToolQuery;
+import com.albatross.api.v1.company.blueraven.models.Proposal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -304,12 +305,11 @@ public class ProposalVersionService {
     return sqlCache.getBySql(ProposalToolQuery.getKwhProposalValueForUtility, params, new SingleColumnRowMapper<>(String.class));
   }
 
-  //  TODO: cacheable
-  public List<Long> getProposalValuesFilterIds(@NonNull Long versionId, ProposalValueFilter filter) {
+  public List<Long> getProposalValuesFilterIds(@NonNull Proposal proposal, ProposalValueFilter filter) {
     try {
 
       final ProposalVersion proposalVersion =
-        getProposalVersion(versionId)
+        getProposalVersion(proposal.getProposalVersionId())
           .filter(pv -> !ProposalVersionStatus.DRAFT.equals(pv.getStatus()))
           .orElseThrow(
             () ->
@@ -319,9 +319,14 @@ public class ProposalVersionService {
       varsObject.setType("jsonb");
       varsObject.setValue(objectMapper.writeValueAsString(filter));
 
+      Map<String, Object> params = Map.of(
+        "versionId", proposalVersion.getId(),
+        "stateId", proposal.getStateId(),
+        "vars", varsObject);
+
       return sqlCache.queryBySql(
           ProposalToolQuery.findFilterableValues,
-          Map.of("versionId", proposalVersion.getId(), "vars", varsObject),
+          params,
           new SingleColumnRowMapper<>(Long.class))
         .stream()
         .filter(Objects::nonNull)

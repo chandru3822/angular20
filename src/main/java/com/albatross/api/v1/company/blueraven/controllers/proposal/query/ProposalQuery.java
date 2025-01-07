@@ -802,7 +802,6 @@ where jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 160)')
                                               jsonb_build_object('stateId', :stateId))) >= 1
         or
     jsonb_array_length(jsonb_path_query_array(a, '$.fields[*] ? (@.fieldId == 341).intArrayValue[*]')) = 0
-    );
-
+    )
     """;
 }

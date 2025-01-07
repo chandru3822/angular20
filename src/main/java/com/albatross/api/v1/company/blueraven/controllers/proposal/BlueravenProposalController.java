@@ -340,8 +340,8 @@ public class BlueravenProposalController {
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_EDIT', 'PROPOSALS_MANAGE', 'PROPOSALS_ADMIN')")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
-    final Long proposalVersionId = proposalService.getProposalVersionByProposalId(proposalId).orElseThrow(NotFoundException::new);
-    final List<Long> filterIds = proposalVersionService.getProposalValuesFilterIds(proposalVersionId, filter);
+    final Proposal proposal = proposalService.getSimpleProposal(proposalId).orElseThrow(NotFoundException::new);
+    final List<Long> filterIds = proposalVersionService.getProposalValuesFilterIds(proposal, filter);
     return new ProposalFilterResponse(filterIds);
   }
 
