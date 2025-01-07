@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class SrecDTO {
   @JsonProperty("form_name")
@@ -118,13 +120,13 @@ public class SrecDTO {
   private String customerAddress1;
 
   @JsonProperty("expected_rec_value")
-  private String expectedRecValue;
+  private BigDecimal expectedRecValue;
 
   @JsonProperty("project_size_kw_ac")
-  private String projectSizeKwAc;
+  private BigDecimal projectSizeKwAc;
 
   @JsonProperty("project_size_kw_dc")
-  private String projectSizeKwDc;
+  private BigDecimal projectSizeKwDc;
 
   @JsonProperty("seller_address_zip")
   private String sellerAddressZip;
@@ -232,7 +234,7 @@ public class SrecDTO {
   private String panelWarrantyIncluded;
 
   @JsonProperty("gross_electric_production")
-  private String grossElectricProduction;
+  private BigDecimal grossElectricProduction;
 
   @JsonProperty("install_warranty_included")
   private String installWarrantyIncluded;
@@ -255,6 +257,30 @@ public class SrecDTO {
   @JsonProperty("muni_coop_name")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String muniCOOPName;
+
+  @JsonProperty("expected_annual_electricity_usage")
+  private BigDecimal expectedAnnualElectricityUsage;
+
+  @JsonProperty("electric_service_billing_type")
+  private String electricServiceBillingType;
+
+  @JsonProperty("include_battery")
+  private String includeBattery;
+
+  @JsonProperty("battery_size")
+  private BigDecimal batterySize;
+
+  @JsonProperty("energy_storage_rebate")
+  private String energyStorageRebate;
+
+  @JsonProperty("energy_storage_rebate_recipient")
+  private String energyStorageRebateRecipient;
+
+  @JsonProperty("rebate_rate")
+  private Integer rebateRate;
+
+  @JsonProperty("netmetering_excess_generation_credit")
+  private String netmeteringExcessGenerationCredit;
 
   public SrecDTO() {
     this.formType = "purchase_form";

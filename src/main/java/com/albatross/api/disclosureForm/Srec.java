@@ -33,5 +33,10 @@ public class Srec {
     loanAmount,
     optionalDownPayment,
     requiredDownPayment,
-    srecValue;
+    srecValue,
+    storageSizeKwhPerBattery,
+    expectedAnnualElectricityUsage;
+
+  private Boolean
+    hasBattery;
 }
