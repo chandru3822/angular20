@@ -55,6 +55,7 @@ SELECT     p.id,
           inner join flow.company_state cs on p.company_state_id = cs.id
           inner join flow.state s on cs.state_id = s.id
           left join flow.user_position up on up.id = p.user_position_id
+          inner join brs.project_details pd on p.id = pd.project_id
     WHERE  st_makepoint(p.longitude, p.latitude)
            && ST_MakeEnvelope (
                :upperBoundLongitude, :upperBoundLatitude,
@@ -67,7 +68,8 @@ SELECT     p.id,
       end
       and p.archived is false
      and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::bigint[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::bigint[] ) else 1=1 end
-     and case when :searchTypeId::bigint = 2 then up.user_id = :currentUserId::bigint else 1=1 end
+     and case when :searchTypeId::bigint = 2 then up.user_id = :currentUserId::bigint else up.user_id = :currentUserId::bigint or  pd.substantial_completion_date is not null
+     end
     """;
 
   //language=PostgreSQL
