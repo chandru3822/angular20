@@ -185,10 +185,20 @@
                       :custom-field-groups="sortedCustomFieldGroups"
                       :proposal-id="proposalId"
                     />
-                    <div v-if="field.customFieldGroupAssignmentId === 1312 && field.booleanValue && auroraProjectId && auroraDesignId"
-                       class="mb-4 mt-n4"
-                    ><a :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
+<!--                    Only show the Aurora Storage options link for the Storage Type custom field and only if the selected value has "Grid-tied" in the name-->
+                    <div v-if="field.customFieldGroupAssignmentId === 200 && field.listOfValues.find(v => v.id === field.intValue)?.name.search(/\bgrid[-\s]+tied\b/i) >= 0 && auroraProjectId && auroraDesignId"
+                         class="mb-4 mt-n4"
+                    >
+                      <a :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
                         target="_blank">Aurora Storage Options</a>
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on }">
+                          <span v-on="on">
+                            <v-icon small>mdi-information</v-icon>
+                          </span>
+                        </template>
+                        <span> Aurora price calculator for grid-tied batteries</span>
+                      </v-tooltip>
                     </div>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
