@@ -190,7 +190,7 @@
                          class="mb-4 mt-n4"
                     >
                       <a :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
-                        target="_blank">Aurora Storage Options</a>
+                        target="_blank" class="pr-1"><v-icon small color="primary" class="pr-1">mdi-open-in-new</v-icon>Aurora Storage Options</a>
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on }">
                           <span v-on="on">
