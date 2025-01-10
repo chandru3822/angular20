@@ -632,7 +632,7 @@ const vuetify = vueInstance.$vuetify
 
 const editState = ref(false)
 //keeping this an array cuz they keep changing it
-const addressNoUpdateModalObjectCategoryIds = [5,6] //community and lot projects
+const addressNoUpdateModalObjectCategoryIds = [5,6,12,10] //community and lot projects
 const tempProject = ref({})
 const updateEventKey = ref(0)
 const updatePpsKey = ref(0)
