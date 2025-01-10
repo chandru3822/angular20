@@ -48,6 +48,7 @@ SELECT     p.id,
            p.city,
            s.abbreviation as state,
            p.street1,
+           pd.closer_user_id,
            p.postal_code
     FROM   flow.project p
           inner join flow.company_process cp on cp.id = p.company_process_id

@@ -118,13 +118,14 @@ BEGIN
                         date_modified = now()
                     where id = v_existing_id;
                 elsif v_data_type_id = 7 then
-                    update flow.project_custom_field_value  set int_array_value = array(
-                            select unnest(v_existing_value)
+                    update flow.project_custom_field_value
+                        set int_array_value = array(
+                            select unnest(v_existing_value::bigint[])
                             union
-                            select unnest(p_value_to_save)
+                            select unnest(p_value_to_save::bigint[])
                         ),
-                                                                modified_by_id = p_user_id,
-                                                                date_modified = now()
+                        modified_by_id = p_user_id,
+                        date_modified = now()
                     where id = v_existing_id;
                 elsif v_data_type_id = 8 or v_data_type_id = 9 then
                     return false;
