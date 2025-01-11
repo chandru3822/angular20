@@ -72,6 +72,14 @@ public class ApiManagementService {
         sqlCache.updateBySql(ApiManagementQuery.updateKey, params);
     }
 
+    public void deleteKey(Long keyId) {
+      var user = securityService.getCurrentUser();
+      sqlCache.updateBySql(ApiManagementQuery.deleteKey, Map.of(
+        "id", keyId,
+        "userId", user.trueUserId()
+        ));
+    }
+
     public static class PartnerMapper<T> extends BeanPropertyRowMapper<T> {
         private final ObjectMapper om;
 

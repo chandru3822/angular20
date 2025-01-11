@@ -76,4 +76,14 @@ public record ApiManagementQuery() {
             modified_by = :userId
         where id = :id
     """;
+
+  //language=PostgreSQL
+  public final static String deleteKey = """
+        update api.api_key
+        set
+            valid_until = now(),
+            date_modified = now(),
+            modified_by = :userId
+        where id = :id
+    """;
 }
