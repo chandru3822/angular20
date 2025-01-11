@@ -225,6 +225,10 @@ const items = computed(() => {
       title: 'Work Queue',
       show: hasSettingsAccess.value || userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
     }, {
+      path: '/settings/apiManagement',
+      title: 'API Management',
+      show: userStore.userHasFeatureAccessLevel('API_MANAGEMENT', 'ADMIN')
+    }, {
       header: 'Processes',
       show: hasSettingsAccess.value
     }, {

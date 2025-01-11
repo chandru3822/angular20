@@ -89,10 +89,12 @@ public class BlueravenProposalService {
   private final AuroraProxy auroraProxy;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
+    var user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
+    params.put("partnerIds", user.getPartnerIds());
 
     List<ProposalProject> results =
       sqlCache.queryBySql(ProposalQuery.getProjects, params, ProposalProject.class);
@@ -146,17 +148,17 @@ public class BlueravenProposalService {
       }
 
       //update the energy usage
-        updateEnergyUsage(ppsId, auroraProjectId, null, null);
+      updateEnergyUsage(ppsId, auroraProjectId, null, null);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public Map<String, String> getAuroraProjectId(Long projectId, Long ppsId){
-        Map<String, Object> params = new HashMap<>();
-        params.put("projectId", projectId);
-        params.put("projectProcessStepId", ppsId);
-        return sqlCache.queryForMapBySql(ProposalQuery.getAuroraProjectAndDesignIds, params);
+  public Map<String, String> getAuroraProjectId(Long projectId, Long ppsId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("projectProcessStepId", ppsId);
+    return sqlCache.queryForMapBySql(ProposalQuery.getAuroraProjectAndDesignIds, params);
   }
 
   public Resource getResourceFromUrl(String url) {
@@ -322,14 +324,14 @@ public class BlueravenProposalService {
     Long calcMethodValue
   ) {
     Optional<String> auroraUserId = getAuroraUserId();
-      AuroraConsumptionProfileDTO consumptionProfile;
-    if(monthlyInputs != null && monthlyInputs.size() > 0) {
-        //update the monthly inputs on Aurora
-        consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
+    AuroraConsumptionProfileDTO consumptionProfile;
+    if (monthlyInputs != null && monthlyInputs.size() > 0) {
+      //update the monthly inputs on Aurora
+      consumptionProfile = auroraProxy.updateAuroraDesignWithMonthlyEnergyUsage(auroraUserId.get(), auroraProjectId, monthlyInputs);
     } else {
-        consumptionProfile = auroraProxy.getConsumptionProfile(auroraUserId.get(), auroraProjectId);
+      consumptionProfile = auroraProxy.getConsumptionProfile(auroraUserId.get(), auroraProjectId);
     }
-    if ((calcMethodValue != null && calcMethodValue.equals(20851L) )|| consumptionProfile == null) {
+    if ((calcMethodValue != null && calcMethodValue.equals(20851L)) || consumptionProfile == null) {
       //calculate by square footage then we're done b/c we've already updated the annual energy
       return;
     }
@@ -474,11 +476,11 @@ public class BlueravenProposalService {
     final Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
 
     //per lowry don't show unapproved zip message if it is a New Home project
-    if(project.getObjectCategoryId() != 6) {
-        final ProposalPostalCodeStatus proposalPostalCodeStatus = getPostalCodeApprovalStatus(project.getId());
-        if (!proposalPostalCodeStatus.isApproved()) {
-          throw new UnapprovedPostalCodeProposalException();
-        }
+    if (project.getObjectCategoryId() != 6) {
+      final ProposalPostalCodeStatus proposalPostalCodeStatus = getPostalCodeApprovalStatus(project.getId());
+      if (!proposalPostalCodeStatus.isApproved()) {
+        throw new UnapprovedPostalCodeProposalException();
+      }
     }
 
     // create new "create proposal design" step (active, cancel others)
@@ -564,7 +566,7 @@ public class BlueravenProposalService {
   private static final Long brsPanelBrandFieldId = 138L;
   private static final Long brsPricePerWattFieldId = 724L;
   private static final Long brsOtherMaxDiscount = 135L;
-
+  private static final Long brsStorageTypeFieldId = 160L;
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId, Long userId) {
     Optional<Long> userOrgId = findUserOrgId(userId);
@@ -596,7 +598,7 @@ public class BlueravenProposalService {
           if (financialProductFieldId.equals(cfv.getCustomFieldId())) {
             // BRS needs to filter out financial products by state
             filterCustomFieldValues(cfv,
-              excludeValuesByCustomFieldId(proposal.getProposalVersionId(), cfv, excludedStateCustomFieldId, proposal.getStateId(), "PROPOSAL_FINANCE_PRODUCTS"), true);
+              excludeValuesByCustomFieldId(proposalVersionId, cfv, excludedStateCustomFieldId, proposal.getStateId(), "PROPOSAL_FINANCE_PRODUCTS"), true);
 
             proposalDesignStepValues.stream()
               .filter(p -> p.getFieldId().equals(flowPanelBrandFieldId))
@@ -604,6 +606,11 @@ public class BlueravenProposalService {
               .ifPresent(proposalStepCustomFieldValue ->
                 filterCustomFieldValues(cfv,
                   getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), brsPanelBrandFieldId, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), "PROPOSAL_FINANCE_PRODUCTS"), true));
+          }
+
+          //BRS needs to filter out 'storage type' by state
+          if (brsStorageTypeFieldId.equals(cfv.getCustomFieldId()) && proposal.getStateId() != null) {
+            filterCustomFieldValues(cfv, filterStorageTypesByState(proposalVersionId, proposal.getStateId()), true);
           }
 
           //BRS needs to filter out dealers by associated org
@@ -684,6 +691,14 @@ public class BlueravenProposalService {
     params.put("stateId", stateId);
 
     return sqlCache.queryBySql(ProposalQuery.filterRebatesByStateAndUtility, params, new SingleColumnRowMapper<>(Long.class));
+  }
+
+  private List<Long> filterStorageTypesByState(@NonNull Long proposalVersionId, Long stateId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalVersionId", proposalVersionId);
+    params.put("stateId", stateId);
+
+    return sqlCache.queryBySql(ProposalQuery.filterStorageTypesByState, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   private List<Long> getProposalVersionValues(Long proposalVersionId, Long targetCustomFieldId, Long customFieldId, Long intValue, String objectCode) {
@@ -1042,19 +1057,19 @@ public class BlueravenProposalService {
   }
 
   public static class ProposalProjectDetailsMapper<T> extends BeanPropertyRowMapper<T> {
-      private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-      public ProposalProjectDetailsMapper(Class<T> mappedClass, ObjectMapper objectMapper){
-          super(mappedClass);
-          this.objectMapper = objectMapper;
-      }
+    public ProposalProjectDetailsMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
 
-      @Override
-      protected void initBeanWrapper(BeanWrapper bw) {
-          TypeReference<List<CustomFieldValue>> cfvRef = new TypeReference<>() {
-          };
-          bw.registerCustomEditor(
-                  List.class, "availableModules", new JsonCollectionDeserializer(cfvRef, objectMapper));
-      }
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomFieldValue>> cfvRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+        List.class, "availableModules", new JsonCollectionDeserializer(cfvRef, objectMapper));
+    }
   }
 }

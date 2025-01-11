@@ -9,6 +9,9 @@ public class ProposalQuery {
           from flow.project_process_step pps
                    inner join flow.project p on pps.project_id = p.id
                    inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+            -- filter by parnter IDs
+                   left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                     pcfv.custom_field_group_assignment_id = 27972
           where p.archived is false
             and pps.process_step_id in (3507, 3546)
             and cpsst.process_step_status_type_id in (1, 2)
@@ -16,6 +19,11 @@ public class ProposalQuery {
                     when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
                                                                      lower(p.project_name) like '%' || lower(trim(:query::text)) || '%')
                     else 1 = 1 end
+            and case
+                when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+                  pcfv.int_array_value && array[ :partnerIds ]::bigint[]
+                else true
+            end
           """;
 
   //language=PostgreSQL
@@ -162,11 +170,19 @@ from project p
           from flow.project_process_step pps
             inner join flow.project p on pps.project_id = p.id
             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+            -- filter by partner IDs
+            left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                              pcfv.custom_field_group_assignment_id = 27972
           where p.archived is false
           and pps.process_step_id in (3507, 3546)
           and cpsst.process_step_status_type_id in (1,2)
           and case when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
            lower(p.project_name) like '%' ||  lower(trim(:query::text))  || '%') else 1=1 end
+          and case
+              when array_length(array[ :partnerIds ]::bigint[], 1) > 0 then
+                pcfv.int_array_value && array[ :partnerIds ]::bigint[]
+              else true
+          end
     """;
 
   //language=PostgreSQL
@@ -775,5 +791,17 @@ where cfga.custom_field_id = 12855
                                             jsonb_build_object('stateId', :stateId))
                   )
           )
+    """;
+
+  public static final String filterStorageTypesByState = """
+select distinct jsonb_path_query_first(a, '$.fields[*] ? (@.fieldId == 160).intValue')::integer
+from brs.get_proposal_version_value(:proposalVersionId, null::proposalfieldfilter[], 'PROPOSAL_STORAGE_DETAILS') a
+where jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 160)')
+  and (
+    jsonb_array_length(jsonb_path_query_array(a, '$.fields[*] ? (@.fieldId == 341).intArrayValue[*] ? (@ == $stateId)',
+                                              jsonb_build_object('stateId', :stateId))) >= 1
+        or
+    jsonb_array_length(jsonb_path_query_array(a, '$.fields[*] ? (@.fieldId == 341).intArrayValue[*]')) = 0
+    )
     """;
 }

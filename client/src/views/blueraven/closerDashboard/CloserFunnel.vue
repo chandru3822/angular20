@@ -121,6 +121,7 @@
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
                     style="padding: 0px"
+                    link
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
                       <v-menu open-on-hover offset-x>
@@ -223,6 +224,7 @@
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
                     style="padding: 0px"
+                    link
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
                       <v-menu open-on-hover location="end" :offset-x="true">
@@ -323,6 +325,7 @@
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
                     style="padding: 0px"
+                    link
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
                       <v-menu open-on-hover location="end">

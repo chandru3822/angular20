@@ -341,39 +341,54 @@ where a.int_value not in (select t.int_value from t where t.is_match is false)
 
   //language=PostgreSQL
   public final static String findFilterableValues = """
-      with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
-                                                                                                         proposal_group_uuid,
-                                                                                                         value,
-                                                                                                         field_id
-                            from brs.proposal_version_custom_field_value_vw
-                            where proposal_version_id <= :versionId
-                              and proposal_group_uuid not in (select distinct proposal_group_uuid
-                                                              from brs.proposal_version_custom_field_group
-                                                              where archived is not null
-                                                                and proposal_version_id <= :versionId)
-                            order by proposal_group_uuid, custom_field_group_assignment_id, date_modified desc),
-         grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
-                                                    'fields',
-                                                    array_to_json(array_agg(jsonb_strip_nulls(
-                                                                jsonb_build_object('fieldId', vv.field_id,
-                                                                                   'flowCustomFieldId', cf.flow_custom_field_id) || vv.value)))
-                                     ) as row
-                          from version_values vv
-                                   inner join brs.custom_field cf on cf.id = vv.field_id
-                          group by proposal_group_uuid)
-    select jsonb_array_elements(jsonb_path_query(row,
-                                                 '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFlowCustomFieldId)',
-                                                 :vars) -> 'intArrayValue')::bigint as ids
-    from grouped_rows
-    where jsonb_path_exists(row,
-                            '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)',
-                            :vars)
-    union
-    select (jsonb_path_query(row,
-                              '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFlowCustomFieldId)',
-                               :vars) -> 'intValue')::bigint as ids
-    from grouped_rows
-    where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)', :vars)
+    with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
+                                                                                                                          proposal_group_uuid,
+                                                                                                                          value,
+                                                                                                                          field_id
+                                             from brs.proposal_version_custom_field_value_vw
+                                             where proposal_version_id <= :versionId
+                                               and proposal_group_uuid not in (select distinct proposal_group_uuid
+                                                                               from brs.proposal_version_custom_field_group
+                                                                               where archived is not null
+                                                                                 and proposal_version_id <= :versionId)
+                                             order by proposal_group_uuid, custom_field_group_assignment_id, date_modified desc),
+                          grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
+                                                                     'fields',
+                                                                     array_to_json(array_agg(jsonb_strip_nulls(
+                                                                             jsonb_build_object('fieldId', vv.field_id,
+                                                                                                'flowCustomFieldId',
+                                                                                                cf.flow_custom_field_id) || vv.value)))
+                                                  ) as row
+                                           from version_values vv
+                                                    inner join brs.custom_field cf on cf.id = vv.field_id
+                                           group by proposal_group_uuid),
+                          filtered_rows as (select *
+                                            from grouped_rows
+                                            where case
+                                                      when :stateId::int is not null
+                                                          and
+                                                           jsonb_path_exists(
+                                                                   row,
+                                                                   '$.fields[*] ? (@.fieldId == 341)')
+                                                          then jsonb_array_length(
+                                                                       jsonb_path_query_array(
+                                                                               row,
+                                                                               '$.fields[*] ? (@.fieldId == 341).intArrayValue[*] ? (@ == $stateId)',
+                                                                               jsonb_build_object('stateId', :stateId))) >= 1
+                                                      else 1 = 1 end)
+                     select jsonb_array_elements(jsonb_path_query(row,
+                                                                  '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFlowCustomFieldId)',
+                                                                  :vars) -> 'intArrayValue')::bigint as ids
+                     from filtered_rows
+                     where jsonb_path_exists(row,
+                                             '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)',
+                                             :vars)
+                     union
+                     select (jsonb_path_query(row,
+                                              '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFlowCustomFieldId)',
+                                              :vars) -> 'intValue')::bigint as ids
+                     from filtered_rows
+                     where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)', :vars)
     """;
 
   public static final String findFilterableValuesByFieldIdAndValue = """

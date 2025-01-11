@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProjectDensityResult {
 
-  private Long id;
+  private Long id, closerUserId;
   private String projectName, projectStatusType, city, state, street1, postalCode;
   private Double latitude, longitude;
 }

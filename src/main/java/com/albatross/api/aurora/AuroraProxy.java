@@ -109,8 +109,8 @@ public class AuroraProxy {
                     .get()
                     .uri(uriBuilder -> uriBuilder
                     .path("/tenants/%s/users".formatted(tenantId))
-                    .queryParam("email[]", personalEmail, userNameEmail)
-                    .build())
+                    .queryParam("email[]", "{personalEmail}", "{userNameEmail}")
+                    .build(personalEmail, userNameEmail))
                     .header("Authorization", "Bearer " + tokenV2022)
                     .retrieve()
                     .toEntity(AuroraUserListDTO.class)

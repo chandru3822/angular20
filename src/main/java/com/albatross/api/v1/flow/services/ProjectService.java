@@ -7,7 +7,7 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
-import com.albatross.api.v1.flow.controllers.ProjectController;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
@@ -26,7 +26,6 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -37,6 +36,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -176,6 +176,7 @@ public class ProjectService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
     params.put("searchColumn", searchColumn);
+    params.put("partnerIds", user.getPartnerIds());
 
     String searchSql = ProjectQuery.searchByOwner;
     if (viewCustom) {
@@ -320,7 +321,13 @@ public class ProjectService {
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 
-    Map<String, Object> params = Map.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of(
+      "projectId", projectId,
+      "companyId", user.getCompanyId(),
+      "isParent", user.isParentCompany(),
+      "parentCompanyId", user.getHighestParentCompanyId(),
+      "partnerIds", (user.getPartnerIds() == null) ? List.of() : user.getPartnerIds()
+    );
     // for now I limit the # of child projects returned to 3. the frontend only shows 3 and if they want to see more they load via a different query
     // there can be hundreds of child projects
     Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
@@ -509,6 +516,7 @@ public class ProjectService {
     return objectCategoryId;
   }
 
+  @Transactional
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress, Long ownerUserPositionId) throws Exception {
     User user = securityService.getCurrentUser();
 
@@ -558,12 +566,39 @@ public class ProjectService {
       }
 
       Long id = sqlCache.updateBySqlReturningId(ProjectQuery.insert, params, "id").longValue();
+      addPartnerIds(id);
+
       return getProject(id);
     } else {
       throw new ResponseStatusException(
         HttpStatus.BAD_REQUEST,
         "Contact ID and Process ID are required to add a project.",
         new Exception());
+    }
+  }
+
+
+  // Adds project partner IDs belonging to orgs of the user's positions.
+  // This is here instead of the cfvService due to circular dependencies.
+  private void addPartnerIds(Long projectId) throws SQLException {
+    var user = securityService.getCurrentUser();
+    if (!user.getPartnerIds().isEmpty()) {
+      var params = new HashMap<String, Object>();
+      //default values
+      params.put("dateValue", null);
+      params.put("textValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", null);
+      params.put("richTextValue", null);
+      params.put("jsonValue", null);
+
+      params.put("intArrayValue", sqlArrayService.createSqlArrayOfType("int", user.getPartnerIds()));
+      params.put("customFieldGroupAssignmentId", 27972L);
+      params.put("userId", user.trueUserId());
+      params.put("sourceId", projectId);
+      sqlCache.updateBySql(ObjectType.PROJECT.upsertCustomFieldValueQuery, params);
     }
   }
 

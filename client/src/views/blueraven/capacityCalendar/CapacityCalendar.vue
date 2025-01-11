@@ -137,8 +137,8 @@ const switchCalendarEditMode = () => {
 }
 
 const getTimeSlotLabel = (date) => {
-  let dateText = `${moment(date, "hh:mm").format("h:mma").toString()}`
-  const endDate = moment(date, "hh:mm").add(30, 'minutes').format("h:mma").toString()
+  let dateText = `${moment(date).format("h:mma").toString()}`
+  const endDate = moment(date).add(30, 'minutes').format("h:mma").toString()
   dateText += `-${endDate}`
   return dateText
 }

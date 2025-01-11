@@ -58,6 +58,8 @@ public class DisclosureFormService {
 
         boolean successfullySent = false;
         boolean isFinanced = !srec.getLoanType().toLowerCase().contains("cash");
+        String utilityCompanyName = srec.getUtilityCompanyName();
+        boolean hasBattery = srec.getHasBattery();
 
         var body = new SrecDTO();
         body.setFormName(srec.getProposalNumber() + " " + srec.getContactName() + " " + srec.getProjectId());
@@ -69,10 +71,10 @@ public class DisclosureFormService {
         body.setCustomerAddressCity(srec.getProjectCity());
         body.setCustomerAddressState(srec.getProjectStateAbbreviation());
 
-        body.setElectricUtility(srec.getUtilityCompanyName());
+        body.setElectricUtility(utilityCompanyName);
 
         //Naperville users qualify as municipal utility but 3rd part is picky and needs this exact naming
-        if (body.getElectricUtility().equalsIgnoreCase("Naperville Electric Utility")) {
+        if (utilityCompanyName.equalsIgnoreCase("Naperville Electric Utility")) {
             body.setElectricUtility("Municipal Utility");
             body.setMuniCOOPName("City of Naperville");
         }
@@ -83,14 +85,14 @@ public class DisclosureFormService {
         var systemSizeKw = new BigDecimal(srec.getSystemSize()).divide(new BigDecimal(1000));
         var systemSizeAcKw = new BigDecimal(srec.getSystemSizeAc()).divide(new BigDecimal(1000));
 
-        body.setProjectSizeKwDc(systemSizeKw.toString());
-        body.setProjectSizeKwAc(systemSizeAcKw.toString());
-        body.setGrossElectricProduction(srec.getYearOneKwhOutput());
+        body.setProjectSizeKwDc(new BigDecimal(systemSizeKw.toString()));
+        body.setProjectSizeKwAc(new BigDecimal(systemSizeAcKw.toString()));
+        body.setGrossElectricProduction(new BigDecimal(srec.getYearOneKwhOutput()));
 
         var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
 
         // based on feedback from IL Shrines (greenhouse), the rec customer payment should always be zero since BR discounts the customer's systems upfront
-        body.setExpectedRecValue(srecValue.toString());
+        body.setExpectedRecValue(srecValue);
         body.setRecCustomerPayment("0");
 
         if (isFinanced) {
@@ -106,6 +108,31 @@ public class DisclosureFormService {
             body.setInstallationOwed(halfTotalCost.toString());
             body.setInitialDepositOwed("0");
         }
+
+        body.setExpectedAnnualElectricityUsage(srec.getExpectedAnnualElectricityUsage());
+        body.setNetmeteringExcessGenerationCredit("");
+
+        if (hasBattery) {
+          body.setElectricServiceBillingType("hourly");
+          body.setIncludeBattery("Yes");
+          body.setBatterySize(srec.getStorageSizeKwhPerBattery());
+          if (utilityCompanyName.equalsIgnoreCase("ComEd") ||
+            utilityCompanyName.equalsIgnoreCase("AmerenIllinois")) {
+            body.setEnergyStorageRebate("Yes");
+            body.setEnergyStorageRebateRecipient("Vendor/designee");
+          }
+        }
+        else {
+          body.setIncludeBattery("No");
+          body.setElectricServiceBillingType("basic utility service");
+        }
+
+      if (systemSizeKw.compareTo(new BigDecimal("100")) < 0) {
+        body.setRebateRate(300);
+      }
+      else {
+        body.setRebateRate(250);
+      }
 
         try {
             WebClient client = WebClient.create(srecHost);

@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/apiManagement", produces = MediaType.APPLICATION_JSON_VALUE)
-@PreAuthorize("hasRootLevelAccess()")
+@PreAuthorize("hasRootLevelAccess() || hasFeatureAccessLevel('API_MANAGEMENT_ADMIN')")
 @RequiredArgsConstructor
 public class ApiManagementController {
 
@@ -37,6 +37,7 @@ public class ApiManagementController {
 
     @PostMapping("/partner/{partnerId}/key")
     public ResponseEntity<Key> addKey(@RequestBody Key key) {
+        key.setIsAdmin(false);
         return new ResponseEntity<>(apiService.addKey(key), HttpStatus.OK);
     }
 
@@ -44,5 +45,11 @@ public class ApiManagementController {
     public ResponseEntity<Void> updateKey(@RequestBody Key key) {
         apiService.updateKey(key);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/partner/{partnerId}/key/{keyId}")
+    public ResponseEntity<Void> deleteKey(@PathVariable Long keyId) {
+      apiService.deleteKey(keyId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

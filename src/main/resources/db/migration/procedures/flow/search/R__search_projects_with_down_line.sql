@@ -13,6 +13,15 @@ drop function if exists flow.search_projects_with_down_line(p_searchterm charact
                                                             p_sort_direction character varying,
                                                             p_query_commissions boolean,
                                                             p_search_column character varying);
+drop function if exists flow.search_projects_with_down_line(p_searchterm character varying, p_company_id bigint,
+                                                            p_user_id bigint, p_is_parent boolean, p_limit bigint,
+                                                            p_offset bigint,
+                                                            p_company_project_status_type_id bigint,
+                                                            p_sort_column character varying,
+                                                            p_sort_direction character varying,
+                                                            p_query_commissions boolean,
+                                                            p_search_column character varying,
+                                                            p_partner_ids bigint[]);
 
 create or replace function flow.search_projects_with_down_line(p_searchterm character varying, p_company_id bigint,
                                                                p_user_id bigint, p_is_parent boolean, p_limit bigint,
@@ -21,7 +30,8 @@ create or replace function flow.search_projects_with_down_line(p_searchterm char
                                                                p_sort_column character varying DEFAULT NULL::character varying,
                                                                p_sort_direction character varying DEFAULT NULL::character varying,
                                                                p_query_commissions boolean default false,
-                                                               p_search_column character varying DEFAULT NULL::character varying)
+                                                               p_search_column character varying DEFAULT NULL::character varying,
+                                                               p_partner_ids bigint[] default array[]::bigint[])
   returns TABLE
           (
             id                             bigint,
@@ -146,6 +156,8 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                           pcfv.custom_field_group_assignment_id = 27972
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and case
@@ -173,7 +185,12 @@ BEGIN
                     and case
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
-                          else 1 = 1 end) as foo
+                          else 1 = 1 end
+                  and case
+                        when array_length(p_partner_ids, 1) > 0 then
+                          pcfv.int_array_value && p_partner_ids
+                        else true
+                  end) as foo
             ORDER BY foo.date_created desc
             limit p_limit
               offset p_offset
@@ -234,6 +251,8 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                           pcfv.custom_field_group_assignment_id = 27972
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and case when p_query_commissions is false then
@@ -248,6 +267,11 @@ BEGIN
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
                           else 1 = 1 end
+                  and case
+                        when array_length(p_partner_ids, 1) > 0 then
+                          pcfv.int_array_value && p_partner_ids
+                        else true
+                      end
                   union
                   select p.id::bigint,
                          p.project_name,
@@ -278,6 +302,8 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                           pcfv.custom_field_group_assignment_id = 27972
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and trim(lower(translate(cpst.project_status_type, '*.,%', ''))) like '%' || v_clean_status_term || '%'
@@ -285,6 +311,11 @@ BEGIN
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
                           else 1 = 1 end
+                  and case
+                        when array_length(p_partner_ids, 1) > 0 then
+                          pcfv.int_array_value && p_partner_ids
+                        else true
+                      end
                   union
                   select p.id::bigint,
                          p.project_name,
@@ -315,6 +346,8 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                           pcfv.custom_field_group_assignment_id = 27972
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and
@@ -323,6 +356,11 @@ BEGIN
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
                           else 1 = 1 end
+                  and case
+                        when array_length(p_partner_ids, 1) > 0 then
+                          pcfv.int_array_value && p_partner_ids
+                        else true
+                      end
                   union
                   select p.id::bigint,
                          p.project_name,
@@ -353,6 +391,8 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                           pcfv.custom_field_group_assignment_id = 27972
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and case when p_query_commissions is false then
@@ -365,7 +405,12 @@ BEGIN
                     and case
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
-                          else 1 = 1 end) as foo
+                          else 1 = 1 end
+                  and case
+                        when array_length(p_partner_ids, 1) > 0 then
+                          pcfv.int_array_value && p_partner_ids
+                        else true
+                      end) as foo
             ORDER BY (case when p_sort_column is null OR p_sort_direction is null then foo.date_created end) desc,
                      (case
                         when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc'
@@ -435,6 +480,8 @@ BEGIN
                       inner join flow.contact c on c.id = p.contact_id
                       left join flow.company_state cs on cs.id = p.company_state_id
                       left join flow.state s on s.id = cs.state_id
+                      left join flow.project_custom_field_value pcfv on pcfv.project_id = p.id and
+                                                                        pcfv.custom_field_group_assignment_id = 27972
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
                  and case when p_query_commissions is false then
@@ -445,6 +492,11 @@ BEGIN
                        when p_company_project_status_type_id is not null then
                          cpst.id = p_company_project_status_type_id
                        else 1 = 1 end
+               and case
+                     when array_length(p_partner_ids, 1) > 0 then
+                       pcfv.int_array_value && p_partner_ids
+                     else true
+                   end
                ORDER BY (case when p_sort_column is null OR p_sort_direction is null then p.date_created end) desc,
                         (case
                            when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc'

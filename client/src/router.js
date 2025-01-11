@@ -779,6 +779,16 @@ const router = new Router({
                   return accessDenied()
                 }
               }
+            }, {
+              path: 'apiManagement',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (userStore.userHasFeatureAccessLevel('API_MANAGEMENT', 'ADMIN')) {
+                  return import('./views/flow/settings/ApiManagement.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
             },
             {
               path: 'attachments',

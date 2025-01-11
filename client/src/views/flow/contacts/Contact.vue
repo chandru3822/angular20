@@ -153,7 +153,7 @@
       <span class="bold error-text">WARNING:</span> This cannot be undone. Are you sure you want to delete this contact?
     </ConfirmationDialog>
     <!--    modal to prompt contact address update -->
-    <ConfirmationDialog v-if="addressUpdateModalObjectCategoryIds.includes(contact.objectCategoryId) && contact?.projects?.length > 0"  :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
+    <ConfirmationDialog v-if="!addressNoUpdateModalObjectCategoryIds.includes(contact.objectCategoryId) && contact?.projects?.length > 0" :open-dialog="!showEditModal && (contactAddressChanged || contactNameChanged)" :disable-confirm="!updateProjectNameSelected && !updateProjectAddressSelected"
                         @cancel="cancelUpdateProject" @confirm="updateProjectInfo"
     >
       <template v-slot:title>Update Project Information</template>
@@ -295,7 +295,7 @@
                   {{category}}
                   <v-card flat v-for="p in projects"
                           class="project-button albatross-body-1"
-                          :to="`/project/${p.id}/${defaultProjectPage}`">
+                          :to="p.ownerId === currentUserId || is7oaksAdmin ? `/project/${p.id}/${defaultProjectPage}`: ''">
                     <div class="body-large" >{{ p.projectName }} </div>
                     <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                   </v-card>
@@ -634,7 +634,7 @@ const store = vueInstance.$store
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 //keeping this an array cuz they keep changing it
-const addressUpdateModalObjectCategoryIds = [8]
+const addressNoUpdateModalObjectCategoryIds = [7]
 const states = ref([])
 const countries = ref([])
 const showEditModal = ref(false)
@@ -687,6 +687,7 @@ const updateProjectNameSelected = ref(true)
 const is7oaksAdmin  = computed(() => {
   return userStore.isSystemAdmin
 })
+const currentUserId = computed(() => userStore.details.id)
 const userCanEdit  = computed(() => {
   return userStore.userHasFeatureAccessLevel('CONTACTS', 'EDIT')
 })

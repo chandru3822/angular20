@@ -194,7 +194,7 @@ create type brs.calculated_proposal_value as
   setter_lead_cost numeric,
   digital_lead_cost numeric,
   lead_cost_adder numeric,
-  v_grid_tied_battery boolean
+  grid_tied_battery boolean
 );
 
 drop type brs.excluded_proposal_value;
@@ -552,8 +552,9 @@ v_closer_gen_source_ids bigint[];
   v_setter_lead_cost numeric;
   v_digital_lead_cost numeric;
   v_lead_cost_adder numeric;
-  v_grid_tied_cash_price_storage numeric;
   v_grid_tied_battery boolean;
+  v_storage_heat_detector_adder numeric;
+v_grid_tied_battery_not_allowed boolean;
 BEGIN
 
   select (select string_to_array(value, ',')
@@ -630,8 +631,7 @@ BEGIN
          qualifies_for_swr,
          rete_incentive_applied,
          rete_depreciation_incentive_amount,
-         base_price_per_watt,
-         grid_tied_battery
+         base_price_per_watt
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -701,8 +701,7 @@ BEGIN
     v_proposal_qualifies_for_swr,
     v_rete_incentive_applied,
     v_rete_depreciation_incentive_amount,
-    v_base_price_per_watt,
-    v_grid_tied_battery
+    v_base_price_per_watt
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -892,11 +891,12 @@ BEGIN
          closer_gen_discount,
          virtual_sales_base_price,
          max_base_price_per_watt,
-         redline_utility_adder
+         redline_utility_adder,
+         grid_tied_battery_not_allowed
   into v_instant_use_assumption,v_net_metring_rate,v_production_factor_east_west,
     v_production_factor_south,v_maximum_funding_amount_per_watt,v_minimum_funding_amount_per_watt,
     v_current_estimated_cost_per_kwh,v_utility_cost_escalator,v_high_commission_funding_amount_per_watt,v_closer_gen_discount,
-    v_virtual_sales_base_price,v_max_base_price_per_watt,v_redline_utility_adder
+    v_virtual_sales_base_price,v_max_base_price_per_watt,v_redline_utility_adder,v_grid_tied_battery_not_allowed
   from brs.get_proposal_pricing(v_version_id, v_utility_company_id);
 
   select kwh_rate_discount,
@@ -945,11 +945,16 @@ BEGIN
          nominal_power,
          battery_manufacturers_warranty,
          battery_workmanship_warranty,
-         grid_tied_cash_price_storage
+         grid_tied_battery
   into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,
     v_storage_id,v_storage_brand_id,v_nominal_power,
-    v_battery_manufacturers_warranty,v_battery_workmanship_warranty,v_grid_tied_cash_price_storage
+    v_battery_manufacturers_warranty,v_battery_workmanship_warranty,v_grid_tied_battery
   from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
+
+  if v_grid_tied_battery_not_allowed is true and v_grid_tied_battery is true then
+    raise exception 'Grid Tied Batteries are not allowed in this Utility.  Please select a different Storage Type.';
+  end if;
+
 
   if v_storage_id is not null then
     select name
@@ -1157,16 +1162,8 @@ BEGIN
   --raise notice 'v_initial_system_cost = %',v_initial_system_cost;
 
   v_equipment_storage_adder = 0;
-  if v_grid_tied_battery is true then
-    if v_grid_tied_cash_price_storage is null and v_storage_brand is not null then
-      raise exception 'The Grid Tied option is not available for this Storage selection.';
-    else
-      v_equipment_storage_adder = coalesce(v_grid_tied_cash_price_storage,0);
-    end if;
+  v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
 
-  else
-    v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
-  end if;
 
 
   --raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
@@ -1185,12 +1182,26 @@ BEGIN
     v_has_critter_guard = true;
   end if;
 
+  if v_storage_type is not null then
+    select  (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as adder_amount
+    into v_storage_heat_detector_adder
+    from brs.get_proposal_version_value(v_version_id, array [(718, 'Storage Heat Detector', null, null)::ProposalFieldFilter,
+      (341, null, null, v_state_id)::ProposalFieldFilter],
+                                        'PROPOSAL_MISC_ADDERS');
+  end if;
+
+
+
   select misc_adder,rete_incentive_adder
   into v_misc_adders,v_rete_adder
   from brs.get_misc_adder_amount(v_version_id,v_system_size, v_misc_adders_array,v_rete_incentive_applied);
   --raise notice 'v_misc_adders = %',v_misc_adders;
   --raise notice 'v_rete_adder = %',v_rete_adder;
   --raise notice 'v_has_critter_guard = %',v_has_critter_guard;
+
+  v_misc_adders = v_misc_adders + coalesce(v_storage_heat_detector_adder,0);
+
+  raise notice 'v_storage_heat_detector_adder = %',v_storage_heat_detector_adder;
 
 
   v_smart_thermostat_adder = 0.00::numeric;
@@ -2537,8 +2548,7 @@ BEGIN
             v_setter_lead_cost,
             v_digital_lead_cost,
             v_lead_cost_adder,
-            case when v_storage_brand is not null then
-                   v_grid_tied_battery end
+            v_grid_tied_battery
             );
   end if;
 
@@ -2752,8 +2762,7 @@ BEGIN
            v_setter_lead_cost,
            v_digital_lead_cost,
            v_lead_cost_adder,
-           case when v_storage_brand is not null then
-                  v_grid_tied_battery end;
+           v_grid_tied_battery;
 
 
 END

@@ -102,7 +102,7 @@ $default-text: rgba(0,0,0,0.87);
 }
 
 #app {
-  letter-spacing: .4px;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-top: 0 !important;
@@ -115,6 +115,10 @@ $default-text: rgba(0,0,0,0.87);
     font-size: 25px;
     margin-top: 7px;
   }
+}
+
+.v-btn {
+  letter-spacing: 0.02em;
 }
 
 .app-button{
@@ -409,7 +413,7 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th, {
 .app-pre-wrapper {
   white-space: pre-line;
   font-family: 'Lato', sans-serif;
-  letter-spacing: .4px;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   word-break: break-word;

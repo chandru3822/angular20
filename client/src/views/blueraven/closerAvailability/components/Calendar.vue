@@ -24,6 +24,7 @@ const store = vueInstance.$store
  const vuetify = vueInstance.$vuetify
 const filters = vueInstance.$filters
 const resourcesExpandedMobile = ref(false)
+const companyHolidays = ref([])
 
 const collapseExpandResources = () => {
   resourcesExpandedMobile.value = !resourcesExpandedMobile.value
@@ -201,6 +202,17 @@ const getRoundRobinUsers = async() => {
       appStore.loading = false
     }
   }
+
+const fetchHolidays = async() => {
+  try {
+    const {data, status} = await getRequest(`/availability/companyHolidays`)
+    companyHolidays.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Company Holidays')
+    appStore.loading = false
+  }
+}
 
 const selectAllRoundRobinUsers = computed(() => roundRobinUsers.value.length === selectedUsers.value.length)
 const selectSomeRoundRobinUsers = computed(() => selectedUsers.value.length > 0 && !selectAllRoundRobinUsers.value)
@@ -383,6 +395,32 @@ const getAvailability = async(info) => {
         backgroundColor: 'rgba(0,0,0,.12)'
       })
     })
+    companyHolidays.value.forEach((ch) => {
+      if (isHolidayInRange(info.start, info.end, ch.date)) {
+        //they want the holidays to start at 6am and end at 6pm on the calendar,
+        // so we calculate based on the utc offset to make sure it displays at these values in the local timezone
+        let holidayStart = 6 - moment().utcOffset()/60
+        let holidayEnd = 18 - moment().utcOffset()/60
+
+        calendarOptions.value.resources.forEach((r) => {
+          data.push({
+            backgroundColor: 'var(--v-primary-lighten9)',
+            textColor: 'var(--v-grey-darken4)',
+            display: 'auto',
+            resourceId: r.id,
+            start: moment
+                .utc(new Date(ch.date))
+                .hour(holidayStart)
+                .format('YYYY-MM-DDTHH:mm:ssZ'),
+            end: moment
+                .utc(new Date(ch.date))
+                .hour(holidayEnd)
+                .format('YYYY-MM-DDTHH:mm:ssZ'),
+            title: 'Holiday - '.concat(ch.name)
+          })
+        })
+      }
+    })
     return data;
 
   } catch (e) {
@@ -390,6 +428,63 @@ const getAvailability = async(info) => {
     appStore.showSnack('ERROR', 'Error Retrieving Availability')
     appStore.loading = false
   }
+}
+
+const isHolidayInRange = (startDate, endDate, holiday) => {
+  // Convert startDate and endDate to UTC by setting the time components to UTC
+  const startUTC = new Date(
+      Date.UTC(
+          startDate.getUTCFullYear(),
+          startDate.getUTCMonth(),
+          startDate.getUTCDate(),
+          0,
+          0,
+          0,
+          0 // Setting time to midnight to only compare the date part
+      )
+  )
+
+  const endUTC = new Date(
+      Date.UTC(
+          endDate.getUTCFullYear(),
+          endDate.getUTCMonth(),
+          endDate.getUTCDate(),
+          0,
+          0,
+          0,
+          0 // Setting time to midnight to only compare the date part
+      )
+  )
+
+  // Convert holiday to a Date object and set it to UTC
+  const holidayUTC = new Date(holiday)
+  const holidayDateUTC = new Date(
+      Date.UTC(
+          holidayUTC.getUTCFullYear(),
+          holidayUTC.getUTCMonth(),
+          holidayUTC.getUTCDate(),
+          0,
+          0,
+          0,
+          0 // Setting time to midnight to only compare the date part
+      )
+  )
+
+  // Check if the holiday is the same as the start date
+  if (holidayDateUTC.getTime() === startUTC.getTime()) {
+    return true
+  }
+
+  // Check if the holiday is between the start and end dates (inclusive)
+  if (
+      holidayDateUTC.getTime() >= startUTC.getTime() &&
+      holidayDateUTC.getTime() <= endUTC.getTime()
+  ) {
+    return true
+  }
+
+  // Otherwise, return false
+  return false
 }
 
 const countSelected = computed(() => {
@@ -422,7 +517,7 @@ onMounted (async () => {
   calendarApi.value = eventCalendar.value.getApi()
   await getRoundRobins()
   await getRoundRobinUsers()
-
+  await fetchHolidays()
 })
 
 </script>

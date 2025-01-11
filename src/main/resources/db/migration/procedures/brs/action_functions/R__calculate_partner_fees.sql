@@ -9,6 +9,7 @@ declare
 --other values we save for use later on
     v_module_installation_cost_field_value            numeric := 0;
     v_ac_rough_wire                                   numeric := 0;
+    v_additional_rough_labor_adder_value                    numeric := 0;
     v_custom_distance_adder                           numeric := 0;
     v_3_story_roof                                    numeric := 0;
     v_steep_roof                                      numeric := 0;
@@ -32,6 +33,7 @@ declare
     v_nh_permit_cost_actual_cfga_id                   bigint  := 28326;
     v_nh_trim_labor_pricing_cfga_id                   bigint  := 28213;
     v_nh_rough_labor_pricing_cfga_id                  bigint  := 28230;
+    v_nh_additional_rough_labor_adder_cfga_id         bigint  := 30460;
     v_nh_roofer_labor_pricing_cfga_id                 bigint  := 28240;
     v_nh_storage_rough_pricing_cfga_id                bigint  := 28334;
     v_nh_storage_trim_pricing_cfga_id                 bigint  := 28338;
@@ -239,7 +241,10 @@ BEGIN
             select flow.get_cfv_value_as_text(p_project_id, null, v_ac_rough_wire_fee_org_cfga_id, v_alliance_ip_partner_value)::numeric
             into v_ac_rough_wire_fee_value;
 
-            v_ac_rough_wire = v_ac_rough_wire_fee_value;
+            select flow.get_cfv_value_as_text(p_project_id, null, v_nh_additional_rough_labor_adder_cfga_id)::numeric
+            into v_additional_rough_labor_adder_value;
+
+            v_ac_rough_wire = coalesce(v_ac_rough_wire_fee_value, 0) + coalesce(v_additional_rough_labor_adder_value, 0);
         end if;
 
         select flow.get_cfv_value_as_text(p_project_id, null, v_distance_adder_cfga_id)::boolean

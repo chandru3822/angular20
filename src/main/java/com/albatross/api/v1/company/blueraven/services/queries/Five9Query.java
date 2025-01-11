@@ -101,8 +101,8 @@ public class Five9Query {
                      from brs.project_details pd
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
-                             'US/Mountain') :: date between current_date - 180 and current_date - 10)
-                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
+                             'US/Mountain') :: date between current_date - 180 and current_date - 30)
+                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral','Setter Gen')
                        AND ((select ccfv.int_value
                                from flow.contact_custom_field_value ccfv
                                where ccfv.custom_field_group_assignment_id = 20977
@@ -146,7 +146,7 @@ public class Five9Query {
                      from brs.project_details pd
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
-                             'US/Mountain') :: date between current_date - 180 and current_date - 10)
+                             'US/Mountain') :: date between current_date - 180 and current_date - 30)
                        and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Setter Gen')
                        AND (COALESCE((select ccfv.int_value
                                from flow.contact_custom_field_value ccfv
@@ -191,8 +191,8 @@ public class Five9Query {
                      from brs.project_details pd
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
-                             'US/Mountain') :: date between current_date - 180 and current_date - 10)
-                       and pd.source_name in ('Organic', 'Organic with Referral')
+                             'US/Mountain') :: date between current_date - 180 and current_date - 30)
+                       and pd.source_name in ('Organic', 'Organic with Referral','Setter Gen')
                        AND (COALESCE((select ccfv.int_value
                                from flow.contact_custom_field_value ccfv
                                where ccfv.custom_field_group_assignment_id = 20977

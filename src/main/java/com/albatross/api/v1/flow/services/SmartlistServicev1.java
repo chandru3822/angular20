@@ -1144,7 +1144,9 @@ public class SmartlistServicev1 {
           "       left join flow.user \"project_user\" on \"project_user\".id = \"project_user_position\".user_id\n" +
           "       left join flow.user_position \"contact_user_position\"\n" +
           "                 on \"contact_user_position\".id = flow.contact.owner_user_position_id\n" +
-          "       left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id");
+          "       left join flow.user \"contact_user\" on \"contact_user\".id = \"contact_user_position\".user_id\n" +
+          "       left join flow.project_custom_field_value pcfv on pcfv.project_id = flow.project.id and pcfv.custom_field_group_assignment_id = 27972\n");
+
     }
 
     if (installationCrewIds != null && !installationCrewIds.isEmpty() && companyId == 3) {
@@ -1600,6 +1602,13 @@ public class SmartlistServicev1 {
                            "  and flow.project.archived is not true\n" +
                            "      and flow.process_step.company_id = any\n" +
                            "                        (select id from flow.company_hierarchy_filter_down(" + companyId + ")) and ");
+
+      if (!securityService.getCurrentUser().getPartnerIds().isEmpty()) {
+        var partnerIDsCSV = securityService.getCurrentUser().getPartnerIds().stream()
+                                                                            .map(String::valueOf)
+                                                                            .collect(Collectors.joining(","));
+        whereClause.append(" pcfv.int_array_value && array[" + partnerIDsCSV + "]::bigint[] and ");
+      }
     }
 
     if (withClause.length() > 0) {
@@ -3613,10 +3622,17 @@ public class SmartlistServicev1 {
     }
 
     //build the "where" clause
-    query.append(" where ")
+    query.append(" where ");
+
+    if (!securityService.getCurrentUser().getPartnerIds().isEmpty()) {
+      var partnerIDsCSV = securityService.getCurrentUser().getPartnerIds().stream()
+                                         .map(String::valueOf)
+                                         .collect(Collectors.joining(","));
+      query.append("pcfv.int_array_value && array[" + partnerIDsCSV + "]::bigint[] and ");
+    }
 
          //omit archived items
-         .append("flow.project.archived is not true and ")
+    query.append("flow.project.archived is not true and ")
          .append("flow.project_process_step.archived is not true and ")
          .append("flow.project_process_step_event.archived is not true");
 
@@ -4388,6 +4404,8 @@ public class SmartlistServicev1 {
     } else {
       // workqueue smartlists
       join += " inner join flow.project on flow.project.id = flow.project_process_step.project_id";
+      // partner IDs
+      join += " left join flow.project_custom_field_value pcfv on pcfv.project_id = flow.project.id and pcfv.custom_field_group_assignment_id = 27972";
     }
 
     join += " left join flow.user_position \"project_user_position\" on \"project_user_position\".id = flow.project.user_position_id";
