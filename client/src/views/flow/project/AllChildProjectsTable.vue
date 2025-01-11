@@ -76,7 +76,7 @@
 
                 <template #item="{ item, index }">
                   <tr :class="{'shaded-row': index % 2}">
-                    <td class="text-left pl-4">{{item.projectName}}</td>
+                    <td class="text-left pl-4" :style="{background: index % 2 ? 'var(--v-primary-lighten9) !important' : 'white'}">{{item.projectName}}</td>
                     <td class="text-left pl-4" v-for="h in headers.filter(h => h.showInLoop)">
                       <DatetimePickerInput
                           v-if="h.dataTypeId === 1"
@@ -103,6 +103,9 @@
                       <v-checkbox v-else-if="h.dataTypeId === 3"
                                   @change="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
                                   v-model="item[h.customFieldGroupAssignmentId]"></v-checkbox>
+                      <v-text-field v-else-if="h.dataTypeId === 5"
+                                    v-model="item[h.customFieldGroupAssignmentId]"
+                                    @change="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"/>
                       <a-autocomplete attach
                                       v-model="item[h.customFieldGroupAssignmentId]"
                                       v-else-if="h.dataTypeId === 9"
@@ -174,6 +177,7 @@ const timezone = computed(() => {
 
 const childProjects = ref([])
 const projectSearch = ref('')
+const phaseSearch = ref('')
 const dirtyFields = ref([])
 const menuOpen = ref(false)
 const isChildProjectsLoading = ref(false)
@@ -339,5 +343,18 @@ const getChildProjects = async () => {
 .project-children-filter-header {
   border-bottom: thin solid rgba(0, 0, 0, 0.12);
   padding-bottom: 8px;
+}
+
+#project-children-container table > tr > th:nth-child(1),
+#project-children-container table > tbody > tr > td:nth-child(1),
+#project-children-container table > thead > tr > th:nth-child(1) {
+   position: sticky !important;
+   position: -webkit-sticky !important;
+   left: 0;
+   z-index: 9998;
+   background: white;
+ }
+#project-children-container table > thead > tr > th:nth-child(1) {
+  z-index: 9999 !important;
 }
 </style>
