@@ -245,43 +245,53 @@ select *
   //language=PostgreSQL
   public final static String getChildrenHeaders = """
     select cfga.id as custom_field_group_assignment_id,
-           cf.field_name,
-           cf.system_readonly,
-           cf.allow_now,
-           cf.sort_list_values_alphabetically,
-           cf.custom_field_sql_key,
-           cf.custom_field_sql,
-           cf.company_system_list_id,
-           array_to_json(cf.system_list_option_ids) as system_list_option_ids,
-           cdt.has_list_values,
-           cdt.data_type_id,
-           dt.data_type,
-            coalesce((
-                               SELECT array_to_json(array_agg(row_to_json(listOfValues)))
-                               FROM (
-                                        select
-                                            lov.id,
-                                            lov.name,
-                                            lov.code,
-                                            lov.parent_id,
-                                            lov.display_order,
-                                            lov.archived
-                                        from flow.list_of_value lov
-                                        where lov.parent_id is not null
-                                          and lov.parent_id = cf.list_of_value_id
-                                          and lov.archived is not true
-                                        order by
-                                            case when cf.sort_list_values_alphabetically is true  then lov.name end,
-                                            case when cf.sort_list_values_alphabetically is false then lov.display_order end
-                                    ) listOfValues), '[]') AS "listOfValues"
-    from flow.custom_field_group_assignment cfga
-        inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-        inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-        inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where cfga.id = any (SELECT unnest(string_to_array(value, ',')::bigint[])
-                   FROM flow.company_configuration_value
-                   WHERE code = 'CHILD_PROJECT_CFGA_IDS')
-    and cfga.archived is false
+                                      cf.field_name,
+                                      cf.system_readonly,
+                                      cf.allow_now,
+                                      cf.sort_list_values_alphabetically,
+                                      cf.custom_field_sql_key,
+                                      cf.custom_field_sql,
+                                      cf.company_system_list_id,
+                                      array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+                                      case when cf.company_system_list_id is not null then true else cdt.has_list_values end as has_list_values,
+                                      cdt.data_type_id,
+                                      dt.data_type,
+                                      case when cf.company_system_list_id is not null then
+                                               coalesce((
+                                                            SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                                            FROM (
+                                                                     select *
+                                                                     from flow.get_system_list_options(3::bigint,
+                                                                                                       cf.company_system_list_id::bigint,
+                                                                                                       true,
+                                                                                                       cf.system_list_option_ids::bigint[],
+                                                                         null::bigint)) listOfValues), '[]')
+                                          else coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                                   FROM (
+                                                            select
+                                                                lov.id,
+                                                                lov.name,
+                                                                lov.code,
+                                                                lov.parent_id,
+                                                                lov.display_order,
+                                                                lov.archived
+                                                            from flow.list_of_value lov
+                                                            where lov.parent_id is not null
+                                                              and lov.parent_id = cf.list_of_value_id
+                                                              and lov.archived is not true
+                                                            order by
+                                                                case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                                case when cf.sort_list_values_alphabetically is false then lov.display_order end
+                                                        ) listOfValues), '[]') end AS "listOfValues"
+                               from brs.child_project_edit_field cpef
+                                        inner join flow.custom_field_group_assignment cfga on cpef.custom_field_group_assignment_id = cfga.id
+                                        inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+                                        inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+                                        inner join flow.data_type dt on cdt.data_type_id = dt.id
+                               where cpef.archived is not true
+                                 and cfga.archived is false
+                               order by cpef.display_order
   """;
 
   //language=PostgreSQL

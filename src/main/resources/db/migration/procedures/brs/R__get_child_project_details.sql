@@ -12,6 +12,7 @@ BEGIN
                         from (
                             select p.id,
                                    p.project_name as "projectName",
+                                    (select text_value from flow.project_custom_field_value pcfv where pcfv.project_id = p.id and pcfv.custom_field_group_assignment_id = 28136) as "28136",
                                     (select date_value from flow.project_custom_field_value pcfv where pcfv.project_id = p.id and pcfv.custom_field_group_assignment_id = 28217) as "28217",
                                     (select date_value from flow.project_custom_field_value pcfv where pcfv.project_id = p.id and pcfv.custom_field_group_assignment_id = 28238) as "28238",
                                     (select date_value from flow.project_custom_field_value pcfv where pcfv.project_id = p.id and pcfv.custom_field_group_assignment_id = 28241) as "28241",

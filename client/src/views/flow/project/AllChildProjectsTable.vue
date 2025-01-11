@@ -53,7 +53,17 @@
                       <div v-if="header.value === 'projectName'" class="pt-2 table-filter">
                         <a-text-field v-model="projectSearch"
                                       class="mx-2"
-                                      :placeholder="'Search ' + header.text.toLowerCase()"
+                                      :placeholder="'Search ' + header.text"
+                                      clearable
+                                      density="compact"
+                                      variant="outlined"
+                                      hide-details
+                        ></a-text-field>
+                      </div>
+                      <div v-if="header.key === 28136" class="pt-2 table-filter">
+                        <a-text-field v-model="phaseSearch"
+                                      class="mx-2"
+                                      :placeholder="'Search ' + header.text"
                                       clearable
                                       density="compact"
                                       variant="outlined"
@@ -121,7 +131,8 @@
                         @close-dialog="unsavedModal = false">
       <template v-slot:title>Unsaved Changes</template>
       You have unsaved changes. Are you sure you want to continue without saving?
-      <template v-slot:yes>Don't Save</template>
+      <template v-slot:yes>Exit Without Saving</template>
+      <template v-slot:no>Stay and Keep Editing</template>
     </ConfirmationDialog>
   </v-row>
 </template>
@@ -249,9 +260,11 @@ const getChildProjectHeaders = async () => {
     data.forEach(d => {
       let header = { ...d,
         text: d.fieldName,
+        key: d.customFieldGroupAssignmentId,
         value: d.customFieldGroupAssignmentId.toString(),
         showInLoop: true,
-        width: getColumnWidth(d.dataTypeId)
+        width: getColumnWidth(d.dataTypeId),
+        filter: d.customFieldGroupAssignmentId === 28136 ? value => {if (!phaseSearch.value) {return true} else {return value?.toLowerCase().includes(phaseSearch.value?.toLowerCase())}} : null
       }
       headers.value.push(header)
     })
@@ -264,6 +277,7 @@ const getColumnWidth = (dataTypeId) => {
   switch (dataTypeId) {
     case 1: return 210
     case 2: return 250
+    case 5: return 200
     case 8:
     case 9:
     case 10:

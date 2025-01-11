@@ -290,17 +290,7 @@ public class ProjectService {
   }
 
   public List<ChildProjectHeader> getProjectChildrenHeaders() {
-    User user = securityService.getCurrentUser();
-
     List<ChildProjectHeader> results = sqlCache.queryBySql(ProjectQuery.getChildrenHeaders, Collections.emptyMap(), new ChildProjectHeaderMapper<>(ChildProjectHeader.class, om));
-
-    for (ChildProjectHeader header : results) {
-      if (null != header.getCompanySystemListId()) {
-        header.setHasListValues(true);
-        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(header.getCompanySystemListId(), true, header.getSystemListOptionIds(), null, user.getCompanyId());
-        header.setListOfValues(listOfValues);
-      }
-    }
 
     return results;
   }
