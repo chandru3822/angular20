@@ -189,15 +189,13 @@
                     <div v-if="field.customFieldGroupAssignmentId === 200 && field.listOfValues.find(v => v.id === field.intValue)?.name.search(/\bgrid[-\s]+tied\b/i) >= 0 && auroraProjectId && auroraDesignId"
                          class="mb-4 mt-n4"
                     >
-                      <a :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
-                        target="_blank" class="pr-1"><v-icon small color="primary" class="pr-1">mdi-open-in-new</v-icon>Aurora Storage Options</a>
                       <v-tooltip bottom>
-                        <template v-slot:activator="{ on }">
-                          <span v-on="on">
-                            <v-icon small>mdi-information</v-icon>
-                          </span>
+                        <template v-slot:activator="{ on, attrs }">
+                      <a :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
+                        target="_blank" class="pr-1" v-on="on" v-bind="attrs">
+                        <v-icon small color="primary" class="pr-1">mdi-open-in-new</v-icon>Aurora Storage Options <v-icon small>mdi-information</v-icon></a>
                         </template>
-                        <span> Aurora price calculator for grid-tied batteries</span>
+                        <span> Aurora savings calculator for grid-tied batteries</span>
                       </v-tooltip>
                     </div>
                   </v-expansion-panel-content>
