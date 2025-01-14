@@ -326,7 +326,7 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
                     <v-list-item-title v-if="item.name === 'PERIOD'">
                       <v-menu open-on-hover offset-x>
                         <template v-slot:activator="{ on }">
@@ -388,7 +388,7 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
                     <v-list-item-title v-if="item.name === 'PERIOD'">
                       <v-menu open-on-hover location="end" :offset-x="true">
                         <template v-slot:activator="{ on }">
@@ -449,7 +449,7 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
                     <v-list-item-title v-if="item.name === 'PERIOD'">
                       <v-menu open-on-hover location="end">
                         <template v-slot:activator="{ on }">
@@ -510,7 +510,7 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
+                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
                     <v-list-item-title v-if="item.name === 'PERIOD'">
                       <v-menu open-on-hover location="end">
                         <template v-slot:activator="{ on }">
