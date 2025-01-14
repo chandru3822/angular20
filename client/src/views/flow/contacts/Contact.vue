@@ -290,12 +290,11 @@
             </template>
             <template v-slot:expanded-content>
               <div v-if="contact?.projects?.length > 0">
-
                 <div v-for="(projects, category) in groupedProjects" :key="category" :value="true">
                   {{category}}
                   <v-card flat v-for="p in projects"
                           class="project-button albatross-body-1"
-                          :to="p.ownerId === currentUserId || is7oaksAdmin ? `/project/${p.id}/${defaultProjectPage}`: ''">
+                          :to="p.ownerId == null || p.ownerId === currentUserId || is7oaksAdmin ? `/project/${p.id}/${defaultProjectPage}`: ''">
                     <div class="body-large" >{{ p.projectName }} </div>
                     <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                   </v-card>
