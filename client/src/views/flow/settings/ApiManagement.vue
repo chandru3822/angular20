@@ -78,7 +78,7 @@
             </span>
         </template>
 
-        <template #item.name="{ item }" class="text-left">{{ item.name }}</template>
+        <template #item.name="{ item }" class="text-left">{{ item.name }} - ({{ item.id }})</template>
         <template #item.icons="{item}" class="text-right d-flex">
           <a-btn
             v-if="!expanded.includes(item)"
