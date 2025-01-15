@@ -188,33 +188,33 @@
       <v-form ref="eventFieldForm" class="px-6" v-else>
 		<v-expansion-panels
 			multiple
-			:value="expansionOpenStatus"
+			v-model="expansionOpenStatus"
 		>
-			<v-expansion-panel class="square-card mt-4 mb-1" key="0">
-				<v-expansion-panel-header class="px-4 py-0 panel-header">
-					<v-toolbar
-						color="transparent"
-						class="elevation-0 cfg-name-toolbar"
-						dense
-					>
-						<v-toolbar-title>
-							<div class="d-flex align-baseline">
-								Overview
-								<a
-									small
-									text
-									v-if="userStore.userHasFeature('SCHEDULE')"
-									class="px-0 pl-2 d-flex align-baseline scheduler-link"
-									target="_blank"
-									:href="`/schedule?projectProcessStepEventId=${ppsEventId}&projectProcessStepId=${projectProcessStepId}`"
-                  @click.stop=""
-								>
-									Open Scheduler
-								</a>
-							</div>
-						</v-toolbar-title>
-					</v-toolbar>
-				</v-expansion-panel-header>
+      <v-expansion-panel class="square-card mt-4 mb-1" key="0">
+        <v-expansion-panel-header class="px-4 py-0 panel-header">
+          <v-toolbar
+              color="transparent"
+              class="elevation-0 cfg-name-toolbar"
+              dense
+          >
+            <v-toolbar-title>
+              <div class="d-flex align-baseline">
+                Overview
+                <a
+                    small
+                    text
+                    v-if="userStore.userHasFeature('SCHEDULE')"
+                    class="px-0 pl-2 d-flex align-baseline scheduler-link"
+                    target="_blank"
+                    :href="`/schedule?projectProcessStepEventId=${ppsEventId}&projectProcessStepId=${projectProcessStepId}`"
+                    @click.stop=""
+                >
+                  Open Scheduler
+                </a>
+              </div>
+            </v-toolbar-title>
+          </v-toolbar>
+        </v-expansion-panel-header>
         <v-expansion-panel-content class="pa-0">
 
           <a-autocomplete
@@ -298,6 +298,7 @@
                       :callback="checkAvailabilityDate"
                       :field="availabilityDateField"
                       :show-field-name="false"
+                      @cvi-created="checkValidationState"
                   />
                 </v-col>
                 <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged">
@@ -314,7 +315,7 @@
                       {{ item.scheduledStartTime | formatDate('timestamp') }}
                     </template>
                     <template v-slot:item="{ props, item }">
-                        {{ item.scheduledStartTime | formatDate('timestamp') }}
+                      {{ item.scheduledStartTime | formatDate('timestamp') }}
                     </template>
                   </a-select>
                   <div v-else-if="searchedTimeSlots">No Times
@@ -359,48 +360,50 @@
             </v-card-text>
 
           </div>
-		</v-expansion-panel-content>
-		</v-expansion-panel>
-        <v-expansion-panel
-            v-if="selectedEvent && selectedEvent.id"
-            class="pt-0 px-0 my-1 stupid-header"
-            v-for="(cfg, index) in selectedEvent.customFieldGroups.filter(g => g.customFieldValues?.length > 0)"
-            :key="cfg.id"
-        >
-			<v-expansion-panel-header class="px-4 py-0 panel-header">
-				<v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-			  		<v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
-          		</v-toolbar>
-		  </v-expansion-panel-header>
-          <v-expansion-panel-content class="pa-0 square-card">
-            <v-row>
-              <v-col :cols="projectStore.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
-                <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
-                    :key="idx"
-                    :required="field.required && !eventSaveOverrideRequired"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getFieldReadOnly(field)"
-                    :field="field"
-                    :use-field-ancillary-name="true"
-                    :show-field-name="false"
-                />
-              </v-col>
-              <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
-                <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
-                    :key="idx"
-                    :required="field.required && !eventSaveOverrideRequired"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getFieldReadOnly(field)"
-                    :field="field"
-                    :use-field-ancillary-name="true"
-                    :show-field-name="false"
-                />
-              </v-col>
-            </v-row>
-		  </v-expansion-panel-content>
-        </v-expansion-panel>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel
+          v-if="selectedEvent && selectedEvent.id"
+          class="pt-0 px-0 my-1 stupid-header"
+          v-for="(cfg, index) in selectedEvent.customFieldGroups.filter(g => g.customFieldValues?.length > 0)"
+          :key="cfg.id"
+      >
+        <v-expansion-panel-header class="px-4 py-0 panel-header">
+          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+            <v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
+          </v-toolbar>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content class="pa-0 square-card">
+          <v-row>
+            <v-col :cols="projectStore.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
+              <CustomValueInput
+                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                  :key="idx"
+                  :required="field.required && !eventSaveOverrideRequired"
+                  :callback="populateDirtyCfvs"
+                  :readonly="getFieldReadOnly(field)"
+                  :field="field"
+                  :use-field-ancillary-name="true"
+                  :show-field-name="false"
+                  @cvi-created="checkValidationState"
+              />
+            </v-col>
+            <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
+              <CustomValueInput
+                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                  :key="idx"
+                  :required="field.required && !eventSaveOverrideRequired"
+                  :callback="populateDirtyCfvs"
+                  :readonly="getFieldReadOnly(field)"
+                  :field="field"
+                  :use-field-ancillary-name="true"
+                  :show-field-name="false"
+                  @cvi-created="checkValidationState"
+              />
+            </v-col>
+          </v-row>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
 		</v-expansion-panels>
       </v-form>
 
@@ -502,11 +505,14 @@ const isUploadReadonly = ref(false)
 const showDeleteDialog = ref(false)
 const ppseFieldsContainer = ref(null)
 const eventFieldForm = ref(null)
+const expansionOpenStatus = ref([])
+
 
 const emit = defineEmits(['refresh-upcoming-events', 'refresh-project-status', 'refresh-upcoming-pps'])
 
 onMounted(async() => {
   await loadAllPageDetails()
+  expansionOpenStatus.value = defaultExpansionOpenStatus()
 })
 
 const projectId = computed(() => {
@@ -558,6 +564,12 @@ watch(ppsEventId, async() => {
   loadAllPageDetails()
 })
 
+const checkValidationState = ($event) => {
+  //this is so if a section has been collapsed on action selected or save initiated, when it auto un-collapses, the fields will be revalidated and show their error message if applicable
+  if(eventActionMissingRequirements) {
+    eventFieldForm.value.validate()
+  }
+}
 
 const timezone = computed(() => {
   return userStore.timezone.value
@@ -595,7 +607,8 @@ const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 
-const expansionOpenStatus = computed(() => {
+
+const defaultExpansionOpenStatus = (() => {
 	// determine which groups to collapse. Default is expand
 	let indexes = []
 	const defaultStatusNotSet = selectedEvent.value.companyEventStatusTypeIds.length === 0 &&
@@ -701,7 +714,10 @@ const validateActionRequirements = async (action) => {
       (actionRequiresEnd.value && !selectedEvent.value.endTime) ||
       (actionRequiresResource.value && !selectedEvent.value.resourceId) || cfHasMissing) {
     eventActionMissingRequirements.value = true
-
+    if(expansionOpenStatus.value.indexOf(0) < 0 && (!selectedEvent.value.startTime || !selectedEvent.value.endTime || !selectedEvent.value.resourceId)) {
+      //if the overview panel is collapsed and one of its values is empty, expand it
+      expansionOpenStatus.value.push(0)
+    }
   } else {
     //if there wasn't a required field then run the event
     eventActionMissingRequirements.value = false
@@ -711,7 +727,7 @@ const validateActionRequirements = async (action) => {
 const needsRequiredField = (requiredFields) => {
   let fieldValueMissing = false
 
-  selectedEvent.value?.customFieldGroups?.forEach(cfg => {
+  selectedEvent.value?.customFieldGroups?.forEach((cfg, index) => {
     cfg?.customFieldValues?.forEach(cf => {
       let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
       if (match) {
@@ -726,6 +742,8 @@ const needsRequiredField = (requiredFields) => {
             (cf.dataTypeId === 8 && null == cf.intValue) ||
             (cf.dataTypeId === 9 && null == cf.intValue)
         ) {
+          //assuming for now that every cfg has at least one cf and so the index for the expansion panel is 1 more than the index of the cfg; if that's not the case we need to think of another approach to figure out the index
+          if(expansionOpenStatus.value.indexOf(index + 1) < 0) {expansionOpenStatus.value.push(index + 1)}
           cf.required = true
           fieldValueMissing = true
           eventActionMissingRequirements.value = true
@@ -1158,10 +1176,12 @@ const checkFieldsForUnique = () => {
       actionRequiresEnd.value = !endTime
       actionRequiresResource.value = !selectedEvent.value.resourceId
       saveErrorMsg.value = 'Additional fields are required to save this event.'
+      if(expansionOpenStatus.value.indexOf(0) < 0) {expansionOpenStatus.value.push(0)} //if the overview panel is collapsed, expand it
     } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
       validSave = false
       eventActionMissingRequirements.value = true
       saveErrorMsg.value = 'End time must be after start time'
+      if(expansionOpenStatus.value.indexOf(0) < 0) {expansionOpenStatus.value.push(0)} //if the overview panel is collapsed, expand it
     }
   } else if (null != selectedEvent.value.startTime) {
     //for all other types just compare start to end if end not null
@@ -1169,6 +1189,7 @@ const checkFieldsForUnique = () => {
       validSave = false
       eventActionMissingRequirements.value = true
       saveErrorMsg.value = 'End time must be after start time'
+      if(expansionOpenStatus.value.indexOf(0) < 0) {expansionOpenStatus.value.push(0)} //if the overview panel is collapsed, expand it
     }
   }
   //per judson, dont require start time anymore
