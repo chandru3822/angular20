@@ -67,6 +67,7 @@ public class PartsMasterQuery {
       and ot.archived is false
       and cf.archived is false
       and cfga.archived is false
+      and cfg.archived is false
     order by cfg.group_order, cfga.field_order
     """;
 
