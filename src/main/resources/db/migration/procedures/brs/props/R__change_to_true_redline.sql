@@ -10,20 +10,21 @@ declare
   v_minimum_funding_amount_per_watt   numeric;
   v_markup                            numeric;
   v_closer_commission_amount          numeric;
-  v_df_pps_id                         bigint;
   v_booking_pps_id                    bigint;
   v_pcfv_commission_strategy_id       bigint;
   v_pcfv_desired_commission_id        bigint;
   x                                   record;
+  y_df                                record;
+  z_bk                                record;
   v_df_cs_id                          bigint;
   v_df_dca_id                         bigint;
-  v_booking_cs_id                     bigint;
   v_booking_dca_id                    bigint;
   v_plh_id                            bigint;
   v_override_plan_id                  bigint;
   v_override_plan_name                text;
   v_source_id                         bigint;
   v_non_self_gen_source_id            bigint;
+  v_booking_cs_id                     bigint;
   v_round_robin_id                    bigint;
   v_digital_lead_cost                 numeric;
   v_setter_lead_cost                  numeric;
@@ -83,13 +84,11 @@ BEGIN
                     inner join flow.project_process_step pps on pps.id = p.project_process_step_id
              where pps.project_id = p_project_id
       loop
-
-        v_df_pps_id = null;
-        v_booking_cs_id = null;
         v_booking_dca_id = null;
         v_df_dca_id = null;
         v_df_cs_id = null;
         v_booking_pps_id = null;
+        v_booking_cs_id = null;
         v_markup = 0;
         v_closer_commission_amount = 0;
         v_minimum_funding_amount_per_watt = null;
@@ -107,27 +106,6 @@ BEGIN
         where h.project_id = x.project_id
           and h.proposal_nbr = x.proposal_nbr;
 
-
-        select p.id
-        into v_df_pps_id
-        from flow.project_process_step p
-               inner join flow.project_process_step_custom_field_value v on v.project_process_step_id = p.id and
-                                                                            v.custom_field_group_assignment_id = 19449
-        where p.project_id = x.project_id
-          and v.int_value = v_plh_id
-          and p.process_step_id = 3355
-          and p.main is true;
-
-
-        select p.id
-        into v_booking_pps_id
-        from flow.project_process_step p
-               inner join flow.project_process_step_custom_field_value v on v.project_process_step_id = p.id and
-                                                                            v.custom_field_group_assignment_id = 1434
-        where p.project_id = p_project_id
-          and v.int_value = v_plh_id
-          and p.process_step_id = 4
-          and p.main is true;
 
         select pcfv.id
         into v_pcfv_commission_strategy_id
@@ -169,94 +147,116 @@ BEGIN
             v_closer_commission_amount = v_desired_commission_amount;
           end if;
 
-          if v_booking_pps_id is not null then
-            select ppscfv.id
-            into v_booking_cs_id
-            from flow.project_process_step s
-                   inner join flow.project_process_step_custom_field_value ppscfv
-                              on ppscfv.project_process_step_id = s.id
-            where ppscfv.custom_field_group_assignment_id = 27105
-              and s.id = v_booking_pps_id
-              and s.main is true;
+          for y_df in
+            select p.id as df_pps_id
+            from flow.project_process_step p
+                   inner join flow.project_process_step_custom_field_value v on v.project_process_step_id = p.id and
+                                                                                v.custom_field_group_assignment_id =
+                                                                                19449 -- proposal log number
+            where p.project_id = x.project_id
+              and v.int_value = v_plh_id
+              and p.process_step_id = 3355
+            loop
+              v_df_cs_id = null;
+              v_df_dca_id = null;
 
-            select ppscfv.id
-            into v_booking_dca_id
-            from flow.project_process_step s
-                   inner join flow.project_process_step_custom_field_value ppscfv
-                              on ppscfv.project_process_step_id = s.id
-            where ppscfv.custom_field_group_assignment_id = 26943
-              and s.id = v_booking_pps_id
-              and s.main is true;
+              select ppscfv.id
+              into v_df_cs_id
+              from flow.project_process_step s
+                     inner join flow.project_process_step_custom_field_value ppscfv
+                                on ppscfv.project_process_step_id = s.id
+              where ppscfv.custom_field_group_assignment_id = 27107 --commission strategy
+                and s.id = y_df.df_pps_id;
 
-            if v_booking_cs_id is not null then
-              update flow.project_process_step_custom_field_value
-              set int_value = 26056::bigint
-              where id = v_booking_cs_id;
-            else
-              insert into flow.project_process_step_custom_field_value(project_process_step_id,
-                                                                       custom_field_group_assignment_id, int_value,
-                                                                       date_created, date_modified, created_by_id,
-                                                                       modified_by_id)
-              values (v_booking_pps_id, 27105, 26056::bigint, now(), now(), 99999999, 99999999);
-            end if;
+              select ppscfv.id
+              into v_df_dca_id
+              from flow.project_process_step s
+                     inner join flow.project_process_step_custom_field_value ppscfv
+                                on ppscfv.project_process_step_id = s.id
+              where ppscfv.custom_field_group_assignment_id = 26166 -- desired commission amount
+                and s.id = y_df.df_pps_id;
 
-            if v_booking_dca_id is not null then
-              update flow.project_process_step_custom_field_value
-              set numeric_value = v_closer_commission_amount
-              where id = v_booking_dca_id;
-            else
-              insert into flow.project_process_step_custom_field_value(project_process_step_id,
-                                                                       custom_field_group_assignment_id, numeric_value,
-                                                                       date_created, date_modified, created_by_id,
-                                                                       modified_by_id)
-              values (v_booking_pps_id, 26943, v_closer_commission_amount, now(), now(), 99999999, 99999999);
-            end if;
-          end if;
+              if v_df_cs_id is not null then
+                update flow.project_process_step_custom_field_value
+                set int_value = 26056::bigint
+                where id = v_df_cs_id;
+              else
+                insert into flow.project_process_step_custom_field_value(project_process_step_id,
+                                                                         custom_field_group_assignment_id, int_value,
+                                                                         date_created, date_modified, created_by_id,
+                                                                         modified_by_id)
+                values (y_df.df_pps_id, 27107, 26056::bigint, now(), now(), 99999999, 99999999);
+              end if;
 
-          if v_df_pps_id is not null then
-            select ppscfv.id
-            into v_df_cs_id
-            from flow.project_process_step s
-                   inner join flow.project_process_step_custom_field_value ppscfv
-                              on ppscfv.project_process_step_id = s.id
-            where ppscfv.custom_field_group_assignment_id = 27107
-              and s.id = v_df_pps_id
-              and s.main is true;
+              if v_df_dca_id is not null then
+                update flow.project_process_step_custom_field_value
+                set numeric_value = v_closer_commission_amount
+                where id = v_df_dca_id;
+              else
+                insert into flow.project_process_step_custom_field_value(project_process_step_id,
+                                                                         custom_field_group_assignment_id,
+                                                                         numeric_value,
+                                                                         date_created, date_modified, created_by_id,
+                                                                         modified_by_id)
+                values (y_df.df_pps_id, 26166, v_closer_commission_amount, now(), now(), 99999999, 99999999);
+              end if;
 
-            select ppscfv.id
-            into v_df_dca_id
-            from flow.project_process_step s
-                   inner join flow.project_process_step_custom_field_value ppscfv
-                              on ppscfv.project_process_step_id = s.id
-            where ppscfv.custom_field_group_assignment_id = 26166
-              and s.id = v_df_pps_id
-              and s.main is true;
+            end loop;
 
-            if v_df_cs_id is not null then
-              update flow.project_process_step_custom_field_value
-              set int_value = 26056::bigint
-              where id = v_df_cs_id;
-            else
-              insert into flow.project_process_step_custom_field_value(project_process_step_id,
-                                                                       custom_field_group_assignment_id, int_value,
-                                                                       date_created, date_modified, created_by_id,
-                                                                       modified_by_id)
-              values (v_df_pps_id, 27107, 26056::bigint, now(), now(), 99999999, 99999999);
-            end if;
+          for z_bk in select p.id as booking_pps_id
+                      from flow.project_process_step p
+                             inner join flow.project_process_step_custom_field_value v
+                                        on v.project_process_step_id = p.id and
+                                           v.custom_field_group_assignment_id =
+                                           1434 --proposal log number
+                      where p.project_id = p_project_id
+                        and v.int_value = v_plh_id
+                        and p.process_step_id = 4
 
-            if v_df_dca_id is not null then
-              update flow.project_process_step_custom_field_value
-              set numeric_value = v_closer_commission_amount
-              where id = v_df_dca_id;
-            else
-              insert into flow.project_process_step_custom_field_value(project_process_step_id,
-                                                                       custom_field_group_assignment_id, numeric_value,
-                                                                       date_created, date_modified, created_by_id,
-                                                                       modified_by_id)
-              values (v_df_pps_id, 26166, v_closer_commission_amount, now(), now(), 99999999, 99999999);
-            end if;
-          end if;
+            loop
+              v_booking_cs_id = null;
+              v_booking_dca_id = null;
+              select ppscfv.id
+              into v_booking_cs_id
+              from flow.project_process_step s
+                     inner join flow.project_process_step_custom_field_value ppscfv
+                                on ppscfv.project_process_step_id = s.id
+              where ppscfv.custom_field_group_assignment_id = 27105 --commission strategy
+                and s.id = z_bk.booking_pps_id;
 
+              select ppscfv.id
+              into v_booking_dca_id
+              from flow.project_process_step s
+                     inner join flow.project_process_step_custom_field_value ppscfv
+                                on ppscfv.project_process_step_id = s.id
+              where ppscfv.custom_field_group_assignment_id = 26943 -- desired commission amount
+                and s.id = z_bk.booking_pps_id;
+
+              if v_booking_cs_id is not null then
+                update flow.project_process_step_custom_field_value
+                set int_value = 26056::bigint
+                where id = v_booking_cs_id;
+              else
+                insert into flow.project_process_step_custom_field_value(project_process_step_id,
+                                                                         custom_field_group_assignment_id, int_value,
+                                                                         date_created, date_modified, created_by_id,
+                                                                         modified_by_id)
+                values (z_bk.booking_pps_id, 27105, 26056::bigint, now(), now(), 99999999, 99999999);
+              end if;
+
+              if v_booking_dca_id is not null then
+                update flow.project_process_step_custom_field_value
+                set numeric_value = v_closer_commission_amount
+                where id = v_booking_dca_id;
+              else
+                insert into flow.project_process_step_custom_field_value(project_process_step_id,
+                                                                         custom_field_group_assignment_id,
+                                                                         numeric_value,
+                                                                         date_created, date_modified, created_by_id,
+                                                                         modified_by_id)
+                values (z_bk.booking_pps_id, 26943, v_closer_commission_amount, now(), now(), 99999999, 99999999);
+              end if;
+            end loop;
 
           update brs.proposal_log_history plh
           set commission_strategy_id    = 26056,

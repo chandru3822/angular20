@@ -555,6 +555,7 @@ v_closer_gen_source_ids bigint[];
   v_grid_tied_battery boolean;
   v_storage_heat_detector_adder numeric;
 v_grid_tied_battery_not_allowed boolean;
+v_storage_states bigint[];
 BEGIN
 
   select (select string_to_array(value, ',')
@@ -945,11 +946,16 @@ BEGIN
          nominal_power,
          battery_manufacturers_warranty,
          battery_workmanship_warranty,
-         grid_tied_battery
+         grid_tied_battery,
+         states
   into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,
     v_storage_id,v_storage_brand_id,v_nominal_power,
-    v_battery_manufacturers_warranty,v_battery_workmanship_warranty,v_grid_tied_battery
+    v_battery_manufacturers_warranty,v_battery_workmanship_warranty,v_grid_tied_battery,v_storage_states
   from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
+raise notice 'v_storage_states %',v_storage_states;
+  if v_storage_states != '{}' and not v_state_id = any(v_storage_states) then
+    raise exception 'Storage options are not available in this state. %',(select state from flow.state where id = v_state_id );
+  end if;
 
   if v_grid_tied_battery_not_allowed is true and v_grid_tied_battery is true then
     raise exception 'Grid Tied Batteries are not allowed in this Utility.  Please select a different Storage Type.';
@@ -1201,7 +1207,7 @@ BEGIN
 
   v_misc_adders = v_misc_adders + coalesce(v_storage_heat_detector_adder,0);
 
-  raise notice 'v_storage_heat_detector_adder = %',v_storage_heat_detector_adder;
+  --raise notice 'v_storage_heat_detector_adder = %',v_storage_heat_detector_adder;
 
 
   v_smart_thermostat_adder = 0.00::numeric;

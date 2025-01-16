@@ -13,7 +13,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_storage_details(p_version_id bigint,
             nominal_power                  numeric,
             battery_manufacturers_warranty bigint,
             battery_workmanship_warranty   bigint,
-            grid_tied_battery   boolean
+            grid_tied_battery   boolean,
+            states bigint[]
           )
 AS
 $BODY$
@@ -41,7 +42,9 @@ BEGIN
            (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 442)') ->>
             'value')::bigint                                                                                         as battery_workmanship_warranty,
            (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 979)') ->>
-            'value')::boolean                                                                                         as grid_tied_battery
+            'value')::boolean                                                                                         as grid_tied_battery,
+           (SELECT ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 341)') ->>
+                                                           'intArrayValue')::jsonb)))::bigint[] as states
     from brs.get_proposal_version_value(p_version_id, array [(160, null, p_storage_type_id, null)::ProposalFieldFilter,
       (102, null, p_financier_id, null)::ProposalFieldFilter],
                                         'PROPOSAL_STORAGE_DETAILS');

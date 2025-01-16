@@ -13,7 +13,6 @@ declare
     v_true_boolean_strings text[];
 BEGIN
     v_true_boolean_strings = array['true', 'yes']::text[];
-
     if p_value_to_save is not null then
         select cdt.data_type_id
         into v_data_type_id
@@ -51,6 +50,7 @@ BEGIN
                     )
             on conflict do nothing;
         elsif (p_feat_db_type = 'AHJ_UTILITY') then
+
             insert into brs.feat_db_utility_custom_field_value(utility_id, custom_field_group_assignment_id,
                                                                     created_by_id, modified_by_id,
                                                                     date_value, timestamp_value,
@@ -61,13 +61,22 @@ BEGIN
                     case when v_data_type_id = 1 then p_value_to_save::date end,
                     case when v_data_type_id = 2 then p_value_to_save::timestamp end,
                        --sometimes the boolean value comes in as 'Yes'...this should solve that
-                    case when v_data_type_id = 3 then case when lower(p_value_to_save::text) = any(v_true_boolean_strings::text[]) then true else false end end,
+                    case when v_data_type_id = 3 then p_value_to_save::boolean end,
                     case when v_data_type_id = 4 then p_value_to_save::numeric end,
                     case when v_data_type_id = 5 then p_value_to_save::text end,
                     case when v_data_type_id in (6,9) then p_value_to_save::bigint end,
                     case when v_data_type_id = 7 then p_value_to_save::bigint[] end
                    )
-            on conflict do nothing;
+            on conflict (utility_id,custom_field_group_assignment_id)
+            do update set
+                        date_value = case when v_data_type_id = 1 then p_value_to_save::date  end,
+                         timestamp_value = case when v_data_type_id = 2 then p_value_to_save::timestamp  end,
+                         boolean_value = case when v_data_type_id = 3 then p_value_to_save::boolean  end,
+                         numeric_value = case when v_data_type_id = 4 then p_value_to_save::numeric  end,
+                         text_value = case when v_data_type_id = 5 then p_value_to_save::text  end,
+                         int_value = case when v_data_type_id in (6,9) then p_value_to_save::bigint  end,
+                         int_array_value = case when v_data_type_id = 7 then p_value_to_save::bigint[]  end,
+                        date_modified = now();
         end if;
     end if;
 
