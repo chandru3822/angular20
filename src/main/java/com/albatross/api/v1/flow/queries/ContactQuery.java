@@ -9,7 +9,7 @@ public class ContactQuery {
                                                             :isParent::boolean,
                                                             :userId::bigint,
                                                             :limit::bigint, :offset::bigint,
-                                                            :partnerIds::bigint[])
+                                                            array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL

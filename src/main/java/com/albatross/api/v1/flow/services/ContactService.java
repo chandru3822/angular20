@@ -109,7 +109,7 @@ public class ContactService {
 
       params.put("limit", pageable.getPageSize());
       params.put("offset", pageable.getOffset());
-      params.put("partnerIds", user.getPartnerIds());
+      params.put("partnerIds", (user.getPartnerIds() == null) ? List.of() : user.getPartnerIds());
 
       String searchSql = ContactQuery.searchByOwner;
       if (viewCustom) {
