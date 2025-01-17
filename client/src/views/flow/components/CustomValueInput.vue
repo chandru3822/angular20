@@ -387,7 +387,7 @@ import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
 import { getRequestWithParams } from '@/helpers/helpers'
 
-import { toRefs, computed, ref, watch } from 'vue'
+import {toRefs, computed, ref, watch, onMounted} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
@@ -704,6 +704,10 @@ const selectSelf = () => {
     handleInput(field.value.intValue)
   }
 }
+const emit = defineEmits(['cvi-created'])
+onMounted(() => {
+emit('cvi-created', field.value)
+})
 </script>
 
 <style lang="scss">
