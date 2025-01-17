@@ -103,7 +103,7 @@
                 attach
                 v-if="item.orgLevelId && item.orgLevelId"
                 v-model="item.orgParentTypeId"
-                :items="filteredOrgTypes(item)"
+                :items="filteredOrgTypes(item.orgLevelId)"
                 label="Parent"
                 item-title="orgType"
                 item-value="id"
