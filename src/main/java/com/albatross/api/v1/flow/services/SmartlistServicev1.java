@@ -1603,7 +1603,7 @@ public class SmartlistServicev1 {
                            "      and flow.process_step.company_id = any\n" +
                            "                        (select id from flow.company_hierarchy_filter_down(" + companyId + ")) and ");
 
-      if (!securityService.getCurrentUser().getPartnerIds().isEmpty()) {
+      if (securityService.getCurrentUser().getPartnerIds() != null && !securityService.getCurrentUser().getPartnerIds().isEmpty()) {
         var partnerIDsCSV = securityService.getCurrentUser().getPartnerIds().stream()
                                                                             .map(String::valueOf)
                                                                             .collect(Collectors.joining(","));
@@ -3624,7 +3624,7 @@ public class SmartlistServicev1 {
     //build the "where" clause
     query.append(" where ");
 
-    if (!securityService.getCurrentUser().getPartnerIds().isEmpty()) {
+    if (securityService.getCurrentUser().getPartnerIds() != null && !securityService.getCurrentUser().getPartnerIds().isEmpty()) {
       var partnerIDsCSV = securityService.getCurrentUser().getPartnerIds().stream()
                                          .map(String::valueOf)
                                          .collect(Collectors.joining(","));

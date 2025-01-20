@@ -411,7 +411,7 @@ public class ContactService {
   // This is here instead of the cfvService due to circular dependencies.
   private void addPartnerIds(Long contactId) throws SQLException {
     var user = securityService.getCurrentUser();
-    if (!user.getPartnerIds().isEmpty()) {
+    if (user.getPartnerIds() != null && !user.getPartnerIds().isEmpty()) {
       var params = new HashMap<String, Object>();
       //default values
       params.put("dateValue", null);
