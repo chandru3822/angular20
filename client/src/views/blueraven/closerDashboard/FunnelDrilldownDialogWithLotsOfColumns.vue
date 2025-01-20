@@ -20,7 +20,6 @@ const props = defineProps({
   funnelDrilldownLoading: Boolean,
   funnelDrilldownHeaders: Array,
   selectedFunnel: Object,
-  totalSystemSize: Number
 })
 
 const emit = defineEmits(['close', 'export'])
@@ -46,6 +45,31 @@ const filteredFunnelDrilldownItems = (filteredItems) => {
   filteredFunnelDrilldownData.value = filteredItems
   funnelDrilldownRowCount.value = filteredItems.length
 }
+
+const totalSystemSize = computed(() => {
+  let size = 0
+  if (
+      props.funnelDrilldownData.length > 0 &&
+      filteredFunnelDrilldownData.value.length > 0
+  ) {
+    let total = 0
+
+    filteredFunnelDrilldownData.value.forEach((row) => {
+      if (row.system_size) {
+        total += row.system_size
+      }
+    })
+
+    size = +total.toFixed(2)
+  } else {
+    size = 0
+  }
+  return size
+})
+
+const showTotalSystemSize = computed(() => {
+  return funnelDrilldownRowCount.value > 0
+})
 
 </script>
 
@@ -351,13 +375,18 @@ const filteredFunnelDrilldownItems = (filteredItems) => {
           </template>
           <template v-if="showTotalSystemSize" v-slot:body.append>
             <tr id="total-system-size-row">
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
+<!--these help line up the total size to sit in the right column-->
+              <template v-for="(item, index) in funnelDrilldownHeaders">
+                <td v-if="index < funnelDrilldownHeaders.findIndex(h => h.value === 'system_size')-1 && item.show"></td>
+              </template>
+<!-- ---------------------- -->
               <td id="total-system-size-label">Total Size:</td>
               <td>{{ totalSystemSize ? totalSystemSize : 0 }}</td>
+<!--these help line up the total size to sit in the right column-->
+              <template v-for="(item, index) in funnelDrilldownHeaders">
+                <td v-if="index > funnelDrilldownHeaders.findIndex(h => h.value === 'system_size')+1 && item.show"></td>
+              </template>
+<!-- ---------------------- -->
             </tr>
           </template>
 

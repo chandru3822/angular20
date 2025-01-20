@@ -2182,7 +2182,6 @@
           :funnelDrilldownLoading="funnelDrilldownLoading"
           :funnelDrilldownHeaders="funnelDrilldownHeaders"
           :selectedFunnel="selectedFunnel"
-          :totalSystemSize="totalSystemSize"
           @close="closeFunnelDrilldownDialog"
           @export="exportDrilldownCsv"
       ></FunnelDrilldownDialog>
@@ -2194,7 +2193,6 @@
         :funnelDrilldownLoading="funnelDrilldownLoading"
         :funnelDrilldownHeaders="funnelDrilldownHeaders"
         :selectedFunnel="selectedFunnel"
-        :totalSystemSize="totalSystemSize"
         @close="closeFunnelDrilldownDialog"
         @export="exportDrilldownCsv"
     />
@@ -2418,7 +2416,6 @@ const funnelDrilldownLoading = ref(false)
 const funnelDrilldownSearch = ref('')
 const filteredFunnelDrilldownData = ref([])
 const funnelDrilldownRowCount = ref(0)
-const totalSystemSize = ref(0)
 const repLengthOverride = ref(false)
 const footerProps = ref({
   showFirstLastPage: !constants.IS_MOBILE,
@@ -2885,9 +2882,6 @@ const appointmentTypesIcon = computed(() => {
 // visibleFunnelDrilldownHeaders() {
 //   return funnelDrilldownHeaders.value.filter(header => header.show === true)
 // },
-const showTotalSystemSize = computed(() => {
-  return funnelDrilldownRowCount.value > 0
-})
 
 onMounted(async () => {
   await getDropdownValues()
@@ -3953,7 +3947,7 @@ const apptsCreatedPipelineLoad = async (column) => {
 
   if (column === 1) {
     dateSelected = getDropdownById(firstDateRange.value)
-    if (dateSelected.periodList != null) {
+    if (dateSelected?.periodList != null) {
       dateSelected.startDate =
         dateSelected.periodList[firstPeriod.value].startDate
       dateSelected.endDate = dateSelected.periodList[firstPeriod.value].endDate
@@ -3966,7 +3960,7 @@ const apptsCreatedPipelineLoad = async (column) => {
     }
   } else if (column === 2) {
     dateSelected = getDropdownById(secondDateRange.value)
-    if (dateSelected.periodList != null) {
+    if (dateSelected?.periodList != null) {
       dateSelected.startDate =
         dateSelected.periodList[secondPeriod.value].startDate
       dateSelected.endDate = dateSelected.periodList[secondPeriod.value].endDate
@@ -3979,7 +3973,7 @@ const apptsCreatedPipelineLoad = async (column) => {
     }
   } else if (column === 3) {
     dateSelected = getDropdownById(thirdDateRange.value)
-    if (dateSelected.periodList != null) {
+    if (dateSelected?.periodList != null) {
       dateSelected.startDate =
         dateSelected.periodList[thirdPeriod.value].startDate
       dateSelected.endDate = dateSelected.periodList[thirdPeriod.value].endDate
@@ -4833,30 +4827,6 @@ const markMissingDrilldownData = () => {
     })
     return newLine
   })
-}
-
-const calcTotalSystemSize = () => {
-  if (
-    funnelDrilldownData.value.length > 0 &&
-    filteredFunnelDrilldownData.value.length > 0
-  ) {
-    let total = 0
-
-    filteredFunnelDrilldownData.value.forEach((row) => {
-      if (row.system_size) {
-        total += row.system_size
-      }
-    })
-
-    totalSystemSize.value = +total.toFixed(2)
-  } else {
-    totalSystemSize.value = 0
-  }
-}
-
-const filteredFunnelDrilldownItems = (filteredItems) => {
-  filteredFunnelDrilldownData.value = filteredItems
-  funnelDrilldownRowCount.value = filteredItems.length
 }
 
 const filteredRepData = computed(() => {
