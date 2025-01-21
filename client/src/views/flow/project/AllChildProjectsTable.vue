@@ -11,6 +11,7 @@
                     <v-toolbar-title class="app-title">All Child Projects</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
+                      <a-btn variant="text" text="Export to Excel" @click="exportToCsv"></a-btn>
                       <a-btn variant="text" text="Cancel" :to="`/project/${projectId}/children`"></a-btn>
                       <a-btn variant="text" color="primary" text="Save Changes"
                              :disabled="dirtyFields?.length === 0"
@@ -152,6 +153,8 @@ import { useAppStore } from '@/stores/AppStore.js'
 import constants from "@/helpers/constants.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { saveAs } from 'file-saver'
+
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -159,6 +162,8 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const filters = vueInstance.$filters
+
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 let count = ref(0)
@@ -297,6 +302,48 @@ const getChildProjects = async () => {
     childProjects.value = data
   } catch (e) {
     logError(e)
+  }
+}
+
+const exportToCsv = () => {
+  appStore.loading = true
+  try {
+    let csv = ''
+
+    headers.value.forEach((h) => {
+      return (csv += `${h.text},`)
+    })
+    csv += `\n`
+
+    childProjects.value.filter(
+        p => {
+          const projectNameMatch = !projectSearch.value || p.projectName?.toLowerCase().includes(projectSearch.value.toLowerCase());
+          const phaseMatch = !phaseSearch.value || (p[28136] && p[28136]?.toLowerCase().includes(phaseSearch.value.toLowerCase()));
+          return projectNameMatch && phaseMatch;
+        }).forEach((p) => {
+      headers.value.forEach((h) => {
+        if (h.dataType === "date") {
+          //if it is a date it needs to be formatted here
+          csv +=
+              '"' +
+              `${p[h.value] === null || p[h.value] === undefined ? '' : filters.formatDate(p[h.value], "date")}` +
+              '",'
+        } else {
+          csv +=
+              '"' +
+              `${p[h.value] === null || p[h.value] === undefined ? '' : p[h.value]}` +
+              '",'
+        }
+      })
+      csv += `\n`
+    })
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+    saveAs(blob, `ChildProjects.csv`)
+    appStore.loading = false
+  }catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Exporting to Excel')
+    appStore.loading = false
   }
 }
 </script>
