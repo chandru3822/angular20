@@ -40,9 +40,9 @@ BEGIN
              case
                when cancelled_date is not null then
                  0
-               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and  foo.substantial_completion_date is not null then
+               when foo.commission_strategy =24102 and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and  foo.substantial_completion_date is not null then
                    (foo.red_line_m1_allocation + foo.red_line_m2_allocation) * foo.total_commissions
-               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is null then
+               when foo.commission_strategy =24102 and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is null then
                    (foo.red_line_m1_allocation) * foo.total_commissions
                when foo.substantial_completion_date is null then
                  foo.system_size * foo.milestone1_amount
@@ -51,28 +51,28 @@ BEGIN
              case
                when cancelled_date is not null  then
                  0
-               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is not null then
+               when foo.commission_strategy =24102 and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is not null then
                    (foo.red_line_m1_allocation + case when foo.substantial_completion_date is not null and
                                                            foo.substantial_completion_date <= v_period_end_date then
                                                         foo.red_line_m2_allocation else 0 end) * foo.total_commissions
-               when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is null then
+               when foo.commission_strategy =24102 and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) and foo.substantial_completion_date is null then
                    (foo.red_line_m1_allocation) * foo.total_commissions
                when foo.substantial_completion_date is null then
                  foo.system_size * foo.milestone1_amount
                else foo.system_size * (foo.milestone1_amount + foo.milestone2_amount) end -
              foo.overrides_paid                                                                                as current_pay,
              foo.name                                                                                          as override_plan_name,
-             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
+             case when foo.commission_strategy =24102 and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                     foo.red_line_m1_allocation + foo.red_line_m2_allocation
               else foo.user_allocation end ,
-             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
+             case when foo.commission_strategy =24102 and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                foo.red_line_m1_allocation
               else foo.milestone1_amount end ,
-             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
+             case when foo.commission_strategy =24102  and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                foo.red_line_m2_allocation
               else
               foo.milestone2_amount end ,
-             case when foo.commission_strategy =24102 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
+             case when foo.commission_strategy =24102 and foo.override_plan_id < 2635 and (foo.commission_strategy_type_id is null or foo.commission_strategy_type_id = 1) then
                0::numeric
                else foo.plan_total  end                                                                                  as plan_total
       from (select pd.project_id                                      as project_id,
@@ -102,7 +102,8 @@ BEGIN
                    fd.substantial_completion_date,
                    fd.overrides_earned_m1,
                    fd.cancelled_date,
-                   cp.commission_strategy_type_id
+                   cp.commission_strategy_type_id,
+                   fd.override_plan_id
             from brs.payroll p1
                     inner join brs.project_details pd on pd.project_id = any (p1.selected_project_ids)
                    inner join brs.financial_details fd on fd.project_id = pd.project_id
@@ -142,7 +143,8 @@ BEGIN
                    fd.substantial_completion_date,
                    fd.overrides_earned_m1,
                    fd.cancelled_date,
-                   c.commission_strategy_type_id
+                   c.commission_strategy_type_id,
+                   fd.override_plan_id
             from brs.payroll p1
                      inner join brs.project_details pd on pd.project_id = any (p1.selected_project_ids)
                    inner join brs.financial_details fd on fd.project_id = pd.project_id

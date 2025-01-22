@@ -109,7 +109,7 @@ BEGIN
               (ucfv.int_array_value is not null or ucfv.int_array_value != '{}');
 
         if v_cfga_id is null then
-          perform flow.set_user_cfv(new.user_id::integer, 3::integer, new.created_by_id::integer,26897::integer, '{24102}'::text );
+          perform flow.set_user_cfv(new.user_id::integer, 3::integer, new.created_by_id::integer,26897::integer, '{26056}'::text );
         end if;
       end if;
 
