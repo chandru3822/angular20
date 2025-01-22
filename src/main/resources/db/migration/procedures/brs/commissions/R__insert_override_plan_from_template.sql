@@ -32,7 +32,7 @@ BEGIN
                       on ucfv.user_id = u.id and custom_field_group_assignment_id = 26897
     where u.id = p_closer_user_id;
 
-    if array_length(v_user_commission_strategy_id, 1) = 1 and v_user_commission_strategy_id && '{24102,24871}' then
+    if array_length(v_user_commission_strategy_id, 1) = 1 and v_user_commission_strategy_id && '{24102,24871,26056}' then
 
       select o.id
       into v_template_override_plan_id
