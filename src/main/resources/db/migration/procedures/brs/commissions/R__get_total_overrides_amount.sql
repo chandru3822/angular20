@@ -12,7 +12,9 @@ DECLARE
   v_red_line_m2_allocation    numeric;
   v_red_line_m1_allocation    numeric;
   v_commission_strategy_id    bigint;
+  v_override_plan_id bigint;
 BEGIN
+
 
   select interest_rate,
          loan_term,
@@ -29,15 +31,16 @@ BEGIN
     v_desired_commission_amount,
     v_commission_strategy_id;
 
-  select sum(u.red_line_m1_allocation), sum(u.red_line_m2_allocation)
-  into v_red_line_m1_allocation,v_red_line_m2_allocation
+  select sum(u.red_line_m1_allocation), sum(u.red_line_m2_allocation),o.id
+  into v_red_line_m1_allocation,v_red_line_m2_allocation,v_override_plan_id
   from brs.financial_details f
          inner join brs.override_plan o on o.id = f.override_plan_id
          inner join brs.override_plan_receiving_user u on u.override_plan_id = o.id
   where f.project_id = p_project_id
-    and (u.red_line_m1_allocation > 0 or u.red_line_m2_allocation >0);
+    and (u.red_line_m1_allocation > 0 or u.red_line_m2_allocation >0)
+  group by o.id;
 
-  if v_commission_strategy_id = 24102 then
+  if v_commission_strategy_id = 24102 and v_override_plan_id < 2635 then
     v_total = v_desired_commission_amount * v_system_size * 1000;
     v_total = v_total*(v_red_line_m1_allocation + v_red_line_m2_allocation);
   else
