@@ -14,6 +14,7 @@ public class Milestone {
 
     @Id
     private Long commissionPlanAllocationId;
-    private Long allocation, milestoneTypeId, planId, min, max;
+    private Long milestoneTypeId, planId;
+    private Double allocation, min, max;
 
 }
