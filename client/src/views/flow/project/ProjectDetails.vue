@@ -126,7 +126,7 @@
                   </v-toolbar-title>
                 </v-toolbar>
                 <v-card
-                  class="px-4 text-left square-card"
+                  class="px-4 pb-4 text-left square-card"
                   :class="{ 'mb-6': index === customFieldGroups.length - 1 }"
                 >
                   <v-row>
