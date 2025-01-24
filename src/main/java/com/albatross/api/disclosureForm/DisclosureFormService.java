@@ -110,7 +110,21 @@ public class DisclosureFormService {
         }
 
         body.setExpectedAnnualElectricityUsage(srec.getExpectedAnnualElectricityUsage());
+
+      if (utilityCompanyName.equalsIgnoreCase("Mt. Carmel")
+        || utilityCompanyName.equalsIgnoreCase("Municipal Utility")
+        || utilityCompanyName.equalsIgnoreCase("Rural Electric Cooperative")
+        || utilityCompanyName.equalsIgnoreCase("Naperville Electric Utility")) {
+        body.setNetmeteringExcessGenerationCredit("A solar system must be installed under a Building Permit issued by " +
+          "the City of Naperville. The installation of a solar system must comply with UL 1741 and IEEE 1547 standards " +
+          "and all subsequent revisions. The output of a grid tied solar system is limited in size to 10 Kw for " +
+          "residential installations. A completed Solar Compliance Form must accompany a building permit for a grid " +
+          "tied renewable energy generator.\n " +
+          "Supply side connections are limited to, detached or duplex single-family housing.");
+      }
+      else {
         body.setNetmeteringExcessGenerationCredit("");
+      }
 
         if (hasBattery) {
           body.setElectricServiceBillingType("hourly");
