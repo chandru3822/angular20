@@ -102,16 +102,18 @@ public class Five9Query {
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
                              'US/Mountain') :: date between current_date - 180 and current_date - 30)
-                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral','Setter Gen')
-                       AND ((select ccfv.int_value
+                       and
+                        (
+                          pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Setter Gen',
+                                             'Breeze', 'Retargeted', 'Virtual Lead', 'BRS-Display')
+                            OR
+                          (COALESCE((select ccfv.int_value
                                from flow.contact_custom_field_value ccfv
                                where ccfv.custom_field_group_assignment_id = 20977
-                               and ccfv.contact_id = pd.contact_id) in
-                               (1, 2, 3, 7, 40)) -- contacts with certain lead level
+                               and ccfv.contact_id = pd.contact_id), 0) in
+                               (0, 1, 2, 3, 7, 40)) -- contacts with certain lead level
+                          )
                        AND pd.complete_date_booking is null
-                       AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
-                                                         from flow.company_configuration_value
-                                                      where code = 'PNB_EXCLUDED_USER_IDS')
                        AND (select ppscfv.int_value
                             from flow.project_process_step_custom_field_value ppscfv
                             where ppscfv.custom_field_group_assignment_id = 26698 -- Appointment Type
@@ -124,7 +126,7 @@ public class Five9Query {
                        )
     select id
     from results
-    where (next_event is null or (next_event between current_date - 10 and current_date - 30)) -- Make sure latest Closer Appointment is between 10 and 30 days old
+    where (next_event is null or next_event >= current_date - 30) -- Make sure latest Closer Appointment is greater than or equal to 30 days old
     """;
 
   //language=PostgreSQL
