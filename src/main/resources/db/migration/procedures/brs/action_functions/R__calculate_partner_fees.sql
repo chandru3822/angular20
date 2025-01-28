@@ -9,7 +9,8 @@ declare
 --other values we save for use later on
     v_module_installation_cost_field_value            numeric := 0;
     v_ac_rough_wire                                   numeric := 0;
-    v_additional_rough_labor_adder_value                    numeric := 0;
+    v_additional_rough_labor_adder_value              numeric := 0;
+    v_additional_trim_labor_adder_value               numeric := 0;
     v_custom_distance_adder                           numeric := 0;
     v_3_story_roof                                    numeric := 0;
     v_steep_roof                                      numeric := 0;
@@ -33,6 +34,7 @@ declare
     v_nh_permit_cost_actual_cfga_id                   bigint  := 28326;
     v_nh_trim_labor_pricing_cfga_id                   bigint  := 28213;
     v_nh_rough_labor_pricing_cfga_id                  bigint  := 28230;
+    v_nh_additional_trim_labor_adder_cfga_id          bigint  := 30616;
     v_nh_additional_rough_labor_adder_cfga_id         bigint  := 30460;
     v_nh_roofer_labor_pricing_cfga_id                 bigint  := 28240;
     v_nh_storage_rough_pricing_cfga_id                bigint  := 28334;
@@ -293,11 +295,13 @@ BEGIN
         end if;
 
         select flow.get_cfv_value_as_text(p_project_id, null, v_nh_custom_community_adder_cfga_id)::numeric into v_nh_custom_community_adder_value;
+        select flow.get_cfv_value_as_text(p_project_id, null, v_nh_additional_trim_labor_adder_cfga_id)::numeric into v_additional_trim_labor_adder_value;
 
         --NOTE: these values have to be coalesced because sometimes the value is null and 10 + null = null which breaks stuff
         v_calculated_nh_trim_labor_pricing_to_save =
                     coalesce(v_module_installation_cost, 0) + coalesce(v_custom_distance_adder, 0) + coalesce(v_3_story_roof, 0)
-                        + coalesce(v_steep_roof, 0) + coalesce(v_storage_install, 0) + coalesce(v_nh_ip_steep_roof_fee_value, 0) + coalesce(v_nh_custom_community_adder_value, 0);
+                        + coalesce(v_steep_roof, 0) + coalesce(v_storage_install, 0) + coalesce(v_nh_ip_steep_roof_fee_value, 0)
+                        + coalesce(v_nh_custom_community_adder_value, 0) + coalesce(v_additional_trim_labor_adder_value, 0);
 --         raise notice 'v_module_installation_cost = %', v_module_installation_cost::text;
 --         raise notice 'v_custom_distance_adder = %', v_custom_distance_adder::text;
 --         raise notice 'v_3_story_roof = %', v_3_story_roof::text;
