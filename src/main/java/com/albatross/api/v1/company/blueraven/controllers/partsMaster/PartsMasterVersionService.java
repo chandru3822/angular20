@@ -215,31 +215,51 @@ public class PartsMasterVersionService {
       // doesn't have a BRSID
       if (!fields.containsKey("731")) {
 
-        // has a manufacturer and part number, to construct a BRSID
-        if (fields.containsKey("729") && fields.containsKey("730")) {
-
-          var manufacturer = objectMapper.convertValue(fields.get("729"), JsonNode.class);
-          var partNumber = objectMapper.convertValue(fields.get("730"), JsonNode.class);
-
           final var code = objectCode.substring(6).toUpperCase();
-          final var brsID = String.format("%s-%s-%s", code, manufacturer.get("value").asText(), partNumber.get("value").asText());
+          String brsID = null;
+          //the formula for the BRSID is different for Wires: objectCode (minus the prefix `PARTS_`), Description-Wire Color-Wire Gauge-Wire Sequence-Wire Stranding
+          // color can be null, but if any of the other fields are null, don't add a BRSID
+          if(objectCode.equals("PARTS_WIRES") && fields.containsKey("728") && fields.containsKey("840") && fields.containsKey("841") && fields.containsKey("844")){
+              var description = objectMapper.convertValue(fields.get("728"), JsonNode.class);
+              var colorText = "";
+              if(fields.containsKey("843")){
+                  var color = objectMapper.convertValue(fields.get("843"), JsonNode.class);
+                  colorText = color.get("value").asText();
+              }
+              var gauge = objectMapper.convertValue(fields.get("840"), JsonNode.class);
+              var sequence = objectMapper.convertValue(fields.get("841"), JsonNode.class);
+              var stranding = objectMapper.convertValue(fields.get("844"), JsonNode.class);
 
-          Map<String, Object> lovParams = Map.of("name", brsID, "parentId", 2608, "createdById", currentUser.getId());
+               brsID = String.format("%s-%s-%s-%s-%s-%s", code, description.get("value").asText(), colorText, gauge.get("value").asText(), sequence.get("value").asText(), stranding.get("value").asText());
+          }
 
-          final var lovID = sqlCache.queryForObjectBySql(BlueravenCustomFieldQuery.upsertListOfValue, lovParams, Long.class);
+        // has a manufacturer and part number, to construct a BRSID
+        else if (fields.containsKey("729") && fields.containsKey("730")) {
 
-          HashMap<String, Object> values = new HashMap<>();
-          values.put("partsMasterVersionId", versionId);
-          values.put("groupUUID", rowId);
-          values.put("objectCode", objectCode);
-          values.put("currentUserId", currentUser.getId());
-          values.put("value", objectMapper.writeValueAsString(Map.of("type", "integer", "intValue", lovID, "value", brsID)));
-          values.put("fieldId", 731);
+              var manufacturer = objectMapper.convertValue(fields.get("729"), JsonNode.class);
+              var partNumber = objectMapper.convertValue(fields.get("730"), JsonNode.class);
 
-          sqlCache.updateBatchBySql(PartsMasterQuery.insertCustomValue, List.of(values));
-          row = getPartsMasterCustomFieldValuesByGroupUUID(versionId, objectCode, rowId);
+              brsID = String.format("%s-%s-%s", code, manufacturer.get("value").asText(), partNumber.get("value").asText());
+          }
+
+        if(brsID != null) {
+            Map<String, Object> lovParams = Map.of("name", brsID, "parentId", 2608, "createdById", currentUser.getId());
+
+            final var lovID = sqlCache.queryForObjectBySql(BlueravenCustomFieldQuery.upsertListOfValue, lovParams, Long.class);
+
+            HashMap<String, Object> values = new HashMap<>();
+            values.put("partsMasterVersionId", versionId);
+            values.put("groupUUID", rowId);
+            values.put("objectCode", objectCode);
+            values.put("currentUserId", currentUser.getId());
+            values.put("value", objectMapper.writeValueAsString(Map.of("type", "integer", "intValue", lovID, "value", brsID)));
+            values.put("fieldId", 731);
+
+            sqlCache.updateBatchBySql(PartsMasterQuery.insertCustomValue, List.of(values));
+            row = getPartsMasterCustomFieldValuesByGroupUUID(versionId, objectCode, rowId);
         }
-      }
+        }
+
     }
 
     return row;
