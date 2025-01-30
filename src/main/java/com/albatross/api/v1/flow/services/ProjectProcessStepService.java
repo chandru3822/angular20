@@ -2139,12 +2139,13 @@ public class ProjectProcessStepService {
     //needs to return the same stuff as the one called by communicationController.sendTextsForProject
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
-    HashMap<String, Object> params = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("contactId", contactId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-    params.put("partnerIds", user.getPartnerIds());
+    params.put("partnerIds", (user.getPartnerIds() == null) ? List.of() : user.getPartnerIds());
+
     Optional<Contact> contact =
       sqlCache.getBySql(ContactQuery.getById, params, new ContactService.ContactMapper<>(Contact.class, om));
 
