@@ -49,12 +49,11 @@ const filteredFunnelDrilldownItems = (filteredItems) => {
 const totalSystemSize = computed(() => {
   let size = 0
   if (
-      props.funnelDrilldownData.length > 0 &&
-      filteredFunnelDrilldownData.value.length > 0
+      props.funnelDrilldownData.length > 0
   ) {
     let total = 0
 
-    filteredFunnelDrilldownData.value.forEach((row) => {
+    props.funnelDrilldownData.forEach((row) => {
       if (row.system_size) {
         total += row.system_size
       }
