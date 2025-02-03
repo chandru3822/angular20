@@ -671,7 +671,7 @@
                                 prepend-icon="mdi-cursor-move"
                               />
                             </template>
-                            <v-list>
+                            <v-list class="scroll-it">
                               <v-list-item
                                 v-for="(cfg, index) in customFieldGroups.filter(
                                   (g) => {
@@ -1475,6 +1475,11 @@ const expandItem = (item, index) => {
   align-items: center;
   border-bottom: thin solid rgba(0, 0, 0, 0.12);
   width: calc(100vw - 100px);
+}
+
+.scroll-it{
+  overflow: auto;
+  max-height: 300px;
 }
 </style>
 <style lang="scss">
