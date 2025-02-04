@@ -231,6 +231,11 @@
       v-if="isMobile"
       :menu-items="[
         pageOverviewMenuItem,
+        {
+          pageName: 'Child Projects',
+          subMenuSlot: true,
+          customPath: `/projects/${route.params.projectId}/children`
+        },
         { pageName: 'Details', subMenuSlot: true },
         {
           pageName: 'Active Process Steps',
@@ -266,27 +271,47 @@
       :subMenuSelectedView="selectedTab"
     >
       <template v-slot:subMenu_1>
-        <ProjectTabs
-          :project="project"
-          hideAdminBtn
-          :tab-change-callback="changeTabs"
-          class="mx-2"
-        ></ProjectTabs>
+        <div class="custom-divider">
+          <ChildProjects
+            v-if="
+                project?.childProjects?.length > 0 ||
+                project?.childCompanyProcesses?.length > 0
+              "
+            :child-company-processes="project?.childCompanyProcesses"
+            :project-company-process-id="project.companyProcessId"
+            :child-projects="project.childProjects?.slice(0, 3)"
+            class="mx-2"
+          ></ChildProjects>
+        </div>
       </template>
       <template v-slot:subMenu_2>
-        <ActiveProcessSteps
-          :project="project"
-          :update-key="updatePpsKey"
-          class="mx-2"
-        ></ActiveProcessSteps>
+        <div class="custom-divider">
+          <ProjectTabs
+            :project="project"
+            hideAdminBtn
+            :tab-change-callback="changeTabs"
+            class="mx-2"
+          ></ProjectTabs>
+        </div>
       </template>
       <template v-slot:subMenu_3>
-        <ActiveEvents
-          v-if="userHasEventsFeature"
-          :update-key="updateEventKey"
-          :projectId="projectId"
-          class="mx-2"
-        />
+        <div class="custom-divider">
+          <ActiveProcessSteps
+            :project="project"
+            :update-key="updatePpsKey"
+            class="mx-2"
+          ></ActiveProcessSteps>
+        </div>
+      </template>
+      <template v-slot:subMenu_4>
+        <div class="custom-divider">
+          <ActiveEvents
+            v-if="userHasEventsFeature"
+            :update-key="updateEventKey"
+            :projectId="projectId"
+            class="mx-2"
+          />
+        </div>
       </template>
       <template v-slot:header-contents>
         <v-toolbar-title class="title-medium text-wrap">
@@ -1280,6 +1305,12 @@ const getOwners = async () => {
   border: solid 1px var(--v-grey-lighten1);
   padding: 10px;
   margin: 0 23px 10px 23px;
+}
+
+.custom-divider {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 }
 
 .edit-state-link {
