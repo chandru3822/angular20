@@ -28,7 +28,7 @@ public class DisclosureFormQuery {
           COALESCE(plh.loan_amount::numeric + plh.optional_down_payment::numeric + plh.required_down_payment, '0') as total_cost,
           CAST(COALESCE(plh.number_of_batteries, '0') AS integer) > 0 as has_battery,
           plh.storage_size_kwh_per_battery,
-          round(plh.total_yearly_usage_pre_solar::numeric / 1000, 2) as expected_annual_electricity_usage
+          round(plh.total_yearly_usage_pre_solar::numeric, 2) as expected_annual_electricity_usage
         from brs.proposal_log_history plh
         inner join brs.project_details pd on pd.project_id = plh.project_id
         inner join flow.project p on pd.project_id = p.id
