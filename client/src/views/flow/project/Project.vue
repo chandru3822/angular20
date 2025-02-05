@@ -522,6 +522,7 @@
         <div v-if="project && project.id">
           <PageOverview
             page-name="Project"
+            :project="project"
             :show-edit-btn="
               userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') &&
               userCanEdit
@@ -529,13 +530,7 @@
             @clickEdit="showEditModal()"
             :details="overviewDetails"
           />
-          <ContactCard :project="project"></ContactCard>
-          <v-divider v-if="project?.parentProject?.id != null" />
-          <ParentProject
-            v-if="project?.parentProject?.id != null"
-            :parent-project="project.parentProject"
-            class="mx-2"
-          ></ParentProject>
+
           <v-divider
             v-if="
               project?.childProjects?.length > 0 ||

@@ -426,6 +426,7 @@ const resetContact = async () => {
   border: solid 1px var(--v-grey-lighten1);
   padding: 10px;
   margin: 0 23px 10px 23px;
+  max-width: 480px;
 }
 
 .overview-contact-email {

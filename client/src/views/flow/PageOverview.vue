@@ -161,6 +161,13 @@
 
       </template>
     </SidePanelExpansionPanel>
+    <ContactCard v-if="project" :project="project"></ContactCard>
+    <v-divider v-if="project?.parentProject?.id != null" />
+    <ParentProject
+        v-if="project?.parentProject?.id != null"
+        :parent-project="project.parentProject"
+        class="mx-2"
+    ></ParentProject>
   </v-container>
 </template>
 
@@ -175,6 +182,8 @@ import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+import ContactCard from "@/views/flow/project/ContactCard.vue";
+import ParentProject from "@/views/flow/project/ParentProject.vue";
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
@@ -200,6 +209,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  project: Object,
   details: Array,
   owner: Object
 })
