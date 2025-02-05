@@ -190,7 +190,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping(value = "/{proposalId}/lock")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN') || isBrSystemUser()")
   public Optional<Proposal> lockProposal(@PathVariable Long proposalId, @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.lockProposal(proposalId, details);
   }
