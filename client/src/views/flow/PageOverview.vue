@@ -161,10 +161,11 @@
 
       </template>
     </SidePanelExpansionPanel>
-    <ContactCard v-if="project" :project="project"></ContactCard>
+<!--    the only purpose to hiding these when there are no details is that it causes them to not show in the center screen when we're accidentally navigated to /projectOverview on desktop-->
+    <ContactCard v-if="project && details" :project="project"></ContactCard>
     <v-divider v-if="project?.parentProject?.id != null" />
     <ParentProject
-        v-if="project?.parentProject?.id != null"
+        v-if="project?.parentProject?.id != null && details"
         :parent-project="project.parentProject"
         class="mx-2"
     ></ParentProject>
