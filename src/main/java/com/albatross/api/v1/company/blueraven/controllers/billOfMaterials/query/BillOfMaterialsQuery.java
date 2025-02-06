@@ -4,19 +4,21 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String createBomForProject = """
-        insert into brs.bill_of_materials(bom_type_id, project_id, date_created, date_modified, created_by_id, modified_by_id)
-        values (:bomtypeId, :projectId, now(), now(), :userId, :userId)
+        insert into brs.bill_of_materials(project_id, date_created, date_modified, created_by_id, modified_by_id)
+        values (:projectId, now(), now(), :userId, :userId)
     """;
 
     //language=PostgreSQL
     public final static String upsertBomParts = """
-            INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, bom_id, date_created, date_modified, created_by_id, modified_by_id)
-            VALUES (:quantity, :partsMasterId, :bomId, now(), now(), :userId, :userId)
+            INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, bom_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
+            VALUES (:quantity, :partsMasterId, :bomId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
             on conflict (parts_master_id, bom_id)
             do update
             	set quantity = :quantity
-            	  , archived = :archived
-            	  , modified_by_id = :userId
+            	    , supplier_id = :supplierId
+            	    , supplier_confirmed = :supplierConfirmed
+            	    , archived = :archived
+            	    , modified_by_id = :userId
             	    , date_modified = now()
     """;
 
@@ -67,7 +69,7 @@ public class BillOfMaterialsQuery {
     """;
 
     //language=PostgreSQL
-    public final static String getBomByTypeForProject = """
+    public final static String getBomForProject = """
             WITH version_values AS (
             	SELECT DISTINCT ON (vw.parts_master_group_uuid, vw.custom_field_group_assignment_id)
             		vw.parts_master_group_uuid,
@@ -88,7 +90,6 @@ public class BillOfMaterialsQuery {
             
             SELECT
                 bom.id
-            , bom.bom_type_id
             , bom.project_id
             , date_created
             , date_modified
@@ -118,7 +119,7 @@ public class BillOfMaterialsQuery {
                      ) bomp
             	), '[]') AS "partsList"
             FROM brs.bill_of_materials bom
-            WHERE bom.project_id = :projectId AND bom.bom_type_id = :bomTypeId
+            WHERE bom.project_id = :projectId
     """;
 
     //language=PostgreSQL
@@ -143,7 +144,6 @@ public class BillOfMaterialsQuery {
             
             SELECT
                 bom.id
-            , bom.bom_type_id
             , bom.project_id
             , date_created
             , date_modified

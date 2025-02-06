@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 public class BillOfMaterialsPart {
-    private Long id, quantity, bomId, partsMasterId, createdById, modifiedById;
-    private UUID partsMasterUuid;
+    private Long id, quantity, bomId, partsMasterId, supplierId, createdById, modifiedById;
     private Date dateCreated, dateModified;
-    private Boolean archived;
+    private Boolean supplierConfirmed, archived;
     private PartsMasterCustomValuesRow partDetails;
 }

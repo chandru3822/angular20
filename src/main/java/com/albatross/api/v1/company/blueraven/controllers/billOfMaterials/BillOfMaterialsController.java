@@ -18,13 +18,12 @@ public class BillOfMaterialsController {
 
     private final BillOfMaterialsService billOfMaterialsService;
 
-    @PostMapping("/{projectId}/{bomTypeId}")
+    @PostMapping("/{projectId}")
     public Optional<BillOfMaterials> createBillOfMaterials(
             @PathVariable Long projectId,
-            @PathVariable Long bomTypeId,
             @RequestParam List<BillOfMaterialsPart> parts
     ){
-        return billOfMaterialsService.createBomForProject(projectId, bomTypeId, parts);
+        return billOfMaterialsService.createBomForProject(projectId, parts);
     }
 
     @PutMapping(value="/{bomId}/parts")
@@ -35,12 +34,11 @@ public class BillOfMaterialsController {
         return billOfMaterialsService.updateBomParts(bomId, parts);
     }
 
-    @GetMapping(value="/{projectId}/{bomTypeId}")
+    @GetMapping(value="/{projectId}")
     public Optional<BillOfMaterials> getBomByTypeForProject(
-            @PathVariable Long projectId,
-            @PathVariable Long bomTypeId
+            @PathVariable Long projectId
     ){
-        return billOfMaterialsService.getBomByTypeForProject(projectId, bomTypeId);
+        return billOfMaterialsService.getBomForProject(projectId);
     }
 
     @DeleteMapping(value="/{bomId}")

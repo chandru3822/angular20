@@ -31,12 +31,11 @@ public class BillOfMaterialsService {
     private final ObjectMapper om;
 
     @Transactional
-    public Optional<BillOfMaterials> createBomForProject(Long projectId, Long bomTypeId, List<BillOfMaterialsPart> parts){
+    public Optional<BillOfMaterials> createBomForProject(Long projectId, List<BillOfMaterialsPart> parts){
         User user = securityService.getCurrentUser();
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", user.getId());
         params.put("projectId", projectId);
-        params.put("bomTypeId", bomTypeId);
 
         Long bomId = sqlCache.updateBySqlReturningId(BillOfMaterialsQuery.createBomForProject, params, "id").longValue();
         return updateBomParts(bomId, parts);
@@ -56,6 +55,8 @@ public class BillOfMaterialsService {
                     map.put("quantity", p.getQuantity());
                     map.put("partsMasterId", p.getPartsMasterId());
                     map.put("bomId", bomId);
+                    map.put("supplierId", p.getSupplierId());
+                    map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
                     Boolean archived = p.getQuantity() > 0 ? p.getArchived() : true; //make sure if they set the quantity to zero the part gets archived
                     map.put("archived", archived);
                     return map;
@@ -66,12 +67,11 @@ public class BillOfMaterialsService {
         return getBomById(bomId);
     }
 
-    public Optional<BillOfMaterials> getBomByTypeForProject(Long projectId, Long bomTypeId){
+    public Optional<BillOfMaterials> getBomForProject(Long projectId){
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
-        params.put("bomTypeId", bomTypeId);
 
-        return sqlCache.getBySql(BillOfMaterialsQuery.getBomByTypeForProject, params, new BomMapper<>(BillOfMaterials.class, om));
+        return sqlCache.getBySql(BillOfMaterialsQuery.getBomForProject, params, new BomMapper<>(BillOfMaterials.class, om));
     }
 
     public Optional<BillOfMaterials> getBomById(Long bomId){
