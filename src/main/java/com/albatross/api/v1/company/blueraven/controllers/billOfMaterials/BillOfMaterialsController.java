@@ -1,6 +1,5 @@
 package com.albatross.api.v1.company.blueraven.controllers.billOfMaterials;
 
-import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterials;
 import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterialsPart;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -18,31 +16,23 @@ public class BillOfMaterialsController {
 
     private final BillOfMaterialsService billOfMaterialsService;
 
-    @PostMapping("/{projectId}")
-    public Optional<BillOfMaterials> createBillOfMaterials(
+    @PutMapping(value="/{projectId}/parts")
+    public List<BillOfMaterialsPart> upsertBomParts(
             @PathVariable Long projectId,
             @RequestParam List<BillOfMaterialsPart> parts
-    ){
-        return billOfMaterialsService.createBomForProject(projectId, parts);
-    }
-
-    @PutMapping(value="/{bomId}/parts")
-    public Optional<BillOfMaterials> updateBomParts(
-            @PathVariable Long bomId,
-            @RequestParam List<BillOfMaterialsPart> parts
             ){
-        return billOfMaterialsService.updateBomParts(bomId, parts);
+        return billOfMaterialsService.upsertBomParts(projectId, parts);
     }
 
     @GetMapping(value="/{projectId}")
-    public Optional<BillOfMaterials> getBomByTypeForProject(
+    public List<BillOfMaterialsPart> getBomByTypeForProject(
             @PathVariable Long projectId
     ){
         return billOfMaterialsService.getBomForProject(projectId);
     }
 
-    @DeleteMapping(value="/{bomId}")
-    public void deleteBillOfMaterials(@PathVariable Long bomId){
-        billOfMaterialsService.deleteBillOfMaterials(bomId);
+    @DeleteMapping(value="/{projectId}")
+    public void deleteBillOfMaterialsAllParts(@PathVariable Long projectId){
+        billOfMaterialsService.deleteBillOfMaterialsAllParts(projectId);
     }
 }
