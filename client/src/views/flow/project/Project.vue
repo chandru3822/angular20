@@ -234,7 +234,8 @@
         {
           pageName: 'Child Projects',
           subMenuSlot: true,
-          customPath: `/projects/${route.params.projectId}/children`
+          customPath: `/projects/${route.params.projectId}/children`,
+          hidden: !showCommunity && !showChildProject,
         },
         { pageName: 'Details', subMenuSlot: true },
         {
@@ -271,17 +272,19 @@
       :subMenuSelectedView="selectedTab"
     >
       <template v-slot:subMenu_1>
-        <div class="custom-divider">
+        <div class="custom-divider" v-if="showChildProject || showCommunity">
           <ChildProjects
-            v-if="
-                project?.childProjects?.length > 0 ||
-                project?.childCompanyProcesses?.length > 0
-              "
+            v-if="showChildProject"
             :child-company-processes="project?.childCompanyProcesses"
-            :project-company-process-id="project.companyProcessId"
-            :child-projects="project.childProjects?.slice(0, 3)"
+            :project-company-process-id="project?.companyProcessId"
+            :child-projects="project?.childProjects?.slice(0, 3)"
             class="mx-2"
           ></ChildProjects>
+          <ParentProject
+            v-if="showCommunity"
+            :parent-project="project?.parentProject"
+            class="mx-2"
+          ></ParentProject>
         </div>
       </template>
       <template v-slot:subMenu_2>
@@ -683,6 +686,9 @@ const tempFirstName = ref('')
 const tempLastName = ref('')
 const projectContact = ref({})
 const contactLoading = ref(false)
+const showCommunity = ref(false)
+const showChildProject = ref(false)
+const filteredMenuItems = ref([])
 
 onMounted(() => {
   //have to reset this on creation in case there is already a state then they go to the project url directly
@@ -806,9 +812,16 @@ watch(projectTagEvents, async () => {
   }
 })
 
+const setUiValues = () => {
+  showCommunity.value = project.value?.parentProject?.id != null
+  showChildProject.value = project.value?.childProjects?.length > 0 ||
+    project.value?.childCompanyProcesses?.length > 0
+}
+
 const loadProject = async () => {
   await getProject()
   await getMilestones()
+  setUiValues()
 }
 const changeTabs = (selectedChildTab, buttonClicked) => {
   selectedTab.value = selectedChildTab
@@ -1306,6 +1319,7 @@ const getOwners = async () => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   padding-bottom: 8px;
   margin-bottom: 8px;
+  width: 100%;
 }
 
 .edit-state-link {

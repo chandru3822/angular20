@@ -75,7 +75,7 @@ const rightDrawerInput = (event) => {
   <v-container class="pa-0" id="three-column-container">
     <v-navigation-drawer v-model="showMenu" absolute temporary clipped>
       <v-list>
-        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0" :class="{'my-1': !item.subMenuSlot, 'active': item.customPath && route.path.includes(item.customPath)}">
+        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0" :class="{'my-1': !item.subMenuSlot, 'active': item.customPath && route.path.includes(item.customPath), 'hide': item.hidden}">
           <v-list-item-title class="mx-6 label-large" v-if="!item.subMenuSlot" @click="chooseSelectedView(item, index)">{{ item.pageName }}</v-list-item-title>
           <slot :name="`subMenu_${index}`"/>
         </v-list-item>
@@ -135,6 +135,10 @@ const rightDrawerInput = (event) => {
 
 .active {
   background-color: var(--v-primary-lighten9);
+}
+
+.hide {
+  display: none;
 }
 
 .white-bg {
