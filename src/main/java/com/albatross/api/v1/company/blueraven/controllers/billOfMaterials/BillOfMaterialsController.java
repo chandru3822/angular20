@@ -16,10 +16,10 @@ public class BillOfMaterialsController {
 
     private final BillOfMaterialsService billOfMaterialsService;
 
-    @PutMapping(value="/{projectId}/parts")
+    @PostMapping(value="/{projectId}/parts")
     public List<BillOfMaterialsPart> upsertBomParts(
             @PathVariable Long projectId,
-            @RequestParam List<BillOfMaterialsPart> parts
+            @RequestBody List<BillOfMaterialsPart> parts
             ){
         return billOfMaterialsService.upsertBomParts(projectId, parts);
     }

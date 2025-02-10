@@ -58,6 +58,7 @@ public class BillOfMaterialsQuery {
                    WHERE bomp.project_id = :projectId
                    GROUP BY bomp.id
                           , pmvcfg.id
+                          , s.name
     """;
 
     //language=PostgreSQL
