@@ -31,10 +31,11 @@ public class BillOfMaterialsService {
         User user = securityService.getCurrentUser();
 
         //do a batch update using upsertBomParts
-        final List<Map<String, Object>> params =
-                parts.stream().map(p -> {
+        final List<Map<String, Object>> insertParams =
+                parts.stream().filter(p ->p.getId() == null).map(p -> {
                     final Map<String, Object> map = new HashMap<>();
                     map.put("userId", user.getId());
+                    map.put("id", p.getId());
                     map.put("quantity", p.getQuantity());
                     map.put("partsMasterId", p.getPartsMasterId());
                     map.put("projectId", projectId);
@@ -45,8 +46,23 @@ public class BillOfMaterialsService {
                     return map;
                 }).toList();
 
-        sqlCache.updateBatchBySql(BillOfMaterialsQuery.upsertBomParts, params);
+        final List<Map<String, Object>> updateParams =
+                parts.stream().filter(p ->p.getId() != null).map(p -> {
+                    final Map<String, Object> map = new HashMap<>();
+                    map.put("userId", user.getId());
+                    map.put("id", p.getId());
+                    map.put("quantity", p.getQuantity());
+                    map.put("partsMasterId", p.getPartsMasterId());
+                    map.put("projectId", projectId);
+                    map.put("supplierId", p.getSupplierId());
+                    map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
+                    Boolean archived = p.getQuantity() <= 0 || p.getArchived() != null && p.getArchived(); //make sure if they set the quantity to zero the part gets archived
+                    map.put("archived", archived);
+                    return map;
+                }).toList();
 
+        sqlCache.updateBatchBySql(BillOfMaterialsQuery.insertBomParts, insertParams);
+        sqlCache.updateBatchBySql(BillOfMaterialsQuery.updateBomParts, updateParams);
         return getBomForProject(projectId);
     }
 

@@ -3,62 +3,60 @@ package com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.query
 public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
-    public final static String upsertBomParts = """
+    public final static String insertBomParts = """
             INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
             VALUES (:quantity, :partsMasterId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
-            on conflict (id)
-            do update
-            	set quantity = :quantity
-            	    , supplier_id = :supplierId
-            	    , supplier_confirmed = :supplierConfirmed
-            	    , archived = :archived
-            	    , modified_by_id = :userId
-            	    , date_modified = now()
+    """;
+
+    //language=PostgreSQL
+    public final static String updateBomParts = """
+             UPDATE brs.bill_of_materials_parts
+                set quantity = :quantity
+                    , supplier_id = :supplierId
+                    , supplier_confirmed = :supplierConfirmed
+                    , archived = :archived
+                    , modified_by_id = :userId
+                    , date_modified = now()
+            WHERE id = :id
     """;
 
     //language=PostgreSQL
     public final static String getBomForProject = """
-       WITH version_values AS (
-                   	SELECT DISTINCT ON (vw.parts_master_group_uuid, vw.custom_field_group_assignment_id)
-                   		vw.parts_master_group_uuid,
-                   		vw.custom_field_group_assignment_id,
-                   		pmv.version AS parts_master_version_id,
-                   		vw.value,
-                   		vw.field_id,
-                   		vw.field_code,
-                   		vw.modified_by_id,
-                   		vw.modified_by,
-                   		vw.date_modified
-                   	FROM brs.parts_master_version_custom_field_value_vw vw
-                   		     INNER JOIN brs.parts_master_version pmv
-                   		                ON pmv.id = vw.parts_master_version_id
-                   	WHERE pmv.parts_master_version_status_id = 1
-                   	ORDER BY vw.parts_master_group_uuid, vw.custom_field_group_assignment_id, vw.date_modified DESC
-                   )
-                   SELECT
-                   	bomp.id
-                   	 , bomp.quantity
-                   	 , bomp.project_id
-                   	 , bomp.parts_master_id
-                   	 , bomp.supplier_id
-                   	 , s.name
-                   	 , bomp.supplier_confirmed
-                   	 , pmvcfg.parts_master_group_uuid
-                   	 , json_build_object(
-                   			   'pk', pmvcfg.parts_master_group_uuid,
-                   			   'versionId', MAX(vv.parts_master_version_id)
-                   		   )::jsonb || json_object_agg(vv.field_id, vv.value)::jsonb AS "partDetails"
-                   FROM brs.bill_of_materials_parts bomp
-                   	     INNER JOIN brs.parts_master_version_custom_field_group pmvcfg
-                   	                ON pmvcfg.id = bomp.parts_master_id
-                   	    LEFT JOIN brs.feat_db_supplier s
-                   	                ON s.id = bomp.supplier_id
-                   	     LEFT JOIN version_values vv
-                   	               ON pmvcfg.parts_master_group_uuid = vv.parts_master_group_uuid
-                   WHERE bomp.project_id = :projectId
-                   GROUP BY bomp.id
-                          , pmvcfg.id
-                          , s.name
+      WITH parts_data AS (
+                          SELECT
+                              parts_master_group_uuid,
+                              jsonb_extract_path_text(value, 'value') AS part_value,
+                              field_id
+                          FROM brs.parts_master_version_custom_field_value_vw vw
+                                   INNER JOIN brs.parts_master_version pmv
+                                              ON pmv.id = vw.parts_master_version_id
+                          WHERE pmv.parts_master_version_status_id = 2
+                              and field_id IN (728, 729, 730)
+                          ORDER BY vw.parts_master_group_uuid, vw.custom_field_group_assignment_id, vw.date_modified DESC
+                      )
+                      SELECT
+                          bomp.id
+                           , bomp.quantity
+                           , bomp.project_id
+                           , bomp.parts_master_id
+                           , bomp.supplier_id
+                           , s.name
+                           , bomp.supplier_confirmed
+                           , pmvcfg.parts_master_group_uuid
+                           , MAX(CASE WHEN field_id = 728 THEN part_value END) AS description
+                           , MAX(CASE WHEN field_id = 729 THEN part_value END) AS brand
+                           , MAX(CASE WHEN field_id = 730 THEN part_value END) AS part_number
+                      FROM brs.bill_of_materials_parts bomp
+                               INNER JOIN brs.parts_master_version_custom_field_group pmvcfg
+                                          ON pmvcfg.id = bomp.parts_master_id
+                               LEFT JOIN brs.feat_db_supplier s
+                                         ON s.id = bomp.supplier_id
+                               LEFT JOIN parts_data vv
+                                         ON pmvcfg.parts_master_group_uuid = vv.parts_master_group_uuid
+                      WHERE bomp.project_id = :projectId
+                      GROUP BY bomp.id
+                             , pmvcfg.id
+                             , s.name
     """;
 
     //language=PostgreSQL
