@@ -81,7 +81,7 @@
                       class="text-left pl-6 custom-column-width"
                       :class="{
                         'shrink': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput === `${index}-${h.customFieldGroupAssignmentId}` && filteredChildProjects.length > 1,
-                        'normal': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput !== `${index}-${h.customFieldGroupAssignmentId}`
+                        'normal': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput !== `${index}-${h.customFieldGroupAssignmentId}` || filteredChildProjects.length <= 1
                       }"
                       v-for="h in headers.filter(h => h.showInLoop)"
                       @focusin="handleFocusin(index, h.customFieldGroupAssignmentId)"
@@ -464,7 +464,7 @@ const exportToCsv = () => {
 
 <style lang="scss" scoped>
 
-.custom-column-width.normal > div,
+.custom-column-width.normal > div:not(:has(.v-input--checkbox)),
 ::v-deep(td.normal > div.v-input.datetime-picker-input) {
   width: 280px !important;
 }
