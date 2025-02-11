@@ -14,7 +14,7 @@
                       <a-btn variant="text" text="Export to Excel" @click="exportToCsv"></a-btn>
                       <a-btn variant="text" text="Cancel" :to="`/project/${projectId}/children`"></a-btn>
                       <a-btn variant="text" color="primary" text="Save Changes"
-                             :disabled="dirtyFields?.length === 0"
+                             :disabled="dirtyFields.value?.size === 0"
                              @click="saveChanges()"></a-btn>
                     </v-toolbar-items>
                   </v-toolbar>
@@ -29,7 +29,7 @@
             <v-col cols="12" class="pt-0" v-else>
               <v-data-table
                   :headers="headers"
-                  :items="childProjects"
+                  :items="filteredChildProjects"
                   item-key="id"
                   :fixed-header="true"
                   :options.sync="options"
@@ -74,51 +74,83 @@
                     </th>
                   </tr>
                 </template>
-
                 <template #item="{ item, index }">
                   <tr :class="{'shaded-row': index % 2}">
-                    <td class="text-left pl-4" :style="{background: index % 2 ? 'var(--v-primary-lighten9) !important' : 'white'}">{{item.projectName}}</td>
-                    <td class="text-left pl-4" v-for="h in headers.filter(h => h.showInLoop)">
-                      <DatetimePickerInput
-                          v-if="h.dataTypeId === 1"
+                    <td class="text-left pl-6" :style="{background: index % 2 ? 'var(--v-primary-lighten9) !important' : 'white'}">{{item.projectName}}</td>
+                    <td
+                      class="text-left pl-6 custom-column-width"
+                      :class="{
+                        'shrink': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput === `${index}-${h.customFieldGroupAssignmentId}`,
+                        'normal': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput !== `${index}-${h.customFieldGroupAssignmentId}`
+                      }"
+                      v-for="h in headers.filter(h => h.showInLoop)"
+                      @focusin="handleFocusin(index, h.customFieldGroupAssignmentId)"
+                      @focusout="handleFocusout"
+                      tabindex="0"
+                    >
+                      <div
+                        class="input-container"
+
+                      >
+                        <DatetimePickerInput
+                          v-if="h.dataTypeId === DATA_FIELD_TYPES.DATE"
                           v-model="item[h.customFieldGroupAssignmentId]"
+                          class="custom-column-width"
+                          tabindex="0"
                           :timezone="timezone"
                           :type="'date'"
                           dense="compact"
                           :format="'MMMM DD, YYYY'"
                           hide-details
                           hide-prepend-icon
-                          :change-callback="() => { populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
-                      />
-                      <DatetimePickerInput
-                          v-else-if="h.dataTypeId === 2"
+                          :change-callback="() => { debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
+                        />
+                        <DatetimePickerInput
+                          v-else-if="h.dataTypeId === DATA_FIELD_TYPES.TIMESTAMP"
                           v-model="item[h.customFieldGroupAssignmentId]"
+                          class="custom-column-width"
+                          tabindex="0"
                           :timezone="timezone"
                           :type="'timestamp'"
                           :format="'MMMM DD, YYYY, h:mm A'"
                           hide-prepend-icon
                           hide-details
                           dense="compact"
-                          :change-callback="() => { populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
-                      />
-                      <v-checkbox v-else-if="h.dataTypeId === 3"
-                                  @change="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
-                                  v-model="item[h.customFieldGroupAssignmentId]"></v-checkbox>
-                      <v-text-field v-else-if="h.dataTypeId === 5"
-                                    v-model="item[h.customFieldGroupAssignmentId]"
-                                    @change="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"/>
-                      <a-autocomplete attach
+                          :change-callback="() => { debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
+                        />
+                        <v-checkbox v-else-if="h.dataTypeId === DATA_FIELD_TYPES.BOOLEAN"
+                                    @change="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
+                                    v-model="item[h.customFieldGroupAssignmentId]"></v-checkbox>
+                        <v-text-field v-else-if="h.dataTypeId === DATA_FIELD_TYPES.TEXT"
                                       v-model="item[h.customFieldGroupAssignmentId]"
-                                      v-else-if="h.dataTypeId === 9"
-                                      :items="h.listOfValues"
-                                      no-data-text="No Values Available"
-                                      clearable
-                                      density="compact"
-                                      hide-details
-                                      @input="populateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
-                                      item-title="name"
-                                      item-value="id"
-                      ></a-autocomplete>
+                                      class="custom-column-width"
+                                      @change="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"/>
+                        <a-autocomplete attach
+                                        v-model="item[h.customFieldGroupAssignmentId]"
+                                        v-else-if="h.dataTypeId === DATA_FIELD_TYPES.SYSTEM_LIST"
+                                        class="custom-column-width"
+                                        :items="h.listOfValues"
+                                        no-data-text="No Values Available"
+                                        clearable
+                                        density="compact"
+                                        hide-details
+                                        @input="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
+                                        item-title="name"
+                                        item-value="id"
+                        ></a-autocomplete>
+                        <v-btn
+                          small
+                          v-show="focusedInput === `${index}-${h.customFieldGroupAssignmentId}` &&
+                            h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN &&
+                            filteredChildProjects.length > 1"
+                          :disabled="!item[h.customFieldGroupAssignmentId]"
+                          color="secondary"
+                          class="ml-2 apply-to-btn"
+                          @click="() => populateAllCfgaIdValues(h.customFieldGroupAssignmentId, item[h.customFieldGroupAssignmentId], item)"
+                        >
+                          {{ filteredChildProjects.length === childProjects.length ? 'Apply to All' : 'Apply to Filtered' }}
+                        </v-btn>
+                      </div>
                     </td>
                   </tr>
                 </template>
@@ -146,7 +178,7 @@
 import {getRequest, logError, getProjectPath, putRequest} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted } from 'vue'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
@@ -154,8 +186,9 @@ import constants from "@/helpers/constants.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { saveAs } from 'file-saver'
+import debounce from "lodash.debounce";
 
-
+const { DATA_FIELD_TYPES } = constants
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
@@ -179,11 +212,14 @@ const projectId = computed(() => {
 const timezone = computed(() => {
   return userStore.timezone.value
 })
-
+const focusedInput = ref(null);
+const currentFocusedInput = ref(null);
 const childProjects = ref([])
 const projectSearch = ref('')
+const debouncedProjectSearch = ref('');
 const phaseSearch = ref('')
-const dirtyFields = ref([])
+const debouncedPhaseSearch = ref('');
+const dirtyFields = ref(new Map())
 const menuOpen = ref(false)
 const isChildProjectsLoading = ref(false)
 const options = ref({itemsPerPage: 25})
@@ -193,10 +229,64 @@ const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
+
+const filteredChildProjects = computed(() => {
+  return childProjects.value.filter(p => {
+    const projectNameMatch = !debouncedProjectSearch.value || p.projectName?.toLowerCase().includes(debouncedProjectSearch.value.toLowerCase());
+    const phaseMatch = !debouncedPhaseSearch.value || (p[28136] && p[28136]?.toLowerCase().includes(debouncedPhaseSearch.value.toLowerCase()));
+    return projectNameMatch && phaseMatch;
+  });
+});
+
+const filterFunction = computed(() => {
+  const searchTerm = debouncedProjectSearch.value;
+
+  if (!searchTerm) return () => true;
+
+  return (value) => {
+    if (!value) return false;
+    return value.toLowerCase().includes(searchTerm);
+  };
+});
+
+watch(
+  projectSearch,
+  debounce((newVal) => {
+    debouncedProjectSearch.value = newVal?.toLowerCase() || '';
+  }, 500)
+);
+
+watch(
+  phaseSearch,
+  debounce((newVal) => {
+    debouncedPhaseSearch.value = newVal?.toLowerCase() || '';
+  }, 500)
+);
+
+const handleFocusin = (index, cfgaId) => {
+  const focusedInputKey = `${index}-${cfgaId}`;
+  focusedInput.value = focusedInputKey;
+  setTimeout(() => {
+    currentFocusedInput.value = focusedInputKey;
+  }, 100);
+}
+
+const handleFocusout = () => {
+  setTimeout(() => {
+    if (focusedInput.value === currentFocusedInput.value)
+      focusedInput.value = null;
+  }, 100);
+}
+
 const headers = ref([
-  // { text: '', value: 'selectBox', selectFilter:true, showInLoop: false, width: '50px' },
-  {text: 'Project Name', value: 'projectName', showInLoop: false, width: 200, filter: value => {if (!projectSearch.value) {return true} else {return value.toLowerCase().includes(projectSearch.value.toLowerCase())}}},
-])
+  {
+    text: 'Project Name',
+    value: 'projectName',
+    showInLoop: false,
+    width: 200,
+    filter: filterFunction.value,
+  },
+]);
 
 onMounted(async () => {
   isChildProjectsLoading.value = true
@@ -207,7 +297,7 @@ onMounted(async () => {
 })
 
 onBeforeRouteUpdate(async (to, from, next) => {
-  if (!override.value && dirtyFields.value?.length > 0) {
+  if (!override.value && dirtyFields.value?.size > 0) {
     unsavedModal.value = true
   } else {
     next()
@@ -215,7 +305,7 @@ onBeforeRouteUpdate(async (to, from, next) => {
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
-  if (!override.value && dirtyFields.value?.length > 0) {
+  if (!override.value && dirtyFields.value?.size > 0) {
     unsavedModal.value = true
   } else {
     next()
@@ -230,19 +320,39 @@ const companyId = computed(() => {
   return userStore.details.companyId
 })
 
-const populateDirtyFields = (cfgaId, projectId, value) => {
-  let matchingIndex = dirtyFields.value.findIndex((field) => field.customFieldGroupAssignmentId === cfgaId && field.projectId === projectId)
+const debouncePopulateDirtyFields = debounce((cfgaId, projectId, value) => {
+  populateDirtyFields(cfgaId, projectId, value)
+}, 500)
 
-  if(matchingIndex !== -1) {
-    dirtyFields.value[matchingIndex].value = value
+const updateDirtyFields = (cfgaId, projectId, key, value) => {
+  if (dirtyFields.value?.has(key)) {
+    dirtyFields.value.get(key).value = value
   } else {
-    dirtyFields.value.push({
-      customFieldGroupAssignmentId: cfgaId,
-      projectId,
-      value
-    })
+    dirtyFields.value?.set(key, { customFieldGroupAssignmentId: cfgaId, projectId, value })
   }
+}
 
+const populateDirtyFields = (cfgaId, projectId, value) => {
+  const key = `${cfgaId}_${projectId}`
+
+  if (projectId && cfgaId && key) {
+    updateDirtyFields(cfgaId, projectId, key, value)
+  }
+}
+
+
+const populateAllCfgaIdValues = (cfgaId, value, item) => {
+  if (!childProjects.value || !Array.isArray(childProjects.value)) return
+
+  item[cfgaId] = value
+
+  filteredChildProjects.value.forEach((child) => {
+    const projectId = child.id
+
+    child[cfgaId] = value
+
+    populateDirtyFields(cfgaId, projectId, value)
+  })
 }
 
 const goToProject = () => {
@@ -253,8 +363,8 @@ const goToProject = () => {
 const saveChanges = async () => {
   appStore.loading = true
   try {
-    await putRequest(`/project/${projectId.value}/children/details`, dirtyFields.value)
-    dirtyFields.value = []
+    await putRequest(`/project/${projectId.value}/children/details`, Array.from(dirtyFields.value?.values()))
+    dirtyFields.value?.clear()
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Changes')
@@ -267,13 +377,17 @@ const getChildProjectHeaders = async () => {
   try {
     const {data} = await getRequest(`/project/childrenHeaders`)
     data.forEach(d => {
+      let determinedFilter =
+        d.customFieldGroupAssignmentId === 28136
+          ? (value) => filteredChildProjects.value
+          : null;
       let header = { ...d,
         text: d.fieldName,
         key: d.customFieldGroupAssignmentId,
         value: d.customFieldGroupAssignmentId.toString(),
         showInLoop: true,
         width: getColumnWidth(d.dataTypeId),
-        filter: d.customFieldGroupAssignmentId === 28136 ? value => {if (!phaseSearch.value) {return true} else {return value?.toLowerCase().includes(phaseSearch.value?.toLowerCase())}} : null
+        filter: determinedFilter
       }
       headers.value.push(header)
     })
@@ -284,12 +398,12 @@ const getChildProjectHeaders = async () => {
 
 const getColumnWidth = (dataTypeId) => {
   switch (dataTypeId) {
-    case 1: return 210
-    case 2: return 250
-    case 5: return 200
-    case 8:
-    case 9:
-    case 10:
+    case DATA_FIELD_TYPES.DATE: return 210
+    case DATA_FIELD_TYPES.TIMESTAMP: return 250
+    case DATA_FIELD_TYPES.TEXT:
+    case DATA_FIELD_TYPES.SYSTEM:
+    case DATA_FIELD_TYPES.SYSTEM_LIST:
+    case DATA_FIELD_TYPES.SYSTEM_MULTISELECT:
       return 200
     default: return 100
   }
@@ -317,8 +431,8 @@ const exportToCsv = () => {
 
     childProjects.value.filter(
         p => {
-          const projectNameMatch = !projectSearch.value || p.projectName?.toLowerCase().includes(projectSearch.value.toLowerCase());
-          const phaseMatch = !phaseSearch.value || (p[28136] && p[28136]?.toLowerCase().includes(phaseSearch.value.toLowerCase()));
+          const projectNameMatch = !debouncedProjectSearch.value || p.projectName?.toLowerCase().includes(debouncedProjectSearch.value);
+          const phaseMatch = !debouncedPhaseSearch.value || (p[28136] && p[28136]?.toLowerCase().includes(debouncedPhaseSearch.value));
           return projectNameMatch && phaseMatch;
         }).forEach((p) => {
       headers.value.forEach((h) => {
@@ -349,6 +463,33 @@ const exportToCsv = () => {
 </script>
 
 <style lang="scss" scoped>
+
+.custom-column-width.normal > div,
+::v-deep(td.normal > div.v-input.datetime-picker-input) {
+  width: 280px !important;
+}
+
+ .custom-column-width.shrink,
+ .custom-column-width.shrink > div,
+ ::v-deep(.v-input.datetime-picker-input) {
+   flex: 1;
+ }
+
+.v-input.datetime-picker-input .v-input__control {
+  width: 100%;
+}
+
+.apply-to-btn {
+  color: var(--v-primary-base) !important;
+  white-space: nowrap;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 #project-details-container {
   margin-top: -15px;
   padding-left: 0;
@@ -398,10 +539,10 @@ const exportToCsv = () => {
    position: sticky !important;
    position: -webkit-sticky !important;
    left: 0;
-   z-index: 9998;
+   z-index: 2;
    background: white;
  }
 #project-children-container table > thead > tr > th:nth-child(1) {
-  z-index: 9999 !important;
+  z-index: 3 !important;
 }
 </style>

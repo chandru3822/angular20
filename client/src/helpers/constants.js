@@ -223,4 +223,20 @@ constants.OVERVIEW_FIELD_TYPES = {
     BUTTON: 'button'
 }
 
+constants.DATA_FIELD_TYPES = {
+  DATE: 1,
+  TIMESTAMP: 2,
+  BOOLEAN: 3,
+  NUMERIC: 4,
+  TEXT: 5,
+  INTEGER: 6,
+  INTEGER_ARRAY: 7,
+  SYSTEM: 8,
+  SYSTEM_LIST: 9,
+  SYSTEM_MULTISELECT: 10,
+  JSON: 11,
+  SYSTEM_READ_ONLY: 12,
+  RICH_TEXT: 13,
+}
+
 export default constants
