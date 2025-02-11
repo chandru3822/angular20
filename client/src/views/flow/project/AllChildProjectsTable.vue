@@ -80,7 +80,7 @@
                     <td
                       class="text-left pl-6 custom-column-width"
                       :class="{
-                        'shrink': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput === `${index}-${h.customFieldGroupAssignmentId}`,
+                        'shrink': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput === `${index}-${h.customFieldGroupAssignmentId}` && filteredChildProjects.length > 1,
                         'normal': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput !== `${index}-${h.customFieldGroupAssignmentId}`
                       }"
                       v-for="h in headers.filter(h => h.showInLoop)"
