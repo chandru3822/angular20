@@ -535,21 +535,20 @@
           />
 
           <v-divider
-            v-if="
-              project?.childProjects?.length > 0 ||
-              project?.childCompanyProcesses?.length > 0
-            "
+            v-if="showChildProject"
           />
           <ChildProjects
-            v-if="
-              project?.childProjects?.length > 0 ||
-              project?.childCompanyProcesses?.length > 0
-            "
+            v-if="showChildProject"
             :child-company-processes="project?.childCompanyProcesses"
             :project-company-process-id="project.companyProcessId"
             :child-projects="project.childProjects?.slice(0, 3)"
             class="mx-2"
           ></ChildProjects>
+          <ParentProject
+            v-if="showCommunity"
+            :parent-project="project?.parentProject"
+            class="mx-2"
+          ></ParentProject>
           <v-divider />
           <ProjectTabs
             :project="project"
