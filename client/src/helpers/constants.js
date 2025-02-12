@@ -239,4 +239,10 @@ constants.DATA_FIELD_TYPES = {
   RICH_TEXT: 13,
 }
 
+constants.COMPANY_SYSTEM_LISTS = {
+  USERS_BY_ORGANIZATION: 1,
+  USERS_BY_POSITION: 2,
+  USERS_BY_ALL_ACTIVE: 4
+}
+
 export default constants

@@ -78,24 +78,37 @@
                   <tr :class="{'shaded-row': index % 2}">
                     <td class="text-left pl-6" :style="{background: index % 2 ? 'var(--v-primary-lighten9) !important' : 'white'}">{{item.projectName}}</td>
                     <td
-                      class="text-left pl-6 custom-column-width"
+                      class="text-left pl-6"
                       :class="{
                         'shrink': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput === `${index}-${h.customFieldGroupAssignmentId}` && filteredChildProjects.length > 1,
-                        'normal': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput !== `${index}-${h.customFieldGroupAssignmentId}` || filteredChildProjects.length <= 1
+                        'normal': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput !== `${index}-${h.customFieldGroupAssignmentId}` || filteredChildProjects.length <= 1,
+                        'custom-column-width': h.dataTypeId !== DATA_FIELD_TYPES.DATE && h.dataTypeId !== DATA_FIELD_TYPES.TIMESTAMP && h.dataTypeId !== DATA_FIELD_TYPES.SYSTEM_LIST,
+                        'custom-column-selector-width': h.dataTypeId === DATA_FIELD_TYPES.SYSTEM_LIST,
+                        'custom-column-date-width': h.dataTypeId === DATA_FIELD_TYPES.DATE || h.dataTypeId === DATA_FIELD_TYPES.TIMESTAMP
                       }"
                       v-for="h in headers.filter(h => h.showInLoop)"
                       @focusin="handleFocusin(index, h.customFieldGroupAssignmentId)"
                       @focusout="handleFocusout"
                       tabindex="0"
                     >
-                      <div
-                        class="input-container"
-
-                      >
+                      <div class="input-container">
+                        <a-btn class="pl-0"
+                              v-if="h.dataTypeId === DATA_FIELD_TYPES.DATE || h.dataTypeId === DATA_FIELD_TYPES.TIMESTAMP"
+                              icon
+                              color="unset"
+                              prepend-icon="mdi-calendar"
+                              @click="populateField(h.customFieldGroupAssignmentId, item, getTodayDate(h.dataTypeId))"
+                        />
+                        <a-btn class="pl-0"
+                               v-if="h.dataTypeId === DATA_FIELD_TYPES.SYSTEM_LIST && constantSystemListValues.includes(h.companySystemListId)"
+                               icon
+                               color="unset"
+                               prepend-icon="mdi-account-arrow-right-outline"
+                               @click="() => populateListOptionField(h, item)"
+                        />
                         <DatetimePickerInput
                           v-if="h.dataTypeId === DATA_FIELD_TYPES.DATE"
                           v-model="item[h.customFieldGroupAssignmentId]"
-                          class="custom-column-width"
                           tabindex="0"
                           :timezone="timezone"
                           :type="'date'"
@@ -108,7 +121,6 @@
                         <DatetimePickerInput
                           v-else-if="h.dataTypeId === DATA_FIELD_TYPES.TIMESTAMP"
                           v-model="item[h.customFieldGroupAssignmentId]"
-                          class="custom-column-width"
                           tabindex="0"
                           :timezone="timezone"
                           :type="'timestamp'"
@@ -123,7 +135,6 @@
                                     v-model="item[h.customFieldGroupAssignmentId]"></v-checkbox>
                         <v-text-field v-else-if="h.dataTypeId === DATA_FIELD_TYPES.TEXT"
                                       v-model="item[h.customFieldGroupAssignmentId]"
-                                      class="custom-column-width"
                                       @change="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"/>
                         <a-autocomplete attach
                                         v-model="item[h.customFieldGroupAssignmentId]"
@@ -188,7 +199,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { saveAs } from 'file-saver'
 import debounce from "lodash.debounce";
 
-const { DATA_FIELD_TYPES } = constants
+const { DATA_FIELD_TYPES, COMPANY_SYSTEM_LISTS } = constants
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
@@ -197,6 +208,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const filters = vueInstance.$filters
 
+const constantSystemListValues = Object.values(COMPANY_SYSTEM_LISTS)
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 let count = ref(0)
@@ -320,6 +332,22 @@ const companyId = computed(() => {
   return userStore.details.companyId
 })
 
+const getTodayDate = (dataTypeId) => {
+  const today = new Date();
+
+  if (dataTypeId === DATA_FIELD_TYPES.DATE) {
+    return today.toISOString().split('T')[0];
+  } else if (dataTypeId === DATA_FIELD_TYPES.TIMESTAMP) {
+    return today.toISOString();
+  }
+
+  return null;
+}
+
+const getCurrentUserPositionId = () => {
+  return userStore.details.userPositionId
+}
+
 const debouncePopulateDirtyFields = debounce((cfgaId, projectId, value) => {
   populateDirtyFields(cfgaId, projectId, value)
 }, 500)
@@ -340,6 +368,11 @@ const populateDirtyFields = (cfgaId, projectId, value) => {
   }
 }
 
+const populateField = (cfgaId, item, value) => {
+  item[cfgaId] = value
+
+  populateDirtyFields(cfgaId, item.id, value);
+}
 
 const populateAllCfgaIdValues = (cfgaId, value, item) => {
   if (!childProjects.value || !Array.isArray(childProjects.value)) return
@@ -353,6 +386,13 @@ const populateAllCfgaIdValues = (cfgaId, value, item) => {
 
     populateDirtyFields(cfgaId, projectId, value)
   })
+}
+
+const populateListOptionField = (header, item) => {
+  const userPositionId = getCurrentUserPositionId()
+  const isValidHeaderListOption = header.listOfValues.some(lov => lov.id === userPositionId)
+
+  populateField(header.customFieldGroupAssignmentId, item, isValidHeaderListOption ? userPositionId : null)
 }
 
 const goToProject = () => {
@@ -464,14 +504,20 @@ const exportToCsv = () => {
 
 <style lang="scss" scoped>
 
-.custom-column-width.normal > div:not(:has(.v-input--checkbox)),
-::v-deep(td.normal > div.v-input.datetime-picker-input) {
-  width: 280px !important;
+.custom-column-width.normal > div:not(:has(.v-input--checkbox)) {
+  width: 260px !important;
 }
 
- .custom-column-width.shrink,
- .custom-column-width.shrink > div,
- ::v-deep(.v-input.datetime-picker-input) {
+.custom-column-selector-width.normal > div:not(:has(.v-input--checkbox)) {
+  width: 360px !important;
+}
+
+.custom-column-date-width.normal > div:not(:has(.v-input--checkbox)) {
+  width: 340px !important;
+}
+
+.custom-column-width.shrink,
+ .custom-column-width.shrink > div:not(:has(button)) {
    flex: 1;
  }
 
