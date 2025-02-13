@@ -11,7 +11,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/api/v1/brs/bom", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/company/blueraven/bom", produces = MediaType.APPLICATION_JSON_VALUE)
 public class BillOfMaterialsController {
 
     private final BillOfMaterialsService billOfMaterialsService;

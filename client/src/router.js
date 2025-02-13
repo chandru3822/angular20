@@ -1936,6 +1936,16 @@ const router = new Router({
                 }
               }
             },
+              {
+              path: 'billOfMaterials',
+              component: () => {
+                if (userStore.userHasFeature('PROCESS_STEPS')) {
+                  return import('./views/flow/project/ProjectTabBillOfMaterials.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },
             {
               path: 'projectOverview',
               component: () => {
