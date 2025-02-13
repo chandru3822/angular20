@@ -40,7 +40,7 @@ public class BillOfMaterialsQuery {
                            , bomp.project_id
                            , bomp.parts_master_id
                            , bomp.supplier_id
-                           , s.name
+                           , s.name as "supplierName"
                            , bomp.supplier_confirmed
                            , pmvcfg.parts_master_group_uuid
                            , MAX(CASE WHEN field_id = 728 THEN part_value END) AS description

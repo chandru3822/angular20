@@ -11,6 +11,7 @@
 import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import {useRoute} from "vue-router/composables";
 import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {getRequest, logError} from "@/helpers/helpers.js";
 import SpinnerInline from '@/components/SpinnerInline'
 
@@ -18,6 +19,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 
 const route = useRoute()
 const userStore = useUserStore()
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
 
@@ -28,7 +30,7 @@ const headers = ref([
   { text: 'Part Number', value: 'partNumber', show: true },
   { text: 'Manufacturer', value: 'brand', show:true },
   { text: 'Quantity', value: 'quantity', show: true },
-  { text: 'Supplier', value: 'supplierId', show: true},
+  { text: 'Supplier', value: 'supplierName', show: true},
   { text: 'Confirmed', value: 'supplierConfirmed', show: true }
 ])
 
@@ -48,13 +50,13 @@ onMounted(async() =>{
 })
 
 const getParts = async () => {
-  debugger
   bomLoading.value = true
   try {
     const { data } = await getRequest(`/bom/${projectId.value}`, 'blueraven', [])
     bomParts.value = data
   } catch (e) {
     logError(e)
+    appStore.showSnack('ERROR', 'Error loading BOM')
   }
   bomLoading.value = false
 }
@@ -72,12 +74,10 @@ const getParts = async () => {
         >
           <v-toolbar-title class="title-large">
             <span>BOM</span>
-            <a-btn variant="text" prepend-icon="mdi-tray-arrow-down"
-            />
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <div>
-            <a-btn prepend-icon="mdi-list-box-outline" text="Create PO"></a-btn>
+            <a-btn prepend-icon="mdi-list-box-outline" text="Create PO" :disabled="true"></a-btn>
           </div>
         </v-toolbar>
       </div>
@@ -96,7 +96,7 @@ const getParts = async () => {
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <div>
-          <a-btn variant="outlined" prepend-icon="mdi-pencil" text="Edit"></a-btn>
+          <a-btn variant="outlined" prepend-icon="mdi-pencil" text="Edit" :disabled="true"></a-btn>
         </div>
       </v-toolbar>
     </v-row>
@@ -112,7 +112,18 @@ const getParts = async () => {
           :items="bomParts"
           :headers="headers"
           disable-sort
-      ></v-data-table>
+          class="table-striped"
+      >
+        <template #item.supplierConfirmed="{ item }">
+          <v-simple-checkbox
+              dense
+              hide-details
+              v-model="item.supplierConfirmed"
+              :disabled="true"
+          ></v-simple-checkbox>
+        </template>
+
+      </v-data-table>
     </div>
   </div>
 </template>
