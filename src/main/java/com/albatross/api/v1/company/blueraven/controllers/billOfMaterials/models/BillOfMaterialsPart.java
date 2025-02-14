@@ -13,5 +13,5 @@ public class BillOfMaterialsPart {
     private Date dateCreated, dateModified;
     private Boolean supplierConfirmed, archived;
     private UUID partsMasterGroupUuid;
-    private String description, brand, partNumber, supplierName;
+    private String description, brand, partNumber, supplierName, objectCode, objectType;
 }

@@ -245,7 +245,7 @@ import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import { useStickyStore } from '@/stores/StickyStore.js'
-import ProjectTabBillOfMaterials from "@/views/flow/project/ProjectTabBillOfMaterials.vue";
+import ProjectTabBillOfMaterials from "@/views/flow/project/BillOfMaterials.vue";
 
 const projectStore = useProjectStore()
 const fileStore = useFileStore()

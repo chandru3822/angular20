@@ -26,7 +26,9 @@ public class BillOfMaterialsQuery {
                           SELECT
                               parts_master_group_uuid,
                               jsonb_extract_path_text(value, 'value') AS part_value,
-                              field_id
+                              field_id,
+                              object_code,
+                              object_type
                           FROM brs.parts_master_version_custom_field_value_vw vw
                                    INNER JOIN brs.parts_master_version pmv
                                               ON pmv.id = vw.parts_master_version_id
@@ -43,6 +45,8 @@ public class BillOfMaterialsQuery {
                            , s.name as "supplierName"
                            , bomp.supplier_confirmed
                            , pmvcfg.parts_master_group_uuid
+                           , vv.object_code as "objectCode"
+                           , vv.object_type as "objectType"
                            , MAX(CASE WHEN field_id = 728 THEN part_value END) AS description
                            , MAX(CASE WHEN field_id = 729 THEN part_value END) AS brand
                            , MAX(CASE WHEN field_id = 730 THEN part_value END) AS part_number
@@ -57,6 +61,8 @@ public class BillOfMaterialsQuery {
                       GROUP BY bomp.id
                              , pmvcfg.id
                              , s.name
+                             , object_code
+                             , object_type
     """;
 
     //language=PostgreSQL
