@@ -8,14 +8,22 @@
               <v-row class="justify-space-around align-center">
                 <v-col class="text-left pb-0">
                   <v-toolbar color="white" class="elevation-1">
-                    <v-toolbar-title class="app-title">All Child Projects</v-toolbar-title>
-                    <v-spacer></v-spacer>
+                    <v-toolbar-title class="headline-medium albatross-header-1 align-center">
+                      <router-link :to="`/project/${projectId}/children`" @click="$emit('click')">
+                        {{parentProject?.projectName}}
+                      </router-link>
+                      <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+                      <span class="title-medium">All Child Projects</span>
+                    </v-toolbar-title>
+                    <v-spacer/>
                     <v-toolbar-items>
-                      <a-btn variant="text" text="Export to Excel" @click="exportToCsv"></a-btn>
-                      <a-btn variant="text" text="Cancel" :to="`/project/${projectId}/children`"></a-btn>
+                      <a-btn variant="text" text="Export to Excel" @click="exportToCsv" />
+                      <a-btn variant="text" text="Discard Changes"
+                             @click="discardModal = true"
+                             :disabled="disabledSave" />
                       <a-btn variant="text" color="primary" text="Save Changes"
-                             :disabled="dirtyFields.value?.size === 0"
-                             @click="saveChanges()"></a-btn>
+                             :disabled="disabledSave"
+                             @click="saveChanges"/>
                     </v-toolbar-items>
                   </v-toolbar>
                 </v-col>
@@ -76,7 +84,14 @@
                 </template>
                 <template #item="{ item, index }">
                   <tr :class="{'shaded-row': index % 2}">
-                    <td class="text-left pl-6" :style="{background: index % 2 ? 'var(--v-primary-lighten9) !important' : 'white'}">{{item.projectName}}</td>
+                    <td
+                      class="text-left pl-6"
+                      :style="{background: index % 2 ? 'var(--v-primary-lighten9) !important' : 'white'}"
+                    >
+                      <router-link :to="`/project/${item.id}/status`" target="_blank">
+                        {{ item.projectName }}
+                      </router-link>
+                    </td>
                     <td
                       class="text-left pl-6"
                       :class="{
@@ -148,7 +163,7 @@
                                         @input="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
                                         item-title="name"
                                         item-value="id"
-                        ></a-autocomplete>
+                        />
                         <v-btn
                           small
                           v-show="focusedInput === `${index}-${h.customFieldGroupAssignmentId}` &&
@@ -181,6 +196,13 @@
       <template v-slot:yes>Exit Without Saving</template>
       <template v-slot:no>Stay and Keep Editing</template>
     </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="discardModal" @confirm="[discardChanges()]"
+                        @close-dialog="discardModal = false">
+      <template v-slot:title>Discard Changes</template>
+      Are you sure you want to discard any unsaved changes?
+      <template v-slot:yes>Discard Changes</template>
+      <template v-slot:no>Cancel</template>
+    </ConfirmationDialog>
   </v-row>
 </template>
 
@@ -189,7 +211,7 @@
 import {getRequest, logError, getProjectPath, putRequest} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch, nextTick } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
@@ -198,6 +220,7 @@ import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { saveAs } from 'file-saver'
 import debounce from "lodash.debounce";
+import Vue from 'vue'
 
 const { DATA_FIELD_TYPES, COMPANY_SYSTEM_LISTS } = constants
 const appStore = useAppStore()
@@ -216,6 +239,7 @@ const props = defineProps({
   project: Object
 })
 const { project } = toRefs(props)
+const parentProject = ref()
 
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
@@ -231,12 +255,14 @@ const projectSearch = ref('')
 const debouncedProjectSearch = ref('');
 const phaseSearch = ref('')
 const debouncedPhaseSearch = ref('');
-const dirtyFields = ref(new Map())
+const dirtyFields = ref({})
 const menuOpen = ref(false)
 const isChildProjectsLoading = ref(false)
 const options = ref({itemsPerPage: 25})
 const unsavedModal = ref(false);
+const discardModal = ref(false);
 const override = ref(false);
+const preSaveSnapshot = ref([])
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
@@ -302,7 +328,7 @@ const headers = ref([
 
 onMounted(async () => {
   isChildProjectsLoading.value = true
-  let requests = [getChildProjectHeaders(), getChildProjects()]
+  let requests = [getChildProjectHeaders(), getChildProjects(), getProject()]
   await Promise.all(requests).then(async () => {
     isChildProjectsLoading.value = false
   })
@@ -353,11 +379,7 @@ const debouncePopulateDirtyFields = debounce((cfgaId, projectId, value) => {
 }, 500)
 
 const updateDirtyFields = (cfgaId, projectId, key, value) => {
-  if (dirtyFields.value?.has(key)) {
-    dirtyFields.value.get(key).value = value
-  } else {
-    dirtyFields.value?.set(key, { customFieldGroupAssignmentId: cfgaId, projectId, value })
-  }
+  Vue.set(dirtyFields.value, key, { customFieldGroupAssignmentId: cfgaId, projectId, value });
 }
 
 const populateDirtyFields = (cfgaId, projectId, value) => {
@@ -400,17 +422,28 @@ const goToProject = () => {
   router.push({path: `/project/${projectId.value}/children`})
 }
 
+const getDeepCopy = (obj) => {
+  return JSON.parse(JSON.stringify(obj))
+}
+
 const saveChanges = async () => {
   appStore.loading = true
   try {
-    await putRequest(`/project/${projectId.value}/children/details`, Array.from(dirtyFields.value?.values()))
-    dirtyFields.value?.clear()
+    await putRequest(`/project/${projectId.value}/children/details`, Object.values(dirtyFields.value));
+    preSaveSnapshot.value = getDeepCopy(childProjects.value)
+    dirtyFields.value = {}
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Changes')
   } finally {
     appStore.loading = false
   }
+}
+
+const discardChanges = async () => {
+  dirtyFields.value = {};
+  childProjects.value = getDeepCopy(preSaveSnapshot.value)
+  await nextTick();
 }
 
 const getChildProjectHeaders = async () => {
@@ -436,6 +469,17 @@ const getChildProjectHeaders = async () => {
   }
 }
 
+const disabledSave = computed(() => Object.keys(dirtyFields.value || {}).length === 0);
+
+const getProject = async () => {
+  try {
+    const { data } = await getRequest(`/project/${projectId.value}`)
+    parentProject.value = data
+  } catch (e) {
+    logError(e)
+  }
+}
+
 const getColumnWidth = (dataTypeId) => {
   switch (dataTypeId) {
     case DATA_FIELD_TYPES.DATE: return 210
@@ -453,7 +497,8 @@ const getChildProjects = async () => {
   try {
     isChildProjectsLoading.value = true
     const {data} = await getRequest(`/project/${projectId.value}/children/details`)
-    childProjects.value = data
+    childProjects.value = getDeepCopy(data)
+    preSaveSnapshot.value = getDeepCopy(data)
   } catch (e) {
     logError(e)
   }
@@ -503,6 +548,17 @@ const exportToCsv = () => {
 </script>
 
 <style lang="scss" scoped>
+
+.albatross-header-1,
+td {
+  a {
+    text-decoration-line: none;
+  }
+}
+
+.v-input--checkbox {
+  width: 140px !important;
+}
 
 .custom-column-width.normal > div:not(:has(.v-input--checkbox)) {
   width: 260px !important;
