@@ -132,7 +132,7 @@ const getPartsTypes = async () => {
           disable-sort
           fixed-header
           hide-default-footer
-          class="table-striped"
+          class="table-striped elevation-1"
       >
         <template v-slot:group.header="{ groupBy, group, headers, isOpen=true, toggle, remove }">
           <td :colspan="headers.length" class="grey lighten-5 group-header clickable" @click="toggle">
@@ -168,8 +168,8 @@ const getPartsTypes = async () => {
 <style scoped lang="scss">
 ::v-deep {
   .v-data-table__wrapper {
-    height: calc(100vh - 300px);
-    min-height: 300px;
+    max-height: calc(100vh - 300px);
+    //min-height: 300px;
   }
 }
 </style>
