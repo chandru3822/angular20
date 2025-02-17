@@ -484,8 +484,10 @@ const saveUser = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMsg = 'Error Adding User'
-    if (e?.message?.includes('Email already in use')) {
-      errorMsg += ': Email Already in Use'
+    if (e?.data?.detail === 'Email already in use') {
+      errorMsg += ":" +
+        "This Email Address is already associated with another user." +
+        "Please use a different email address."
     }
     appStore.showSnack('ERROR', errorMsg)
 
