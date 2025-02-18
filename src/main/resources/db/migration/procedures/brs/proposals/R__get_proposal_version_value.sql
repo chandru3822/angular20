@@ -29,6 +29,8 @@ DECLARE
   v_jsonpath            varchar;
   v_proposal_version_id int;
   v_item_data_type      varchar;
+  v_found_field_id boolean default false;
+  v_parameters_are_null boolean default true;
 BEGIN
   if p_proposal_version_id is null
   then
@@ -40,7 +42,6 @@ BEGIN
   else
     v_proposal_version_id := p_proposal_version_id;
   end if;
-
   v_query := format($query$
     with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) vw.id,
                                                                                                              vw.proposal_group_uuid,
@@ -78,7 +79,11 @@ BEGIN
 --     build the filters
     foreach v_item in array p_filters
       loop
+        if v_item.fieldid is not null then
+          v_found_field_id = true;
+        end if;
         if v_item.intArrayValue is not null or v_item.intValue is not null or v_item.value is not null then
+          v_parameters_are_null = false;
           v_var = format('(@.fieldId == %s && ', v_item.fieldId);
           case
             when v_item.intArrayValue is not null and v_item.intArrayValue > -1
@@ -129,12 +134,15 @@ BEGIN
     end if;
 
     v_query = v_query || v_where_clause;
-
   end if;
 
   v_query = replace(v_query, 'V_PROPOSAL_VERSION_ID', v_proposal_version_id::varchar);
 --   raise notice 'SQL %', v_query;
+  if v_found_field_id is true and v_parameters_are_null is true then
+    return;
+ else
   return query execute v_query;
+  end if;
 END;
 $$
   LANGUAGE plpgsql;
