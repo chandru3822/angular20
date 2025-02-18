@@ -95,11 +95,12 @@
                     <td
                       class="text-left pl-6"
                       :class="{
-                        'shrink': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput === `${index}-${h.customFieldGroupAssignmentId}` && filteredChildProjects.length > 1,
-                        'normal': h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN && focusedInput !== `${index}-${h.customFieldGroupAssignmentId}` || filteredChildProjects.length <= 1,
-                        'custom-column-width': h.dataTypeId !== DATA_FIELD_TYPES.DATE && h.dataTypeId !== DATA_FIELD_TYPES.TIMESTAMP && h.dataTypeId !== DATA_FIELD_TYPES.SYSTEM_LIST,
+                        'shrink': focusedInput === `${index}-${h.customFieldGroupAssignmentId}` && filteredChildProjects.length > 1,
+                        'normal': focusedInput !== `${index}-${h.customFieldGroupAssignmentId}` || filteredChildProjects.length <= 1,
+                        'custom-column-width': h.dataTypeId !== DATA_FIELD_TYPES.DATE && h.dataTypeId !== DATA_FIELD_TYPES.TIMESTAMP && h.dataTypeId !== DATA_FIELD_TYPES.SYSTEM_LIST && h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN,
                         'custom-column-selector-width': h.dataTypeId === DATA_FIELD_TYPES.SYSTEM_LIST,
-                        'custom-column-date-width': h.dataTypeId === DATA_FIELD_TYPES.DATE || h.dataTypeId === DATA_FIELD_TYPES.TIMESTAMP
+                        'custom-column-date-width': h.dataTypeId === DATA_FIELD_TYPES.DATE || h.dataTypeId === DATA_FIELD_TYPES.TIMESTAMP,
+                        'custom-column-checkbox-width': h.dataTypeId === DATA_FIELD_TYPES.BOOLEAN,
                       }"
                       v-for="h in headers.filter(h => h.showInLoop)"
                       @focusin="handleFocusin(index, h.customFieldGroupAssignmentId)"
@@ -146,15 +147,14 @@
                           :change-callback="() => { debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
                         />
                         <v-checkbox v-else-if="h.dataTypeId === DATA_FIELD_TYPES.BOOLEAN"
-                                    @change="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
+                                    @input="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"
                                     v-model="item[h.customFieldGroupAssignmentId]"></v-checkbox>
                         <v-text-field v-else-if="h.dataTypeId === DATA_FIELD_TYPES.TEXT"
                                       v-model="item[h.customFieldGroupAssignmentId]"
-                                      @change="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"/>
+                                      @input="debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])"/>
                         <a-autocomplete attach
                                         v-model="item[h.customFieldGroupAssignmentId]"
                                         v-else-if="h.dataTypeId === DATA_FIELD_TYPES.SYSTEM_LIST"
-                                        class="custom-column-width"
                                         :items="h.listOfValues"
                                         no-data-text="No Values Available"
                                         clearable
@@ -167,9 +167,8 @@
                         <v-btn
                           small
                           v-show="focusedInput === `${index}-${h.customFieldGroupAssignmentId}` &&
-                            h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN &&
                             filteredChildProjects.length > 1"
-                          :disabled="!item[h.customFieldGroupAssignmentId]"
+                          :disabled="!item[h.customFieldGroupAssignmentId] && h.dataTypeId !== DATA_FIELD_TYPES.BOOLEAN"
                           color="secondary"
                           class="ml-2 apply-to-btn"
                           @click="() => populateAllCfgaIdValues(h.customFieldGroupAssignmentId, item[h.customFieldGroupAssignmentId], item)"
@@ -335,7 +334,7 @@ onMounted(async () => {
 })
 
 onBeforeRouteUpdate(async (to, from, next) => {
-  if (!override.value && dirtyFields.value?.size > 0) {
+  if (!override.value && Object.keys(dirtyFields.value || {}).length > 0) {
     unsavedModal.value = true
   } else {
     next()
@@ -343,7 +342,7 @@ onBeforeRouteUpdate(async (to, from, next) => {
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
-  if (!override.value && dirtyFields.value?.size > 0) {
+  if (!override.value && Object.keys(dirtyFields.value || {}).length > 0) {
     unsavedModal.value = true
   } else {
     next()
@@ -371,7 +370,7 @@ const getTodayDate = (dataTypeId) => {
 }
 
 const getCurrentUserPositionId = () => {
-  return userStore.details.userPositionId
+  return userStore.details?.userPositions.find(up => up.primaryFlag)?.id
 }
 
 const debouncePopulateDirtyFields = debounce((cfgaId, projectId, value) => {
@@ -537,7 +536,7 @@ const exportToCsv = () => {
       csv += `\n`
     })
     const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
-    saveAs(blob, `ChildProjects.csv`)
+    saveAs(blob, `${parentProject.value?.projectName.replace(' ', '_')}_ChildProjects.csv`)
     appStore.loading = false
   }catch (e) {
     console.error('*** ERROR ***', e)
@@ -556,8 +555,10 @@ td {
   }
 }
 
-.v-input--checkbox {
-  width: 140px !important;
+.custom-column-checkbox-width.normal {
+  .v-input--checkbox {
+    width: 230px !important;
+  }
 }
 
 .custom-column-width.normal > div:not(:has(.v-input--checkbox)) {
@@ -572,6 +573,7 @@ td {
   width: 340px !important;
 }
 
+.custom-column-checkbox-width.shrink,
 .custom-column-width.shrink,
  .custom-column-width.shrink > div:not(:has(button)) {
    flex: 1;
