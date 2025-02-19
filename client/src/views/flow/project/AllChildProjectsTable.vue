@@ -520,12 +520,24 @@ const exportToCsv = () => {
           return projectNameMatch && phaseMatch;
         }).forEach((p) => {
       headers.value.forEach((h) => {
-        if (h.dataType === "date") {
+        if (h.dataTypeId === DATA_FIELD_TYPES.DATE) {
           //if it is a date it needs to be formatted here
           csv +=
               '"' +
               `${p[h.value] === null || p[h.value] === undefined ? '' : filters.formatDate(p[h.value], "date")}` +
               '",'
+        } else if (h.dataTypeId === DATA_FIELD_TYPES.SYSTEM_LIST) {
+          // if they add other system lists besides the one being used at this time, we will need to specify by id
+          csv +=
+            '"' +
+            `${p[h.value] === null || p[h.value] === undefined ? '' :
+              h.listOfValues.find(lv => lv.id === p[h.value])?.name ?? p[h.value]}` +
+            '",'
+        } else if (h.dataTypeId === DATA_FIELD_TYPES.BOOLEAN) {
+          csv +=
+            '"' +
+            `${p[h.value] === true ? 'true' : 'false'}` +
+            '",'
         } else {
           csv +=
               '"' +
