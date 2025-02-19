@@ -435,43 +435,39 @@
               </v-toolbar>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-              <v-row>
-                <v-col
-                  :cols="projectStore.manualColumnSplit ? 6 : 12"
-                  class="pb-0 pt-2"
+              <v-container fluid>
+                <v-layout
+                  :style="{
+                    display: 'grid',
+                    gridTemplateColumns: projectStore.manualColumnSplit ? '1fr 1fr' : '1fr',
+                    gap: '8px', // Adjust spacing between elements as needed
+                  }"
                 >
-                  <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(
-                      cfg.customFieldValues,
-                      1
-                    )"
-                    :key="idx"
-                    :use-field-ancillary-name="true"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getReadOnly(field)"
-                    :field="field"
-                    :show-field-name="false"
-                  />
-                </v-col>
-                <v-col
-                  cols="6"
-                  v-if="projectStore.manualColumnSplit"
-                  class="pb-0 pt-2"
-                >
-                  <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(
-                      cfg.customFieldValues,
-                      2
-                    )"
-                    :key="idx"
-                    :use-field-ancillary-name="true"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getReadOnly(field)"
-                    :field="field"
-                    :show-field-name="false"
-                  />
-                </v-col>
-              </v-row>
+                  <div>
+                    <CustomValueInput
+                      v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                      :key="idx"
+                      :use-field-ancillary-name="true"
+                      :callback="populateDirtyCfvs"
+                      :readonly="getReadOnly(field)"
+                      :field="field"
+                      :show-field-name="false"
+                    />
+                  </div>
+
+                  <div v-if="projectStore.manualColumnSplit">
+                    <CustomValueInput
+                      v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                      :key="idx"
+                      :use-field-ancillary-name="true"
+                      :callback="populateDirtyCfvs"
+                      :readonly="getReadOnly(field)"
+                      :field="field"
+                      :show-field-name="false"
+                    />
+                  </div>
+                </v-layout>
+              </v-container>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>

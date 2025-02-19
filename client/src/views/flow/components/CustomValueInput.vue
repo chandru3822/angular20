@@ -1,6 +1,6 @@
 <template>
-  <div :class="{'column-row-height': field.dataTypeId !== 13}">
-    <v-row class="d-flex justify-space-between align-center" :class="{'column-row-height': field.dataTypeId !== 13, 'rich-text-field-height': field.dataTypeId === 13}">
+  <div>
+    <v-row class="d-flex justify-space-between align-center unlimited-height" :class="{'rich-text-field-height': field.dataTypeId === 13}">
       <v-col v-if="showFieldName">
         <span
           :title="`ID: ${field.id}, DataType: (${field.dataType}) ${field.dataTypeId} `"
@@ -740,11 +740,6 @@ emit('cvi-created', field.value)
 .cvi-rich-text-label {
   font-size: 11px;
   font-family: Lato, sans-serif;
-}
-
-.column-row-height{
-  min-height: 70px !important;
-  max-height: 70px !important;
 }
 
 .rich-text-field-height {
