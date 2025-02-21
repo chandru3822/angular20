@@ -35,7 +35,7 @@ const partsMasterParts = ref([])
 const editMode = ref(false)
 const addPart = ref(false)
 
-const newPartNumber = ref(null)
+const newPart = ref(null)
 const newPartQuantity = ref(null)
 
 
@@ -69,11 +69,10 @@ onMounted(async() =>{
 })
 
 const combinedPartsList = computed(() => {
-  debugger
   if(!editMode.value) {
     return bomParts?.value
   } else {
-    return [...bomParts.value, ...newParts.value]
+    return [...bomParts.value, ...newParts?.value]
   }
 })
 
@@ -132,21 +131,20 @@ const newPartSearch = (item, queryText, itemText) => {
   return description?.indexOf(searchText) > -1 || partNumber?.indexOf(searchText) > -1
 }
 
-const setNewPartNumber = (input) => {
-  newPartNumber.value = input
+const setNewPart = (input) => {
+  newPart.value = input
 }
 
 
 const addNewPartToList = () => {
-  const newPart = {
-    quantity: newPartQuantity,
-    partsMasterId: newPartNumber
-  }
-  editParts.value.push(newPart)
-  newPart.description =
-  newParts.value.push(newPart)
+  editParts.value.push({
+    quantity: newPartQuantity.value,
+    partsMasterId: newPart.value.id
+  })
+  newPart.value.quantity = newPartQuantity.value
+  newParts.value.push(newPart.value)
   newPartQuantity.value = null
-  newPartNumber.value = null
+  newPart.value = null
 }
 
 const populateDirtyRows = (event, item, column) => {
@@ -175,7 +173,7 @@ const cancel = () => {
   editParts.value = [] //clear the editParts list
   newParts.value = [] //clear the added parts list
   addPart.value = false //turn off add parts
-  newPartNumber.value = null //clear the new part values
+  newPart.value = null //clear the new part values
   newPartQuantity.value = null
   editMode.value = false //turn off edit mode
 }
@@ -229,8 +227,6 @@ const save = async () => {
       >
         <v-toolbar-title class="headline-small d-flex align-center">
           <span >Bill of Materials</span>
-          <span>{{newPartQuantity}}</span>
-          <span>{{newPartNumber}}</span>
           <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -246,11 +242,10 @@ const save = async () => {
       <v-card-text>
         <a-autocomplete
             :items="partsMasterParts"
-            :value="newPartNumber"
+            :value="newPart"
             :filter="newPartSearch"
             :loading = partsMasterLoading
-            item-value="id"
-            @input="setNewPartNumber"
+            @input="setNewPart"
             label="Find in Parts Master by Description, Part Number"
             clearable
         >
