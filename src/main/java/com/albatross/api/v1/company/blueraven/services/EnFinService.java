@@ -160,7 +160,7 @@ public class EnFinService {
         throw new Exception("A credit application for the customer has already been submitted. Please navigate to the EnFin portal to find the application.");
       }
       else {
-        throw new Exception(errorMsg);
+        throw new Exception("Error message response from EnFin: " + errorMsg);
       }
     }
 
