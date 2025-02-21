@@ -25,11 +25,18 @@ const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
 
 const bomLoading = ref(false)
+const partsMasterLoading = ref(false)
 const bomParts = ref([])
 const editParts = ref([])
+const newParts = ref([])
 const partsTypes = ref([])
-const editMode = ref(false)
 const suppliers = ref([])
+const partsMasterParts = ref([])
+const editMode = ref(false)
+const addPart = ref(false)
+
+const newPartNumber = ref(null)
+const newPartQuantity = ref(null)
 
 
 const headers = ref([
@@ -59,6 +66,15 @@ onMounted(async() =>{
   await getPartsTypes()
   await getSuppliers()
   bomLoading.value = false
+})
+
+const combinedPartsList = computed(() => {
+  debugger
+  if(!editMode.value) {
+    return bomParts?.value
+  } else {
+    return [...bomParts.value, ...newParts.value]
+  }
 })
 
 const getParts = async () => {
@@ -95,6 +111,44 @@ const getSuppliers = async () => {
   }
 }
 
+const getPartsMasterParts = async () => {
+  if(partsMasterParts.value?.length === 0) {
+    partsMasterLoading.value = true
+    try {
+      const {data} = await getRequest('/partsMaster/versions/allParts', 'blueraven')
+      partsMasterParts.value = data
+    } catch (e) {
+      logError(e)
+      appStore.showSnack('ERROR', 'Error loading parts master list')
+    }
+    partsMasterLoading.value = false
+  }
+}
+
+const newPartSearch = (item, queryText, itemText) => {
+  const description = item.description?.toLowerCase()
+  const partNumber = item.partNumber?.toLowerCase()
+  const searchText = queryText?.toLowerCase()
+  return description?.indexOf(searchText) > -1 || partNumber?.indexOf(searchText) > -1
+}
+
+const setNewPartNumber = (input) => {
+  newPartNumber.value = input
+}
+
+
+const addNewPartToList = () => {
+  const newPart = {
+    quantity: newPartQuantity,
+    partsMasterId: newPartNumber
+  }
+  editParts.value.push(newPart)
+  newPart.description =
+  newParts.value.push(newPart)
+  newPartQuantity.value = null
+  newPartNumber.value = null
+}
+
 const populateDirtyRows = (event, item, column) => {
   let alreadyEdited = false
   editParts.value.map(ep => {
@@ -111,8 +165,18 @@ const populateDirtyRows = (event, item, column) => {
   }
 }
 
+const openAddForm = () => {
+  addPart.value = true
+  editMode.value = true
+  getPartsMasterParts()
+}
+
 const cancel = () => {
   editParts.value = [] //clear the editParts list
+  newParts.value = [] //clear the added parts list
+  addPart.value = false //turn off add parts
+  newPartNumber.value = null //clear the new part values
+  newPartQuantity.value = null
   editMode.value = false //turn off edit mode
 }
 
@@ -124,8 +188,7 @@ const save = async () => {
         editParts.value,
         'blueraven')
     bomParts.value = data //update the saved bom
-    editParts.value = [] //clear the editParts list
-    editMode.value = false //turn off edit mode
+    cancel()
     appStore.showSnack('SUCCESS', 'BOM Saved')
   } catch (e) {
     logError(e)
@@ -166,7 +229,9 @@ const save = async () => {
       >
         <v-toolbar-title class="headline-small d-flex align-center">
           <span >Bill of Materials</span>
-          <a-btn v-if="editMode" @click="" size="small" variant="text" prepend-icon="mdi-plus" text="Add"/>
+          <span>{{newPartQuantity}}</span>
+          <span>{{newPartNumber}}</span>
+          <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <div>
@@ -176,6 +241,39 @@ const save = async () => {
         </div>
       </v-toolbar>
     </v-row>
+    <v-card v-if="addPart" class="mb-3">
+      <v-card-title class="label-medium">Add Material</v-card-title>
+      <v-card-text>
+        <a-autocomplete
+            :items="partsMasterParts"
+            :value="newPartNumber"
+            :filter="newPartSearch"
+            :loading = partsMasterLoading
+            item-value="id"
+            @input="setNewPartNumber"
+            label="Find in Parts Master by Description, Part Number"
+            clearable
+        >
+          <template v-slot:item="{item}">
+            {{item.description}} ({{item.partNumber}})
+          </template>
+          <template v-slot:selection="{item}">
+            {{item.description}} ({{item.partNumber}})
+          </template>
+        </a-autocomplete>
+        <a-text-field
+            type="number"
+            v-model="newPartQuantity"
+            label="Quantity"
+            customClasses="new-part-quantity"
+        />
+      </v-card-text>
+      <v-card-actions class="px-4 pt-0 pb-4">
+        <v-spacer/>
+        <a-btn variant="text" @click="[addPart = false, newPartNumber = null, newPartQuantity = null]" text="Cancel"></a-btn>
+        <a-btn @click="addNewPartToList" text="Add"></a-btn>
+      </v-card-actions>
+    </v-card>
     <v-col v-if="bomLoading" class="d-flex justify-center">
       <SpinnerInline :size="20" color="primary" class="d-flex justify-center"/>
     </v-col>
@@ -186,7 +284,7 @@ const save = async () => {
       <v-form ref="bomPartsForm">
       <v-data-table
           id="bom-parts-table"
-          :items="bomParts"
+          :items="combinedPartsList"
           :headers="headers"
           group-by="objectType"
           :items-per-page="-1"
@@ -259,6 +357,10 @@ const save = async () => {
   .supplier-col {
     min-width: 135px;
   }
+}
+
+.new-part-quantity {
+  max-width: 6rem;
 }
 </style>
 

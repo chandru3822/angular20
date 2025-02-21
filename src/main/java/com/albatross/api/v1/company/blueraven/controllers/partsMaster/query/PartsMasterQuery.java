@@ -104,6 +104,39 @@ public class PartsMasterQuery {
                group by vv.parts_master_group_uuid, archived
     """;
 
+    //language=PostgreSQL
+    public static final String partsMasterAllPublishedPartsAndFieldValues = """
+         WITH parts_data AS (
+         	SELECT
+         		parts_master_group_uuid,
+         		jsonb_extract_path_text(value, 'value') AS part_value,
+         		field_id,
+         		object_code,
+         		object_type
+         	FROM brs.parts_master_version_custom_field_value_vw vw
+         		     INNER JOIN brs.parts_master_version pmv
+         		                ON pmv.id = vw.parts_master_version_id
+         	WHERE pmv.parts_master_version_status_id = 2
+         	  and field_id IN (728, 729, 730)
+         	ORDER BY vw.parts_master_group_uuid, vw.custom_field_group_assignment_id, vw.date_modified DESC
+         )
+         SELECT
+                pmvcfg.id
+         	 , pmvcfg.parts_master_group_uuid
+         	 , vv.object_code as "objectCode"
+         	 , vv.object_type as "objectType"
+         	 , MAX(CASE WHEN field_id = 728 THEN part_value END) AS description
+         	 , MAX(CASE WHEN field_id = 729 THEN part_value END) AS brand
+         	 , MAX(CASE WHEN field_id = 730 THEN part_value END) AS part_number
+         FROM brs.parts_master_version_custom_field_group pmvcfg
+         	     LEFT JOIN parts_data vv
+         	               ON pmvcfg.parts_master_group_uuid = vv.parts_master_group_uuid
+         GROUP BY
+                 pmvcfg.id
+                , object_code
+                , object_type
+    """;
+
   //language=PostgreSQL
   public static final String partsMasterVersionCustomFieldValuesByUUID = """
     with version_values as (
