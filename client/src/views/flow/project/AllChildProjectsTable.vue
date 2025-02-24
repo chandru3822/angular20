@@ -15,16 +15,18 @@
                       <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
                       <span class="title-medium">All Child Projects</span>
                     </v-toolbar-title>
+                    <v-toolbar-items>
+                      <a-btn variant="text" text="Export" prepend-icon="mdi-tray-arrow-down" @click="exportToCsv" />
+                    </v-toolbar-items>
                     <v-spacer/>
                     <v-toolbar-items>
-                      <a-btn variant="text" text="Export to Excel" @click="exportToCsv" />
                       <a-btn variant="text" text="Discard Changes"
                              @click="discardModal = true"
                              :disabled="disabledSave" />
-                      <a-btn variant="text" color="primary" text="Save Changes"
-                             :disabled="disabledSave"
-                             @click="saveChanges"/>
                     </v-toolbar-items>
+                    <a-btn prepend-icon="mdi-content-save" text="Save"
+                           :disabled="disabledSave"
+                           @click="saveChanges"/>
                   </v-toolbar>
                 </v-col>
               </v-row>
@@ -644,10 +646,15 @@ td {
   margin-left: 12px;
 }
 
-.project-children-filter-header {
-  border-bottom: thin solid rgba(0, 0, 0, 0.12);
-  padding-bottom: 8px;
+tr {
+  height: 48px;
+
+  th.project-children-filter-header {
+    border-bottom: thin solid rgba(0, 0, 0, 0.12);
+    padding-bottom: 8px;
+  }
 }
+
 
 #project-children-container table > tr > th:nth-child(1),
 #project-children-container table > tbody > tr > td:nth-child(1),
