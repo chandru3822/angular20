@@ -134,7 +134,10 @@
                           :format="'MMMM DD, YYYY'"
                           hide-details
                           hide-prepend-icon
-                          :change-callback="() => { debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId]) }"
+                          :change-callback="() => {
+                            debouncePopulateDirtyFields(h.customFieldGroupAssignmentId, item.id, item[h.customFieldGroupAssignmentId])
+                            delayFocusin(index, h.customFieldGroupAssignmentId)
+                          }"
                         />
                         <DatetimePickerInput
                           v-else-if="h.dataTypeId === DATA_FIELD_TYPES.TIMESTAMP"
@@ -301,6 +304,8 @@ watch(
     debouncedPhaseSearch.value = newVal?.toLowerCase() || '';
   }, 500)
 );
+
+const delayFocusin = (index, cfgaId) => setTimeout(() => handleFocusin(index, cfgaId), 100);
 
 const handleFocusin = (index, cfgaId) => {
   const focusedInputKey = `${index}-${cfgaId}`;
@@ -646,10 +651,10 @@ td {
   margin-left: 12px;
 }
 
-tr {
+.v-data-table-header > tr {
   height: 48px;
 
-  th.project-children-filter-header {
+  .project-children-filter-header {
     border-bottom: thin solid rgba(0, 0, 0, 0.12);
     padding-bottom: 8px;
   }
