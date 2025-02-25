@@ -143,19 +143,12 @@
                               item-title="name"
                               return-object
                               autocomplete="off"
-                              @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents()]"
+                              @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents(), () => parentProcessStepEvent = null]"
               >
                 <template v-slot:item="{ props, item }">
                   {{ item.name }}
                 </template>
               </a-autocomplete>
-              <a-autocomplete
-                v-model="newField.parentId"
-                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== newField.id)"
-                item-title="parentMenuOption"
-                item-value="id"
-                label="Parent"
-              />
               <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === 4"
                               v-model="parentProcessStepEvent"
                               :items="parentProcessStepEvents"
@@ -175,7 +168,10 @@
                               autocomplete="off">
               </a-autocomplete>
 
-              <div class="mb-3" v-if="[4,6].includes(selectedObjectTypeId)">
+              <div class="mb-3" v-if="[4,6].includes(selectedObjectTypeId) && (
+                newField.processStepId || newField.processStepEventId || newField.customFieldGroupAssignmentId ||
+                Object.keys(parentProcessStepEvent).length > 0
+              )">
                 <span class="mr-3">Update First Value Only?</span>
                 <input
                   type="checkbox"
@@ -183,13 +179,15 @@
                   v-model="newField.updateFirstValueOnly"
                 />
                 <br/>
-                <span
-                  class="mr-3">Match New {{ selectedObjectTypeId === 4 ? 'Process Step' : 'Event' }} on create?</span>
-                <input
-                  :disabled="newField.updateFirstValueOnly"
-                  type="checkbox"
-                  v-model="newField.resetOnNew"
-                />
+                <div v-if="selectedDefaultField.objectTypeId !== 4 && !newField.customFieldGroupAssignmentId">
+                  <span class="mr-3">Match New {{ selectedObjectTypeId === 4 ? 'Process Step' : 'Event' }} on create?</span>
+                  <input
+                    :disabled="newField.updateFirstValueOnly"
+                    type="checkbox"
+                    v-model="newField.resetOnNew"
+                  />
+                </div>
+
                 <div v-if="selectedObjectTypeId === 4">
                 <span
                   class="mr-3">Match Primary Process Step on change?</span>
@@ -199,7 +197,7 @@
                   v-model="newField.resetValuesOnMain"
                 />
                 </div>
-                <div>
+                <div v-if="!newField.processStepEventId && !parentProcessStepEvent">
                   <span
                     class="mr-3">Ignore If Null?</span>
                   <input
@@ -208,6 +206,14 @@
                   />
                 </div>
               </div>
+              <a-autocomplete
+                v-if="newField.fieldToUpdate"
+                v-model="newField.parentId"
+                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.fieldToUpdate === newField.fieldToUpdate)"
+                item-title="parentMenuOption"
+                item-value="id"
+                label="Parent"
+              />
             </v-form>
             <a-btn
               :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
@@ -267,7 +273,7 @@
                              label="Display Name"/>
               <a-autocomplete
                 v-model="item.parentId"
-                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id)"
+                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id && dvfc.fieldToUpdate === item.fieldToUpdate)"
                 item-title="parentMenuOption"
                 item-value="id"
                 label="Parent"
