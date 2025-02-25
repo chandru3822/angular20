@@ -132,6 +132,7 @@ public class DataViewService {
     params.put("viewId", viewId);
     params.put("displayName", field.getDisplayName());
     params.put("userId", user.trueUserId());
+    params.put("parentId", field.getParentId());
 
     Long id;
     if (null != field.getId()) {

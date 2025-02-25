@@ -55,11 +55,16 @@ public class DataViewQuery {
                                  dvfc.process_step_event_id as "processStepEventId",
                                  dvfc.process_step_id as "processStepId",
                                  dvfc.field_to_update as "fieldToUpdate",
+                                 coalesce(ps.process_step_name, e.event_name, ot.object_type) AS "description",
+                                 dvfc.display_name || ' - ' || coalesce(ps.process_step_name, e.event_name, ot.object_type) AS "parentMenuOption",
                                  dvfc.update_first_value_only as "updateFirstValueOnly",
                                  dvfc.reset_on_new as "resetOnNew",
                                  dvfc.reset_values_on_main as "resetValuesOnMain",
                                  dvfc.ignore_if_null as "ignoreIfNull",
                                  dvfc.archived,
+                                 dvfc1.id AS "parentId",
+                                 dvfc1.display_name AS "parentDisplayName",
+                                 coalesce(ps1.process_step_name, e1.event_name, ot1.object_type) AS "parentDescription",
                                  coalesce((
                                             SELECT array_to_json(array_agg(row_to_json(childFields)))
                                             FROM (
@@ -93,6 +98,13 @@ public class DataViewQuery {
                             left join flow.process_step ps on cfg.process_step_id = ps.id
                             left join flow.company_object_type cot on cfg.company_object_type_id = cot.id
                             left join flow.object_type ot on cot.object_type_id = ot.id
+                             -- Parent Join
+                            left join flow.data_view_field_config dvfc1 ON dvfc1.id = dvfc.parent_id
+                            left join flow.process_step ps1 ON dvfc1.process_step_id = ps1.id
+                            left join flow.process_step_event pse1 ON dvfc1.process_step_event_id = pse1.id
+                            left join flow.event e1 ON pse1.event_id = e1.id
+                            left join flow.default_field df1 ON dvfc1.default_field_id = df1.id
+                            left join flow.object_type ot1 ON df1.object_type_id = ot1.id
                           where dvfc.archived is false
                             and dvfc.data_view_id = dv.id
                           order by lower(dvfc.display_name)
@@ -115,14 +127,15 @@ public class DataViewQuery {
 
   //language=PostgreSQL
   public final static String addFieldConfig = """
-    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main, ignore_if_null)
-        values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain, :ignoreIfNull )
+    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, parent_id, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main, ignore_if_null)
+        values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :parentId, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain, :ignoreIfNull )
     """;
 
   //language=PostgreSQL
   public final static String updateFieldConfig = """
     update flow.data_view_field_config
       set display_name = :displayName,
+          parent_id = :parentId,
           modified_by_id = :userId,
           date_modified = now()
     where id = :id
@@ -141,6 +154,7 @@ public class DataViewQuery {
               coalesce(df.object_type_id, cot.object_type_id) as "objectTypeId",
               coalesce(ps2.process_step_name, ps.process_step_name, ot.object_type) as "parentObjectName",
               coalesce(e.event_name, e2.event_name) as "processStepEventName",
+              coalesce(ps.process_step_name, e.event_name, ot.object_type) AS "description",
               ps3.process_step_name as "processStepName",
               dvfc.default_field_id as "defaultFieldId",
               dvfc.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
@@ -152,6 +166,11 @@ public class DataViewQuery {
               dvfc.reset_values_on_main as "resetValuesOnMain",
               dvfc.ignore_if_null as "ignoreIfNull",
               dvfc.archived,
+              dvfc1.id AS "parentId",
+              coalesce(ps1.process_step_name, e1.event_name, ot1.object_type) AS "parentDescription",
+              coalesce(dvfc1.display_name || ' - ' || coalesce(ps1.process_step_name, e1.event_name, ot1.object_type),
+                       dvfc1.display_name,
+                       coalesce(ps1.process_step_name, e1.event_name, ot1.object_type)) AS "parentMenuItem",
               coalesce((
                          SELECT array_to_json(array_agg(row_to_json(childFields)))
                          FROM (
@@ -185,6 +204,12 @@ public class DataViewQuery {
               left join flow.process_step ps on cfg.process_step_id = ps.id
               left join flow.company_object_type cot on cfg.company_object_type_id = cot.id
               left join flow.object_type ot on cot.object_type_id = ot.id
+              left join flow.data_view_field_config dvfc1 ON dvfc1.id = dvfc.parent_id
+              left join flow.process_step ps1 ON dvfc1.process_step_id = ps1.id
+              left join flow.process_step_event pse1 ON pse1.id = dvfc1.process_step_event_id
+              left join flow.event e1 ON e1.id = pse1.event_id
+              left join flow.default_field df1 ON df1.id = dvfc1.default_field_id
+              left join flow.object_type ot1 ON ot1.id = df1.object_type_id
        where dvfc.id = :id
          and dvfc.archived is false
     """;

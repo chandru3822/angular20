@@ -149,6 +149,13 @@
                   {{ item.name }}
                 </template>
               </a-autocomplete>
+              <a-autocomplete
+                v-model="newField.parentId"
+                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id)"
+                item-title="parentMenuOption"
+                item-value="id"
+                label="Parent"
+              />
               <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === 4"
                               v-model="parentProcessStepEvent"
                               :items="parentProcessStepEvents"
@@ -246,10 +253,8 @@
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <v-row>
                 <v-col cols="12">
-              <h3>Edit Field Configs</h3>
               <div class="flex-display">
-                <a-text-field  v-model="item.displayName" class="d-inline-block display-name-field"
-                              label="Display Name"/>
+                <h3 class="d-inline-block display-name-field">Edit Field Configs</h3>
                 <a-btn
                   variant="text"
                   :disabled="!item.displayName"
@@ -258,6 +263,15 @@
                   prepend-icon="save"
                 />
               </div>
+              <a-text-field  v-model="item.displayName"
+                             label="Display Name"/>
+              <a-autocomplete
+                v-model="item.parentId"
+                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id)"
+                item-title="parentMenuOption"
+                item-value="id"
+                label="Parent"
+              />
               <a-text-field  v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
               <a-text-field v-if="item.defaultFieldId"
@@ -501,7 +515,7 @@ import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
 
 
-import {getCurrentInstance, computed, onMounted, ref} from "vue";
+import Vue, {getCurrentInstance, computed, onMounted, ref} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
@@ -565,7 +579,9 @@ const newField = ref({})
 const dataView = ref({})
 const headers = ref([
   {text: 'Field Name', value: 'displayName', show: true},
+  {text: 'Description', value: 'description', show: true},
   {text: 'Field to Update', value: 'fieldToUpdate', show: true},
+  {text: 'Parent Description', value: 'parentDescription', show: true},
   {text: null, value: 'icons', show: true, sortable: false, width: 150}
 ])
 
@@ -632,6 +648,7 @@ const resetAllFields = () => {
   cfgaParentObject.value = {}
   newField.value.processStepEventId = null
   newField.value.processStepId = null
+  newField.value.parentId = null
 }
 const validateFields = (field, isNew) => {
   let valid = fieldConfigForm.value?.validate()
@@ -834,6 +851,11 @@ const saveFieldConfig = async (field, isNew) => {
       defaultFields.value = []
       appStore.showSnack('SUCCESS', 'New Field Config Added')
     } else {
+      const index = dataView.value.dataViewFieldConfigs.findIndex(f => f.id === data.id);
+
+      if (index !== -1) {
+        Vue.set(dataView.value.dataViewFieldConfigs, index, data);
+      }
       appStore.showSnack('SUCCESS', 'Data View Updated')
     }
     handleHidingGlobalLoader(status)
