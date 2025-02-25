@@ -161,6 +161,8 @@
 
       </template>
     </SidePanelExpansionPanel>
+<!--    the only purpose to hiding these when there are no details is that it causes them to not show in the center screen when we're accidentally navigated to /projectOverview on desktop-->
+    <ContactCard v-if="project && details" :project="project"></ContactCard>
   </v-container>
 </template>
 
@@ -175,6 +177,7 @@ import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+import ContactCard from "@/views/flow/project/ContactCard.vue";
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
@@ -200,6 +203,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  project: Object,
   details: Array,
   owner: Object
 })

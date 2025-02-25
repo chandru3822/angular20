@@ -952,7 +952,7 @@ BEGIN
     v_storage_id,v_storage_brand_id,v_nominal_power,
     v_battery_manufacturers_warranty,v_battery_workmanship_warranty,v_grid_tied_battery,v_storage_states
   from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
-raise notice 'v_storage_states %',v_storage_states;
+--raise notice 'v_storage_states %',v_storage_states;
   if v_storage_states != '{}' and not v_state_id = any(v_storage_states) then
     raise exception 'Storage options are not available in this state. %',(select state from flow.state where id = v_state_id );
   end if;
@@ -1525,8 +1525,8 @@ raise notice 'v_storage_states %',v_storage_states;
   --       v_csu_rebate = v_csu_rebate * v_system_size * 1000;
   -- end if;
 
-  ------raise notice 'v_csu_rebate = %',v_csu_rebate;
-  ------raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
+  --raise notice 'v_csu_rebate = %',v_csu_rebate;
+  --raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
 
 
   -- select *

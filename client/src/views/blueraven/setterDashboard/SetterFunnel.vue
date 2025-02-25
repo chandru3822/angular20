@@ -3470,17 +3470,41 @@ const funnelDrilldown = async (funnel, dateRange, funnelName) => {
   let start, end
   orgs = officeModel.value.map(org => org.org_id)
 
-  let datesMatch = moment(dateRange.startDate).format('YYYY-MM-DD') === moment(dateRange.endDate).format('YYYY-MM-DD')
+  let datesMatch
+  const customValues = {
+    1: fdcFirstCustom.value,
+    2: fdcSecondCustom.value,
+    3: fdcThirdCustom.value,
+    4: fdcFourthCustom.value
+  };
+
+  let dateRangeFinal = dateRange.name === "CUSTOM" ? {
+    // this needs fixed, as is the customColumn is only holdling one column value
+    // and doesn't work if there's multiple custom columns
+      ...customValues[customColumn.value],
+      startDate: customValues[customColumn.value].startDate.format('YYYY-MM-DD'),
+      endDate: customValues[customColumn.value].endDate.format('YYYY-MM-DD'),
+      trendEnd: customValues[customColumn.value].trendEnd.format('YYYY-MM-DD'),
+      trendStart: customValues[customColumn.value].trendStart.format('YYYY-MM-DD'),
+  } : dateRange
+
+  if (dateRangeFinal.name === "CUSTOM") {
+    datesMatch = dateRangeFinal
+      ? moment(dateRangeFinal.startDate).format('YYYY-MM-DD') === moment(dateRangeFinal.endDate).format('YYYY-MM-DD')
+      : false;
+  } else {
+    datesMatch = moment(dateRangeFinal.startDate).format('YYYY-MM-DD') === moment(dateRangeFinal.endDate).format('YYYY-MM-DD');
+  }
 
   if (datesMatch) {
-    funnelDrilldownTitle.value = funnel.name + ' on ' + moment(dateRange.startDate).format('M/D/YYYY')
+    funnelDrilldownTitle.value = funnel.name + ' on ' + moment(dateRangeFinal.startDate).format('M/D/YYYY')
   } else {
-    funnelDrilldownTitle.value = funnel.name + ' ' + moment(dateRange.startDate).format('M/D/YYYY') + ' - ' + moment(dateRange.endDate).format('M/D/YYYY')
+    funnelDrilldownTitle.value = funnel.name + ' ' + moment(dateRangeFinal.startDate).format('M/D/YYYY') + ' - ' + moment(dateRangeFinal.endDate).format('M/D/YYYY')
   }
 
   const requestBody = {
-    start: dateRange.startDate,
-    end: dateRange.endDate,
+    start: dateRangeFinal.startDate,
+    end: dateRangeFinal.endDate,
     funnelId: funnelId.value,
     users: selectedRepData.value,
     orgs: orgs,
