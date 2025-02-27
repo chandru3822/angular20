@@ -85,6 +85,7 @@ public class BrsProcessStepActionFunctionService {
     inverterMap.put("IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters");
     inverterMap.put("IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters");
     inverterMap.put("IQ7A-72-2-INT", "Enphase IQ7A Microinverters");
+    inverterMap.put("IQ7HS-66-M-US (240V)", "Enphase IQ7HS Microinverters");
     inverterMap.put("IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters");
     inverterMap.put("IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters");
     inverterMap.put("IQ7X-96-2-INT", "Enphase IQ7X Microinverters");
