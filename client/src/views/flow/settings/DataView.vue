@@ -216,24 +216,6 @@
                   item-value="customFieldGroupAssignmentId"
                   label="Parents"
                 />
-<!--                <a-autocomplete-->
-<!--                  v-if="(newField.parentPsIds || parentOptionsHavePsIds) && !parentOptionsHaveCfgaIds"-->
-<!--                  v-model="newField.parentPsIds"-->
-<!--                  :items="availableParentOptions"-->
-<!--                  multiple-->
-<!--                  item-title="parentMenuOption"-->
-<!--                  item-value="processStepId"-->
-<!--                  label="Parents"-->
-<!--                />-->
-<!--                <a-autocomplete-->
-<!--                  v-if="(newField.parentPseIds || parentOptionsHavePseIds) && !parentOptionsHaveCfgaIds && !parentOptionsHavePsIds"-->
-<!--                  v-model="newField.parentPseIds"-->
-<!--                  :items="availableParentOptions"-->
-<!--                  multiple-->
-<!--                  item-title="parentMenuOption"-->
-<!--                  item-value="processStepEventId"-->
-<!--                  label="Parents"-->
-<!--                />-->
               </div>
             </v-form>
             <a-btn
@@ -301,24 +283,6 @@
                 item-value="customFieldGroupAssignmentId"
                 label="Parents"
               />
-<!--              <a-autocomplete-->
-<!--                v-if="(item.parentPsIds || parentOptionsHavePsIds) && !parentOptionsHaveCfgaIds"-->
-<!--                v-model="item.parentPsIds"-->
-<!--                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id && dvfc.fieldToUpdate === item.fieldToUpdate)"-->
-<!--                multiple-->
-<!--                item-title="parentMenuOption"-->
-<!--                item-value="processStepId"-->
-<!--                label="Parents"-->
-<!--              />-->
-<!--              <a-autocomplete-->
-<!--                v-if="(item.parentPseIds || parentOptionsHavePseIds) && !parentOptionsHaveCfgaIds && !parentOptionsHavePsIds"-->
-<!--                v-model="item.parentPseIds"-->
-<!--                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id && dvfc.fieldToUpdate === item.fieldToUpdate)"-->
-<!--                multiple-->
-<!--                item-title="parentMenuOption"-->
-<!--                item-value="processStepEventId"-->
-<!--                label="Parents"-->
-<!--              />-->
               <a-text-field  v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
               <a-text-field v-if="item.defaultFieldId"
@@ -516,7 +480,7 @@
               <template #item.displayName="{ item }" class="text-left">{{ item.displayName }}</template>
               <template #item.description="{ item }" class="text-left">{{ item.description }}</template>
               <template #item.fieldToUpdate="{ item }" class="text-left">{{ item.fieldToUpdate }}</template>
-              <template #item.parentDescription="{ item }" class="text-left">
+              <template #item.parentDescriptions="{ item }" class="text-left">
                 <a-autocomplete
                   v-if="item.parentCfgaIds"
                   v-model="item.parentCfgaIds"
@@ -527,26 +491,6 @@
                   item-title="parentMenuOption"
                   item-value="customFieldGroupAssignmentId"
                 />
-<!--                <a-autocomplete-->
-<!--                  v-if="item.parentPsIds"-->
-<!--                  v-model="item.parentPsIds"-->
-<!--                  multiple-->
-<!--                  readonly-->
-<!--                  class="no-arrow no-underline"-->
-<!--                  :items="dataView.dataViewFieldConfigs"-->
-<!--                  item-title="parentMenuOption"-->
-<!--                  item-value="processStepId"-->
-<!--                />-->
-<!--                <a-autocomplete-->
-<!--                  v-if="item.parentPseIds"-->
-<!--                  :v-model="item.parentPseIds"-->
-<!--                  multiple-->
-<!--                  readonly-->
-<!--                  class="no-arrow no-underline"-->
-<!--                  :items="dataView.dataViewFieldConfigs"-->
-<!--                  item-title="parentMenuOption"-->
-<!--                  item-value="processStepEventId"-->
-<!--                />-->
               </template>
               <template #item.icons="{ item, index }" class="text-right d-flex">
                 <v-tooltip left>
@@ -636,8 +580,6 @@ const fieldToUpdateRule = ref([
 const selectedDefaultField = ref({})
 const availableParentOptions = ref([])
 const parentOptionsHaveCfgaIds = ref(false)
-// const parentOptionsHavePsIds = ref(false)
-// const parentOptionsHavePseIds = ref(false)
 const uniqueBehaviorTypes = ref([])
 const expanded = ref([])
 const childFieldExpanded = ref([])
@@ -666,7 +608,7 @@ const headers = ref([
   {text: 'Field Name', value: 'displayName', show: true},
   {text: 'Description', value: 'description', show: true},
   {text: 'Field to Update', value: 'fieldToUpdate', show: true},
-  {text: 'Parent Description', value: 'parentDescription', show: true},
+  {text: 'Parent Descriptions', value: 'parentDescriptions', show: true},
   {text: null, value: 'icons', show: true, sortable: false, width: 150}
 ])
 
@@ -779,13 +721,9 @@ watch(
   () => {
     if (availableParentOptions.value == null || availableParentOptions.value?.length === 0) {
       parentOptionsHaveCfgaIds.value = false
-      // parentOptionsHavePsIds.value = false
-      // parentOptionsHavePseIds.value = false
       return
     }
     parentOptionsHaveCfgaIds.value = availableParentOptions.value.every(apo => apo.customFieldGroupAssignmentId)
-    // parentOptionsHavePsIds.value = availableParentOptions.value.every(apo => apo.processStepId)
-    // parentOptionsHavePseIds.value = availableParentOptions.value.every(apo => apo.processStepEventId)
   },
   { deep: true }
 )
