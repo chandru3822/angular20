@@ -149,13 +149,6 @@
                   {{ item.name }}
                 </template>
               </a-autocomplete>
-              <a-autocomplete
-                v-model="newField.parentId"
-                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id)"
-                item-title="parentMenuOption"
-                item-value="id"
-                label="Parent"
-              />
               <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === 4"
                               v-model="parentProcessStepEvent"
                               :items="parentProcessStepEvents"
@@ -265,13 +258,6 @@
               </div>
               <a-text-field  v-model="item.displayName"
                              label="Display Name"/>
-              <a-autocomplete
-                v-model="item.parentId"
-                :items="dataView.dataViewFieldConfigs.filter(dvfc => dvfc.id !== item.id)"
-                item-title="parentMenuOption"
-                item-value="id"
-                label="Parent"
-              />
               <a-text-field  v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
               <a-text-field v-if="item.defaultFieldId"
@@ -581,7 +567,6 @@ const headers = ref([
   {text: 'Field Name', value: 'displayName', show: true},
   {text: 'Description', value: 'description', show: true},
   {text: 'Field to Update', value: 'fieldToUpdate', show: true},
-  {text: 'Parent Description', value: 'parentDescription', show: true},
   {text: null, value: 'icons', show: true, sortable: false, width: 150}
 ])
 
@@ -648,7 +633,6 @@ const resetAllFields = () => {
   cfgaParentObject.value = {}
   newField.value.processStepEventId = null
   newField.value.processStepId = null
-  newField.value.parentId = null
 }
 const validateFields = (field, isNew) => {
   let valid = fieldConfigForm.value?.validate()
