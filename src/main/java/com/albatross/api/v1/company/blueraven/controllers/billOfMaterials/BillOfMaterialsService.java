@@ -56,13 +56,17 @@ public class BillOfMaterialsService {
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
-                    Boolean archived = p.getQuantity() <= 0 || p.getArchived() != null && p.getArchived(); //make sure if they set the quantity to zero the part gets archived
+                    Boolean archived = (p.getQuantity()!= null && p.getQuantity() <= 0) || p.getArchived() != null && p.getArchived(); //make sure if they set the quantity to zero the part gets archived
                     map.put("archived", archived);
                     return map;
                 }).toList();
 
-        sqlCache.updateBatchBySql(BillOfMaterialsQuery.insertBomParts, insertParams);
-        sqlCache.updateBatchBySql(BillOfMaterialsQuery.updateBomParts, updateParams);
+        if(insertParams.size() > 0) {
+            sqlCache.updateBatchBySql(BillOfMaterialsQuery.insertBomParts, insertParams);
+        }
+        if(updateParams.size() > 0) {
+            sqlCache.updateBatchBySql(BillOfMaterialsQuery.updateBomParts, updateParams);
+        }
         return getBomForProject(projectId);
     }
 

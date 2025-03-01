@@ -11,8 +11,8 @@ public class BillOfMaterialsQuery {
     //language=PostgreSQL
     public final static String updateBomParts = """
              UPDATE brs.bill_of_materials_parts
-                set quantity = :quantity
-                    , supplier_id = :supplierId
+                set quantity = coalesce(:quantity, quantity)
+                    , supplier_id = coalesce(:supplierId, supplier_id)
                     , supplier_confirmed = :supplierConfirmed
                     , archived = :archived
                     , modified_by_id = :userId
