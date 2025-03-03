@@ -556,6 +556,8 @@ v_closer_gen_source_ids bigint[];
   v_storage_heat_detector_adder numeric;
 v_grid_tied_battery_not_allowed boolean;
 v_storage_states bigint[];
+v_reamortized_monthly_payment_for_roi_calcs numeric;
+v_intial_monthly_payment_for_solar_only_costs numeric;
 BEGIN
 
   select (select string_to_array(value, ',')
@@ -2079,8 +2081,8 @@ BEGIN
   v_remaining_monthly_electric_bill_25_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
-    v_adjusted_annual_consumption,
-    v_adjusted_annual_production,
+    v_estimated_annual_energy_consumption_kwh,
+    v_first_year_production_estimate,
     v_panel_degradation_factor,
     25);
   --raise notice 'v_remaining_monthly_electric_bill_25_year_average = %',v_remaining_monthly_electric_bill_25_year_average;
@@ -2088,8 +2090,8 @@ BEGIN
   v_remaining_monthly_electric_bill_30_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
-    v_adjusted_annual_consumption,
-    v_adjusted_annual_production,
+    v_estimated_annual_energy_consumption_kwh,
+    v_first_year_production_estimate,
     v_panel_degradation_factor,
     30);
   --raise notice 'v_remaining_monthly_electric_bill_30_year_average = %',v_remaining_monthly_electric_bill_30_year_average;
@@ -2122,6 +2124,8 @@ BEGIN
 --   else
   v_reamortized_monthly_payment_all_credits_to_loan =
     (coalesce(v_total_loan_amount, 0) - coalesce(v_total_rebate_first_year_cap_amount,0) + coalesce(v_virginia_srec_rebate_amount,0)) * v_reamortization_factor;
+
+  v_reamortized_monthly_payment_for_roi_calcs =     (coalesce(v_total_loan_amount, 0) - (coalesce(v_reroof_cost,0)/(1-v_dealer_fee)) - coalesce(v_storage_cost_with_fees,0) - coalesce(v_federal_tax_incentive_amount,0)) * v_reamortization_factor;
   -- end if;
 
   v_rete_reamortized_monthly_payment_all_credits_to_loan = (coalesce(v_total_loan_amount, 0) - coalesce(v_total_rebate_first_year_cap_amount,0) - coalesce(v_rete_depreciation_incentive_amount,0) + coalesce(v_virginia_srec_rebate_amount,0)) * v_reamortization_factor;
@@ -2131,17 +2135,27 @@ BEGIN
   v_cost_of_solar = v_reamortized_monthly_payment_all_credits_to_loan * 12 * v_loan_term;
   --raise notice 'v_cost_of_solar = %',v_cost_of_solar;
 
+  if v_financier_id = 721 then
+    v_monthly_cost_25_year_average_with_solar = v_remaining_monthly_electric_bill_25_year_average +
+                                                ((v_total_loan_amount - coalesce(v_reroof_cost,0) - v_storage_cost_with_fees - v_federal_tax_incentive_amount) / 300) + ((v_down_payment_amount+coalesce(v_required_down_payment,0)) / 300);
+
+    v_monthly_cost_30_year_average_with_solar = v_remaining_monthly_electric_bill_30_year_average +
+                                                ((v_total_loan_amount - coalesce(v_reroof_cost,0) - v_storage_cost_with_fees - v_federal_tax_incentive_amount) / 360)
+      + ((v_down_payment_amount+coalesce(v_required_down_payment,0)) / 360);
+  else
   v_monthly_cost_25_year_average_with_solar = v_remaining_monthly_electric_bill_25_year_average +
-                                              ((v_reamortized_monthly_payment_all_credits_to_loan * 12 *
-                                                v_loan_term) / 300) + (v_down_payment_amount / 300);
-  --raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
+                                              ((v_reamortized_monthly_payment_for_roi_calcs * 12 *
+                                                v_loan_term) / 300) + ((v_down_payment_amount+coalesce(v_required_down_payment,0)) / 300);
+
 
   v_monthly_cost_30_year_average_with_solar = v_remaining_monthly_electric_bill_30_year_average +
-                                              ((v_reamortized_monthly_payment_all_credits_to_loan * 12 *
+                                              ((v_reamortized_monthly_payment_for_roi_calcs * 12 *
                                                 v_loan_term) / 360)
-    + (v_down_payment_amount / 360);
-  --raise notice 'v_monthly_cost_30_year_average_with_solar = %',v_monthly_cost_30_year_average_with_solar;
+    + ((v_down_payment_amount+coalesce(v_required_down_payment,0)) / 360);
 
+  end if;
+  --raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
+  --raise notice 'v_monthly_cost_30_year_average_with_solar = %',v_monthly_cost_30_year_average_with_solar;
   v_total_cost_25_years = brs.get_year_cost_by_years(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
@@ -2183,8 +2197,8 @@ BEGIN
     / (v_system_size * 1000);
   --raise notice 'v_financed_pv_price_per_watt_to_customer = %',v_financed_pv_price_per_watt_to_customer;
   v_monthly_cost_today_avg_remaining_electrical_bill = greatest(0.00::numeric, (v_current_estimated_cost_per_kwh *
-                                                                                (v_adjusted_annual_consumption -
-                                                                                 v_adjusted_annual_production)) /
+                                                                                (v_estimated_annual_energy_consumption_kwh -
+                                                                                 v_first_year_production_estimate)) /
                                                                                12);
   --raise notice 'v_monthly_cost_today_avg_remaining_electrical_bill = %',v_monthly_cost_today_avg_remaining_electrical_bill;
 
@@ -2194,6 +2208,7 @@ BEGIN
     v_initial_monthly_payment_all_credits_to_loan_bpPlus = v_total_loan_amount * v_initial_payment_factor;
   end if;
   v_initial_monthly_payment_all_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
+  v_intial_monthly_payment_for_solar_only_costs = (v_total_loan_amount - (coalesce(v_reroof_cost,0)/(1-v_dealer_fee)) - v_storage_cost_with_fees)  * v_initial_payment_factor;
   --raise notice 'v_initial_monthly_payment_all_credits_to_loan = %',v_initial_monthly_payment_all_credits_to_loan;
 
   v_initial_monthly_payment_no_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
@@ -2221,13 +2236,13 @@ BEGIN
 
   if v_product_id in (293, 19424) then
     v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
-                                                   (v_adjusted_annual_consumption -
-                                                    v_adjusted_annual_production)) / 12);
+                                                   (v_estimated_annual_energy_consumption_kwh -
+                                                    v_first_year_production_estimate)) / 12);
   else
     v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
-                                                   (v_adjusted_annual_consumption -
-                                                    v_adjusted_annual_production)) / 12) +
-                                      v_initial_monthly_payment_all_credits_to_loan;
+                                                   (v_estimated_annual_energy_consumption_kwh -
+                                                    v_first_year_production_estimate)) / 12) +
+                                      v_intial_monthly_payment_for_solar_only_costs;
 
   end if;
   --raise notice 'v_monthly_cost_today_with_solar = %',v_monthly_cost_today_with_solar;
