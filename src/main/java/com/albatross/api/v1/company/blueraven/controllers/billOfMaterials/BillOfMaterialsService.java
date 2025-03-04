@@ -51,7 +51,7 @@ public class BillOfMaterialsService {
                     final Map<String, Object> map = new HashMap<>();
                     map.put("userId", user.getId());
                     map.put("id", p.getId());
-                    map.put("quantity", p.getQuantity());
+                    map.put("quantity", p.getQuantity() == 0 ? null : p.getQuantity());
                     map.put("partsMasterId", p.getPartsMasterId());
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
