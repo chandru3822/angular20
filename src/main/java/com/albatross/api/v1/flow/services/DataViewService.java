@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.BigIntArrayDeserializer;
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.convert.JsonObjectDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
@@ -16,8 +18,11 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.beans.PropertyEditor;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by randanunn on 2019-05-20. !Describe Purpose!
@@ -126,12 +131,17 @@ public class DataViewService {
     return sqlCache.getBySql(DataViewQuery.getChildFieldConfig, params, DataViewChildFieldConfig.class);
   }
 
-  public Optional<DataViewFieldConfig> saveFieldConfig(Long viewId, DataViewFieldConfig field) {
+
+
+  public Optional<DataViewFieldConfig> saveFieldConfig(Long viewId, DataViewFieldConfig field) throws SQLException {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("viewId", viewId);
     params.put("displayName", field.getDisplayName());
     params.put("userId", user.trueUserId());
+    params.put("parentCfgaIds", sqlArrayService.createSqlArrayOfType("bigint", field.getParentCfgaIds()));
+    params.put("parentPsIds", sqlArrayService.createSqlArrayOfType("bigint", field.getParentPsIds()));
+    params.put("parentPseIds", sqlArrayService.createSqlArrayOfType("bigint", field.getParentPseIds()));
 
     Long id;
     if (null != field.getId()) {
@@ -276,8 +286,10 @@ public class DataViewService {
       bw.registerCustomEditor(
         List.class,
         "childFieldConfigs",
-        new JsonCollectionDeserializer(childFieldConfigsRef, objectMapper));
+        new JsonCollectionDeserializer<>(childFieldConfigsRef, objectMapper));
+      bw.registerCustomEditor(List.class, "parentCfgaIds", new BigIntArrayDeserializer());
+      bw.registerCustomEditor(List.class, "parentPsIds", new BigIntArrayDeserializer());
+      bw.registerCustomEditor(List.class, "parentPseIds", new BigIntArrayDeserializer());
     }
   }
-
 }
