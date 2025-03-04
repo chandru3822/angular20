@@ -15,6 +15,7 @@ public class AwsProperties {
   @NotBlank String accessKeyId;
   @NotBlank String secretKey;
   @NotBlank String storageBucket;
+  @NotBlank String token;
   @NotNull Regions region = Regions.US_EAST_1;
   URI serviceEndpoint;
 

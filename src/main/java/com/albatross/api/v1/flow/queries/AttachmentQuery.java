@@ -203,8 +203,8 @@ SELECT
 
   //language=PostgreSQL
   public final static String create = """
-INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid, display_name)
-    VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4(), :displayName)
+INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, date_modified, modified_by_id, attachment_type_id, company_id, uuid, display_name, processed)
+    VALUES(:filename, :contentType, :key, :size, now(), :createdById, now(), :createdById, :attachmentTypeId, :companyId, uuid_generate_v4(), :displayName, :processed)
     """;
 
   //language=PostgreSQL
@@ -220,6 +220,15 @@ INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, 
       archived = TRUE,
       date_modified = now(),
       modified_by_id = :modifiedById
+    WHERE id = :id
+    returning attachment_type_id
+    """;
+
+  //language=PostgreSQL
+  public final static String updateProcessed = """
+    UPDATE flow.attachment
+    SET
+      processed = :processed
     WHERE id = :id
     returning attachment_type_id
     """;
