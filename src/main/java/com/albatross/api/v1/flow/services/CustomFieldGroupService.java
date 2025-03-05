@@ -174,6 +174,12 @@ public class CustomFieldGroupService {
     Long whiteListTypeId) {
     User currentUser = securityService.getCurrentUser();
 
+    if (customField.getCustomFieldGroupAssignmentId() == null) {
+      String msg = "Custom Field Group Assignment ID is null, it is required for Custom Field White Listing";
+      log.error(msg);
+      throw new RuntimeException(msg);
+    }
+
     Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());

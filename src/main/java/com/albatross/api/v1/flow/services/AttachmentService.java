@@ -9,13 +9,16 @@ import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.AttachmentTypeSecondaryKeyPattern;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -38,12 +41,16 @@ public class AttachmentService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final PubSubService pubSubService;
+  private final SecondaryKeyPatternService secondaryKeyPatternService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
   @Value("${app.host}")
   private String hostUrl;
+
+  @Value(value = "${app.env}")
+  private String environment;
 
   /**
    * Set the URL to find an Attachment in a custom S3 bucket.
@@ -408,49 +415,139 @@ public class AttachmentService {
   }
 
   public Attachment create(
-    InputStream inputStream, Long sourceId, Long attachmentTypeId, String displayName, String filename, String contentType, Long contentLength, Boolean deleteFirst, Long companyId) {
+    InputStream inputStream, Long sourceId, Long attachmentTypeId,
+    String displayName, String filename, String contentType,
+    Long contentLength, Boolean deleteFirst, Long companyId) {
 
     User currentUser = securityService.getCurrentUser();
-
-    // get keyPattern from attachmentType
     AttachmentType attachmentType = getAttachmentType(attachmentTypeId);
-    String key =
-      String.format(
-        currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(contentLength);
-    metadata.setContentType(contentType);
-    metadata.setCacheControl("public, max-age=31536000");
+    try {
+      byte[] inputBytes = IOUtils.toByteArray(inputStream);
 
-    final PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, inputStream, metadata);
+      String fileUuid = UUID.randomUUID().toString();
+      AttachmentMetadata metadata = new AttachmentMetadata(
+        new ByteArrayInputStream(inputBytes), attachmentTypeId, displayName, filename, contentType,
+        (long) inputBytes.length, companyId, currentUser, sourceId, fileUuid, deleteFirst
+      );
 
-    s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+      sendToS3(metadata, attachmentType.getKeyPattern(), false);
 
+      String finalKey = generateS3Key(metadata.currentUser, attachmentType.getKeyPattern(), metadata.uuid, false);
+
+      Long attachmentId = insertAttachment(metadata, finalKey);
+
+      if (metadata.sourceId != null) {
+        addToJoinTable(attachmentId, metadata.sourceId, metadata.attachmentTypeId, metadata.deleteFirst);
+      }
+
+      handleSecondaryUploads(new ByteArrayInputStream(inputBytes), attachmentTypeId, displayName, filename, contentType,
+        (long) inputBytes.length, companyId, currentUser, sourceId, fileUuid, deleteFirst, attachmentType);
+
+      publishThemeUpdateIfNeeded(attachmentTypeId);
+
+      return findById(attachmentId);
+    } catch (IOException e) {
+      throw new RuntimeException("Error handling input stream for S3 upload", e);
+    }
+  }
+
+  private static InputStream copyInputStream(InputStream originalStream) throws IOException {
+    byte[] byteArray = IOUtils.toByteArray(originalStream);
+    return new ByteArrayInputStream(byteArray);
+  }
+
+  private void sendToS3(AttachmentMetadata metadata, String keyPattern, Boolean useStage) {
+    ObjectMetadata objectMetadata = createS3Metadata(metadata);
+    String finalKey = generateS3Key(metadata.currentUser, keyPattern, metadata.uuid, useStage);
+
+    PutObjectRequest objectRequest = new PutObjectRequest(
+      storageBucket, finalKey, metadata.inputStream, objectMetadata
+    ).withCannedAcl(CannedAccessControlList.PublicRead);
+
+    s3.putObject(objectRequest);
+  }
+
+  @NotNull
+  private Long insertAttachment(AttachmentMetadata metadata, String keyPattern) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", CleanString.cleanFilename(filename));
-    params.put("contentType", contentType);
-    params.put("key", key);
-    params.put("size", contentLength);
-    params.put("displayName", cleanDisplayName(displayName));
-    params.put("createdById", currentUser.trueUserId());
-    params.put("attachmentTypeId", attachmentTypeId);
-    params.put("companyId", companyId != null ? companyId : currentUser.getCompanyId());
+    params.put("filename", CleanString.cleanFilename(metadata.filename));
+    params.put("contentType", metadata.contentType);
+    params.put("key", keyPattern);
+    params.put("size", metadata.contentLength);
+    params.put("displayName", cleanDisplayName(metadata.displayName));
+    params.put("createdById", metadata.currentUser.trueUserId());
+    params.put("attachmentTypeId", metadata.attachmentTypeId);
+    params.put("companyId", metadata.companyId != null ? metadata.companyId : metadata.currentUser.getCompanyId());
+    params.put("processed", false);
 
-    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
+    return sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
+  }
 
-    // add to join - only if they sent in a sourceId (sometimes we have to upload the attachment
-    // first before having the source id (i.e. reimbursement requests)
-    if (null != sourceId) {
-      addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
+  private ObjectMetadata createS3Metadata(AttachmentMetadata metadata) {
+    ObjectMetadata objectMetadata = new ObjectMetadata();
+    objectMetadata.setContentLength(metadata.contentLength);
+    objectMetadata.setContentType(metadata.contentType);
+    objectMetadata.setCacheControl("public, max-age=31536000");
+    return objectMetadata;
+  }
+
+  private String generateS3Key(User currentUser, String keyPattern, String uuid, Boolean useStage) {
+    String baseFolder = (environment.equals("prod") || !useStage) ? "/" : "/stage/";
+    return String.format(currentUser.getAwsBucket() + baseFolder + keyPattern, uuid);
+  }
+
+  private void handleSecondaryUploads(InputStream inputStream, Long attachmentTypeId, String displayName,
+                                      String filename, String contentType, Long contentLength, Long companyId,
+                                      User currentUser, Long sourceId, String Uuid, Boolean deleteFirst, AttachmentType attachmentType) {
+    List<AttachmentTypeSecondaryKeyPattern> secondaryKeyPatterns = secondaryKeyPatternService.getByAttachmentTypeId(attachmentTypeId);
+    for (AttachmentTypeSecondaryKeyPattern secondaryKeyPattern : secondaryKeyPatterns) {
+      try {
+        AttachmentMetadata amd = new AttachmentMetadata(copyInputStream(inputStream), attachmentTypeId, displayName, filename, contentType, contentLength,
+          companyId, currentUser, sourceId, Uuid, deleteFirst);
+        if (amd.contentLength > 0) {
+          sendToS3(amd, secondaryKeyPattern.getKeyPattern(), true);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Error sending input stream for S3 upload", e);
+      }
     }
+  }
 
+  private void publishThemeUpdateIfNeeded(Long attachmentTypeId) {
     if (attachmentTypeId == 987L || attachmentTypeId == 29) {
-      ThemeUpdateMessage tum = new ThemeUpdateMessage();
-      pubSubService.publish(EventChannel.NOTIFICATION, tum);
+      pubSubService.publish(EventChannel.NOTIFICATION, new ThemeUpdateMessage());
     }
+  }
 
-    return findById(attachmentId);
+  private static class AttachmentMetadata {
+    InputStream inputStream;
+    Long attachmentTypeId;
+    String displayName;
+    String filename;
+    String contentType;
+    Long contentLength;
+    Long companyId;
+    User currentUser;
+    Long sourceId;
+    String uuid;
+    Boolean deleteFirst;
+
+    public AttachmentMetadata(InputStream inputStream, Long attachmentTypeId, String displayName,
+                              String filename, String contentType, Long contentLength, Long companyId,
+                              User currentUser, Long sourceId, String uuid, Boolean deleteFirst) {
+      this.inputStream = inputStream;
+      this.attachmentTypeId = attachmentTypeId;
+      this.displayName = displayName;
+      this.filename = filename;
+      this.contentType = contentType;
+      this.contentLength = contentLength;
+      this.companyId = companyId;
+      this.currentUser = currentUser;
+      this.sourceId = sourceId;
+      this.uuid = uuid;
+      this.deleteFirst = deleteFirst;
+    }
   }
 
   public String cleanDisplayName(String original) {

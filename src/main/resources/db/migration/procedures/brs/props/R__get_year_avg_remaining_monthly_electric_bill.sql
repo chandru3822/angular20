@@ -44,7 +44,7 @@ BEGIN
 
    --   raise notice 'v_annual_cost ******** %',v_annual_cost;
 
-      v_monthly_cost = v_annual_cost /12;
+      v_monthly_cost = greatest(v_annual_cost,0) /12;
    --   raise notice 'v_monthly_cost ******** %',v_monthly_cost;
 
       v_average_monthly_cost = v_monthly_cost/p_years;

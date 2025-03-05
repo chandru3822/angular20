@@ -143,7 +143,7 @@
                               item-title="name"
                               return-object
                               autocomplete="off"
-                              @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents()]"
+                              @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents(), () => parentProcessStepEvent = null]"
               >
                 <template v-slot:item="{ props, item }">
                   {{ item.name }}
@@ -168,7 +168,10 @@
                               autocomplete="off">
               </a-autocomplete>
 
-              <div class="mb-3" v-if="[4,6].includes(selectedObjectTypeId)">
+              <div class="mb-3" v-if="[4,6].includes(selectedObjectTypeId) && (
+                newField.processStepId || newField.processStepEventId || newField.customFieldGroupAssignmentId ||
+                Object.keys(parentProcessStepEvent).length > 0
+              )">
                 <span class="mr-3">Update First Value Only?</span>
                 <input
                   type="checkbox"
@@ -176,13 +179,15 @@
                   v-model="newField.updateFirstValueOnly"
                 />
                 <br/>
-                <span
-                  class="mr-3">Match New {{ selectedObjectTypeId === 4 ? 'Process Step' : 'Event' }} on create?</span>
-                <input
-                  :disabled="newField.updateFirstValueOnly"
-                  type="checkbox"
-                  v-model="newField.resetOnNew"
-                />
+                <div v-if="selectedDefaultField.objectTypeId !== 4 && !newField.customFieldGroupAssignmentId">
+                  <span class="mr-3">Match New {{ selectedObjectTypeId === 4 ? 'Process Step' : 'Event' }} on create?</span>
+                  <input
+                    :disabled="newField.updateFirstValueOnly"
+                    type="checkbox"
+                    v-model="newField.resetOnNew"
+                  />
+                </div>
+
                 <div v-if="selectedObjectTypeId === 4">
                 <span
                   class="mr-3">Match Primary Process Step on change?</span>
@@ -192,7 +197,7 @@
                   v-model="newField.resetValuesOnMain"
                 />
                 </div>
-                <div>
+                <div v-if="!newField.processStepEventId && !parentProcessStepEvent">
                   <span
                     class="mr-3">Ignore If Null?</span>
                   <input
@@ -200,6 +205,17 @@
                     v-model="newField.ignoreIfNull"
                   />
                 </div>
+              </div>
+              <div v-if="availableParentOptions.length > 0">
+                <a-autocomplete
+                  v-if="newField.customFieldGroupAssignmentId"
+                  v-model="newField.parentCfgaIds"
+                  :items="availableParentOptions"
+                  multiple
+                  item-title="parentMenuOption"
+                  item-value="customFieldGroupAssignmentId"
+                  label="Parents"
+                />
               </div>
             </v-form>
             <a-btn
@@ -246,10 +262,8 @@
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <v-row>
                 <v-col cols="12">
-              <h3>Edit Field Configs</h3>
               <div class="flex-display">
-                <a-text-field  v-model="item.displayName" class="d-inline-block display-name-field"
-                              label="Display Name"/>
+                <h3 class="d-inline-block display-name-field">Edit Field Configs</h3>
                 <a-btn
                   variant="text"
                   :disabled="!item.displayName"
@@ -258,6 +272,17 @@
                   prepend-icon="save"
                 />
               </div>
+              <a-text-field  v-model="item.displayName"
+                             label="Display Name"/>
+              <a-autocomplete
+                v-if="item.customFieldGroupAssignmentId && parentOptionsHaveCfgaIds"
+                v-model="item.parentCfgaIds"
+                :items="availableParentOptions"
+                multiple
+                item-title="parentMenuOption"
+                item-value="customFieldGroupAssignmentId"
+                label="Parents"
+              />
               <a-text-field  v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
               <a-text-field v-if="item.defaultFieldId"
@@ -453,7 +478,20 @@
           </template>
 
               <template #item.displayName="{ item }" class="text-left">{{ item.displayName }}</template>
+              <template #item.description="{ item }" class="text-left">{{ item.description }}</template>
               <template #item.fieldToUpdate="{ item }" class="text-left">{{ item.fieldToUpdate }}</template>
+              <template #item.parentDescriptions="{ item }" class="text-left">
+                <a-autocomplete
+                  v-if="item.parentCfgaIds"
+                  v-model="item.parentCfgaIds"
+                  multiple
+                  readonly
+                  class="no-arrow no-underline"
+                  :items="dataView.dataViewFieldConfigs"
+                  item-title="parentMenuOption"
+                  item-value="customFieldGroupAssignmentId"
+                />
+              </template>
               <template #item.icons="{ item, index }" class="text-right d-flex">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
@@ -475,7 +513,8 @@
                   variant="text"
                   color="primary"
                   v-if="!expanded.includes(item)"
-                  @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]"
+                  @click="[addNew = false, expanded = [item], setAvailableParentOptions(item),
+                    getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]"
                   prepend-icon="edit"
                 />
                 <a-btn
@@ -501,7 +540,7 @@ import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
 
 
-import {getCurrentInstance, computed, onMounted, ref} from "vue";
+import Vue, {getCurrentInstance, computed, onMounted, ref, watch} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
@@ -539,6 +578,8 @@ const fieldToUpdateRule = ref([
   v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
 ])
 const selectedDefaultField = ref({})
+const availableParentOptions = ref([])
+const parentOptionsHaveCfgaIds = ref(false)
 const uniqueBehaviorTypes = ref([])
 const expanded = ref([])
 const childFieldExpanded = ref([])
@@ -565,7 +606,9 @@ const newField = ref({})
 const dataView = ref({})
 const headers = ref([
   {text: 'Field Name', value: 'displayName', show: true},
+  {text: 'Description', value: 'description', show: true},
   {text: 'Field to Update', value: 'fieldToUpdate', show: true},
+  {text: 'Parent Descriptions', value: 'parentDescriptions', show: true},
   {text: null, value: 'icons', show: true, sortable: false, width: 150}
 ])
 
@@ -632,6 +675,9 @@ const resetAllFields = () => {
   cfgaParentObject.value = {}
   newField.value.processStepEventId = null
   newField.value.processStepId = null
+  newField.value.parentCfgaIds = null
+  newField.value.parentPsIds = null
+  newField.value.parentPseIds = null
 }
 const validateFields = (field, isNew) => {
   let valid = fieldConfigForm.value?.validate()
@@ -661,6 +707,38 @@ const validateChildField = (item, newChildField, isNew) => {
     saveChildFieldConfig(item, newChildField, isNew)
   }
 }
+const setAvailableParentOptions = (item) => {
+  availableParentOptions.value = dataView.value.dataViewFieldConfigs.filter(dvfc =>
+    dvfc.id !== item.id && dvfc.fieldToUpdate === item.fieldToUpdate && (
+      (!!item.customFieldGroupAssignmentId && !!dvfc.customFieldGroupAssignmentId) ||
+      (!!item.processStepId && !!dvfc.processStepId) ||
+      (!!item.processStepEventId && !!dvfc.processStepEventId)
+    )
+  )
+}
+watch(
+  () => availableParentOptions,
+  () => {
+    if (availableParentOptions.value == null || availableParentOptions.value?.length === 0) {
+      parentOptionsHaveCfgaIds.value = false
+      return
+    }
+    parentOptionsHaveCfgaIds.value = availableParentOptions.value.every(apo => apo.customFieldGroupAssignmentId)
+  },
+  { deep: true }
+)
+watch(
+  () => [newField.value.fieldToUpdate, newField.value.customFieldGroupAssignmentId, newField.value.processStepId, newField.value.processStepEventId],
+  () => {
+    setAvailableParentOptions(newField.value)
+    if (availableParentOptions.value != null && availableParentOptions.value?.length === 0) {
+      newField.value.parentCfgaIds = null
+      newField.value.parentPsIds = null
+      newField.value.parentPseIds = null
+    }
+  },
+  { deep: true }
+)
 const getUniqueBehaviorTypes = async () => {
   if (uniqueBehaviorTypes.value.length === 0) {
     appStore.loading = true
@@ -810,6 +888,21 @@ const getDataView = async () => {
     appStore.loading = false
   }
 }
+const assignParentValues = (field) => {
+  if (!field.parentCfgaIds || field.parentCfgaIds.length === 0) {
+    field.parentPsIds = null;
+    field.parentPseIds = null;
+    return;
+  }
+
+  const matchingParents = dataView.value.dataViewFieldConfigs.filter(dvfc =>
+    field.parentCfgaIds.includes(dvfc.customFieldGroupAssignmentId)
+  );
+
+  field.parentPsIds = [...new Set(matchingParents.map(parent => parent.processStepId).filter(id => id))];
+  field.parentPseIds = [...new Set(matchingParents.map(parent => parent.processStepEventId).filter(id => id))];
+};
+
 const saveFieldConfig = async (field, isNew) => {
   appStore.loading = true
   try {
@@ -824,6 +917,8 @@ const saveFieldConfig = async (field, isNew) => {
     if(cfgaParentObject.value?.id) {
       field.processStepId = cfgaParentObject.value?.id
     }
+
+    assignParentValues(field)
 
     const {data, status} = await postRequest(`/dataView/${viewId.value}/field`, field)
     if (isNew) {
@@ -931,4 +1026,14 @@ const isMobile = computed(() => vuetify.breakpoint.smAndDown)
     width: calc(100vw - 50px);
   }
 }
+
+
+::v-deep(.no-underline .v-input__control .v-input__slot::before) {
+  display: none !important;
+}
+
+::v-deep(.no-arrow .v-input__append-inner) {
+  display: none !important;
+}
+
 </style>

@@ -55,11 +55,16 @@ public class DataViewQuery {
                                  dvfc.process_step_event_id as "processStepEventId",
                                  dvfc.process_step_id as "processStepId",
                                  dvfc.field_to_update as "fieldToUpdate",
+                                 coalesce(ps.process_step_name, e.event_name, ot.object_type) AS "description",
+                                 dvfc.display_name || ' - ' || coalesce(ps.process_step_name, e.event_name, ot.object_type) AS "parentMenuOption",
                                  dvfc.update_first_value_only as "updateFirstValueOnly",
                                  dvfc.reset_on_new as "resetOnNew",
                                  dvfc.reset_values_on_main as "resetValuesOnMain",
                                  dvfc.ignore_if_null as "ignoreIfNull",
                                  dvfc.archived,
+                                 dvfc.parent_cfga_ids as "parentCfgaIds",
+                                 dvfc.parent_ps_ids as "parentPsIds",
+                                 dvfc.parent_pse_ids as "parentPseIds",
                                  coalesce((
                                             SELECT array_to_json(array_agg(row_to_json(childFields)))
                                             FROM (
@@ -115,14 +120,17 @@ public class DataViewQuery {
 
   //language=PostgreSQL
   public final static String addFieldConfig = """
-    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main, ignore_if_null)
-        values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain, :ignoreIfNull )
+    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, parent_cfga_ids, parent_ps_ids, parent_pse_ids, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main, ignore_if_null)
+        values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :parentCfgaIds, :parentPsIds, :parentPseIds, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain, :ignoreIfNull )
     """;
 
   //language=PostgreSQL
   public final static String updateFieldConfig = """
     update flow.data_view_field_config
       set display_name = :displayName,
+          parent_cfga_ids = cast(:parentCfgaIds as bigint[]),
+          parent_ps_ids = cast(:parentPsIds as bigint[]),
+          parent_pse_ids = cast(:parentPseIds as bigint[]),
           modified_by_id = :userId,
           date_modified = now()
     where id = :id
@@ -141,6 +149,8 @@ public class DataViewQuery {
               coalesce(df.object_type_id, cot.object_type_id) as "objectTypeId",
               coalesce(ps2.process_step_name, ps.process_step_name, ot.object_type) as "parentObjectName",
               coalesce(e.event_name, e2.event_name) as "processStepEventName",
+              coalesce(ps.process_step_name, e.event_name, ot.object_type) AS "description",
+              dvfc.display_name || ' - ' || coalesce(ps.process_step_name, e.event_name, ot.object_type) AS "parentMenuOption",
               ps3.process_step_name as "processStepName",
               dvfc.default_field_id as "defaultFieldId",
               dvfc.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
@@ -152,6 +162,9 @@ public class DataViewQuery {
               dvfc.reset_values_on_main as "resetValuesOnMain",
               dvfc.ignore_if_null as "ignoreIfNull",
               dvfc.archived,
+              dvfc.parent_cfga_ids as "parentCfgaIds",
+              dvfc.parent_ps_ids as "parentPsIds",
+              dvfc.parent_pse_ids as "parentPseIds",
               coalesce((
                          SELECT array_to_json(array_agg(row_to_json(childFields)))
                          FROM (

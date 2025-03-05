@@ -45,7 +45,7 @@ public class DataViewController {
 
   @PostMapping(value = "/{viewId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<DataViewFieldConfig> saveFieldConfig(@PathVariable Long viewId,
-                                                       @RequestBody DataViewFieldConfig field) {
+                                                       @RequestBody DataViewFieldConfig field) throws SQLException {
     return dataViewService.saveFieldConfig(viewId, field);
   }
 
