@@ -55,8 +55,7 @@ const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 const userCanEdit = computed(() => {
-  //todo: change to new BOM edit permission
-  return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+  return userStore.userHasFeatureAccessLevel('BILL_OF_MATERIALS', 'EDIT')
 })
 
 

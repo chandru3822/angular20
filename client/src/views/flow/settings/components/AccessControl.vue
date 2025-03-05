@@ -3,7 +3,8 @@
     <v-data-table
       :headers="headers"
       :items="companyFeatureList"
-      :fixed-header="true"
+      fixed-header
+      height="65vh"
       :items-per-page="-1"
       v-model="selectedRows"
       hide-default-footer
