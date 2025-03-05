@@ -22,7 +22,7 @@ public class AwsService {
 
   private HashMap<String, Object> getParams(String jobId, AwsWebhookController.UtilityBillResult awsResults) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("fileUuid", jobId);
+    params.put("s3_key", "blueraven/uploads/" + jobId);
     params.put("premiseNumber", getValueIfHighConfidence(awsResults.getPremiseNumber()));
     params.put("customerName", getValueIfHighConfidence(awsResults.getCustomerName()));
     params.put("meterNumber", getValueIfHighConfidence(awsResults.getMeterNumber()));

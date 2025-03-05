@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -19,6 +20,7 @@ public class AwsWebhookController {
   private String SECRET_TOKEN;
   private final AwsService awsService;
 
+  @ResponseStatus(HttpStatus.ACCEPTED)
   @PostMapping(value = "/event")
   public void handleEvent(
           @RequestHeader(value = "Authorization", required = false) String authorizationHeader,

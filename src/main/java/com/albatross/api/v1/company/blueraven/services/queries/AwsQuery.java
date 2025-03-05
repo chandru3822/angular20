@@ -19,7 +19,7 @@ INSERT INTO flow.project_process_step_custom_field_value (
               FROM flow.attachment a
                        JOIN flow.project_process_step_attachment ppsa ON a.id = ppsa.attachment_id
                        JOIN flow.project_process_step pps ON pps.id = ppsa.project_process_step_id
-              WHERE a.uuid = :fileUuid::UUID AND a.attachment_type_id = 47),
+               WHERE a.s3_key = :s3_key AND a.attachment_type_id = 47),
              unnest(array[629, 738, 739, 737, 22533, 27003, 1091]), -- Field IDs, need to match order of values below
              unnest(array[now(), NULL, NULL, NULL, NULL, NULL, NULL]),  -- Date values
              unnest(array[NULL, :customerName, :meterNumber, :accountNumber, :serviceAddress, :otherNotes, :premiseNumber]), -- Text values
