@@ -44,7 +44,7 @@ watch(props.bomParts, () => {
 const populateDirtyRows = (event, item, column) => {
   let alreadyEdited = false
   editParts.value.map(ep => {
-    if(ep.id === item.id)
+    if(ep.id === item.id || (!item.id && !ep.id && ep.partsMasterId === item.partsMasterId))
       ep[column] = event
     alreadyEdited = true
   })
@@ -122,6 +122,8 @@ const addNewPartToList = () => {
   }
   //either way we need to display a temporary row with the values entered into the add field,
   // so we'll add the entered quantity and supplier id to the "newPart" object and then add that to the newParts list
+  newPart.value.partsMasterId = newPart.value.id
+  newPart.value.id = null
   newPart.value.quantity = newPartQuantity.value
   newPart.value.supplierId = newPartSupplier.value?.id
   newPart.value.supplierName = newPartSupplier.value?.supplierName
