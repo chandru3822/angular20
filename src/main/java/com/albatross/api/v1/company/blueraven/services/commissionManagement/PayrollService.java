@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -65,14 +66,12 @@ public class PayrollService {
     params.put("projectId", searchQuery.getProjectId());
 
     Optional<String> results;
-    if (searchQuery.getPositionId() == 1) {
+    if (Objects.equals(searchQuery.getPositionId(), 1L)) {
       results =
         sqlCache.getBySql(PayrollQuery.searchClosers, params, new SingleColumnRowMapper<>(String.class));
-    } else {
-      results =
-        sqlCache.getBySql(PayrollQuery.searchSetters, params, new SingleColumnRowMapper<>(String.class));
+    }else {
+      results = sqlCache.getBySql(PayrollQuery.searchSetters, params, new SingleColumnRowMapper<>(String.class));
     }
-
     return results.orElse("[]");
   }
 
@@ -203,14 +202,12 @@ public class PayrollService {
     }
 
     Optional<String> bySql;
-    if (request.getPositionId() == 1) {
+    if (Objects.equals(request.getPositionId(),1L)){
       bySql =
         sqlCache.getBySql(PayrollQuery.getAccountReviewForClosers, params, new SingleColumnRowMapper<>(String.class));
     } else {
-      bySql =
-        sqlCache.getBySql(PayrollQuery.getAccountReviewForSetters, params, new SingleColumnRowMapper<>(String.class));
+       bySql = sqlCache.getBySql(PayrollQuery.getAccountReviewForSetters, params, new SingleColumnRowMapper<>(String.class));
     }
-
     return bySql.orElse("[]");
   }
 
@@ -220,15 +217,12 @@ public class PayrollService {
     // todo:change the columns returned by the setter query
 
     Optional<String> bySql;
-    if (positionId == 1) {
+    if (Objects.equals(positionId,1L)) {
       bySql =
         sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForClosers, params, new SingleColumnRowMapper<>(String.class));
-    } else {
-      bySql =
-        sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForSetters, params, new SingleColumnRowMapper<>(String.class));
+    }else {
+      bySql = sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForSetters, params, new SingleColumnRowMapper<>(String.class));
     }
-
-
     return bySql.orElse("[]");
   }
 
@@ -284,7 +278,7 @@ public class PayrollService {
       sqlCache.getBySql(PayrollQuery.status, params, SingleColumnRowMapper.newInstance(Integer.class));
 
     if (payrollStatusId.isPresent()) {
-      if (payrollStatusId.get() == 3) {
+      if (payrollStatusId.get().equals(3)) {
         return sqlCache.queryBySql(PayrollQuery.overridesSnapshot, params, OverrideResult.class);
       } else {
         return sqlCache.queryBySql(PayrollQuery.overridesOpen, params, OverrideResult.class);
