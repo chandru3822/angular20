@@ -506,6 +506,7 @@ const getPartsMasterObjectTypeFieldValues = async (
     {},
     'blueraven'
   )
+  debugger
   const filteredValues = data.map(({ pk, versionId, archived, row }) => ({
     pk,
     versionId,

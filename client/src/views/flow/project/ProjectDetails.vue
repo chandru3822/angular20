@@ -110,7 +110,10 @@
           </v-col>
 
           <div v-else>
-            <div v-if="projectTab.id !== -1">
+            <div v-if="projectTab.id === BOM_TAB_ID">
+              <ProjectTabBillOfMaterials :projectId="project.id"></ProjectTabBillOfMaterials>
+            </div>
+            <div v-else-if="projectTab.id !== -1">
               <v-col
                 :class="{ 'mt-4': index !== 0 }"
                 class="py-0"
@@ -242,6 +245,7 @@ import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import { useStickyStore } from '@/stores/StickyStore.js'
+import ProjectTabBillOfMaterials from "@/views/flow/project/BillOfMaterials.vue";
 
 const projectStore = useProjectStore()
 const fileStore = useFileStore()
@@ -270,6 +274,8 @@ const query = ref({})
 const projectForm = ref(null)
 const errors = ref(null)
 const stickySearch = useStickyStore()
+
+const BOM_TAB_ID = 122;
 
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
@@ -354,7 +360,7 @@ const getCustomFieldValuesToDisplay = (values, columnNum) => {
 }
 
 const getFieldGroups = async () => {
-  //two custom tabs have id = -1 and id = -2
+  //three custom tabs have id = -1 and id = -2 and id = -3
   if (projectTab.value?.id != null && projectTab.value?.id > 0) {
     isFieldsLoading.value = true
     customFieldGroups.value = []

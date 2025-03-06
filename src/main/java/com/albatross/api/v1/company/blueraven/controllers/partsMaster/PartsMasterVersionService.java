@@ -28,7 +28,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.albatross.api.v1.company.blueraven.controllers.partsMaster.models.PartsMasterVersionStatus.*;
+import static com.albatross.api.v1.company.blueraven.controllers.partsMaster.models.PartsMasterVersionStatus.DRAFT;
+import static com.albatross.api.v1.company.blueraven.controllers.partsMaster.models.PartsMasterVersionStatus.PUBLISHED;
 
 @Slf4j
 @Service
@@ -360,6 +361,10 @@ public class PartsMasterVersionService {
       sqlCache.queryBySql(PartsMasterQuery.partsMasterVersionCustomFieldValues, params, new ColumnMapRowMapper());
 
     return query.stream().map(getMapper(objectMapper, PartsMasterCustomValuesRow.class)).filter(Objects::nonNull).toList();
+  }
+
+  public List<PartsMasterSimplePart> getPartsMasterAllPublishedParts(){
+      return sqlCache.queryBySql(PartsMasterQuery.partsMasterAllPublishedPartsAndFieldValues, null, PartsMasterSimplePart.class);
   }
 
   //  TODO: cacheable

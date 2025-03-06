@@ -73,6 +73,12 @@ public class BlueravenPartsMasterVersionController {
   public record PartsMasterPublishRequest(@NotEmpty String message) {
   }
 
+    @GetMapping(value = "/allParts")
+  @PreAuthorize("hasFeatureAccessLevel('PARTS_MASTER_ADMIN')")
+  public List<PartsMasterSimplePart> getPartsMasterAllPublishedParts(){
+      return partsMasterVersionService.getPartsMasterAllPublishedParts();
+  }
+
   @GetMapping(value = "/{id}/values/{objectCode}")
   @PreAuthorize("hasFeatureAccessLevel('PARTS_MASTER_ADMIN')")
   public List<PartsMasterCustomValuesRow> getPartsMasterCustomFieldsByObjectCode(

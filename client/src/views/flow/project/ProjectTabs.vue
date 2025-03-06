@@ -111,6 +111,15 @@ const getProjectTabs = async () => {
       tabName: 'Current Work Queues',
       uniqueIdentifier: 'tab_work_queues'
     })
+    tabs.value.push({
+      archived: false,
+      companyObjectTypeId: 1,
+      displayOrder: tabs.value.length + 1,
+      id: -3,
+      customPath: `/project/${ projectId.value }/billOfMaterials`,
+      tabName: 'BOM',
+      uniqueIdentifier: 'tab_bill_of_materials'
+    })
     const projectPath = getProjectPath()
     if (projectPath && tabs.value?.length > 0) {
       const someFilters = data.filter((d) => d.uniqueIdentifier === projectPath.tabName)

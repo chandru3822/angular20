@@ -23,6 +23,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <a-btn
+            v-if="!hideCancel"
             @click.native="no"
             variant="text"
             id="qa-confirmation-dialog-no"
@@ -77,6 +78,7 @@ const props = defineProps({
   itemToDelete: Object, // @deprecated
   disableConfirm: Boolean, //allows parent to perform validation before allowing user to confirm
   hideConfirm: Boolean, // hides confirmation btn when only 'close' or 'cancel' is needed
+  hideCancel: Boolean, //hides cancel btn when only 'confirm' is needed
   confirmLoading:Boolean,
   confirmClass: String, //allows parent to control appearance of confirmation btn
   width: Number, //width of the dialog
