@@ -215,7 +215,9 @@ const findBestMatchDuplicatePart = () => {
         <a-btn :disabled="!newPart || !newPartQuantity" @click="addNewPartToList" text="Add"></a-btn>
       </v-card-actions>
     </v-card>
-
+    <div v-if="bomParts?.length === 0" class="grey--text body-medium">
+      No BOM Available
+    </div>
     <v-data-table
       id="bom-parts-table"
       :items="localBomParts"
@@ -225,6 +227,7 @@ const findBestMatchDuplicatePart = () => {
       disable-sort
       fixed-header
       hide-default-footer
+      :loading="bomSaving"
       class="table-striped elevation-1"
   >
     <template v-slot:group.header="{ groupBy, group, headers, isOpen=true, toggle, remove }">
