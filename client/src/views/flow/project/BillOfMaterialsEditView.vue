@@ -10,6 +10,8 @@
 import {onMounted, ref, toRefs, watch} from "vue";
 import {postRequest, logError} from "@/helpers/helpers.js";
 import { useAppStore } from '@/stores/AppStore.js'
+import {onBeforeRouteLeave, onBeforeRouteUpdate} from "vue-router/composables";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const appStore = useAppStore()
 
@@ -32,10 +34,30 @@ const localBomParts = ref([])
 const editParts = ref([])
 
 const bomSaving = ref(false)
+const unsavedModal = ref(false);
+const nextRoute = ref(null);
+const override = ref(false);
 
 onMounted(() => {
   localBomParts.value = [...props.bomParts]
 })
+
+onBeforeRouteUpdate(async (to, from, next) => {
+  await routeGuard(to, from, next)
+})
+
+onBeforeRouteLeave(async (to, from, next) => {
+ await routeGuard(to, from, next)
+})
+
+const routeGuard = async (to, from, next) => {
+  if (!override.value && Object.keys(editParts.value || {}).length > 0) {
+    unsavedModal.value = true
+    nextRoute.value = next
+  } else {
+    next()
+  }
+}
 
 watch(props.bomParts, () => {
   localBomParts.value = [...props.bomParts]
@@ -277,6 +299,13 @@ const findBestMatchDuplicatePart = () => {
     </template>
 
   </v-data-table>
+    <ConfirmationDialog :open-dialog="unsavedModal" @confirm="nextRoute()"
+                        @close-dialog="[unsavedModal = false, nextRoute = null]">
+      <template v-slot:title>Unsaved Changes</template>
+      <template>You have unsaved changes.  Are you sure you want to leave this page without saving?</template>
+      <template v-slot:yes>Leave Without Saving</template>
+      <template v-slot:no>Stay and Keep Editing</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
