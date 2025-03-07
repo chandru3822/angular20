@@ -17,6 +17,8 @@ import SpinnerInline from '@/components/SpinnerInline'
 import cloneDeep from "lodash.clonedeep";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import BillOfMaterialsEditView from "@/views/flow/project/BillOfMaterialsEditView.vue";
+import VueClamp from 'vue-clamp'
+
 
 
 
@@ -209,7 +211,19 @@ const afterSave = ($event) => {
             </div>
           </td>
         </template>
-
+        <template #item.description="{ item }">
+          <v-tooltip top max-width="240">
+            <template v-slot:activator="{ on, attrs }">
+              <span v-bind="attrs" v-on="on">
+          <vue-clamp autoresize :max-lines="3">
+            {{item.description}}
+          </vue-clamp>
+              </span>
+            </template>
+            <!--tooltip text-->
+            {{item.description}}
+          </v-tooltip>
+        </template>
         <template #item.quantity="{ item }">
           <td class="text-end">
             <a-text-field
