@@ -402,7 +402,14 @@ const saveUserSystemFields = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    appStore.showSnack('ERROR', 'Error Saving Fields')
+    let errorMsg = 'Error Saving Fields'
+    if (e?.data?.detail === 'Email already in use') {
+      errorMsg += ": " +
+        "This Email Address is already associated with another user. " +
+        "Please use a different email address."
+    }
+    appStore.showSnack('ERROR', errorMsg)
+
 
     appStore.loading = false
   }
