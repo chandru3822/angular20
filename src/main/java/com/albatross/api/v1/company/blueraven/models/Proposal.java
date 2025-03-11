@@ -11,11 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 public class Proposal {
   private Long id, proposalNbr, projectId, projectProcessStepId, proposalVersionId, revisionNumber, stateId, utilityCompanyId, proposalTemplateId,
-    objectCategoryId;
-  private String projectName, name, email, version;
+    objectCategoryId, proposalLogHistoryId;
+  private String projectName, name, email, version, proposalDetails;
   private OffsetDateTime dateCreated, dateModified;
   private BigDecimal maxDiscountAmount, minPricePerWatt;
-  private boolean locked, archived, creditCheckSubmitted, financeDocsSent, installationAgreementSent;
+  private boolean locked, archived, creditCheckSubmitted, financeDocsSent, installationAgreementSent, external;
   private List<CustomFieldGroup> customFieldGroups;
 
   public String getDisplayName() {

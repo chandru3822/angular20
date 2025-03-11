@@ -232,7 +232,19 @@ BEGIN
                                         estimated_backup_days,
                                         solar_rebate_for_hic,
                                         include_soft_start_device,
-                                        solar_below_the_line_rebates)
+                                        solar_below_the_line_rebates,
+                                        net_system_cost,
+                                        estimated_backup_hours,
+                                        estimated_backup_hours_with_pv,
+                                        required_down_payment,
+                                        storage_package_name,
+                                        storage_part_number,
+                                        smart_switch_name,
+                                        smart_switch_part_number,
+                                        storage_model,
+                                        storage_name,
+                                        storage_size_kwh_per_battery,
+                                        is_external)
   VALUES (new.proposal ->> '_filename',
           new.project_id,
           new.proposal ->> 'Full Name',
@@ -461,7 +473,19 @@ BEGIN
           new.proposal ->> 'Estimated Backup Days',
           new.proposal ->> 'Solar Rebate for HIC',
           new.proposal ->> 'Soft Start Included',
-          new.proposal ->> 'Solar Below the Line Rebates');
+          new.proposal ->> 'Solar Below the Line Rebates',
+          (new.proposal->>'Net System Cost')::bigint,
+          (new.proposal->>'Estimated Backup Hours')::bigint,
+          (new.proposal->>'Estimated Backup Hours With PV')::bigint,
+          (new.proposal->>'Required Down Payment')::bigint,
+          new.proposal ->> 'Storage Package Name',
+          new.proposal ->> 'Storage Part Number',
+          new.proposal ->> 'Smart Switch Name',
+          new.proposal ->> 'Smart Switch Part Number',
+          new.proposal ->> 'Storage Model',
+          new.proposal ->> 'Storage Name',
+          (new.proposal->>'Storage Size Per Battery (kWh)')::bigint,
+          (new.proposal->>'External')::boolean);
   RETURN NEW;
 END;
 $$;

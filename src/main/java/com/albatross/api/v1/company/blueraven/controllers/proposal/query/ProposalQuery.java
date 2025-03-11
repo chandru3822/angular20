@@ -574,7 +574,8 @@ select p.id,
        p.credit_check_submitted_tsz is not null      as credit_check_submitted,
        p.finance_docs_sent_tsz is not null           as finance_docs_sent,
        p.installation_agreement_sent_tsz is not null as installation_agreement_sent,
-       ocpt.proposal_template_id                     as proposal_template_id
+       ocpt.proposal_template_id                     as proposal_template_id,
+       p.is_external                                 as external
 from brs.proposal p
          inner join flow.project_process_step pps on p.project_process_step_id = pps.id
          inner join flow.project prj on pps.project_id = prj.id
@@ -590,7 +591,8 @@ where p.id = :proposalId
 
   //language=PostgreSQL
   public final static String insert = """
-    insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id) values(:projectProcessStepId, :userId, :proposalVersionId)
+    insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id, proposal_details, is_external)
+    values(:projectProcessStepId, :userId, :proposalVersionId, :proposalDetails, :isExternal)
     """;
 
   //language=PostgreSQL
@@ -803,5 +805,29 @@ where jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 160)')
         or
     jsonb_array_length(jsonb_path_query_array(a, '$.fields[*] ? (@.fieldId == 341).intArrayValue[*]')) = 0
     )
+    """;
+
+  public final static String getProposalDetails = """
+      select proposal_details from brs.proposal where id = :proposalId and archived is false
+    """;
+
+  public final static String updateProposalDetails = """
+      update brs.proposal
+      set proposal_details = :proposalDetails,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      where id = :proposalId and archived is false
+    """;
+
+  //language=PostgreSQL
+  public final static String insertProposalLog = """
+      insert into brs.proposal_log (proposal_date, source, proposal, proposal_nbr, project_id)
+        values (current_date, :source, (select p.proposal_details from brs.proposal p where p.id = :id),
+                :proposalNbr, :projectId)
+    """;
+
+  //language=PostgreSQL
+  public final static String getProposalLogHistoryId = """
+      select id from brs.proposal_log_history where proposal_nbr = :proposalNbr and project_id = :projectId
     """;
 }

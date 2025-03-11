@@ -37,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
+import org.postgresql.util.PGobject;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
@@ -62,6 +63,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Predicate;
@@ -537,6 +539,42 @@ public class BlueravenProposalService {
     return sqlCache.queryBySql(ProposalQuery.getCommissionDetails, params, ProposalCommissionDetail.class);
   }
 
+  // This is used by the external API to update the proposal_details in brs.proposal
+  public void updateProposalDetails(@NonNull Long proposalId, Proposal proposal, @NonNull UserAccountDetails details) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+    if (proposal.getProposalDetails() != null) {
+      String proposalDetails = sqlCache.queryForObjectBySql(ProposalQuery.getProposalDetails, params, String.class);
+
+      try {
+        // Convert existing JSON string to Map
+        Map<String, Object> detailsMap = proposalDetails == null || proposalDetails.isEmpty()
+          ? new HashMap<>()
+          : om.readValue(proposalDetails, Map.class);
+        // New Proposal Details
+        Map<String, Object> newDetailsMap = om.readValue(proposal.getProposalDetails(), Map.class);
+        // Overwrite any values from the new details into the existing ones
+        detailsMap.putAll(newDetailsMap);
+
+        // Convert updated Map to JSON string
+        String updatedJson = om.writeValueAsString(detailsMap);
+
+        // Store JSON correctly in PostgreSQL using PGobject
+        PGobject jsonObject = new PGobject();
+        jsonObject.setType("json");
+        jsonObject.setValue(updatedJson);
+
+        params.put("proposalDetails", jsonObject);
+        params.put("modifiedById", details.getTrueUserId());
+      } catch (Exception e) {
+        log.error("[Proposal] Error updating proposal details ", e);
+        throw new ApiException("Error updating proposal");
+      }
+
+      sqlCache.updateBySql(ProposalQuery.updateProposalDetails, params);
+    }
+  }
+
   public void updateProposalVersion(@NonNull Long proposalId, @NonNull Long versionId, @NonNull UserAccountDetails details) {
     Map<String, Object> params = new HashMap<>();
     params.put("proposalId", proposalId);
@@ -812,6 +850,23 @@ public class BlueravenProposalService {
     params.put("proposalVersionId", proposalVersionId);
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
     params.put("userId", currentUser.getTrueUserId());
+    // Check to see if the proposal is from our External API
+    if (proposal.getProposalDetails() != null) {
+      params.put("isExternal", true);
+      try {
+        params.put("proposalDetails", new PGobject() {{
+          setType("json");
+          setValue(proposal.getProposalDetails());
+        }});
+      } catch (SQLException e) {
+        log.error("[Proposal] Error inserting proposal due to proposal history json", e);
+        throw new ApiException("Error generating proposal template");
+      }
+    }
+    else {
+      params.put("proposalDetails", null);
+      params.put("isExternal", false);
+    }
 
     Long id = sqlCache.updateBySqlReturningId(ProposalQuery.insert, params, "id").longValue();
     return getProposal(id, currentUser.getId());
@@ -904,12 +959,35 @@ public class BlueravenProposalService {
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
     Proposal unlockedProposal = getSimpleProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+    // Check to see if the proposal is from our External API
+    if (unlockedProposal.isExternal()) {
+      Map<String, Object> params = new HashMap<>();
+      params.put("proposalId", proposalId);
+      String proposalDetails = sqlCache.queryForObjectBySql(ProposalQuery.getProposalDetails, params, String.class);
+      if (proposalDetails != null) {
+        params.put("id", proposalId);
+        params.put("proposalNbr", unlockedProposal.getProposalNbr());
+        params.put("source", "External");
+        params.put("proposal", proposalDetails);
+        params.put("projectId", unlockedProposal.getProjectId());
+        sqlCache.updateBySql(ProposalQuery.insertProposalLog, params);
+        sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
 
-    //insert values immediately in to proposal log history
-    getCalculatedProposalValues(unlockedProposal.getId(), unlockedProposal.getProposalTemplateId(), ProposalGeneratedType.PRINT, true);
+        Long proposalLogHistoryId = sqlCache.queryForObjectBySql(ProposalQuery.getProposalLogHistoryId, params, Long.class);
+        Optional<Proposal> lockedProposal = getProposal(unlockedProposal.getId(), currentUser.getId());
+        lockedProposal.ifPresent(proposal -> proposal.setProposalLogHistoryId(proposalLogHistoryId));
+        return lockedProposal;
+      } else {
+        throw new ApiException("Error locking proposal: No proposal details found");
+      }
+    }
+    else {
+      //insert values immediately in to proposal log history
+      getCalculatedProposalValues(unlockedProposal.getId(), unlockedProposal.getProposalTemplateId(), ProposalGeneratedType.PRINT, true);
 
-    sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", unlockedProposal.getId(), "modifiedById", currentUser.getTrueUserId()));
-    return getProposal(unlockedProposal.getId(), currentUser.getId());
+      sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", unlockedProposal.getId(), "modifiedById", currentUser.getTrueUserId()));
+      return getProposal(unlockedProposal.getId(), currentUser.getId());
+    }
   }
 
   private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {

@@ -159,6 +159,14 @@ public class BlueravenProposalController {
     return proposalService.getProposalCommissionDetails(proposalId, financialProductId, brsProductId);
   }
 
+  @PutMapping(value = "/{proposalId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN', 'PROPOSALS_MANAGE') || isBrSystemUser()")
+  public void updateProposalDetails(@PathVariable Long proposalId,
+                                    @RequestBody Proposal proposal,
+                                    @AuthenticationPrincipal UserAccountDetails details) {
+    proposalService.updateProposalDetails(proposalId, proposal, details);
+  }
+
   @PutMapping(value = "/{proposalId}/version/{versionId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN', 'PROPOSALS_MANAGE')")
   public void updateProposalVersion(@PathVariable Long proposalId,
