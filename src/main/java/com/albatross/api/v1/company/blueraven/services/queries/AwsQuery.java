@@ -31,7 +31,11 @@ INSERT INTO flow.project_process_step_custom_field_value (
              DO UPDATE
              SET
                  date_value = COALESCE(EXCLUDED.date_value, flow.project_process_step_custom_field_value.date_value),
-                 text_value = COALESCE(EXCLUDED.text_value, flow.project_process_step_custom_field_value.text_value),
+                 text_value = CASE
+                                   WHEN flow.project_process_step_custom_field_value.custom_field_group_assignment_id = 27003 -- Per Sean Mar 11, 2025, append, rather than replace the value
+                                   THEN COALESCE(flow.project_process_step_custom_field_value.text_value, '') || ' ' || EXCLUDED.text_value
+                                   ELSE EXCLUDED.text_value
+                               END,
                  modified_by_id = EXCLUDED.modified_by_id,
                  date_modified = now()
     """;

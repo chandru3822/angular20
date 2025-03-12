@@ -34,41 +34,13 @@ public class AwsService {
   }
 
   private Object getValueIfHighConfidence(AwsWebhookController.TextractResult awsResult) {
-    return awsResult != null && awsResult.getConfidence() > highConfidenceThreshold ? awsResult.getText() : null;
+    return awsResult != null && awsResult.getConfidence() >= highConfidenceThreshold ? awsResult.getText() : null;
   }
 
   private String getOtherNotesWithConfidenceLevels(AwsWebhookController.UtilityBillResult awsResults) {
-    StringJoiner result = new StringJoiner("\n", "Automation by Albatross\n", "");
-
-    StringJoiner confidenceLevels = new StringJoiner("\n");
-    addConfidence(confidenceLevels, "Account Holder", awsResults.getCustomerName());
-    addConfidence(confidenceLevels, "Account Number", awsResults.getAccountNumber());
-    addConfidence(confidenceLevels, "Meter Number", awsResults.getMeterNumber());
-    addConfidence(confidenceLevels, "Address", awsResults.getServiceAddress());
-    addConfidence(confidenceLevels, "Premise Number", awsResults.getPremiseNumber());
-
-    if (confidenceLevels.length() > 0) {
-      result.add("\nConfidence Levels:");
-      result.add(confidenceLevels.toString());
-    }
+    StringJoiner result = new StringJoiner("\n", "Automation by Albatross", "");
 
     return result.toString();
-  }
-
-  private void addConfidence(StringJoiner result, String label, AwsWebhookController.TextractResult field) {
-    if (field != null && field.getText() != null) {
-      result.add(label + ": " + getConfidenceLevelString(field.getConfidence()));
-    }
-  }
-
-  private String getConfidenceLevelString(Double confidence) {
-    if (confidence >= highConfidenceThreshold) {
-      return "High";
-    } else if (confidence >= mediumConfidenceThreshold) {
-      return "Medium";
-    } else {
-      return "Low";
-    }
   }
 
   public void processUtilityBillResults(String jobId, AwsWebhookController.UtilityBillResult awsResults) {
