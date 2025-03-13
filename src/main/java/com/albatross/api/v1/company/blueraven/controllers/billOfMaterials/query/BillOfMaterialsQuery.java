@@ -75,4 +75,24 @@ public class BillOfMaterialsQuery {
         modified_by_id = :userId
     WHERE project_id = :projectId
     """;
+
+    //language=PostgreSQL
+    public final static String getDesignLogNumber = """
+    select ppscfv.int_value
+        from flow.project_process_step pps
+        inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
+        where pps.project_id = :projectId and
+            pps.main = true and
+            ppscfv.custom_field_group_assignment_id = 24211
+            """; //24211 is the custom field group assignment id for design log number
+
+    //language=PostgreSQL
+    public final static String getPermitPackLogNumber = """
+    select ppscfv.int_value
+        from flow.project_process_step pps
+        inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
+        where pps.project_id = :projectId and
+            pps.main = true and
+            ppscfv.custom_field_group_assignment_id = 26343
+            """; //26343 is the custom field group assignment id for permit pack log number
 }
