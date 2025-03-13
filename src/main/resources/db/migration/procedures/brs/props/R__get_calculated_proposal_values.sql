@@ -2081,8 +2081,8 @@ BEGIN
   v_remaining_monthly_electric_bill_25_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
-    v_estimated_annual_energy_consumption_kwh,
-    v_first_year_production_estimate,
+    v_adjusted_annual_consumption,
+    v_adjusted_annual_production,
     v_panel_degradation_factor,
     25);
   --raise notice 'v_remaining_monthly_electric_bill_25_year_average = %',v_remaining_monthly_electric_bill_25_year_average;
@@ -2090,8 +2090,8 @@ BEGIN
   v_remaining_monthly_electric_bill_30_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
-    v_estimated_annual_energy_consumption_kwh,
-    v_first_year_production_estimate,
+    v_adjusted_annual_consumption,
+    v_adjusted_annual_production,
     v_panel_degradation_factor,
     30);
   --raise notice 'v_remaining_monthly_electric_bill_30_year_average = %',v_remaining_monthly_electric_bill_30_year_average;
@@ -2197,8 +2197,8 @@ BEGIN
     / (v_system_size * 1000);
   --raise notice 'v_financed_pv_price_per_watt_to_customer = %',v_financed_pv_price_per_watt_to_customer;
   v_monthly_cost_today_avg_remaining_electrical_bill = greatest(0.00::numeric, (v_current_estimated_cost_per_kwh *
-                                                                                (v_estimated_annual_energy_consumption_kwh -
-                                                                                 v_first_year_production_estimate)) /
+                                                                                (v_adjusted_annual_consumption -
+                                                                                 v_adjusted_annual_production)) /
                                                                                12);
   --raise notice 'v_monthly_cost_today_avg_remaining_electrical_bill = %',v_monthly_cost_today_avg_remaining_electrical_bill;
 
@@ -2236,12 +2236,12 @@ BEGIN
 
   if v_product_id in (293, 19424) then
     v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
-                                                   (v_estimated_annual_energy_consumption_kwh -
-                                                    v_first_year_production_estimate)) / 12);
+                                                   (v_adjusted_annual_consumption -
+                                                    v_adjusted_annual_production)) / 12);
   else
     v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
-                                                   (v_estimated_annual_energy_consumption_kwh -
-                                                    v_first_year_production_estimate)) / 12) +
+                                                   (v_adjusted_annual_consumption -
+                                                    v_adjusted_annual_production)) / 12) +
                                       v_intial_monthly_payment_for_solar_only_costs;
 
   end if;
