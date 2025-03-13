@@ -160,6 +160,7 @@ public class CustomFieldQuery {
     select cf.id,
            cf.field_name,
            cfg.group_name,
+           cfga.id as "customFieldGroupAssignmentId",
            ot.object_type,
            ps.process_step_name,
            e.event_name

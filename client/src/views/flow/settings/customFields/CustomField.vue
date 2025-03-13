@@ -265,6 +265,7 @@
           <th v-if="apiPath === undefined">Object Name</th>
           <th>Object Type</th>
           <th>Custom Field Group</th>
+          <th>CFGA ID</th>
         </tr>
         </thead>
         <tbody>
@@ -272,6 +273,21 @@
           <td v-if="apiPath === undefined">{{item.processStepName || item.eventName }}</td>
           <td>{{item.objectType}}</td>
           <td>{{item.groupName}}</td>
+          <td><v-tooltip left>
+            <template v-slot:activator="{ on, attrs }">
+              <a-btn
+                  icon
+                  color="primary"
+                  @click="copyToClipBoard(item.customFieldGroupAssignmentId)"
+                  v-bind="attrs"
+                  :activation-handler="on"
+                  prepend-icon="mdi-information"
+              ></a-btn>
+            </template>
+            <span>Custom Field Group Assignment Id: {{ item.customFieldGroupAssignmentId }}</span>
+            <div class="text-center">(click to copy)</div>
+          </v-tooltip>
+            {{ item.customFieldGroupAssignmentId }}</td>
         </tr>
         </tbody>
       </v-simple-table>
