@@ -563,7 +563,7 @@
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-              <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', true)">
+              <span @click="funnelDrilldown(item, getDropdownById(fdcFirstDateRange), 'standard', 1)">
                 {{ item.count_count ? item.count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && item.trend_count>0"
@@ -589,7 +589,7 @@
                     v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-            <span @click="funnelDrilldown(item, getDropdownById(fdcSecondDateRange), 'standard', true)">
+            <span @click="funnelDrilldown(item, getDropdownById(fdcSecondDateRange), 'standard', 2)">
               {{ fdcColumn2Values[index].count_count  ? fdcColumn2Values[index].count_count  : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
@@ -617,7 +617,7 @@
                     v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-            <span @click="funnelDrilldown(item, getDropdownById(fdcSecondDateRange), 'standard', true)">
+            <span @click="funnelDrilldown(item, getDropdownById(fdcSecondDateRange), 'standard', 3)">
               {{ fdcColumn3Values[index].count_count ? fdcColumn3Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
@@ -645,7 +645,7 @@
                     v-if="fdcFourthDateRange != null && fdcColumn4Values != null && fdcColumn4Values.length > 0">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
-            <span @click="funnelDrilldown(item, getDropdownById(fdcFourthDateRange), 'standard', true)">
+            <span @click="funnelDrilldown(item, getDropdownById(fdcFourthDateRange), 'standard', 4)">
               {{ fdcColumn4Values[index].count_count ? fdcColumn4Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"
@@ -1356,8 +1356,8 @@ const officeFdcRankingData = ref([])
 const officeRankingData = ref([])
 const topRepsData = ref([])
 const tomorrow = ref(new Date())
-const customColumn = ref(1)
 const customTable = ref('apptsCreated')
+const lastColumnSelected = ref(0)
 const milestonesExpanded = ref(true)
 const apptsCreatedExpanded = ref(true)
 const fdcPipelineExpanded = ref(true)
@@ -2118,6 +2118,7 @@ const openDrilldown = async(item, column) => {
 
 const changeFdcDropdownSelection = async(dropdown) => {
   customTable.value = 'FDC'
+  lastColumnSelected.value = dropdown;
   if (dropdown === 1) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcFirstDateRange.value))
     if (result === null) {
@@ -2126,7 +2127,6 @@ const changeFdcDropdownSelection = async(dropdown) => {
     if (result.startDate === null) {
       if (!fdcFirstCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 1;
           if (fdcFirstCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = fdcFirstCustom.value.startDate.format('YYYY-MM-DD').toString();
           }
@@ -2164,7 +2164,6 @@ const changeFdcDropdownSelection = async(dropdown) => {
     if (result.startDate === null) {
       if (!fdcSecondCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 2;
           if (fdcSecondCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = fdcSecondCustom.value.startDate.format('YYYY-MM-DD').toString();
           }
@@ -2202,7 +2201,6 @@ const changeFdcDropdownSelection = async(dropdown) => {
     if (result.startDate === null) {
       if (!fdcThirdCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 3;
           if (fdcThirdCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = fdcThirdCustom.value.startDate.format('YYYY-MM-DD').toString();
           }
@@ -2239,7 +2237,6 @@ const changeFdcDropdownSelection = async(dropdown) => {
     if (result.startDate === null) {
       if (!fdcFourthCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 4;
           if (fdcFourthCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = fdcFourthCustom.value.startDate.format('YYYY-MM-DD').toString();
           }
@@ -2281,7 +2278,6 @@ const changeDropdownSelection = async(dropdown) => {
     if (result.startDate === null) {
       if (!firstCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 1;
           if (firstCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = firstCustom.value.startDate.format('YYYY-MM-DD').toString();
           }
@@ -2319,7 +2315,6 @@ const changeDropdownSelection = async(dropdown) => {
     if (result.startDate === null) {
       if (!secondCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 2;
           if (secondCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = secondCustom.value.startDate.format('YYYY-MM-DD').toString();
           }
@@ -2357,7 +2352,6 @@ const changeDropdownSelection = async(dropdown) => {
     if (result.startDate === null) {
       if (!thirdCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 3;
           if (thirdCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = thirdCustom.value.startDate.format('YYYY-MM-DD').toString();
           }
@@ -2848,7 +2842,7 @@ const funnelAllRepsUpcomingAppointments = async() => {
 
 const applyCustomDates = async()=> {
   if(customTable.value === 'apptsCreated') {
-    if (customColumn.value === 1) {
+    if (clastColumnSelected.value === 1) {
       firstCustom.value.startDate = moment(customDate.value.startDate);
       firstCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days');
@@ -2856,7 +2850,8 @@ const applyCustomDates = async()=> {
       firstCustom.value.trendStart = firstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
       getDropdownById(firstDateRange.value).trendText = moment(firstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(firstCustom.value.trendEnd).format('MM/DD/YYYY');
       firstCustom.value.name = moment(firstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(firstCustom.value.endDate).format('MM/DD/YY');
-    } else if (customColumn.value === 2) {
+    }
+    if (lastColumnSelected.value === 2) {
       secondCustom.value.startDate = moment(customDate.value.startDate);
       secondCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = secondCustom.value.endDate.diff(secondCustom.value.startDate, 'days');
@@ -2864,7 +2859,8 @@ const applyCustomDates = async()=> {
       secondCustom.value.trendStart = secondCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
       getDropdownById(secondDateRange.value).trendText = moment(secondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(secondCustom.value.trendEnd).format('MM/DD/YYYY');
       secondCustom.value.name = moment(secondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(secondCustom.value.endDate).format('MM/DD/YY');
-    } else if (customColumn.value === 3) {
+    }
+    if (lastColumnSelected.value === 3) {
       thirdCustom.value.startDate = moment(customDate.value.startDate);
       thirdCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = thirdCustom.value.endDate.diff(thirdCustom.value.startDate, 'days');
@@ -2872,7 +2868,8 @@ const applyCustomDates = async()=> {
       thirdCustom.value.trendStart = thirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
       getDropdownById(thirdDateRange.value).trendText = moment(thirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(thirdCustom.value.trendEnd).format('MM/DD/YYYY');
       thirdCustom.value.name = moment(thirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(thirdCustom.value.endDate).format('MM/DD/YY');
-    } else if (customColumn.value === 4) {
+    }
+    if (lastColumnSelected.value === 4) {
       fourthCustom.value.startDate = moment(customDate.value.startDate);
       fourthCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = fourthCustom.value.endDate.diff(fourthCustom.value.startDate, 'days');
@@ -2882,10 +2879,10 @@ const applyCustomDates = async()=> {
       fourthCustom.value.name = moment(fourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fourthCustom.value.endDate).format('MM/DD/YY');
     }
 
-    await upcomingAppointmentsLoad(customColumn.value);
+    await upcomingAppointmentsLoad(lastColumnSelected.value)
   }
   else{
-    if (customColumn.value === 1) {
+    if (lastColumnSelected.value === 1) {
       fdcFirstCustom.value.startDate = moment(customDate.value.startDate);
       fdcFirstCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = fdcFirstCustom.value.endDate.diff(fdcFirstCustom.value.startDate, 'days');
@@ -2893,7 +2890,8 @@ const applyCustomDates = async()=> {
       fdcFirstCustom.value.trendStart = fdcFirstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
       getDropdownById(fdcFirstDateRange.value).trendText = moment(fdcFirstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFirstCustom.value.trendEnd).format('MM/DD/YYYY');
       fdcFirstCustom.value.name = moment(fdcFirstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFirstCustom.value.endDate).format('MM/DD/YY');
-    } else if (customColumn.value === 2) {
+    }
+    if (lastColumnSelected.value === 2) {
       fdcSecondCustom.value.startDate = moment(customDate.value.startDate);
       fdcSecondCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = fdcSecondCustom.value.endDate.diff(fdcSecondCustom.value.startDate, 'days');
@@ -2901,7 +2899,8 @@ const applyCustomDates = async()=> {
       fdcSecondCustom.value.trendStart = fdcSecondCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
       getDropdownById(fdcSecondDateRange.value).trendText = moment(fdcSecondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcSecondCustom.value.trendEnd).format('MM/DD/YYYY');
       fdcSecondCustom.value.name = moment(fdcSecondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcSecondCustom.value.endDate).format('MM/DD/YY');
-    } else if (customColumn.value === 3) {
+    }
+    if (lastColumnSelected.value === 3) {
       fdcThirdCustom.value.startDate = moment(customDate.value.startDate);
       fdcThirdCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = fdcThirdCustom.value.endDate.diff(fdcThirdCustom.value.startDate, 'days');
@@ -2909,7 +2908,8 @@ const applyCustomDates = async()=> {
       fdcThirdCustom.value.trendStart = fdcThirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
       getDropdownById(fdcThirdDateRange.value).trendText = moment(fdcThirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcThirdCustom.value.trendEnd).format('MM/DD/YYYY');
       fdcThirdCustom.value.name = moment(fdcThirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcThirdCustom.value.endDate).format('MM/DD/YY');
-    } else if (customColumn.value === 4) {
+    }
+    if (lastColumnSelected.value === 4) {
       fdcFourthCustom.value.startDate = moment(customDate.value.startDate);
       fdcFourthCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = fdcFourthCustom.value.endDate.diff(fdcFourthCustom.value.startDate, 'days');
@@ -2919,7 +2919,7 @@ const applyCustomDates = async()=> {
       fdcFourthCustom.value.name = moment(fdcFourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFourthCustom.value.endDate).format('MM/DD/YY');
     }
 
-    await pipelineLoad(customColumn.value);
+    await pipelineLoad(lastColumnSelected.value)
   }
 }
 
@@ -3461,7 +3461,7 @@ const yearToDate = (pipelineName) => {
     updateApptsToFdcPipelineCalendar()
   }
 }
-const funnelDrilldown = async (funnel, dateRange, funnelName) => {
+const funnelDrilldown = async (funnel, dateRange, funnelName, index) => {
   if(funnel.name === 'Pitch Percentage'){
     return
   }
@@ -3479,13 +3479,11 @@ const funnelDrilldown = async (funnel, dateRange, funnelName) => {
   };
 
   let dateRangeFinal = dateRange.name === "CUSTOM" ? {
-    // this needs fixed, as is the customColumn is only holdling one column value
-    // and doesn't work if there's multiple custom columns
-      ...customValues[customColumn.value],
-      startDate: customValues[customColumn.value].startDate.format('YYYY-MM-DD'),
-      endDate: customValues[customColumn.value].endDate.format('YYYY-MM-DD'),
-      trendEnd: customValues[customColumn.value].trendEnd.format('YYYY-MM-DD'),
-      trendStart: customValues[customColumn.value].trendStart.format('YYYY-MM-DD'),
+      ...customValues[index],
+      startDate: customValues[index].startDate.format('YYYY-MM-DD'),
+      endDate: customValues[index].endDate.format('YYYY-MM-DD'),
+      trendEnd: customValues[index].trendEnd.format('YYYY-MM-DD'),
+      trendStart: customValues[index].trendStart.format('YYYY-MM-DD'),
   } : dateRange
 
   if (dateRangeFinal.name === "CUSTOM") {
