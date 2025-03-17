@@ -12,7 +12,7 @@ import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import {useRoute} from "vue-router/composables";
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
-import {getRequest, getRequestWithParams, postRequest, logError} from "@/helpers/helpers.js";
+import {getRequest, getRequestWithParams, postRequest, apiRequest, logError} from "@/helpers/helpers.js";
 import SpinnerInline from '@/components/SpinnerInline'
 import cloneDeep from "lodash.clonedeep";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
@@ -143,6 +143,38 @@ const afterSave = ($event) => {
 
 }
 
+const exportPdf = async () => {
+  try {
+    appStore.loading = true
+    const { data, headers } = await apiRequest('blueraven', {
+      method: 'post',
+      url: `/bom/${projectId.value}/pdf`,
+      data: bomParts.value,
+      responseType: 'blob'
+    })
+    const filename = 'bom'
+    if (data) {
+      const pdfFile = URL.createObjectURL(
+          new Blob([data], { type: 'application/pdf' })
+      )
+      const docUrl = document.createElement('a')
+      docUrl.href = pdfFile
+      docUrl.setAttribute('download', filename)
+      document.body.appendChild(docUrl)
+      docUrl.click()
+      setTimeout(() => {
+        docUrl.remove()
+        URL.revokeObjectURL(pdfFile)
+      }, 100)
+
+      appStore.showSnack('SUCCESS', 'Materials List Downloaded')
+    }
+  } finally {
+    appStore.loading = false
+  }
+}
+
+
 </script>
 
 <template>
@@ -158,13 +190,13 @@ const afterSave = ($event) => {
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <div>
-            <a-btn prepend-icon="mdi-list-box-outline" text="Create PO" :disabled="true"></a-btn>
+            <a-btn prepend-icon="mdi-list-box-outline" text="Export Material List" :disabled="editMode" @click="exportPdf"></a-btn>
           </div>
         </v-toolbar>
       </div>
 
     </div>
-    <v-container v-if="!editMode">
+    <v-container v-if="!editMode" class="px-0">
     <v-row
         no-gutters
         class="py-0 relative overflow-y-auto"
@@ -313,6 +345,7 @@ const afterSave = ($event) => {
 <style lang="scss">
 .bom-toolbar .v-toolbar__content {
   padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 #bom-parts-table > div.v-data-table__wrapper > table > tbody > tr > td.group-header {
   border-top: 1px solid var(--v-grey-lighten1) !important;
