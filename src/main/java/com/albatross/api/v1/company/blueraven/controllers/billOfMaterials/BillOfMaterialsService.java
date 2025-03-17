@@ -177,11 +177,22 @@ public class BillOfMaterialsService {
 
 
     public String buildAddress(String street1, String street2, String city, String state, String zip) {
-        StringBuilder sb = new StringBuilder(street1);
+        StringBuilder sb = new StringBuilder();
+        if(street1 != null){
+            sb.append(street1);
+        }
         if(street2 != null && street2.length() > 0){
             sb.append("<br/>").append(street2);
         }
-        sb.append("<br/>").append(city).append(", ").append(state).append(" ").append(zip);
+        if(city != null){
+            sb.append("<br/>").append(city);
+        }
+        if(state != null) {
+            sb.append(", ").append(state);
+        }
+        if(zip != null){
+            sb.append(" ").append(zip);
+        }
         return sb.toString();
     }
 }
