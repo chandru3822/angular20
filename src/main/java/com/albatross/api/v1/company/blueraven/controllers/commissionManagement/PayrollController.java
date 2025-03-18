@@ -45,9 +45,9 @@ public class PayrollController {
 
   @PostMapping(value = "/{payrollId}")
   public ResponseEntity<?> updatePayrollById(
-      @PathVariable Long payrollId,
-      @RequestBody PayrollService.PayrollUpdateRequest updateRequest)
-      throws SQLException {
+    @PathVariable Long payrollId,
+    @RequestBody PayrollService.PayrollUpdateRequest updateRequest)
+    throws SQLException {
     boolean updated = payrollService.updatePayroll(payrollId, updateRequest);
     if (!updated) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -72,7 +72,7 @@ public class PayrollController {
 
   @PostMapping(value = "/{payrollId}/approve")
   public void approvePayroll(
-      @PathVariable Long payrollId, @RequestBody PayrollService.PayrollApproveRequest request) {
+    @PathVariable Long payrollId, @RequestBody PayrollService.PayrollApproveRequest request) {
     payrollService.approvePayroll(payrollId, request);
   }
 
@@ -88,14 +88,26 @@ public class PayrollController {
 
   @GetMapping(value = "/{payrollId}/adjustments")
   public String getPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long projectId) {
-    return payrollService.getPayrollAdjustments(payrollId, projectId);
+    return payrollService.getPayrollAdjustments(payrollId, projectId, false);
+  }
+
+  @GetMapping(value = "/{payrollId}/partnerAdjustments")
+  public String getPartnerPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long projectId) {
+    return payrollService.getPayrollAdjustments(payrollId, projectId, true);
   }
 
   @PostMapping(value = "/{payrollId}/adjustments")
   public void addPayrollAdjustment(
-      @PathVariable Long payrollId,
-      @RequestBody PayrollService.PayrollAdjustmentRequest adjustmentRequest) {
-    payrollService.addPayrollAdjustment(payrollId, adjustmentRequest);
+    @PathVariable Long payrollId,
+    @RequestBody PayrollService.PayrollAdjustmentRequest adjustmentRequest) {
+    payrollService.addPayrollAdjustment(payrollId, adjustmentRequest, false);
+  }
+
+  @PostMapping(value = "/{payrollId}/partnerAdjustments")
+  public void addPartnerPayrollAdjustment(
+    @PathVariable Long payrollId,
+    @RequestBody PayrollService.PayrollAdjustmentRequest adjustmentRequest) {
+    payrollService.addPayrollAdjustment(payrollId, adjustmentRequest, true);
   }
 
   @GetMapping(value = "/summary/prepare")
@@ -134,7 +146,7 @@ public class PayrollController {
 
   @GetMapping(value = "/{payrollId}/overrides")
   public List<OverrideResult> getAllOverrideDetails(@PathVariable Long payrollId)
-      throws IOException {
+    throws IOException {
     return payrollService.getAllOverrideDetails(payrollId);
   }
 }

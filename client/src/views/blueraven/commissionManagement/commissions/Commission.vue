@@ -568,13 +568,6 @@
               item-title="label"
               item-value="id"
             />
-            <a-select
-              attach v-model="selectedAdder.milestoneId"
-              :items="commission.milestones"
-              label="Deduct at Milestone"
-              item-title="milestoneType"
-              item-value="milestoneId"
-            />
             <a-btn
               color="primary"
               class="mr-3"
@@ -619,13 +612,6 @@
                 item-title="label"
                 item-value="id"
               />
-              <a-select
-                attach v-model="item.milestoneId"
-                :items="commission.milestones"
-                label="Deduct at Milestone"
-                item-title="milestoneType"
-                item-value="milestoneId"
-              />
               <a-btn
                 :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
                 @click="[adderExpanded = [], updateAdder(item)]"
@@ -640,7 +626,6 @@
               <td class="text-left">{{ item.adderName }}</td>
               <td class="text-left">{{ item.feeAmount }}</td>
               <td class="text-left">{{ item.feeType }}</td>
-              <td class="text-left">{{ item.milestoneType }}</td>
               <td>
                 <a-btn
                   size="small"
@@ -741,14 +726,13 @@
   import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal.vue";
   import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
   import { useBrsStore } from '@/stores/BrsStore.js'
-  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-  import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStore.js'
-  import { useRoute, useRouter } from "vue-router/composables"
+  import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useAppStore} from '@/stores/AppStore.js'
+  import {useRoute, useRouter} from "vue-router/composables"
   import { storeToRefs } from 'pinia'
   import AssignedUsers from "@/views/blueraven/commissionManagement/commissions/AssignedUsers.vue";
   import AssignedOrgs from "@/views/blueraven/commissionManagement/commissions/AssignedOrgs.vue";
-
 
   const route = useRoute()
   const router = useRouter()
@@ -791,11 +775,6 @@
   const sourceToDelete = ref(null)
   const userToDelete = ref(null)
 
-  /*
-  * Eventually we will need to move commission static values to a true constants
-  * file for BRS, aggregate repetitive permission implementations to a composable,
-  * and break out repeating components like data tables.
-  *  */
   const positions = ref([
     {
       id: 1,
@@ -840,7 +819,6 @@
     {text: 'Adder', value: 'adder', show: true},
     {text: 'Fee Amount', value: 'feeAmount', show: true},
     {text: 'Fee Type', value: 'feeType', show: true},
-    {text: 'Deduct at Milestone', value: 'deductAtMilestone', show: true},
     {text: '', value: 'icons', show: true},
   ])
   const milestoneHeaders = ref([
@@ -1187,12 +1165,6 @@
       }
     })
 
-    commission.value.adders.forEach(s => {
-      if (s.milestoneId === milestoneId) {
-        used = true
-      }
-    })
-
     return used
   }
 
@@ -1274,7 +1246,6 @@
     appStore.loading = true
     try {
       const {data, status} = await putRequest(`/commissionManagement/${planId.value}/adder`, item, 'blueraven')
-      item.milestoneType = data.milestoneType
       item.feeType = data.feeType
       handleHidingGlobalLoader(status)
     } catch (e) {
@@ -1288,7 +1259,6 @@
     try {
       let params = {
         adderId: selectedAdder.value.id,
-        milestoneId: selectedAdder.value.milestoneId,
         feeAmount: selectedAdder.value.feeAmount,
         feeTypeId: selectedAdder.value.feeTypeId,
       }

@@ -34,14 +34,12 @@ public class CommissionManagementQuery {
         where mt.position_id = 4
     """;
 
-  //language=PostgreSQL
   public final static String findAvailableMilestonesForDealers = """
     select mt.*
     from brs.milestone_type mt
         where mt.position_id = 743
     """;
 
-  //language=PostgreSQL
   public final static String findAvailableMilestonesForInstallationPartners= """
     select mt.*
     from brs.milestone_type mt
@@ -491,14 +489,11 @@ FROM (SELECT cp.id,
                 coalesce((SELECT array_to_json(array_agg(row_to_json(adders)))
               FROM (SELECT cpsa.id,
                            lov.name as "adderName",
-                           mt.milestone_type as "milestoneType",
                            ft.fee_type as "feeType",
                            cpsa.fee_amount as "feeAmount",
                            cpsa.adder_id as "adderId",
-                           cpsa.milestone_id as "milestoneId",
                            fee_type_id as "feeTypeId"
                     FROM brs.partner_commission_plan_adder cpsa
-                             INNER JOIN brs.milestone_type mt ON mt.id = cpsa.milestone_id
                              INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
                              INNER JOIN flow.list_of_value lov on lov.id = cpsa.adder_id
                     WHERE cpsa.commission_plan_id = cp.id
@@ -744,14 +739,12 @@ FROM (SELECT cp.id,
   public final static String getAdder = """
     SELECT cpsa.id,
            lov.name as "adderName",
-           mt.milestone_type as "milestoneType",
            ft.fee_type as "feeType",
            cpsa.fee_amount as "feeAmount",
            cpsa.adder_id as "adderId",
            cpsa.milestone_id as "milestoneId",
            cpsa.fee_type_id as "feeTypeId"
     FROM brs.partner_commission_plan_adder cpsa
-             INNER JOIN brs.milestone_type mt ON mt.id = cpsa.milestone_id
              INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
              INNER JOIN flow.list_of_value lov on lov.id = cpsa.adder_id
     WHERE cpsa.id = :id
@@ -759,8 +752,8 @@ FROM (SELECT cp.id,
 
   //language=PostgreSQL
   public final static String saveAdder = """
-    INSERT INTO brs.partner_commission_plan_adder (commission_plan_id, milestone_id, fee_amount, fee_type_id, adder_id)
-    VALUES (:planId, :milestoneId, :feeAmount, :feeTypeId, :adderId)
+    INSERT INTO brs.partner_commission_plan_adder (commission_plan_id, fee_amount, fee_type_id, adder_id)
+    VALUES (:planId, :feeAmount, :feeTypeId, :adderId)
     """;
 
 
@@ -768,7 +761,6 @@ FROM (SELECT cp.id,
   public final static String updateAdder = """
     UPDATE brs.partner_commission_plan_adder
      SET
-     milestone_id = :milestoneId,
      fee_amount = :feeAmount,
      fee_type_id =:feeTypeId
      WHERE id = :id
