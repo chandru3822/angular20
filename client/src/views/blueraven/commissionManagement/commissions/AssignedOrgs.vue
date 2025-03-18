@@ -21,19 +21,18 @@
         <v-card v-if="addOrg" class="square-card text-left px-5 pb-5">
           <v-row>
             <v-col cols="12" md="6">
-              <a-autocomplete
-                v-model="newOrg.orgId"
-                :items="orgsToAdd"
-                :loading="orgsLoading"
-                prepend-icon="search"
-                cache-items
-                :search-input.sync="orgSearch"
-                label="Search for an org..."
-                item-title="orgName"
-                item-value="orgId"
-                autocomplete="off"
-                @input="getOrgHistory(newOrg.orgId)"
-                attach
+              <a-autocomplete v-model="newOrg.orgId"
+                              :items="orgsToAdd"
+                              :loading="orgsLoading"
+                              prepend-icon="search"
+                              cache-items
+                              :search-input.sync="orgSearch"
+                              label="Search for an org..."
+                              item-title="orgName"
+                              item-value="orgId"
+                              autocomplete="off"
+                              @input="getOrgHistory(newOrg.orgId)"
+                              attach
               >
               </a-autocomplete>
               <DatetimePickerInput
@@ -207,18 +206,23 @@
     handleHidingGlobalLoader,
     getRequest,
     deleteRequest,
+    putRequest,
     postRequestWithRequestParams,
     postRequest,
+    getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers.js';
   import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
   import { useBrsStore } from '@/stores/BrsStore.js'
-  import { getCurrentInstance, computed, ref, onMounted, watch, toRefs} from 'vue'
-  import { useUserStore} from '@/stores/UserStore.js'
-  import { useAppStore} from '@/stores/AppStore.js'
+  import {getCurrentInstance, computed, ref, onMounted, watch, toRefs} from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useAppStore} from '@/stores/AppStore.js'
+  import {useRoute, useRouter} from "vue-router/composables"
   import debounce from "lodash.debounce"
   import { storeToRefs } from 'pinia'
 
+  const route = useRoute()
+  const router = useRouter()
   const userStore = useUserStore()
   const appStore = useAppStore()
   const brsStore = useBrsStore()

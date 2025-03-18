@@ -440,292 +440,292 @@
 
 <script setup>
 
-import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import moment from 'moment'
-import {handleHidingGlobalLoader, getRequest, postRequest, } from '@/helpers/helpers'
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStore.js'
-import { useBrsStore } from '@/stores/BrsStore.js'
-import { storeToRefs } from 'pinia'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import moment from 'moment'
+  import {handleHidingGlobalLoader, getRequest, postRequest, } from '@/helpers/helpers'
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useRoute, useRouter} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStore.js'
+  import { useBrsStore } from '@/stores/BrsStore.js'
+  import { storeToRefs } from 'pinia'
 
-const brsStore = useBrsStore()
-const { commissionPositionId } = storeToRefs(brsStore)
-const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+  const brsStore = useBrsStore()
+  const { commissionPositionId } = storeToRefs(brsStore)
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
 
-onMounted(() => {
-  getCloserDetails()
-})
+  onMounted(() => {
+    getCloserDetails()
+  })
 
-watch(commissionPositionId, async() => {
-  // if the position is Dealer / Installation Partner, go to commissions
-  if ([743,828].includes(commissionPositionId.value)) {
-    await router.push('/commissionManagement/commissions')
-  } else {
-    await router.push('/commissionManagement/users')
-  }
-})
+  watch(commissionPositionId, async() => {
+    // if the position is Dealer / Installation Partner, go to commissions
+    if ([743,828].includes(commissionPositionId.value)) {
+      await router.push('/commissionManagement/commissions')
+    } else {
+      await router.push('/commissionManagement/users')
+    }
+  })
 
-const planErrorObj = ref({})
-const overrideErrorObj = ref({})
-const dataLoading = ref(true)
-const overrideSelectedIndex = ref(null)
-const positionId = ref(brsStore.commissionPositionId)
-const selectedIndex = ref(null)
-const receivingSelectedIndex = ref(null)
-const commissionPlans = ref([])
-const overridePlans = ref([])
-const newCommissionPlan = ref({})
-const newOverridePlan = ref({})
-const cloneOverridePlan = ref({})
-const addNewCommissionPlan = ref(false)
-const addNewOverridePlan = ref(false)
-const addNewReceivingPlan = ref(false)
-const userId = ref(route.params.id)
-const expanded = ref([])
-const overrideExpanded = ref([])
-const receivingExpanded = ref([])
-const overrideHeaders = ref([
-  {text: 'Plan Name', value: 'name', show: true},
-  {text: 'Description', value: 'Position', show: true},
-  {text: 'Start Date', value: 'startDate', show: true},
-  {text: 'End Date', value: 'endDate', show: true},
-  {text: 'Notes', value: 'note', show: true},
-  {text: '', value: 'icons', show: true},
-])
-const planHeaders = ref([
-  {text: 'Plan Name', value: 'name', show: true},
-  {text: 'Description', value: 'description', show: true},
-  {text: 'Start Date', value: 'startDate', show: true},
-  {text: 'End Date', value: 'endDate', show: true},
-  {text: 'Notes', value: 'note', show: true},
-  {text: '', value: 'icons', show: true},
-])
-const receivingHeaders = ref([
-  {text: 'Plan Name', value: 'name', show: true},
-  {text: 'Status', value: 'statusType', show: true},
-  {text: 'M1 Allocation', value: 'm1Allocation', show: true},
-  {text: 'M2 Allocation', value: 'm2Allocation', show: true},
-  {text: 'Red Line M1 Allocation', value: 'redLineM1Allocation', show: true},
-  {text: 'Red Line M1 Allocation', value: 'redLineM2Allocation', show: true},
-  {text: 'Notes', value: 'note', show: true},
-  {text: '', value: 'icons', show: true},
-])
-const closer = ref({})
+  const planErrorObj = ref({})
+  const overrideErrorObj = ref({})
+  const dataLoading = ref(true)
+  const overrideSelectedIndex = ref(null)
+  const positionId = ref(brsStore.commissionPositionId)
+  const selectedIndex = ref(null)
+  const receivingSelectedIndex = ref(null)
+  const commissionPlans = ref([])
+  const overridePlans = ref([])
+  const newCommissionPlan = ref({})
+  const newOverridePlan = ref({})
+  const cloneOverridePlan = ref({})
+  const addNewCommissionPlan = ref(false)
+  const addNewOverridePlan = ref(false)
+  const addNewReceivingPlan = ref(false)
+  const userId = ref(route.params.id)
+  const expanded = ref([])
+  const overrideExpanded = ref([])
+  const receivingExpanded = ref([])
+  const overrideHeaders = ref([
+    {text: 'Plan Name', value: 'name', show: true},
+    {text: 'Description', value: 'Position', show: true},
+    {text: 'Start Date', value: 'startDate', show: true},
+    {text: 'End Date', value: 'endDate', show: true},
+    {text: 'Notes', value: 'note', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const planHeaders = ref([
+    {text: 'Plan Name', value: 'name', show: true},
+    {text: 'Description', value: 'description', show: true},
+    {text: 'Start Date', value: 'startDate', show: true},
+    {text: 'End Date', value: 'endDate', show: true},
+    {text: 'Notes', value: 'note', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const receivingHeaders = ref([
+    {text: 'Plan Name', value: 'name', show: true},
+    {text: 'Status', value: 'statusType', show: true},
+    {text: 'M1 Allocation', value: 'm1Allocation', show: true},
+    {text: 'M2 Allocation', value: 'm2Allocation', show: true},
+    {text: 'Red Line M1 Allocation', value: 'redLineM1Allocation', show: true},
+    {text: 'Red Line M1 Allocation', value: 'redLineM2Allocation', show: true},
+    {text: 'Notes', value: 'note', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const closer = ref({})
 
-const userCanAdd = computed(() => {
-  return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADD') ||
-    userStore.userHasFeatureAccessLevel('COMMISSIONS_DEALER', 'ADD') ||
-    userStore.userHasFeatureAccessLevel('COMMISSIONS_INSTALLATION_PARTNER', 'ADD')
-})
-const userCanEdit = computed(() => {
-  return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'EDIT') ||
-    userStore.userHasFeatureAccessLevel('COMMISSIONS_DEALER', 'EDIT') ||
-    userStore.userHasFeatureAccessLevel('COMMISSIONS_INSTALLATION_PARTNER', 'EDIT')
-})
-const timezone = computed(() => {
-  return userStore.timezone.value
-})
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADD') ||
+      userStore.userHasFeatureAccessLevel('COMMISSIONS_DEALER', 'ADD') ||
+      userStore.userHasFeatureAccessLevel('COMMISSIONS_INSTALLATION_PARTNER', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'EDIT') ||
+      userStore.userHasFeatureAccessLevel('COMMISSIONS_DEALER', 'EDIT') ||
+      userStore.userHasFeatureAccessLevel('COMMISSIONS_INSTALLATION_PARTNER', 'EDIT')
+  })
+  const timezone = computed(() => {
+    return userStore.timezone.value
+  })
 
-const getCloserDetails = async () => {
-  appStore.loading = true
-  try {
-    const {data, status} = await getRequest(`/commissionManagement/closerDetails/${userId.value}`, 'blueraven')
-    closer.value = data ? data[0] : []
-    dataLoading.value = false
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Loading User Details')
-
-    appStore.loading = false
-  }
-}
-const getCommissionPlans = async () => {
-  if(addNewCommissionPlan.value) {
+  const getCloserDetails = async () => {
     appStore.loading = true
     try {
-      const {data, status} = await getRequest(`/commissionManagement/plans/${positionId.value}`, 'blueraven')
-      commissionPlans.value = data
+      const {data, status} = await getRequest(`/commissionManagement/closerDetails/${userId.value}`, 'blueraven')
+      closer.value = data ? data[0] : []
+      dataLoading.value = false
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Loading Commission Plans')
+      appStore.showSnack('ERROR', 'Error Loading User Details')
 
       appStore.loading = false
     }
   }
-}
-const getOverridePlans = async () => {
-  if(addNewOverridePlan.value || addNewReceivingPlan.value) {
-    appStore.loading = true
-    try {
-      const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${positionId.value}/active`, 'blueraven')
-      overridePlans.value = data
-      handleHidingGlobalLoader( status)
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Loading Override Plans')
+  const getCommissionPlans = async () => {
+    if(addNewCommissionPlan.value) {
+      appStore.loading = true
+      try {
+        const {data, status} = await getRequest(`/commissionManagement/plans/${positionId.value}`, 'blueraven')
+        commissionPlans.value = data
+        handleHidingGlobalLoader( status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        appStore.showSnack('ERROR', 'Error Loading Commission Plans')
 
-      appStore.loading = false
+        appStore.loading = false
+      }
     }
   }
-}
-const checkDates = (startDate, endDate, plans, item, existingId) => {
-  //item = where to track the error
-  item.dateError = false
+  const getOverridePlans = async () => {
+    if(addNewOverridePlan.value || addNewReceivingPlan.value) {
+      appStore.loading = true
+      try {
+        const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${positionId.value}/active`, 'blueraven')
+        overridePlans.value = data
+        handleHidingGlobalLoader( status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        appStore.showSnack('ERROR', 'Error Loading Override Plans')
 
-  if(startDate > endDate) {
-    item.dateError = true
-    item.dateErrorMsg = 'End Date cannot be before Start Date'
-  } else {
-    let overlap = []
-    let hasActivePlan = false
-    plans.forEach(p => {
-      if(dateRangeOverlap(startDate, endDate, p, existingId)) {
-        overlap.push(p)
+        appStore.loading = false
       }
-      // if any plan doesn't have an end date, then there is an active plan
-      if(!p.endDate) {
-        hasActivePlan = true
-      }
-    })
-    if(overlap.length > 0) {
+    }
+  }
+  const checkDates = (startDate, endDate, plans, item, existingId) => {
+    //item = where to track the error
+    item.dateError = false
+
+    if(startDate > endDate) {
       item.dateError = true
-      item.dateErrorMsg = 'Plans Cannot Overlap'
-    } else if(!existingId && startDate && hasActivePlan) {
-      item.showNote = true
-      item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
-    }
-  }
-}
-const dateRangeOverlap = (start, end, plan, existingId) => {
-  //this will not allow them to go back in time to add plans before existing plans which seems to be ok
-  if(plan.id === existingId) {
-    // ignore overlap check for self on existing record
-    return false
-  } else {
-    //this is used when adding a new plan
-    return start <= plan.startDate || start <= plan.endDate
-  }
-}
-const savePlan = async (item, type, isNew) => {
-  let params = {
-    userId: userId.value,
-    startDate: item.startDate,
-    endDate: item.endDate,
-    note: item.note,
-    m1Allocation: item.m1Allocation,
-    m2Allocation: item.m2Allocation
-  }
-  let url = ''
-  //override == 1, commission = 2, receiving === 3
-  if(type === 1) {
-    if(isNew) {
-      url = `/commissionManagement/overrides/${item.id}/assignedUsers`
+      item.dateErrorMsg = 'End Date cannot be before Start Date'
     } else {
-      url = `/commissionManagement/overrides/${item.id}/updateUser`
+      let overlap = []
+      let hasActivePlan = false
+      plans.forEach(p => {
+        if(dateRangeOverlap(startDate, endDate, p, existingId)) {
+          overlap.push(p)
+        }
+        // if any plan doesn't have an end date, then there is an active plan
+        if(!p.endDate) {
+          hasActivePlan = true
+        }
+      })
+      if(overlap.length > 0) {
+        item.dateError = true
+        item.dateErrorMsg = 'Plans Cannot Overlap'
+      } else if(!existingId && startDate && hasActivePlan) {
+        item.showNote = true
+        item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
+      }
     }
-  } else if(type === 2) {
-    if(isNew) {
-      url = `/commissionManagement/${item.id}/users/${positionId.value}`
-    } else {
-      url = `/commissionManagement/${item.id}/updateUser`
-    }
-  } else {
-    url = `/commissionManagement/overrides/${item.id}/receivingUser`
   }
-  try {
-    const {data, status} = await postRequest(url, params, 'blueraven')
-    //reset fields as needed
+  const dateRangeOverlap = (start, end, plan, existingId) => {
+    //this will not allow them to go back in time to add plans before existing plans which seems to be ok
+    if(plan.id === existingId) {
+      // ignore overlap check for self on existing record
+      return false
+    } else {
+      //this is used when adding a new plan
+      return start <= plan.startDate || start <= plan.endDate
+    }
+  }
+  const savePlan = async (item, type, isNew) => {
+    let params = {
+      userId: userId.value,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      note: item.note,
+      m1Allocation: item.m1Allocation,
+      m2Allocation: item.m2Allocation
+    }
+    let url = ''
+    //override == 1, commission = 2, receiving === 3
     if(type === 1) {
-      overrideExpanded.value = []
-      addNewOverridePlan.value = false
-      newOverridePlan.value = {}
       if(isNew) {
-        closer.value.overrides = data
+        url = `/commissionManagement/overrides/${item.id}/assignedUsers`
+      } else {
+        url = `/commissionManagement/overrides/${item.id}/updateUser`
       }
-    } else if (type === 2) {
-      expanded.value = []
-      newCommissionPlan.value = {}
-      addNewCommissionPlan.value = false
+    } else if(type === 2) {
       if(isNew) {
-        closer.value.plans = data
+        url = `/commissionManagement/${item.id}/users/${positionId.value}`
+      } else {
+        url = `/commissionManagement/${item.id}/updateUser`
       }
     } else {
-      receivingExpanded.value = []
-      addNewReceivingPlan.value = false
+      url = `/commissionManagement/overrides/${item.id}/receivingUser`
     }
-    appStore.showSnack('SUCCESS', 'Saved Successfully')
+    try {
+      const {data, status} = await postRequest(url, params, 'blueraven')
+      //reset fields as needed
+      if(type === 1) {
+        overrideExpanded.value = []
+        addNewOverridePlan.value = false
+        newOverridePlan.value = {}
+        if(isNew) {
+          closer.value.overrides = data
+        }
+      } else if (type === 2) {
+        expanded.value = []
+        newCommissionPlan.value = {}
+        addNewCommissionPlan.value = false
+        if(isNew) {
+          closer.value.plans = data
+        }
+      } else {
+        receivingExpanded.value = []
+        addNewReceivingPlan.value = false
+      }
+      appStore.showSnack('SUCCESS', 'Saved Successfully')
 
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    let errorMsg = e?.msg ?? 'Error Saving Plan'
-    appStore.showSnack('ERROR', errorMsg)
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let errorMsg = e?.msg ?? 'Error Saving Plan'
+      appStore.showSnack('ERROR', errorMsg)
 
-    appStore.loading = false
+      appStore.loading = false
+    }
   }
-}
-const clonePlan = async () => {
-  let params = {
-    receivingUsers: cloneOverridePlan.value.receivingUsers.filter(r => r.selected).map(r => r.userId),
-    assignedUsers: cloneOverridePlan.value.assignedUsers.filter(r => r.selected).map(r => r.userId),
-    positionId: cloneOverridePlan.value.positionId,
-    userId: userId.value,
-    backdateApprovalCreds: null,
-  }
-  try {
-    const {data, status} = await postRequest(`/commissionManagement/overrides/${cloneOverridePlan.value.id}/clone`, params, 'blueraven')
-    handleHidingGlobalLoader( status)
-    await router.push({name: 'override', params: {id: data.id}})
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Saving Plan to User')
+  const clonePlan = async () => {
+    let params = {
+      receivingUsers: cloneOverridePlan.value.receivingUsers.filter(r => r.selected).map(r => r.userId),
+      assignedUsers: cloneOverridePlan.value.assignedUsers.filter(r => r.selected).map(r => r.userId),
+      positionId: cloneOverridePlan.value.positionId,
+      userId: userId.value,
+      backdateApprovalCreds: null,
+    }
+    try {
+      const {data, status} = await postRequest(`/commissionManagement/overrides/${cloneOverridePlan.value.id}/clone`, params, 'blueraven')
+      handleHidingGlobalLoader( status)
+      await router.push({name: 'override', params: {id: data.id}})
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Saving Plan to User')
 
-    appStore.loading = false
+      appStore.loading = false
+    }
   }
-}
-const addOverridePlan = async() => {
-  try {
-    const {data} = await postRequest(`/commissionManagement/overrides`, {}, 'blueraven')
-    addReceivingUserToOverridePlan(data.id)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Creating New Plan')
+  const addOverridePlan = async() => {
+    try {
+      const {data} = await postRequest(`/commissionManagement/overrides`, {}, 'blueraven')
+      addReceivingUserToOverridePlan(data.id)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Creating New Plan')
 
-    appStore.loading = false
+      appStore.loading = false
+    }
   }
-}
-const addReceivingUserToOverridePlan = async(overridePlanId) => {
-  let params = {
-    userId: userId.value,
-    m1Allocation: 0,
-    m2Allocation: 0,
-    redLineM1Allocation: 0,
-    redLineM2Allocation: 0
-  }
-  try {
-    const {status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
-    handleHidingGlobalLoader( status)
-    await router.push({name: 'override', params: {id: overridePlanId}})
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Adding User to Plan')
+  const addReceivingUserToOverridePlan = async(overridePlanId) => {
+    let params = {
+      userId: userId.value,
+      m1Allocation: 0,
+      m2Allocation: 0,
+      redLineM1Allocation: 0,
+      redLineM2Allocation: 0
+    }
+    try {
+      const {status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
+      handleHidingGlobalLoader( status)
+      await router.push({name: 'override', params: {id: overridePlanId}})
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Adding User to Plan')
 
-    appStore.loading = false
+      appStore.loading = false
+    }
   }
-}
 </script>
 
 <style lang="scss" scoped>
-.v-data-table {
-  border-radius: 0;
-}
+  .v-data-table {
+    border-radius: 0;
+  }
 </style>

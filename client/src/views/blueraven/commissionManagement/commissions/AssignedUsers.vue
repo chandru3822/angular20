@@ -21,19 +21,18 @@
         <v-card v-if="addUser" class="square-card text-left px-5 pb-5">
           <v-row>
             <v-col cols="12" md="6">
-              <a-autocomplete
-                v-model="newUser.userId"
-                :items="usersToAdd"
-                :loading="usersLoading"
-                prepend-icon="search"
-                cache-items
-                :search-input.sync="userSearch"
-                label="Search for a user..."
-                item-title="name"
-                item-value="userId"
-                autocomplete="off"
-                @input="getUserHistory(newUser.userId)"
-                attach
+              <a-autocomplete v-model="newUser.userId"
+                              :items="usersToAdd"
+                              :loading="usersLoading"
+                              prepend-icon="search"
+                              cache-items
+                              :search-input.sync="userSearch"
+                              label="Search for a user..."
+                              item-title="name"
+                              item-value="userId"
+                              autocomplete="off"
+                              @input="getUserHistory(newUser.userId)"
+                              attach
               >
                 <template v-slot:item="{ props, item }">
                   {{ item.name }} - {{ item.position }}
@@ -175,7 +174,7 @@
                   color="primary"
                   prepend-icon="edit"
                   @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                />
+                ></a-btn>
                 <a-btn
                   size="small"
                   variant="text"
@@ -183,7 +182,7 @@
                   @click="assignedUserExpanded = []"
                   v-if="assignedUserExpanded.includes(item)"
                   text="Cancel"
-                />
+                ></a-btn>
                 <a-btn
                   v-if="commission.statusType === 'PENDING' && canDelete"
                   size="small"
@@ -191,7 +190,7 @@
                   color="primary"
                   @click="userToDelete=item"
                   prepend-icon="delete"
-                />
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -205,34 +204,34 @@
 </template>
 
 <script setup>
-  import {
-    getCurrentInstance,
-    computed,
-    ref,
-    onMounted,
-    watch,
-    toRefs
-  } from 'vue'
+  import moment from 'moment'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 
   import {
     handleHidingGlobalLoader,
     getRequest,
     deleteRequest,
+    putRequest,
     postRequestWithRequestParams,
     postRequest,
+    getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers.js';
-  import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStore.js'
-
   import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-  import moment from 'moment'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import { useBrsStore } from '@/stores/BrsStore.js'
+  import {getCurrentInstance, computed, ref, onMounted, watch, toRefs} from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useAppStore} from '@/stores/AppStore.js'
+  import {useRoute, useRouter} from "vue-router/composables"
   import debounce from "lodash.debounce"
+  import { storeToRefs } from 'pinia'
 
-
+  const route = useRoute()
+  const router = useRouter()
   const userStore = useUserStore()
   const appStore = useAppStore()
+  const brsStore = useBrsStore()
+  const { commissionPositionId } = storeToRefs(brsStore)
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store

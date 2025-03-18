@@ -63,6 +63,7 @@
   import {handleHidingGlobalLoader, getRequest, formatCurrencyWithDefault} from '@/helpers/helpers.js'
   import constants from "@/helpers/constants.js";
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
   import {useRoute, useRouter} from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStore.js'
   import { useBrsStore } from '@/stores/BrsStore.js'
@@ -73,125 +74,126 @@
   const appStore = useAppStore()
   const route = useRoute()
   const router = useRouter()
+  const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
 
   onMounted(() => {
-    viewSummary()
+  viewSummary()
   })
 
   const payrollId = computed(() => {
-    return parseInt(route.params.id)
+  return parseInt(route.params.id)
   })
 
   watch(commissionPositionId, async() => {
-    //if they change the position (setter vs closer) have to go back to main page
-    await router.push('/commissionManagement/payroll')
+  //if they change the position (setter vs closer) have to go back to main page
+  await router.push('/commissionManagement/payroll')
   })
 
   const payrollSummary = ref([])
   const dataLoading = ref(false)
   const closerHeaders = ref([
-    { text: 'Sales Rep', value: 'closer_user', show: true },
-    { text: 'Total Commission', value: 'total_commission', show: true },
-    { text: 'Total Overrides', value: 'total_overrides', show: true },
-    { text: 'Adjustments', value: 'commission_adjustments', show: true },
-    { text: 'Current Pay', value: 'current_pay', show: true },
-    { text: '', value: 'icons', show: true, width: 40 },
+  { text: 'Sales Rep', value: 'closer_user', show: true },
+  { text: 'Total Commission', value: 'total_commission', show: true },
+  { text: 'Total Overrides', value: 'total_overrides', show: true },
+  { text: 'Adjustments', value: 'commission_adjustments', show: true },
+  { text: 'Current Pay', value: 'current_pay', show: true },
+  { text: '', value: 'icons', show: true, width: 40 },
   ])
   const partnerHeaders = ref([
-    { text: 'Org ID', value: 'org_id', show: true },
-    { text: 'Org Name', value: 'org_name', show: true },
-    { text: 'Total Commission', value: 'total_commission', show: true },
-    { text: 'Current Pay', value: 'current_pay', show: true },
-    { text: '', value: 'icons', show: true, width: 40 },
+  { text: 'Org ID', value: 'org_id', show: true },
+  { text: 'Org Name', value: 'org_name', show: true },
+  { text: 'Total Commission', value: 'total_commission', show: true },
+  { text: 'Current Pay', value: 'current_pay', show: true },
+  { text: '', value: 'icons', show: true, width: 40 },
   ])
   const footerProps = ref({
-    'items-per-page-options': [25, 50, 100, 500],
-    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
   })
 
   const headers = computed(() => {
-    return (commissionPositionId.value === 743 || commissionPositionId.value === 828) ? partnerHeaders.value : closerHeaders.value
+  return commissionPositionId.value === 743 || commissionPositionId.value === 828 ? partnerHeaders.value : closerHeaders.value
   })
 
   const viewSummary = async() => {
-    appStore.loading = true
-    dataLoading.value = true
-    try {
-      const {data, status} = await getRequest(`/payroll/${payrollId.value}/summary`, 'blueraven')
-      payrollSummary.value = data || []
-      dataLoading.value = false
-      handleHidingGlobalLoader( status)
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Retrieving Payroll Summary')
+  appStore.loading = true
+  dataLoading.value = true
+  try {
+    const {data, status} = await getRequest(`/payroll/${payrollId.value}/summary`, 'blueraven')
+    payrollSummary.value = data || []
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Payroll Summary')
 
-      appStore.loading = false
-    }
+    appStore.loading = false
+  }
   }
 
   const exportPayrollSummary = async () => {
-    appStore.loading = true
-    try {
-      let filename = 'Payroll Summary.csv';
-      let csvData;
+  appStore.loading = true
+  try {
+    let filename = 'Payroll Summary.csv';
+    let csvData;
 
-      // Format currency values with $0.00 instead if returns `0`
-      const formatCurrencyForCSV = (value) => {
-        if (value === 0) {
-          return '$0.00'
-        }
-        let curVal;
-        if (typeof (value) === 'string') {
-          curVal = parseFloat(value).toFixed(2);
-        } else if (typeof (value) === 'number' || typeof (value) === 'bigint') {
-          curVal = value.toFixed(2);
-        } else {
-          return '-'
-        }
-        return `$${curVal}`
-      };
-
-      if (commissionPositionId.value === 743 || commissionPositionId.value === 828) {
-        csvData = 'Org ID, Org Name, Total Commission, Current Pay';
-        csvData += '\n';
-
-        payrollSummary.value.forEach(p => {
-          csvData +=
-            p.org_id + ',' +
-            p.org_name + ',' +
-            formatCurrencyForCSV(p.total_commission) + ',' +
-            formatCurrencyForCSV(p.current_pay)
-          csvData += '\n';
-        })
-      } else {
-        csvData = 'Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay';
-        csvData += '\n';
-
-        payrollSummary.value.forEach(p => {
-          csvData +=
-            '"' + p.closer_user + '",' +
-            p.total_commission + ',' +
-            p.total_overrides + ',' +
-            p.commission_adjustments + ',' +
-            p.current_pay
-          csvData += '\n';
-        })
+    // Format currency values with $0.00 instead if returns `0`
+    const formatCurrencyForCSV = (value) => {
+      if (value === 0) {
+        return '$0.00'
       }
+      let curVal;
+      if (typeof (value) === 'string') {
+        curVal = parseFloat(value).toFixed(2);
+      } else if (typeof (value) === 'number' || typeof (value) === 'bigint') {
+        curVal = value.toFixed(2);
+      } else {
+        return '-'
+      }
+      return `$${curVal}`
+    };
 
+    if (commissionPositionId.value === 743 || commissionPositionId.value === 828) {
+      csvData = 'Org ID, Org Name, Total Commission, Current Pay';
+      csvData += '\n';
 
-      let blob = new Blob([csvData], {
-        type: 'text/csv;charset=utf-8'
-      });
+      payrollSummary.value.forEach(p => {
+        csvData +=
+          p.org_id + ',' +
+          p.org_name + ',' +
+          formatCurrencyForCSV(p.total_commission) + ',' +
+          formatCurrencyForCSV(p.current_pay)
+        csvData += '\n';
+      })
+    } else {
+      csvData = 'Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay';
+      csvData += '\n';
 
-      saveAs(blob, filename);
-      appStore.loading = false
-    } catch (e) {
-      console.error('*** ERROR ***', e)
-      appStore.showSnack('ERROR', 'Error Exporting Payroll Summary')
-
-      appStore.loading = false
+      payrollSummary.value.forEach(p => {
+        csvData +=
+          '"' + p.closer_user + '",' +
+          p.total_commission + ',' +
+          p.total_overrides + ',' +
+          p.commission_adjustments + ',' +
+          p.current_pay
+        csvData += '\n';
+      })
     }
+
+
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
+
+    saveAs(blob, filename);
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Exporting Payroll Summary')
+
+    appStore.loading = false
   }
+}
 </script>

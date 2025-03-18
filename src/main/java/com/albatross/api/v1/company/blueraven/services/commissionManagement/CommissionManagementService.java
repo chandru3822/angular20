@@ -491,7 +491,6 @@ public class CommissionManagementService {
     params.put("id", adder.getId());
     params.put("feeAmount", adder.getFeeAmount());
     params.put("feeTypeId", adder.getFeeTypeId());
-    params.put("milestoneId", adder.getMilestoneId());
 
     sqlCache.updateBySql(CommissionManagementQuery.updateAdder, params);
     return getAdder(adder.getId());
@@ -507,7 +506,6 @@ public class CommissionManagementService {
     Map<String, Object> params = new HashMap<>();
     params.put("planId", planId);
     params.put("adderId", adder.getAdderId());
-    params.put("milestoneId", adder.getMilestoneId());
     params.put("feeAmount", adder.getFeeAmount());
     params.put("feeTypeId", adder.getFeeTypeId());
 

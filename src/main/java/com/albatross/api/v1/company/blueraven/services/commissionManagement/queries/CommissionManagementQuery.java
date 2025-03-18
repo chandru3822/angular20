@@ -742,7 +742,6 @@ FROM (SELECT cp.id,
            ft.fee_type as "feeType",
            cpsa.fee_amount as "feeAmount",
            cpsa.adder_id as "adderId",
-           cpsa.milestone_id as "milestoneId",
            cpsa.fee_type_id as "feeTypeId"
     FROM brs.partner_commission_plan_adder cpsa
              INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id

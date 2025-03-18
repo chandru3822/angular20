@@ -130,7 +130,7 @@
   })
   const payrollSummary = ref([])
   const payrollStatus = ref({})
-  const positionId = ref(commissionPositionId)
+  const positionId = ref(brsStore.commissionPositionId)
   const payrollId = ref(route.params.id)
   const closerHeaders = ref([
     {text: 'Project ID', value: 'projectId', show: true},
@@ -223,20 +223,20 @@
   const headers = computed(() => {
     if (commissionPositionId.value === 743 || commissionPositionId.value === 828) {
       return partnerHeaders.value
-    } else if (commissionPositionId.value === 4) {
-      return setterHeaders.value
-    } else {
+    } else if (commissionPositionId.value === 1) {
       return closerHeaders.value
+    } else {
+      return setterHeaders.value
     }
   })
 
   const getPayroll = async() => {
     appStore.loading = true
     try {
-      const { data, status } = await getRequest(`/payroll/${payrollId.value}`, 'blueraven')
+      const {data, status} = await getRequest(`/payroll/${payrollId.value}`, 'blueraven')
       payroll.value = data
       populateStatusDetails()
-      handleHidingGlobalLoader(status)
+      handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error Retrieving Payroll Details')

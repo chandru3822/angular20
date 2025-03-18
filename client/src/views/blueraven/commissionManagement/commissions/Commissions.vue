@@ -71,12 +71,13 @@
   import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
   import { useUserStore } from '@/stores/UserStore.js'
   import { getCommissionPlans } from '@/services/commissionService.js'
-  import { useRouter } from 'vue-router/composables'
+  import { useRoute, useRouter } from 'vue-router/composables'
   import { useBrsStore } from '@/stores/BrsStore.js'
   import { useAppStore } from '@/stores/AppStore.js'
   import { storeToRefs } from 'pinia'
   import StatusChip from '@/components/StatusChip.vue'
 
+  const route = useRoute()
   const router = useRouter()
   const appStore = useAppStore()
   const brsStore = useBrsStore()

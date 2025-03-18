@@ -613,7 +613,7 @@
                 item-value="id"
               />
               <a-btn
-                :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
+                :disabled="!item.feeAmount || !item.feeTypeId"
                 @click="[adderExpanded = [], updateAdder(item)]"
                 color="primary"
                 text="Save"

@@ -96,153 +96,153 @@
 
 <script setup>
 
-import {handleHidingGlobalLoader, getRequestWithParams, } from '@/helpers/helpers'
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStore.js'
-import { useBrsStore } from '@/stores/BrsStore.js'
-import { storeToRefs } from 'pinia'
-import { saveAs } from 'file-saver'
+  import {handleHidingGlobalLoader, getRequestWithParams, } from '@/helpers/helpers'
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useRoute, useRouter} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStore.js'
+  import { useBrsStore } from '@/stores/BrsStore.js'
+  import { storeToRefs } from 'pinia'
+  import { saveAs } from 'file-saver'
 
-const brsStore = useBrsStore()
-const { commissionPositionId } = storeToRefs(brsStore)
+  const brsStore = useBrsStore()
+  const { commissionPositionId } = storeToRefs(brsStore)
 
-const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
 
-onMounted(() => {
-  if ([743, 828].includes(commissionPositionId.value)) {
-    router.push({ name: 'commissions' })
-  } else {
-    getUsers()
-  }
-})
-
-const dataLoading = ref(true)
-const includeInactive = ref(false)
-const search = ref('')
-const footerProps = ref({
-  'items-per-page-options': [25, 50, 100, 1000]})
-const headers = ref([
-  {text: 'User', value: 'name', show: true},
-  {text: 'Office', value: 'orgName', show: true},
-  {text: 'Available Commission Strategies', value: 'availableCommissionStrategies', show: true},
-  {text: 'Commission Plan', value: 'commissionPlan', show: true},
-  {text: 'Override Plan', value: 'overridePlan', show: true},
-  {text: 'Residual Plan', value: 'residualPlan', show: true},
-  {text: 'Has Commission Plan Gap', value: 'hasCommissionPlanGap', show: true},
-])
-const users = ref([])
-
-watch(commissionPositionId, () => {
-  if ([743, 828].includes(commissionPositionId.value)) {
-    router.push({ name: 'commissions' })
-  } else {
-    getUsers()
-  }
-})
-
-
-const getUsers = async () => {
-  appStore.loading = true
-  try {
-    let params = {
-      includeInactive: includeInactive.value
-    }
-
-    // Need to separate Dealer (743) & Installation Partner (828) from Users.vue due to
-    // not every commissionPositionId feature path defaulting to the 'users' tab. This
-    // solution works for now though and does not cause any issues that I've seen.
-    let url;
-    if (commissionPositionId.value === 1) url = '/commissionManagement/closers'
-    if (commissionPositionId.value === 4) url = '/commissionManagement/setters'
-
-    if(url) {
-      const {data, status} = await getRequestWithParams(url, { params }, 'blueraven', [])
-      users.value = data
-      dataLoading.value = false
-      handleHidingGlobalLoader(status)
+  onMounted(() => {
+    if ([743, 828].includes(commissionPositionId.value)) {
+      router.push({ name: 'commissions' })
     } else {
-      dataLoading.value = false
+      getUsers()
+    }
+  })
+
+  const dataLoading = ref(true)
+  const includeInactive = ref(false)
+  const search = ref('')
+  const footerProps = ref({
+    'items-per-page-options': [25, 50, 100, 1000]})
+  const headers = ref([
+    {text: 'User', value: 'name', show: true},
+    {text: 'Office', value: 'orgName', show: true},
+    {text: 'Available Commission Strategies', value: 'availableCommissionStrategies', show: true},
+    {text: 'Commission Plan', value: 'commissionPlan', show: true},
+    {text: 'Override Plan', value: 'overridePlan', show: true},
+    {text: 'Residual Plan', value: 'residualPlan', show: true},
+    {text: 'Has Commission Plan Gap', value: 'hasCommissionPlanGap', show: true},
+  ])
+  const users = ref([])
+
+  watch(commissionPositionId, () => {
+    if ([743, 828].includes(commissionPositionId.value)) {
+      router.push({ name: 'commissions' })
+    } else {
+      getUsers()
+    }
+  })
+
+
+  const getUsers = async () => {
+    appStore.loading = true
+    try {
+      let params = {
+        includeInactive: includeInactive.value
+      }
+
+      // Need to separate Dealer (743) & Installation Partner (828) from Users.vue due to
+      // not every commissionPositionId feature path defaulting to the 'users' tab. This
+      // solution works for now though and does not cause any issues that I've seen.
+      let url;
+      if (commissionPositionId.value === 1) url = '/commissionManagement/closers'
+      if (commissionPositionId.value === 4) url = '/commissionManagement/setters'
+
+      if(url) {
+        const {data, status} = await getRequestWithParams(url, { params }, 'blueraven', [])
+        users.value = data
+        dataLoading.value = false
+        handleHidingGlobalLoader(status)
+      } else {
+        dataLoading.value = false
+        appStore.loading = false
+      }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Loading Users')
+
       appStore.loading = false
     }
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Loading Users')
-
-    appStore.loading = false
   }
-}
-const goToDetails = async(planId, planType) => {
-  // 1 = commission, 2 = override, 3 = residual
-  let pathName
-  switch(planType) {
-    case 1:
-      pathName = 'commission'
-      break
-    case 2:
-      pathName = 'override'
-      break
-    case 3:
-      pathName = 'residualPlan'
-      break
-    default:
-      pathName = null
+  const goToDetails = async(planId, planType) => {
+    // 1 = commission, 2 = override, 3 = residual
+    let pathName
+    switch(planType) {
+      case 1:
+        pathName = 'commission'
+        break
+      case 2:
+        pathName = 'override'
+        break
+      case 3:
+        pathName = 'residualPlan'
+        break
+      default:
+        pathName = null
+    }
+    await router.push({name: pathName, params: { id: planId}})
   }
-  await router.push({name: pathName, params: { id: planId}})
-}
 
-const exportData = async () => {
-  appStore.loading = true
-  try {
-    let filename = `Commission_Users.csv`;
+  const exportData = async () => {
+    appStore.loading = true
+    try {
+      let filename = `Commission_Users.csv`;
 
-    let csvData = 'User ID, User Name, User Employee ID, Primary Position, Office, Available Commission Strategies, Commission Plan Start Date, Commission Plan, Override Plan Start Date, Override Plan, Residual Plan Start Date, Residual Plan';
-    csvData += '\n'
+      let csvData = 'User ID, User Name, User Employee ID, Primary Position, Office, Available Commission Strategies, Commission Plan Start Date, Commission Plan, Override Plan Start Date, Override Plan, Residual Plan Start Date, Residual Plan';
+      csvData += '\n'
 
-    users.value.forEach(p => {
-      csvData +=
-        p.userId + ',' +
-        '"' + p.name + '",' +
-        p.employeeId + ',' +
-        p.primaryPosition + ',' +
-        '"' + p.orgName + '",' +
-        '"' + p.availableCommissionStrategies + '",' +
-        (p.commissionPlanStart || '') + ',' +
-        (p.commissionPlan || '') + ',' +
-        (p.overridePlanStart || '') + ',' +
-        (p.overridePlan || '') + ',' +
-        (p.residualPlanStart || '') + ',' +
-        (p.residualPlan || '')
+      users.value.forEach(p => {
+        csvData +=
+          p.userId + ',' +
+          '"' + p.name + '",' +
+          p.employeeId + ',' +
+          p.primaryPosition + ',' +
+          '"' + p.orgName + '",' +
+          '"' + p.availableCommissionStrategies + '",' +
+          (p.commissionPlanStart || '') + ',' +
+          (p.commissionPlan || '') + ',' +
+          (p.overridePlanStart || '') + ',' +
+          (p.overridePlan || '') + ',' +
+          (p.residualPlanStart || '') + ',' +
+          (p.residualPlan || '')
 
-      csvData += '\n';
-    })
+        csvData += '\n';
+      })
 
-    let blob = new Blob([csvData], {
-      type: 'text/csv;charset=utf-8'
-    });
+      let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
 
-    saveAs(blob, filename);
-    appStore.loading = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Exporting Data')
+      saveAs(blob, filename);
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Exporting Data')
 
-    appStore.loading = false
+      appStore.loading = false
+    }
   }
-}
 </script>
 
 <style lang="scss">
-#commission-closers-container .v-data-table__wrapper {
-  height: calc(100vh - 350px);
-  min-height: 300px;
-}
+  #commission-closers-container .v-data-table__wrapper {
+    height: calc(100vh - 350px);
+    min-height: 300px;
+  }
 </style>
 
 <style lang="scss" scoped>

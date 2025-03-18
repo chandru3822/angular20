@@ -5,14 +5,14 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 
 /**
- * Model for Adders that are used 
+ * Model for Adders that are used
  */
 @Getter
 @Setter
 public class Adder {
 
   @Id
-  private Long id, milestoneTypeId, adderId, feeAmount, feeTypeId, milestoneId;
-  private String adderName, feeType, milestoneType;
+  private Long id, adderId, feeAmount, feeTypeId;
+  private String adderName, feeType;
 
 }

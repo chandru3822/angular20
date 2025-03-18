@@ -35,11 +35,13 @@
 </template>
 
 <script setup>
-  import { useUserStore } from '@/stores/UserStore.js'
-  import { useBrsStore } from '@/stores/BrsStore.js'
-  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useBrsStore} from '@/stores/BrsStore.js'
+  import {getCurrentInstance, computed, ref, onMounted} from 'vue'
   import { storeToRefs } from 'pinia'
+  import {useRoute} from "vue-router/composables";
 
+  const route = useRoute()
   const userStore = useUserStore()
   const brsStore = useBrsStore()
   const { commissionPositionId } = storeToRefs(brsStore)
@@ -47,19 +49,17 @@
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
 
-  const isDealerTab = computed(() => {
-    return [743,828].includes(commissionPositionId.value)
-  })
-
   const userCanCommission = computed(() => {
     return userStore.userHasFeature('COMMISSIONS_CLOSER') ||
       userStore.userHasFeature('COMMISSIONS_DEALER') ||
+      userStore.userHasFeature('COMMISSUTIONS_SETTER') ||
       userStore.userHasFeature('COMMISSIONS_INSTALLATION_PARTNER')
   })
-
+  
   const userIsAdmin = computed(() => {
     return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADMIN') ||
       userStore.userHasFeatureAccessLevel('COMMISSIONS_DEALER', 'ADMIN') ||
+      userStore.userHasFeatureAccessLevel('COMMISSUTIONS_SETTER', 'ADMIN') ||
       userStore.userHasFeatureAccessLevel('COMMISSIONS_INSTALLATION_PARTNER', 'ADMIN')
   })
 
@@ -67,7 +67,7 @@
     return [{
       label: 'Users',
       path: `/commissionManagement/users`,
-      display: userCanCommission.value && !isDealerTab.value,
+      display: userCanCommission.value && ![743,828].includes(commissionPositionId.value)
     }, {
       label: 'Commissions',
       path: `/commissionManagement/commissions`,
@@ -75,7 +75,7 @@
     }, {
       label: 'Overrides',
       path: `/commissionManagement/overrides`,
-      display: userCanCommission.value && !isDealerTab.value
+      display: userCanCommission.value && ![743,828].includes(commissionPositionId.value)
     }, {
       label: 'Accounting Review',
       path: `/commissionManagement/accounting`,
@@ -87,26 +87,25 @@
     }, {
       label: 'Residual Plans',
       path: '/commissionManagement/residualPlans',
-      display: userCanCommission.value && !isDealerTab.value
+      display: userCanCommission.value && ![743,828].includes(commissionPositionId.value)
     }, {
       label: 'Residuals',
       path: '/commissionManagement/residuals',
-      display: userIsAdmin.value && !isDealerTab.value
+      display: userIsAdmin.value && ![743,828].includes(commissionPositionId.value)
     }, {
       label: 'Closer Residuals',
       path: '/commissionManagement/closerResiduals',
-      display: userCanCommission.value && !isDealerTab.value
+      display: userCanCommission.value && ![743,828].includes(commissionPositionId.value)
     }, {
       label: 'Residual Search',
       path: `/commissionManagement/residualSearch`,
-      display: userCanCommission.value && !isDealerTab.value
-    }]
+      display: userCanCommission.value && ![743,828].includes(commissionPositionId.value)
+    }
+    ]
   })
-
   const displayedTabs = computed(() => {
     return tabs.value.filter(tab => tab.display)
   })
-
   onMounted(() => {
   })
 

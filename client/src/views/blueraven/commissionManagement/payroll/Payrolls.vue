@@ -118,16 +118,19 @@
 </template>
 
 <script setup>
+
   import constants from "@/helpers/constants.js";
+
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
     handleHidingGlobalLoader,
     postRequest,
+    getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers.js'
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-  import { useUserStore } from '@/stores/UserStore.js'
-  import { useRouter } from "vue-router/composables";
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useRoute, useRouter} from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStore.js'
   import { useBrsStore } from '@/stores/BrsStore.js'
   import debounce from 'lodash.debounce'
@@ -136,6 +139,7 @@
   const brsStore = useBrsStore()
   const { commissionPositionId } = storeToRefs(brsStore)
   const appStore = useAppStore()
+  const route = useRoute()
   const router = useRouter()
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
@@ -192,7 +196,7 @@
   })
 
   const positionId = computed(() => {
-    return commissionPositionId.value
+    return brsStore.commissionPositionId
   })
 
   const payrollData = ref([])
