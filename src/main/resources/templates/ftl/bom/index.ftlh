@@ -194,16 +194,16 @@
 
             <tr>
                 <td rowspan="${details?size}">${objectType}</td>
-                <td>${details[0].quantity}</td>
-                <td>${details[0].partNumber}</td>
-                <td>${details[0].description}</td>
+                <td><#if details[0].quantity??>${details[0].quantity}</#if></td>
+                <td><#if details[0].partNumber??>${details[0].partNumber}</#if></td>
+                <td><#if details[0].description??>${details[0].description}</#if></td>
             </tr>
 
             <#list details[1..] as detail>
             <tr>
-                <td>${detail.quantity}</td>
-                <td>${detail.partNumber}</td>
-                <td>${detail.description}</td>
+                <td><#if details[0].quantity??>${details[0].quantity}</#if></td>
+                <td><#if details[0].partNumber??>${detail.partNumber}</#if></td>
+                <td><#if details[0].description??>${detail.description}</#if></td>
             </tr>
             </#list>
             <#if !objectType?is_last>
