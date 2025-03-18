@@ -5,8 +5,8 @@ package com.albatross.api.v1.company.blueraven.enums.commissionManagement;
  */
 public enum PayrollAdjustmentType {
     COMMISSION(1L),
-    OVERRIDE(2L);
-
+    OVERRIDE(2L),
+    PARTNER(4L);
     private Long id;
 
     PayrollAdjustmentType(Long id) {

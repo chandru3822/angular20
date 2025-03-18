@@ -18,7 +18,7 @@
           <a-btn
               color="success"
               class="mr-2"
-              v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
+              v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
               :disabled="errorMessages.length > 0"
               @click="approvePlan()"
           > Approve </a-btn>

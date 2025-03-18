@@ -152,7 +152,7 @@ public class ResidualService {
     return query.isEmpty() ? "[]" : query.get(0);
   }
 
-  public void insertUser(Long planId, PlanUser user) {
+  public void insertUser(Long planId, PlanAssignment user) {
     User currentUser = securityService.getCurrentUser();
     final Date newStartDate = user.getStartDate();
 

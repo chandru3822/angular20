@@ -26,28 +26,28 @@
       <v-toolbar-items>
         <div class="flex-display align-center" >
           <a-btn
-              v-if="payrollStatus.action && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
-              :color="payrollStatus.actionColor"
-              @click="submitForApproval(payrollStatus.action)"
-              :text="payrollStatus.actionText"
+            v-if="payrollStatus.action && userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADD')"
+            :color="payrollStatus.actionColor"
+            @click="submitForApproval(payrollStatus.action)"
+            :text="payrollStatus.actionText"
           ></a-btn>
           <!-- currently only "Approve" has a secondary action which requires a dialog confirm. will have to update if that changes -->
           <v-dialog
-              v-if="payrollStatus.secondaryAction && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
-              v-model="approveConfirm"
-              width="500">
+            v-if="payrollStatus.secondaryAction && userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADMIN')"
+            v-model="approveConfirm"
+            width="500">
             <template v-slot:activator="{ on }">
               <a-btn
-                  :activation-handler="on"
-                  :color="payrollStatus.secondaryActionColor"
-                  class="ml-3"
-                  :text="payrollStatus.secondaryActionText"
+                :activation-handler="on"
+                :color="payrollStatus.secondaryActionColor"
+                class="ml-3"
+                :text="payrollStatus.secondaryActionText"
               ></a-btn>
             </template>
             <v-card>
               <v-card-title
-                  class="text-h5 grey lighten-2"
-                  primary-title
+                class="text-h5 grey lighten-2"
+                primary-title
               >
                 Confirm
               </v-card-title>
@@ -56,11 +56,11 @@
                 Are you sure you want to approve this residual?
 
                 <DatetimePickerInput
-                    v-model="payDate"
-                    :timezone="timezone"
-                    :type="'date'"
-                    :format="'MMMM DD, YYYY'"
-                    label="Date Paid"
+                  v-model="payDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="Date Paid"
                 />
               </v-card-text>
 
@@ -70,15 +70,15 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <a-btn
-                    @click="approveConfirm = false"
-                    color="unset"
-                    text="No"
+                  @click="approveConfirm = false"
+                  color="unset"
+                  text="No"
                 ></a-btn>
                 <a-btn
-                    color="primary"
-                    :disabled="null == payDate"
-                    @click="submitForApproval(payrollStatus.secondaryAction)"
-                    text="Yes"
+                  color="primary"
+                  :disabled="null == payDate"
+                  @click="submitForApproval(payrollStatus.secondaryAction)"
+                  text="Yes"
                 ></a-btn>
               </v-card-actions>
             </v-card>
@@ -93,24 +93,24 @@
             <v-card flat color="transparent" class="pa-3">
               <a-text-field  readonly disabled label="Payroll ID #" v-model="currentResidual.id"></a-text-field>
               <a-text-field
-                            label="Description"
-                            placeholder=" "
-                            readonly
-                            disabled
-                            v-model="currentResidual.description"></a-text-field>
+                label="Description"
+                placeholder=" "
+                readonly
+                disabled
+                v-model="currentResidual.description"></a-text-field>
 
               <div class="text-left">
                 <a-btn
-                    color="primary"
-                    v-if="userCanEdit"
-                    @click="saveChangesToResidual()"
-                    text="Save Changes"
+                  color="primary"
+                  v-if="userCanEdit"
+                  @click="saveChangesToResidual()"
+                  text="Save Changes"
                 ></a-btn>
                 <a-btn
-                    color="primary"
-                    class="ml-3"
-                    @click="exportResiduals()"
-                    text="Export"
+                  color="primary"
+                  class="ml-3"
+                  @click="exportResiduals()"
+                  text="Export"
                 ></a-btn>
               </div>
             </v-card>
@@ -133,28 +133,28 @@
                               attach>
               </a-autocomplete>
               <DatetimePickerInput
-                  v-model="projectOverrideDate"
-                  :timezone="timezone"
-                  :readonly="!userCanEdit"
-                  :disabled="!userCanEdit"
-                  :type="'date'"
-                  :format="'MMMM DD, YYYY'"
-                  label="Override Date"
+                v-model="projectOverrideDate"
+                :timezone="timezone"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Override Date"
               />
 
               <div class="text-left">
                 <a-btn
-                    color="primary"
-                    :disabled="!projectId || !projectOverrideDate"
-                    @click="saveOverrideDate()"
-                    text="Save"
+                  color="primary"
+                  :disabled="!projectId || !projectOverrideDate"
+                  @click="saveOverrideDate()"
+                  text="Save"
                 ></a-btn>
                 <a-btn
-                    class="ml-3"
-                    variant="text"
-                    color="primary"
-                    @click="[projectId = null, projectSearch='', projects=[], projectOverrideDate = null]"
-                    text="Reset"
+                  class="ml-3"
+                  variant="text"
+                  color="primary"
+                  @click="[projectId = null, projectSearch='', projects=[], projectOverrideDate = null]"
+                  text="Reset"
                 ></a-btn>
               </div>
             </v-card>
@@ -167,25 +167,25 @@
         <v-card>
           <v-card-title class="pt-0">
             <a-text-field
-                v-model="search"
-                prepend-inner-icon="search"
-                label="Search"
-                single-line
-                hide-details
+              v-model="search"
+              prepend-inner-icon="search"
+              label="Search"
+              single-line
+              hide-details
             ></a-text-field>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
-              :headers="headers"
-              :items="residuals"
-              :fixed-header="true"
-              :search="search"
-              :footer-props="footerProps"
-              :mobile-breakpoint="0"
-              :show-select="payrollStatus.showSelect"
-              :loading="dataLoading"
-              :items-per-page="25"
-              class="elevation-1"
+            :headers="headers"
+            :items="residuals"
+            :fixed-header="true"
+            :search="search"
+            :footer-props="footerProps"
+            :mobile-breakpoint="0"
+            :show-select="payrollStatus.showSelect"
+            :loading="dataLoading"
+            :items-per-page="25"
+            class="elevation-1"
           >
             <template #no-data>
               No available residuals
@@ -253,18 +253,18 @@
                   {{item.adjustmentOverride | currency('$', 0)}}
 
                   <v-dialog
-                      v-if="userCanAdd"
-                      v-model="item.dialog"
-                      width="500">
+                    v-if="userCanAdd"
+                    v-model="item.dialog"
+                    width="500">
                     <template v-slot:activator="{ on }">
                       <a-btn
-                          size="x-small"
-                          color="primary"
-                          fab
-                          class="ml-2"
-                          :activation-handler="on"
-                          @click="[delete item.adjustment, delete item.adjustmentNote]"
-                          prepend-icon="add"
+                        size="x-small"
+                        color="primary"
+                        fab
+                        class="ml-2"
+                        :activation-handler="on"
+                        @click="[delete item.adjustment, delete item.adjustmentNote]"
+                        prepend-icon="add"
                       ></a-btn>
                     </template>
                     <v-card>
@@ -274,30 +274,30 @@
                       <v-card-text class="pt-3">
                         <strong>Type: </strong>Commission
                         <a-text-field
-                                      type="number"
-                                      label="Adjustment Amount"
-                                      prepend-icon="mdi-currency-usd"
-                                      persistent-hint
-                                      v-model.number="item.adjustment">
+                          type="number"
+                          label="Adjustment Amount"
+                          prepend-icon="mdi-currency-usd"
+                          persistent-hint
+                          v-model.number="item.adjustment">
                         </a-text-field>
                         <a-textarea
-                            label="Notes"
-                            v-model="item.adjustmentNote"
+                          label="Notes"
+                          v-model="item.adjustmentNote"
                         ></a-textarea>
                       </v-card-text>
                       <v-divider></v-divider>
                       <v-card-actions>
                         <v-spacer></v-spacer>
                         <a-btn
-                            @click="item.dialog = false"
-                            color="unset"
-                            text="Cancel"
+                          @click="item.dialog = false"
+                          color="unset"
+                          text="Cancel"
                         ></a-btn>
                         <a-btn
-                            color="primary"
-                            :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote"
-                            @click="addAdjustment(item)"
-                            text="Add"
+                          color="primary"
+                          :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote"
+                          @click="addAdjustment(item)"
+                          text="Add"
                         ></a-btn>
                       </v-card-actions>
                     </v-card>
@@ -360,10 +360,10 @@ onMounted(() => {
 })
 
 const userCanAdd = computed(() => {
-  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADD')
 })
 const userCanEdit = computed(() => {
-  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'EDIT')
 })
 const timezone = computed(() => {
   return userStore.timezone.value
@@ -549,15 +549,15 @@ const loadModalData = async (residualItem, typeId) => {
   showModal.value = false
   modalData.value = []
   modalTitle.value = typeId === 1 ? 'Lifetime Qualified FDC' :
-      typeId === 2 ? 'Qualified FDC in Period' :
-          typeId === 3 ? 'FDA Not Qualified this Period'
-              : 'Cancelled Projects'
+    typeId === 2 ? 'Qualified FDC in Period' :
+      typeId === 3 ? 'FDA Not Qualified this Period'
+        : 'Cancelled Projects'
   modalUserFullName.value = ''
   try {
     let url = typeId === 1 ? `/commissionManagement/residuals/qualifiedLifetime/${residualItem.userId}` :
-        typeId === 2 ? `/commissionManagement/residuals/qualifiedPeriod/${residualItem.userId}` :
-            typeId === 3 ? `/commissionManagement/residuals/notQualifiedPeriod/${residualItem.userId}`
-                : `/commissionManagement/residuals/currentClawbacks/${residualItem.userId}`
+      typeId === 2 ? `/commissionManagement/residuals/qualifiedPeriod/${residualItem.userId}` :
+        typeId === 3 ? `/commissionManagement/residuals/notQualifiedPeriod/${residualItem.userId}`
+          : `/commissionManagement/residuals/currentClawbacks/${residualItem.userId}`
 
 
     const {data, status} = await getRequest(url, 'blueraven')
@@ -691,32 +691,32 @@ const exportResiduals = async () => {
 
     residuals.value.forEach(p => {
       csvData +=
-          p.firstName + ',"' +
-          p.lastName + '",' +
-          p.employeeId + ',"' +
-          p.regionName + '",' +
-          "\"" + p.officeName + '\",' +
-          p.officeState + ',' +
-          p.userPositionName + ',"' +
-          p.userStatusType + '",' +
-          p.hireDate + ',' +
-          p.userFullName + ',' +
-          p.residualStartDate + ',' +
-          p.lifetimeFdc + ',' +
-          p.lifetimeSystemSize + ',' +
-          p.qualifiedThisPeriodFdc + ',' +
-          p.qualifiedThisPeriodSystemSize + ',' +
-          p.fdsNotQualified + ',' +
-          p.requiredFdcPerMonth + ',' +
-          p.residualEarned + ',' +
-          p.percentOfResidualEarned + ',"' +
-          p.potentialResidual + '",' +
-          p.earnedResidual + ',' +
-          p.currentClawback + ',' +
-          p.existingClawback + ',' +
-          p.totalClawback + ',' +
-          p.adjustmentOverride + ',' +
-          p.total
+        p.firstName + ',"' +
+        p.lastName + '",' +
+        p.employeeId + ',"' +
+        p.regionName + '",' +
+        "\"" + p.officeName + '\",' +
+        p.officeState + ',' +
+        p.userPositionName + ',"' +
+        p.userStatusType + '",' +
+        p.hireDate + ',' +
+        p.userFullName + ',' +
+        p.residualStartDate + ',' +
+        p.lifetimeFdc + ',' +
+        p.lifetimeSystemSize + ',' +
+        p.qualifiedThisPeriodFdc + ',' +
+        p.qualifiedThisPeriodSystemSize + ',' +
+        p.fdsNotQualified + ',' +
+        p.requiredFdcPerMonth + ',' +
+        p.residualEarned + ',' +
+        p.percentOfResidualEarned + ',"' +
+        p.potentialResidual + '",' +
+        p.earnedResidual + ',' +
+        p.currentClawback + ',' +
+        p.existingClawback + ',' +
+        p.totalClawback + ',' +
+        p.adjustmentOverride + ',' +
+        p.total
       csvData += '\n';
     })
 
@@ -747,4 +747,3 @@ const exportResiduals = async () => {
   border-radius: 0;
 }
 </style>
-

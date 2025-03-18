@@ -11,7 +11,7 @@
             variant="text"
             color="primary"
             @click="goToDetails({})"
-            v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
+            v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADD')"
             prepend-icon="add"
         ></a-btn>
       </v-toolbar-items>

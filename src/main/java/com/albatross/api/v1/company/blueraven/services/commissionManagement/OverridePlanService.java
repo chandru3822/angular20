@@ -6,7 +6,7 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Overrid
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.BackdatedPlanApprovalCredentials;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanAssignment;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.OverrideManagementQuery;
 import com.albatross.api.v1.flow.model.User;
@@ -77,7 +77,7 @@ public class OverridePlanService {
         private BackdatedPlanApprovalCredentials backdateApprovalCreds;
     }
 
-    public void updatePlanUser(Long planId, PlanUser planUser) {
+    public void updatePlanUser(Long planId, PlanAssignment planUser) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("id", planId);
         params.put("userId", planUser.getUserId());

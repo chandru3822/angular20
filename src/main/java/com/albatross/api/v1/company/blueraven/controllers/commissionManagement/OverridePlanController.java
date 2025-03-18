@@ -2,7 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.OverridePlanStatus;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanAssignment;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanService;
 import com.albatross.api.v1.flow.model.org.Org;
@@ -53,28 +53,28 @@ public class OverridePlanController {
 
   @GetMapping(value = "/_search")
   public String findOverridePlanUsers(
-      @RequestParam String query,
-      @RequestParam(required = false) Long positionId,
-      @RequestParam(required = false) Long planId,
-      @RequestParam(required = false) Boolean isReceiving) {
+    @RequestParam String query,
+    @RequestParam(required = false) Long positionId,
+    @RequestParam(required = false) Long planId,
+    @RequestParam(required = false) Boolean isReceiving) {
     return overridePlanService.findUserForOverrides(query, positionId, planId, isReceiving);
   }
 
   @PostMapping(value = "")
   public ResponseEntity<Object> createOverridePlanDetails(
-      @RequestBody OverridePlanService.OverridePlan overridePlan) {
+    @RequestBody OverridePlanService.OverridePlan overridePlan) {
     String detail = overridePlanService.updateOverridePlan(overridePlan);
 
     blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
-        ObjectType.COMMISSION_OVERRIDE,
-        overridePlan.getCustomFieldGroups(),
-        overridePlan.getId());
+      ObjectType.COMMISSION_OVERRIDE,
+      overridePlan.getCustomFieldGroups(),
+      overridePlan.getId());
 
     return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
   }
 
   @PostMapping(value = "/{planId}/updateUser")
-  public void updatePlanUser(@PathVariable Long planId, @RequestBody PlanUser planUser) {
+  public void updatePlanUser(@PathVariable Long planId, @RequestBody PlanAssignment planUser) {
     overridePlanService.updatePlanUser(planId, planUser);
   }
 
@@ -92,13 +92,13 @@ public class OverridePlanController {
 
   @PostMapping(value = "/{id}/clone")
   public ResponseEntity cloneOverridePlanById(
-      @PathVariable Long id, @RequestBody OverridePlanService.CloneOverridePlan overridePlan) {
+    @PathVariable Long id, @RequestBody OverridePlanService.CloneOverridePlan overridePlan) {
     try {
       Optional<Long> cloneOverridePlan =
-          overridePlanService.cloneOverridePlan(id, overridePlan, overridePlan.getUserId());
+        overridePlanService.cloneOverridePlan(id, overridePlan, overridePlan.getUserId());
       if (cloneOverridePlan.isPresent()) {
         String overridePlanDetail =
-            overridePlanService.findOverridePlanDetail(cloneOverridePlan.get());
+          overridePlanService.findOverridePlanDetail(cloneOverridePlan.get());
         return ResponseEntity.ok(overridePlanDetail);
       } else {
         log.error("COMMISSION: Unable to create a clone of override plan id={}", id);
@@ -109,17 +109,17 @@ public class OverridePlanController {
     } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
       SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
       Map<String, String> body =
-          Map.of(
-              "msg",
-              e.getMessage(),
-              "reason",
-              "approvalRequired",
-              "userStartDate",
-              f.format(e.getUserStartDate()),
-              "payrollId",
-              String.valueOf(e.getPayrollId()),
-              "payrollEndDate",
-              f.format(e.getPayrollEndDate()));
+        Map.of(
+          "msg",
+          e.getMessage(),
+          "reason",
+          "approvalRequired",
+          "userStartDate",
+          f.format(e.getUserStartDate()),
+          "payrollId",
+          String.valueOf(e.getPayrollId()),
+          "payrollEndDate",
+          f.format(e.getPayrollEndDate()));
       return ResponseEntity.badRequest().body(body);
     } catch (OverridePlanService.BackdatedPlanApprovalBadCredentialsException e) {
       Map<String, String> body = Map.of("msg", e.getMessage(), "reason", "badCredentials");
@@ -150,13 +150,13 @@ public class OverridePlanController {
 
   @PostMapping(value = "/{id}/receivingUsers")
   public String addReceivingUser(
-      @PathVariable Long id, @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
+    @PathVariable Long id, @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
     return overridePlanService.addReceivingUser(id, receivingUser);
   }
 
   @PostMapping(value = "/{id}/receivingUser")
   public void updateReceivingUser(
-      @PathVariable Long id, @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
+    @PathVariable Long id, @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
     overridePlanService.updateReceivingUser(id, receivingUser);
   }
 
@@ -178,29 +178,29 @@ public class OverridePlanController {
 
   @PostMapping(value = "/{id}/assignedUsers/{positionId}")
   public ResponseEntity addAssignedUser(
-      @PathVariable Long id,
-      @PathVariable Long positionId,
-      @RequestParam(required = false) Boolean addUserToPlan,
-      @RequestBody OverridePlanService.OverrideAssignedUser assignedUser) {
+    @PathVariable Long id,
+    @PathVariable Long positionId,
+    @RequestParam(required = false) Boolean addUserToPlan,
+    @RequestBody OverridePlanService.OverrideAssignedUser assignedUser) {
     try {
 
       String result =
-          overridePlanService.updateAssignedUser(id, assignedUser, positionId, addUserToPlan);
+        overridePlanService.updateAssignedUser(id, assignedUser, positionId, addUserToPlan);
       return ResponseEntity.ok(result);
     } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
       SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
       Map<String, String> body =
-          Map.of(
-              "msg",
-              e.getMessage(),
-              "reason",
-              "approvalRequired",
-              "userStartDate",
-              f.format(e.getUserStartDate()),
-              "payrollId",
-              String.valueOf(e.getPayrollId()),
-              "payrollEndDate",
-              f.format(e.getPayrollEndDate()));
+        Map.of(
+          "msg",
+          e.getMessage(),
+          "reason",
+          "approvalRequired",
+          "userStartDate",
+          f.format(e.getUserStartDate()),
+          "payrollId",
+          String.valueOf(e.getPayrollId()),
+          "payrollEndDate",
+          f.format(e.getPayrollEndDate()));
       return ResponseEntity.badRequest().body(body);
     } catch (OverridePlanService.BackdatedPlanApprovalBadCredentialsException e) {
       Map<String, String> body = Map.of("msg", e.getMessage(), "reason", "badCredentials");

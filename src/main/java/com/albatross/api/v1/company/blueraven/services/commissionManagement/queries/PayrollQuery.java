@@ -110,6 +110,63 @@ public class PayrollQuery {
     """;
 
   //language=PostgreSQL
+  public final static String searchDealers = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+         FROM (SELECT p.period_end as "periodEnd",
+                      p.id,
+                      p.description,
+                      (SELECT sum(dcs1.current_pay)
+                       FROM brs.partner_project_commission_snapshot dcs1
+                       WHERE dcs1.payroll_id = p.id) AS "currentPay"
+               FROM brs.payroll p
+                        INNER JOIN brs.partner_project_commission_snapshot dcs ON p.id = dcs.payroll_id
+                        INNER JOIN brs.project_details pd on pd.project_id = dcs.project_id
+               WHERE p.position_id = 743
+                 AND CASE WHEN :startDate:: DATE IS NOT NULL
+                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+                 AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                          ELSE 1 = 1 END
+                 AND CASE WHEN :orgId:: INTEGER IS NOT NULL
+                              THEN dcs.partner_org_id = :orgId::INTEGER
+                          ELSE 1 = 1 END
+                 AND CASE WHEN :projectId:: INTEGER IS NOT NULL
+                              THEN pd.project_id = :projectId:: INTEGER ELSE 1 = 1 END
+
+               GROUP BY p.id, p.period_end
+               ORDER BY p.period_end desc) AS sub_rows
+    """;
+
+  //language=PostgreSQL
+  public final static String searchInstallationPartners = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+         FROM (SELECT p.period_end as "periodEnd",
+                      p.id,
+                      p.description,
+                      (SELECT sum(dcs1.current_pay)
+                       FROM brs.partner_project_commission_snapshot dcs1
+                       WHERE dcs1.payroll_id = p.id) AS "currentPay"
+               FROM brs.payroll p
+                        INNER JOIN brs.partner_project_commission_snapshot dcs ON p.id = dcs.payroll_id
+                        INNER JOIN brs.project_details pd on pd.project_id = dcs.project_id
+               WHERE p.position_id = 828
+                 AND CASE WHEN :startDate:: DATE IS NOT NULL
+                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+                 AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                          ELSE 1 = 1 END
+                 AND CASE WHEN :orgId:: INTEGER IS NOT NULL
+                              THEN dcs.partner_org_id = :orgId::INTEGER
+                          ELSE 1 = 1 END
+                 AND CASE WHEN :projectId:: INTEGER IS NOT NULL
+                              THEN pd.project_id = :projectId:: INTEGER ELSE 1 = 1 END
+
+               GROUP BY p.id, p.period_end
+               ORDER BY p.period_end desc) AS sub_rows
+    """;
+
+
+  //language=PostgreSQL
   public final static String getApprovedPayrolls = """
     SELECT DISTINCT p.id, p.period_end
     FROM brs.payroll p
@@ -119,7 +176,7 @@ public class PayrollQuery {
     """;
 
   //language=PostgreSQL
-  public final static String addCommissionAdjustment = """
+  public final static String addCommissionAdjustmentUser = """
     INSERT INTO brs.payroll_adjustment (payroll_id,
                                         project_id,
                                         user_id,
@@ -130,6 +187,37 @@ public class PayrollQuery {
                                         created)
     VALUES (:payrollId, :projectId, :userId, :amount, :note, :adjustmentTypeId, :createdById, now());
     """;
+
+  //language=PostgreSQL
+  public final static String addCommissionAdjustmentPartner = """
+    INSERT INTO brs.partner_payroll_adjustment (payroll_id,
+                                        project_id,
+                                        org_id,
+                                        amount,
+                                        note,
+                                        payroll_adjustment_type_id,
+                                        created_by,
+                                        created)
+    VALUES (:payrollId, :projectId, :orgId, :amount, :note, :adjustmentTypeId, :createdById, now());
+    """;
+
+  //language=PostgreSQL
+  public final static String getPartnerCommissionAdjustments = """
+    SELECT array_to_json(array_agg(row_to_json(history)))
+    FROM (SELECT
+           pa.org_id as "orgId",
+           pa.amount,
+           pa.note,
+           pat.adjustment_type as "adjustmentType",
+           pa.created,
+           concat(u.first_name, ' ', u.last_name) AS "createdBy"
+    FROM brs.partner_payroll_adjustment pa
+           INNER JOIN brs.payroll_adjustment_type pat ON pa.payroll_adjustment_type_id = pat.id
+           INNER JOIN flow."user" u ON pa.created_by = u.id
+    WHERE payroll_id = :payrollId
+      AND project_id = :projectId) history
+    """;
+
 
   //language=PostgreSQL
   public final static String getCommissionAdjustments = """
@@ -201,7 +289,7 @@ public class PayrollQuery {
 
   //language=PostgreSQL
   public final static String getSummary = """
-    SELECT CASE WHEN p.payroll_status_id = 3 and p.position_id = 1
+    SELECT CASE WHEN p.payroll_status_id = 3 and (p.position_id = 1 or p.position_id = 743)
           THEN brs.get_commission_summary_from_snapshot(p.id, :currentUserId)
         WHEN p.payroll_status_id = 3 and p.position_id = 4
           THEN brs.get_commission_summary_from_snapshot_for_setters(p.id, :currentUserId)
@@ -227,6 +315,17 @@ public class PayrollQuery {
             FROM brs.get_commission_account_details_for_setters(:payrollId::bigint, :selectedProjectIds::bigint[],
             :customerId::bigint, :salesRepId::bigint, :cancelStartDate::date, :cancelEndDate::date,
             :overridePlanId::bigint, :commissionPlanId::bigint)
+            ) sub_rows
+    """;
+
+
+  //language=PostgreSQL
+  public final static String getAccountReviewForPartners = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+      FROM (SELECT *
+            FROM brs.get_partner_commission_account_details(:payrollId::bigint, :selectedProjectIds::bigint[],
+            :customerId::bigint, :orgId::bigint, :cancelStartDate::date,
+              :cancelEndDate::date, :commissionPlanId::bigint)
             ) sub_rows
     """;
 
@@ -316,5 +415,37 @@ public class PayrollQuery {
                  INNER JOIN flow.project p ON s.project_id = p.id
             WHERE payroll_id = :payrollId
          ) AS sub_rows
+    """;
+
+
+  //language=PostgreSQL
+  public final static String getPayrollSearchDetailForPartners = """
+    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+    FROM (
+           SELECT s.cancelled,
+                  s.commission_paid_to_date as "commissionPaidToDate",
+                  s.commission_plan as "commissionPlan",
+                  s.commission_plan_id as "commissionPlanId",
+                  s.commissions_earned as "commissionsEarned",
+                  s.current_pay as "currentPay",
+                  s.current_pay_commissions as "currentPayCommissions",
+                  s.customer_name as "customerName",
+                  s.project_id as "projectId",
+                  s.project_total_value as "projectTotalValue",
+                  s.ahj_final_inspection_verified as "ahjFinalInspectionVerified",
+                  s.id,
+                  s.payroll_id as "payrollId",
+                  s.remaining_value as "remainingValue",
+                  s.remaining_value_commissions as "remainingValueCommissions",
+                  s.partner_org_name as "partnerOrgName",
+                  s.partner_org_id as "partnerOrgId",
+                  s.sc,
+                  s.system_size as "systemSize",
+                  s.total_commissions as "totalCommissions",
+                  s.updated
+           FROM brs.partner_project_commission_snapshot s
+                    INNER JOIN flow.project p ON s.project_id = p.id
+           WHERE payroll_id = :payrollId
+       ) AS sub_rows
     """;
 }

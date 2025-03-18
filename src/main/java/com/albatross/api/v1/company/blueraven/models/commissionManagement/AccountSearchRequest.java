@@ -11,6 +11,7 @@ public class AccountSearchRequest {
   private Long projectId;
   private Long customerId;
   private Long salesRepId;
+  private Long orgId;
   private String periodEnd;
   private String cancelStartDate;
   private String cancelEndDate;

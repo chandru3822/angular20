@@ -32,7 +32,7 @@
           <a-btn
               color="success"
               class="mr-2"
-              v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
+              v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADMIN') && overrideId && override.status === 'PENDING'"
               :disabled="errorMessages.length > 0"
               @click="approveOverride()"
               text="Approve"
@@ -40,7 +40,7 @@
 <!--          <a-btn-->
 <!--              color="error"-->
 <!--              class="mr-2"-->
-<!--              v-if="overrideId && override.status !== 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"-->
+<!--              v-if="overrideId && override.status !== 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'DELETE')"-->
 <!--              :disabled="errorMessages.length > 0"-->
 <!--              @click="openDeleteDialog(override, deleteTypes.OVERRIDE)"-->
 <!--              text="Delete"-->
@@ -55,7 +55,7 @@
           <a-btn
               color="error"
               class="mr-2"
-              v-if="overrideId && override.status === 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+              v-if="overrideId && override.status === 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'DELETE')"
               @click="inactivateConfirm=true"
               text="Inactivate"
           ></a-btn>
@@ -694,13 +694,13 @@
 
 
   const userCanAdd = computed(()  => {
-    return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADD')
   })
   const userCanEdit = computed(()  => {
-    return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'EDIT')
   })
   const userIsAdmin = computed(()  => {
-    return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADMIN')
   })
   const timezone = computed(()  => {
     return userStore.timezone.value

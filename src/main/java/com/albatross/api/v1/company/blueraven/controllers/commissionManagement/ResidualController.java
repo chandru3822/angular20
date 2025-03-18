@@ -99,7 +99,7 @@ public class ResidualController {
 
   @PostMapping(value = "/{planId}/users")
   public ResponseEntity insertUser(@PathVariable Long planId,
-                                   @RequestBody PlanUser user) {
+                                   @RequestBody PlanAssignment user) {
     residualService.insertUser(planId, user);
     String users = residualService.getResidualPlanUsers(planId);
     return ResponseEntity.ok(users);
@@ -145,25 +145,24 @@ public class ResidualController {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
 
-    @GetMapping(value = "/{id}/availableSources")
-    public List<ResidualSource> getAvailableSources(@PathVariable Long id) {
-        return residualService.getAvailableSources(id);
-    }
+  @GetMapping(value = "/{id}/availableSources")
+  public List<ResidualSource> getAvailableSources(@PathVariable Long id) {
+    return residualService.getAvailableSources(id);
+  }
 
-    @PostMapping(value = "/{planId}/source")
-    public ResidualSource saveSource(@PathVariable Long planId, @RequestBody ResidualSource source) {
-        return residualService.saveSource(planId, source);
-    }
+  @PostMapping(value = "/{planId}/source")
+  public ResidualSource saveSource(@PathVariable Long planId, @RequestBody ResidualSource source) {
+    return residualService.saveSource(planId, source);
+  }
 
-    @PutMapping(value = "/{planId}/source")
-    public ResidualSource updateSource(@PathVariable Long planId, @RequestBody ResidualSource source) {
-        return residualService.updateSource(planId, source);
-    }
+  @PutMapping(value = "/{planId}/source")
+  public ResidualSource updateSource(@PathVariable Long planId, @RequestBody ResidualSource source) {
+    return residualService.updateSource(planId, source);
+  }
 
-    @DeleteMapping(value = "/{planId}/source/{sourceId}")
-    public void removeSource(@PathVariable Long planId, @PathVariable Long sourceId) {
-        residualService.removeSource(planId, sourceId);
-    }
+  @DeleteMapping(value = "/{planId}/source/{sourceId}")
+  public void removeSource(@PathVariable Long planId, @PathVariable Long sourceId) {
+    residualService.removeSource(planId, sourceId);
+  }
 }
-
 

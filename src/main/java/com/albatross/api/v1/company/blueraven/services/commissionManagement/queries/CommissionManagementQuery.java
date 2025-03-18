@@ -34,6 +34,18 @@ public class CommissionManagementQuery {
         where mt.position_id = 4
     """;
 
+  public final static String findAvailableMilestonesForDealers = """
+    select mt.*
+    from brs.milestone_type mt
+        where mt.position_id = 743
+    """;
+
+  public final static String findAvailableMilestonesForInstallationPartners= """
+    select mt.*
+    from brs.milestone_type mt
+        where mt.position_id = 828
+    """;
+
   //language=PostgreSQL
   public final static String getUserPayrolls = """
     select p.id,
@@ -235,6 +247,29 @@ public class CommissionManagementQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getPartnerCommissionPlans = """
+    SELECT
+      cp.id,
+      cp.name,
+      cp.total,
+      cp.status_id,
+      cps.status_type,
+      cp.description,
+      count(cpo.id)
+        FILTER ( WHERE (
+          cpo.end_date IS NULL
+          OR cpo.end_date > CURRENT_TIMESTAMP
+        ) AND cpo.start_date < CURRENT_TIMESTAMP) AS active_users
+    FROM brs.commission_plan cp
+      LEFT JOIN brs.commission_plan_org cpo ON cp.id = cpo.commission_plan_id
+      INNER JOIN brs.commission_plan_status cps ON cp.status_id = cps.id
+      WHERE name IS NOT NULL AND name != ''
+        AND cp.position_id = :positionId
+    GROUP BY cp.id, cp.name, cps.status_type
+    ORDER BY cp.name;
+    """;
+
+  //language=PostgreSQL
   public final static String getClosers = """
     select * from brs.get_commission_users(:includeInactive::boolean)
     """;
@@ -298,7 +333,7 @@ public class CommissionManagementQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getPlans = """
+  public final static String getUserPlans = """
     SELECT array_to_json(array_agg(row_to_json(rows)))
     FROM (SELECT cpu.id as "userPlanId",
                                cpu.start_date AS "startDate",
@@ -310,6 +345,24 @@ public class CommissionManagementQuery {
                         FROM brs.commission_plan_user cpu
                                  INNER JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id
                         WHERE cpu.user_id = :userId
+                      order by cpu.start_date desc
+                      ) as rows
+    """;
+
+
+  //language=PostgreSQL
+  public final static String getOrgPlans = """
+    SELECT array_to_json(array_agg(row_to_json(rows)))
+    FROM (SELECT cpu.id as "orgPlanId",
+                               cpu.start_date AS "startDate",
+                               cpu.end_date   AS "endDate",
+                               cpu.note,
+                               cp.name        ,
+                               cp.id          ,
+                               cp.description
+                        FROM brs.commission_plan_org cpu
+                                 INNER JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id
+                        WHERE cpu.org_id = :orgId
                       order by cpu.start_date desc
                       ) as rows
     """;
@@ -402,6 +455,8 @@ FROM (SELECT cp.id,
              concat(au.first_name, ' ', au.last_name) AS "approvedName",
              cp.created_by as "createdBy",
              cp.position_id as "positionId",
+             cp.partner_commission_amount as "partnerAmount",
+             cp.fee_type_id as "feeTypeId",
              cp.approved                                                 AS "approvedDate",
                          coalesce((SELECT array_to_json(array_agg(row_to_json(mt)))
                        FROM (
@@ -431,12 +486,24 @@ FROM (SELECT cp.id,
                              INNER JOIN flow.list_of_value lov on lov.id = cpsa.source_id
                     WHERE cpsa.commission_plan_id = cp.id
                     order by lov.name ) AS sources), '[]')    AS sources,
+                coalesce((SELECT array_to_json(array_agg(row_to_json(adders)))
+              FROM (SELECT cpsa.id,
+                           lov.name as "adderName",
+                           ft.fee_type as "feeType",
+                           cpsa.fee_amount as "feeAmount",
+                           cpsa.adder_id as "adderId",
+                           fee_type_id as "feeTypeId"
+                    FROM brs.partner_commission_plan_adder cpsa
+                             INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
+                             INNER JOIN flow.list_of_value lov on lov.id = cpsa.adder_id
+                    WHERE cpsa.commission_plan_id = cp.id
+                    order by lov.name ) AS adders), '[]')    AS adders,
              coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
               FROM (SELECT cpu.id,
                             concat(u.first_name, ' ', u.last_name) AS name,
 
                            string_agg(DISTINCT p.position, ', ') FILTER (WHERE
-                               CASE WHEN cp.position_id = 1
+                               CASE WHEN cp.position_id IN (1, 743, 828)
                                         THEN up.id IN (select up5.id
                                                 from flow.user_position up5
                                                          inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
@@ -464,7 +531,18 @@ FROM (SELECT cp.id,
                              INNER JOIN flow.user_position up ON up.user_id = u.id
                              INNER JOIN flow.position p ON p.id = up.position_id
                     WHERE cpu.commission_plan_id = cp.id
-                    GROUP BY cpu.id, u.id) AS users), '[]')                    AS users
+                    GROUP BY cpu.id, u.id) AS users), '[]')                    AS users,
+                    coalesce((SELECT array_to_json(array_agg(row_to_json(orgs)))
+              FROM (SELECT cpo.id,
+                            o.org_name as "orgName",
+                            o.id as "orgId",
+                           cpo.start_date                     AS "startDate",
+                           cpo.end_date                       AS "endDate",
+                           false                              as "archived"
+                    FROM brs.commission_plan_org cpo
+                             INNER JOIN flow.org o on cpo.org_id = o.id
+                    WHERE cpo.commission_plan_id = cp.id
+                    GROUP BY cpo.id, o.id) AS orgs), '[]')                    AS orgs
       FROM brs.commission_plan cp
                INNER JOIN brs.commission_plan_status cps ON cp.status_id = cps.id
                LEFT JOIN flow.user cu ON cp.created_by = cu.id
@@ -481,7 +559,7 @@ FROM (SELECT cp.id,
              cpu.start_date                     AS "startDate",
              cpu.end_date                       AS "endDate",
              string_agg(DISTINCT p.position, ', ') FILTER (WHERE
-               CASE WHEN cp.position_id = 1
+               CASE WHEN cp.position_id IN (1, 743, 828)
                  THEN up.id IN (select up5.id
                                   from flow.user_position up5
                                            inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
@@ -507,6 +585,22 @@ FROM (SELECT cp.id,
              INNER JOIN flow.position p ON p.id = up.position_id
       WHERE cp.id = :planId
       GROUP BY cpu.id, u.id) AS users
+    """;
+
+
+  //language=PostgreSQL
+  public final static String getCommissionPlanOrgs = """
+    SELECT coalesce(array_to_json(array_agg(row_to_json(orgs))), '[]')
+    FROM (SELECT cpu.id,
+                 o.org_name as "orgName",
+                 o.id                               AS "orgId",
+                 cpu.start_date                     AS "startDate",
+                 cpu.end_date                       AS "endDate"
+          FROM brs.commission_plan_org cpu
+                   INNER JOIN brs.commission_plan cp ON cpu.commission_plan_id = cp.id
+                   INNER JOIN flow.org o on cpu.org_id = o.id
+          WHERE cp.id = :planId
+          GROUP BY cpu.id, o.id) AS orgs
     """;
 
   //language=PostgreSQL
@@ -556,13 +650,36 @@ FROM (SELECT cp.id,
       AND user_id = :userId
     """;
 
+
   //language=PostgreSQL
-  public final static String appendNote = """
+  public final static String updatePlanOrg = """
+    UPDATE brs.commission_plan_org
+       SET note = :note,
+       end_date = :endDate,
+       date_modified = now()
+     WHERE commission_plan_id = :planId
+      AND org_id = :orgId
+    """;
+
+  //language=PostgreSQL
+  public final static String appendUserNote = """
     UPDATE brs.commission_plan_user
          SET note = CONCAT_WS('; ', note, :note),
               date_modified = now()
        WHERE commission_plan_id = :planId
          AND user_id = :userId
+         AND start_date = :startDate
+         AND end_date IS NULL
+    """;
+
+
+  //language=PostgreSQL
+  public final static String appendOrgNote = """
+    UPDATE brs.commission_plan_org
+         SET note = CONCAT_WS('; ', note, :note),
+              date_modified = now()
+       WHERE commission_plan_id = :planId
+         AND org_id = :orgId
          AND start_date = :startDate
          AND end_date IS NULL
     """;
@@ -607,6 +724,55 @@ FROM (SELECT cp.id,
     VALUES (:planId, :milestoneId, :feeAmount, :feeTypeId, :sourceId)
     """;
 
+
+  //language=PostgreSQL
+  public final static String getAdders = """
+    select lov.id,
+           lov.name as adder_name
+    from flow.list_of_value lov
+    where lov.parent_id = 5
+      and lov.archived is not true
+    order by lov.name
+    """;
+
+  //language=PostgreSQL
+  public final static String getAdder = """
+    SELECT cpsa.id,
+           lov.name as "adderName",
+           ft.fee_type as "feeType",
+           cpsa.fee_amount as "feeAmount",
+           cpsa.adder_id as "adderId",
+           cpsa.milestone_id as "milestoneId",
+           cpsa.fee_type_id as "feeTypeId"
+    FROM brs.partner_commission_plan_adder cpsa
+             INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
+             INNER JOIN flow.list_of_value lov on lov.id = cpsa.adder_id
+    WHERE cpsa.id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String saveAdder = """
+    INSERT INTO brs.partner_commission_plan_adder (commission_plan_id, fee_amount, fee_type_id, adder_id)
+    VALUES (:planId, :feeAmount, :feeTypeId, :adderId)
+    """;
+
+
+  //language=PostgreSQL
+  public final static String updateAdder = """
+    UPDATE brs.partner_commission_plan_adder
+     SET
+     fee_amount = :feeAmount,
+     fee_type_id =:feeTypeId
+     WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String removeAdder = """
+    DELETE
+      FROM brs.partner_commission_plan_adder
+       WHERE id = :id
+    """;
+
   //language=PostgreSQL
   public final static String insertUser = """
     INSERT INTO brs.commission_plan_user (commission_plan_id, user_id, start_date, end_date)
@@ -623,7 +789,7 @@ FROM (SELECT cp.id,
     """;
 
   //language=PostgreSQL
-  public final static String insertEndDate = """
+  public final static String insertUserEndDate = """
     WITH active_commission_plans AS (SELECT cpu.id,
                                             cp.id   AS plan_id,
                                             cp.name AS plan_name,
@@ -637,6 +803,45 @@ FROM (SELECT cp.id,
                                        AND cpu.start_date <= :startDate
                                        AND cpu.user_id = :userId)
     UPDATE brs.commission_plan_user cpu
+    SET end_date = :startDate :: DATE - INTERVAL  '1 day',
+        date_modified = now()
+    FROM active_commission_plans p
+    WHERE cpu.id = p.id
+    """;
+
+
+
+  //language=PostgreSQL
+  public final static String insertOrg = """
+    INSERT INTO brs.commission_plan_org (commission_plan_id, org_id, start_date, end_date)
+    VALUES (:planId, :orgId, :startDate, :endDate)
+    """;
+
+  //language=PostgreSQL
+  public final static String updateOrg = """
+    UPDATE brs.commission_plan_org
+    SET start_date = :startDate,
+      end_date     = :endDate,
+      date_modified = now()
+    WHERE id = :id
+    """;
+
+
+  //language=PostgreSQL
+  public final static String insertOrgEndDate = """
+    WITH active_commission_plans AS (SELECT cpu.id,
+                                            cp.id   AS plan_id,
+                                            cp.name AS plan_name,
+                                            cpu.org_id,
+                                            cpu.start_date,
+                                            cpu.end_date
+                                     FROM brs.commission_plan cp
+                                            INNER JOIN brs.commission_plan_org cpu ON cp.id = cpu.commission_plan_id
+                                     WHERE cp.status_id <> 3
+                                       AND cpu.end_date IS NULL
+                                       AND cpu.start_date <= :startDate
+                                       AND cpu.org_id = :orgId)
+    UPDATE brs.commission_plan_org cpu
     SET end_date = :startDate :: DATE - INTERVAL  '1 day',
         date_modified = now()
     FROM active_commission_plans p
@@ -718,6 +923,25 @@ FROM (SELECT cp.id,
     """;
 
   //language=PostgreSQL
+  public final static String findDealerOrgs = """
+    SELECT coalesce(array_to_json(array_agg(row_to_json(results))), '[]')
+    FROM (SELECT DISTINCT o.id                               AS "orgId",
+                          o.org_name as "orgName"
+          FROM flow.org o
+                   inner join flow.organization_custom_field_value ocfv on o.id = ocfv.org_id and ocfv.custom_field_group_assignment_id = 30238 and ocfv.boolean_value is true
+          WHERE lower(o.org_name) LIKE concat('%', lower(:search), '%')
+            and ( case when :planId::bigint is not null
+              then o.id not in (
+              select org_id
+              from brs.commission_plan_org
+              where commission_plan_id = :planId
+              ) else 1 = 1 end
+              )
+          ORDER BY org_name
+          LIMIT 10) results
+    """;
+
+  //language=PostgreSQL
   public final static String removeMilestone = """
     DELETE
       FROM brs.commission_plan_allocation
@@ -732,6 +956,10 @@ FROM (SELECT cp.id,
 
       DELETE
         FROM brs.commission_plan_source_allocation
+        WHERE commission_plan_id = :planId;
+
+      DELETE
+        FROM brs.partner_commission_plan_adder
         WHERE commission_plan_id = :planId;
 
       DELETE
@@ -778,9 +1006,32 @@ FROM (SELECT cp.id,
     """;
 
   //language=PostgreSQL
+  public final static String getCommissionPlanOrgHistory = """
+    SELECT coalesce(array_to_json(array_agg(row_to_json(aup))), '[]')
+    FROM (SELECT cpu.id as "userPlanId",
+             cpu.start_date  AS "startDate",
+             cpu.end_date    AS "endDate",
+             cp.name         ,
+             cps.status_type AS status,
+             cp.status_id    AS statusId,
+             cp.id
+      FROM brs.commission_plan_org cpu
+             INNER JOIN brs.commission_plan cp ON cpu.commission_plan_id = cp.id
+             INNER JOIN brs.commission_plan_status cps ON cp.status_id = cps.id
+      WHERE cpu.org_id = :orgId
+      ORDER BY cpu.end_date DESC) aup;
+    """;
+
+  //language=PostgreSQL
   public final static String deleteUser = """
     DELETE FROM brs.commission_plan_user
     WHERE commission_plan_id = :planId AND id = :commissionPlanUserId;
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteOrg = """
+    DELETE FROM brs.commission_plan_org
+    WHERE commission_plan_id = :planId AND id = :commissionPlanOrgId;
     """;
 
   //language=PostgreSQL
@@ -793,8 +1044,8 @@ FROM (SELECT cp.id,
   //language=PostgreSQL
   public final static String create = """
     INSERT INTO brs.commission_plan
-    (name, description, total,  position_id, created_by, created)
-    VALUES (:name, :description, :total, :positionId, :userId, now())
+    (name, description, total,  position_id, created_by, created, partner_commission_amount, fee_type_id)
+    VALUES (:name, :description, :total, :positionId, :userId, now(), :partnerAmount, :feeTypeId)
     RETURNING id
     """;
 
@@ -830,7 +1081,9 @@ FROM (SELECT cp.id,
     UPDATE brs.commission_plan
     SET name      = :name,
     description = :description,
-    total       = :total
+    total       = :total,
+    partner_commission_amount = :partnerAmount,
+    fee_type_id = :feeTypeId
     WHERE id = :id
     RETURNING id
     """;

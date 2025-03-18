@@ -14,9 +14,9 @@ public class CommissionPlan {
 
   @Id private Long id;
 
-  private Long statusId, activeUsers, positionId;
+  private Long statusId, activeUsers, positionId, feeTypeId;
   private String name, description, statusType;
-  private double total;
+  private Double total, partnerAmount;
   private List<Long> users;
   private BackdatedPlanApprovalCredentials backdateApprovalCreds;
 

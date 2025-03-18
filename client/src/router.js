@@ -372,7 +372,7 @@ const router = new Router({
                 ) {
                   return import(
                     './views/blueraven/expenses/BudgetTemplates.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -436,7 +436,7 @@ const router = new Router({
               component: () =>
                 import(
                   './views/blueraven/closerDashboard/CloserLeaderboard.vue'
-                )
+                  )
             },
             {
               path: 'residuals',
@@ -467,7 +467,7 @@ const router = new Router({
               component: () =>
                 import(
                   './views/blueraven/setterDashboard/SetterPerformance.vue'
-                )
+                  )
             },
             {
               path: 'funnel',
@@ -494,7 +494,7 @@ const router = new Router({
             if (userStore.userHasFeature('COMPANY_DASHBOARD')) {
               return import(
                 './views/blueraven/companyDashboard/CompanyDashboard.vue'
-              )
+                )
             } else {
               return accessDenied()
             }
@@ -522,7 +522,7 @@ const router = new Router({
             ) {
               return import(
                 './views/blueraven/closerAvailability/CloserAvailability.vue'
-              )
+                )
             } else {
               return accessDenied()
             }
@@ -565,7 +565,7 @@ const router = new Router({
                 if (userStore.userHasFeature('AHJ')) {
                   return import(
                     './views/blueraven/featDB/ahj/details/AhjDetails.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -583,7 +583,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/blueraven/featDB/ahj/details/AhjInspection.vue'
-                    )
+                      )
                 },
                 {
                   path: 'design',
@@ -607,7 +607,7 @@ const router = new Router({
                 if (userStore.userHasFeature('UTILITY')) {
                   return import(
                     './views/blueraven/featDB/utility/Utilities.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -622,7 +622,7 @@ const router = new Router({
                 if (userStore.userHasFeature('UTILITY')) {
                   return import(
                     './views/blueraven/featDB/utility/UtilityDetails.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -661,7 +661,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SUPPLIERS')) {
                   return import(
                     './views/blueraven/featDB/suppliers/Suppliers.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -676,7 +676,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SUPPLIERS')) {
                   return import(
                     './views/blueraven/featDB/suppliers/SupplierDetails.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -690,7 +690,7 @@ const router = new Router({
                 if (userStore.userHasFeature('INCENTIVE')) {
                   return import(
                     './views/blueraven/featDB/incentive/Incentives.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -705,7 +705,7 @@ const router = new Router({
                 if (userStore.userHasFeature('INCENTIVE')) {
                   return import(
                     './views/blueraven/featDB/incentive/IncentiveDetails.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -810,7 +810,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/attachments/AttachmentType.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -822,7 +822,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/attachments/AttachmentTypeCustomFieldGroups.vue'
-                    )
+                      )
                 }
               ]
             },
@@ -833,7 +833,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/customFields/CompanyCustomFields.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -846,7 +846,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/customFields/CompanyCustomField.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -859,7 +859,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/companyObjectType/CompanyObjectTypes.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -873,7 +873,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/companyObjectType/CompanyObjectType.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -899,7 +899,7 @@ const router = new Router({
                 ) {
                   return import(
                     './views/flow/settings/tournaments/Tournaments.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -914,7 +914,7 @@ const router = new Router({
                 ) {
                   return import(
                     './views/flow/settings/tournaments/Tournament.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -926,7 +926,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/tournaments/TournamentDetails.vue'
-                    )
+                      )
                 },
                 {
                   path: 'brackets',
@@ -976,7 +976,7 @@ const router = new Router({
                     if (userStore.userHasFeature('SETTINGS')) {
                       return import(
                         './views/flow/settings/defaults/CompanySettings.vue'
-                      )
+                        )
                     } else {
                       return accessDenied()
                     }
@@ -991,7 +991,7 @@ const router = new Router({
                     ) {
                       return import(
                         './views/flow/settings/defaults/Configurations.vue'
-                      )
+                        )
                     } else {
                       return accessDenied()
                     }
@@ -1006,7 +1006,7 @@ const router = new Router({
                     ) {
                       return import(
                         './views/flow/settings/defaults/EmailSettings.vue'
-                      )
+                        )
                     } else {
                       return accessDenied()
                     }
@@ -1024,7 +1024,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/defaults/CloserDashboardSettings.vue'
-                    )
+                      )
                 }
               ]
             },
@@ -1035,7 +1035,7 @@ const router = new Router({
                 if (userStore.userHasFeature('ROUND_ROBIN')) {
                   return import(
                     './views/flow/settings/roundRobins/RoundRobins.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1048,7 +1048,7 @@ const router = new Router({
                 if (userStore.userHasFeature('POSTAL_CODE')) {
                   return import(
                     './views/flow/settings/postalCode/ZipContainer.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1072,7 +1072,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/postalCode/PostalCodeZones.vue'
-                    )
+                      )
                 },
                 {
                   path: 'zone/:id',
@@ -1080,7 +1080,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/postalCode/PostalCodeZone.vue'
-                    )
+                      )
                 }
               ]
             },
@@ -1091,7 +1091,7 @@ const router = new Router({
                 if (userStore.userHasFeature('ROUND_ROBIN')) {
                   return import(
                     './views/flow/settings/roundRobins/RoundRobin.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1122,7 +1122,7 @@ const router = new Router({
                 if (userStore.userHasFeature('CALL_GROUPS')) {
                   return import(
                     './views/flow/settings/callGroups/CallGroups.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1135,7 +1135,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/callGroups/PostalCode.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1272,7 +1272,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/customFields/FlowCustomFields.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1285,7 +1285,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/customFields/FlowCustomField.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1299,7 +1299,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/objectType/ObjectType.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1311,7 +1311,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/objectType/CustomFieldGroup.vue'
-                    )
+                      )
                 },
                 {
                   path: 'attachmentTypes',
@@ -1320,7 +1320,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/objectType/ObjectTypeAttachments.vue'
-                    )
+                      )
                 },
                 {
                   path: 'attachmentType/:attachmentTypeId',
@@ -1328,7 +1328,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/objectType/ObjectTypeAttachment.vue'
-                    )
+                      )
                 }
               ]
             },
@@ -1398,7 +1398,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/processStep/ProcessStep.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1410,7 +1410,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/processStep/ProcessStepComponents.vue'
-                    )
+                      )
                 },
                 {
                   path: 'customFieldGroups',
@@ -1419,7 +1419,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/processStep/ProcessStepCFG.vue'
-                    )
+                      )
                 },
                 {
                   path: 'actions',
@@ -1427,7 +1427,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/processStep/ProcessStepActions.vue'
-                    )
+                      )
                 },
                 {
                   path: 'events',
@@ -1435,7 +1435,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/processStep/ProcessStepEvents.vue'
-                    )
+                      )
                 },
                 {
                   path: 'event/:eventId',
@@ -1443,7 +1443,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/processStep/ProcessStepEvent.vue'
-                    )
+                      )
                 },
                 {
                   path: 'attachmentTypes',
@@ -1451,7 +1451,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/processStep/ProcessStepAttachmentTypes.vue'
-                    )
+                      )
                 },
                 {
                   path: 'attachmentType/:attachmentTypeId',
@@ -1459,7 +1459,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/processStep/ProcessStepAttachmentType.vue'
-                    )
+                      )
                 }
               ]
             },
@@ -1503,7 +1503,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/projectStatus/ProjectStatuses.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1516,7 +1516,7 @@ const router = new Router({
                 if (userStore.userHasFeature('SETTINGS')) {
                   return import(
                     './views/flow/settings/projectStatus/ProjectStatus.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1528,7 +1528,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/projectStatus/ProjectStatusComponents.vue'
-                    )
+                      )
                 },
                 {
                   path: 'fields',
@@ -1536,7 +1536,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/projectStatus/ProjectStatusFields.vue'
-                    )
+                      )
                 }
               ]
             },
@@ -1559,7 +1559,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/project/ProjectCustomFieldGroups.vue'
-                    )
+                      )
                 },
                 {
                   path: 'tabs',
@@ -1573,7 +1573,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/project/ProjectAttachmentTypes.vue'
-                    )
+                      )
                 },
                 {
                   path: 'attachmentType/:attachmentTypeId',
@@ -1581,7 +1581,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/project/ProjectAttachmentType.vue'
-                    )
+                      )
                 },
                 {
                   path: 'system',
@@ -1621,7 +1621,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/event/EventCustomFieldGroups.vue'
-                    )
+                      )
                 },
                 {
                   path: 'components',
@@ -1635,7 +1635,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/event/EventAttachmentTypes.vue'
-                    )
+                      )
                 },
                 {
                   path: 'attachmentType/:attachmentTypeId',
@@ -1643,7 +1643,7 @@ const router = new Router({
                   component: () =>
                     import(
                       './views/flow/settings/event/EventAttachmentType.vue'
-                    )
+                      )
                 }
               ]
             },
@@ -1689,7 +1689,7 @@ const router = new Router({
                 if (userStore.userHasFeature('AVAILABILITY')) {
                   return import(
                     './views/flow/settings/availability/AvailabilityHeader.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1705,7 +1705,7 @@ const router = new Router({
                     if (userStore.userHasFeature('AVAILABILITY')) {
                       return import(
                         './views/flow/settings/availability/Availability.vue'
-                      )
+                        )
                     } else {
                       return accessDenied()
                     }
@@ -1718,7 +1718,7 @@ const router = new Router({
                       component: () =>
                         import(
                           './views/flow/settings/availability/Schedule.vue'
-                        )
+                          )
                     },
                     {
                       path: 'appointments',
@@ -1727,7 +1727,7 @@ const router = new Router({
                       component: () =>
                         import(
                           './views/flow/settings/availability/Appointments.vue'
-                        )
+                          )
                     }
                   ]
                 },
@@ -1745,7 +1745,7 @@ const router = new Router({
                     ) {
                       return import(
                         './views/flow/settings/availability/SlotSchedules.vue'
-                      )
+                        )
                     } else {
                       return accessDenied()
                     }
@@ -1764,7 +1764,7 @@ const router = new Router({
                     ) {
                       return import(
                         './views/flow/settings/availability/Holidays.vue'
-                      )
+                        )
                     } else {
                       return accessDenied()
                     }
@@ -1864,7 +1864,7 @@ const router = new Router({
             if (userStore.userHasFeature('INSTALLER_DASHBOARD')) {
               return import(
                 './views/blueraven/installerDashboard/InstallerDashboard.vue'
-              )
+                )
             } else {
               return accessDenied()
             }
@@ -1920,7 +1920,7 @@ const router = new Router({
                 if (userStore.userHasFeature('PROCESS_STEPS')) {
                   return import(
                     './views/flow/project/ProjectProcessStepEvent.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -1936,7 +1936,7 @@ const router = new Router({
                 }
               }
             },
-              {
+            {
               path: 'billOfMaterials',
               component: () => {
                 if (userStore.userHasFeature('PROCESS_STEPS')) {
@@ -2200,10 +2200,13 @@ const router = new Router({
           name: 'commissionManagement',
           meta: { title: 'Albatross - Commissions' },
           component: () => {
-            if (userStore.userHasFeature('COMMISSIONS')) {
+            if ((userStore.userHasFeature('COMMISSIONS_CLOSER') ||
+              userStore.userHasFeature('COMMISSIONS_SETTER') ||
+              userStore.userHasFeature('COMMISSIONS_DEALER') ||
+              userStore.userHasFeature('COMMISSIONS_INSTALLATION_PARTNER'))) {
               return import(
                 './views/blueraven/commissionManagement/CommissionManagement.vue'
-              )
+                )
             } else {
               return accessDenied()
             }
@@ -2227,14 +2230,14 @@ const router = new Router({
               name: 'commissions',
               meta: { title: 'Albatross - Commissions' },
               component: () =>
-                import('./views/blueraven/commissionManagement/Commissions.vue')
+                import('./views/blueraven/commissionManagement/commissions/Commissions.vue')
             },
             {
               path: 'commission/:id?',
               name: 'commission',
               meta: { title: 'Albatross - Commissions' },
               component: () =>
-                import('./views/blueraven/commissionManagement/Commission.vue')
+                import('./views/blueraven/commissionManagement/commissions/Commission.vue')
             },
             {
               path: 'overrides',
@@ -2254,21 +2257,33 @@ const router = new Router({
               path: 'accounting',
               meta: { title: 'Albatross - Commissions' },
               component: () =>
-                import('./views/blueraven/commissionManagement/Accounting.vue'),
+                import('./views/blueraven/commissionManagement/accountingReview/Accounting.vue'),
               children: [
                 {
                   path: 'current',
                   meta: { title: 'Albatross - Commissions' },
                   component: () =>
                     import(
-                      './views/blueraven/commissionManagement/CurrentPayroll.vue'
-                    )
+                      './views/blueraven/commissionManagement/accountingReview/CurrentPayroll.vue'
+                      )
                 },
                 {
                   path: 'summary',
                   meta: { title: 'Albatross - Commissions' },
                   component: () =>
-                    import('./views/blueraven/commissionManagement/Summary.vue')
+                    import('./views/blueraven/commissionManagement/accountingReview/Summary.vue')
+                },
+                {
+                  path: 'partnerPay',
+                  meta: { title: 'Albatross - Commissions' },
+                  component: () =>
+                    import('./views/blueraven/commissionManagement/accountingReview/CurrentPartnerPay.vue')
+                },
+                {
+                  path: 'partnerSummary',
+                  meta: { title: 'Albatross - Commissions' },
+                  component: () =>
+                    import('./views/blueraven/commissionManagement/accountingReview/PartnerSummary.vue')
                 }
               ]
             },
@@ -2277,14 +2292,14 @@ const router = new Router({
               meta: { title: 'Albatross - Commissions' },
               name: 'payrolls',
               component: () =>
-                import('./views/blueraven/commissionManagement/Payrolls.vue')
+                import('./views/blueraven/commissionManagement/payroll/Payrolls.vue')
             },
             {
               path: 'payroll/:id',
               name: 'payroll',
               meta: { title: 'Albatross - Commissions' },
               component: () =>
-                import('./views/blueraven/commissionManagement/Payroll.vue'),
+                import('./views/blueraven/commissionManagement/payroll/Payroll.vue'),
               children: [
                 {
                   path: 'review',
@@ -2292,8 +2307,8 @@ const router = new Router({
                   name: 'payrollReview',
                   component: () =>
                     import(
-                      './views/blueraven/commissionManagement/PayrollReview.vue'
-                    )
+                      './views/blueraven/commissionManagement/payroll/PayrollReview.vue'
+                      )
                 },
                 {
                   path: 'summary',
@@ -2301,8 +2316,8 @@ const router = new Router({
                   meta: { title: 'Albatross - Commissions' },
                   component: () =>
                     import(
-                      './views/blueraven/commissionManagement/PayrollSummary.vue'
-                    )
+                      './views/blueraven/commissionManagement/payroll/PayrollSummary.vue'
+                      )
                 }
               ]
             },
@@ -2313,7 +2328,7 @@ const router = new Router({
               component: () =>
                 import(
                   './views/blueraven/commissionManagement/ResidualPlans.vue'
-                )
+                  )
             },
             {
               path: 'residualPlan/:id?',
@@ -2322,7 +2337,7 @@ const router = new Router({
               component: () =>
                 import(
                   './views/blueraven/commissionManagement/ResidualPlan.vue'
-                )
+                  )
             },
             {
               path: 'residuals',
@@ -2338,11 +2353,11 @@ const router = new Router({
               // component: () => import ( './views/blueraven/closerDashboard/CloserResiduals.vue')
               component: () => {
                 if (
-                  userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+                  userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADMIN')
                 ) {
                   return import(
                     './views/blueraven/closerDashboard/CloserResiduals.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -2355,7 +2370,7 @@ const router = new Router({
               component: () =>
                 import(
                   './views/blueraven/commissionManagement/ResidualSearch.vue'
-                )
+                  )
             },
             {
               path: 'residual/:id',
@@ -2364,7 +2379,7 @@ const router = new Router({
               component: () =>
                 import(
                   './views/blueraven/commissionManagement/ResidualReview.vue'
-                )
+                  )
             }
           ]
         },
@@ -2398,7 +2413,7 @@ const router = new Router({
                 if (userStore.userHasFeature('REBATES')) {
                   return import(
                     './views/blueraven/finances/rebate/ViewPayments.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -2412,7 +2427,7 @@ const router = new Router({
                 if (userStore.userHasFeature('REBATES')) {
                   return import(
                     './views/blueraven/finances/rebate/RebateDetails.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -2428,7 +2443,7 @@ const router = new Router({
             if (userStore.userHasFeature('ELECTRONIC_DOCUMENTS')) {
               return import(
                 './views/blueraven/electronicDocuments/ElectronicDocuments.vue'
-              )
+                )
             } else {
               return accessDenied()
             }
@@ -2440,7 +2455,7 @@ const router = new Router({
                 if (userStore.userHasFeature('ELECTRONIC_DOCUMENTS')) {
                   return import(
                     './views/blueraven/electronicDocuments/Request.vue'
-                  )
+                    )
                 } else {
                   return accessDenied()
                 }
@@ -2455,7 +2470,7 @@ const router = new Router({
           component: () =>
             import(
               './views/blueraven/installationAgreements/InstallationAgreements.vue'
-            ),
+              ),
           children: [
             {
               path: 'request',

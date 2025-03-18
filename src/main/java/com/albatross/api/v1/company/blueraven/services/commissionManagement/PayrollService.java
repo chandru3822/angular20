@@ -24,11 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.sql.DataSource;
 import jakarta.validation.constraints.NotNull;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -63,15 +59,27 @@ public class PayrollService {
     params.put("endDate", searchQuery.getEndDate());
     params.put("customerName", searchQuery.getCustomerName());
     params.put("salesRepId", searchQuery.getSalesRepId());
+    params.put("orgId", searchQuery.getSalesRepId());
     params.put("projectId", searchQuery.getProjectId());
 
     Optional<String> results;
     if (Objects.equals(searchQuery.getPositionId(), 1L)) {
       results =
         sqlCache.getBySql(PayrollQuery.searchClosers, params, new SingleColumnRowMapper<>(String.class));
-    }else {
-      results = sqlCache.getBySql(PayrollQuery.searchSetters, params, new SingleColumnRowMapper<>(String.class));
+    } else if (Objects.equals(searchQuery.getPositionId(), 4L)) {
+      results =
+        sqlCache.getBySql(PayrollQuery.searchSetters, params, new SingleColumnRowMapper<>(String.class));
+    }  else if (Objects.equals(searchQuery.getPositionId(), 743L)) {
+      results =
+        sqlCache.getBySql(PayrollQuery.searchDealers, params, new SingleColumnRowMapper<>(String.class));
+    } else if (Objects.equals(searchQuery.getPositionId(), 828L)) {
+      results =
+        sqlCache.getBySql(PayrollQuery.searchInstallationPartners, params, new SingleColumnRowMapper<>(String.class));
+    } else {
+      results =
+        sqlCache.getBySql(PayrollQuery.searchClosers, params, new SingleColumnRowMapper<>(String.class));
     }
+
     return results.orElse("[]");
   }
 
@@ -185,6 +193,7 @@ public class PayrollService {
     params.put("projectId", null);
     params.put("customerId", request.getCustomerId());
     params.put("salesRepId", request.getSalesRepId());
+    params.put("orgId", request.getOrgId());
     params.put("cancelStartDate", request.getCancelStartDate());
     params.put("cancelEndDate", request.getCancelEndDate());
     params.put("overridePlanId", request.getOverridePlanId());
@@ -201,13 +210,18 @@ public class PayrollService {
         sqlArrayService.createSqlArrayOfType("int", List.of(request.getProjectId())));
     }
 
-    Optional<String> bySql;
+    Optional<String> bySql = null;
     if (Objects.equals(request.getPositionId(),1L)){
       bySql =
         sqlCache.getBySql(PayrollQuery.getAccountReviewForClosers, params, new SingleColumnRowMapper<>(String.class));
-    } else {
-       bySql = sqlCache.getBySql(PayrollQuery.getAccountReviewForSetters, params, new SingleColumnRowMapper<>(String.class));
+    } else if (Objects.equals(request.getPositionId(),2L)){
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getAccountReviewForSetters, params, new SingleColumnRowMapper<>(String.class));
+    } else if(Objects.equals(request.getPositionId(),743L) || Objects.equals(request.getPositionId(),828L)) {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getAccountReviewForPartners, params, new SingleColumnRowMapper<>(String.class));
     }
+
     return bySql.orElse("[]");
   }
 
@@ -217,12 +231,24 @@ public class PayrollService {
     // todo:change the columns returned by the setter query
 
     Optional<String> bySql;
-    if (Objects.equals(positionId,1L)) {
+    if (positionId == 1) {
       bySql =
         sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForClosers, params, new SingleColumnRowMapper<>(String.class));
-    }else {
-      bySql = sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForSetters, params, new SingleColumnRowMapper<>(String.class));
+    } else if (positionId == 4) {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForSetters, params, new SingleColumnRowMapper<>(String.class));
+    } else if (positionId == 743) {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForPartners, params, new SingleColumnRowMapper<>(String.class));
+    } else if (positionId == 828) {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForPartners, params, new SingleColumnRowMapper<>(String.class));
+    } else {
+      bySql =
+        sqlCache.getBySql(PayrollQuery.getPayrollSearchDetailForClosers, params, new SingleColumnRowMapper<>(String.class));
     }
+
+
     return bySql.orElse("[]");
   }
 
@@ -309,28 +335,32 @@ public class PayrollService {
     return update != 0;
   }
 
-  public void addPayrollAdjustment(Long payrollId, PayrollAdjustmentRequest adjustmentRequest) {
+  public void addPayrollAdjustment(Long payrollId, PayrollAdjustmentRequest adjustmentRequest, Boolean isPartner) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("payrollId", payrollId);
     params.put("projectId", adjustmentRequest.getProjectId());
     params.put("userId", adjustmentRequest.getUserId());
+    params.put("orgId", adjustmentRequest.getOrgId());
     params.put("amount", adjustmentRequest.getAmount());
     params.put("note", adjustmentRequest.getNote());
     params.put("createdById", securityService.getCurrentUser().trueUserId());
     params.put("adjustmentTypeId", adjustmentRequest.getAdjustmentType().getId());
 
-    sqlCache.updateBySql(PayrollQuery.addCommissionAdjustment, params);
+    String sql = isPartner ? PayrollQuery.addCommissionAdjustmentPartner : PayrollQuery.addCommissionAdjustmentUser;
+    sqlCache.updateBySql(sql, params);
   }
 
-  public String getPayrollAdjustments(Long payrollId, Long projectId) {
+  public String getPayrollAdjustments(Long payrollId, Long projectId, Boolean isPartner) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("payrollId", payrollId);
     params.put("projectId", projectId);
 
+    String sql = isPartner ? PayrollQuery.getPartnerCommissionAdjustments : PayrollQuery.getCommissionAdjustments;
+
     Optional<String> adjustmentsOpt =
       sqlCache.getBySql(
-        PayrollQuery.getCommissionAdjustments, params, new SingleColumnRowMapper<>(String.class));
+        sql, params, new SingleColumnRowMapper<>(String.class));
     return adjustmentsOpt.orElse("[]");
   }
 
@@ -363,7 +393,7 @@ public class PayrollService {
 
   @Data
   public static class PayrollAdjustmentRequest {
-    private Long projectId, userId;
+    private Long projectId, userId, orgId;
     private Double amount;
     private String note;
 
