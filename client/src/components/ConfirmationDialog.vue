@@ -3,7 +3,7 @@
       class="confirmation-dialog"
       v-model="show"
       :retain-focus="retainFocus"
-      :width="width || 500"
+      :width="fullSize ? '100%' : (width || 500)"
       @click:outside="no"
       id = "dialogBox"
       ref="dialogBox"
@@ -82,6 +82,7 @@ const props = defineProps({
   confirmLoading:Boolean,
   confirmClass: String, //allows parent to control appearance of confirmation btn
   width: Number, //width of the dialog
+  fullSize: Boolean, //if the dialog is the full screensize; overrides width property
   parentClose: Boolean, //set to true when validation needed before closing a dialog on confirm
   primaryHeader: Boolean, //if set to true, header will have primary color background and white text instead of vice versa
 })
