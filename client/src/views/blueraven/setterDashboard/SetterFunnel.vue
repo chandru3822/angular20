@@ -578,10 +578,10 @@
                 </span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcFirstDateRange, 1)}}</span>
+              <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcFirstDateRange, 1)}}</span>
               <span
-                v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownTrendText(fdcFirstDateRange, 1)}}</span>
             </v-tooltip>
           </template>
 
@@ -606,11 +606,11 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcSecondDateRange, 2)}}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcSecondDateRange, 2)}}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcSecondDateRange, 2)}}</span>
             </v-tooltip>
           </template>
           <template #item.actualTotal3="{item, index}" class="milestone-col-td"
@@ -634,11 +634,11 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcThirdDateRange, 3)}}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcThirdDateRange, 3)}}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcThirdDateRange, 3)}}</span>
             </v-tooltip>
           </template>
           <template #item.actualTotal4="{item, index}" class="milestone-col-td"
@@ -662,11 +662,11 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcFourthDateRange, 4)}}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcFourthDateRange, 4)}}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count ===null || fdcColumn4Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count ===null || fdcColumn4Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcFourthDateRange, 4)}}</span>
             </v-tooltip>
           </template>
         </v-data-table>
@@ -2066,6 +2066,7 @@ const getDropdownValues = async() => {
     }
 
     const {data, status} = await getRequestWithParams('/setterDashboard/dropdownValues', {params}, 'blueraven', [])
+    // Rearanging the menu here
     dropdownValues.value = data;
     isLoading.value = false
     handleHidingGlobalLoader( status)
@@ -2382,9 +2383,34 @@ const changeDropdownSelection = async(dropdown) => {
     await upcomingAppointmentsLoad(3);
   }
 }
+
 const getDropdownById = (id) => {
   return dropdownValues.value.find(x => x.id === id)
 }
+
+const getDropdownTrendText = (id, columnNum) => {
+  // Handle Custom case
+  if (id === 12) {
+    const customObjects = {
+      1: fdcFirstCustom.value,
+      2: fdcSecondCustom.value,
+      3: fdcThirdCustom.value,
+      4: fdcFourthCustom.value
+    };
+
+    // Get the appropriate custom object based on column number
+    const customObj = customObjects[columnNum];
+
+    // Return formatted date range if the custom object exists
+    if (customObj) {
+      return `${moment(customObj.trendStart).format('MM/DD/YYYY')} - ${moment(customObj.trendEnd).format('MM/DD/YYYY')}`;
+    }
+  }
+
+  // Return trend text for non-custom dropdown values
+  return dropdownValues.value.find(x => x.id === id).trendText;
+};
+
 const exportDrilldownCsv = () => {
   let csv = ''
 
@@ -2842,7 +2868,7 @@ const funnelAllRepsUpcomingAppointments = async() => {
 
 const applyCustomDates = async()=> {
   if(customTable.value === 'apptsCreated') {
-    if (clastColumnSelected.value === 1) {
+    if (lastColumnSelected.value === 1) {
       firstCustom.value.startDate = moment(customDate.value.startDate);
       firstCustom.value.endDate = moment(customDate.value.endDate);
       let dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days');
@@ -2888,6 +2914,7 @@ const applyCustomDates = async()=> {
       let dateDiff = fdcFirstCustom.value.endDate.diff(fdcFirstCustom.value.startDate, 'days');
       fdcFirstCustom.value.trendEnd = fdcFirstCustom.value.startDate.clone().subtract(1, 'days');
       fdcFirstCustom.value.trendStart = fdcFirstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+
       getDropdownById(fdcFirstDateRange.value).trendText = moment(fdcFirstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFirstCustom.value.trendEnd).format('MM/DD/YYYY');
       fdcFirstCustom.value.name = moment(fdcFirstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFirstCustom.value.endDate).format('MM/DD/YY');
     }
