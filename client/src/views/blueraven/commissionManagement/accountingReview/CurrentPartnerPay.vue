@@ -245,7 +245,7 @@
     getRequest,
     postRequest,
     getRequestWithParams,
-    formatOrDash,
+    formatOrDash
   } from '@/helpers/helpers.js'
   import constants from "@/helpers/constants.js";
   import sumBy from "lodash.sumby";

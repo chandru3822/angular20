@@ -383,3 +383,121 @@ export function canRestoreDBEntry(entryList, entryItem) {
   }
   return false
 }
+
+/**
+ * Format a value for display - returns "-" for empty/null/undefined values
+ * @param {*} value - The value to format
+ * @param {Function} formatter - Optional formatter function to apply if value exists
+ * @returns {string} Formatted value or "-" for empty values
+ */
+export const formatEmptyValue = (value, formatter = null) => {
+  if (value === null || value === undefined || value === '') {
+    return '-'
+  }
+
+  return formatter ? formatter(value) : value
+}
+
+/**
+ * Format a value for display - returns "-" for empty/null/undefined values
+ * @param {*} value - The value to format
+ * @returns {string} The value or "-" if empty
+ */
+export const formatOrDash = (value) => {
+  return value !== null && value !== undefined && value !== '' ? value : '-';
+};
+
+/**
+ * Format currency with fallback for empty values
+ * @param {number} value - The currency value
+ * @param {string} symbol - Currency symbol
+ * @param {number} decimals - Number of decimal places
+ * @returns {string} Formatted currency or "-" for empty values
+ */
+export const formatCurrencyOrDash = (value, symbol = '$', decimals = 2) => {
+  if (value === null || value === undefined) {
+    return '-';
+  }
+
+  // Format currency directly without using filters
+  const numValue = parseFloat(value);
+  if (isNaN(numValue)) {
+    return '-';
+  }
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+
+  // For non-USD currencies, replace the $ with the requested symbol
+  return formatter.format(numValue).replace('$', symbol);
+};
+
+/**
+ * Format date with fallback for empty values
+ * @param {string} value - The date value
+ * @param {string} format - Simple format type: 'date', 'datetime', or 'time'
+ * @returns {string} Formatted date or "-" for empty values
+ */
+export const formatDateOrDash = (value, format = 'date') => {
+  if (!value) {
+    return '-';
+  }
+
+  try {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      return '-';
+    }
+
+    const options = {};
+
+    if (format === 'date' || format === 'datetime') {
+      options.year = 'numeric';
+      options.month = 'short';
+      options.day = 'numeric';
+    }
+
+    if (format === 'time' || format === 'datetime') {
+      options.hour = '2-digit';
+      options.minute = '2-digit';
+    }
+
+    return date.toLocaleDateString('en-US', options);
+  } catch (e) {
+    console.error('Date formatting error:', e);
+    return '-';
+  }
+};
+
+/**
+ * Format a number with fallback for empty values
+ * @param {number} value - The numeric value
+ * @param {number} decimals - Number of decimal places
+ * @returns {string} Formatted number or "-" for empty values
+ */
+export const formatNumberOrDash = (value, decimals = 0) => {
+  if (value === null || value === undefined) {
+    return '-';
+  }
+
+  const numValue = parseFloat(value);
+  if (isNaN(numValue)) {
+    return '-';
+  }
+
+  return numValue.toFixed(decimals);
+};
+
+export const formatCurrencyWithDefault = (value, currencySymbol = '$', decimals = 2) => {
+  // Return $0.00 for null, undefined, or 0 values
+  if (value === null || value === undefined || value === 0) {
+    return `${currencySymbol}0.00`;
+  }
+
+  // Format the number with proper decimal places
+  return `${currencySymbol}${parseFloat(value).toFixed(decimals)}`;
+}
