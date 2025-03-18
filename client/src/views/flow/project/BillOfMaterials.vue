@@ -18,6 +18,7 @@ import cloneDeep from "lodash.clonedeep";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import BillOfMaterialsEditView from "@/views/flow/project/BillOfMaterialsEditView.vue";
 import VueClamp from 'vue-clamp'
+import BillofMaterialsExportDialog from "@/views/flow/project/BillofMaterialsExportDialog.vue";
 
 
 
@@ -37,6 +38,7 @@ const partsMasterParts = ref([])
 const editMode = ref(false)
 const addPart = ref(false)
 const duplicatedPart = ref(false)
+const showExportDialog = ref(false)
 
 
 
@@ -143,13 +145,13 @@ const afterSave = ($event) => {
 
 }
 
-const exportPdf = async () => {
+const exportPdf = async ($event) => {
   try {
     appStore.loading = true
     const { data, headers } = await apiRequest('blueraven', {
       method: 'post',
       url: `/bom/${projectId.value}/pdf`,
-      data: bomParts.value,
+      data: $event,
       responseType: 'blob'
     })
     const filename = 'bom'
@@ -167,8 +169,12 @@ const exportPdf = async () => {
         URL.revokeObjectURL(pdfFile)
       }, 100)
 
+      showExportDialog.value = false
       appStore.showSnack('SUCCESS', 'Materials List Downloaded')
     }
+  } catch (e) {
+    logError(e)
+    appStore.showSnack('ERROR', 'Error Downloading Pdf')
   } finally {
     appStore.loading = false
   }
@@ -190,7 +196,7 @@ const exportPdf = async () => {
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <div>
-            <a-btn prepend-icon="mdi-list-box-outline" text="Export Material List" :disabled="editMode" @click="exportPdf"></a-btn>
+            <a-btn prepend-icon="mdi-list-box-outline" text="Export Material List" :disabled="editMode" @click="showExportDialog = true"></a-btn>
           </div>
         </v-toolbar>
       </div>
@@ -321,6 +327,10 @@ const exportPdf = async () => {
       </template>
       <template v-slot:yes>Okay</template>
     </ConfirmationDialog>
+    <BillofMaterialsExportDialog :openDialog="showExportDialog"
+                                 :bomParts="bomParts" :headers="headers"
+                                 @download="exportPdf" @close="showExportDialog = false"
+    />
   </div>
 </template>
 

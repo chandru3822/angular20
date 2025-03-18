@@ -169,7 +169,7 @@
 
             <div class="label">Address</div>
             <div class="field-value">
-                <#list shipToAddress?split("\n") as line>${line}<br/></#list>
+                ${shipToAddress?no_esc}
             </div>
 
             <div class="label">Phone Number</div>
