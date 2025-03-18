@@ -121,7 +121,7 @@ public class BlueravenPartsMasterVersionController {
   }
 
   @GetMapping(value = "/types")
-  @PreAuthorize("hasFeatureAccessLevel('PARTS_MASTER_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PARTS_MASTER_ADMIN') or hasFeatureAccessLevel('BILL_OF_MATERIALS_VIEW')")
   public List<PartsMasterObjectType> getPartsMasterObjectTypes() {
     return partsMasterVersionService.getPartsMasterTypes();
   }

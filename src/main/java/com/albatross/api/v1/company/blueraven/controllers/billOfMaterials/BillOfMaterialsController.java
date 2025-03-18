@@ -28,6 +28,7 @@ public class BillOfMaterialsController {
 
 
     @PostMapping(value="/{projectId}/parts")
+    @PreAuthorize("hasFeatureAccessLevel('BILL_OF_MATERIALS_EDIT')")
     public List<BillOfMaterialsPart> upsertBomParts(
             @PathVariable Long projectId,
             @RequestBody List<BillOfMaterialsPart> parts
@@ -36,6 +37,7 @@ public class BillOfMaterialsController {
     }
 
     @GetMapping(value="/{projectId}")
+    @PreAuthorize("hasFeatureAccessLevel('BILL_OF_MATERIALS_VIEW')")
     public List<BillOfMaterialsPart> getBomByTypeForProject(
             @PathVariable Long projectId
     ){
@@ -43,6 +45,7 @@ public class BillOfMaterialsController {
     }
 
     @DeleteMapping(value="/{projectId}")
+    @PreAuthorize("hasFeatureAccessLevel('BILL_OF_MATERIALS_EDIT')")
     public void deleteBillOfMaterialsAllParts(@PathVariable Long projectId){
         billOfMaterialsService.deleteBillOfMaterialsAllParts(projectId);
     }

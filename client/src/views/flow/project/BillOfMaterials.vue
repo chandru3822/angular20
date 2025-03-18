@@ -196,7 +196,7 @@ const exportPdf = async ($event) => {
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <div>
-            <a-btn prepend-icon="mdi-list-box-outline" text="Export Material List" :disabled="editMode" @click="showExportDialog = true"></a-btn>
+            <a-btn v-if="userCanEdit" prepend-icon="mdi-list-box-outline" text="Export Material List" :disabled="editMode" @click="showExportDialog = true"></a-btn>
           </div>
         </v-toolbar>
       </div>
