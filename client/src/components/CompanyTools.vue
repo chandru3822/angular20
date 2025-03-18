@@ -92,111 +92,111 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
-import SpinnerInline from '@/components/SpinnerInline'
-import { getRequest,  } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
+  import SpinnerInline from '@/components/SpinnerInline'
+  import { getRequest } from '@/helpers/helpers'
+  import { getCurrentInstance, toRefs, ref, onMounted } from 'vue'
+  import { useAppStore } from '@/stores/AppStore.js'
 
+  const appStore = useAppStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStore.js'
+  const props = defineProps({
+    companyTools: Array,
+    isMobile: Boolean
 
-const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+  })
+  const { companyTools, isMobile } = toRefs(props)
 
-const props = defineProps({
-  companyTools: Array,
-  isMobile: Boolean
+  const tournaments = ref([])
+  const tourneysLoading = ref(false)
+  // const loadComplete = ref(false)
+  const mutableCompanyTools = ref(companyTools.value)
+  const headerColor = ref(constants.ENV_COLOR)
+  const menuOpen = ref(false)
+  // const databaseLoaded = ref(false)
+  const databaseOptions = ref([])
+  const databasePaths = ref([])
 
-})
-const { companyTools, isMobile } = toRefs(props)
+  onMounted(() => {
+    filterForParents();
+  })
 
-const tournaments = ref([])
-const tourneysLoading = ref(false)
-const loadComplete = ref(false)
-const mutableCompanyTools = ref(companyTools.value)
-const headerColor = ref(constants.ENV_COLOR)
-const menuOpen = ref(false)
-const databaseLoaded = ref(false)
-const databaseOptions = ref([])
-const databasePaths = ref([])
-
-onMounted(() => {
-  filterForParents();
-})
-
-const closeMenu = (item) => {
-  if(item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASES') {
-    menuOpen.value = false
+  const closeMenu = (item) => {
+    if(item.featureCode !== 'TOURNAMENTS' && item.featureCode !== 'DATABASES') {
+      menuOpen.value = false
+    }
   }
-}
-const loadBrsTournaments = async() => {
-  tourneysLoading.value = true
-  try {
-    const {data} = await getRequest('/tournament/active', 'blueraven')
-    tournaments.value = data
-    tourneysLoading.value = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Loading Tournaments')
-    tourneysLoading.value = false
+  const loadBrsTournaments = async() => {
+    tourneysLoading.value = true
+    try {
+      const {data} = await getRequest('/tournament/active', 'blueraven')
+      tournaments.value = data
+      tourneysLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Loading Tournaments')
+      tourneysLoading.value = false
+    }
   }
-}
-const loadDatabaseOptions = async(index) => {
-  databaseOptions.value = mutableCompanyTools.value[index].childNames.slice().reverse();
-  databasePaths.value = mutableCompanyTools.value[index].childPaths.slice().reverse();
-}
-const filterForParents = async() => {
-  appStore.loading = true
-  let filteredTools = companyTools.value.slice().reverse();
-  let lastName = " ";
-  companyTools.value?.slice().reverse().forEach(
-      x => {
-        if (x.featureName == lastName) {
-          filteredTools.splice(filteredTools.indexOf(x), 1);
+  const loadDatabaseOptions = async(index) => {
+    databaseOptions.value = mutableCompanyTools.value[index].childNames.slice().reverse();
+    databasePaths.value = mutableCompanyTools.value[index].childPaths.slice().reverse();
+  }
+
+  const filterForParents = async() => {
+    appStore.loading = true
+    let filteredTools = [];
+    let lastName = " ";
+    let hasCommissions = false;
+    companyTools.value?.slice().reverse().forEach(x => {
+      if (x.featureName !== lastName) {
+        if (["Commissions - Closer", "Commissions - Setter", "Commissions - Installation Partner", "Commissions - Dealer"].includes(x.featureName)) {
+          if (!hasCommissions) {
+            x.featureName = "Commissions";
+            filteredTools.push(x);
+            hasCommissions = true;
+          }
+        } else {
+          filteredTools.push(x);
         }
         lastName = x.featureName;
       }
-  )
-  mutableCompanyTools.value = filteredTools.reverse();
-  appStore.loading = false
-}
+    });
+    mutableCompanyTools.value = filteredTools.reverse();
+    appStore.loading = false
+  }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
+  h3 {
+    margin: 40px 0 0;
+  }
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  li {
+    display: inline-block;
+    margin: 0 10px;
+  }
 
-.v-list .v-list-item--active{
-  color:var(--v-anchor-base);
-  background-color: var(--v-primary-lighten9);
-}
-.account-menu-button{
-  text-transform: capitalize;
-  box-shadow: none !important;
-  -webkit-box-shadow: none !important;
-  border: none !important;
-}
-.fake-inactive {
-  opacity: .6;
-}
-.mobile-tools-button {
-  padding-left: 8px !important;
-  padding-right: 4px !important;
-}
+  .v-list .v-list-item--active{
+    color:var(--v-anchor-base);
+    background-color: var(--v-primary-lighten9);
+  }
+  .account-menu-button{
+    text-transform: capitalize;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    border: none !important;
+  }
+  .fake-inactive {
+    opacity: .6;
+  }
+  .mobile-tools-button {
+    padding-left: 8px !important;
+    padding-right: 4px !important;
+  }
 </style>

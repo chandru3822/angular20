@@ -1,0 +1,473 @@
+<template>
+  <v-container class="pa-0">
+    <v-row>
+      <v-col>
+        <v-toolbar flat :color="payrollStatus.color">
+          <v-toolbar-title :style="{'color': payrollStatus.textColor}">
+            {{ payrollStatus.message }}
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <div class="commission-button-container">
+
+            </div>
+          </v-toolbar-items>
+        </v-toolbar>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="6">
+        <table>
+          <tr>
+            <td class="text-left pr-3"><strong>Payroll ID #</strong></td>
+            <td class="text-left">{{payroll.id}}</td>
+          </tr>
+          <tr>
+            <td class="text-left pr-3"><strong>Payroll Ending</strong></td>
+            <td class="text-left">{{payroll.periodEnd | formatDate('date')}}</td>
+          </tr>
+          <tr>
+            <td class="text-left pr-3"><strong>Description</strong></td>
+            <td class="text-left">{{payroll.description}}</td>
+          </tr>
+          <tr v-for="(hx, idx) in payroll.history" :key="idx">
+            <td class="text-left pr-3"><strong>{{hx.actionType}}</strong></td>
+            <td class="text-left">{{hx.actionUser}} - {{hx.actionDate | formatDate('date')}}</td>
+          </tr>
+        </table>
+      </v-col>
+      <v-col cols="6" class="text-right">
+        <a-btn
+          color="primary"
+          @click="exportPayrollReview"
+          text="Export"
+        ></a-btn>
+      </v-col>
+    </v-row>
+    <v-divider></v-divider>
+    <v-row>
+      <v-col>
+        <v-data-table
+          :headers="headers"
+          :items="payrollSnapshot"
+          :fixed-header="true"
+          disable-sort
+          :loading="dataLoading"
+          :items-per-page="25"
+          :footer-props="footerProps"
+          class="elevation-1"
+        >
+          <template #no-data>
+            No available snapshot data
+          </template>
+
+          <template #no-results>
+            No available snapshot data
+          </template>
+
+          <template v-slot:item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{ formatOrDash(item.projectId) }}</td>
+              <td class="text-left">{{ formatOrDash(item.customerName) }}</td>
+              <td class="text-left">{{ formatOrDash(item.systemSize) }}</td>
+              <td class="text-left">{{ formatOrDash(item.panelQuantity) }}</td>
+              <td class="text-left">{{ formatOrDash(item.partnerOrgName) }}</td>
+              <td class="text-left">{{ formatOrDash(item.partnerOrgId) }}</td>
+              <td class="text-left">{{ formatOrDash(item[milestone1Field]) }}</td>
+              <td class="text-left">{{ formatOrDash(item[milestone2Field]) }}</td>
+              <td class="text-left">{{ formatOrDash(item.commissionPlan) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.baseCommission, '$', 2) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.customAdderAmount, '$', 2) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.selectedAdderAmount, '$', 2) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.totalCommissions, '$', 2) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.commissionsEarned, '$', 2) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.commissionPaidToDate, '$', 2) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.currentPayCommissions, '$', 2) }}</td>
+              <td class="text-left">{{ formatCurrencyFn(item.remainingValueCommissions, '$', 2) }}</td>
+            </tr>
+          </template>
+
+          <template v-slot:body.append="{ partnerHeaders }">
+            <tr>
+              <td v-for="(header, i) in partnerHeaders" :key="i" class="font-weight-bold">
+              </td>
+            </tr>
+          </template>
+
+        </v-data-table>
+      </v-col>
+    </v-row>
+
+  </v-container>
+</template>
+
+<script setup>
+
+  import { saveAs } from 'file-saver'
+  import constants from "@/helpers/constants.js";
+  import { formatOrDash } from '@/helpers/helpers.js'
+  import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers.js'
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import { useRoute, useRouter } from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStore.js'
+  import { useBrsStore } from '@/stores/BrsStore.js'
+  import { storeToRefs } from 'pinia'
+
+  const brsStore = useBrsStore()
+  const { commissionPositionId } = storeToRefs(brsStore)
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+
+  const payroll = ref({})
+  const dataLoading = ref(false)
+  const payrollSnapshot = ref([])
+  const footerProps = ref({
+    'items-per-page-options': [25, 50, 100, 500],
+    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+  })
+  const payrollSummary = ref([])
+  const payrollStatus = ref({})
+  const positionId = ref(commissionPositionId)
+  const payrollId = ref(route.params.id)
+  const closerHeaders = ref([
+    {text: 'Project ID', value: 'projectId', show: true},
+    {text: 'Customer Name', value: 'customerName', show: true},
+    {text: 'System Size (kW)', value: 'systemSize', show: true},
+    {text: 'Sales Rep', value: 'salesRep', show: true},
+    {text: 'Source', value: 'source', show: true},
+    {text: 'Stage', value: 'stage', show: true},
+    {text: 'Cancelled', value: 'cancelled', show: true},
+    {text: 'IAS', value: 'installAgreementSigned', show: true},
+    {text: 'FDS', value: 'finalDesignSigned', show: true},
+    {text: 'FAS', value: 'financialAgreementSent', show: true},
+    {text: '$/% Dep', value: 'percentOfCashDeposit', show: true},
+    {text: 'SC', value: 'sc', show: true},
+    {text: 'Commission Plan', value: 'commissionPlan', show: true},
+    {text: 'Commission Strategy', value: 'commissionStrategyName', show: true},
+    {text: 'Commissions Earned', value: 'commissionsEarned', show: true},
+    {text: 'Commissions Paid To Date', value: 'commissionPaidToDate', show: true},
+    {text: 'Commission Forfeited Paid to Date', value: 'commissionForfeitedPaidToDate', show: true},
+    {text: 'Commission Forfeited by Closer', value: 'commissionForfeitedByCloser', show: true},
+    {text: 'Forfeited Amount', value: 'forfeitedAmount', show: true},
+    {text: 'Adjustment', value: 'commissionAdjustment', show: true},
+    {text: 'Commission Pay', value: 'currentPayCommissions', show: true},
+    {text: 'Remaining Value Commissions', value: 'remainingValueCommissions', show: true},
+    {text: 'Override Plan', value: 'overridePlan', show: true},
+    {text: 'Override Earned', value: 'overrideEarned', show: true},
+    {text: 'Overrides Paid to Date', value: 'overridesPaidToDate', show: true},
+    {text: 'Override Pay', value: 'currentPayOverrides', show: true},
+    {text: 'Remaining Value Overrides', value: 'remainingValueOverrides', show: true},
+    {text: 'Current Pay', value: 'currentPay', show: true},
+  ])
+  const setterHeaders = ref([
+    {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'Customer Name', value: 'project_name', show: true},
+    {text: 'Setter', value: 'sales_rep', show: true},
+    {text: 'Current Pay', value: 'current_pay', show: true},
+    {text: 'Source', value: 'source_name', show: true},
+    {text: 'Cancelled', value: 'cancelled_date', show: true},
+    {text: 'Appointment Date', value: 'closer_appointment_start', show: true},
+    {text: 'Appointment Outcome', value: 'closer_appointment_outcome', show: true},
+    {text: 'Commission Plan', value: 'commission_plan', show: true},
+    {text: 'Commissions Earned', value: 'commissions_earned', show: true},
+    {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
+    {text: 'Adjustment', value: 'commission_adjustment', width: 150, show: true},
+    {text: 'Commission Pay', value: 'current_pay_commissions', show: true},
+    {text: 'Override Plan', value: 'override_plan', show: true},
+    {text: 'Override Earned', value: 'override_earned', show: true},
+    {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
+    {text: 'Override Pay', value: 'current_pay_overrides', show: true},
+  ])
+
+  const milestone1Field = computed(() => {
+    return commissionPositionId.value === 828 ? 'sc' : 'finalDesignCompleteDate'
+  });
+
+  const milestone2Field = computed(() => {
+    return commissionPositionId.value === 828 ? 'ahjFinalInspectionVerified' : 'sc';
+  });
+
+  const partnerHeaders = ref([
+    { text: 'Project ID', value: 'projectId', show: true },
+    { text: 'Customer Name', value: 'customerName', show: true },
+    { text: 'System Size (kW)', value: 'systemSize', show: true },
+    { text: 'Panel Quantity', value: 'panelQuantity', show: true },
+    { text: 'Org Name', value: 'partnerOrgName', show: true },
+    { text: 'Org ID', value: 'partnerOrgId', show: true },
+    { text: 'Milestone 1 Date', value: 'milestone1', show: true },
+    { text: 'Milestone 2 Date', value: 'milestone2', show: true },
+    { text: 'Commission Plan', value: 'commissionPlan', width: 300, show: true },
+    { text: 'Base Commission', value: 'baseCommission', show: true },
+    { text: 'Custom Adders', value: 'customAdderAmount', show: true },
+    { text: 'Selected Adders', value: 'selectedAdderAmount', show: true },
+    { text: 'Total Commissions', value: 'totalCommissions', show: true },
+    { text: 'Commission Earned', value: 'commissionsEarned', show: true },
+    { text: 'Commission Paid to Date', value: 'commissionPaidToDate', show: true },
+    { text: 'Commission Pay', value: 'currentPayCommissions', show: true },
+    { text: 'Remaining Commission Value', value: 'remainingValueCommissions', show: true },
+  ])
+
+  onMounted(() => {
+    getPayroll()
+    getPayrollSnapshot()
+  })
+
+  watch(commissionPositionId, async() => {
+    // position change redirects back to main payroll page
+    await router.push('/commissionManagement/payroll')
+  })
+
+  const headers = computed(() => {
+    if (commissionPositionId.value === 743 || commissionPositionId.value === 828) {
+      return partnerHeaders.value
+    } else if (commissionPositionId.value === 4) {
+      return setterHeaders.value
+    } else {
+      return closerHeaders.value
+    }
+  })
+
+  const getPayroll = async() => {
+    appStore.loading = true
+    try {
+      const { data, status } = await getRequest(`/payroll/${payrollId.value}`, 'blueraven')
+      payroll.value = data
+      populateStatusDetails()
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Payroll Details')
+
+      appStore.loading = false
+    }
+  }
+  const getPayrollSnapshot = async() => {
+    appStore.loading = true
+    dataLoading.value = true
+    try {
+      const {data, status} = await getRequest(`/payroll/${payrollId.value}/snapshot/${positionId.value}`, 'blueraven')
+      dataLoading.value = false
+      payrollSnapshot.value = data
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Payroll Snapshot')
+
+      appStore.loading = false
+    }
+  }
+  const viewSummary = async() => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/payroll/${payrollId.value}/summary`, 'blueraven')
+      payrollSummary.value = data
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Payroll Summary')
+
+      appStore.loading = false
+    }
+  }
+  const populateStatusDetails = () => {
+    switch(payroll.value.status) {
+      case 'PENDING':
+        payrollStatus.value.message = 'This payroll is pending.'
+        payrollStatus.value.color = 'primary'
+        payrollStatus.value.textColor = 'white'
+        break
+      case 'APPROVED':
+        payrollStatus.value.message = 'This payroll has been Approved for Pay.'
+        payrollStatus.value.color = 'success'
+        payrollStatus.value.textColor = 'white'
+        break
+      case 'SUBMITTED':
+        payrollStatus.value.message = 'This payroll has been Submitted for Approval.'
+        payrollStatus.value.color = '#DCDCDC'
+        break
+      case 'REJECTED':
+        payrollStatus.value.message = 'This payroll has been Rejected.'
+        payrollStatus.value.color = 'error'
+        payrollStatus.value.textColor = 'white'
+        break
+      default:
+        payrollStatus.value = {}
+    }
+  }
+
+  const formatCurrencyFn = (value, currencySymbol = '$', decimals = 2) => {
+    // Return $0.00 for null, undefined, or 0 values
+    if (value === null || value === undefined || value === 0) {
+      return `${currencySymbol}0.00`;
+    }
+
+    // Format the number with proper decimal places
+    return `${currencySymbol}${parseFloat(value).toFixed(decimals)}`;
+  }
+
+  const exportPayrollReview = async () => {
+    appStore.loading = true
+    try {
+      let filename = 'Payroll Review.csv'
+      let csvData = ''
+
+      if (payroll.value.positionId === 1) {
+        csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commission Strategy,Commissions Earned,Commissions Paid To Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
+        csvData += '\n'
+
+        payrollSnapshot.value.forEach(p => {
+          csvData +=
+            p.projectId + ',' +
+            '"' + p.customerName + '",' +
+            p.systemSize + ',' +
+            '"' + p.salesRep + '",' +
+            '"' + p.source + '",' +
+            '"' + p.stage + '",' +
+            p.cancelled + ',' +
+            p.installAgreementSigned + ',' +
+            p.finalDesignSigned + ',' +
+            p.financialAgreementSent + ',' +
+            p.percentOfCashDeposit + ',"' +
+            p.sc + '","' +
+            p.commissionPlan + '",' +
+            p.commissionStrategyName + '",' +
+            p.commissionsEarned + ',' +
+            p.commissionPaidToDate + ',' +
+            p.commissionForfeitedPaidToDate + ',' +
+            p.commissionForfeitedByCloser + ',' +
+            p.forfeitedAmount + ',' +
+            p.commissionAdjustment + ',' +
+            p.currentPayCommissions + ',' +
+            p.remainingValueCommissions + ',' +
+            p.overridePlan + ',' +
+            p.overrideEarned + ',' +
+            p.overridesPaidToDate + ',' +
+            p.currentPayOverrides + ',' +
+            p.remainingValueOverrides + ',' +
+            p.currentPay
+          csvData += '\n';
+        })
+      } else if (payroll.value.positionId === 4) {
+        csvData += 'Project ID,Customer Name,Setter,Current Pay,Source,Cancelled,Appointment Date,Appointment Outcome,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Override Plan,Override Earned,Overrides Paid to Date,Override Pay'
+        csvData += '\n'
+
+        payrollSnapshot.value.forEach(p => {
+          csvData +=
+            p.project_id + ',' +
+            p.project_name + ',' +
+            p.sales_rep + ',' +
+            p.current_pay + ',' +
+            p.source_name + ',' +
+            p.cancelled + ',' +
+            p.closer_appointment_start + ',' +
+            p.closer_appointment_outcome + ',' +
+            p.commission_plan + ',' +
+            p.commissions_earned + ',' +
+            p.commission_paid_to_date + ',' +
+            p.commission_forfeited_paid_to_date + ',' +
+            p.commission_forfeited_by_closer + ',' +
+            p.commission_adjustment + ',' +
+            p.current_pay_commissions + ',' +
+            p.override_plan + ',' +
+            p.override_earned + ',' +
+            p.overrides_paid_to_date + ',' +
+            p.current_pay_overrides
+          csvData += '\n';
+        })
+      } else if (payroll.value.positionId === 743 || payroll.value.positionId === 828) {
+        // Format currency values with $0.00 instead if returns `0`
+        const formatCurrencyForCSV = (value) => {
+          if (value === 0) {
+            return '$0.00'
+          }
+          let curVal;
+          if (typeof (value) === 'string') {
+            curVal = parseFloat(value).toFixed(2);
+          } else if (typeof (value) === 'number') {
+            curVal = value.toFixed(2);
+          } else {
+            return '-'
+          }
+          return `$${curVal}`
+        };
+
+        csvData = 'Project ID,Customer Name,System Size (kW),Panel Quantity,Org Name,Org ID,Milestone 1 Date,Milestone 2 Date,Commission Plan,Base Commission,Custom Adders,Selected Adders,Total Commissions,Commission Earned,Commission Paid to Date,Commission Pay,Remaining Commission Value'
+        csvData += '\n'
+        payrollSnapshot.value.forEach(p => {
+          csvData +=
+            (p.projectId || '-') + ',' +
+            (p.customerName || '-') + ',' +
+            (p.systemSize || '-') + ',' +
+            (p.panelQuantity || '-') + ',' +
+            (p.partnerOrgName || '-') + ',' +
+            (p.orgId || '-') + ',' +
+            (p[milestone1Field.value] || '-') + ',' +
+            (p[milestone2Field.value] || '-') + ',' +
+            (p.commissionPlan || '-') + ',' +
+            formatCurrencyForCSV(p.baseCommission) + ',' +
+            formatCurrencyForCSV(p.customAdderAmount) + ',' +
+            formatCurrencyForCSV(p.selectedAdderAmount) + ',' +
+            formatCurrencyForCSV(p.totalCommissions) + ',' +
+            formatCurrencyForCSV(p.commissionsEarned) + ',' +
+            formatCurrencyForCSV(p.commissionPaidToDate) + ',' +
+            formatCurrencyForCSV(p.currentPayCommissions) + ',' +
+            formatCurrencyForCSV(p.remainingValueCommissions)
+          csvData += '\n'
+        })
+      } else {
+        csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commission Strategy,Commissions Earned,Commissions Paid To Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
+        csvData += '\n'
+
+        payrollSnapshot.value.forEach(p => {
+          csvData +=
+            p.projectId + ',' +
+            '"' + p.customerName + '",' +
+            p.systemSize + ',' +
+            '"' + p.salesRep + '",' +
+            '"' + p.source + '",' +
+            '"' + p.stage + '",' +
+            p.cancelled + ',' +
+            p.installAgreementSigned + ',' +
+            p.finalDesignSigned + ',' +
+            p.financialAgreementSent + ',' +
+            p.percentOfCashDeposit + ',"' +
+            p.sc + '","' +
+            p.commissionPlan + '",' +
+            p.commissionStrategyName + '",' +
+            p.commissionsEarned + ',' +
+            p.commissionPaidToDate + ',' +
+            p.commissionForfeitedPaidToDate + ',' +
+            p.commissionForfeitedByCloser + ',' +
+            p.forfeitedAmount + ',' +
+            p.commissionAdjustment + ',' +
+            p.currentPayCommissions + ',' +
+            p.remainingValueCommissions + ',' +
+            p.overridePlan + ',' +
+            p.overrideEarned + ',' +
+            p.overridesPaidToDate + ',' +
+            p.currentPayOverrides + ',' +
+            p.remainingValueOverrides + ',' +
+            p.currentPay
+          csvData += '\n';
+        })
+      }
+
+
+      let blob = new Blob([csvData], {
+        type: 'text/csv;charset=utf-8'
+      });
+
+      saveAs(blob, filename);
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Exporting Payroll Review')
+
+      appStore.loading = false
+    }
+  }
+</script>

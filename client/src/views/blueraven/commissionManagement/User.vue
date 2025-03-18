@@ -24,12 +24,12 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
-                variant="text"
-                color="primary"
-                v-if="userCanAdd"
-                @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]"
-                :prepend-icon="addNewCommissionPlan ? 'remove' : 'add'"
-            ></a-btn>
+              variant="text"
+              color="primary"
+              v-if="userCanAdd"
+              @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]"
+              :prepend-icon="addNewCommissionPlan ? 'remove' : 'add'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -43,20 +43,20 @@
                           attach
           />
           <DatetimePickerInput
-              v-model="newCommissionPlan.startDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Start Date"
-              @input="checkDates(newCommissionPlan.startDate, newCommissionPlan.endDate, closer.plans, planErrorObj)"
+            v-model="newCommissionPlan.startDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            label="Start Date"
+            @input="checkDates(newCommissionPlan.startDate, newCommissionPlan.endDate, closer.plans, planErrorObj)"
           />
           <DatetimePickerInput
-              v-model="newCommissionPlan.endDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="End Date"
-              @input="checkDates(newCommissionPlan.startDate, newCommissionPlan.endDate, closer.plans, planErrorObj)"
+            v-model="newCommissionPlan.endDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            label="End Date"
+            @input="checkDates(newCommissionPlan.startDate, newCommissionPlan.endDate, closer.plans, planErrorObj)"
           />
           <div v-if="planErrorObj.dateError" class="error--text mb-2">
             * Error: {{planErrorObj.dateErrorMsg}}
@@ -66,32 +66,32 @@
           </div>
           <div>
             <a-btn
-                color="primary"
-                class="mr-3"
-                @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
-                :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate"
-                text="Save"
+              color="primary"
+              class="mr-3"
+              @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
+              :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate"
+              text="Save"
             ></a-btn>
             <a-btn
-                color="primary"
-                variant="text"
-                @click="addNewCommissionPlan = !addNewCommissionPlan"
-                text="Cancel"
+              color="primary"
+              variant="text"
+              @click="addNewCommissionPlan = !addNewCommissionPlan"
+              text="Cancel"
             ></a-btn>
           </div>
         </v-card>
         <v-divider v-if="addNewCommissionPlan"></v-divider>
         <v-data-table
-            :headers="planHeaders"
-            :items="closer.plans"
-            :fixed-header="true"
-            :items-per-page="-1"
-            disable-sort
-            single-expand
-            :expanded.sync="expanded"
-            :loading="dataLoading"
-            hide-default-footer
-            class="elevation-1"
+          :headers="planHeaders"
+          :items="closer.plans"
+          :fixed-header="true"
+          :items-per-page="-1"
+          disable-sort
+          single-expand
+          :expanded.sync="expanded"
+          :loading="dataLoading"
+          hide-default-footer
+          class="elevation-1"
         >
           <template #no-data>
             <span class="default-text-color">No available plans</span>
@@ -104,22 +104,22 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
               <DatetimePickerInput
-                  v-model="item.endDate"
-                  :timezone="timezone"
-                  :type="'date'"
-                  :format="'MMMM DD, YYYY'"
-                  :readonly="closer.plans.indexOf(item) !== 0"
-                  label="New End Date"
+                v-model="item.endDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                :readonly="closer.plans.indexOf(item) !== 0"
+                label="New End Date"
               />
               <label>Note:</label>
               <a-textarea variant="filled" class="mt-4"
                           v-model="item.note">
               </a-textarea>
               <a-btn
-                  color="primary"
-                  :disabled="!item.endDate && !item.note"
-                  @click="[expanded = [], savePlan(item, 2)]"
-                  text="Save"
+                color="primary"
+                :disabled="!item.endDate && !item.note"
+                @click="[expanded = [], savePlan(item, 2)]"
+                text="Save"
               ></a-btn>
             </td>
           </template>
@@ -137,20 +137,20 @@
               </td>
               <td>
                 <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="[expanded = [item], selectedIndex = index]"
-                    v-if="!expanded.includes(item) && userCanEdit"
-                    prepend-icon="edit"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="[expanded = [item], selectedIndex = index]"
+                  v-if="!expanded.includes(item) && userCanEdit"
+                  prepend-icon="edit"
                 ></a-btn>
                 <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="[expanded = [], selectedIndex = index]"
-                    v-if="expanded.includes(item)"
-                    text="Cancel"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="[expanded = [], selectedIndex = index]"
+                  v-if="expanded.includes(item)"
+                  text="Cancel"
                 ></a-btn>
               </td>
             </tr>
@@ -167,11 +167,11 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
-                variant="text"
-                color="primary"
-                v-if="userCanAdd"
-                @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan, newOverridePlan = {}, getOverridePlans()]"
-                :prepend-icon="addNewOverridePlan ? 'remove' : 'add'"
+              variant="text"
+              color="primary"
+              v-if="userCanAdd"
+              @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan, newOverridePlan = {}, getOverridePlans()]"
+              :prepend-icon="addNewOverridePlan ? 'remove' : 'add'"
             ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -186,20 +186,20 @@
                           attach
           />
           <DatetimePickerInput
-              v-model="newOverridePlan.startDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Start Date"
-              @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
+            v-model="newOverridePlan.startDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            label="Start Date"
+            @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
           />
           <DatetimePickerInput
-              v-model="newOverridePlan.endDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="End Date"
-              @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
+            v-model="newOverridePlan.endDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            label="End Date"
+            @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
           />
           <div v-if="overrideErrorObj.dateError" class="error--text mb-2">
             * Error: {{overrideErrorObj.dateErrorMsg}}
@@ -208,31 +208,31 @@
             {{overrideErrorObj.noteMsg}}
           </div>
           <a-btn
-              color="primary"
-              class="mr-3"
-              @click="[addNewOverridePlan = false, savePlan(newOverridePlan, 1, true)]"
-              :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate"
-              text="Save"
+            color="primary"
+            class="mr-3"
+            @click="[addNewOverridePlan = false, savePlan(newOverridePlan, 1, true)]"
+            :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate"
+            text="Save"
           ></a-btn>
           <a-btn
-              color="primary"
-              variant="text"
-              @click="addNewOverridePlan = !addNewOverridePlan"
-              text="Cancel"
+            color="primary"
+            variant="text"
+            @click="addNewOverridePlan = !addNewOverridePlan"
+            text="Cancel"
           ></a-btn>
         </v-card>
         <v-divider v-if="addNewOverridePlan"></v-divider>
         <v-data-table
-            :headers="overrideHeaders"
-            :items="closer.overrides"
-            :fixed-header="true"
-            :items-per-page="-1"
-            disable-sort
-            :expanded.sync="overrideExpanded"
-            single-expand
-            :loading="dataLoading"
-            hide-default-footer
-            class="elevation-1"
+          :headers="overrideHeaders"
+          :items="closer.overrides"
+          :fixed-header="true"
+          :items-per-page="-1"
+          disable-sort
+          :expanded.sync="overrideExpanded"
+          single-expand
+          :loading="dataLoading"
+          hide-default-footer
+          class="elevation-1"
         >
           <template #no-data>
             <span class="default-text-color">No available overrides</span>
@@ -245,13 +245,13 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
               <DatetimePickerInput
-                  v-model="item.endDate"
-                  :timezone="timezone"
-                  :type="'date'"
-                  :readonly="closer.overrides.indexOf(item) !== 0"
-                  :format="'MMMM DD, YYYY'"
-                  label="New End Date"
-                  @input="checkDates(item.startDate, item.endDate, closer.overrides, item, item.id)"
+                v-model="item.endDate"
+                :timezone="timezone"
+                :type="'date'"
+                :readonly="closer.overrides.indexOf(item) !== 0"
+                :format="'MMMM DD, YYYY'"
+                label="New End Date"
+                @input="checkDates(item.startDate, item.endDate, closer.overrides, item, item.id)"
               />
               <label>Note:</label>
               <a-textarea variant="filled" class="mt-4"
@@ -264,10 +264,10 @@
                 {{item.noteMsg}}
               </div>
               <a-btn
-                  color="primary"
-                  :disabled="(!item.endDate && !item.note) || item.dateError "
-                  @click="[overrideExpanded = [], savePlan(item, 1)]"
-                  text="Save"
+                color="primary"
+                :disabled="(!item.endDate && !item.note) || item.dateError "
+                @click="[overrideExpanded = [], savePlan(item, 1)]"
+                text="Save"
               ></a-btn>
             </td>
           </template>
@@ -285,20 +285,20 @@
               </td>
               <td>
                 <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
-                    v-if="!overrideExpanded.includes(item) && userCanEdit"
-                    prepend-icon="edit"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
+                  v-if="!overrideExpanded.includes(item) && userCanEdit"
+                  prepend-icon="edit"
                 ></a-btn>
                 <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="[overrideExpanded = [], overrideSelectedIndex = index]"
-                    v-if="overrideExpanded.includes(item)"
-                    text="Cancel"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="[overrideExpanded = [], overrideSelectedIndex = index]"
+                  v-if="overrideExpanded.includes(item)"
+                  text="Cancel"
                 ></a-btn>
               </td>
             </tr>
@@ -315,18 +315,18 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
-                variant="text"
-                color="primary"
-                v-if="userCanAdd"
-                @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]"
-                :prepend-icon="addNewReceivingPlan ? 'remove' : 'mdi-content-copy'"
+              variant="text"
+              color="primary"
+              v-if="userCanAdd"
+              @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]"
+              :prepend-icon="addNewReceivingPlan ? 'remove' : 'mdi-content-copy'"
             ></a-btn>
             <a-btn
-                variant="text"
-                color="primary"
-                @click="addOverridePlan()"
-                v-if="userCanAdd"
-                prepend-icon="add"
+              variant="text"
+              color="primary"
+              @click="addOverridePlan()"
+              v-if="userCanAdd"
+              prepend-icon="add"
             ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -356,24 +356,24 @@
             </div>
           </v-card>
           <a-btn
-              color="primary"
-              class="mr-3"
-              @click="clonePlan()"
-              :disabled="!cloneOverridePlan.id"
-              text="Clone"
+            color="primary"
+            class="mr-3"
+            @click="clonePlan()"
+            :disabled="!cloneOverridePlan.id"
+            text="Clone"
           ></a-btn>
         </v-card>
         <v-data-table
-            :headers="receivingHeaders"
-            :items="closer.receiving"
-            :fixed-header="true"
-            :items-per-page="-1"
-            disable-sort
-            :expanded.sync="receivingExpanded"
-            single-expand
-            :loading="dataLoading"
-            hide-default-footer
-            class="elevation-1"
+          :headers="receivingHeaders"
+          :items="closer.receiving"
+          :fixed-header="true"
+          :items-per-page="-1"
+          disable-sort
+          :expanded.sync="receivingExpanded"
+          single-expand
+          :loading="dataLoading"
+          hide-default-footer
+          class="elevation-1"
         >
           <template #no-data>
             <span class="default-text-color">No available plans</span>
@@ -390,10 +390,10 @@
                           v-model="item.note">
               </a-textarea>
               <a-btn
-                  color="primary"
-                  :disabled="!item.endDate && !item.note"
-                  @click="[addNewReceivingPlan = false, savePlan(item, 3)]"
-                  text="Save"
+                color="primary"
+                :disabled="!item.endDate && !item.note"
+                @click="[addNewReceivingPlan = false, savePlan(item, 3)]"
+                text="Save"
               ></a-btn>
             </td>
           </template>
@@ -413,20 +413,20 @@
               </td>
               <td>
                 <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
-                    v-if="!receivingExpanded.includes(item) && userCanEdit"
-                    prepend-icon="edit"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
+                  v-if="!receivingExpanded.includes(item) && userCanEdit"
+                  prepend-icon="edit"
                 ></a-btn>
                 <a-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="[receivingExpanded = [], receivingSelectedIndex = index]"
-                    v-if="receivingExpanded.includes(item)"
-                    text="Cancel"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="[receivingExpanded = [], receivingSelectedIndex = index]"
+                  v-if="receivingExpanded.includes(item)"
+                  text="Cancel"
                 ></a-btn>
               </td>
             </tr>
@@ -464,8 +464,12 @@ onMounted(() => {
 })
 
 watch(commissionPositionId, async() => {
-  //if they change the position (setter vs closer) have to go back to main page
-  await router.push('/commissionManagement/users')
+  // if the position is Dealer / Installation Partner, go to commissions
+  if ([743,828].includes(commissionPositionId.value)) {
+    await router.push('/commissionManagement/commissions')
+  } else {
+    await router.push('/commissionManagement/users')
+  }
 })
 
 const planErrorObj = ref({})
@@ -516,15 +520,18 @@ const receivingHeaders = ref([
 const closer = ref({})
 
 const userCanAdd = computed(() => {
-  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'ADD') ||
+    userStore.userHasFeatureAccessLevel('COMMISSIONS_DEALER', 'ADD') ||
+    userStore.userHasFeatureAccessLevel('COMMISSIONS_INSTALLATION_PARTNER', 'ADD')
 })
 const userCanEdit = computed(() => {
-  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS_CLOSER', 'EDIT') ||
+    userStore.userHasFeatureAccessLevel('COMMISSIONS_DEALER', 'EDIT') ||
+    userStore.userHasFeatureAccessLevel('COMMISSIONS_INSTALLATION_PARTNER', 'EDIT')
 })
 const timezone = computed(() => {
   return userStore.timezone.value
 })
-
 
 const getCloserDetails = async () => {
   appStore.loading = true
@@ -722,4 +729,3 @@ const addReceivingUserToOverridePlan = async(overridePlanId) => {
   border-radius: 0;
 }
 </style>
-

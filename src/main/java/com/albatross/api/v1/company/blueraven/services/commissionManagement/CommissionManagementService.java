@@ -6,7 +6,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
-import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.OverrideManagementQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,7 +35,7 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('COMMISSIONS')")
+@PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && (hasFeatureAccess('COMMISSIONS_CLOSER') || hasFeatureAccess('COMMISSIONS_SETTER') || hasFeatureAccess('COMMISSIONS_DEALER') || hasFeatureAccess('COMMISSIONS_INSTALLATION_PARTNER'))")
 public class CommissionManagementService {
 
   private final SqlCache sqlCache;
@@ -53,6 +51,8 @@ public class CommissionManagementService {
     params.put("description", commissionPlan.getDescription());
     params.put("total", commissionPlan.getTotal());
     params.put("positionId", commissionPlan.getPositionId());
+    params.put("partnerAmount", commissionPlan.getPartnerAmount());
+    params.put("feeTypeId", commissionPlan.getFeeTypeId());
 
     User currentUser = securityService.getCurrentUser();
     params.put("userId", currentUser.trueUserId());
@@ -131,8 +131,11 @@ public class CommissionManagementService {
 
     if (positionId == 4) {
       return sqlCache.queryBySql(CommissionManagementQuery.findAvailableMilestonesForSetters, params, MilestoneType.class);
-    }
-    else {
+    } else if (positionId == 743) {
+      return sqlCache.queryBySql(CommissionManagementQuery.findAvailableMilestonesForDealers, params, MilestoneType.class);
+    } else if (positionId == 828) {
+      return sqlCache.queryBySql(CommissionManagementQuery.findAvailableMilestonesForInstallationPartners, params, MilestoneType.class);
+    } else {
       return sqlCache.queryBySql(CommissionManagementQuery.findAvailableMilestonesForClosers, params, MilestoneType.class);
     }
   }
@@ -140,6 +143,9 @@ public class CommissionManagementService {
   public List<CommissionPlan> getCommissionPlans(Long positionId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("positionId", positionId);
+    if (positionId == 828 || positionId == 743) {
+      return sqlCache.queryBySql(CommissionManagementQuery.getPartnerCommissionPlans, params, CommissionPlan.class);
+    }
     return sqlCache.queryBySql(CommissionManagementQuery.getCommissionPlans, params, CommissionPlan.class);
   }
 
@@ -150,8 +156,19 @@ public class CommissionManagementService {
     params.put("planId", planId);
 
     List<String> query =
-        sqlCache.queryBySql(
-          CommissionManagementQuery.findUsers, params, new SingleColumnRowMapper<>(String.class));
+      sqlCache.queryBySql(
+        CommissionManagementQuery.findUsers, params, new SingleColumnRowMapper<>(String.class));
+    return query.isEmpty() ? "[]" : query.get(0);
+  }
+
+  public String findDealerOrgs(String search, Long planId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("search", search + "%");
+    params.put("planId", planId);
+
+    List<String> query =
+      sqlCache.queryBySql(
+        CommissionManagementQuery.findDealerOrgs, params, new SingleColumnRowMapper<>(String.class));
     return query.isEmpty() ? "[]" : query.get(0);
   }
 
@@ -162,15 +179,22 @@ public class CommissionManagementService {
     return sqlCache.queryBySql(CommissionManagementQuery.getAvailableSources, params, Source.class);
   }
 
+  public List<Adder> getAvailableAdders(Long planId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("planId", planId);
+
+    return sqlCache.queryBySql(CommissionManagementQuery.getAvailableAdders, params, Adder.class);
+  }
+
   public List<ClosersPlan> getClosers(Boolean includeInactive) {
     Map<String, Object> params = new HashMap<>();
     params.put("includeInactive", includeInactive);
 
     List<ClosersPlan> closers =
-        sqlCache.queryBySql(
-          CommissionManagementQuery.getClosers,
-            params,
-            new ClosersPlanMapper<>(ClosersPlan.class, om));
+      sqlCache.queryBySql(
+        CommissionManagementQuery.getClosers,
+        params,
+        new ClosersPlanMapper<>(ClosersPlan.class, om));
     List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).toList();
     Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);
     for (ClosersPlan closer : closers) {
@@ -182,10 +206,10 @@ public class CommissionManagementService {
 
   public List<ClosersPlan> getSetters() {
     List<ClosersPlan> closers =
-        sqlCache.queryBySql(
-          CommissionManagementQuery.getSetters,
-            Collections.emptyMap(),
-            new ClosersPlanMapper<>(ClosersPlan.class, om));
+      sqlCache.queryBySql(
+        CommissionManagementQuery.getSetters,
+        Collections.emptyMap(),
+        new ClosersPlanMapper<>(ClosersPlan.class, om));
     List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).toList();
     Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);
     for (ClosersPlan closer : closers) {
@@ -203,13 +227,13 @@ public class CommissionManagementService {
   }
 
   public Optional<Long> clonePlan(Long id, CommissionPlan commissionPlan)
-      throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException,
-          PlanStartDateBeforeHireDate {
+    throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException,
+    PlanStartDateBeforeHireDate {
     boolean isBackdatedPlan =
-        validateBackdatedPlan(
-            commissionPlan.getStartDate(),
-            commissionPlan.getBackdateApprovalCreds(),
-            commissionPlan.getPositionId());
+      validateBackdatedPlan(
+        commissionPlan.getStartDate(),
+        commissionPlan.getBackdateApprovalCreds(),
+        commissionPlan.getPositionId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("planId", id);
@@ -232,14 +256,14 @@ public class CommissionManagementService {
     }
 
     Optional<Long> clonedId =
-        sqlCache.getBySql(CommissionManagementQuery.clone, params, new SingleColumnRowMapper<>(Long.class));
+      sqlCache.getBySql(CommissionManagementQuery.clone, params, new SingleColumnRowMapper<>(Long.class));
     if (isBackdatedPlan && clonedId.isPresent()) {
       params.put("planId", clonedId.get());
       params.put(
-          "note",
-          String.format(
-              "Backdated start date approved by %s",
-              commissionPlan.getBackdateApprovalCreds().getUsername()));
+        "note",
+        String.format(
+          "Backdated start date approved by %s",
+          commissionPlan.getBackdateApprovalCreds().getUsername()));
       sqlCache.updateBySql(CommissionManagementQuery.appendNoteToPlan, params);
     }
     return clonedId;
@@ -250,20 +274,30 @@ public class CommissionManagementService {
     params.put("planId", planId);
 
     Optional<String> result =
-        sqlCache.getBySql(
-          CommissionManagementQuery.getCommissionPlanDetails,
-            params,
-            new SingleColumnRowMapper<>(String.class));
+      sqlCache.getBySql(
+        CommissionManagementQuery.getCommissionPlanDetails,
+        params,
+        new SingleColumnRowMapper<>(String.class));
     return result.orElse("{}");
   }
 
-  public String getPlans(Long userId) {
+  public String getUserPlans(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
 
     Optional<String> users =
-        sqlCache.getBySql(
-          CommissionManagementQuery.getPlans, params, new SingleColumnRowMapper<>(String.class));
+      sqlCache.getBySql(
+        CommissionManagementQuery.getUserPlans, params, new SingleColumnRowMapper<>(String.class));
+    return users.orElse("[]");
+  }
+
+  public String getOrgPlans(Long orgId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("orgId", orgId);
+
+    Optional<String> users =
+      sqlCache.getBySql(
+        CommissionManagementQuery.getOrgPlans, params, new SingleColumnRowMapper<>(String.class));
     return users.orElse("[]");
   }
 
@@ -272,10 +306,10 @@ public class CommissionManagementService {
     params.put("planId", id);
 
     Optional<String> users =
-        sqlCache.getBySql(
-            CommissionManagementQuery.getCommissionPlanUsers,
-            params,
-            new SingleColumnRowMapper<>(String.class));
+      sqlCache.getBySql(
+        CommissionManagementQuery.getCommissionPlanUsers,
+        params,
+        new SingleColumnRowMapper<>(String.class));
     return users.orElse("[]");
   }
 
@@ -283,10 +317,33 @@ public class CommissionManagementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     List<String> query =
-        sqlCache.queryBySql(
-            CommissionManagementQuery.getCommissionPlanUserHistory,
-            params,
-            new SingleColumnRowMapper<>(String.class));
+      sqlCache.queryBySql(
+        CommissionManagementQuery.getCommissionPlanUserHistory,
+        params,
+        new SingleColumnRowMapper<>(String.class));
+    return query.isEmpty() ? "[]" : query.get(0);
+  }
+
+  public String getCommissionPlanOrgs(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("planId", id);
+
+    Optional<String> users =
+      sqlCache.getBySql(
+        CommissionManagementQuery.getCommissionPlanOrgs,
+        params,
+        new SingleColumnRowMapper<>(String.class));
+    return users.orElse("[]");
+  }
+
+  public String getCommissionPlanOrgHistory(Long orgId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("orgId", orgId);
+    List<String> query =
+      sqlCache.queryBySql(
+        CommissionManagementQuery.getCommissionPlanOrgHistory,
+        params,
+        new SingleColumnRowMapper<>(String.class));
     return query.isEmpty() ? "[]" : query.get(0);
   }
 
@@ -299,7 +356,7 @@ public class CommissionManagementService {
     sqlCache.updateBySql(CommissionManagementQuery.approve, params);
   }
 
-  public void updatePlanUser(Long planId, PlanUser planUser) {
+  public void updatePlanUser(Long planId, PlanAssignment planUser) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("planId", planId);
     params.put("userId", planUser.getUserId());
@@ -307,6 +364,16 @@ public class CommissionManagementService {
     params.put("endDate", planUser.getEndDate());
 
     sqlCache.updateBySql(CommissionManagementQuery.updatePlanUser, params);
+  }
+
+  public void updatePlanOrg(Long planId, PlanAssignment planOrg) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("planId", planId);
+    params.put("orgId", planOrg.getOrgId());
+    params.put("note", planOrg.getNote());
+    params.put("endDate", planOrg.getEndDate());
+
+    sqlCache.updateBySql(CommissionManagementQuery.updatePlanOrg, params);
   }
 
   public void inactivatePlan(Long planId) {
@@ -323,10 +390,10 @@ public class CommissionManagementService {
     params.put("userId", userId);
 
     List<String> query =
-        sqlCache.queryBySql(
-            CommissionManagementQuery.getCloserDetails,
-            params,
-            new SingleColumnRowMapper<>(String.class));
+      sqlCache.queryBySql(
+        CommissionManagementQuery.getCloserDetails,
+        params,
+        new SingleColumnRowMapper<>(String.class));
     return query.isEmpty() ? null : query.get(0);
   }
 
@@ -335,10 +402,10 @@ public class CommissionManagementService {
     params.put("id", id);
 
     Optional<String> result =
-        sqlCache.getBySql(
-            CommissionManagementQuery.getCommissionPlanAllocationMilestone,
-            params,
-            new SingleColumnRowMapper<>(String.class));
+      sqlCache.getBySql(
+        CommissionManagementQuery.getCommissionPlanAllocationMilestone,
+        params,
+        new SingleColumnRowMapper<>(String.class));
     return result.orElse("{}");
   }
 
@@ -351,7 +418,7 @@ public class CommissionManagementService {
     params.put("max", milestone.getMax());
 
     Long id =
-        sqlCache.updateBySqlReturningId(CommissionManagementQuery.saveMilestone, params, "id").longValue();
+      sqlCache.updateBySqlReturningId(CommissionManagementQuery.saveMilestone, params, "id").longValue();
     return getCommissionPlanAllocationMilestone(id);
   }
 
@@ -377,6 +444,23 @@ public class CommissionManagementService {
     return result.orElse(null);
   }
 
+  public Source updateSource(Long planId, Source source) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", source.getId());
+    params.put("feeAmount", source.getFeeAmount());
+    params.put("feeTypeId", source.getFeeTypeId());
+    params.put("milestoneId", source.getMilestoneId());
+
+    sqlCache.updateBySql(CommissionManagementQuery.updateSource, params);
+    return getSource(source.getId());
+  }
+
+  public void removeSource(Long planId, Long sourceId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", sourceId);
+    sqlCache.updateBySql(CommissionManagementQuery.removeSource, params);
+  }
+
   public Source saveSource(Long planId, Source source) {
     Map<String, Object> params = new HashMap<>();
     params.put("planId", planId);
@@ -386,29 +470,72 @@ public class CommissionManagementService {
     params.put("feeTypeId", source.getFeeTypeId());
 
     Long id =
-        sqlCache.updateBySqlReturningId(CommissionManagementQuery.saveSource, params, "id").longValue();
+      sqlCache.updateBySqlReturningId(CommissionManagementQuery.saveSource, params, "id").longValue();
     return getSource(id);
   }
 
+  public List<Adder> getAdders() {
+    return sqlCache.queryBySql(CommissionManagementQuery.getAdders, Collections.emptyMap(), Adder.class);
+  }
+
+  public Adder getAdder(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<Adder> result = sqlCache.getBySql(CommissionManagementQuery.getAdder, params, Adder.class);
+    return result.orElse(null);
+  }
+
+  public Adder updateAdder(Long planId, Adder adder) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", adder.getId());
+    params.put("feeAmount", adder.getFeeAmount());
+    params.put("feeTypeId", adder.getFeeTypeId());
+    params.put("milestoneId", adder.getMilestoneId());
+
+    sqlCache.updateBySql(CommissionManagementQuery.updateAdder, params);
+    return getAdder(adder.getId());
+  }
+
+  public void removeAdder(Long planId, Long adderId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", adderId);
+    sqlCache.updateBySql(CommissionManagementQuery.removeAdder, params);
+  }
+
+  public Adder saveAdder(Long planId, Adder adder) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("planId", planId);
+    params.put("adderId", adder.getAdderId());
+    params.put("milestoneId", adder.getMilestoneId());
+    params.put("feeAmount", adder.getFeeAmount());
+    params.put("feeTypeId", adder.getFeeTypeId());
+
+    Long id =
+      sqlCache.updateBySqlReturningId(CommissionManagementQuery.saveAdder, params, "id").longValue();
+    return getAdder(id);
+  }
+
   public boolean validateBackdatedPlan(
-      Date startDate, BackdatedPlanApprovalCredentials credentials, Long positionId)
-      throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+    Date startDate, BackdatedPlanApprovalCredentials credentials, Long positionId)
+    throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
     // if no start date is provided, then it doesn't make sense to say the clone is backdated
     if (startDate == null) return false;
 
     final boolean IS_BACKDATED_PLAN = true;
 
     List<Payroll> approvedPayrolls = payroll.getApprovedPayrolls(positionId);
+
     if (approvedPayrolls.size() > 0) {
       Payroll mostRecent = approvedPayrolls.get(0);
       if (startDate.before(
-          mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
+        mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
         if (credentials == null) { // throw exception if not credentials are provided
           throw new BackdatedPlanApprovalRequiredException(
-              startDate, mostRecent.getId(), mostRecent.getPeriodEnd());
+            startDate, mostRecent.getId(), mostRecent.getPeriodEnd());
         }
         if (!areValidBackdatedPlanApprovalCredentials(
-            credentials)) { // throw exception if credentials are inadequate
+          credentials)) { // throw exception if credentials are inadequate
           throw new BackdatedPlanApprovalBadCredentialsException();
         }
         // if we get here, we're all good! backdated change included appropriate approval
@@ -426,9 +553,9 @@ public class CommissionManagementService {
       String username = creds.getUsername(), password = creds.getPassword();
       User approvingUser = securityService.getUser(username);
       isApproved =
-          userExists(approvingUser)
-              && validCreds(approvingUser, password)
-              && isExecutive(approvingUser);
+        userExists(approvingUser)
+          && validCreds(approvingUser, password)
+          && isExecutive(approvingUser);
 
     } catch (Exception e) {
       isApproved = false;
@@ -460,14 +587,14 @@ public class CommissionManagementService {
     return false;
   }
 
-  public void insertUser(Long planId, PlanUser user, Long positionId)
-      throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+  public void insertUser(Long planId, PlanAssignment user, Long positionId)
+    throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
     final BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
     final Date newStartDate = user.getStartDate();
     boolean isBackdatedPlan =
-        newStartDate != null
-            && startDateChanged(user)
-            && validateBackdatedPlan(newStartDate, approvalCreds, positionId);
+      newStartDate != null
+        && startDateChanged(user)
+        && validateBackdatedPlan(newStartDate, approvalCreds, positionId);
 
     Map<String, Object> params = new HashMap<>();
     params.put("planId", planId);
@@ -480,52 +607,68 @@ public class CommissionManagementService {
       sqlCache.updateBySql(CommissionManagementQuery.updateUser, params);
     } else {
 
-      sqlCache.updateBySql(CommissionManagementQuery.insertEndDate, params);
+      sqlCache.updateBySql(CommissionManagementQuery.insertUserEndDate, params);
       sqlCache.updateBySql(CommissionManagementQuery.insertUser, params);
     }
 
     if (isBackdatedPlan) {
       params.put(
-          "note", "backdated plan entry approved by " + user.getApprovalCreds().getUsername());
-      sqlCache.updateBySql(CommissionManagementQuery.appendNote, params);
+        "note", "backdated plan entry approved by " + user.getApprovalCreds().getUsername());
+      sqlCache.updateBySql(CommissionManagementQuery.appendUserNote, params);
     }
   }
 
-  private boolean startDateChanged(PlanUser user) {
+
+  public void insertOrg(Long planId, PlanAssignment org)
+    throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+    final BackdatedPlanApprovalCredentials approvalCreds = org.getApprovalCreds();
+    final Date newStartDate = org.getStartDate();
+    boolean isBackdatedPlan =
+      newStartDate != null
+        && startDateChanged(org)
+        && validateBackdatedPlan(newStartDate, approvalCreds, 743L);
+    //743 = dealer stuff
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("planId", planId);
+    params.put("orgId", org.getOrgId());
+    params.put("startDate", newStartDate);
+    params.put("endDate", org.getEndDate());
+
+    if (org.getId() != null) {
+      params.put("id", org.getId());
+      sqlCache.updateBySql(CommissionManagementQuery.updateOrg, params);
+    } else {
+
+      sqlCache.updateBySql(CommissionManagementQuery.insertOrgEndDate, params);
+      sqlCache.updateBySql(CommissionManagementQuery.insertOrg, params);
+    }
+
+    if (isBackdatedPlan) {
+      params.put(
+        "note", "backdated plan entry approved by " + org.getApprovalCreds().getUsername());
+      sqlCache.updateBySql(CommissionManagementQuery.appendOrgNote, params);
+    }
+  }
+
+  private boolean startDateChanged(PlanAssignment user) {
     if (user.getId() == null) return true; // no existing entry in database? then start is new
 
     final Optional<UserDateRange> existingDateRange =
-        sqlCache.getBySql(
-            CommissionManagementQuery.getUserDateRange,
-            Map.of(
-                "rowId", user.getId(),
-                "userId", user.getUserId()),
-            UserDateRange.class);
+      sqlCache.getBySql(
+        CommissionManagementQuery.getUserDateRange,
+        Map.of(
+          "rowId", user.getId(),
+          "userId", user.getUserId()),
+        UserDateRange.class);
 
     final LocalDate newStartDate =
-        user.getStartDate().toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+      user.getStartDate().toInstant().atZone(ZoneOffset.UTC).toLocalDate();
 
     final Optional<LocalDate> existingStartDate =
-        existingDateRange.map(UserDateRange::getStartDate);
+      existingDateRange.map(UserDateRange::getStartDate);
 
     return existingStartDate.isPresent() && !newStartDate.equals(existingStartDate.get());
-  }
-
-  public Source updateSource(Long planId, Source source) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", source.getId());
-    params.put("feeAmount", source.getFeeAmount());
-    params.put("feeTypeId", source.getFeeTypeId());
-    params.put("milestoneId", source.getMilestoneId());
-
-    sqlCache.updateBySql(CommissionManagementQuery.updateSource, params);
-    return getSource(source.getId());
-  }
-
-  public void removeSource(Long planId, Long sourceId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", sourceId);
-    sqlCache.updateBySql(CommissionManagementQuery.removeSource, params);
   }
 
   public void deletePlan(Long id) {
@@ -547,10 +690,17 @@ public class CommissionManagementService {
     sqlCache.updateBySql(CommissionManagementQuery.deleteUser, params);
   }
 
+  public void deleteOrg(Long planId, Long commissionPlanOrgId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("planId", planId);
+    params.put("commissionPlanOrgId", commissionPlanOrgId);
+    sqlCache.updateBySql(CommissionManagementQuery.deleteOrg, params);
+  }
+
   public Set<Long> getUsersWithPlanGaps(List<Long> userIds) {
     Map<String, Object> params = Map.of("userIds", userIds);
     List<UserDateRange> closerDates =
-        sqlCache.queryBySql(CommissionManagementQuery.getUserDatesAsCloser, params, UserDateRange.class);
+      sqlCache.queryBySql(CommissionManagementQuery.getUserDatesAsCloser, params, UserDateRange.class);
 
     // Make sets of all days the users have been closers...
     Map<Long, Set<LocalDate>> allUsersDatesNotCoveredByPlan = new HashMap<>();
@@ -560,12 +710,12 @@ public class CommissionManagementService {
 
     // Now remove from those sets the days covered by plans
     List<UserDateRange> commissionPlanDates =
-        sqlCache.queryBySql(CommissionManagementQuery.getUserDatesOnCommissionPlans, params, UserDateRange.class);
+      sqlCache.queryBySql(CommissionManagementQuery.getUserDatesOnCommissionPlans, params, UserDateRange.class);
 
     for (UserDateRange plan : commissionPlanDates) {
       if (allUsersDatesNotCoveredByPlan.containsKey(plan.getUserId())) {
         Set<LocalDate> datesAsCloser = allUsersDatesNotCoveredByPlan.get(plan.getUserId()),
-            datesNotCoveredByPlan = Sets.difference(datesAsCloser, plan.getDateRange());
+          datesNotCoveredByPlan = Sets.difference(datesAsCloser, plan.getDateRange());
         if (datesNotCoveredByPlan.isEmpty()) allUsersDatesNotCoveredByPlan.remove(plan.getUserId());
         else allUsersDatesNotCoveredByPlan.put(plan.getUserId(), datesNotCoveredByPlan);
       }
@@ -587,7 +737,7 @@ public class CommissionManagementService {
     private final Date payrollEndDate;
 
     public BackdatedPlanApprovalRequiredException(
-        Date userStartDate, Long payrollId, Date payrollEndDate) {
+      Date userStartDate, Long payrollId, Date payrollEndDate) {
       super(
         (
           """
@@ -633,9 +783,9 @@ public class CommissionManagementService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<ReceivingPlan>> receivingPlanRef = new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "receivingPlans",
-          new JsonCollectionDeserializer(receivingPlanRef, objectMapper));
+        List.class,
+        "receivingPlans",
+        new JsonCollectionDeserializer(receivingPlanRef, objectMapper));
     }
   }
 }

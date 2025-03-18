@@ -10,10 +10,10 @@ import java.util.Date;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PlanUser {
+public class PlanAssignment {
 
     @Id
-    private Long id, userId;
+    private Long id, userId, orgId;
     private Date startDate, endDate;
     private BackdatedPlanApprovalCredentials approvalCreds;
     private String note;

@@ -43,42 +43,42 @@ public class CommissionManagementController {
 
   @PostMapping(value = "/{id}/clone")
   public ResponseEntity cloneOverridePlanById(
-      @PathVariable Long id, @RequestBody CommissionPlan commissionPlan) {
+    @PathVariable Long id, @RequestBody CommissionPlan commissionPlan) {
     try {
       Optional<Long> clonePlan = commissionManagementService.clonePlan(id, commissionPlan);
       if (clonePlan.isPresent()) {
         String commissionPlanDetail =
-            commissionManagementService.getCommissionPlanDetails(clonePlan.get());
+          commissionManagementService.getCommissionPlanDetails(clonePlan.get());
         return ResponseEntity.ok(commissionPlanDetail);
       }
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
       SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
       Map<String, String> body =
-          Map.of(
-              "msg",
-              e.getMessage(),
-              "reason",
-              "approvalRequired",
-              "userStartDate",
-              f.format(e.getUserStartDate()),
-              "payrollId",
-              String.valueOf(e.getPayrollId()),
-              "payrollEndDate",
-              f.format(e.getPayrollEndDate()));
+        Map.of(
+          "msg",
+          e.getMessage(),
+          "reason",
+          "approvalRequired",
+          "userStartDate",
+          f.format(e.getUserStartDate()),
+          "payrollId",
+          String.valueOf(e.getPayrollId()),
+          "payrollEndDate",
+          f.format(e.getPayrollEndDate()));
       return ResponseEntity.badRequest().body(body);
     } catch (CommissionManagementService.BackdatedPlanApprovalBadCredentialsException e) {
       Map<String, String> body = Map.of("msg", e.getMessage(), "reason", "badCredentials");
       return ResponseEntity.badRequest().body(body);
     } catch (CommissionManagementService.PlanStartDateBeforeHireDate e) {
       Map<String, Object> body =
-          Map.of(
-              "msg",
-              e.getMessage(),
-              "reason",
-              "startDateBeforeHireDate",
-              "problems",
-              e.getProblematicUsers().stream().map(BackdatedUser::new).toList());
+        Map.of(
+          "msg",
+          e.getMessage(),
+          "reason",
+          "startDateBeforeHireDate",
+          "problems",
+          e.getProblematicUsers().stream().map(BackdatedUser::new).toList());
 
       return ResponseEntity.badRequest().body(body);
     }
@@ -108,7 +108,7 @@ public class CommissionManagementController {
 
   @GetMapping(value = "/{id}/availableMilestones/{positionId}")
   public List<CommissionManagementService.MilestoneType> getAvailableMilestones(
-      @PathVariable Long id, @PathVariable Long positionId) {
+    @PathVariable Long id, @PathVariable Long positionId) {
     return commissionManagementService.findAvailableMilestones(id, positionId);
   }
 
@@ -132,12 +132,24 @@ public class CommissionManagementController {
     return commissionManagementService.getAvailableSources(id);
   }
 
+  @GetMapping(value = "/{id}/availableAdders")
+  public List<Adder> getAvailableAdders(@PathVariable Long id) {
+    return commissionManagementService.getAvailableAdders(id);
+  }
+
   @GetMapping(value = "/_search")
   public String findCommissionPlanUsers(
-      @RequestParam String query,
-      @RequestParam(required = false) String positions,
-      @RequestParam(required = false) Long planId) {
+    @RequestParam String query,
+    @RequestParam(required = false) String positions,
+    @RequestParam(required = false) Long planId) {
     return commissionManagementService.findUserForCommissions(query, positions, planId);
+  }
+
+  @GetMapping(value = "/dealerOrgs/_search")
+  public String findDealerOrgs(
+    @RequestParam String query,
+    @RequestParam(required = false) Long planId) {
+    return commissionManagementService.findDealerOrgs(query, planId);
   }
 
   @GetMapping(value = "/closers")
@@ -153,6 +165,11 @@ public class CommissionManagementController {
   @DeleteMapping(value = "/{id}/commissionUser/{commissionPlanUserId}")
   public void deleteUser(@PathVariable Long id, @PathVariable Long commissionPlanUserId) {
     commissionManagementService.deleteUser(id, commissionPlanUserId);
+  }
+
+  @DeleteMapping(value = "/{id}/commissionOrg/{commissionPlanOrgId}")
+  public void deleteOrg(@PathVariable Long id, @PathVariable Long commissionPlanOrgId) {
+    commissionManagementService.deleteOrg(id, commissionPlanOrgId);
   }
 
   @PostMapping(value = "/{planId}/milestone")
@@ -190,17 +207,43 @@ public class CommissionManagementController {
     commissionManagementService.removeSource(planId, sourceId);
   }
 
+
+  @GetMapping(value = "/adders")
+  public List<Adder> getAdders() {
+    return commissionManagementService.getAdders();
+  }
+
+  @PostMapping(value = "/{planId}/adder")
+  public Adder saveAdder(@PathVariable Long planId, @RequestBody Adder adder) {
+    return commissionManagementService.saveAdder(planId, adder);
+  }
+
+  @PutMapping(value = "/{planId}/adder")
+  public Adder updateAdder(@PathVariable Long planId, @RequestBody Adder adder) {
+    return commissionManagementService.updateAdder(planId, adder);
+  }
+
+  @DeleteMapping(value = "/{planId}/adder/{adderId}")
+  public void removeAdder(@PathVariable Long planId, @PathVariable Long adderId) {
+    commissionManagementService.removeAdder(planId, adderId);
+  }
+
   @PostMapping(value = "/{planId}/updateUser")
-  public void updatePlanUser(@PathVariable Long planId, @RequestBody PlanUser user) {
+  public void updatePlanUser(@PathVariable Long planId, @RequestBody PlanAssignment user) {
     commissionManagementService.updatePlanUser(planId, user);
+  }
+
+  @PostMapping(value = "/{planId}/updateOrg")
+  public void updatePlanOrg(@PathVariable Long planId, @RequestBody PlanAssignment org) {
+    commissionManagementService.updatePlanOrg(planId, org);
   }
 
   @PostMapping(value = "/{planId}/users/{positionId}")
   public ResponseEntity insertUser(
-      @PathVariable Long planId,
-      @PathVariable Long positionId,
-      @RequestParam(required = false) Boolean addUserToPlan,
-      @RequestBody PlanUser user) {
+    @PathVariable Long planId,
+    @PathVariable Long positionId,
+    @RequestParam(required = false) Boolean addUserToPlan,
+    @RequestBody PlanAssignment user) {
     try {
       commissionManagementService.insertUser(planId, user, positionId);
       String response;
@@ -209,18 +252,50 @@ public class CommissionManagementController {
       if (null != addUserToPlan && addUserToPlan) {
         response = commissionManagementService.getCommissionPlanUsers(planId);
       } else {
-        response = commissionManagementService.getPlans(user.getUserId());
+        response = commissionManagementService.getUserPlans(user.getUserId());
       }
       return ResponseEntity.ok(response);
     } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
       SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
       Map<String, String> body =
-          Map.of(
-              "msg", e.getMessage(),
-              "reason", "approvalRequired",
-              "userStartDate", f.format(e.getUserStartDate()),
-              "payrollId", String.valueOf(e.getPayrollId()),
-              "payrollEndDate", f.format(e.getPayrollEndDate()));
+        Map.of(
+          "msg", e.getMessage(),
+          "reason", "approvalRequired",
+          "userStartDate", f.format(e.getUserStartDate()),
+          "payrollId", String.valueOf(e.getPayrollId()),
+          "payrollEndDate", f.format(e.getPayrollEndDate()));
+      return ResponseEntity.badRequest().body(body);
+    } catch (CommissionManagementService.BackdatedPlanApprovalBadCredentialsException e) {
+      Map<String, String> body = Map.of("msg", e.getMessage(), "reason", "badCredentials");
+      return ResponseEntity.badRequest().body(body);
+    }
+  }
+
+  @PostMapping(value = "/{planId}/orgs")
+  public ResponseEntity insertOrg(
+    @PathVariable Long planId,
+    @RequestParam(required = false) Boolean addOrgToPlan,
+    @RequestBody PlanAssignment org) {
+    try {
+      commissionManagementService.insertOrg(planId, org);
+      String response;
+      // this same endpoint is used when adding a user to a plan or when adding a plan to a user.
+      // need to return different response in each scenario
+      if (null != addOrgToPlan && addOrgToPlan) {
+        response = commissionManagementService.getCommissionPlanOrgs(planId);
+      } else {
+        response = commissionManagementService.getOrgPlans(org.getOrgId());
+      }
+      return ResponseEntity.ok(response);
+    } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
+      SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
+      Map<String, String> body =
+        Map.of(
+          "msg", e.getMessage(),
+          "reason", "approvalRequired",
+          "userStartDate", f.format(e.getUserStartDate()),
+          "payrollId", String.valueOf(e.getPayrollId()),
+          "payrollEndDate", f.format(e.getPayrollEndDate()));
       return ResponseEntity.badRequest().body(body);
     } catch (CommissionManagementService.BackdatedPlanApprovalBadCredentialsException e) {
       Map<String, String> body = Map.of("msg", e.getMessage(), "reason", "badCredentials");
@@ -236,6 +311,11 @@ public class CommissionManagementController {
   @GetMapping(value = "/commissionUser/{userId}/history")
   public String getOldPlans(@PathVariable Long userId) {
     return commissionManagementService.getCommissionPlanUserHistory(userId);
+  }
+
+  @GetMapping(value = "/commissionOrg/{orgId}/history")
+  public String getOldPlansForOrg(@PathVariable Long orgId) {
+    return commissionManagementService.getCommissionPlanOrgHistory(orgId);
   }
 
   @GetMapping(value = "/closerDetails/{userId}")

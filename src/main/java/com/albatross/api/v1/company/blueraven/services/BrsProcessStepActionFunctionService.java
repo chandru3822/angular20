@@ -91,6 +91,7 @@ public class BrsProcessStepActionFunctionService {
     inverterMap.put("IQ7X-96-2-INT", "Enphase IQ7X Microinverters");
     inverterMap.put("IQ8A-72-2-US", "Enphase IQ8A Microinverters");
     inverterMap.put("IQ8M-72-M-US", "Enphase IQ8M Microinverters");
+    inverterMap.put("IQ7HS-66-M-US (240V)", "Enphase IQ7HS Microinverters");
     inverterMap.put("IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters");
     inverterMap.put("GW9600A-MS (240V)", "GoodWe GW9600A-MS");
     inverterMap.put("Powerwall 3 (integrated inverter)", "Tesla Powerwall 3 (integrated inverter)");
@@ -460,31 +461,31 @@ public class BrsProcessStepActionFunctionService {
           params.put("textValue", panelName);
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } else if (paramName.contains("Storage Type") && !storageType.equals("null")) {
-            final long companyId = Long.parseLong(systemValues.get("companyId").toString());
-            final String sql = "select id from flow.custom_field cf where field_name = 'Storage Type' and company_id = " + companyId;
-            Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
-            List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
-            String finalStorageType;
-            if(storageType.equals("energy_arbitrage") || storageType.equals("energy arbitrage")) {
-                //(right now it's energy_arbitrage but just in case it changes to a space instead)
-                finalStorageType = "Grid-Tied";
-                //we're using a different name than Aurora is for this one; I don't know why
-            } else {
-                finalStorageType = storageType;
+          final long companyId = Long.parseLong(systemValues.get("companyId").toString());
+          final String sql = "select id from flow.custom_field cf where field_name = 'Storage Type' and company_id = " + companyId;
+          Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
+          List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
+          String finalStorageType;
+          if(storageType.equals("energy_arbitrage") || storageType.equals("energy arbitrage")) {
+            //(right now it's energy_arbitrage but just in case it changes to a space instead)
+            finalStorageType = "Grid-Tied";
+            //we're using a different name than Aurora is for this one; I don't know why
+          } else {
+            finalStorageType = storageType;
+          }
+          final Long storageTypeLovId = values.stream()
+            .filter(i -> Objects.equals(i.getName().toLowerCase(), finalStorageType.toLowerCase()))
+            .map(ListOfValue::getId)
+            .findFirst()
+            .orElse(null);
+          if (storageTypeLovId != null) {
+            params.put("intValue", storageTypeLovId);
+            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+          } else {
+            if(!ignoreAuroraErrors) {
+              throw new RuntimeException("Unable to find list item for given storage type");
             }
-            final Long storageTypeLovId = values.stream()
-                    .filter(i -> Objects.equals(i.getName().toLowerCase(), finalStorageType.toLowerCase()))
-                    .map(ListOfValue::getId)
-                    .findFirst()
-                    .orElse(null);
-            if (storageTypeLovId != null) {
-                params.put("intValue", storageTypeLovId);
-                sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-            } else {
-                if(!ignoreAuroraErrors) {
-                    throw new RuntimeException("Unable to find list item for given storage type");
-                }
-            }
+          }
         }
       }
     } catch (Exception e) {
@@ -520,12 +521,12 @@ public class BrsProcessStepActionFunctionService {
         try {
           marketoService.pushData(List.of(lead));
         } catch (Exception e) {
-            // This is a bandaid fix to let actions run while adobe/marketo get their act together
+          // This is a bandaid fix to let actions run while adobe/marketo get their act together
 //          throw new RuntimeException(e.getMessage());
           log.error(String.format("MARKETO: Unable to update Marketo during action: %s", e.getMessage()));
         }
       } catch (Exception e) {
-          // This is a bandaid fix to let actions run while adobe/marketo get their act together
+        // This is a bandaid fix to let actions run while adobe/marketo get their act together
 //        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         log.error(String.format("MARKETO: Unable to update Marketo during action: %s", e.getMessage()));
       }
@@ -657,54 +658,54 @@ public class BrsProcessStepActionFunctionService {
     }
   }
 
-    /**
-     * Send disclosure form and save returned form ID to given CFGA ID
-     * @param func
-     * @param systemValues
-     */
-    public void sendDisclosureForm(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-        Long projectId = Long.parseLong(systemValues.get("projectId").toString());
-        List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
-        Long propCFGAID = Long.parseLong(paramValues.getFirst().getDynamicValue());
+  /**
+   * Send disclosure form and save returned form ID to given CFGA ID
+   * @param func
+   * @param systemValues
+   */
+  public void sendDisclosureForm(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+    List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
+    Long propCFGAID = Long.parseLong(paramValues.getFirst().getDynamicValue());
 
-        Long ppsID = Long.parseLong(systemValues.get("ppsId").toString());
-        Long propNbr = disclosureFormService.getProposalNumber(propCFGAID, ppsID);
+    Long ppsID = Long.parseLong(systemValues.get("ppsId").toString());
+    Long propNbr = disclosureFormService.getProposalNumber(propCFGAID, ppsID);
 
-        if (propNbr == null) {
-            throw new RuntimeException(formatErrorMessage(func, "unable to fetch proposal number"));
-        }
-
-        Srec srec = disclosureFormService.getSrec(projectId, propNbr);
-
-        if (srec == null) {
-            throw new RuntimeException(formatErrorMessage(func, "unable to fetch proposal"));
-        }
-
-        String disclosureID = srec.getIlSrecDisclosureFormId();
-        if (disclosureID == null) {
-            var success = disclosureFormService.send(projectId, propNbr);
-            if (!success) {
-                throw new RuntimeException(formatErrorMessage(func, "unable to send disclosure form"));
-            }
-            srec = disclosureFormService.getSrec(projectId, propNbr);
-            disclosureID = srec.getIlSrecDisclosureFormId();
-        }
-
-        Long userID = Long.parseLong(systemValues.get("userId").toString());
-        Long disclosureCFGAID = Long.parseLong(paramValues.get(1).getDynamicValue());
-        Map<String, Object> params = new HashMap<>();
-        params.put("userId", userID);
-        params.put("sourceId", ppsID);
-        params.put("customFieldGroupAssignmentId", disclosureCFGAID);
-        params.put("textValue", disclosureID);
-        params.put("dateValue", null);
-        params.put("timestampValue", null);
-        params.put("booleanValue", null);
-        params.put("numericValue", null);
-        params.put("intValue", null);
-        params.put("intArrayValue", null);
-        params.put("richTextValue", null);
-        params.put("jsonValue", null);
-        sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+    if (propNbr == null) {
+      throw new RuntimeException(formatErrorMessage(func, "unable to fetch proposal number"));
     }
+
+    Srec srec = disclosureFormService.getSrec(projectId, propNbr);
+
+    if (srec == null) {
+      throw new RuntimeException(formatErrorMessage(func, "unable to fetch proposal"));
+    }
+
+    String disclosureID = srec.getIlSrecDisclosureFormId();
+    if (disclosureID == null) {
+      var success = disclosureFormService.send(projectId, propNbr);
+      if (!success) {
+        throw new RuntimeException(formatErrorMessage(func, "unable to send disclosure form"));
+      }
+      srec = disclosureFormService.getSrec(projectId, propNbr);
+      disclosureID = srec.getIlSrecDisclosureFormId();
+    }
+
+    Long userID = Long.parseLong(systemValues.get("userId").toString());
+    Long disclosureCFGAID = Long.parseLong(paramValues.get(1).getDynamicValue());
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", userID);
+    params.put("sourceId", ppsID);
+    params.put("customFieldGroupAssignmentId", disclosureCFGAID);
+    params.put("textValue", disclosureID);
+    params.put("dateValue", null);
+    params.put("timestampValue", null);
+    params.put("booleanValue", null);
+    params.put("numericValue", null);
+    params.put("intValue", null);
+    params.put("intArrayValue", null);
+    params.put("richTextValue", null);
+    params.put("jsonValue", null);
+    sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+  }
 }

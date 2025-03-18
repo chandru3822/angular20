@@ -5,36 +5,36 @@
         <v-card>
           <v-card-title class="pt-0">
             <a-text-field
-                v-model="search"
-                prepend-inner-icon="search"
-                label="Search"
-                single-line
-                hide-details
+              v-model="search"
+              prepend-inner-icon="search"
+              label="Search"
+              single-line
+              hide-details
             ></a-text-field>
             <v-spacer></v-spacer>
             <v-switch
-                v-model="includeInactive"
-                class=""
-                label="Include Inactive"
-                @change="getUsers()"
+              v-model="includeInactive"
+              class=""
+              label="Include Inactive"
+              @change="getUsers()"
             />
             <a-btn
-                color="primary"
-                class="ml-3"
-                @click="exportData()"
-                text="Export"
+              color="primary"
+              class="ml-3"
+              @click="exportData()"
+              text="Export"
             ></a-btn>
           </v-card-title>
-          <v-divider></v-divider>
+          <v-divider />
           <v-data-table
-              :headers="headers"
-              :items="users"
-              :fixed-header="true"
-              :items-per-page="50"
-              :loading="dataLoading"
-              :search="search"
-              :footer-props="footerProps"
-              class="elevation-1"
+            :headers="headers"
+            :items="users"
+            :fixed-header="true"
+            :items-per-page="50"
+            :loading="dataLoading"
+            :search="search"
+            :footer-props="footerProps"
+            class="elevation-1"
           >
             <template #no-data>
               <div class="black--text">No available users</div>
@@ -46,14 +46,14 @@
 
             <template #item="{ item, index }">
               <tr class="vertical-top" :class="{'shaded-row': index % 2}">
-                <td class="text-left pt-1" >
+                <td class="text-left pt-1">
                   <a-btn
-                      variant="text"
-                      class="anchor"
-                      :to="`/commissionManagement/users/${item.userId}`"
-                      color="unset"
-                      :text="item.name"
-                  ></a-btn>
+                    variant="text"
+                    class="anchor"
+                    :to="`/commissionManagement/users/${item.userId}`"
+                    color="unset"
+                    :text="item.name"
+                  />
                 </td>
                 <td class="text-left pt-1" >
                   {{ item.orgName }}
@@ -116,7 +116,11 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
 onMounted(() => {
-  getUsers()
+  if ([743, 828].includes(commissionPositionId.value)) {
+    router.push({ name: 'commissions' })
+  } else {
+    getUsers()
+  }
 })
 
 const dataLoading = ref(true)
@@ -136,7 +140,11 @@ const headers = ref([
 const users = ref([])
 
 watch(commissionPositionId, () => {
-  getUsers()
+  if ([743, 828].includes(commissionPositionId.value)) {
+    router.push({ name: 'commissions' })
+  } else {
+    getUsers()
+  }
 })
 
 
@@ -146,11 +154,23 @@ const getUsers = async () => {
     let params = {
       includeInactive: includeInactive.value
     }
-    let url = commissionPositionId.value === 1 ? '/commissionManagement/closers' : '/commissionManagement/setters'
-    const {data, status} = await getRequestWithParams(url, { params }, 'blueraven', [])
-    users.value = data
-    dataLoading.value = false
-    handleHidingGlobalLoader( status)
+
+    // Need to separate Dealer (743) & Installation Partner (828) from Users.vue due to
+    // not every commissionPositionId feature path defaulting to the 'users' tab. This
+    // solution works for now though and does not cause any issues that I've seen.
+    let url;
+    if (commissionPositionId.value === 1) url = '/commissionManagement/closers'
+    if (commissionPositionId.value === 4) url = '/commissionManagement/setters'
+
+    if(url) {
+      const {data, status} = await getRequestWithParams(url, { params }, 'blueraven', [])
+      users.value = data
+      dataLoading.value = false
+      handleHidingGlobalLoader(status)
+    } else {
+      dataLoading.value = false
+      appStore.loading = false
+    }
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Loading Users')
@@ -183,25 +203,25 @@ const exportData = async () => {
     let filename = `Commission_Users.csv`;
 
     let csvData = 'User ID, User Name, User Employee ID, Primary Position, Office, Available Commission Strategies, Commission Plan Start Date, Commission Plan, Override Plan Start Date, Override Plan, Residual Plan Start Date, Residual Plan';
-      csvData += '\n'
+    csvData += '\n'
 
-      users.value.forEach(p => {
-        csvData +=
-            p.userId + ',' +
-            '"' + p.name + '",' +
-            p.employeeId + ',' +
-            p.primaryPosition + ',' +
-            '"' + p.orgName + '",' +
-            '"' + p.availableCommissionStrategies + '",' +
-            (p.commissionPlanStart || '') + ',' +
-            (p.commissionPlan || '') + ',' +
-            (p.overridePlanStart || '') + ',' +
-            (p.overridePlan || '') + ',' +
-            (p.residualPlanStart || '') + ',' +
-            (p.residualPlan || '')
+    users.value.forEach(p => {
+      csvData +=
+        p.userId + ',' +
+        '"' + p.name + '",' +
+        p.employeeId + ',' +
+        p.primaryPosition + ',' +
+        '"' + p.orgName + '",' +
+        '"' + p.availableCommissionStrategies + '",' +
+        (p.commissionPlanStart || '') + ',' +
+        (p.commissionPlan || '') + ',' +
+        (p.overridePlanStart || '') + ',' +
+        (p.overridePlan || '') + ',' +
+        (p.residualPlanStart || '') + ',' +
+        (p.residualPlan || '')
 
-        csvData += '\n';
-      })
+      csvData += '\n';
+    })
 
     let blob = new Blob([csvData], {
       type: 'text/csv;charset=utf-8'
@@ -226,8 +246,7 @@ const exportData = async () => {
 </style>
 
 <style lang="scss" scoped>
-.v-data-table {
-  border-radius: 0;
-}
+  .v-data-table {
+    border-radius: 0;
+  }
 </style>
-

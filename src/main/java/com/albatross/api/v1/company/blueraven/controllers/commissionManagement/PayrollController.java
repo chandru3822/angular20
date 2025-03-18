@@ -29,11 +29,11 @@ public class PayrollController {
   public ResponseEntity<?> getCurrentPayroll(@PathVariable Long positionId) {
     Long currentPayrollId = payrollService.findCurrentPayroll(positionId);
     if (currentPayrollId == null) {
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.noContent().build();
     }
     Optional<String> current = payrollService.getPayrollById(currentPayrollId);
     if (current.isEmpty()) {
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.noContent().build();
     }
     return ResponseEntity.ok(current.get());
   }

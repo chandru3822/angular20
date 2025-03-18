@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import { getCurrentInstance, computed, ref } from 'vue'
   import {useUserStore} from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables";
   const route = useRoute()
@@ -28,20 +28,29 @@
 
   const model = ref('')
 
+  const userHasFeatureAccess = computed(() => {
+    return userStore.userHasFeature('COMMISSIONS_CLOSER') ||
+      userStore.userHasFeature('COMMISSIONS_SETTER') ||
+      userStore.userHasFeature('COMMISSIONS_DEALER') ||
+      userStore.userHasFeature('COMMISSIONS_INSTALLATION_PARTNER')
+  })
+
   const tabs = computed(() => {
-    return [ {
+    return [{
       label: 'Payroll Review',
       path: `/commissionManagement/payroll/${route.params.id}/review`,
-      display: userStore.userHasFeature('COMMISSIONS')
+      display: userHasFeatureAccess.value,
     }, {
       label: 'Summary',
       path: `/commissionManagement/payroll/${route.params.id}/summary`,
-      display: userStore.userHasFeature('COMMISSIONS')
+      display: userHasFeatureAccess.value,
     }]
   })
+
   const displayedTabs = computed(() => {
     return tabs.value.filter(tab => tab.display)
   })
+
 </script>
 
 <style lang="scss" scoped>
@@ -49,4 +58,3 @@
     border-radius: 0;
   }
 </style>
-
