@@ -78,9 +78,10 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String getDesignLogNumber = """
-    select ppscfv.int_value
+    select dlh.reference_nbr
         from flow.project_process_step pps
         inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
+        inner join brs.design_log_history dlh on dlh.id = ppscfv.int_value
         where pps.project_id = :projectId and
             pps.main = true and
             ppscfv.custom_field_group_assignment_id = 24211
@@ -88,9 +89,10 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String getPermitPackLogNumber = """
-    select ppscfv.int_value
+    select pplh.permit_pack_log_nbr
         from flow.project_process_step pps
         inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
+        inner join brs.permit_pack_log_history pplh on pplh.id = ppscfv.int_value
         where pps.project_id = :projectId and
             pps.main = true and
             ppscfv.custom_field_group_assignment_id = 26343
