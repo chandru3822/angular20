@@ -12,7 +12,7 @@
               variant="text"
               color="primary"
               @click="[addOrg = !addOrg, newOrg = {}, orgHistory = []]"
-              v-if="canAdd"
+              v-if="canAdd || canEdit || canDelete || isAdmin"
               :prepend-icon="addOrg ? 'remove' : 'add'"
             ></a-btn>
           </v-toolbar-items>
@@ -21,18 +21,19 @@
         <v-card v-if="addOrg" class="square-card text-left px-5 pb-5">
           <v-row>
             <v-col cols="12" md="6">
-              <a-autocomplete v-model="newOrg.orgId"
-                              :items="orgsToAdd"
-                              :loading="orgsLoading"
-                              prepend-icon="search"
-                              cache-items
-                              :search-input.sync="orgSearch"
-                              label="Search for an org..."
-                              item-title="orgName"
-                              item-value="orgId"
-                              autocomplete="off"
-                              @input="getOrgHistory(newOrg.orgId)"
-                              attach
+              <a-autocomplete
+                v-model="newOrg.orgId"
+                :items="orgsToAdd"
+                :loading="orgsLoading"
+                prepend-icon="search"
+                cache-items
+                :search-input.sync="orgSearch"
+                label="Search for an org..."
+                item-title="orgName"
+                item-value="orgId"
+                autocomplete="off"
+                @input="getOrgHistory(newOrg.orgId)"
+                attach
               >
               </a-autocomplete>
               <DatetimePickerInput
@@ -175,7 +176,7 @@
                   variant="text"
                   color="primary"
                   @click="assignedOrgExpanded = []"
-                  v-if="assignedOrgExpanded.includes(item) && canEdit"
+                  v-if="assignedOrgExpanded.includes(item) && canEdit || canDelete"
                   text="Cancel"
                 ></a-btn>
                 <a-btn

@@ -35,18 +35,18 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}" v-if="commissionPositionId === 743 || commissionPositionId === 828">
-              <td class="text-left">{{item.org_id}}</td>
-              <td class="text-left">{{item.org_name}}</td>
-              <td class="text-left">{{formatCurrencyWithDefault(item.total_commissions, '$', 2)}}</td>
-              <td class="text-left">{{formatCurrencyWithDefault(item.current_pay, '$', 2)}}</td>
+              <td class="text-left">{{item[orgIdField] || '-'}}</td>
+              <td class="text-left">{{item[orgNameField] || '-'}}</td>
+              <td class="text-left">{{item.total_commissions || 0 | currency('$', 2)}}</td>
+              <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
               <td></td>
             </tr>
             <tr :class="{'shaded-row': index % 2}" v-else>
               <td class="text-left">{{item.closer_user}}</td>
-              <td class="text-left">{{formatCurrencyWithDefault(item.total_commission, '$', 2)}}</td>
-              <td class="text-left">{{formatCurrencyWithDefault(item.total_overrides, '$', 2)}}</td>
-              <td class="text-left">{{formatCurrencyWithDefault(item.commission_adjustments, '$', 2)}}</td>
-              <td class="text-left">{{formatCurrencyWithDefault(item.current_pay, '$', 2)}}</td>
+              <td class="text-left">{{item.total_commission || 0 | currency('$', 2)}}</td>
+              <td class="text-left">{{item.total_overrides || 0 | currency('$', 2)}}</td>
+              <td class="text-left">{{item.commission_adjustments || 0 | currency('$', 2)}}</td>
+              <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
               <td></td>
             </tr>
           </template>
@@ -60,7 +60,7 @@
 <script setup>
   import { saveAs } from 'file-saver'
 
-  import {handleHidingGlobalLoader, getRequest, formatCurrencyWithDefault} from '@/helpers/helpers.js'
+  import {handleHidingGlobalLoader, getRequest } from '@/helpers/helpers.js'
   import constants from "@/helpers/constants.js";
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
   import {useUserStore} from '@/stores/UserStore.js'
@@ -101,6 +101,20 @@
   { text: 'Current Pay', value: 'current_pay', show: true },
   { text: '', value: 'icons', show: true, width: 40 },
   ])
+
+  /*
+ * Adding conditional fields below
+ * `Installation Partner` returns `org_id` and `org_name` in the response
+ * `Dealer` returns `partner_org_id` and `partner_org_name` in the response
+ */
+  const orgIdField = computed(() => {
+    return commissionPositionId.value === 828 ? 'org_id' : 'partner_org_id';
+  });
+
+  const orgNameField = computed(() => {
+    return commissionPositionId.value === 828 ? 'org_name' : 'partner_org_name';
+  })
+
   const partnerHeaders = ref([
   { text: 'Org ID', value: 'org_id', show: true },
   { text: 'Org Name', value: 'org_name', show: true },
@@ -118,20 +132,25 @@
   })
 
   const viewSummary = async() => {
-  appStore.loading = true
-  dataLoading.value = true
-  try {
-    const {data, status} = await getRequest(`/payroll/${payrollId.value}/summary`, 'blueraven')
-    payrollSummary.value = data || []
-    dataLoading.value = false
-    handleHidingGlobalLoader( status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Retrieving Payroll Summary')
+    appStore.loading = true
+    dataLoading.value = true
+    try {
+      const {data, status} = await getRequest(`/payroll/${payrollId.value}/summary`, 'blueraven')
+      payrollSummary.value = data || []
+      dataLoading.value = false
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Payroll Summary')
 
-    appStore.loading = false
+      appStore.loading = false
+    }
   }
-  }
+
+  // Format currency values with $0.00
+  const formatCurrencyForCSV = (value) => {
+    return ((value === 0 || value === null || value === undefined) ? '$0.00' : `$${parseFloat(value).toFixed(2)}`) ?? '-';
+  };
 
   const exportPayrollSummary = async () => {
   appStore.loading = true
@@ -139,30 +158,14 @@
     let filename = 'Payroll Summary.csv';
     let csvData;
 
-    // Format currency values with $0.00 instead if returns `0`
-    const formatCurrencyForCSV = (value) => {
-      if (value === 0) {
-        return '$0.00'
-      }
-      let curVal;
-      if (typeof (value) === 'string') {
-        curVal = parseFloat(value).toFixed(2);
-      } else if (typeof (value) === 'number' || typeof (value) === 'bigint') {
-        curVal = value.toFixed(2);
-      } else {
-        return '-'
-      }
-      return `$${curVal}`
-    };
-
     if (commissionPositionId.value === 743 || commissionPositionId.value === 828) {
       csvData = 'Org ID, Org Name, Total Commission, Current Pay';
       csvData += '\n';
 
       payrollSummary.value.forEach(p => {
         csvData +=
-          p.org_id + ',' +
-          p.org_name + ',' +
+          (p[orgIdField.value] || '-') + ',' +
+          (p[orgNameField.value] || '-') + ',' +
           formatCurrencyForCSV(p.total_commission) + ',' +
           formatCurrencyForCSV(p.current_pay)
         csvData += '\n';
@@ -181,7 +184,6 @@
         csvData += '\n';
       })
     }
-
 
     let blob = new Blob([csvData], {
       type: 'text/csv;charset=utf-8'

@@ -26,14 +26,14 @@
             color="primary"
             class="mr-2"
             :disabled="!commission.name || !commission.positionId"
-            v-if="userCanEdit"
+            v-if="userCanEdit || userCanAdd || userIsAdmin"
             @click="savePlan()"
             text="Save"
           />
           <a-btn
             color="success"
             class="mr-2"
-            v-if="userIsAdmin && planId && commission.statusType === 'PENDING'"
+            v-if="(userIsAdmin || userCanEdit || userCanAdd) && planId && commission.statusType === 'PENDING'"
             :disabled="errorMessages.length > 0"
             @click="approvePlan()"
           >
@@ -47,13 +47,13 @@
             Are you sure you want to delete this plan?
           </ConfirmationDialog>
           <a-btn
-            v-if="planId && !commission.approved && (userCanDelete)"
+            v-if="planId && !commission.approved && (userCanDelete || userCanEdit || userIsAdmin)"
             @click="showDeleteConfirm = true"
             color="error"
             text="Delete"
           />
           <a-btn
-            v-else-if="(planId && (userCanDelete || userCanEdit) && commission.statusType !== 'INACTIVE')"
+            v-else-if="(planId && (userCanDelete || userCanEdit || userIsAdmin || userCanAdd) && commission.statusType !== 'INACTIVE')"
             @click="inactivateConfirm = true"
             color="error"
             class="mr-2"

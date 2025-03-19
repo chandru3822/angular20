@@ -24,7 +24,7 @@
           </tr>
           <tr>
             <td class="text-left pr-3"><strong>Payroll Ending</strong></td>
-            <td class="text-left">{{payroll.periodEnd | formatDate('date')}}</td>
+            <td class="text-left">{{payroll.periodEnd | formatDate('date') || '-'}}</td>
           </tr>
           <tr>
             <td class="text-left pr-3"><strong>Description</strong></td>
@@ -32,7 +32,7 @@
           </tr>
           <tr v-for="(hx, idx) in payroll.history" :key="idx">
             <td class="text-left pr-3"><strong>{{hx.actionType}}</strong></td>
-            <td class="text-left">{{hx.actionUser}} - {{hx.actionDate | formatDate('date')}}</td>
+            <td class="text-left">{{hx.actionUser}} - {{hx.actionDate | formatDate('date') || '-'}}</td>
           </tr>
         </table>
       </v-col>
@@ -66,30 +66,81 @@
           </template>
 
           <template v-slot:item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
+            <tr :class="{'shaded-row': index % 2}" v-if="commissionPositionId === 743 || commissionPositionId === 828">
               <td class="text-left">{{ formatOrDash(item.projectId) }}</td>
               <td class="text-left">{{ formatOrDash(item.customerName) }}</td>
               <td class="text-left">{{ formatOrDash(item.systemSize) }}</td>
               <td class="text-left">{{ formatOrDash(item.panelQuantity) }}</td>
               <td class="text-left">{{ formatOrDash(item.partnerOrgName) }}</td>
               <td class="text-left">{{ formatOrDash(item.partnerOrgId) }}</td>
-              <td class="text-left">{{ formatOrDash(item[milestone1Field]) }}</td>
-              <td class="text-left">{{ formatOrDash(item[milestone2Field]) }}</td>
+              <td class="text-left">{{ item[milestone1Field] | formatDate('date') || '-'}}</td>
+              <td class="text-left">{{ item[milestone2Field] | formatDate('date') || '-' }}</td>
               <td class="text-left">{{ formatOrDash(item.commissionPlan) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.baseCommission, '$', 2) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.customAdderAmount, '$', 2) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.selectedAdderAmount, '$', 2) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.totalCommissions, '$', 2) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.commissionsEarned, '$', 2) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.commissionPaidToDate, '$', 2) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.currentPayCommissions, '$', 2) }}</td>
-              <td class="text-left">{{ formatCurrencyFn(item.remainingValueCommissions, '$', 2) }}</td>
+              <td class="text-left">{{ item.baseCommission || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.customAdderAmount || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.selectedAdderAmount || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.totalCommissions || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commissionsEarned || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commissionPaidToDate || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.currentPayCommissions || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.remainingValueCommissions || 0 | currency('$', 2) }}</td>
+            </tr>
+
+            <tr :class="{'shaded-row': index % 2, 'error--text': item.closer_is_terminated }" v-else-if="commissionPositionId === 1">
+              <td class="text-left">{{ formatOrDash(item.projectId) }}</td>
+              <td class="text-left">{{ formatOrDash(item.customerName) }}</td>
+              <td class="text-left">{{ formatOrDash(item.systemSize) }}</td>
+              <td class="text-left">{{ formatOrDash(item.salesRep) }}</td>
+              <td class="text-left">{{ formatOrDash(item.source) }}</td>
+              <td class="text-left">{{ formatOrDash(item.stage) }}</td>
+              <td class="text-left">{{ formatOrDash(item.cancelled) }}</td>
+              <td class="text-left">{{ item.installAgreementSigned | formatDate('date') || '-' }}</td>
+              <td class="text-left">{{ item.finalDesignSigned | formatDate('date') || '-' }}</td>
+              <td class="text-left">{{ item.financialAgreementSent | formatDate('date') || '-' }}</td>
+              <td class="text-left">{{ formatOrDash(item.percentOfCashDeposit) }}</td>
+              <td class="text-left">{{ item.sc | formatDate('date') || '-' }}</td>
+              <td class="text-left">{{ formatOrDash(item.commissionPlan) }}</td>
+              <td class="text-left">{{ formatOrDash(item.commissionStrategyName) }}</td>
+              <td class="text-left">{{ item.commissionsEarned || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commissionPaidToDate || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commissionForfeitedPaidToDate || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commissionForfeitedByCloser || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.forfeitedAmount || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commissionAdjustment || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.currentPayCommissions || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.remainingValueCommissions || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ formatOrDash(item.overridePlan) }}</td>
+              <td class="text-left">{{ item.overrideEarned || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.overridesPaidToDate || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.currentPayOverrides || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.remainingValueOverrides || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.currentPay || 0 | currency('$', 2) }}</td>
+            </tr>
+
+            <tr :class="{'shaded-row': index % 2, 'error--text': item.closer_is_terminated}" v-else>
+              <td class="text-left">{{ formatOrDash(item.project_id) }}</td>
+              <td class="text-left">{{ formatOrDash(item.project_name) }}</td>
+              <td class="text-left">{{ formatOrDash(item.sales_rep) }}</td>
+              <td class="text-left">{{ item.current_pay || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ formatOrDash(item.source_name) }}</td>
+              <td class="text-left">{{ formatOrDash(item.cancelled_date) }}</td>
+              <td class="text-left">{{ item.closer_appointment_start | formatDate('date') || '-'</td>
+              <td class="text-left">{{ formatOrDash(item.closer_appointment_outcome) }}</td>
+              <td class="text-left">{{ formatOrDash(item.commission_plan) }}</td>
+              <td class="text-left">{{ item.commissions_earned || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.commission_adjustment || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.current_pay_commissions || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ formatOrDash(item.override_plan) }}</td>
+              <td class="text-left">{{ item.override_earned || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.overrides_paid_to_date || 0 | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.current_pay_overrides || 0 | currency('$', 2) }}</td>
             </tr>
           </template>
 
-          <template v-slot:body.append="{ partnerHeaders }">
+          <template v-slot:body.append="{ headers }">
             <tr>
-              <td v-for="(header, i) in partnerHeaders" :key="i" class="font-weight-bold">
+              <td v-for="(header, i) in headers" :key="i" class="font-weight-bold">
               </td>
             </tr>
           </template>
@@ -105,8 +156,11 @@
 
   import { saveAs } from 'file-saver'
   import constants from "@/helpers/constants.js";
-  import { formatOrDash } from '@/helpers/helpers.js'
-  import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers.js'
+  import {
+    handleHidingGlobalLoader,
+    getRequest,
+    formatOrDash
+  } from '@/helpers/helpers.js'
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStore.js'
@@ -299,15 +353,10 @@
     }
   }
 
-  const formatCurrencyFn = (value, currencySymbol = '$', decimals = 2) => {
-    // Return $0.00 for null, undefined, or 0 values
-    if (value === null || value === undefined || value === 0) {
-      return `${currencySymbol}0.00`;
-    }
-
-    // Format the number with proper decimal places
-    return `${currencySymbol}${parseFloat(value).toFixed(decimals)}`;
-  }
+  // Format currency values with $0.00
+  const formatCurrencyForCSV = (value) => {
+    return ((value === 0 || value === null || value === undefined) ? '$0.00' : `$${parseFloat(value).toFixed(2)}`) ?? '-';
+  };
 
   const exportPayrollReview = async () => {
     appStore.loading = true
@@ -379,21 +428,6 @@
           csvData += '\n';
         })
       } else if (payroll.value.positionId === 743 || payroll.value.positionId === 828) {
-        // Format currency values with $0.00 instead if returns `0`
-        const formatCurrencyForCSV = (value) => {
-          if (value === 0) {
-            return '$0.00'
-          }
-          let curVal;
-          if (typeof (value) === 'string') {
-            curVal = parseFloat(value).toFixed(2);
-          } else if (typeof (value) === 'number') {
-            curVal = value.toFixed(2);
-          } else {
-            return '-'
-          }
-          return `$${curVal}`
-        };
 
         csvData = 'Project ID,Customer Name,System Size (kW),Panel Quantity,Org Name,Org ID,Milestone 1 Date,Milestone 2 Date,Commission Plan,Base Commission,Custom Adders,Selected Adders,Total Commissions,Commission Earned,Commission Paid to Date,Commission Pay,Remaining Commission Value'
         csvData += '\n'
@@ -455,7 +489,6 @@
           csvData += '\n';
         })
       }
-
 
       let blob = new Blob([csvData], {
         type: 'text/csv;charset=utf-8'

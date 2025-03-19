@@ -91,9 +91,9 @@ const headers = ref([
 const getCurrentPayroll = async() => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/payroll/current/${positionId.value}`, 'blueraven')
+    const {data, status} = await getRequest(`/payroll/current/${commissionPositionId.value}`, 'blueraven')
     currentPayroll.value = data
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Loading Current Payroll')
@@ -105,7 +105,7 @@ const viewSummary = async () => {
   appStore.loading = true
   dataLoading.value = true
   try {
-    const {data, status} = await getRequest(`/payroll/current/summary/${positionId.value}`, 'blueraven')
+    const {data, status} = await getRequest(`/payroll/current/summary/${commissionPositionId.value}`, 'blueraven')
     payrollSummary.value = data
     dataLoading.value = false
     handleHidingGlobalLoader( status)
@@ -153,7 +153,6 @@ const exportPayrollSummary = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Exporting Payroll Summary')
-
     appStore.loading = false
   }
 }

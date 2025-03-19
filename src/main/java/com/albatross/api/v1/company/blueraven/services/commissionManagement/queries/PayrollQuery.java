@@ -441,6 +441,8 @@ public class PayrollQuery {
                   s.partner_org_id as "partnerOrgId",
                   s.sc,
                   s.system_size as "systemSize",
+                  s.final_design_complete_date as "finalDesignCompleteDate",
+                  s.panel_quantity as "panelQuantity",
                   s.total_commissions as "totalCommissions",
                   s.updated
            FROM brs.partner_project_commission_snapshot s

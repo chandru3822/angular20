@@ -197,8 +197,8 @@
               <v-checkbox color="primary" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
             </template>
 
-            <template v-slot:item="{ item }">
-              <tr :class="{'error--text': item.closer_is_terminated }">
+            <template v-slot:item="{ item, index }">
+              <tr :class="{'shaded-row': index % 2, 'error--text': item.closer_is_terminated }">
                 <td v-if="payrollStatus.showSelect">
                   <v-checkbox color="primary" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
@@ -208,23 +208,29 @@
                 <td class="text-left">{{ formatOrDash(item.panel_quantity) }}</td>
                 <td class="text-left">{{ formatOrDash(item.partner_org_name) }}</td>
                 <td class="text-left">{{ formatOrDash(item.org_id) }}</td>
-                <td class="text-left">{{ formatOrDash(item[milestone1Field]) }}</td>
-                <td class="text-left">{{ formatOrDash(item[milestone2Field]) }}</td>
+                <td class="text-left">{{ item[milestone1Field] | formatDate('date') || '-' }}</td>
+                <td class="text-left">{{ item[milestone2Field] | formatDate('date') || '-' }}</td>
                 <td class="text-left">{{ formatOrDash(item.commission_plan) }}</td>
-                <td class="text-left">{{ formatCurrency(item.base_commission, '$', 2) }}</td>
-                <td class="text-left">{{ formatCurrency(item.custom_adder_amount, '$', 2) }}</td>
-                <td class="text-left">{{ formatCurrency(item.selected_adder_amount, '$', 2) }}</td>
-                <td class="text-left">{{ formatCurrency(item.total_commissions, '$', 2) }}</td>
-                <td class="text-left">{{ formatCurrency(item.commission_earned, '$', 2) }}</td>
-                <td class="text-left">{{ formatCurrency(item.commission_paid_to_date, '$', 2) }}</td>
-                <td class="text-left">{{ formatCurrency(item.current_pay_commissions, '$', 2) }}</td>
-                <td class="text-left">{{ formatCurrency(item.remaining_value_commissions, '$', 2) }}</td>
+                <td class="text-left">{{ item.base_commission || 0 | currency('$', 2)}}</td>
+                <td class="text-left">{{ item.custom_adder_amount || 0 | currency('$', 2)}}</td>
+                <td class="text-left">{{ item.selected_adder_amount || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{ item.total_commissions || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{ item.commission_earned || 0 | currency('$', 2)}}</td>
+                <td class="text-left">{{ item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{ item.current_pay_commissions || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{ item.remaining_value_commissions || 0 | currency('$', 2) }}</td>
               </tr>
             </template>
 
             <template v-slot:body.append="{ headers }">
               <tr>
                 <td v-for="(header, i) in headers" :key="i" class="font-weight-bold">
+                  <div v-if="header.value === 'panel_quantity'">
+                    Total Pay:
+                  </div>
+                  <div v-if="header.value === 'org_id'">
+                    {{ totalPay | currency('$', 2) }}
+                  </div>
                 </td>
               </tr>
             </template>
@@ -627,15 +633,10 @@
     }
   }
 
-  const formatCurrency = (value, currencySymbol = '$', decimals = 2) => {
-    // Return $0.00 for null, undefined, or 0 values
-    if (value === null || value === undefined || value === 0) {
-      return `${currencySymbol}0.00`;
-    }
-
-    // Format the number with proper decimal places
-    return `${currencySymbol}${parseFloat(value).toFixed(decimals)}`;
-  }
+  // Format currency values with $0.00 or '-' if NaN
+  const formatCurrencyForCSV = (value) => {
+    return ((value === 0 || value === null || value === undefined) ? '$0.00' : `$${parseFloat(value).toFixed(2)}`) ?? '-';
+  };
 
   const exportAccountingReview = async () => {
     appStore.loading = true
@@ -649,11 +650,6 @@
           // Use the computed milestone fields
           const milestone1 = p[milestone1Field.value] || '-';
           const milestone2 = p[milestone2Field.value] || '-';
-
-          // Format currency values with $0.00 instead of dashes
-          const formatCurrencyForCSV = (value) => {
-            return (value === 0) ? '$0.00' : `$${parseFloat(value).toFixed(2)}`;
-          };
 
           csvData +=
             (p.project_id || '-') + ',"' +
