@@ -38,10 +38,6 @@ BEGIN
                  where dv.id = 2 and p.company_process_id = any (dv.company_process_ids));
     if v_project_id is not null then
 
-      select fd.id
-      into v_financial_details_id
-      from brs.financial_details fd
-      where fd.project_id = p_project_id;
 
 --       if v_financial_details_id is null then
 --         insert into brs.financial_details(project_id, contact_id, company_id, date_modified)
@@ -57,7 +53,14 @@ BEGIN
           v_partner_m2_amount = 0::numeric;
           v_partner_total_commissions = 0::numeric;
           v_contact_id = null;
+          v_financial_details_id = null;
+          v_financial_details_partner_id = null;
 
+          select fd.id
+          into v_financial_details_id
+          from brs.financial_details fd
+          inner join brs.financial_details_partner f on f.financial_details_id = fd.id
+          where fd.project_id = p_project_id and f.org_id = elem;
 
           select cp.id, cp.name, cps.status_type, cp.position_id
           into v_commission_plan_id,v_name,v_status_type,v_position_id
@@ -103,6 +106,8 @@ BEGIN
                  partner_commission_amount
           into v_partner_m1_amount,v_partner_m2_amount,v_partner_total_commissions,v_custom_adder_amount,v_selected_adder_amount,v_partner_commission_amount
           from brs.get_partner_commissions_earned(p_project_id, elem);
+
+
 
           update brs.financial_details_partner fdp
           set partner_commissions_earned_m1 =v_partner_m1_amount,
