@@ -37,8 +37,7 @@ BEGIN
                  where exists(select dvfc2.id
                               from flow.data_view_field_config dvfc2
                               where dvfc2.data_view_id = z.id
-                                and dvfc2.id = a.dvfc_id
-                         )
+                                and dvfc2.id = a.dvfc_id)
           loop
             execute format('SELECT $1.%I', x.column_name)
               into v_value using new;
@@ -81,7 +80,7 @@ CREATE TRIGGER contact_details_trg
   after update
   ON flow.contact
   FOR EACH ROW
---     when (
+  --     when (
 --   coalesce(new.email,'') != coalesce(old.email,'') or
 --   coalesce(new.phone,'') != coalesce(old.phone,'') or
 --   coalesce(new.mobile,'') != coalesce(old.mobile,'') or
@@ -112,16 +111,16 @@ CREATE OR REPLACE FUNCTION flow.update_contact_custom_field_value_details()
 $body$
 
 declare
-  z             record;
-  x             record;
-  v_project_ids text;
-  v_company_id  bigint;
-  v_sql         character varying;
-  v_value       character varying;
-  v_count       bigint;
+  z                     record;
+  x                     record;
+  v_project_ids         text;
+  v_company_id          bigint;
+  v_sql                 character varying;
+  v_value               character varying;
+  v_count               bigint;
   v_company_process_ids bigint[];
 BEGIN
-  select quote_literal(array_agg(p.id)::text),array_agg(distinct p.company_process_id)
+  select quote_literal(array_agg(p.id)::text), array_agg(distinct p.company_process_id)
   into v_project_ids,v_company_process_ids
   from flow.contact c
          inner join flow.project p on c.id = p.contact_id
@@ -136,11 +135,11 @@ BEGIN
            where exists(select ao.dvfc_id
                         from flow.get_data_view_field_configs(dv.id,
                                                               null,
-                                                              new.custom_field_group_assignment_id) ao) and
-               v_company_process_ids && dv.company_process_ids
+                                                              new.custom_field_group_assignment_id) ao)
+             and v_company_process_ids && dv.company_process_ids
     loop
       v_sql = NULL;
-      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
+      for x in select a.*, lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) a
@@ -154,7 +153,7 @@ BEGIN
                                                       when x.data_type_id = 2 then new.timestamp_value::text
                                                       when x.data_type_id = 3 then new.boolean_value::text
                                                       when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id in (5,13) then new.text_value::text
+                                                      when x.data_type_id in (5, 13) then new.text_value::text
                                                       when x.data_type_id = 6 then new.int_value::text
                                                       when x.data_type_id = 7 then new.int_array_value::text
                                                       when x.data_type_id in (8, 9) then new.int_value::text end,
@@ -184,22 +183,22 @@ BEGIN
     end loop;
 
 -- --TODO take this out again after we figure out how closers are changing this field.
-  if (TG_OP = 'UPDATE' and new.custom_field_group_assignment_id = 395 and old.int_value is not null and old.int_value != new.int_value) THEN
+  if (TG_OP = 'UPDATE' and new.custom_field_group_assignment_id = 395 and old.int_value is not null and
+      old.int_value != new.int_value) THEN
 
     select count(1)
     into v_count
     from flow.user_position up
     where up.user_id = new.modified_by_id
-      and up.position_id in (1,2)
+      and up.position_id in (1, 2)
       and up.archived is false
       and up.primary_flag is true
       and up.end_date is null
-      and 1 = ( select count(1)
-                from flow.user_position up2
-                where up2.user_id = up.user_id
-                  and up2.archived is false
-                  and up2.end_date is null
-    );
+      and 1 = (select count(1)
+               from flow.user_position up2
+               where up2.user_id = up.user_id
+                 and up2.archived is false
+                 and up2.end_date is null);
 
     if v_count > 0 then
       raise exception 'You do not have rights to update the Lead Source for this Contact. Please contact Carlin Johnson if you see this error message.';
@@ -231,6 +230,8 @@ declare
   v_project_ids text;
   v_value       text;
   y             record;
+  v_CFGA_PARTNER_ORG_ASSIGNMENT bigint[];
+  v_partner_count bigint;
 BEGIN
   select company_id
   into v_company_id
@@ -239,34 +240,37 @@ BEGIN
   limit 1;
 
   IF (TG_OP = 'INSERT') THEN
-    for y in select dv2.view_name,c.schema_name
+    for y in select dv2.view_name, c.schema_name
              from flow.data_view dv2
-             inner join flow.company c on dv2.company_id = c.id
+                    inner join flow.company c on dv2.company_id = c.id
              where new.company_process_id = any (dv2.company_process_ids)
       loop
-        v_insert_sql = $$insert into $$||y.schema_name||$$.$$||y.view_name||$$(project_id, company_id, contact_id,date_modified) values ($$
-        ||new.id||$$,$$||v_company_id||$$,$$||new.contact_id||$$,$$||quote_literal(now())||$$);$$;
+        v_insert_sql = $$insert into $$ || y.schema_name || $$.$$ || y.view_name ||
+                       $$(project_id, company_id, contact_id,date_modified) values ($$
+                         || new.id || $$,$$ || v_company_id || $$,$$ || new.contact_id || $$,$$ ||
+                       quote_literal(now()) || $$);$$;
         execute v_insert_sql;
         update flow.contact set id = id where id = new.contact_id;
       end loop;
 
-      update flow.contact
-      set date_modified = now()
+    update flow.contact
+    set date_modified = now()
     where id = new.contact_id;
 
-    with update_data as (
-      select ccfv2.id
-      from flow.data_view_field_config dvfc
-             inner join flow.custom_field_group_assignment cfga on dvfc.custom_field_group_assignment_id = cfga.id
-             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
-             inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id and cot.object_type_id in (2)
-             inner join flow.contact_custom_field_value ccfv2 on cfga.id = ccfv2.custom_field_group_assignment_id
-             inner join flow.contact c on ccfv2.contact_id = c.id and c.id = new.contact_id
-    )
+    with update_data as (select ccfv2.id
+                         from flow.data_view_field_config dvfc
+                                inner join flow.custom_field_group_assignment cfga
+                                           on dvfc.custom_field_group_assignment_id = cfga.id
+                                inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                                inner join flow.company_object_type cot
+                                           on cfg.company_object_type_id = cot.id and cot.object_type_id in (2)
+                                inner join flow.contact_custom_field_value ccfv2
+                                           on cfga.id = ccfv2.custom_field_group_assignment_id
+                                inner join flow.contact c on ccfv2.contact_id = c.id and c.id = new.contact_id)
     update flow.contact_custom_field_value ccfv
     set id = ud.id
     from update_data ud
-    where ud.id= ccfv.id;
+    where ud.id = ccfv.id;
 
 
   end if;
@@ -279,13 +283,13 @@ BEGIN
            where exists(select ao.dvfc_id
                         from flow.get_data_view_field_configs(dv.id,
                                                               'PROJECT',
-                                                              null) ao) and
-             new.company_process_id = any(dv.company_process_ids)
+                                                              null) ao)
+             and new.company_process_id = any (dv.company_process_ids)
 
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
+      for x in select a.*, lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      'PROJECT',
                                                      null) a
@@ -308,7 +312,7 @@ BEGIN
                                                     x.update_first_value_only_id,
                                                     x.is_last_row,
                                                     x.data_type_id,
-                                                     new.id);
+                                                    new.id);
 
         end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
@@ -330,6 +334,24 @@ BEGIN
                                               old.company_project_status_type_id,
                                               new.id);
 
+  select (select string_to_array(value, ',')
+          from flow.company_configuration_value
+          where code = 'CFGA_PARTNER_ORG_ASSIGNMENT')::bigint[]
+  into v_CFGA_PARTNER_ORG_ASSIGNMENT;
+
+  select count(1)
+  into v_partner_count
+    from flow.project_custom_field_value pcfv
+  where pcfv.project_id = new.id and
+        pcfv.custom_field_group_assignment_id = any(v_CFGA_PARTNER_ORG_ASSIGNMENT) and
+        pcfv.int_value is not null;
+
+  if ((new.cancelled_date is not null and old.cancelled_date is null) or (old.cancelled_date is not null and new.cancelled_date is null)) and v_partner_count > 0 then
+    perform flow.company_pps_specific_tasks(3,
+                                            new.id,
+                                            new.created_by_id, new.modified_by_id);
+  end if;
+
   RETURN null;
 END
 $body$
@@ -348,17 +370,20 @@ CREATE OR REPLACE FUNCTION flow.update_project_custom_field_value_details()
 $body$
 
 declare
-  v_project_ids text;
-  z             record;
-  x             record;
-  v_company_id  bigint;
-  v_sql         character varying;
-  v_value       character varying;
-  v_count       bigint;
-  v_company_process_id bigint;
+  v_project_ids                 text;
+  z                             record;
+  x                             record;
+  v_company_id                  bigint;
+  v_sql                         character varying;
+  v_value                       character varying;
+  v_count                       bigint;
+  v_company_process_id          bigint;
+  v_CFGA_PARTNER_ORG_ASSIGNMENT bigint[];
+  v_CFGA_PARTNER_COMMISSIONS bigint[];
+  v_project_partner_org_ids bigint[];
 BEGIN
 
-  select company_id,p.company_process_id
+  select company_id, p.company_process_id
   into v_company_id,v_company_process_id
   from flow.project p
          inner join flow.contact c on c.id = p.contact_id
@@ -371,11 +396,11 @@ BEGIN
            where exists(select ao.dvfc_id
                         from flow.get_data_view_field_configs(dv.id,
                                                               null,
-                                                              new.custom_field_group_assignment_id) ao) and
-               v_company_process_id = any(dv.company_process_ids)
+                                                              new.custom_field_group_assignment_id) ao)
+             and v_company_process_id = any (dv.company_process_ids)
     loop
       v_sql = NULL;
-      for x in select a.*,lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
+      for x in select a.*, lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) a
@@ -389,7 +414,7 @@ BEGIN
                                                       when x.data_type_id = 2 then new.timestamp_value::text
                                                       when x.data_type_id = 3 then new.boolean_value::text
                                                       when x.data_type_id = 4 then new.numeric_value::text
-                                                      when x.data_type_id in (5,13) then new.text_value::text
+                                                      when x.data_type_id in (5, 13) then new.text_value::text
                                                       when x.data_type_id = 6 then new.int_value::text
                                                       when x.data_type_id = 7 then new.int_array_value::text
                                                       when x.data_type_id in (8, 9) then new.int_value::text end,
@@ -419,6 +444,29 @@ BEGIN
         end loop;
     end loop;
 
+    select (select string_to_array(value, ',')
+          from flow.company_configuration_value
+          where code = 'CFGA_PARTNER_ORG_ASSIGNMENT')::bigint[]
+  into v_CFGA_PARTNER_ORG_ASSIGNMENT;
+
+    if new.custom_field_group_assignment_id = any(v_CFGA_PARTNER_ORG_ASSIGNMENT) then
+      perform flow.company_pcfv_specific_tasks(new.project_id,v_company_id,
+                                               new.int_value,old.int_value);
+   end if;
+
+  select brs.get_partner_projects(new.project_id)
+  into v_project_partner_org_ids;
+
+  select (select string_to_array(value, ',')
+          from flow.company_configuration_value
+          where code = 'CFGA_PARTNER_COMMISSIONS')::bigint[]
+  into v_CFGA_PARTNER_COMMISSIONS;
+
+  if new.custom_field_group_assignment_id = any (v_CFGA_PARTNER_COMMISSIONS) and v_project_partner_org_ids is not null and array_length(v_project_partner_org_ids,1)>0 then
+    perform flow.company_pps_specific_tasks(3,
+                                            new.project_id,
+                                            new.created_by_id, new.modified_by_id);
+  end if;
 --   --TODO what to do here
 --   if (TG_OP = 'UPDATE') THEN
 --     select count(1)
@@ -451,17 +499,20 @@ CREATE OR REPLACE FUNCTION flow.update_project_process_step_details()
 $body$
 
 declare
-  v_project_id           bigint;
-  v_sql                  text;
-  z                      record;
-  x                      record;
-  v_company_id           bigint;
-  v_project_ids          text;
-  v_value                character varying;
-  v_company_process_id bigint;
+  v_project_id                bigint;
+  v_sql                       text;
+  z                           record;
+  x                           record;
+  v_company_id                bigint;
+  v_project_ids               text;
+  v_value                     character varying;
+  v_company_process_id        bigint;
+  v_parent_count   bigint;
+  v_parent_process_step_event_ids bigint[];
+  v_parent_process_step_ids  bigint[];
 BEGIN
 
-  select p.id, c.company_id,p.company_process_id
+  select p.id, c.company_id, p.company_process_id
   into v_project_id,v_company_id,v_company_process_id
   from flow.project p
          inner join flow.contact c on p.contact_id = c.id
@@ -476,12 +527,14 @@ BEGIN
                         from flow.get_data_view_field_configs(dv.id,
                                                               'PROCESS_STEP',
                                                               null) ao
-                        where ao.process_step_id = new.process_step_id) and
-               v_company_process_id = any(dv.company_process_ids)
+                        where ao.process_step_id = new.process_step_id)
+             and v_company_process_id = any (dv.company_process_ids)
     loop
       v_sql = NULL;
       v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-      for x in select a.*,lead(a.dvfc_id) OVER (order by a.update_first_value_only_id nulls last) IS NULL::boolean AS is_last_row
+      for x in select a.*,
+                      lead(a.dvfc_id)
+                      OVER (order by a.update_first_value_only_id nulls last) IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      'PROCESS_STEP',
                                                      null) a
@@ -489,58 +542,57 @@ BEGIN
                order by update_first_value_only_id nulls last
 
         loop
-          if ((x.reset_values_on_main is true and new.main is true) or
-              (x.reset_values_on_main is false)) then
-            execute format('SELECT $1.%I', x.column_name)
-              into v_value using new;
-            select *
-            into v_sql
-            from flow.execute_data_view_field_configs(x.contains_children,
-                                                      v_value,
-                                                      x.dvfc_id,
-                                                      new.id,
-                                                      v_sql,
-                                                      x.field_to_update,
-                                                      x.update_first_value_only,
-                                                      x.update_first_value_only_id,
-                                                      x.is_last_row,
-                                                      x.data_type_id);
+            if ((x.reset_values_on_main is true and new.main is true) or
+                (x.reset_values_on_main is false)) then
+              execute format('SELECT $1.%I', x.column_name)
+                into v_value using new;
+              select *
+              into v_sql
+              from flow.execute_data_view_field_configs(x.contains_children,
+                                                        v_value,
+                                                        x.dvfc_id,
+                                                        new.id,
+                                                        v_sql,
+                                                        x.field_to_update,
+                                                        x.update_first_value_only,
+                                                        x.update_first_value_only_id,
+                                                        x.is_last_row,
+                                                        x.data_type_id);
 
-            if x.update_first_value_only is true then
-              v_sql = trim(trailing ' ,' from v_sql);
-              select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                           v_value::text, null::text, null::text,
-                                                           x.update_first_value_only,
-                                                           x.update_first_value_only_id,
-                                                           x.is_last_row, true, v_project_ids)
-              into v_sql;
-              begin
-                execute v_sql;
-              exception
-                when others then
-                  insert into flow.trigger_error(project_process_step_id, error)
-                  values (new.id, SQLERRM);
-              end;
-              v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+              if x.update_first_value_only is true then
+                v_sql = trim(trailing ' ,' from v_sql);
+                select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                             v_value::text, null::text, null::text,
+                                                             x.update_first_value_only,
+                                                             x.update_first_value_only_id,
+                                                             x.is_last_row, true, v_project_ids)
+                into v_sql;
+                begin
+                  execute v_sql;
+                exception
+                  when others then
+                    insert into flow.trigger_error(project_process_step_id, error)
+                    values (new.id, SQLERRM);
+                end;
+                v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
             end if;
           end if;
         end loop;
-      if x.update_first_value_only is not true then
-        select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                     v_value::text, null::text, null::text,
-                                                     x.update_first_value_only,
-                                                     x.update_first_value_only_id,
-                                                     x.is_last_row, true, v_project_ids)
-        into v_sql;
-        begin
-          execute v_sql;
-        exception
-          when others then
-            insert into flow.trigger_error(project_process_step_id, error)
-            values (new.id, SQLERRM);
-        end;
-      end if;
-
+        if x.update_first_value_only is not true then
+          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                       v_value::text, null::text, null::text,
+                                                       x.update_first_value_only,
+                                                       x.update_first_value_only_id,
+                                                       x.is_last_row, true, v_project_ids)
+          into v_sql;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_id, error)
+              values (new.id, SQLERRM);
+          end;
+        end if;
     end loop;
 
   RETURN NULL;
@@ -561,16 +613,21 @@ CREATE OR REPLACE FUNCTION flow.update_project_process_step_custom_field_value_d
 $body$
 
 declare
-  v_project_ids text;
-  v_project_id  bigint;
-  v_sql         character varying;
-  v_value       character varying;
-  v_project_id1 bigint;
-  v_company_id  bigint;
-  z             record;
-  x             record;
-  v_main boolean default false;
-  v_company_process_id bigint;
+  v_project_ids                   text;
+  v_project_id                    bigint;
+  v_sql                           character varying;
+  v_value                         character varying;
+  v_project_id1                   bigint;
+  v_company_id                    bigint;
+  z                               record;
+  x                               record;
+  v_main                          boolean default false;
+  v_company_process_id            bigint;
+  v_CFGA_PARTNER_COMMISSIONS      bigint[];
+  v_parent_count                  bigint;
+  v_parent_records_with_data bigint;
+  v_parent_process_step_ids bigint[];
+  v_project_partner_org_ids bigint[];
 BEGIN
   select pps.project_id, c.company_id
   into v_project_id,v_company_id
@@ -587,7 +644,7 @@ BEGIN
          inner join flow.contact c on p.contact_id = c.id
   where pps.id = new.project_process_step_id;
 
-  select pps.project_id, ps.company_id,pps.main
+  select pps.project_id, ps.company_id, pps.main
   into v_project_id1,v_company_id,v_main
   from flow.project_process_step pps
          inner join flow.process_step ps on pps.process_step_id = ps.id
@@ -600,8 +657,8 @@ BEGIN
            where exists(select ao.dvfc_id
                         from flow.get_data_view_field_configs(dv.id,
                                                               null,
-                                                              new.custom_field_group_assignment_id) ao) and
-             v_company_process_id = any(dv.company_process_ids)
+                                                              new.custom_field_group_assignment_id) ao)
+             and v_company_process_id = any (dv.company_process_ids)
     loop
       v_sql = NULL;
       for x in select a.*, lead(a.dvfc_id) OVER () IS NULL::boolean AS is_last_row
@@ -609,51 +666,114 @@ BEGIN
                                                      null,
                                                      new.custom_field_group_assignment_id) a
         loop
-          if ((x.reset_values_on_main is true and v_main is true) or
-              (x.reset_values_on_main is false)) then
-            select case
-                     when x.data_type_id = 1 then new.date_value::text
-                     when x.data_type_id = 2 then new.timestamp_value::text
-                     when x.data_type_id = 3 then new.boolean_value::text
-                     when x.data_type_id = 4 then new.numeric_value::text
-                     when x.data_type_id in (5, 13) then new.text_value::text
-                     when x.data_type_id = 6 then new.int_value::text
-                     when x.data_type_id = 7 then new.int_array_value::text
-                     when x.data_type_id in (8, 9) then new.int_value::text end
-            into v_value;
-            v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-            select *
-            into v_sql
-            from flow.execute_data_view_field_configs(x.contains_children,
-                                                      v_value,
-                                                      x.dvfc_id,
-                                                      new.id,
-                                                      v_sql,
-                                                      x.field_to_update,
-                                                      x.update_first_value_only,
-                                                      x.update_first_value_only_id,
-                                                      true,
-                                                      x.data_type_id,
-                                                      coalesce(v_project_id, v_project_id1));
+          if x.parent_cfga_ids is not null and array_length(x.parent_cfga_ids,1)>0 then
+            select foo.process_step_ids,sum(foo.ppscfv_id)+ sum(foo.ppsecfv_id) as parent_records_with_data
+            into v_parent_process_step_ids,v_parent_records_with_data
+            from (
+                   select array_agg(pps.process_step_id) as process_step_ids,
+                          (select count(1) as ppscfv_id
+                           from flow.project_process_step pps1
+                                  inner join flow.project_process_step_custom_field_value ppscfv
+                                             on ppscfv.project_process_step_id = pps1.id
+                                               and ppscfv.custom_field_group_assignment_id = any (x.parent_cfga_ids)
+                           where pps1.project_id = pps.project_id and pps1.process_step_id = any(x.parent_ps_ids) and  case
+                                                         when x.data_type_id = 1 then (ppscfv.date_value is not null )
+                                                         when x.data_type_id = 2 then (ppscfv.timestamp_value is not null )
+                                                         when x.data_type_id = 3 then (ppscfv.boolean_value is not null )
+                                                         when x.data_type_id = 4 then (ppscfv.numeric_value is not null )
+                                                         when x.data_type_id in (5, 13) then (ppscfv.text_value is not null )
+                                                         when x.data_type_id = 6 then (ppscfv.int_value is not null )
+                                                         when x.data_type_id = 7 then (ppscfv.int_array_value is not null and array_length(ppscfv.int_array_value,1)>0)
+                                                         when x.data_type_id in (8, 9) then (ppscfv.int_value is not null ) end
+                          ) as ppscfv_id,
+                          (select count(1)  as ppsecfv_id
+                           from flow.project_process_step pps2
+                                  inner join flow.project_process_step_event ppse on ppse.project_process_step_id =pps2.id
+                                  inner join flow.project_process_step_event_custom_field_value ppsecfv
+                                             on ppsecfv.project_process_step_event_id = ppse.id
+                                               and ppsecfv.custom_field_group_assignment_id = any (x.parent_cfga_ids)
+                           where pps2.project_id = pps.project_id and pps2.process_step_id = any(x.parent_ps_ids) and case
+                                                        when x.data_type_id = 1 then (ppsecfv.date_value is not null )
+                                                        when x.data_type_id = 2 then (ppsecfv.timestamp_value is not null)
+                                                        when x.data_type_id = 3 then (ppsecfv.boolean_value is not null )
+                                                        when x.data_type_id = 4 then (ppsecfv.numeric_value is not null )
+                                                        when x.data_type_id in (5, 13) then (ppsecfv.text_value is not null )
+                                                        when x.data_type_id = 6 then (ppsecfv.int_value is not null )
+                                                        when x.data_type_id = 7 then (ppsecfv.int_array_value is not null and array_length(ppsecfv.int_array_value,1)>0)
+                                                        when x.data_type_id in (8, 9) then (ppsecfv.int_value is not null) end) as ppsecfv_id
+                   from  flow.project_process_step pps
+                   where pps.project_id = v_project_id1 and
+                     pps.process_step_id = any(x.parent_ps_ids)
+                   group by pps.process_step_id,pps.project_id) as foo
+            group by foo.process_step_ids;
+          end if;
 
-            select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                         v_value,
-                                    null::text, null::text,
-                                                         x.update_first_value_only,
-                                                         x.update_first_value_only_id,
-                                                         true, true, v_project_ids)
-            into v_sql;
-            --  raise notice 'v_sql %',v_sql;
-            begin
-              execute v_sql;
-            exception
-              when others then
-                insert into flow.trigger_error(project_process_step_custom_value_id, error)
-                values (new.id, SQLERRM);
-            end;
+          if (v_parent_records_with_data is null or array_length(x.parent_cfga_ids,1)<1) or
+             (array_length(x.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and x.reset_values_on_main is false ) or
+             (array_length(x.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) < 1 and x.reset_values_on_main is true ) or
+             (array_length(x.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) > 0 and x.reset_values_on_main is true and x.ignore_if_null is true )then--todo ignore_if_null
+
+            if ((x.reset_values_on_main is true and v_main is true) or
+                (x.reset_values_on_main is false)) then
+              select case
+                       when x.data_type_id = 1 then new.date_value::text
+                       when x.data_type_id = 2 then new.timestamp_value::text
+                       when x.data_type_id = 3 then new.boolean_value::text
+                       when x.data_type_id = 4 then new.numeric_value::text
+                       when x.data_type_id in (5, 13) then new.text_value::text
+                       when x.data_type_id = 6 then new.int_value::text
+                       when x.data_type_id = 7 then new.int_array_value::text
+                       when x.data_type_id in (8, 9) then new.int_value::text end
+              into v_value;
+              v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+              select *
+              into v_sql
+              from flow.execute_data_view_field_configs(x.contains_children,
+                                                        v_value,
+                                                        x.dvfc_id,
+                                                        new.id,
+                                                        v_sql,
+                                                        x.field_to_update,
+                                                        x.update_first_value_only,
+                                                        x.update_first_value_only_id,
+                                                        true,
+                                                        x.data_type_id,
+                                                        coalesce(v_project_id, v_project_id1));
+
+              select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                           v_value,
+                                                           null::text, null::text,
+                                                           x.update_first_value_only,
+                                                           x.update_first_value_only_id,
+                                                           true, true, v_project_ids)
+              into v_sql;
+              --  raise notice 'v_sql %',v_sql;
+              begin
+                execute v_sql;
+              exception
+                when others then
+                  insert into flow.trigger_error(project_process_step_custom_value_id, error)
+                  values (new.id, SQLERRM);
+              end;
+            end if;
           end if;
         end loop;
     end loop;
+
+
+  select brs.get_partner_projects(v_project_id)
+  into v_project_partner_org_ids;
+
+  select (select string_to_array(value, ',')
+          from flow.company_configuration_value
+          where code = 'CFGA_PARTNER_COMMISSIONS')::bigint[]
+  into v_CFGA_PARTNER_COMMISSIONS;
+
+  if new.custom_field_group_assignment_id = any (v_CFGA_PARTNER_COMMISSIONS) and v_main is true and v_project_partner_org_ids is not null and array_length(v_project_partner_org_ids,1)>0 then
+    perform flow.company_pps_specific_tasks(3,
+                                            v_project_id,
+                                            new.created_by_id, new.modified_by_id);
+  end if;
   RETURN NULL;
 END
 $body$
@@ -672,19 +792,22 @@ CREATE OR REPLACE FUNCTION flow.update_project_process_step_event_details()
 $body$
 
 declare
-  v_project_id           bigint;
-  v_sql                  text;
-  z                      record;
-  x                      record;
-  v_company_id           bigint;
-  v_project_ids          text;
-  v_value                character varying;
-  v_event_status_type_id bigint;
-  v_company_process_id bigint;
+  v_project_id                    bigint;
+  v_sql                           text;
+  z                               record;
+  x                               record;
+  v_company_id                    bigint;
+  v_project_ids                   text;
+  v_value                         character varying;
+  v_event_status_type_id          bigint;
+  v_company_process_id            bigint;
+  v_parent_process_step_event_ids bigint[];
+  v_parent_process_step_ids       bigint[];
+  v_parent_count                  bigint[];
 BEGIN
 
   if new.archived is false then
-    select pps.project_id, c.company_id,p.company_process_id
+    select pps.project_id, c.company_id, p.company_process_id
     into v_project_id,v_company_id,v_company_process_id
     from flow.project_process_step_event ppse
            inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
@@ -699,15 +822,17 @@ BEGIN
     where cest.id = new.company_event_status_type_id;
 
 
-    if  old.company_event_status_type_id != new.company_event_status_type_id then
+    if old.company_event_status_type_id != new.company_event_status_type_id then
       if new.company_event_status_type_id is not null and v_event_status_type_id = 2 and new.completed_date is null then
 
         new.cancelled_date = null;
         new.completed_date = now();
-      elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
+      elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and
+             new.cancelled_date is null then
         new.cancelled_date = now();
         new.completed_date = null;
-      elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is not null and old.cancelled_date is not null then
+      elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and
+             new.cancelled_date is not null and old.cancelled_date is not null then
         --if the new status is cancelled AND the old one was cancelled, do nothing
       else
         new.cancelled_date = null;
@@ -720,8 +845,10 @@ BEGIN
       new.scheduled_date = now();
 
       perform flow.add_system_activity((select id from flow.activity where activity_code = 'EVENT_SCHEDULED'),
-                                           1, (select project_id from flow.project_process_step pps where pps.id = new.project_process_step_id),
-                                           new.modified_by_id, new.project_process_step_id, new.id, null, null);
+                                       1, (select project_id
+                                           from flow.project_process_step pps
+                                           where pps.id = new.project_process_step_id),
+                                       new.modified_by_id, new.project_process_step_id, new.id, null, null);
     end if;
 
     select quote_literal(array_agg(coalesce(v_project_id, v_project_id))::text)
@@ -733,12 +860,14 @@ BEGIN
                           from flow.get_data_view_field_configs(dv.id,
                                                                 'EVENT',
                                                                 null) ao
-                          where ao.process_step_event_id = new.process_step_event_id) and
-                 v_company_process_id = any(dv.company_process_ids)
+                          where ao.process_step_event_id = new.process_step_event_id)
+               and v_company_process_id = any (dv.company_process_ids)
       loop
         v_sql = NULL;
         v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-        for x in select a.*,lead(a.dvfc_id) OVER (order by a.update_first_value_only_id nulls last) IS NULL::boolean AS is_last_row
+        for x in select a.*,
+                        lead(a.dvfc_id)
+                        OVER (order by a.update_first_value_only_id nulls last) IS NULL::boolean AS is_last_row
                  from flow.get_data_view_field_configs(z.id,
                                                        'EVENT',
                                                        null) a
@@ -746,60 +875,59 @@ BEGIN
                  order by update_first_value_only_id nulls last
 
           loop
-            execute format('SELECT $1.%I', x.column_name)
-              into v_value using new;
-  --raise notice 'v_value %',v_value;
-            select *
-            into v_sql
-            from flow.execute_data_view_field_configs(x.contains_children,
-                                                      v_value,
-                                                      x.dvfc_id,
-                                                      new.id,
-                                                      v_sql,
-                                                      x.field_to_update,
-                                                      x.update_first_value_only,
-                                                      x.update_first_value_only_id,
-                                                      x.is_last_row,
-                                                      x.data_type_id);
+               execute format('SELECT $1.%I', x.column_name)
+                into v_value using new;
+              --raise notice 'v_value %',v_value;
+              select *
+              into v_sql
+              from flow.execute_data_view_field_configs(x.contains_children,
+                                                        v_value,
+                                                        x.dvfc_id,
+                                                        new.id,
+                                                        v_sql,
+                                                        x.field_to_update,
+                                                        x.update_first_value_only,
+                                                        x.update_first_value_only_id,
+                                                        x.is_last_row,
+                                                        x.data_type_id);
 
-            if x.update_first_value_only is true then
-              v_sql = trim(trailing ' ,' from v_sql);
-              select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                           v_value::text, null::text, null::text,
-                                                           x.update_first_value_only,
-                                                           x.update_first_value_only_id,
-                                                           x.is_last_row, true, v_project_ids)
-              into v_sql;
-              begin
-                execute v_sql;
-              exception
-                when others then
-                  insert into flow.trigger_error(project_process_step_event_id, error)
-                  values (new.id, SQLERRM);
-              end;
-              v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
-            end if;
-
+              if x.update_first_value_only is true then
+                v_sql = trim(trailing ' ,' from v_sql);
+                select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                             v_value::text, null::text, null::text,
+                                                             x.update_first_value_only,
+                                                             x.update_first_value_only_id,
+                                                             x.is_last_row, true, v_project_ids)
+                into v_sql;
+                begin
+                  execute v_sql;
+                exception
+                  when others then
+                    insert into flow.trigger_error(project_process_step_event_id, error)
+                    values (new.id, SQLERRM);
+                end;
+                v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
+              end if;
           end loop;
-        if x.update_first_value_only is not true then
-          select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
-                                                       v_value::text, null::text, null::text,
-                                                       x.update_first_value_only,
-                                                       x.update_first_value_only_id,
-                                                       x.is_last_row, true, v_project_ids)
-          into v_sql;
-          begin
-            execute v_sql;
-          exception
-            when others then
-              insert into flow.trigger_error(project_process_step_event_id, error)
-              values (new.id, SQLERRM);
-          end;
-        end if;
 
+          if x.update_first_value_only is not true then
+            select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
+                                                         v_value::text, null::text, null::text,
+                                                         x.update_first_value_only,
+                                                         x.update_first_value_only_id,
+                                                         x.is_last_row, true, v_project_ids)
+            into v_sql;
+            begin
+              execute v_sql;
+            exception
+              when others then
+                insert into flow.trigger_error(project_process_step_event_id, error)
+                values (new.id, SQLERRM);
+            end;
+          end if;
       end loop;
 
-    if new.process_step_event_id in (14,125) then
+    if new.process_step_event_id in (14, 125) then
       if new.start_time is not null then
         perform flow.company_event_specific_tasks(v_company_id,
                                                   new.resource_id,
@@ -839,19 +967,22 @@ CREATE OR REPLACE FUNCTION flow.update_project_process_step_event_custom_field_v
 $body$
 
 declare
-  v_project_id  bigint;
-  v_sql         character varying;
-  v_value       character varying;
-  v_project_id1 bigint;
-  z             record;
-  x             record;
-  v_company_id  bigint;
-  v_project_ids text;
+  v_project_id         bigint;
+  v_sql                character varying;
+  v_value              character varying;
+  v_project_id1        bigint;
+  z                    record;
+  x                    record;
+  v_company_id         bigint;
+  v_project_ids        text;
   v_company_process_id bigint;
+  v_main boolean default false;
+  v_parent_records_with_data bigint;
+  v_parent_process_step_ids bigint[];
 BEGIN
 
-  select pps.project_id, c.company_id
-  into v_project_id,v_company_id
+  select pps.project_id, c.company_id,main
+  into v_project_id,v_company_id,v_main
   from flow.project_process_step_event ppse
          inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
          inner join flow.project p on pps.project_id = p.id
@@ -886,27 +1017,72 @@ BEGIN
                                                               null,
                                                               new.custom_field_group_assignment_id) ao
                                inner join flow.project_process_step_event ppse on id = new.project_process_step_event_id
-                          and ao.process_step_event_id = ppse.process_step_event_id) and
-               v_company_process_id = any(dv.company_process_ids)
+                          and ao.process_step_event_id = ppse.process_step_event_id)
+             and v_company_process_id = any (dv.company_process_ids)
     loop
       v_sql = NULL;
-      for x in select dvfc.*,lead(dvfc.dvfc_id) OVER () IS NULL::boolean AS is_last_row
+      for x in select dvfc.*, lead(dvfc.dvfc_id) OVER () IS NULL::boolean AS is_last_row
                from flow.get_data_view_field_configs(z.id,
                                                      null,
                                                      new.custom_field_group_assignment_id) dvfc
-              inner join flow.project_process_step_event ppse on id = new.project_process_step_event_id
-                              and dvfc.process_step_event_id = ppse.process_step_event_id
+                      inner join flow.project_process_step_event ppse on id = new.project_process_step_event_id
+                 and dvfc.process_step_event_id = ppse.process_step_event_id
 
         loop
-        select case
-                 when x.data_type_id = 1 then new.date_value::text
-                 when x.data_type_id = 2 then new.timestamp_value::text
-                 when x.data_type_id = 3 then new.boolean_value::text
-                 when x.data_type_id = 4 then new.numeric_value::text
-                 when x.data_type_id in (5,13) then new.text_value::text
-                 when x.data_type_id = 6 then new.int_value::text
-                 when x.data_type_id = 7 then new.int_array_value::text
-                 when x.data_type_id in (8, 9) then new.int_value::text end
+          if x.parent_cfga_ids is not null and array_length(x.parent_cfga_ids,1)>0 then
+            select foo.process_step_ids,sum(foo.ppscfv_id)+ sum(foo.ppsecfv_id) as parent_records_with_data
+            into v_parent_process_step_ids,v_parent_records_with_data
+            from (
+                   select array_agg(pps.process_step_id) as process_step_ids,
+                          (select count(1) as ppscfv_id
+                           from flow.project_process_step pps1
+                                  inner join flow.project_process_step_custom_field_value ppscfv
+                                             on ppscfv.project_process_step_id = pps1.id
+                                               and ppscfv.custom_field_group_assignment_id = any (x.parent_cfga_ids)
+                           where pps1.project_id = pps.project_id and pps1.process_step_id = any(x.parent_ps_ids) and  case
+                                                                                                                         when x.data_type_id = 1 then (ppscfv.date_value is not null )
+                                                                                                                         when x.data_type_id = 2 then (ppscfv.timestamp_value is not null )
+                                                                                                                         when x.data_type_id = 3 then (ppscfv.boolean_value is not null )
+                                                                                                                         when x.data_type_id = 4 then (ppscfv.numeric_value is not null )
+                                                                                                                         when x.data_type_id in (5, 13) then (ppscfv.text_value is not null )
+                                                                                                                         when x.data_type_id = 6 then (ppscfv.int_value is not null )
+                                                                                                                         when x.data_type_id = 7 then (ppscfv.int_array_value is not null and array_length(ppscfv.int_array_value,1)>0)
+                                                                                                                         when x.data_type_id in (8, 9) then (ppscfv.int_value is not null ) end
+                          ) as ppscfv_id,
+                          (select count(1)  as ppsecfv_id
+                           from flow.project_process_step pps2
+                                  inner join flow.project_process_step_event ppse on ppse.project_process_step_id =pps2.id
+                                  inner join flow.project_process_step_event_custom_field_value ppsecfv
+                                             on ppsecfv.project_process_step_event_id = ppse.id
+                                               and ppsecfv.custom_field_group_assignment_id = any (x.parent_cfga_ids)
+                           where pps2.project_id = pps.project_id and pps2.process_step_id = any(x.parent_ps_ids) and case
+                                                                                                                        when x.data_type_id = 1 then (ppsecfv.date_value is not null )
+                                                                                                                        when x.data_type_id = 2 then (ppsecfv.timestamp_value is not null)
+                                                                                                                        when x.data_type_id = 3 then (ppsecfv.boolean_value is not null )
+                                                                                                                        when x.data_type_id = 4 then (ppsecfv.numeric_value is not null )
+                                                                                                                        when x.data_type_id in (5, 13) then (ppsecfv.text_value is not null )
+                                                                                                                        when x.data_type_id = 6 then (ppsecfv.int_value is not null )
+                                                                                                                        when x.data_type_id = 7 then (ppsecfv.int_array_value is not null and array_length(ppsecfv.int_array_value,1)>0)
+                                                                                                                        when x.data_type_id in (8, 9) then (ppsecfv.int_value is not null) end) as ppsecfv_id
+                   from  flow.project_process_step pps
+                   where pps.project_id = v_project_id1 and
+                     pps.process_step_id = any(x.parent_ps_ids)
+                   group by pps.process_step_id,pps.project_id) as foo
+            group by foo.process_step_ids;
+          end if;
+
+          if (v_parent_records_with_data is null or array_length(x.parent_cfga_ids,1)<1) or
+             (array_length(x.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and x.reset_on_new is false ) or
+             (array_length(x.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) < 1 and x.reset_on_new is true ) then
+          select case
+                   when x.data_type_id = 1 then new.date_value::text
+                   when x.data_type_id = 2 then new.timestamp_value::text
+                   when x.data_type_id = 3 then new.boolean_value::text
+                   when x.data_type_id = 4 then new.numeric_value::text
+                   when x.data_type_id in (5, 13) then new.text_value::text
+                   when x.data_type_id = 6 then new.int_value::text
+                   when x.data_type_id = 7 then new.int_array_value::text
+                   when x.data_type_id in (8, 9) then new.int_value::text end
           into v_value;
           v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
           select *
@@ -923,9 +1099,8 @@ BEGIN
                                                     x.data_type_id);
 
 
-
-          select flow.prepare_update_data_view_details(new.id,v_sql,
-                                                  x.field_to_update,
+          select flow.prepare_update_data_view_details(new.id, v_sql,
+                                                       x.field_to_update,
                                                        v_value, null::text, null::text,
                                                        x.update_first_value_only,
                                                        x.update_first_value_only_id,
@@ -939,10 +1114,11 @@ BEGIN
               insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
               values (new.id, SQLERRM);
           end;
+          end if;
         end loop;
     end loop;
 
-  if new.custom_field_group_assignment_id in (4, 21506,1377) then
+  if new.custom_field_group_assignment_id in (4, 21506, 1377) then
     perform flow.company_custom_field_event_specific_tasks(v_company_id,
                                                            new.project_process_step_event_id,
                                                            coalesce(v_project_id, v_project_id1));
@@ -968,7 +1144,6 @@ $body$
 
 declare
   v_sql                     text;
-  v_old_process_steps_found bigint;
   v_count                   bigint = 0;
   z                         record;
   x                         record;
@@ -977,21 +1152,15 @@ declare
   v_project_id              bigint;
   v_value                   text;
   v_project_ids             text;
+  v_parent_records_with_data bigint;
+  v_parent_process_step_ids bigint[];
 BEGIN
 
   for y in select dv.id
            from flow.data_view dv
     loop
-      select count(1)
-      into v_old_process_steps_found
-      from flow.project_process_step
-      where process_step_id = new.process_step_id
-        and project_id = new.project_id
-        and id != new.id
-        and main is false
-        and new.main is true;
       v_count = 0;
-      if ((TG_OP = 'INSERT') and new.main is true and v_old_process_steps_found > 0) or
+      if ((TG_OP = 'INSERT') and new.main is true) or
          (TG_OP = 'UPDATE') and old.main is false and new.main is true then
         select c.company_id, p.id
         into v_company_id,v_project_id
@@ -1002,12 +1171,19 @@ BEGIN
         select quote_literal(array_agg(v_project_id)::text)
         into v_project_ids;
 
+
         for z in select dv.company_process_ids,
                         dv.schema_name,
                         dv.view_name,
                         dvfc.field_to_update,
                         dvfc.id,
-                        flow.get_prepared_value(cdt.data_type_id, null) as value
+                        flow.get_prepared_value(cdt.data_type_id, null) as value,
+                        dvfc.parent_cfga_ids,
+                        dvfc.parent_pse_ids,
+                        dvfc.parent_ps_ids,
+                        cdt.data_type_id,
+                        dvfc.reset_values_on_main,
+                        dvfc.ignore_if_null
                  from flow.get_schema_by_company(v_company_id) dv
                         inner join flow.data_view_field_config dvfc
                                    on dvfc.data_view_id = dv.id and dvfc.data_view_id = y.id
@@ -1040,7 +1216,13 @@ BEGIN
                         dv.view_name,
                         dvfc.field_to_update,
                         dvfc.id,
-                        flow.get_prepared_value(df.data_type_id, null) as value
+                        flow.get_prepared_value(df.data_type_id, null) as value,
+                        dvfc.parent_cfga_ids,
+                        dvfc.parent_pse_ids,
+                        dvfc.parent_ps_ids,
+                        df.data_type_id,
+                        dvfc.reset_values_on_main,
+                        dvfc.ignore_if_null
                  from flow.get_schema_by_company(v_company_id) dv
                         inner join flow.data_view_field_config dvfc
                                    on dvfc.data_view_id = dv.id and dvfc.data_view_id = y.id
@@ -1061,6 +1243,53 @@ BEGIN
                    and dvfc.update_first_value_only is false
                    and dvfc.ignore_if_null is false
           loop
+            if z.parent_cfga_ids is not null and array_length(z.parent_cfga_ids,1)>0 then
+              select foo.process_step_ids,sum(foo.ppscfv_id)+ sum(foo.ppsecfv_id) as parent_records_with_data
+              into v_parent_process_step_ids,v_parent_records_with_data
+              from (
+                     select array_agg(pps.process_step_id) as process_step_ids,
+                            (select count(1) as ppscfv_id
+                             from flow.project_process_step pps1
+                                    inner join flow.project_process_step_custom_field_value ppscfv
+                                               on ppscfv.project_process_step_id = pps1.id
+                                                 and ppscfv.custom_field_group_assignment_id = any (z.parent_cfga_ids)
+                             where pps1.project_id = pps.project_id and pps1.process_step_id = any(z.parent_ps_ids) and  case
+                                                                                                                           when z.data_type_id = 1 then (ppscfv.date_value is not null )
+                                                                                                                           when z.data_type_id = 2 then (ppscfv.timestamp_value is not null )
+                                                                                                                           when z.data_type_id = 3 then (ppscfv.boolean_value is not null )
+                                                                                                                           when z.data_type_id = 4 then (ppscfv.numeric_value is not null )
+                                                                                                                           when z.data_type_id in (5, 13) then (ppscfv.text_value is not null )
+                                                                                                                           when z.data_type_id = 6 then (ppscfv.int_value is not null )
+                                                                                                                           when z.data_type_id = 7 then (ppscfv.int_array_value is not null and array_length(ppscfv.int_array_value,1)>0)
+                                                                                                                           when z.data_type_id in (8, 9) then (ppscfv.int_value is not null ) end
+                            ) as ppscfv_id,
+                            (select count(1)  as ppsecfv_id
+                             from flow.project_process_step pps2
+                                    inner join flow.project_process_step_event ppse on ppse.project_process_step_id =pps2.id
+                                    inner join flow.project_process_step_event_custom_field_value ppsecfv
+                                               on ppsecfv.project_process_step_event_id = ppse.id
+                                                 and ppsecfv.custom_field_group_assignment_id = any (z.parent_cfga_ids)
+                             where pps2.project_id = pps.project_id and pps2.process_step_id = any(z.parent_ps_ids) and case
+                                                                                                                          when z.data_type_id = 1 then (ppsecfv.date_value is not null )
+                                                                                                                          when z.data_type_id = 2 then (ppsecfv.timestamp_value is not null)
+                                                                                                                          when z.data_type_id = 3 then (ppsecfv.boolean_value is not null )
+                                                                                                                          when z.data_type_id = 4 then (ppsecfv.numeric_value is not null )
+                                                                                                                          when z.data_type_id in (5, 13) then (ppsecfv.text_value is not null )
+                                                                                                                          when z.data_type_id = 6 then (ppsecfv.int_value is not null )
+                                                                                                                          when z.data_type_id = 7 then (ppsecfv.int_array_value is not null and array_length(ppsecfv.int_array_value,1)>0)
+                                                                                                                          when z.data_type_id in (8, 9) then (ppsecfv.int_value is not null) end) as ppsecfv_id
+                     from  flow.project_process_step pps
+                     where pps.project_id = v_project_id and
+                       pps.process_step_id = any(z.parent_ps_ids)
+                     group by pps.process_step_id,pps.project_id) as foo
+              group by foo.process_step_ids;
+            end if;
+
+             if (v_parent_records_with_data is null or array_length(z.parent_cfga_ids,1)<1) or
+                (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and z.reset_values_on_main is false ) or
+                (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) < 1 and z.reset_values_on_main is true ) or
+                (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) > 0 and z.reset_values_on_main is true and z.ignore_if_null is true )then--todo ignore_if_null
+
             if v_count = 0 then
               v_sql = NULL;
               v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
@@ -1076,6 +1305,7 @@ BEGIN
               loop
                 v_sql = v_sql || x.field_to_update || $$ = $$ || z.value || $$ ,$$;
               end loop;
+            end if;
           end loop;
         v_sql = trim(trailing ' ,' from v_sql);
         v_sql = v_sql || ' where project_id = ' || v_project_id || ';';
@@ -1101,6 +1331,10 @@ BEGIN
                         dvfc.field_to_update,
                         dvfc.id,
                         cfga.id                                                           as custom_field_group_assignment_id,
+                        dvfc.parent_cfga_ids,
+                        dvfc.parent_pse_ids,
+                        dvfc.parent_ps_ids,
+                        dvfc.reset_values_on_main,
                         case
                           when cdt.data_type_id = 1 then ppscfv.date_value::text
                           when cdt.data_type_id = 2 then ppscfv.timestamp_value::text
@@ -1140,6 +1374,36 @@ BEGIN
                    and dvfc.update_first_value_only is false
 
           loop
+
+            if z.parent_cfga_ids is not null and array_length(z.parent_cfga_ids,1)>0 then
+              select foo.process_step_ids,sum(foo.ppscfv_id)+ sum(foo.ppsecfv_id) as parent_records_with_data
+              into v_parent_process_step_ids,v_parent_records_with_data
+              from (
+                     select array_agg(pps.process_step_id) as process_step_ids,
+                            (select count(1) as ppscfv_id
+                             from flow.project_process_step pps1
+                                    inner join flow.project_process_step_custom_field_value ppscfv
+                                               on ppscfv.project_process_step_id = pps1.id
+                                                 and ppscfv.custom_field_group_assignment_id = any (z.parent_cfga_ids)
+                             where pps1.project_id = pps.project_id and pps1.process_step_id = any(z.parent_ps_ids) and  z.value is not null
+                            ) as ppscfv_id,
+                            (select count(1)  as ppsecfv_id
+                             from flow.project_process_step pps2
+                                    inner join flow.project_process_step_event ppse on ppse.project_process_step_id =pps2.id
+                                    inner join flow.project_process_step_event_custom_field_value ppsecfv
+                                               on ppsecfv.project_process_step_event_id = ppse.id
+                                                 and ppsecfv.custom_field_group_assignment_id = any (z.parent_cfga_ids)
+                             where pps2.project_id = pps.project_id and pps2.process_step_id = any(z.parent_ps_ids) and z.value is not null) as ppsecfv_id
+                     from  flow.project_process_step pps
+                     where pps.project_id = v_project_id and
+                       pps.process_step_id = any(z.parent_ps_ids)
+                     group by pps.process_step_id,pps.project_id) as foo
+              group by foo.process_step_ids;
+            end if;
+            if (v_parent_records_with_data is null or array_length(z.parent_cfga_ids,1)<1) or
+               (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and z.reset_values_on_main is false ) or
+               (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) < 1 and z.reset_values_on_main is true ) or
+               (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) > 0 and z.reset_values_on_main is true and z.ignore_if_null is true )then--todo ignore_if_null
             if z.ignore_if_null is true and (z.value::text is not null or z.value != '') or
                z.ignore_if_null is false then
               v_sql = NULL;
@@ -1162,7 +1426,7 @@ BEGIN
                                                             x.update_first_value_only_id,
                                                             x.is_last_row,
                                                             x.data_type_id,
-                                                                      new.project_id);
+                                                            new.project_id);
 
 
                 end loop;
@@ -1177,13 +1441,14 @@ BEGIN
               if v_count > 0 then
                 begin
                   --raise notice 'v_sql 222222 %',v_sql;
-                 execute v_sql;
+                  execute v_sql;
                 exception
                   when others then
                     insert into flow.trigger_error(project_process_step_id, error)
                     values (new.id, SQLERRM);
                 end;
               end if;
+            end if;
             end if;
           end loop;
 
@@ -1235,7 +1500,7 @@ BEGIN
                                                           x.update_first_value_only_id,
                                                           x.is_last_row,
                                                           x.data_type_id,
-                                                           new.project_id);
+                                                          new.project_id);
 
 
               end loop;
@@ -1280,7 +1545,6 @@ $body$
 
 declare
   v_sql                           text;
-  v_old_process_steps_event_found bigint;
   v_count                         bigint = 0;
   z                               record;
   x                               record;
@@ -1288,21 +1552,15 @@ declare
   v_company_id                    bigint;
   v_project_id                    bigint;
   v_project_ids                   text;
+  v_parent_process_step_ids bigint;
+  v_parent_records_with_data bigint;
 BEGIN
 
   for y in select dv.id
            from flow.data_view dv
     loop
-      select count(1)
-      into v_old_process_steps_event_found
-      from flow.project_process_step_event
-      where process_step_event_id = new.process_step_event_id
-        and project_process_step_id = new.project_process_step_id
-        and id != new.id;
-      v_count = 0;
 
-
-      if ((TG_OP = 'INSERT') and v_old_process_steps_event_found > 0) then
+      if ((TG_OP = 'INSERT')) then
         select c.company_id, p.id
         into v_company_id,v_project_id
         from flow.project_process_step pps
@@ -1317,9 +1575,15 @@ BEGIN
                         dv.view_name,
                         dvfc.field_to_update,
                         dvfc.id,
+                        dvfc.parent_pse_ids,
+                        dvfc.parent_cfga_ids,
+                        dvfc.parent_ps_ids,
+                        dvfc.reset_on_new,
+                        cdt.data_type_id,
                         flow.get_prepared_value(cdt.data_type_id, null) as value
                  from flow.get_schema_by_company(v_company_id) dv
-                        inner join flow.data_view_field_config dvfc on dvfc.data_view_id = dv.id and dvfc.data_view_id = y.id
+                        inner join flow.data_view_field_config dvfc
+                                   on dvfc.data_view_id = dv.id and dvfc.data_view_id = y.id
                         inner join flow.custom_field_group_assignment cfga
                                    on dvfc.custom_field_group_assignment_id = cfga.id
                         inner join flow.process_step_event pse on pse.id = new.process_step_event_id and
@@ -1346,9 +1610,15 @@ BEGIN
                         dv.view_name,
                         dvfc.field_to_update,
                         dvfc.id,
+                        dvfc.parent_pse_ids,
+                        dvfc.parent_cfga_ids,
+                        dvfc.parent_ps_ids,
+                        dvfc.reset_on_new,
+                        df.data_type_id,
                         flow.get_prepared_value(dt.id, null) as value
                  from flow.get_schema_by_company(v_company_id) dv
-                        inner join flow.data_view_field_config dvfc on dvfc.data_view_id = dv.id and dvfc.data_view_id = y.id
+                        inner join flow.data_view_field_config dvfc
+                                   on dvfc.data_view_id = dv.id and dvfc.data_view_id = y.id
                         inner join flow.process_step_event pse on pse.id = new.process_step_event_id and
                                                                   dvfc.process_step_event_id = pse.id and
                                                                   pse.archived is false
@@ -1370,6 +1640,50 @@ BEGIN
                    and dvfc.update_first_value_only is false
 
           loop
+            if z.parent_cfga_ids is not null and array_length(z.parent_cfga_ids,1)>0 then
+              select foo.process_step_ids,sum(foo.ppscfv_id)+ sum(foo.ppsecfv_id) as parent_records_with_data
+              into v_parent_process_step_ids,v_parent_records_with_data
+              from (
+                     select array_agg(pps.process_step_id) as process_step_ids,
+                            (select count(1) as ppscfv_id
+                             from flow.project_process_step pps1
+                                    inner join flow.project_process_step_custom_field_value ppscfv
+                                               on ppscfv.project_process_step_id = pps1.id
+                                                 and ppscfv.custom_field_group_assignment_id = any (z.parent_cfga_ids)
+                             where pps1.project_id = pps.project_id and pps1.process_step_id = any(z.parent_ps_ids) and  case
+                                                                                                                           when z.data_type_id = 1 then (ppscfv.date_value is not null )
+                                                                                                                           when z.data_type_id = 2 then (ppscfv.timestamp_value is not null )
+                                                                                                                           when z.data_type_id = 3 then (ppscfv.boolean_value is not null )
+                                                                                                                           when z.data_type_id = 4 then (ppscfv.numeric_value is not null )
+                                                                                                                           when z.data_type_id in (5, 13) then (ppscfv.text_value is not null )
+                                                                                                                           when z.data_type_id = 6 then (ppscfv.int_value is not null )
+                                                                                                                           when z.data_type_id = 7 then (ppscfv.int_array_value is not null and array_length(ppscfv.int_array_value,1)>0)
+                                                                                                                           when z.data_type_id in (8, 9) then (ppscfv.int_value is not null ) end
+                            ) as ppscfv_id,
+                            (select count(1)  as ppsecfv_id
+                             from flow.project_process_step pps2
+                                    inner join flow.project_process_step_event ppse on ppse.project_process_step_id =pps2.id
+                                    inner join flow.project_process_step_event_custom_field_value ppsecfv
+                                               on ppsecfv.project_process_step_event_id = ppse.id
+                                                 and ppsecfv.custom_field_group_assignment_id = any (z.parent_cfga_ids)
+                             where pps2.project_id = pps.project_id and pps2.process_step_id = any(z.parent_ps_ids) and case
+                                                                                                                          when z.data_type_id = 1 then (ppsecfv.date_value is not null )
+                                                                                                                          when z.data_type_id = 2 then (ppsecfv.timestamp_value is not null)
+                                                                                                                          when z.data_type_id = 3 then (ppsecfv.boolean_value is not null )
+                                                                                                                          when z.data_type_id = 4 then (ppsecfv.numeric_value is not null )
+                                                                                                                          when z.data_type_id in (5, 13) then (ppsecfv.text_value is not null )
+                                                                                                                          when z.data_type_id = 6 then (ppsecfv.int_value is not null )
+                                                                                                                          when z.data_type_id = 7 then (ppsecfv.int_array_value is not null and array_length(ppsecfv.int_array_value,1)>0)
+                                                                                                                          when z.data_type_id in (8, 9) then (ppsecfv.int_value is not null) end) as ppsecfv_id
+                     from  flow.project_process_step pps
+                     where pps.project_id = v_project_id and
+                       pps.process_step_id = any(z.parent_ps_ids)
+                     group by pps.process_step_id,pps.project_id) as foo
+              group by foo.process_step_ids;
+            end if;
+            if (v_parent_records_with_data is null or array_length(z.parent_cfga_ids,1)<1) or
+               (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and z.reset_on_new is false ) or
+               (array_length(z.parent_cfga_ids,1) >= 1 and v_parent_records_with_data < 1 and array_length(v_parent_process_step_ids,1) < 1 and z.reset_on_new is true ) then
             if v_count = 0 then
               v_sql = NULL;
               v_sql = $$update $$ || z.schema_name || $$.$$ || z.view_name || $$ set $$;
@@ -1385,6 +1699,7 @@ BEGIN
               loop
                 v_sql = v_sql || x.field_to_update || $$ = $$ || z.value || $$ ,$$;
               end loop;
+            end if;
           end loop;
         v_sql = trim(trailing ' ,' from v_sql);
         v_sql = v_sql || ' where project_id = ' || v_project_id || ';';
@@ -1488,7 +1803,8 @@ BEGIN
     into v_owner_org_ids;
 
     select array_agg(owner_id) as owner_ids
-    from (select new.id as contact_id, new.owner_user_position_id as owner_id where new.owner_user_position_id is not null
+    from (select new.id as contact_id, new.owner_user_position_id as owner_id
+          where new.owner_user_position_id is not null
           union
           select p.contact_id as contact_id, user_position_id as owner_id
           from flow.project p
@@ -1525,8 +1841,8 @@ declare
 BEGIN
 
   if ((new.user_position_id is null and old.user_position_id is not null)
-        or (old.user_position_id is null and new.user_position_id is not null)
-        or (new.user_position_id != old.user_position_id)) then
+    or (old.user_position_id is null and new.user_position_id is not null)
+    or (new.user_position_id != old.user_position_id)) then
 
     select array_agg(owner_org_ids)
     from (select distinct t.id as owner_org_ids
@@ -1544,16 +1860,19 @@ BEGIN
     into v_owner_org_ids;
 
     select array_agg(owner_id) as owner_ids
-    from (select new.contact_id as contact_id,new.user_position_id as owner_id  where new.user_position_id is not null
+    from (select new.contact_id as contact_id, new.user_position_id as owner_id
+          where new.user_position_id is not null
           union
-          select p.contact_id as contact_id,p.user_position_id as owner_id
+          select p.contact_id as contact_id, p.user_position_id as owner_id
           from flow.project p
-          where p.contact_id = new.contact_id and p.id != new.id and
-            p.user_position_id is not null
+          where p.contact_id = new.contact_id
+            and p.id != new.id
+            and p.user_position_id is not null
           union
-          select c.id as contact_id ,owner_user_position_id as owner_id
+          select c.id as contact_id, owner_user_position_id as owner_id
           from flow.contact c
-          where c.id = new.contact_id and c.owner_user_position_id is not null) as foo
+          where c.id = new.contact_id
+            and c.owner_user_position_id is not null) as foo
     group by foo.contact_id
     into v_owner_position_ids;
 
@@ -1584,7 +1903,7 @@ declare
   v_dvfc_id bigint;
 BEGIN
 
-  select distinct dvfc.id,dv.view_name,dvcfc.field_to_update,c.schema_name
+  select distinct dvfc.id, dv.view_name, dvcfc.field_to_update, c.schema_name
   into v_dvfc_id
   from flow.custom_field cf
          inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -1595,8 +1914,9 @@ BEGIN
   where cf.list_of_value_id = new.parent_id;
 
   if v_dvfc_id is not null then
-    insert into flow.data_view_maintenance( data_view_field_config_id,lov_new_name, lov_old_name, processed, date_created)
-    values(v_dvfc_id,new.name,old.name,false,now());
+    insert into flow.data_view_maintenance(data_view_field_config_id, lov_new_name, lov_old_name, processed,
+                                           date_created)
+    values (v_dvfc_id, new.name, old.name, false, now());
   end if;
 
 
@@ -1610,5 +1930,5 @@ CREATE TRIGGER list_of_value_name_change_trg
   after update
   ON flow.list_of_value
   FOR EACH ROW
-  when(old.name != new.name)
+  when (old.name != new.name)
 EXECUTE PROCEDURE flow.list_of_value_name_change();

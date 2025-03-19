@@ -140,7 +140,80 @@ BEGIN
         WHERE id = p_payroll_id;
 
         RETURN TRUE;
-    else
+    elseif v_position_id in (743,828) then
+      DELETE
+      FROM brs.partner_project_commission_snapshot
+      WHERE payroll_id = p_payroll_id;
+
+      FOR d IN
+        SELECT (brs.get_partner_commission_account_details(
+          p_payroll_id, p.selected_project_ids, NULL, NULL, NULL, NULL, NULL)).*
+        FROM brs.payroll p
+        WHERE p.id = p_payroll_id
+
+        LOOP
+          INSERT INTO brs.partner_project_commission_snapshot (payroll_id,
+                                                       project_id,
+                                                       customer_name,
+                                                       system_size,
+                                                       partner_org_id,
+                                                       partner_org_name,
+                                                       cancelled,
+                                                       commission_plan_id,
+                                                       commission_plan,
+                                                       sc,
+                                                       commissions_earned,
+                                                       commission_paid_to_date,
+                                                       remaining_value_commissions,
+                                                       total_commissions,
+                                                       current_pay_commissions,
+                                                       current_pay,
+                                                       project_total_value,
+                                                       updated,
+                                                       ahj_final_inspection_verified,
+                                                        final_design_complete_date,
+                                                       position_id,
+                                                        custom_adder_amount,
+                                                        select_adder_amount,
+                                                        base_commission,
+                                                               panel_quantity)
+
+          VALUES (p_payroll_id,
+                  d.project_id,
+                  d.customer_name,
+                  d.system_size,
+                  d.org_id,
+                  d.partner_org_name,
+                  d.cancelled_date,
+                  d.commission_plan_id,
+                  d.commission_plan,
+                  d.substantial_completion_date,
+                  coalesce(d.commission_earned, 0),
+                  d.commission_paid_to_date,
+                  d.remaining_value_commissions,
+                  d.total_commissions,
+                  d.current_pay_commissions,
+                  coalesce(d.current_pay, 0),
+                  coalesce(d.project_total_value, 0),
+                  now(),
+                  d.final_inspection_verified,
+                  d.final_design_complete_date,
+                  d.position_id,
+                  d.custom_adder_amount,
+                  d.selected_adder_amount,
+                  d.base_commission,
+                  d.panel_quantity)
+
+          ON CONFLICT (payroll_id,project_id,partner_org_id) DO NOTHING;
+        END LOOP;
+
+      UPDATE brs.payroll
+      SET updated_by = p_updated_by_id,
+          updated    = now()
+      WHERE id = p_payroll_id;
+
+      RETURN TRUE;
+      else
         DELETE
         FROM brs.project_commission_snapshot
         WHERE payroll_id = p_payroll_id;

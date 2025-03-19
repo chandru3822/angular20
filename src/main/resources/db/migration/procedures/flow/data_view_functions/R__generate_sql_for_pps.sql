@@ -13,10 +13,13 @@ CREATE OR REPLACE procedure flow.generate_sql_for_pps(in z record,
 AS
 $BODY$
 declare
+  v_another_where_clause text;
+  v_add_another_where_clause boolean;
   x record;
   v_value character varying;
   v_order text;
   v_field_required boolean default false;
+v_additional_where_clause text;
 BEGIN
 
       if p_in_event_details > 1 then
@@ -41,13 +44,15 @@ BEGIN
       p_text_array_alias_columns =
         array_append(p_text_array_alias_columns, (v_value || z.field_to_update)::character varying);
       p_text_array_columns  = array_append(p_text_array_columns , z.field_to_update);
-      v_order = $$desc$$;
+      v_order = $$date_modified desc$$;
       if z.update_first_value_only is true then
-        v_order = $$asc$$;
+        v_order = $$date_created asc$$;
         p_sql = p_sql || $$pps.id as $$|| z.update_first_value_only_id||$$,$$;
         p_text_array_alias_columns =
           array_append(p_text_array_alias_columns, (v_value || z.update_first_value_only_id)::character varying);
         p_text_array_columns  = array_append(p_text_array_columns , z.update_first_value_only_id);
+        v_additional_where_clause = $$ and exists (select id from $$||z.schema_name||$$.$$||z.view_name||$$
+                                        where $$|| z.update_first_value_only_id||$$is null)$$;
       end if;
 
       for x in select dvcfc.field_to_update,
@@ -67,18 +72,35 @@ BEGIN
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
       v_field_required = false;
-      if (z.reset_on_new is false and z.update_first_value_only is false) or
-         (z.reset_on_new is false and z.update_first_value_only is true) then
+      if (z.reset_values_on_main is false and z.update_first_value_only is false) or
+         (z.reset_values_on_main is false and z.update_first_value_only is true) then
         v_field_required = true;
-
+      end if;
+      v_add_another_where_clause = false;
+      if z.reset_values_on_main is true and z.ignore_if_null is false then
+        v_add_another_where_clause = true;
+        v_another_where_clause = $$ pps.main is true $$;
+        v_field_required = false;
+      elsif z.reset_values_on_main is true and z.ignore_if_null is true then
+        v_add_another_where_clause = true;
+        v_another_where_clause = $$ and ((main is true and pps.$$||z.column_name||$$ is not null) or (pps.main is false)) $$;
+        v_field_required = false;
+      elsif z.reset_values_on_main is false and z.ignore_if_null is false then
+        v_field_required = true;
       end if;
     p_sql = trim(trailing ' ,' from p_sql);
     p_sql = p_sql || $$ from flow.project_process_step pps
                             inner join flow.project p on p.id = pps.project_id
                         where case when $$||v_field_required||$$ is true then pps.$$||z.column_name||
             $$ is not null else 1=1 end and pps.process_step_id = $$ || z.process_step_id || $$
-                        and p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])
-                            order by pps.project_id,pps.date_created $$||v_order||$$ ), $$;
+                        and p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])$$;
+      if z.update_first_value_only is true then
+        p_sql = p_sql || v_additional_where_clause;
+      end if;
+      if v_add_another_where_clause is true then
+        p_sql = p_sql || v_another_where_clause;
+      end if;
+      p_sql = p_sql ||$$ order by pps.project_id,pps.$$||v_order||$$ ), $$;
 
 
 

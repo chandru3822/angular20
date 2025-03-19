@@ -194,7 +194,8 @@ create type brs.calculated_proposal_value as
   setter_lead_cost numeric,
   digital_lead_cost numeric,
   lead_cost_adder numeric,
-  grid_tied_battery boolean
+  grid_tied_battery boolean,
+  proposal_template_id bigint
 );
 
 drop type brs.excluded_proposal_value;
@@ -558,6 +559,7 @@ v_grid_tied_battery_not_allowed boolean;
 v_storage_states bigint[];
 v_reamortized_monthly_payment_for_roi_calcs numeric;
 v_intial_monthly_payment_for_solar_only_costs numeric;
+v_proposal_template_id bigint;
 BEGIN
 
   select (select string_to_array(value, ',')
@@ -634,7 +636,8 @@ BEGIN
          qualifies_for_swr,
          rete_incentive_applied,
          rete_depreciation_incentive_amount,
-         base_price_per_watt
+         base_price_per_watt,
+         proposal_template_id
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -704,7 +707,8 @@ BEGIN
     v_proposal_qualifies_for_swr,
     v_rete_incentive_applied,
     v_rete_depreciation_incentive_amount,
-    v_base_price_per_watt
+    v_base_price_per_watt,
+    v_proposal_template_id
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -2783,7 +2787,8 @@ BEGIN
            v_setter_lead_cost,
            v_digital_lead_cost,
            v_lead_cost_adder,
-           v_grid_tied_battery;
+           v_grid_tied_battery,
+           v_proposal_template_id;
 
 
 END

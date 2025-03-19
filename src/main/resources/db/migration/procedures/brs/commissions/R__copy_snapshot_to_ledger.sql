@@ -244,6 +244,52 @@ BEGIN
         WHERE id = p_payroll_id;
 
         RETURN TRUE;
+    elseif v_position_id in (743,828) then
+      FOR d IN
+        SELECT s.project_id,
+               s.commissions_earned,
+               s.commission_paid_to_date,
+               s.current_pay_commissions,
+               s.cancelled,
+               s.total_commissions,
+               s.id,
+               s.partner_org_id,
+               s.position_id
+        FROM brs.partner_project_commission_snapshot s
+        WHERE payroll_id = p_payroll_id
+        LOOP
+
+          IF d.current_pay_commissions IS NOT NULL
+          THEN
+
+            INSERT INTO brs.partner_project_commission_ledger(payroll_id,project_id, org_id, ledger_type_id, amount, created_by, created,
+                                                              position_id)
+            VALUES (p_payroll_id, d.project_id, d.partner_org_id, 8, d.current_pay_commissions, p_updated_by_id, now(),
+                    d.position_id);
+          END IF;
+
+          update brs.financial_details_partner fdp
+          set partner_total_commissions_paid_to_date = ( SELECT coalesce(sum(amount), 0)
+                                                 FROM brs.partner_project_commission_ledger pcl
+                                                 WHERE pcl.project_id = d.project_id
+                                                   and pcl.org_id = d.partner_org_id
+                                                   AND pcl.ledger_type_id = 8
+                                                   and pcl.position_id = d.position_id)
+          where fdp.financial_details_id in (select id from brs.financial_details f where f.project_id = d.project_id) and
+                fdp.org_id = d.partner_org_id;
+
+        END LOOP;
+      --deal_override_commission_snapshot contains the amount that will be paid out for the specified payroll
+      --deal_commission_ledger is the amount that has already been paid out
+      --We get
+
+
+      UPDATE brs.payroll
+      SET updated_by = p_updated_by_id,
+          updated    = now()
+      WHERE id = p_payroll_id;
+
+      RETURN TRUE;
     else
         FOR d IN
             SELECT s.project_id,

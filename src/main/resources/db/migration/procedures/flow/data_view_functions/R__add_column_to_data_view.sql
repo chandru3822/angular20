@@ -14,6 +14,7 @@ declare
   v_view_name                  varchar;
   v_update_first_value_only_id varchar;
   v_data_view_field_config_id  bigint;
+  v_dvfc_ids                   bigint[];
 BEGIN
 
   if p_data_view_field_config_id is not null and p_data_view_child_field_config_id is null then
@@ -38,6 +39,13 @@ BEGIN
            left join flow.data_type dt on df.data_type_id = dt.id
     where dvfc.id = p_data_view_field_config_id;
 
+    select array_agg(d.id)
+    into v_dvfc_ids
+    from flow.data_view_field_config d
+    where d.field_to_update = v_field_to_update
+    group by field_to_update
+    having count(1) > 1;
+
     if v_data_type_id = 7 then
       v_data_type = 'bigint[]';
     elsif v_data_type_id in (8, 9) then
@@ -47,13 +55,16 @@ BEGIN
 --     raise notice 'what is this %',v_sql;
     EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
             v_field_to_update || $$ $$ || v_data_type || $$;$$;
-    EXECUTE $$CREATE INDEX if not exists $$||v_view_name||$$_$$||v_field_to_update||$$_idx ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
+    EXECUTE
+      $$CREATE INDEX if not exists $$ || v_view_name || $$_$$ || v_field_to_update || $$_idx ON $$ || v_schema_name ||
+      $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
 
     if v_update_first_value_only is true then
       v_data_type = 'bigint';
       EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
-              v_field_to_update || $$_cfv_id$$ ||$$ $$|| v_data_type || $$;$$;
-      EXECUTE $$CREATE INDEX if not exists $$||v_view_name||$$_$$||v_field_to_update||$$_1idx ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||
+              v_field_to_update || $$_cfv_id$$ || $$ $$ || v_data_type || $$;$$;
+      EXECUTE $$CREATE INDEX if not exists $$ || v_view_name || $$_$$ || v_field_to_update || $$_1idx ON $$ ||
+              v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||
               $$_cfv_id);$$;
 
       update flow.data_view_field_config
@@ -61,13 +72,23 @@ BEGIN
       where id = p_data_view_field_config_id;
 
     end if;
-    insert into flow.data_view_maintenance(data_view_field_config_id,date_created)
-    values(p_data_view_field_config_id,now()) on conflict  do nothing;
+
+    if v_dvfc_ids is null or array_length(v_dvfc_ids, 1) < 1 then
+      insert into flow.data_view_maintenance(data_view_field_config_id, date_created)
+      values (p_data_view_field_config_id, now())
+      on conflict do nothing;
+    else
+      update flow.data_view_maintenance dvm
+      set processed = true
+      where data_view_field_config_id = any (v_dvfc_ids);
+    end if;
   else
-    select dvcvw.field_to_update, dt2.data_type,
-          c.schema_name,dv.view_name
+    select dvcvw.field_to_update,
+           dt2.data_type,
+           c.schema_name,
+           dv.view_name
     into v_field_to_update,v_data_type,
-         v_schema_name,v_view_name
+      v_schema_name,v_view_name
     from flow.data_view_child_field_config dvcvw
            inner join flow.unique_behavior_type ubt on dvcvw.unique_behavior_type_id = ubt.id
            inner join flow.data_type dt2 on ubt.return_data_type_id = dt2.id
@@ -76,11 +97,28 @@ BEGIN
            inner join flow.company c on c.id = dv.company_id
     where dvcvw.id = p_data_view_child_field_config_id;
 
+    select array_agg(dvfc3.id)
+    into v_dvfc_ids
+    from flow.data_view_child_field_config dvcfc
+    inner join flow.data_view_field_config dvfc3 on dvfc3.id = dvcfc.data_view_field_config_id
+    where dvcfc.field_to_update = v_field_to_update
+    group by dvcfc.field_to_update
+    having count(1) > 1;
+
     EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
             v_field_to_update || $$ $$ || v_data_type || $$;$$;
-    EXECUTE $$CREATE INDEX if not exists $$||v_view_name||$$_$$||v_field_to_update||$$_2idx ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
-    insert into flow.data_view_maintenance(data_view_field_config_id,date_created)
-    values(p_data_view_field_config_id,now()) on conflict  do nothing;
+    EXECUTE
+      $$CREATE INDEX if not exists $$ || v_view_name || $$_$$ || v_field_to_update || $$_2idx ON $$ || v_schema_name ||
+      $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
+    if v_dvfc_ids is null or array_length(v_dvfc_ids, 1) < 1 then
+      insert into flow.data_view_maintenance(data_view_field_config_id, date_created)
+      values (p_data_view_field_config_id, now())
+      on conflict do nothing;
+    else
+      update flow.data_view_maintenance dvm
+      set processed = true
+      where data_view_field_config_id = any (v_dvfc_ids);
+    end if;
   end if;
 
 END

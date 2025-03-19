@@ -262,6 +262,44 @@ begin
                                 into v_json;
                                 return v_json;
 ----This section is for setters
+    when p_position_id in (743,828) then SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+                                  FROM (with commission_projects as (select pd1.project_id as project_id,pay1.id,pay1.period_end,pay1.position_id
+                                                                     from brs.payroll pay1
+                                                                            inner join brs.project_details pd1
+                                                                                       on pd1.project_id = any (pay1.selected_project_ids)
+                                                                     where current is true
+                                                                       and pay1.position_id = p_position_id)
+                                        select org_id,
+                                               org_name,
+                                               sum(total_commissions) as total_commissions,
+                                               sum(current_pay) as current_pay
+                                        from (
+                                               select foo.org_id,
+                                                      foo.org_name,
+                                                      foo.total_commissions,
+                                                      (foo.total_commissions) as current_pay
+                                               from (select o2.id                                               as                   org_id,
+                                                            o2.org_name,
+                                                            coalesce(fdp.partner_commissions_earned_m1, 0) + case
+                                                                                                               when cp.position_id = 828 and pd3.ahj_final_inspection_verified <= cp.period_end then
+                                                                                                                 coalesce(fdp.partner_commissions_earned_m2, 0)
+                                                                                                               when cp.position_id = 743 and pd3.substantial_completion_date <= cp.period_end then
+                                                                                                                 coalesce(fdp.partner_commissions_earned_m2, 0)
+                                                                                                               else
+                                                                                                                 0::numeric end  - coalesce(fdp.partner_total_commissions_paid_to_date, 0)  as                   total_commissions
+                                                     from brs.financial_details fd
+                                                            inner join brs.project_details pd3 on pd3.project_id = fd.project_id
+                                                            inner join commission_projects cp on cp.project_id = fd.project_id
+                                                            inner join brs.financial_details_partner fdp on fdp.financial_details_id = fd.id and (fdp.active is true or fdp.partner_total_commissions_paid_to_date > 0) and
+                                                                                                            fdp.position_id = p_position_id
+                                                            inner join flow.org o2 on o2.id = fdp.org_id
+                                                       and (case when cp.position_id = 828 then fd.substantial_completion_date else fd.final_design_complete_date end <= cp.period_end or
+                                                            case when cp.position_id = 828 then pd3.ahj_final_inspection_verified else fd.substantial_completion_date end <= cp.period_end)
+
+                                                    ) as foo) as foo1
+                                        group by foo1.org_id,foo1.org_name
+                                        into v_json) AS sub_rows;
+                                  return v_json;
     when p_position_id = 4 then with all_project_ids as (select array_agg(DISTINCT pd.setter_user_id) as user_ids,
                                                                 array_agg(DISTINCT pd.project_id)                 v_all_projects,
                                                                 pay.id

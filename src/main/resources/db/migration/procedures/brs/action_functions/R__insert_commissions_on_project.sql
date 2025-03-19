@@ -32,6 +32,16 @@ declare
   v_residual_date                 date;
   v_cp_commission_strategy_id     bigint;
   v_residual_plan_user_start_date           date;
+  elem BIGINT;
+  v_partner_commission_plan_found bigint;
+v_financial_details_id bigint;
+v_financial_details_partner_id bigint;
+v_partner_m1_amount numeric;
+v_partner_total_commissions numeric;
+  v_position_id bigint;
+  v_custom_adder_amount  numeric;
+  v_selected_adder_amount numeric;
+  v_partner_commission_amount numeric;
 BEGIN
 
   select min(ppscfv.date_value) milestone_one_complete_date
@@ -291,6 +301,78 @@ BEGIN
             now(),
             99999999);
   end if;
+
+--   FOREACH elem IN ARRAY brs.get_partner_projects(p_project_id)
+--     LOOP
+--       v_partner_commission_plan_found = null;
+--       v_commission_plan_id = null;
+--       v_commission_plan = null;
+--       v_commission_status = null;
+--       v_cp_commission_strategy_id = null;
+--       v_financial_details_id = null;
+--       v_position_id = null;
+--
+--       select id
+--       into v_financial_details_id
+--       from brs.financial_details fd2
+--       where fd2.project_id = p_project_id;
+--
+--       select count(1)
+--       into v_partner_commission_plan_found
+--       from brs.financial_details_partner fdp2
+--              inner join brs.commission_plan cp on fdp2.partner_commission_plan_id = cp.id and cp.position_id in (743,828)
+--       where fdp2.financial_details_id= v_financial_details_id and fdp2.org_id = elem;
+--
+--
+--       select cp.id, cp.name, cps.status_type, cp.commission_strategy_type_id,cp.position_id
+--       into v_commission_plan_id,v_commission_plan,v_commission_status,v_cp_commission_strategy_id,v_position_id
+--       from brs.commission_plan cp
+--              inner join brs.commission_plan_org cpo  on cpo.commission_plan_id = cp.id and cpo.org_id = elem
+--              left join brs.commission_plan_status cps on cps.id = cp.status_id
+--       where  cpo.org_id = elem and
+--              cpo.end_date is null
+--                   and cp.position_id in (743,828);
+--
+--       if v_commission_plan_id is not null and v_partner_commission_plan_found = 0 then
+--         --delete from brs.project_commission where project_id = p_project_id;
+--         v_financial_details_partner_id = null;
+--         insert into brs.financial_details_partner(date_created, date_modified, created_by_id, modified_by_id, archived,
+--                                                   partner_commission_plan, partner_commission_plan_id, partner_commission_plan_status,
+--                                                   financial_details_id, org_id,position_id,active)
+--         values(now(),now(),99999999,99999999,false,v_commission_plan,v_commission_plan_id,v_commission_status,v_financial_details_id,elem,v_position_id,true) returning id into v_financial_details_partner_id;
+--
+--         v_partner_m1_amount = 0;
+--         v_partner_total_commissions = 0;
+--         select m1_amount,total_commissions,custom_adder_amount,select_adder_amount,partner_commission_amount
+--         into v_partner_m1_amount,v_partner_total_commissions,v_custom_adder_amount,v_custom_adder_amount,v_partner_commission_amount
+--           from brs.get_partner_commissions_earned(p_project_id, elem);
+--
+--         update brs.financial_details_partner fdp
+--         set partner_commissions_earned_m1 =v_partner_m1_amount,
+--             partner_total_commissions =v_partner_total_commissions,
+--             custom_adder_amount = coalesce(v_custom_adder_amount,0),
+--             selected_adder_amount = coalesce(v_selected_adder_amount,0),
+--             base_commission_amount = coalesce(v_partner_commission_amount,0)
+--         where fdp.id = v_financial_details_partner_id;
+--
+--       else
+--         raise notice 'elem % commission_plan_id % v_partner_commission_plan_found %',elem,v_commission_plan_id,v_partner_commission_plan_found;
+--         select cf.id
+--         into v_company_feature_id
+--         from flow.company_feature cf
+--                inner join flow.feature f on f.id = cf.feature_id
+--         where f.feature_code = 'COMMISSIONS'
+--           and cf.company_id = v_company_id;
+--         insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
+--                                            date_created, created_by_id)
+--         values (v_company_feature_id, 'Unable to assign Commission Plan to Project ' || p_project_id || ' and org_id: '||elem , 1, now(),
+--                 99999999);
+--
+--       end if;
+--
+--
+--     END LOOP;
+
 
   if v_start_date is not null then
     with update_data as (select foo.project_id,

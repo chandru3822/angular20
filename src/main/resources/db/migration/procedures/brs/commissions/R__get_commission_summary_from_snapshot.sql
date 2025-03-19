@@ -4,9 +4,14 @@ CREATE OR REPLACE FUNCTION brs.get_commission_summary_from_snapshot(p_payroll_id
 $BODY$
 declare
     v_json json;
+    v_position_id bigint;
 BEGIN
+  select position_id
+  into v_position_id
+  from brs.payroll
+  where id = p_payroll_id;
 
-
+  if v_position_id = 1 then
    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                FROM (SELECT id,
                             --'1234' as employee_id,
@@ -163,6 +168,22 @@ BEGIN
                      ORDER BY closer_user) AS sub_rows
        into v_json;
        return v_json;
+   elsif v_position_id in (743,828) then
+     --raise notice '1';
+     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+     FROM (
+     select foo.partner_org_id,foo.partner_org_name,
+            foo.total_commissions as total_commissions,
+            foo.total_commissions  as current_pay
+     from (
+      select ppcs.partner_org_id,ppcs.partner_org_name,
+             sum(coalesce(ppcs.current_pay_commissions,0)) as total_commissions
+    from brs.partner_project_commission_snapshot ppcs
+    where ppcs.payroll_id = p_payroll_id
+      group by ppcs.partner_org_id, ppcs.partner_org_name) as foo) AS sub_rows
+     into v_json;
+     return v_json;
+   end if;
 END
 $BODY$
 LANGUAGE plpgsql

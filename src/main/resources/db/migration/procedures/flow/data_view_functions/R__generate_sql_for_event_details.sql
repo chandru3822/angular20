@@ -1,33 +1,36 @@
-drop procedure if exists  flow.generate_sql_for_event_details(in z record,
+drop procedure if exists flow.generate_sql_for_event_details(in z record,
                                                              in p_in_event_details bigint,
-                                                             inout p_sql text ,
+                                                             inout p_sql text,
                                                              inout p_text_array_tables character varying[],
                                                              inout p_text_array_alias_columns character varying[],
-                                                             inout p_text_array_columns       character varying[]);
+                                                             inout p_text_array_columns character varying[]);
 CREATE OR REPLACE procedure flow.generate_sql_for_event_details(in z record,
-                                                         in p_in_event_details bigint,
-                                                         inout p_sql text ,
-                                                         inout p_text_array_tables character varying[],
-                                                         inout p_text_array_alias_columns character varying[],
-                                                         inout p_text_array_columns       character varying[])
+                                                                in p_in_event_details bigint,
+                                                                inout p_sql text,
+                                                                inout p_text_array_tables character varying[],
+                                                                inout p_text_array_alias_columns character varying[],
+                                                                inout p_text_array_columns character varying[])
 AS
 $BODY$
 declare
-  x record;
-  v_value character varying;
-  v_order text;
-  v_join text;
-  v_order_by text;
-  v_field_required boolean default false;
-v_custom_field_group_assignment_ids text;
+  x                                   record;
+  v_value                             character varying;
+  v_order                             text;
+  v_join                              text;
+  v_order_by                          text;
+  v_field_required                    boolean default false;
+  v_custom_field_group_assignment_ids text;
+  v_add_another_where_clause          text;
+  v_additional_where_clause           boolean;
+  v_another_where_clause              text;
 BEGIN
-  with my_data as (
-    select cf.field_name,cf.id as custom_field_id,cfga.id,dvfc.field_to_update
-    from flow.data_view_field_config dvfc
-           inner join flow.custom_field_group_assignment cfga on cfga.id = dvfc.custom_field_group_assignment_id
-           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-    where custom_field_group_assignment_id = z.custom_field_group_assignment_id)
-  select string_agg(c.id::text,',')
+  with my_data as (select cf.field_name, cf.id as custom_field_id, cfga.id, dvfc.field_to_update
+                   from flow.data_view_field_config dvfc
+                          inner join flow.custom_field_group_assignment cfga
+                                     on cfga.id = dvfc.custom_field_group_assignment_id
+                          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                   where custom_field_group_assignment_id = z.custom_field_group_assignment_id)
+  select string_agg(c.id::text, ',')
   into v_custom_field_group_assignment_ids
   from flow.data_view_field_config dvfc2
          inner join flow.custom_field_group_assignment c on c.id = dvfc2.custom_field_group_assignment_id
@@ -36,77 +39,99 @@ BEGIN
   where dvfc2.field_to_update = md.field_to_update;
 
 
-      if p_in_event_details > 1 then
-        p_sql = p_sql || $$ event_details_$$||p_in_event_details||$$ as (select distinct on (p.id) p.id,$$;
-        p_text_array_tables = array_append(p_text_array_tables, ($$event_details_$$||p_in_event_details|| $$ ed_$$||p_in_event_details)::character varying);
-      elsif z.object_type = 'event' and z.custom_field_group_assignment_id is not null and (p_sql = '') IS NOT FALSE then
-        p_sql = $$with event_details as (select distinct on (p.id) p.id,$$;
-        p_text_array_tables = array_append(p_text_array_tables, ('event_details ed')::character varying);
-      elsif z.object_type = 'event' and z.custom_field_group_assignment_id is not null and (p_sql = '') IS FALSE and
-            position('event_details' in p_sql) < 1 then
-        p_sql = p_sql || $$ event_details as (select distinct on (p.id) p.id,$$;
-        p_text_array_tables = array_append(p_text_array_tables, ('event_details ed')::character varying);
-      end if;
+  if p_in_event_details > 1 then
+    p_sql = p_sql || $$ event_details_$$ || p_in_event_details || $$ as (select distinct on (p.id) p.id,$$;
+    p_text_array_tables = array_append(p_text_array_tables, ($$event_details_$$ || p_in_event_details || $$ ed_$$ ||
+                                                             p_in_event_details)::character varying);
+  elsif z.object_type = 'event' and z.custom_field_group_assignment_id is not null and (p_sql = '') IS NOT FALSE then
+    p_sql = $$with event_details as (select distinct on (p.id) p.id,$$;
+    p_text_array_tables = array_append(p_text_array_tables, ('event_details ed')::character varying);
+  elsif z.object_type = 'event' and z.custom_field_group_assignment_id is not null and (p_sql = '') IS FALSE and
+        position('event_details' in p_sql) < 1 then
+    p_sql = p_sql || $$ event_details as (select distinct on (p.id) p.id,$$;
+    p_text_array_tables = array_append(p_text_array_tables, ('event_details ed')::character varying);
+  end if;
 
-        v_value = $$ed.$$;
-        if p_in_event_details > 1 then
-          v_value = $$ed_$$||p_in_event_details||$$.$$;
-        end if;
+  v_value = $$ed.$$;
+  if p_in_event_details > 1 then
+    v_value = $$ed_$$ || p_in_event_details || $$.$$;
+  end if;
 
-      p_sql = p_sql ||$$ppsecfv.$$ || flow.get_value_based_on_data_type(z.data_type_id) || $$ as $$ || z.field_to_update || $$,$$;
+  p_sql = p_sql || $$ppsecfv.$$ || flow.get_value_based_on_data_type(z.data_type_id) || $$ as $$ || z.field_to_update ||
+          $$,$$;
 
+  p_text_array_alias_columns =
+    array_append(p_text_array_alias_columns, (v_value || z.field_to_update)::character varying);
+  p_text_array_columns = array_append(p_text_array_columns, z.field_to_update);
+  v_order = $$desc$$;
+  if z.update_first_value_only is true then
+    v_order = $$asc$$;
+    p_sql = p_sql || $$ppsecfv.id as $$ || z.update_first_value_only_id || $$,$$;
+    p_text_array_alias_columns =
+      array_append(p_text_array_alias_columns, (v_value || z.update_first_value_only_id)::character varying);
+    p_text_array_columns = array_append(p_text_array_columns, z.update_first_value_only_id);
+  end if;
+
+  for x in select dvcfc.field_to_update,
+                  quote_literal(ubt.unique_behavior_code) as unique_behavior_code,
+                  ubt.return_data_type_id                 as data_type_id,
+                  dt.data_type
+           from flow.data_view_child_field_config dvcfc
+                  inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
+                  inner join flow.data_type dt on ubt.return_data_type_id = dt.id
+           where dvcfc.data_view_field_config_id = z.data_view_field_config_id
+    loop
+      p_text_array_columns = array_append(p_text_array_columns, x.field_to_update);
       p_text_array_alias_columns =
-        array_append(p_text_array_alias_columns, (v_value || z.field_to_update)::character varying);
-      p_text_array_columns  = array_append(p_text_array_columns , z.field_to_update);
-      v_order = $$desc$$;
-      if z.update_first_value_only is true then
-        v_order = $$asc$$;
-        p_sql = p_sql || $$ppsecfv.id as $$|| z.update_first_value_only_id||$$,$$;
-        p_text_array_alias_columns =
-          array_append(p_text_array_alias_columns, (v_value || z.update_first_value_only_id)::character varying);
-        p_text_array_columns  = array_append(p_text_array_columns , z.update_first_value_only_id);
-      end if;
+        array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
+      p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, ppsecfv.$$
+                || flow.get_value_based_on_data_type(z.data_type_id) || $$::text,0::bigint, ppsecfv.id,$$ ||
+              quote_literal('EVENT') || $$)::$$ || x.data_type ||
+              $$ as $$ || x.field_to_update || $$,$$;
+    end loop;
 
-      for x in select dvcfc.field_to_update,
-                      quote_literal(ubt.unique_behavior_code) as unique_behavior_code,
-                      ubt.return_data_type_id as data_type_id,
-                      dt.data_type
-               from flow.data_view_child_field_config dvcfc
-                      inner join flow.unique_behavior_type ubt on dvcfc.unique_behavior_type_id = ubt.id
-                      inner join flow.data_type dt on ubt.return_data_type_id = dt.id
-               where dvcfc.data_view_field_config_id = z.data_view_field_config_id
-        loop
-          p_text_array_columns  = array_append(p_text_array_columns , x.field_to_update);
-          p_text_array_alias_columns =
-            array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
-          p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, ppsecfv.$$
-                    || flow.get_value_based_on_data_type(z.data_type_id) || $$::text,0::bigint, ppsecfv.id,$$|| quote_literal('EVENT')||$$)::$$ || x.data_type ||
-                  $$ as $$ || x.field_to_update || $$,$$;
-        end loop;
-
-      v_join = $$ inner $$;
-      v_order_by = $$ ppsecfv.date_modified $$;
-      if z.reset_on_new is true then
-        v_join = $$ left $$;
-        v_order_by = $$ ppse.date_created $$;
-      end if;
-      v_field_required = false;
-      if (z.reset_on_new is false and z.update_first_value_only is false) or
-         (z.reset_on_new is false and z.update_first_value_only is true) then
-        v_field_required = true;
-
-      end if;
-    p_sql = trim(trailing ' ,' from p_sql);
-    p_sql = p_sql || $$ from flow.project p
+  v_join = $$ inner $$;
+  v_order_by = $$ ppsecfv.date_modified $$;
+  if z.reset_on_new is true then
+    v_join = $$ left $$;
+    v_order_by = $$ ppse.date_created $$;
+  end if;
+  v_field_required = false;
+  if (z.reset_on_new is false and z.update_first_value_only is false) or
+     (z.reset_on_new is false and z.update_first_value_only is true) then
+    v_field_required = true;
+  end if;
+  v_add_another_where_clause = false;
+  if z.reset_on_new is true and z.ignore_if_null is false then
+    v_add_another_where_clause = true;
+    v_another_where_clause = $$ pps.main is true $$;
+    v_field_required = false;
+  elsif z.reset_on_new is true and z.ignore_if_null is true then
+    v_add_another_where_clause = true;
+    v_another_where_clause =
+      $$ and ((pps.main is true and pps.$$ || z.column_name || $$ is not null) or (pps.main is false)) $$;
+    v_field_required = false;
+  elsif z.reset_on_new is false and z.ignore_if_null is false then
+    v_field_required = true;
+  end if;
+  p_sql = trim(trailing ' ,' from p_sql);
+  p_sql = p_sql || $$ from flow.project p
                       inner join flow.project_process_step pps on pps.project_id = p.id
                       inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id and
                                               ppse.process_step_event_id = $$ || z.process_step_event_id || $$
-                      $$||v_join||$$ join flow.project_process_step_event_custom_field_value ppsecfv on ppse.id = ppsecfv.project_process_step_event_id
+                      $$ || v_join || $$ join flow.project_process_step_event_custom_field_value ppsecfv on ppse.id = ppsecfv.project_process_step_event_id
                         and ppsecfv.custom_field_group_assignment_id in ($$ || v_custom_field_group_assignment_ids || $$)
-                        where case when $$||v_field_required||$$ is true then ppsecfv.$$||flow.get_value_based_on_data_type(z.data_type_id)||
-            $$ is not null else 1=1 end and
-            p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])
-                        order by p.id, $$||v_order_by|| v_order ||$$ ), $$;
+                        where case when $$ || v_field_required || $$ is true then ppsecfv.$$ ||
+          flow.get_value_based_on_data_type(z.data_type_id) ||
+          $$ is not null else 1=1 end and
+            p.company_process_id = any('$$ || z.company_process_ids::text || $$'::bigint[])$$;
+  if z.update_first_value_only is true then
+    p_sql = p_sql || v_additional_where_clause;
+  end if;
+  if v_add_another_where_clause is true then
+    p_sql = p_sql || v_another_where_clause;
+  end if;
+  p_sql = p_sql ||$$ order by p.id, $$ || v_order_by || v_order || $$ ), $$;
 
 
 END
