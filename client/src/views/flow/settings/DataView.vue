@@ -107,7 +107,7 @@
               </v-radio-group>
 
               <a-autocomplete
-                v-if="fieldType === 1"
+                v-if="fieldType === DEFAULT_FIELD_TYPE_ID"
                 v-model="selectedDefaultField"
                 :items="defaultFields"
                 label="Default Field"
@@ -116,7 +116,7 @@
                 item-title="fieldName"
                 return-object></a-autocomplete>
               <a-autocomplete
-                v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
+                v-if="selectedDefaultField && selectedDefaultField.objectTypeId === objectTypes.EVENT"
                 v-model="newField.processStepEventId"
                 :items="processStepEvents"
                 label="Process Step Event"
@@ -128,7 +128,7 @@
                 </template>
               </a-autocomplete>
               <a-autocomplete
-                v-else-if="selectedDefaultField && selectedDefaultField.objectTypeId === 4"
+                v-else-if="selectedDefaultField && selectedDefaultField.objectTypeId === objectTypes.PROCESS_STEP"
                 v-model="newField.processStepId"
                 :items="processSteps"
                 label="Process Step"
@@ -149,14 +149,14 @@
                   {{ item.name }}
                 </template>
               </a-autocomplete>
-              <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === 4"
+              <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === objectTypes.PROCESS_STEP"
                               v-model="parentProcessStepEvent"
                               :items="parentProcessStepEvents"
                               label="Process Step Event"
                               item-title="eventName"
                               return-object
                               autocomplete="off"
-                              @input="[loadFieldsByParent(true), setObjectTypeId({objectTypeId: 6})]"
+                              @input="[loadFieldsByParent(true), setObjectTypeId({objectTypeId: objectTypes.EVENT})]"
               >
               </a-autocomplete>
               <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.id"
@@ -168,19 +168,21 @@
                               autocomplete="off">
               </a-autocomplete>
 
-              <div class="mb-3" v-if="[4,6].includes(selectedObjectTypeId) && (
+              <div class="mb-3" v-if="(fieldType === DEFAULT_FIELD_TYPE_ID && Object.keys(selectedDefaultField).length > 0) ||
+               ([objectTypes.PROCESS_STEP,objectTypes.EVENT, objectTypes.PROJECT, objectTypes.CONTACT].includes(selectedObjectTypeId) && (
                 newField.processStepId || newField.processStepEventId || newField.customFieldGroupAssignmentId ||
                 Object.keys(parentProcessStepEvent).length > 0
-              )">
-                <span class="mr-3">Update First Value Only?</span>
-                <input
-                  type="checkbox"
-                  :disabled="newField.resetOnNew || newField.resetValuesOnMain"
-                  v-model="newField.updateFirstValueOnly"
-                />
-                <br/>
-                <div v-if="selectedDefaultField.objectTypeId !== 4 && !newField.customFieldGroupAssignmentId">
-                  <span class="mr-3">Match New {{ selectedObjectTypeId === 4 ? 'Process Step' : 'Event' }} on create?</span>
+              ))">
+                <div v-if="(fieldType === DEFAULT_FIELD_TYPE_ID && selectedDefaultField.objectTypeId && [objectTypes.PROCESS_STEP, objectTypes.EVENT].includes(selectedDefaultField.objectTypeId)) || fieldType === 2">
+                  <span class="mr-3">Update First Value Only?</span>
+                  <input
+                    type="checkbox"
+                    :disabled="newField.resetOnNew || newField.resetValuesOnMain"
+                    v-model="newField.updateFirstValueOnly"
+                  />
+                </div>
+                <div v-if="(selectedObjectTypeId !== objectTypes.PROCESS_STEP && selectedObjectTypeId !== objectTypes.PROJECT && selectedObjectTypeId !== objectTypes.CONTACT) || (fieldType === DEFAULT_FIELD_TYPE_ID && selectedDefaultField.objectTypeId === objectTypes.EVENT)">
+                  <span class="mr-3">Match New {{ selectedObjectTypeId === objectTypes.PROCESS_STEP ? 'Process Step' : 'Event' }} on create?</span>
                   <input
                     :disabled="newField.updateFirstValueOnly"
                     type="checkbox"
@@ -188,7 +190,7 @@
                   />
                 </div>
 
-                <div v-if="selectedObjectTypeId === 4">
+                <div v-if="(selectedObjectTypeId === objectTypes.PROCESS_STEP) || fieldType === DEFAULT_FIELD_TYPE_ID && selectedDefaultField.objectTypeId && [objectTypes.PROCESS_STEP].includes(selectedDefaultField.objectTypeId)">
                 <span
                   class="mr-3">Match Primary Process Step on change?</span>
                 <input
@@ -197,7 +199,7 @@
                   v-model="newField.resetValuesOnMain"
                 />
                 </div>
-                <div v-if="!newField.processStepEventId && !parentProcessStepEvent">
+                <div v-if="(!newField.processStepEventId && !parentProcessStepEvent && !selectedDefaultField.id) || (selectedObjectTypeId === objectTypes.PROCESS_STEP && fieldType !== DEFAULT_FIELD_TYPE_ID)">
                   <span
                     class="mr-3">Ignore If Null?</span>
                   <input
@@ -220,7 +222,7 @@
             </v-form>
             <a-btn
               :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
-                              || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
+                              || (selectedDefaultField.objectTypeId === objectTypes.EVENT && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === objectTypes.PROCESS_STEP && !newField.processStepId)"
               color="primary" class="white--text mr-2"
               @click="validateFields(newField, true)"
               text="Save"
@@ -296,13 +298,13 @@
                             v-model="item.parentObjectName"
               ></a-text-field>
               <a-text-field
-                v-if="item.processStepId || (item.customFieldGroupAssignmentId && item.objectTypeId === 4)"
+                v-if="item.processStepId || (item.customFieldGroupAssignmentId && item.objectTypeId === objectTypes.PROCESS_STEP)"
                 label="Process Step"
                 disabled readonly
                 v-model="item.processStepName"
               ></a-text-field>
               <a-text-field
-                v-if="item.processStepEventId || (item.customFieldGroupAssignmentId && item.objectTypeId === 6)"
+                v-if="item.processStepEventId || (item.customFieldGroupAssignmentId && item.objectTypeId === objectTypes.EVENT)"
                 label="Process Step Event"
                 disabled readonly
                 v-model="item.processStepEventName"
@@ -313,7 +315,7 @@
                             v-model="item.fieldName"
               ></a-text-field>
 
-              <div v-if="[4,6].includes(item.objectTypeId)">
+              <div v-if="[objectTypes.PROCESS_STEP,objectTypes.EVENT].includes(item.objectTypeId)">
                 <span class="mr-3 disabled-label">Update First Value Only?</span>
                 <input
                   type="checkbox"
@@ -324,14 +326,14 @@
                 <br/>
                 <span
                   class="mr-3 disabled-label">Match New {{
-                    item.objectTypeId === 4 ? 'Process Step' : 'Event'
+                    item.objectTypeId === objectTypes.PROCESS_STEP ? 'Process Step' : 'Event'
                   }} on create?</span>
                 <input
                   disabled readonly
                   type="checkbox"
                   v-model="item.resetOnNew"
                 />
-                <div v-if="item.objectTypeId === 4">
+                <div v-if="item.objectTypeId === objectTypes.PROCESS_STEP">
                 <span
                   class="mr-3 disabled-label">Match Primary Process Step on change?</span>
                 <input
@@ -577,6 +579,8 @@ const fieldToUpdateRule = ref([
   v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
   v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
 ])
+const objectTypes = ref(constants.OBJECT_TYPES)
+const DEFAULT_FIELD_TYPE_ID = 1
 const selectedDefaultField = ref({})
 const availableParentOptions = ref([])
 const parentOptionsHaveCfgaIds = ref(false)
@@ -683,7 +687,7 @@ const validateFields = (field, isNew) => {
   let valid = fieldConfigForm.value?.validate()
 
   //if they had set one of these as true but then changed the field type to a different type then reset the values here
-  if (![4, 6].includes(selectedObjectTypeId.value)) {
+  if (![objectTypes.value.PROCESS_STEP, objectTypes.value.EVENT].includes(selectedObjectTypeId.value)) {
     newField.value.updateFirstValueOnly = false
     newField.value.resetOnNew = false
     newField.value.resetValuesOnMain = false
@@ -817,7 +821,7 @@ const getProcessStepEventData = async () => {
   newField.value.processStepEventId = null
   newField.value.processStepId = null
   processStepEvents.value = []
-  if (selectedDefaultField.value?.objectTypeId === 6) {
+  if (selectedDefaultField.value?.objectTypeId === objectTypes.value.EVENT) {
     appStore.loading = true
     try {
       const {
@@ -837,7 +841,7 @@ const getProcessStepEventData = async () => {
 const getProcessStepData = async () => {
   newField.value.processStepId = null
   processSteps.value = []
-  if (selectedDefaultField.value?.objectTypeId === 4) {
+  if (selectedDefaultField.value?.objectTypeId === objectTypes.value.PROCESS_STEP) {
     appStore.loading = true
     try {
       const {
