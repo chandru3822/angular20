@@ -39,6 +39,7 @@ const editMode = ref(false)
 const addPart = ref(false)
 const duplicatedPart = ref(false)
 const showExportDialog = ref(false)
+const projectName = ref(null)
 
 
 
@@ -68,6 +69,7 @@ onMounted(async() =>{
   await getParts()
   await getPartsTypes()
   await getSuppliers()
+  await getProject()
   bomLoading.value = false
 })
 
@@ -103,6 +105,16 @@ const getSuppliers = async () => {
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error loading suppliers')
+  }
+}
+
+const getProject = async () => {
+  try{
+    const {data} = await getRequest(`/project/${projectId.value}`)
+    projectName.value = data?.projectName
+  } catch (e) {
+    logError(e)
+    appStore.showSnack('ERROR', 'Error getting project info')
   }
 }
 
@@ -154,7 +166,7 @@ const exportPdf = async ($event) => {
       data: $event,
       responseType: 'blob'
     })
-    const filename = 'bom'
+    const filename = `${projectName.value}_${projectId.value}_bom`
     if (data) {
       const pdfFile = URL.createObjectURL(
           new Blob([data], { type: 'application/pdf' })

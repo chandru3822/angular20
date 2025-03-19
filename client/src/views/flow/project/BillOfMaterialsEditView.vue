@@ -101,7 +101,7 @@ const save = async () => {
         editParts.value,
         'blueraven')
      emit('save', data)//update the saved bom
-    editParts.value
+    editParts.value = []
     appStore.showSnack('SUCCESS', 'BOM Saved')
   } catch (e) {
     logError(e)
