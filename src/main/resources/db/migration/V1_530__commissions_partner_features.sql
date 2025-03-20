@@ -1,4 +1,3 @@
-
 ------------- NEW MILESTONE TYPES -------------
 -- Insert new Milestone Types for source selection on `Dealer`/`Installation Partner`
 -- Add 2 records each role with the IDs of 743, 828; 4 records total
@@ -109,22 +108,25 @@ $$
   -- Arrays are same length, so using either inside the loop will give correct index
   BEGIN
     FOR i IN 1 .. array_length(feature_names, 1) LOOP
-      -- Insert three new rows into flow.feature (one for dealer, one for installer, one for setter)
-      -- Return the `feature_id` and store it into `new_feature_id`
-      INSERT INTO flow.feature (feature_name, feature_code, archived, is_system, feature_path)
-      SELECT
-        feature_names[i],
-        feature_codes[i],
-        false,
-        false,
-        feature_paths[i]
-      WHERE NOT EXISTS (
-        SELECT id
-        FROM flow.feature
-        WHERE feature_name = feature_names[i]
-          AND feature_code = feature_codes[i]
-      )
-      RETURNING id INTO new_feature_id;
+
+      -- First check if the feature already exists and get its ID if it does
+      SELECT id INTO new_feature_id
+      FROM flow.feature
+      WHERE feature_name = feature_names[i]
+        AND feature_code = feature_codes[i];
+
+      -- If the feature doesn't exist, insert it and get the new ID
+      IF new_feature_id IS NULL THEN
+        INSERT INTO flow.feature (feature_name, feature_code, archived, is_system, feature_path)
+        VALUES (
+          feature_names[i],
+          feature_codes[i],
+          false,
+          false,
+          feature_paths[i]
+        )
+        RETURNING id INTO new_feature_id;
+      END IF;
 
       -- Insert corresponding rows into flow.company_feature using returned ID from feature table
       INSERT INTO flow.company_feature (feature_name, company_id, feature_id, archived, home_page, hidden, parent_company_feature_id, has_permissions, show_in_tools)
@@ -168,4 +170,3 @@ $$
     END LOOP;
   END
 $$;
-
