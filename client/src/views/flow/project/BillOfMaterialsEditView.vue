@@ -42,10 +42,6 @@ onMounted(() => {
   localBomParts.value = [...props.bomParts]
 })
 
-onBeforeRouteUpdate(async (to, from, next) => {
-  await routeGuard(to, from, next)
-})
-
 onBeforeRouteLeave(async (to, from, next) => {
  await routeGuard(to, from, next)
 })
