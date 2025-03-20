@@ -100,8 +100,8 @@ const save = async () => {
         `/bom/${props.projectId}/parts`,
         editParts.value,
         'blueraven')
-     emit('save', data)//update the saved bom
-    editParts.value = []
+    editParts.value = [] //make sure we clear the edit parts before we save the data to avoid the route guard triggering the unsaved changes dialog
+    emit('save', data)//update the saved bom
     appStore.showSnack('SUCCESS', 'BOM Saved')
   } catch (e) {
     logError(e)
