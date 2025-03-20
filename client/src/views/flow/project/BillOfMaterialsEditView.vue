@@ -126,30 +126,40 @@ const addNewPartToList = () => {
     supplierId: newPartSupplier.value?.id,
     supplierConfirmed: null
   }
-  //if the part already exists in the BOM we will temporarily add a new row, but that row might get combined on save depending on other factors
-  const existingPart = findBestMatchDuplicatePart()
+  //first check the list of edited parts to see if we're adding a part that matches a previously added or edited part
+  const prevEditedPart = findBestEditedMatchDuplicatePart()
+  if(prevEditedPart){
+    //if it does, update that quantity and don't add a new part to editParts list
+    prevEditedPart.quantity = Number(prevEditedPart.quantity) + Number(newPartQuantity.value)
+  } else {
 
-  if(existingPart && (existingPart.supplierId === newPartSupplier.value?.id || (!existingPart.supplierId && !newPartSupplier.value?.id)) && !existingPart.supplierConfirmed) {
-    //if the existing part's supplier and the new part's supplier match (or if both are null) AND the existing part's supplier is NOT confirmed,
-    // the new row quantity will be added to the existing row (ie, update the existing value) on save, so we need to add the id
-    partForUpdate.id = existingPart.id
-    //and combine the existing quantity with the new quantity to get the updated quantity value
-    partForUpdate.quantity = Number(newPartQuantity.value) + Number(existingPart.quantity)
+    //if the part already exists in the BOM we will temporarily add a new row, but that row might get combined on save depending on other factors
+    const existingPart = findBestMatchDuplicatePart()
+    if (existingPart && (existingPart.supplierId === newPartSupplier.value?.id || (!existingPart.supplierId && !newPartSupplier.value?.id)) && !existingPart.supplierConfirmed) {
+      //if the existing part's supplier and the new part's supplier match (or if both are null) AND the existing part's supplier is NOT confirmed,
+      // the new row quantity will be added to the existing row (ie, update the existing value) on save, so we need to add the id
+      partForUpdate.id = existingPart.id
+      //and combine the existing quantity with the new quantity to get the updated quantity value
+      partForUpdate.quantity = Number(newPartQuantity.value) + Number(existingPart.quantity)
 
+    }
 
+    //now that our value is formatted correctly, we need to add it to the list that will be saved
+    editParts.value.push(partForUpdate)
   }
+
   //either way we need to display a temporary row with the values entered into the add field,
-  // so we'll add the entered quantity and supplier id to the "newPart" object and then add that to the newParts list
-  newPart.value.partsMasterId = newPart.value.id
-  newPart.value.id = null
-  newPart.value.quantity = newPartQuantity.value
-  newPart.value.supplierId = newPartSupplier.value?.id
-  newPart.value.supplierName = newPartSupplier.value?.supplierName
-  localBomParts.value.push(newPart.value)
+  // so we'll make a copy of the new part (so we don't mess up the dropdown part we got it from)
+  // add the entered quantity and supplier id to the "newPart" object and then add that to the localBomParts list
+  // and update the partsMasterId value to the id value, then nullify the id
+  let localNewPart = {...newPart.value, partsMasterId: newPart.value.id}
+  localNewPart.id = null
+  localNewPart.quantity = newPartQuantity.value
+  localNewPart.supplierId = newPartSupplier.value?.id
+  localNewPart.supplierName = newPartSupplier.value?.supplierName
+  localBomParts.value.push(localNewPart)
 
 
-  //now that our value is formatted correctly, we need to add it to the list that will be saved
-  editParts.value.push(partForUpdate)
   //clear out the new part so another may be added
   newPartQuantity.value = null
   newPartSupplier.value = null
@@ -158,7 +168,20 @@ const addNewPartToList = () => {
   emit('hideAddPart')
 }
 
+const findBestEditedMatchDuplicatePart = () => {
+  let possibleEditedMatches = editParts.value.filter(bp => (bp.partsMasterId === newPart.value.id))
+  if(possibleEditedMatches?.length === 0) {
+    return null
+  }
+  if(newPartSupplier?.value){
+    //if new part has supplier, match must have same supplier and must not be confirmed
+    return possibleEditedMatches.find(pm => (pm.supplierId && pm.supplierId === newPartSupplier.value.id && !pm.supplierConfirmed))
+  }
+  return possibleEditedMatches.find(pm => (!pm.supplierId))
+}
+
 const findBestMatchDuplicatePart = () => {
+  //if it hasn't been previously added/edited, check the list of parts already in the bom
   let possibleMatches = localBomParts.value.filter(bp => (bp.partsMasterGroupUuid === newPart.value.partsMasterGroupUuid))
   if(possibleMatches?.length === 0){
     return null
