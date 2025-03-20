@@ -182,7 +182,7 @@
                 <a-text-field
                   placeholder="0.00"
                   type="number"
-                  label="Partner Commission Amount"
+                  :label="commissionPositionId === 828 ? 'Partner Commission Amount' : 'Dealer Redline Amount'"
                   v-if="isDealerOrInstallerPlan"
                   :disabled="(commission.id && commission.statusType !== 'PENDING') || !userCanAdd"
                   :readonly="(commission.id && commission.statusType !== 'PENDING') || !userCanAdd"
