@@ -47,7 +47,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 })
 
 const routeGuard = async (to, from, next) => {
-  if (!override.value && Object.keys(editParts.value || {}).length > 0) {
+  if (!override.value && Object.keys(editParts.value || {}).length > 0 && !bomSaving.value) {
     unsavedModal.value = true
     nextRoute.value = next
   } else {
