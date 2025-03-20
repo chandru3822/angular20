@@ -208,7 +208,7 @@ BEGIN
     into v_company_feature_id
     from flow.company_feature cf
            inner join flow.feature f on f.id = cf.feature_id
-    where f.feature_code = 'COMMISSIONS'
+    where f.feature_code = 'COMMISSIONS_CLOSER'
       and cf.company_id = v_company_id;
     insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
                                        date_created, created_by_id)
@@ -233,7 +233,7 @@ BEGIN
     into v_company_feature_id
     from flow.company_feature cf
            inner join flow.feature f on f.id = cf.feature_id
-    where f.feature_code = 'COMMISSIONS'
+    where f.feature_code = 'COMMISSIONS_CLOSER'
       and cf.company_id = v_company_id;
     insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
                                        date_created, created_by_id)
@@ -291,7 +291,7 @@ BEGIN
     into v_company_feature_id
     from flow.company_feature cf
            inner join flow.feature f on f.id = cf.feature_id
-    where f.feature_code = 'COMMISSIONS'
+    where f.feature_code = 'COMMISSIONS_CLOSER'
       and cf.company_id = v_company_id;
 
     insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,

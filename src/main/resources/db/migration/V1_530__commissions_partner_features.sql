@@ -1,3 +1,69 @@
+
+------------- NEW MILESTONE TYPES -------------
+-- Insert new Milestone Types for source selection on `Dealer`/`Installation Partner`
+-- Add 2 records each role with the IDs of 743, 828; 4 records total
+-----------------------------------------------
+
+-- #1: Insert 'M1 - Pay Eligible' for position ID of 743
+INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
+SELECT
+  'M1 - Pay Eligible',
+  true,
+  1,
+  743
+WHERE NOT EXISTS (
+  SELECT id
+  FROM brs.milestone_type
+  WHERE milestone_type = 'M1 - Pay Eligible'
+    AND position_id = 743
+    AND active = true
+);
+
+-- #2: Insert 'M2 - Substantial Completion' for position ID of 743
+INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
+SELECT
+  'M2 - Substantial Completion',
+  true,
+  2,
+  743
+WHERE NOT EXISTS (
+  SELECT id
+  FROM brs.milestone_type
+  WHERE milestone_type = 'M2 - Substantial Completion'
+    AND position_id = 743
+    AND active = true
+);
+
+-- #3: Insert 'M1 - Pay Eligible' for position ID of 828
+INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
+SELECT
+  'M1 - Pay Eligible',
+  true,
+  1,
+  828
+WHERE NOT EXISTS (
+  SELECT id
+  FROM brs.milestone_type
+  WHERE milestone_type = 'M1 - Pay Eligible'
+    AND position_id = 828
+    AND active = true
+);
+
+-- #4: Insert 'M2 - Substantial Completion' for position ID of 828
+INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
+SELECT
+  'M2 - Substantial Completion',
+  true,
+  2,
+  828
+WHERE NOT EXISTS (
+  SELECT id
+  FROM brs.milestone_type
+  WHERE milestone_type = 'M2 - Substantial Completion'
+    AND position_id = 828
+    AND active = true
+);
+
 ------- UPSERT FEATURE ACCESS CONTROLS --------
 -- Update the `Commissions` access control to the below name & code:
 --   + Commissions - Closer                ::   COMMISSIONS_CLOSER
@@ -7,7 +73,6 @@
 --   + Commissions - Dealer                ::   COMMISSIONS_DEALER
 --   + Commissions - Installation Partner  ::   COMMISSIONS_INSTALLATION_PARTNER
 -----------------------------------------------
-
 
 -- Update feature id 13 from `COMMISSIONS` to "COMMISSIONS - CLOSER"
 UPDATE flow.feature
@@ -104,68 +169,3 @@ $$
   END
 $$;
 
-
-------------- NEW MILESTONE TYPES -------------
--- Insert new Milestone Types for source selection on `Dealer`/`Installation Partner`
--- Add 2 records each role with the IDs of 743, 828; 4 records total
------------------------------------------------
-
--- #1: Insert 'M1 - Pay Eligible' for position ID of 743
-INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
-SELECT
-  'M1 - Pay Eligible',
-  true,
-  1,
-  743
-WHERE NOT EXISTS (
-  SELECT id
-  FROM brs.milestone_type
-  WHERE milestone_type = 'M1 - Pay Eligible'
-    AND position_id = 743
-    AND active = true
-);
-
--- #2: Insert 'M2 - Substantial Completion' for position ID of 743
-INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
-SELECT
-  'M2 - Substantial Completion',
-  true,
-  2,
-  743
-WHERE NOT EXISTS (
-  SELECT id
-  FROM brs.milestone_type
-  WHERE milestone_type = 'M2 - Substantial Completion'
-    AND position_id = 743
-    AND active = true
-);
-
--- #3: Insert 'M1 - Pay Eligible' for position ID of 828
-INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
-SELECT
-  'M1 - Pay Eligible',
-  true,
-  1,
-  828
-WHERE NOT EXISTS (
-  SELECT id
-  FROM brs.milestone_type
-  WHERE milestone_type = 'M1 - Pay Eligible'
-    AND position_id = 828
-    AND active = true
-);
-
--- #4: Insert 'M2 - Substantial Completion' for position ID of 828
-INSERT INTO brs.milestone_type (milestone_type, active, display_order, position_id)
-SELECT
-  'M2 - Substantial Completion',
-  true,
-  2,
-  828
-WHERE NOT EXISTS (
-  SELECT id
-  FROM brs.milestone_type
-  WHERE milestone_type = 'M2 - Substantial Completion'
-    AND position_id = 828
-    AND active = true
-);

@@ -34,12 +34,14 @@ public class CommissionManagementQuery {
         where mt.position_id = 4
     """;
 
+  //language=PostgreSQL
   public final static String findAvailableMilestonesForDealers = """
     select mt.*
     from brs.milestone_type mt
         where mt.position_id = 743
     """;
 
+  //language=PostgreSQL
   public final static String findAvailableMilestonesForInstallationPartners= """
     select mt.*
     from brs.milestone_type mt

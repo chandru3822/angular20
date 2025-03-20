@@ -43,7 +43,7 @@
             </tr>
             <tr :class="{'shaded-row': index % 2}" v-else>
               <td class="text-left">{{item.closer_user}}</td>
-              <td class="text-left">{{item.total_commission || 0 | currency('$', 2)}}</td>
+              <td class="text-left">{{item.total_commissions || 0 | currency('$', 2)}}</td>
               <td class="text-left">{{item.total_overrides || 0 | currency('$', 2)}}</td>
               <td class="text-left">{{item.commission_adjustments || 0 | currency('$', 2)}}</td>
               <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
@@ -95,7 +95,7 @@
   const dataLoading = ref(false)
   const closerHeaders = ref([
   { text: 'Sales Rep', value: 'closer_user', show: true },
-  { text: 'Total Commission', value: 'total_commission', show: true },
+  { text: 'Total Commissions', value: 'total_commissions', show: true },
   { text: 'Total Overrides', value: 'total_overrides', show: true },
   { text: 'Adjustments', value: 'commission_adjustments', show: true },
   { text: 'Current Pay', value: 'current_pay', show: true },
@@ -118,7 +118,7 @@
   const partnerHeaders = ref([
   { text: 'Org ID', value: 'org_id', show: true },
   { text: 'Org Name', value: 'org_name', show: true },
-  { text: 'Total Commission', value: 'total_commission', show: true },
+  { text: 'Total Commissions', value: 'total_commissions', show: true },
   { text: 'Current Pay', value: 'current_pay', show: true },
   { text: '', value: 'icons', show: true, width: 40 },
   ])
@@ -159,25 +159,25 @@
     let csvData;
 
     if (commissionPositionId.value === 743 || commissionPositionId.value === 828) {
-      csvData = 'Org ID, Org Name, Total Commission, Current Pay';
+      csvData = 'Org ID, Org Name, Total Commissions, Current Pay';
       csvData += '\n';
 
       payrollSummary.value.forEach(p => {
         csvData +=
           (p[orgIdField.value] || '-') + ',' +
           (p[orgNameField.value] || '-') + ',' +
-          formatCurrencyForCSV(p.total_commission) + ',' +
+          formatCurrencyForCSV(p.total_commissions) + ',' +
           formatCurrencyForCSV(p.current_pay)
         csvData += '\n';
       })
     } else {
-      csvData = 'Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay';
+      csvData = 'Sales Rep, Total Commissions, Total Overrides, Adjustments, Current Pay';
       csvData += '\n';
 
       payrollSummary.value.forEach(p => {
         csvData +=
           '"' + p.closer_user + '",' +
-          p.total_commission + ',' +
+          p.total_commissions + ',' +
           p.total_overrides + ',' +
           p.commission_adjustments + ',' +
           p.current_pay

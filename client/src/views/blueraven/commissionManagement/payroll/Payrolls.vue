@@ -26,32 +26,36 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
-            <a-autocomplete ref="repAutocomplete" v-if="commissionPositionId !== 743"
-                            v-model="payrollSearch.salesRepId"
-                            :items="reps"
-                            :loading="repsLoading"
-                            :search-input.sync="repSearch"
-                            label="Sales Rep..."
-                            clearable
-                            item-title="name"
-                            item-value="userId"
-                            type="search"
-                            @click:clear="reps = []"
-                            attach
+            <a-autocomplete
+              ref="repAutocomplete"
+              v-if="commissionPositionId !== 743 || commissionPositionId !== 828"
+              v-model="payrollSearch.salesRepId"
+              :items="reps"
+              :loading="repsLoading"
+              :search-input.sync="repSearch"
+              label="Sales Rep..."
+              clearable
+              item-title="name"
+              item-value="userId"
+              type="search"
+              @click:clear="reps = []"
+              attach
             ></a-autocomplete>
 
-            <a-autocomplete ref="orgAutocomplete" v-else
-                            v-model="payrollSearch.orgId"
-                            :items="partnerOrgs"
-                            :loading="partnerOrgsLoading"
-                            :search-input.sync="partnerOrgSearch"
-                            label="Partner Org Name..."
-                            clearable
-                            item-title="orgName"
-                            item-value="orgId"
-                            type="search"
-                            @click:clear="partnerOrgs = []"
-                            attach
+            <a-autocomplete
+              ref="orgAutocomplete"
+              v-else
+              v-model="payrollSearch.orgId"
+              :items="partnerOrgs"
+              :loading="partnerOrgsLoading"
+              :search-input.sync="partnerOrgSearch"
+              label="Partner Org Name..."
+              clearable
+              item-title="orgName"
+              item-value="orgId"
+              type="search"
+              @click:clear="partnerOrgs = []"
+              attach
             ></a-autocomplete>
 
             <div class="text-left">
@@ -221,9 +225,11 @@
   const viewDetails = async (item) => {
     await router.push({name: 'payrollReview', params: { id: item.id }})
   }
+
   const getPartnerOrgsDebounced = debounce((val) => {
     getPartnerOrgs(val)
   }, 500)
+
   const getPartnerOrgs = async(query) => {
     partnerOrgsLoading.value = true
     try {

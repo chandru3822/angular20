@@ -438,7 +438,7 @@
             (p.systemSize || '-') + ',' +
             (p.panelQuantity || '-') + ',' +
             (p.partnerOrgName || '-') + ',' +
-            (p.orgId || '-') + ',' +
+            (p.partnerOrgId || '-') + ',' +
             (p[milestone1Field.value] || '-') + ',' +
             (p[milestone2Field.value] || '-') + ',' +
             (p.commissionPlan || '-') + ',' +

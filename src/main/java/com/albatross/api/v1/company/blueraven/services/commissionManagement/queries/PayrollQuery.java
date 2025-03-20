@@ -289,7 +289,7 @@ public class PayrollQuery {
 
   //language=PostgreSQL
   public final static String getSummary = """
-    SELECT CASE WHEN p.payroll_status_id = 3 and (p.position_id = 1 or p.position_id = 743)
+    SELECT CASE WHEN p.payroll_status_id = 3 and (p.position_id = 1 or p.position_id = 743 or p.position_id = 828)
           THEN brs.get_commission_summary_from_snapshot(p.id, :currentUserId)
         WHEN p.payroll_status_id = 3 and p.position_id = 4
           THEN brs.get_commission_summary_from_snapshot_for_setters(p.id, :currentUserId)
@@ -444,6 +444,8 @@ public class PayrollQuery {
                   s.final_design_complete_date as "finalDesignCompleteDate",
                   s.panel_quantity as "panelQuantity",
                   s.total_commissions as "totalCommissions",
+                  s.custom_adder_amount as "customAdderAmount",
+                  s.select_adder_amount as "selectedAdderAmount",
                   s.updated
            FROM brs.partner_project_commission_snapshot s
                     INNER JOIN flow.project p ON s.project_id = p.id
