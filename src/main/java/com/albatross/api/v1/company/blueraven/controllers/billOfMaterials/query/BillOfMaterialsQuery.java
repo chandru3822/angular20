@@ -59,7 +59,6 @@ public class BillOfMaterialsQuery {
                                          ON pmvcfg.parts_master_group_uuid = vv.parts_master_group_uuid
                       WHERE bomp.project_id = :projectId
                         and bomp.archived is false
-                        and bomp.quantity is not null
                       GROUP BY bomp.id
                              , pmvcfg.id
                              , s.name
