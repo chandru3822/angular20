@@ -398,15 +398,21 @@ const saveUserSystemFields = async () => {
     user.value.hasAccess = data.hasAccess
     showEditModal.value = false
     appStore.showSnack('SUCCESS', 'User Updated')
-
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
+
     let errorMsg = 'Error Saving Fields'
     if (e?.data?.detail === 'Email already in use') {
       errorMsg += ": " +
         "This Email Address is already associated with another user. " +
         "Please use a different email address."
+    }
+
+    if (e?.data?.detail === 'Username already in use') {
+      errorMsg += ": " +
+        "This Username is already associated with another user. " +
+        "Please use a different username."
     }
     appStore.showSnack('ERROR', errorMsg)
 
