@@ -52,7 +52,7 @@ if v_cancelled_date is null then
        ) subquery;
 
   if v_position_id = 743 then --dealer position
-    v_partner_commission_amount = null;
+    v_partner_commission_amount = 0::numeric;
     select (select string_to_array(value, ',')  --- partner dealer custom adders
             from flow.company_configuration_value
             where code = 'PARTNER_DEALER_CUSTOM_ADDER_CFA_IDS')::bigint[]
@@ -94,6 +94,7 @@ if v_cancelled_date is null then
 --     raise notice 'v_source_fees %',v_source_fees;
 --     raise notice 'v_selected_adder_amount %',v_selected_adder_amount;
 --     raise notice 'v_custom_adder_dealer_amount %',v_custom_adder_dealer_amount;
+    v_partner_commission_amount = coalesce(v_final_price,0) - coalesce(v_financing_fees,0) - coalesce(v_dealer_redline_amount,0);
     v_total_fees = coalesce(v_final_price,0) - coalesce(v_financing_fees,0) - coalesce(v_dealer_redline_amount,0) - coalesce(v_source_fees,0) - coalesce(v_selected_adder_amount,0) - coalesce(v_custom_adder_dealer_amount,0);
     if v_substantial_completion_date is null then
       v_m2_allocation = 0;
@@ -156,7 +157,7 @@ if v_cancelled_date is null then
 
 
 
-  return query select v_total_fees*coalesce(v_m1_allocation,0),v_total_fees*coalesce(v_m2_allocation,0), coalesce(v_total_fees, 0),coalesce(v_custom_adder_installer_amount,v_custom_adder_dealer_amount,0),coalesce(v_selected_adder_amount,0),coalesce(v_partner_commission_amount,v_dealer_redline_amount,0);
+  return query select v_total_fees*coalesce(v_m1_allocation,0),v_total_fees*coalesce(v_m2_allocation,0), coalesce(v_total_fees, 0),coalesce(v_custom_adder_installer_amount,v_custom_adder_dealer_amount,0),coalesce(v_selected_adder_amount,0),coalesce(v_partner_commission_amount,0);
   else
   return query select 0::numeric,0::numeric,0::numeric,0::numeric,0::numeric,0::numeric;
   end if;

@@ -621,10 +621,10 @@ public class CommissionManagementService {
     throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
     final BackdatedPlanApprovalCredentials approvalCreds = org.getApprovalCreds();
     final Date newStartDate = org.getStartDate();
-    boolean isBackdatedPlan =
-      newStartDate != null
-        && startDateChanged(org)
-        && validateBackdatedPlan(newStartDate, approvalCreds, 743L);
+//    boolean isBackdatedPlan =
+//      newStartDate != null
+//        && startDateChanged(org)
+//        && validateBackdatedPlan(newStartDate, approvalCreds, 743L);
     //743 = dealer stuff
 
     Map<String, Object> params = new HashMap<>();
@@ -642,11 +642,11 @@ public class CommissionManagementService {
       sqlCache.updateBySql(CommissionManagementQuery.insertOrg, params);
     }
 
-    if (isBackdatedPlan) {
-      params.put(
-        "note", "backdated plan entry approved by " + org.getApprovalCreds().getUsername());
-      sqlCache.updateBySql(CommissionManagementQuery.appendOrgNote, params);
-    }
+//    if (isBackdatedPlan) {
+//      params.put(
+//        "note", "backdated plan entry approved by " + org.getApprovalCreds().getUsername());
+//      sqlCache.updateBySql(CommissionManagementQuery.appendOrgNote, params);
+//    }
   }
 
   private boolean startDateChanged(PlanAssignment user) {
