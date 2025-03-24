@@ -1260,7 +1260,8 @@
     <ConfirmationDialog v-if="selectingCustomDates"
                         :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0"
                         :open-dialog="selectingCustomDates" @cancel="cancelCustomDialogue()"
-                        @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
+                        @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false"
+                        parent-close>
       <template v-slot:title>Custom Date Range</template>
       <div>
         <DatetimePickerInput
@@ -1279,6 +1280,9 @@
           input-format="HH:mm:ss"
           label="End Date"
         />
+        <div class="error-text pb-4 px-6">
+          {{ saveErrorMsg }}
+        </div>
       </div>
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Confirm</template>
@@ -1318,6 +1322,7 @@ const snackbar = vueInstance.$snackbar
 const filters = vueInstance.$filters
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 
+const saveErrorMsg = ref('')
 const pipeline_dt1 = ref(moment().startOf('year').format('YYYY-MM-DD'))
 const pipeline_dt2 = ref(moment().format('YYYY-MM-DD'))
 const setterPipelineLoading = ref(false)
@@ -1571,6 +1576,10 @@ const upcomingApptsText = computed(() => {
     return 'Select Reps to View Upcoming Appointments'
   }
 })
+
+const cancelCustomDialogue= () => {
+  selectingCustomDates.value = false
+}
 
 const filteredRepData = computed(() => {
   if (!hideInactiveReps.value) {
@@ -2889,11 +2898,12 @@ const funnelAllRepsUpcomingAppointments = async () => {
 }
 
 const applyCustomDates = async () => {
+  let dateDiff = 0
   if (customTable.value === 'apptsCreated') {
     if (lastColumnSelected.value === 1) {
       firstCustom.value.startDate = moment(customDate.value.startDate)
       firstCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days')
+      dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days')
       firstCustom.value.trendEnd = firstCustom.value.startDate.clone().subtract(1, 'days')
       firstCustom.value.trendStart = firstCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
       getDropdownById(firstDateRange.value).trendText = moment(firstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(firstCustom.value.trendEnd).format('MM/DD/YYYY')
@@ -2902,7 +2912,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 2) {
       secondCustom.value.startDate = moment(customDate.value.startDate)
       secondCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = secondCustom.value.endDate.diff(secondCustom.value.startDate, 'days')
+      dateDiff = secondCustom.value.endDate.diff(secondCustom.value.startDate, 'days')
       secondCustom.value.trendEnd = secondCustom.value.startDate.clone().subtract(1, 'days')
       secondCustom.value.trendStart = secondCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
       getDropdownById(secondDateRange.value).trendText = moment(secondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(secondCustom.value.trendEnd).format('MM/DD/YYYY')
@@ -2911,7 +2921,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 3) {
       thirdCustom.value.startDate = moment(customDate.value.startDate)
       thirdCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = thirdCustom.value.endDate.diff(thirdCustom.value.startDate, 'days')
+      dateDiff = thirdCustom.value.endDate.diff(thirdCustom.value.startDate, 'days')
       thirdCustom.value.trendEnd = thirdCustom.value.startDate.clone().subtract(1, 'days')
       thirdCustom.value.trendStart = thirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
       getDropdownById(thirdDateRange.value).trendText = moment(thirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(thirdCustom.value.trendEnd).format('MM/DD/YYYY')
@@ -2920,19 +2930,27 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 4) {
       fourthCustom.value.startDate = moment(customDate.value.startDate)
       fourthCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fourthCustom.value.endDate.diff(fourthCustom.value.startDate, 'days')
+      dateDiff = fourthCustom.value.endDate.diff(fourthCustom.value.startDate, 'days')
       fourthCustom.value.trendEnd = fourthCustom.value.startDate.clone().subtract(1, 'days')
       fourthCustom.value.trendStart = fourthCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
       getDropdownById(fourthDateRange.value).trendText = moment(fourthCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fourthCustom.value.trendEnd).format('MM/DD/YYYY')
       fourthCustom.value.name = moment(fourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fourthCustom.value.endDate).format('MM/DD/YY')
     }
+    if (dateDiff < 0) {
+      saveErrorMsg.value = "ERROR: End date must be greater than or equal to start date"
+      return
+    }
 
-    await upcomingAppointmentsLoad(lastColumnSelected.value)
+    if (dateDiff >= 0) {
+      saveErrorMsg.value = ""
+      await upcomingAppointmentsLoad(lastColumnSelected.value)
+      cancelCustomDialogue()
+    }
   } else {
     if (lastColumnSelected.value === 1) {
       fdcFirstCustom.value.startDate = moment(customDate.value.startDate)
       fdcFirstCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fdcFirstCustom.value.endDate.diff(fdcFirstCustom.value.startDate, 'days')
+      dateDiff = fdcFirstCustom.value.endDate.diff(fdcFirstCustom.value.startDate, 'days')
       fdcFirstCustom.value.trendEnd = fdcFirstCustom.value.startDate.clone().subtract(1, 'days')
       fdcFirstCustom.value.trendStart = fdcFirstCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
 
@@ -2942,7 +2960,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 2) {
       fdcSecondCustom.value.startDate = moment(customDate.value.startDate)
       fdcSecondCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fdcSecondCustom.value.endDate.diff(fdcSecondCustom.value.startDate, 'days')
+      dateDiff = fdcSecondCustom.value.endDate.diff(fdcSecondCustom.value.startDate, 'days')
       fdcSecondCustom.value.trendEnd = fdcSecondCustom.value.startDate.clone().subtract(1, 'days')
       fdcSecondCustom.value.trendStart = fdcSecondCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
       getDropdownById(fdcSecondDateRange.value).trendText = moment(fdcSecondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcSecondCustom.value.trendEnd).format('MM/DD/YYYY')
@@ -2951,7 +2969,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 3) {
       fdcThirdCustom.value.startDate = moment(customDate.value.startDate)
       fdcThirdCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fdcThirdCustom.value.endDate.diff(fdcThirdCustom.value.startDate, 'days')
+      dateDiff = fdcThirdCustom.value.endDate.diff(fdcThirdCustom.value.startDate, 'days')
       fdcThirdCustom.value.trendEnd = fdcThirdCustom.value.startDate.clone().subtract(1, 'days')
       fdcThirdCustom.value.trendStart = fdcThirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
       getDropdownById(fdcThirdDateRange.value).trendText = moment(fdcThirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcThirdCustom.value.trendEnd).format('MM/DD/YYYY')
@@ -2960,14 +2978,23 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 4) {
       fdcFourthCustom.value.startDate = moment(customDate.value.startDate)
       fdcFourthCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fdcFourthCustom.value.endDate.diff(fdcFourthCustom.value.startDate, 'days')
+      dateDiff = fdcFourthCustom.value.endDate.diff(fdcFourthCustom.value.startDate, 'days')
       fdcFourthCustom.value.trendEnd = fdcFourthCustom.value.startDate.clone().subtract(1, 'days')
       fdcFourthCustom.value.trendStart = fdcFourthCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
       getDropdownById(fdcFourthDateRange.value).trendText = moment(fdcFourthCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFourthCustom.value.trendEnd).format('MM/DD/YYYY')
       fdcFourthCustom.value.name = moment(fdcFourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFourthCustom.value.endDate).format('MM/DD/YY')
     }
 
-    await pipelineLoad(lastColumnSelected.value)
+    if (dateDiff < 0) {
+      saveErrorMsg.value = "ERROR: End date must be greater than or equal to start date"
+      return
+    }
+
+    if (dateDiff >= 0) {
+      saveErrorMsg.value = ""
+      await pipelineLoad(lastColumnSelected.value)
+      cancelCustomDialogue()
+    }
   }
 }
 

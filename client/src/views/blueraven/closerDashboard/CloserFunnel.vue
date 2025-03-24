@@ -2212,6 +2212,7 @@
       @cancel="cancelCustomDialogue()"
       @confirm="applyCustomDates()"
       @close-dialog="selectingCustomDates = false"
+      parent-close
     >
       <template v-slot:title>Custom Date Range</template>
       <div>
@@ -2231,6 +2232,9 @@
           input-format="HH:mm:ss"
           label="End Date"
         />
+        <div class="error-text pb-4 px-6">
+          {{ saveErrorMsg }}
+        </div>
       </div>
       <template v-slot:no>Cancel</template>
       <template v-slot:yes>Confirm</template>
@@ -2272,6 +2276,7 @@ const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const filters = vueInstance.$filters
 
+const saveErrorMsg = ref('')
 const viewFdcTrends = ref(false)
 const viewTrends = ref(false)
 const viewOnlyMajorMilestones = ref(false)
@@ -2460,6 +2465,10 @@ const filtersSelected = computed(() => {
     officeModel.value.length > 0
   )
 })
+
+const cancelCustomDialogue= () => {
+  selectingCustomDates.value = false
+}
 
 const filteredApptsCreatedPipelineData = computed(() => {
   if (!milestonesExpanded.value) {
@@ -4079,11 +4088,12 @@ const apptsCreatedPipelineLoad = async (column) => {
   }
 }
 const applyCustomDates = async () => {
+  let dateDiff = 0
   if (customTable.value === 'apptsCreated') {
     if (lastColumnSelected.value === 1) {
       firstCustom.value.startDate = moment(customDate.value.startDate)
       firstCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = firstCustom.value.endDate.diff(
+        dateDiff = firstCustom.value.endDate.diff(
         firstCustom.value.startDate,
         'days'
       )
@@ -4105,7 +4115,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 2) {
       secondCustom.value.startDate = moment(customDate.value.startDate)
       secondCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = secondCustom.value.endDate.diff(
+        dateDiff = secondCustom.value.endDate.diff(
         secondCustom.value.startDate,
         'days'
       )
@@ -4127,7 +4137,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 3) {
       thirdCustom.value.startDate = moment(customDate.value.startDate)
       thirdCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = thirdCustom.value.endDate.diff(
+        dateDiff = thirdCustom.value.endDate.diff(
         thirdCustom.value.startDate,
         'days'
       )
@@ -4146,13 +4156,21 @@ const applyCustomDates = async () => {
         '-' +
         moment(thirdCustom.value.endDate).format('MM/DD/YY')
     }
+    if (dateDiff < 0) {
+      saveErrorMsg.value = "ERROR: End date must be greater than or equal to start date"
+      return
+    }
 
-    await apptsCreatedPipelineLoad(lastColumnSelected.value)
+    if (dateDiff >= 0) {
+      saveErrorMsg.value = ""
+      await apptsCreatedPipelineLoad(lastColumnSelected.value)
+      cancelCustomDialogue()
+    }
   } else {
     if (lastColumnSelected.value === 1) {
       fdcFirstCustom.value.startDate = moment(customDate.value.startDate)
       fdcFirstCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fdcFirstCustom.value.endDate.diff(
+        dateDiff = fdcFirstCustom.value.endDate.diff(
         fdcFirstCustom.value.startDate,
         'days'
       )
@@ -4174,7 +4192,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 2) {
       fdcSecondCustom.value.startDate = moment(customDate.value.startDate)
       fdcSecondCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fdcSecondCustom.value.endDate.diff(
+        dateDiff = fdcSecondCustom.value.endDate.diff(
         fdcSecondCustom.value.startDate,
         'days'
       )
@@ -4196,7 +4214,7 @@ const applyCustomDates = async () => {
     if (lastColumnSelected.value === 3) {
       fdcThirdCustom.value.startDate = moment(customDate.value.startDate)
       fdcThirdCustom.value.endDate = moment(customDate.value.endDate)
-      let dateDiff = fdcThirdCustom.value.endDate.diff(
+        dateDiff = fdcThirdCustom.value.endDate.diff(
         fdcThirdCustom.value.startDate,
         'days'
       )
@@ -4215,8 +4233,16 @@ const applyCustomDates = async () => {
         '-' +
         moment(fdcThirdCustom.value.endDate).format('MM/DD/YY')
     }
+    if (dateDiff < 0) {
+      saveErrorMsg.value = "ERROR: End date must be greater than or equal to start date"
+      return
+    }
 
-    await apptsToFdcPipelineLoad(lastColumnSelected.value)
+    if (dateDiff >= 0) {
+      saveErrorMsg.value = ""
+      await apptsCreatedPipelineLoad(lastColumnSelected.value)
+      cancelCustomDialogue()
+    }
   }
 }
 const apptsToFdcPipelineLoad = async (column) => {
