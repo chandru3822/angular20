@@ -170,11 +170,6 @@ alter table brs.project_commission_snapshot add column if not exists partner_org
 alter table brs.project_commission_snapshot add column if not exists partner_org_name text;
 alter table brs.project_commission_snapshot add column if not exists ahj_final_inspection_verified date;
 
-
-create index if not exists partner_project_commission_snapshot_payroll_id_idx
-  on brs.partner_project_commission_snapshot (payroll_id);
-
-
 create table if not exists  brs.partner_project_commission_snapshot
 (
   id                                bigserial
@@ -209,6 +204,9 @@ create table if not exists  brs.partner_project_commission_snapshot
   custom_adder_amount               numeric(10, 2),
   base_commission                   numeric(10, 2)
 );
+
+create index if not exists partner_project_commission_snapshot_payroll_id_idx
+  on brs.partner_project_commission_snapshot (payroll_id);
 
 create unique index if not exists partner_project_commission_snapshot_project_id_payroll_id_udx
   on brs.partner_project_commission_snapshot (project_id, payroll_id,partner_org_id);
