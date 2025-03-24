@@ -9,7 +9,7 @@
           <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
           Export
         </a>
-        <div v-else class="export-button" :class="{'disabled-export': true}">
+        <div v-else :class="{'disabled-export': true}" class="export-button">
           <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
           Export
         </div>
@@ -19,26 +19,26 @@
           <v-icon v-else @click="fdcPipelineExpanded = !fdcPipelineExpanded">expand_more</v-icon>
         </div>
       </v-row>
-      <div style="height: 25px" v-if="!fdcPipelineExpanded"></div>
-      <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
-        <v-col cols="9" class="d-flex">
+      <div v-if="!fdcPipelineExpanded" style="height: 25px"></div>
+      <div v-if="fdcPipelineExpanded" class="pipeline-header-container">
+        <v-col class="d-flex" cols="9">
           <div id="pipeline-header-left-side">
             <div class="reps-container"><span class="rep-filters-text label-small">Rep Filters</span></div>
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
-                            ref="areaSelect"
+            <a-autocomplete ref="areaSelect"
                             v-model="areaModel"
                             :items="areaData"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="Area"
-                            no-data-text="No areas available"
-                            variant="outlined"
-                            density="compact"
                             multiple
-                            hide-details
-                            @input="repValuesChanged = true"
+                            no-data-text="No areas available"
+                            return-object
+                            variant="outlined"
                             @blur="areaValuesChanged = true; regionLoad()"
-                            return-object>
+                            @input="repValuesChanged = true">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">Area</span>
               </template>
@@ -71,21 +71,21 @@
               </template>
             </a-autocomplete>
 
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete ref="regionSelect"
                             v-model="regionModel"
                             :items="regionData"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="Region"
-                            no-data-text="No regions available"
-                            variant="outlined"
-                            density="compact"
                             multiple
-                            @input="repValuesChanged = true"
-                            @blur="regionValuesChanged = true; districtLoad()"
-                            hide-details
+                            no-data-text="No regions available"
                             return-object
-                            ref="regionSelect">
+                            variant="outlined"
+                            @blur="regionValuesChanged = true; districtLoad()"
+                            @input="repValuesChanged = true">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">Region</span>
               </template>
@@ -118,21 +118,21 @@
               </template>
             </a-autocomplete>
 
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
-                            ref="districtSelect"
+            <a-autocomplete ref="districtSelect"
                             v-model="districtModel"
                             :items="districtData"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="District"
-                            no-data-text="No districts available"
                             multiple
+                            no-data-text="No districts available"
+                            return-object
                             variant="outlined"
-                            density="compact"
-                            hide-details
-                            @input="repValuesChanged = true; districtValuesChanged = true;"
                             @blur="officeLoad()"
-                            return-object>
+                            @input="repValuesChanged = true; districtValuesChanged = true;">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">District</span>
               </template>
@@ -165,21 +165,21 @@
               </template>
             </a-autocomplete>
 
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete ref="officeSelect"
                             v-model="officeModel"
                             :items="officeData"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="Office"
-                            no-data-text="No offices available"
                             multiple
-                            variant="outlined"
-                            density="compact"
-                            @input="repValuesChanged = true"
-                            @blur="officeValuesChanged = true; repLoad()"
-                            hide-details
+                            no-data-text="No offices available"
                             return-object
-                            ref="officeSelect">
+                            variant="outlined"
+                            @blur="officeValuesChanged = true; repLoad()"
+                            @input="repValuesChanged = true">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">Office</span>
               </template>
@@ -211,20 +211,20 @@
                 </v-list-item-content>
               </template>
             </a-autocomplete>
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete ref="repSelect"
                             v-model="repModel"
                             :items="repData"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="name"
                             item-value="user_position_id"
                             label="Rep"
-                            no-data-text="No reps available"
                             multiple
-                            variant="outlined"
-                            density="compact"
-                            @input="repValuesChanged = true; apptsToFdcPipelineData.value = []"
-                            hide-details
+                            no-data-text="No reps available"
                             return-object
-                            ref="repSelect">
+                            variant="outlined"
+                            @input="repValuesChanged = true; apptsToFdcPipelineData.value = []">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0 && repModel[0].user_id != -1" class="selected-option text-caption">
                     {{ repModel.length }} Checked
@@ -249,27 +249,30 @@
               </template>
             </a-autocomplete>
             <div class="d-flex hide-inactive-switch-container align-items-center">
-              <v-label class="hide-inactive-label body-medium">Hide Inactive Reps</v-label> <v-switch hide-details v-model="hideInactiveReps" @click="apptsToFdcPipelineLoad(1)" class="hide-inactive-switch"></v-switch>
-            </div>            <a-btn
+              <v-label class="hide-inactive-label body-medium">Hide Inactive Reps</v-label>
+              <v-switch v-model="hideInactiveReps" class="hide-inactive-switch" hide-details
+                        @click="apptsToFdcPipelineLoad(1)"></v-switch>
+            </div>
+            <a-btn
               v-if="!isSetter && !isSetterMgr"
-              class="body-small"
               :class="{'reset-button-inactive': !filtersSelected && repModel?.length === 0 && !hideInactiveReps, 'reset-button-active': filtersSelected || repModel?.length > 0 || hideInactiveReps}"
-              variant="outlined"
-              @click="resetFilters(); repValuesChanged = true;  loadFunnels()"
+              class="body-small"
               color="unset"
               text="Reset Rep Filters"
+              variant="outlined"
+              @click="resetFilters(); repValuesChanged = true;  loadFunnels()"
             ></a-btn>
           </div>
         </v-col>
-        <v-col cols="3" class="d-flex justify-end">
-            <a-btn
-              id="all-reps-btn"
-              variant="outlined"
-              color="primary"
-              class="body-small"
-              @click="funnelAllReps"
-              :text="viewAllRepsText"
-            ></a-btn>
+        <v-col class="d-flex justify-end" cols="3">
+          <a-btn
+            id="all-reps-btn"
+            :text="viewAllRepsText"
+            class="body-small"
+            color="primary"
+            variant="outlined"
+            @click="funnelAllReps"
+          ></a-btn>
         </v-col>
       </div>
 
@@ -282,16 +285,16 @@
         <v-data-table
           v-if="fdcPipelineExpanded"
           id="fdc-dash-table"
-          class="elevation-1"
-          :items="funnelStats"
-          :headers="fdcHeaders"
           ref="pageable-table"
-          disable-sort
-          :item-class="fdcRowBackground"
           :footer-props="footerProps"
-          :loading="isLoading"
+          :headers="fdcHeaders"
           :hide-default-footer="true"
+          :item-class="fdcRowBackground"
+          :items="funnelStats"
+          :loading="isLoading"
           :mobile-breakpoint="0"
+          class="elevation-1"
+          disable-sort
         >
 
           <template #no-data>
@@ -299,25 +302,28 @@
           </template>
 
 
-          <template #header.milestone="{}" id="milestones-header"><span class="milestones-header">Milestones</span></template>
+          <template id="milestones-header" #header.milestone="{}"><span class="milestones-header">Milestones</span>
+          </template>
           <template #header.actualTotal="{}">
-            <v-menu data-app left
-                    offset-y
+            <v-menu v-model="fdcOpenFirstMenu" :close-on-content-click="true"
                     :max-height="`calc(100vh - 20px)`"
                     class="dropdown-header body-small"
-                    v-model="fdcOpenFirstMenu"
-                    :close-on-content-click="true">
+                    data-app
+                    left
+                    offset-y>
               <template v-slot:activator="{ on }">
-                <a-btn class="dropdown-header body-small"
-                       :activation-handler="on"
+                <a-btn :activation-handler="on"
+                       class="dropdown-header body-small"
                 >
-              <span v-if="getDropdownById(fdcFirstDateRange)?.name === 'CUSTOM' && fdcFirstCustom.name != null" class="selected-option body-small">
-                      {{fdcFirstCustom.name}}</span>
-                  <span v-else-if="getDropdownById(fdcFirstDateRange)?.name === 'PERIOD'" class="selected-option body-small">
-              {{ getDropdownById(fdcFirstDateRange).periodList[firstPeriod].shortLabel}}
+              <span v-if="getDropdownById(fdcFirstDateRange)?.name === 'CUSTOM' && fdcFirstCustom.name != null"
+                    class="selected-option body-small">
+                      {{ fdcFirstCustom.name }}</span>
+                  <span v-else-if="getDropdownById(fdcFirstDateRange)?.name === 'PERIOD'"
+                        class="selected-option body-small">
+              {{ getDropdownById(fdcFirstDateRange).periodList[firstPeriod].shortLabel }}
               </span>
                   <span v-else class="selected-option body-small">
-              {{ getDropdownById(fdcFirstDateRange)?.friendlyName}}
+              {{ getDropdownById(fdcFirstDateRange)?.friendlyName }}
               </span>
                   <v-spacer></v-spacer>
                   <v-spacer></v-spacer>
@@ -326,11 +332,11 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
+                  <v-list-item v-for="(item, index) in dropdownValues" link style="padding: 0px">
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover offset-x>
+                      <v-menu offset-x open-on-hover>
                         <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                      <span class="d-flex justify-space-between dashboard-menu-option" v-on="on">
                         {{ item.friendlyName }}
                         <v-icon style="display: flex">mdi-chevron-right</v-icon>
                       </span>
@@ -349,8 +355,8 @@
 
                     </v-list-item-title>
                     <v-list-item-title v-else
-                                       @click="fdcFirstDateRange = item.id; changeFdcDropdownSelection(1); fdcFirstCustom.isActive = (item.name === 'CUSTOM');"
-                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                                       class="dashboard-menu-option"
+                                       @click="fdcFirstDateRange = item.id; changeFdcDropdownSelection(1); fdcFirstCustom.isActive = (item.name === 'CUSTOM');">{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -359,15 +365,15 @@
 
           </template>
           <template #header.actualTotal2="{}">
-            <v-menu data-app left
-                    offset-y
+            <v-menu v-model="fdcOpenSecondMenu" :close-on-content-click="true"
                     :max-height="`calc(100vh - 20px)`"
                     class="dropdown-header body-small"
-                    v-model="fdcOpenSecondMenu"
-                    :close-on-content-click="true">
+                    data-app
+                    left
+                    offset-y>
               <template v-slot:activator="{ on }">
-                <a-btn class="dropdown-header body-small"
-                       :activation-handler="on"
+                <a-btn :activation-handler="on"
+                       class="dropdown-header body-small"
                 >
               <span v-if="getDropdownById(fdcSecondDateRange)?.name === 'CUSTOM' && fdcSecondCustom.name != null"
                     class="selected-option body-small">
@@ -379,7 +385,7 @@
                   <span v-else-if="fdcSecondDateRange != null" class="selected-option body-small">
               {{ getDropdownById(fdcSecondDateRange)?.friendlyName }}
               </span>
-                <span v-else class="placeholder-option body-small">
+                  <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
                   <v-spacer></v-spacer>
@@ -388,11 +394,11 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
+                  <v-list-item v-for="(item, index) in dropdownValues" link style="padding: 0px">
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover location="end" :offset-x="true">
+                      <v-menu :offset-x="true" location="end" open-on-hover>
                         <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                      <span class="d-flex justify-space-between dashboard-menu-option" v-on="on">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -411,8 +417,8 @@
 
                     </v-list-item-title>
                     <v-list-item-title v-else
-                                       @click="fdcSecondDateRange = item.id; changeFdcDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM');"
-                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                                       class="dashboard-menu-option"
+                                       @click="fdcSecondDateRange = item.id; changeFdcDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM');">{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -420,15 +426,15 @@
             </v-menu>
           </template>
           <template #header.actualTotal3="{}">
-            <v-menu data-app left
-                    offset-y
+            <v-menu v-model="fdcOpenThirdMenu" :close-on-content-click="true"
                     :max-height="`calc(100vh - 20px)`"
                     class="dropdown-header body-small"
-                    v-model="fdcOpenThirdMenu"
-                    :close-on-content-click="true">
+                    data-app
+                    left
+                    offset-y>
               <template v-slot:activator="{ on }">
-                <a-btn class="dropdown-header body-small"
-                       :activation-handler="on"
+                <a-btn :activation-handler="on"
+                       class="dropdown-header body-small"
                 >
               <span v-if="getDropdownById(fdcThirdDateRange)?.name === 'CUSTOM' && fdcThirdCustom.name != null"
                     class="selected-option body-small">
@@ -449,11 +455,11 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
+                  <v-list-item v-for="(item, index) in dropdownValues" link style="padding: 0px">
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover location="end">
+                      <v-menu location="end" open-on-hover>
                         <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                      <span class="d-flex justify-space-between dashboard-menu-option" v-on="on">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -472,8 +478,8 @@
 
                     </v-list-item-title>
                     <v-list-item-title v-else
-                                       @click="fdcThirdDateRange = item.id; changeFdcDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM');"
-                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                                       class="dashboard-menu-option"
+                                       @click="fdcThirdDateRange = item.id; changeFdcDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM');">{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -481,15 +487,15 @@
             </v-menu>
           </template>
           <template #header.actualTotal4="{}">
-            <v-menu data-app left
-                    offset-y
+            <v-menu v-model="fdcOpenFourthMenu" :close-on-content-click="true"
                     :max-height="`calc(100vh - 20px)`"
                     class="dropdown-header body-small"
-                    v-model="fdcOpenFourthMenu"
-                    :close-on-content-click="true">
+                    data-app
+                    left
+                    offset-y>
               <template v-slot:activator="{ on }">
-                <a-btn class="dropdown-header body-small"
-                       :activation-handler="on"
+                <a-btn :activation-handler="on"
+                       class="dropdown-header body-small"
                 >
               <span v-if="getDropdownById(fdcFourthDateRange)?.name === 'CUSTOM' && fdcFourthCustom.name != null"
                     class="selected-option body-small">
@@ -510,11 +516,11 @@
               </template>
               <div>
                 <v-list style="height: 400px; overflow-y:auto">
-                  <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px" link>
+                  <v-list-item v-for="(item, index) in dropdownValues" link style="padding: 0px">
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover location="end">
+                      <v-menu location="end" open-on-hover>
                         <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                      <span class="d-flex justify-space-between dashboard-menu-option" v-on="on">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -533,8 +539,8 @@
 
                     </v-list-item-title>
                     <v-list-item-title v-else
-                                       @click="fdcFourthDateRange = item.id; changeFdcDropdownSelection(4); fdcFourthCustom.isActive = (item.name === 'CUSTOM');"
-                                       class="dashboard-menu-option">{{ item.friendlyName }}
+                                       class="dashboard-menu-option"
+                                       @click="fdcFourthDateRange = item.id; changeFdcDropdownSelection(4); fdcFourthCustom.isActive = (item.name === 'CUSTOM');">{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -543,21 +549,21 @@
           </template>
 
 
-          <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td">
+          <template id="milestones-col" #item.milestone="{item, index}" class="milestone-name-col-td">
             <span>{{ item.name }}</span>
-<!--            <v-tooltip v-if="item.name === 'Pitch Percentage'" text="Test" bottom>-->
-<!--              <template v-slot:activator="{ on }">-->
-<!--                <v-icon>mdi-information</v-icon>-->
-<!--              </template>-->
-<!--              <span>Test Test</span>-->
-<!--            </v-tooltip>-->
-            <v-tooltip bottom v-if="item.name==='Pitch Percentage'">
+            <!--            <v-tooltip v-if="item.name === 'Pitch Percentage'" text="Test" bottom>-->
+            <!--              <template v-slot:activator="{ on }">-->
+            <!--                <v-icon>mdi-information</v-icon>-->
+            <!--              </template>-->
+            <!--              <span>Test Test</span>-->
+            <!--            </v-tooltip>-->
+            <v-tooltip v-if="item.name==='Pitch Percentage'" bottom>
               <template v-slot:activator="{ on }">
               <span v-on="viewFdcTrends?on:null">
                 <v-icon>mdi-information</v-icon>
               </span>
               </template>
-                <span> Pitch Percentage = Appointment Pitched / Appointment Occurred</span>
+              <span> Pitch Percentage = Appointment Pitched / Appointment Occurred</span>
             </v-tooltip>
           </template>
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
@@ -567,37 +573,41 @@
                 {{ item.count_count ? item.count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && item.trend_count>0"
-                      :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && item.trend_count<0"
-                      :class="[{'positive-percentage': item.reverse_trend, 'negative-percentage': !item.reverse_trend}]">{{ item.trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': item.reverse_trend, 'negative-percentage': !item.reverse_trend}]">{{ item.trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
                 <span v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"
                       class="neutral-percentage">{{ item.trend_count / 100 | percent }}<v-icon
                   class="neutral-trendline">trending_flat</v-icon></span>
                 </span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcFirstDateRange, 1)}}</span>
-              <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcFirstDateRange, 1)}}</span>
+              <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcFirstDateRange, 1) }}</span>
+              <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcFirstDateRange, 1) }}</span>
               <span
-                v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownTrendText(fdcFirstDateRange, 1)}}</span>
+                v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownTrendText(fdcFirstDateRange, 1) }}</span>
             </v-tooltip>
           </template>
 
-          <template #item.actualTotal2="{item, index}" class="milestone-col-td"
-                    v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0">
+          <template v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0" #item.actualTotal2="{item, index}"
+                    class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
             <span @click="funnelDrilldown(item, getDropdownById(fdcSecondDateRange), 'standard', 2)">
-              {{ fdcColumn2Values[index].count_count  ? fdcColumn2Values[index].count_count  : 0 }}
+              {{ fdcColumn2Values[index].count_count ? fdcColumn2Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                   v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count === null || fdcColumn2Values[index].trend_count==0)"
                   class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
@@ -606,26 +616,30 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcSecondDateRange, 2)}}</span>
+                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent
+                }} more than {{ getDropdownTrendText(fdcSecondDateRange, 2) }}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcSecondDateRange, 2)}}</span>
+                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent
+                }} less than {{ getDropdownTrendText(fdcSecondDateRange, 2) }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcSecondDateRange, 2)}}</span>
+                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcSecondDateRange, 2) }}</span>
             </v-tooltip>
           </template>
-          <template #item.actualTotal3="{item, index}" class="milestone-col-td"
-                    v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0">
+          <template v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0" #item.actualTotal3="{item, index}"
+                    class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
             <span @click="funnelDrilldown(item, getDropdownById(fdcSecondDateRange), 'standard', 3)">
               {{ fdcColumn3Values[index].count_count ? fdcColumn3Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                   v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count === null || fdcColumn3Values[index].trend_count === 0)"
                   class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
@@ -634,26 +648,30 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcThirdDateRange, 3)}}</span>
+                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent
+                }} more than {{ getDropdownTrendText(fdcThirdDateRange, 3) }}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcThirdDateRange, 3)}}</span>
+                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent
+                }} less than {{ getDropdownTrendText(fdcThirdDateRange, 3) }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcThirdDateRange, 3)}}</span>
+                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcThirdDateRange, 3) }}</span>
             </v-tooltip>
           </template>
-          <template #item.actualTotal4="{item, index}" class="milestone-col-td"
-                    v-if="fdcFourthDateRange != null && fdcColumn4Values != null && fdcColumn4Values.length > 0">
+          <template v-if="fdcFourthDateRange != null && fdcColumn4Values != null && fdcColumn4Values.length > 0" #item.actualTotal4="{item, index}"
+                    class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
             <span @click="funnelDrilldown(item, getDropdownById(fdcFourthDateRange), 'standard', 4)">
               {{ fdcColumn4Values[index].count_count ? fdcColumn4Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn4Values[index].reverse_trend, 'negative-percentage': fdcColumn4Values[index].reverse_trend}]">+{{ fdcColumn4Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn4Values[index].reverse_trend, 'negative-trendline': fdcColumn4Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn4Values[index].reverse_trend, 'negative-percentage': fdcColumn4Values[index].reverse_trend}]">+{{ fdcColumn4Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !fdcColumn4Values[index].reverse_trend, 'negative-trendline': fdcColumn4Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn4Values[index].reverse_trend, 'negative-percentage': !fdcColumn4Values[index].reverse_trend}]">{{ fdcColumn4Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn4Values[index].reverse_trend, 'negative-trendline': !fdcColumn4Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn4Values[index].reverse_trend, 'negative-percentage': !fdcColumn4Values[index].reverse_trend}]">{{ fdcColumn4Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': fdcColumn4Values[index].reverse_trend, 'negative-trendline': !fdcColumn4Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                   v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count === null || fdcColumn4Values[index].trend_count === 0)"
                   class="neutral-percentage">{{ fdcColumn4Values[index].trend_count / 100 | percent }}<v-icon
@@ -662,11 +680,13 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} more than {{ getDropdownTrendText(fdcFourthDateRange, 4)}}</span>
+                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent
+                }} more than {{ getDropdownTrendText(fdcFourthDateRange, 4) }}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} less than {{ getDropdownTrendText(fdcFourthDateRange, 4)}}</span>
+                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent
+                }} less than {{ getDropdownTrendText(fdcFourthDateRange, 4) }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count ===null || fdcColumn4Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcFourthDateRange, 4)}}</span>
+                v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count ===null || fdcColumn4Values[index].trend_count===0)"> Same as {{ getDropdownTrendText(fdcFourthDateRange, 4) }}</span>
             </v-tooltip>
           </template>
         </v-data-table>
@@ -682,36 +702,37 @@
           <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
           Export
         </a>
-        <div v-else class="export-button" :class="{'disabled-export': true}">
+        <div v-else :class="{'disabled-export': true}" class="export-button">
           <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
           Export
         </div>
         <v-spacer></v-spacer>
         <div class="flex-display flex-align-items-end table-collapse-button">
-          <v-icon v-if="upcomingApptsExpanded" @click="upcomingApptsExpanded = !upcomingApptsExpanded">expand_less</v-icon>
+          <v-icon v-if="upcomingApptsExpanded" @click="upcomingApptsExpanded = !upcomingApptsExpanded">expand_less
+          </v-icon>
           <v-icon v-else @click="upcomingApptsExpanded = !upcomingApptsExpanded">expand_more</v-icon>
         </div>
       </v-row>
-      <div style="height: 25px" v-if="!upcomingApptsExpanded"></div>
-      <div class="pipeline-header-container" v-if="upcomingApptsExpanded">
-        <v-col cols="9" class="d-flex">
+      <div v-if="!upcomingApptsExpanded" style="height: 25px"></div>
+      <div v-if="upcomingApptsExpanded" class="pipeline-header-container">
+        <v-col class="d-flex" cols="9">
           <div id="pipeline-header-left-side">
-            <div class="reps-container"><span class="rep-filters-text label-small">Rep Filters</span> </div>
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
-                            ref="areaSelect"
+            <div class="reps-container"><span class="rep-filters-text label-small">Rep Filters</span></div>
+            <a-autocomplete ref="areaSelect"
                             v-model="areaModelAppts"
                             :items="areaDataAppts"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="Area"
-                            no-data-text="No areas available"
-                            variant="outlined"
-                            density="compact"
                             multiple
-                            hide-details
-                            @input="repValuesChangedAppts = true"
+                            no-data-text="No areas available"
+                            return-object
+                            variant="outlined"
                             @blur="areaValuesChanged = true; regionLoadAppts()"
-                            return-object>
+                            @input="repValuesChangedAppts = true">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">Area</span>
               </template>
@@ -744,21 +765,21 @@
               </template>
             </a-autocomplete>
 
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete ref="regionSelect"
                             v-model="regionModelAppts"
                             :items="regionDataAppts"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="Region"
-                            no-data-text="No regions available"
-                            variant="outlined"
-                            density="compact"
                             multiple
-                            @input="repValuesChangedAppts = true"
-                            @blur="regionValuesChanged = true; districtLoadAppts()"
-                            hide-details
+                            no-data-text="No regions available"
                             return-object
-                            ref="regionSelect">
+                            variant="outlined"
+                            @blur="regionValuesChanged = true; districtLoadAppts()"
+                            @input="repValuesChangedAppts = true">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">Region</span>
               </template>
@@ -791,21 +812,21 @@
               </template>
             </a-autocomplete>
 
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
-                            ref="districtSelect"
+            <a-autocomplete ref="districtSelect"
                             v-model="districtModelAppts"
                             :items="districtDataAppts"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="District"
-                            no-data-text="No districts available"
                             multiple
+                            no-data-text="No districts available"
+                            return-object
                             variant="outlined"
-                            density="compact"
-                            hide-details
-                            @input="repValuesChangedAppts = true; districtValuesChanged = true;"
                             @blur="officeLoadAppts()"
-                            return-object>
+                            @input="repValuesChangedAppts = true; districtValuesChanged = true;">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">District</span>
               </template>
@@ -838,21 +859,21 @@
               </template>
             </a-autocomplete>
 
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete ref="officeSelect"
                             v-model="officeModelAppts"
                             :items="officeDataAppts"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="org_name"
                             item-value="org_id"
                             label="Office"
-                            no-data-text="No offices available"
                             multiple
-                            variant="outlined"
-                            density="compact"
-                            @input="repValuesChangedAppts = true"
-                            @blur="officeValuesChanged = true; repLoadAppts()"
-                            hide-details
+                            no-data-text="No offices available"
                             return-object
-                            ref="officeSelect">
+                            variant="outlined"
+                            @blur="officeValuesChanged = true; repLoadAppts()"
+                            @input="repValuesChangedAppts = true">
               <template v-slot:label="{ item, index }">
                 <span class="rep-filter-placeholder">Office</span>
               </template>
@@ -884,20 +905,20 @@
                 </v-list-item-content>
               </template>
             </a-autocomplete>
-            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete ref="repSelect"
                             v-model="repModelAppts"
                             :items="repDataAppts"
+                            class="appts-to-fdc-pipeline-dropdown"
+                            density="compact"
+                            hide-details
                             item-title="name"
                             item-value="user_position_id"
                             label="Rep"
-                            no-data-text="No reps available"
                             multiple
-                            variant="outlined"
-                            density="compact"
-                            @input="repValuesChangedAppts = true; apptsToFdcPipelineData.value = []"
-                            hide-details
+                            no-data-text="No reps available"
                             return-object
-                            ref="repSelect">
+                            variant="outlined"
+                            @input="repValuesChangedAppts = true; apptsToFdcPipelineData.value = []">
               <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0 && repModelAppts[0].user_id != -1" class="selected-option text-caption">
                     {{ repModelAppts.length }} Checked
@@ -932,26 +953,27 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </a-autocomplete><a-btn
-            v-if="!isSetter && !isSetterMgr"
-            class="body-small"
-            :class="{'reset-button-inactive': !filtersSelectedAppts && repModelAppts?.length === 0 && !hideInactiveApptsReps, 'reset-button-active': filtersSelectedAppts || repModelAppts?.length > 0 || hideInactiveApptsReps}"
-            variant="outlined"
-            @click="resetFiltersAppts"
-            color="unset"
-            text="Reset Rep Filters"
-          ></a-btn>
+            </a-autocomplete>
+            <a-btn
+              v-if="!isSetter && !isSetterMgr"
+              :class="{'reset-button-inactive': !filtersSelectedAppts && repModelAppts?.length === 0 && !hideInactiveApptsReps, 'reset-button-active': filtersSelectedAppts || repModelAppts?.length > 0 || hideInactiveApptsReps}"
+              class="body-small"
+              color="unset"
+              text="Reset Rep Filters"
+              variant="outlined"
+              @click="resetFiltersAppts"
+            ></a-btn>
           </div>
         </v-col>
-        <v-col cols="3" class="d-flex justify-end">
+        <v-col class="d-flex justify-end" cols="3">
           <div class="flex-display align-right">
             <a-btn
               id="all-reps-btn"
-              variant="outlined"
-              color="primary"
-              @click="funnelAllRepsUpcomingAppointments"
-              class="body-small"
               :text="viewAllRepsTextAppts"
+              class="body-small"
+              color="primary"
+              variant="outlined"
+              @click="funnelAllRepsUpcomingAppointments"
             ></a-btn>
           </div>
         </v-col>
@@ -966,14 +988,14 @@
         <v-data-table
           v-if="upcomingApptsExpanded"
           id="upcoming-data-table"
-          class="elevation-1 body-medium"
-          :items="upcomingAppointmentsData"
-          :headers="upcomingAppointmentsHeaders"
           ref="pageable-table"
           :footer-props="footerProps"
-          :loading="isLoading"
+          :headers="upcomingAppointmentsHeaders"
           :hide-default-footer="true"
+          :items="upcomingAppointmentsData"
+          :loading="isLoading"
           :mobile-breakpoint="0"
+          class="elevation-1 body-medium"
         >
 
           <template #no-data>
@@ -981,22 +1003,22 @@
           </template>
 
 
-          <template #header.milestone="{}" id="milestones-header"><span class="milestones-header">Milestones</span></template>
+          <template id="milestones-header" #header.milestone="{}"><span class="milestones-header">Milestones</span>
+          </template>
 
 
-
-          <template #item.project_id="{item, index}" id="milestones-col" class="milestone-name-col-td">
-            <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
-                         :to="`/project/${item.project_id}/${defaultProjectPage}`" class="body-medium">
+          <template id="milestones-col" #item.project_id="{item, index}" class="milestone-name-col-td">
+            <router-link v-if="item.project_id && userStore.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}/${defaultProjectPage}`"
+                         class="body-medium" text>
               {{ item.project_id }}
             </router-link>
           </template>
 
-          <template #item.appointment_start_time="{item, index}" id="milestones-col" class="milestone-name-col-td">
-            {{item.appointment_start_time | formatDate('timestamp', 'MM/DD/YYYY, h:mm a')}}
+          <template id="milestones-col" #item.appointment_start_time="{item, index}" class="milestone-name-col-td">
+            {{ item.appointment_start_time | formatDate('timestamp', 'MM/DD/YYYY, h:mm a') }}
           </template>
-          <template #item.date_created="{item, index}" id="milestones-col" class="milestone-name-col-td">
-            {{item.appointment_start_time | formatDate('date', 'MM/DD/YYYY')}}
+          <template id="milestones-col" #item.date_created="{item, index}" class="milestone-name-col-td">
+            {{ item.appointment_start_time | formatDate('date', 'MM/DD/YYYY') }}
           </template>
           <template #item.actualTotal="{item, index}" class="milestone-col-td">
             <v-tooltip bottom>
@@ -1005,37 +1027,44 @@
                 {{ item.count_count ? item.count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && item.trend_count>0"
-                      :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !item.reverse_trend, 'negative-percentage': item.reverse_trend}]">+{{ item.trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !item.reverse_trend, 'negative-trendline': item.reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && item.trend_count<0"
-                      :class="[{'positive-percentage': item.reverse_trend, 'negative-percentage': !item.reverse_trend}]">{{ item.trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': item.reverse_trend, 'negative-percentage': !item.reverse_trend}]">{{ item.trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': item.reverse_trend, 'negative-trendline': !item.reverse_trend}]">trending_down</v-icon></span>
                 <span v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"
                       class="neutral-percentage">{{ item.trend_count / 100 | percent }}<v-icon
                   class="neutral-trendline">trending_flat</v-icon></span>
                 </span>
               </span>
               </template>
-              <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
-              <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+              <span v-if="viewFdcTrends && item.trend_count>0"> {{ Math.abs(item.trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFirstDateRange).trendText
+                }}</span>
+              <span v-if="viewFdcTrends && item.trend_count<0"> {{ Math.abs(item.trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFirstDateRange).trendText
+                }}</span>
               <span
-                v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{ getDropdownById(fdcFirstDateRange).trendText
+                }}</span>
             </v-tooltip>
           </template>
 
-          <template #item.actualTotal2="{item, index}" class="milestone-col-td"
-                    v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0">
+          <template v-if="fdcSecondDateRange != null && fdcColumn2Values != null && fdcColumn2Values.length > 0" #item.actualTotal2="{item, index}"
+                    class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
             <span @click="openDrilldown(item, 2)">
-              {{ fdcColumn2Values[index].count_count  ? fdcColumn2Values[index].count_count  : 0 }}
+              {{ fdcColumn2Values[index].count_count ? fdcColumn2Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn2Values[index].reverse_trend, 'negative-percentage': fdcColumn2Values[index].reverse_trend}]">+{{ fdcColumn2Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !fdcColumn2Values[index].reverse_trend, 'negative-trendline': fdcColumn2Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn2Values[index].reverse_trend, 'negative-percentage': !fdcColumn2Values[index].reverse_trend}]">{{ fdcColumn2Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': fdcColumn2Values[index].reverse_trend, 'negative-trendline': !fdcColumn2Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                   v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count === null || fdcColumn2Values[index].trend_count==0)"
                   class="neutral-percentage">{{ fdcColumn2Values[index].trend_count / 100 | percent }}<v-icon
@@ -1044,26 +1073,31 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count>0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent
+                }} more than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn2Values[index].trend_count<0"> {{ Math.abs(fdcColumn2Values[index].trend_count) / 100 | percent
+                }} less than {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcSecondDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (fdcColumn2Values[index].trend_count ===null || fdcColumn2Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcSecondDateRange).trendText
+                }}</span>
             </v-tooltip>
           </template>
-          <template #item.actualTotal3="{item, index}" class="milestone-col-td"
-                    v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0">
+          <template v-if="fdcThirdDateRange != null && fdcColumn3Values != null && fdcColumn3Values.length > 0" #item.actualTotal3="{item, index}"
+                    class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
             <span @click="openDrilldown(item, 3)">
               {{ fdcColumn3Values[index].count_count ? fdcColumn3Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn3Values[index].reverse_trend, 'negative-percentage': fdcColumn3Values[index].reverse_trend}]">+{{ fdcColumn3Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !fdcColumn3Values[index].reverse_trend, 'negative-trendline': fdcColumn3Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn3Values[index].reverse_trend, 'negative-percentage': !fdcColumn3Values[index].reverse_trend}]">{{ fdcColumn3Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': fdcColumn3Values[index].reverse_trend, 'negative-trendline': !fdcColumn3Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                   v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count === null || fdcColumn3Values[index].trend_count === 0)"
                   class="neutral-percentage">{{ fdcColumn3Values[index].trend_count / 100 | percent }}<v-icon
@@ -1072,26 +1106,31 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count>0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent
+                }} more than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn3Values[index].trend_count<0"> {{ Math.abs(fdcColumn3Values[index].trend_count) / 100 | percent
+                }} less than {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcThirdDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (fdcColumn3Values[index].trend_count ===null || fdcColumn3Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcThirdDateRange).trendText
+                }}</span>
             </v-tooltip>
           </template>
-          <template #item.actualTotal4="{item, index}" class="milestone-col-td"
-                    v-if="fdcFourthDateRange != null && fdcColumn4Values != null && fdcColumn4Values.length > 0">
+          <template v-if="fdcFourthDateRange != null && fdcColumn4Values != null && fdcColumn4Values.length > 0" #item.actualTotal4="{item, index}"
+                    class="milestone-col-td">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
             <span @click="openDrilldown(item, 4)">
               {{ fdcColumn4Values[index].count_count ? fdcColumn4Values[index].count_count : 0 }}
               <span v-on="viewFdcTrends?on:null">
                 <span v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"
-                      :class="[{'positive-percentage': !fdcColumn4Values[index].reverse_trend, 'negative-percentage': fdcColumn4Values[index].reverse_trend}]">+{{ fdcColumn4Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': !fdcColumn4Values[index].reverse_trend, 'negative-trendline': fdcColumn4Values[index].reverse_trend}]">trending_up</v-icon></span>
+                      :class="[{'positive-percentage': !fdcColumn4Values[index].reverse_trend, 'negative-percentage': fdcColumn4Values[index].reverse_trend}]">+{{ fdcColumn4Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': !fdcColumn4Values[index].reverse_trend, 'negative-trendline': fdcColumn4Values[index].reverse_trend}]">trending_up</v-icon></span>
                 <span v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"
-                      :class="[{'positive-percentage': fdcColumn4Values[index].reverse_trend, 'negative-percentage': !fdcColumn4Values[index].reverse_trend}]">{{ fdcColumn4Values[index].trend_count / 100 | percent }}<v-icon
-                  :class="[{'positive-trendline': fdcColumn4Values[index].reverse_trend, 'negative-trendline': !fdcColumn4Values[index].reverse_trend}]">trending_down</v-icon></span>
+                      :class="[{'positive-percentage': fdcColumn4Values[index].reverse_trend, 'negative-percentage': !fdcColumn4Values[index].reverse_trend}]">{{ fdcColumn4Values[index].trend_count / 100 | percent
+                  }}<v-icon
+                    :class="[{'positive-trendline': fdcColumn4Values[index].reverse_trend, 'negative-trendline': !fdcColumn4Values[index].reverse_trend}]">trending_down</v-icon></span>
                 <span
                   v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count === null || fdcColumn4Values[index].trend_count === 0)"
                   class="neutral-percentage">{{ fdcColumn4Values[index].trend_count / 100 | percent }}<v-icon
@@ -1100,137 +1139,143 @@
             </span>
               </template>
               <span
-                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} more than {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count>0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent
+                }} more than {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent }} less than {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
+                v-if="viewFdcTrends && fdcColumn4Values[index].trend_count<0"> {{ Math.abs(fdcColumn4Values[index].trend_count) / 100 | percent
+                }} less than {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
               <span
-                v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count ===null || fdcColumn4Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFourthDateRange).trendText }}</span>
+                v-if="viewFdcTrends && (fdcColumn4Values[index].trend_count ===null || fdcColumn4Values[index].trend_count===0)"> Same as {{ getDropdownById(fdcFourthDateRange).trendText
+                }}</span>
             </v-tooltip>
           </template>
         </v-data-table>
       </div>
     </div>
 
-      <!--  APPOINTMENTS TO FDC PIPELINE END-->
+    <!--  APPOINTMENTS TO FDC PIPELINE END-->
 
-      <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
-        <v-card id="funnel-drilldown">
-          <v-card-title class="mb-1">
-            <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
-            <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
-            <a-text-field v-model="funnelDrilldownSearch"
-                          placeholder="Type to filter..."
-                          single-line
-                          hide-details
-                          variant="outlined"
-                          density="compact"
-            ></a-text-field>
-            <span id="funnel-drilldown-row-count">
+    <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
+      <v-card id="funnel-drilldown">
+        <v-card-title class="mb-1">
+          <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
+          <a-text-field v-model="funnelDrilldownSearch"
+                        density="compact"
+                        hide-details
+                        placeholder="Type to filter..."
+                        single-line
+                        variant="outlined"
+          ></a-text-field>
+          <span id="funnel-drilldown-row-count">
             Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
           </span>
-          </v-card-title>
+        </v-card-title>
 
-          <v-card-text>
-            <v-data-table
-              id="funnel-drilldown-table"
-              class="elevation-1"
-              :class="{'mt-6': funnelDrilldownData.length === 0}"
-              :mobile-breakpoint="0"
-              :headers="visibleFunnelDrilldownHeaders"
-              fixed-header
-              :items="funnelDrilldownData"
-              @current-items="filteredFunnelDrilldownItems"
-              :search="funnelDrilldownSearch"
-              :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 365px)') : '105px'"
-              dense
-              multi-sort
-              :sort-by="[]"
-              :sort-desc="[]"
-              :loading="funnelDrilldownLoading"
-              :items-per-page="500"
-              :footer-props="footerProps"
-            >
-              <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
-                <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
-                    :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
-                  <td style="text-align: center">
-                    {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
-                  </td>
-                  <td>{{ item.setter_name || '' }}</td>
-                  <td class="customer-name">{{ item.customer_name || '' }}</td>
-                  <td>
-                    <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
-                                 :to="`/project/${item.project_id}/${defaultProjectPage}`">
-                      {{ item.project_id }}
-                    </router-link>
-                    <div v-else>{{ item.project_id || '' }}</div>
-                  </td>
-                  <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                  <td>{{ item.owner_name || '' }}</td>
-                  <td v-if="!nonNormalFunnelIds.includes(funnelId)">{{ item.verified_setter_lead || '' }}</td>
-                  <td v-if="!nonNormalFunnelIds.includes(funnelId)" :class="item.appointment_outcome_class">
-                    {{ item.appointment_outcome || '' }}
-                  </td>
-                  <td v-if="!nonNormalFunnelIds.includes(funnelId)">
-                    {{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}
-                  </td>
-                  <td v-if="funnelId === 31">{{
-                      item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY')
-                    }}
-                  </td>
-                  <td v-if="funnelId === 32">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
-                  <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                  <td>{{ item.state || '' }}</td>
-                  <td>{{ item.office || '' }}</td>
-                </tr>
-              </template>
+        <v-card-text>
+          <v-data-table
+            id="funnel-drilldown-table"
+            :class="{'mt-6': funnelDrilldownData.length === 0}"
+            :footer-props="footerProps"
+            :headers="visibleFunnelDrilldownHeaders"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 365px)') : '105px'"
+            :items="funnelDrilldownData"
+            :items-per-page="500"
+            :loading="funnelDrilldownLoading"
+            :mobile-breakpoint="0"
+            :search="funnelDrilldownSearch"
+            :sort-by="[]"
+            :sort-desc="[]"
+            class="elevation-1"
+            dense
+            fixed-header
+            multi-sort
+            @current-items="filteredFunnelDrilldownItems"
+          >
+            <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
+                  :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
+                <td style="text-align: center">
+                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
+                </td>
+                <td>{{ item.setter_name || '' }}</td>
+                <td class="customer-name">{{ item.customer_name || '' }}</td>
+                <td>
+                  <router-link v-if="item.project_id && userStore.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}/${defaultProjectPage}`"
+                               text>
+                    {{ item.project_id }}
+                  </router-link>
+                  <div v-else>{{ item.project_id || '' }}</div>
+                </td>
+                <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+                <td>{{ item.owner_name || '' }}</td>
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)">{{ item.verified_setter_lead || '' }}</td>
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)" :class="item.appointment_outcome_class">
+                  {{ item.appointment_outcome || '' }}
+                </td>
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)">
+                  {{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}
+                </td>
+                <td v-if="funnelId === 31">{{
+                    item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY')
+                  }}
+                </td>
+                <td v-if="funnelId === 32">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
+                <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+                <td>{{ item.state || '' }}</td>
+                <td>{{ item.office || '' }}</td>
+              </tr>
+            </template>
 
-              <template #no-data>
-                <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
-                  No data is available for the selected date range.
-                </div>
-              </template>
+            <template #no-data>
+              <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
+                No data is available for the selected date range.
+              </div>
+            </template>
 
-              <template #no-results>
-                <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
-                  No matching records found.
-                </div>
-              </template>
-            </v-data-table>
-          </v-card-text>
+            <template #no-results>
+              <div class="my-3 funnel-drilldown-no-data-msg default-text-color">
+                No matching records found.
+              </div>
+            </template>
+          </v-data-table>
+        </v-card-text>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <a-btn
-              class="text-capitalize mr-4 mb-2"
-              color="primary"
-              @click="closeFunnelDrilldownDialog"
-              text="Close"
-            ></a-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <a-btn
+            class="text-capitalize mr-4 mb-2"
+            color="primary"
+            text="Close"
+            @click="closeFunnelDrilldownDialog"
+          ></a-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <!------------------------------------- FUNNEL TAB END ------------------------------------>
 
-    <ConfirmationDialog v-if="selectingCustomDates" :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @cancel="cancelCustomDialogue()" @close-dialog="selectingCustomDates = false">
+    <ConfirmationDialog v-if="selectingCustomDates"
+                        :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0"
+                        :open-dialog="selectingCustomDates" @cancel="cancelCustomDialogue()"
+                        @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
       <template v-slot:title>Custom Date Range</template>
       <div>
         <DatetimePickerInput
           v-model="customDate.startDate"
+          :format="'MMMM DD, YYYY'"
           :timezone="timezone"
           :type="'date'"
-          :format="'MMMM DD, YYYY'"
           input-format="HH:mm:ss"
           label="Start Date"
         />
         <DatetimePickerInput
           v-model="customDate.endDate"
+          :format="'MMMM DD, YYYY'"
           :timezone="timezone"
           :type="'date'"
-          :format="'MMMM DD, YYYY'"
           input-format="HH:mm:ss"
           label="End Date"
         />
@@ -1245,25 +1290,22 @@
 
 <script setup>
 import cloneDeep from 'lodash.clonedeep'
-import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, getRequest, postRequest,  getRequestWithParams, getProjectPath} from '@/helpers/helpers'
-
-import SpinnerInline from '@/components/SpinnerInline'
-import {saveAs} from 'file-saver'
+import { getProjectPath, getRequestWithParams, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers'
+import { saveAs } from 'file-saver'
 import {
   getSetterAreas,
-  getSetterRegions,
   getSetterDistricts,
   getSetterOffices,
+  getSetterRegions,
   getSetterReps
 } from '@/services/dashboardService'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import { useUserStore } from "@/stores/UserStore.js";
-import {useRoute, useRouter} from "vue-router/composables";
+import { computed, getCurrentInstance, onMounted, ref } from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
@@ -1296,13 +1338,13 @@ const fdcFirstDateRange = ref(2)
 const fdcSecondDateRange = ref(null)
 const fdcThirdDateRange = ref(null)
 const fdcFourthDateRange = ref(null)
-const firstCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
-const secondCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
-const thirdCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
-const fdcFirstCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
-const fdcSecondCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
-const fdcThirdCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
-const fdcFourthCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
+const firstCustom = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '', isActive: false })
+const secondCustom = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '', isActive: false })
+const thirdCustom = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '' })
+const fdcFirstCustom = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '', isActive: false })
+const fdcSecondCustom = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '', isActive: false })
+const fdcThirdCustom = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '' })
+const fdcFourthCustom = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '' })
 const firstPeriod = ref(null)
 const secondPeriod = ref(null)
 const thirdPeriod = ref(null)
@@ -1327,8 +1369,7 @@ const selectedFunnel = ref({})
 const isSetterRegional = ref(false)
 const userCanViewAll = ref(userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'))
 const userCanViewAllProjects = ref(userStore.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL'))
-const headers = ref([
-])
+const headers = ref([])
 const reverseTrends = ref([
   'Cancelled in advance',
   'Ineligible for solar',
@@ -1422,17 +1463,18 @@ const viewAllFilteredReps = ref(false)
 const viewAllFilteredRepsAppts = ref(false)
 const repDataSelectAllUpcomingAppointments = ref(false)
 const appointmentTypesSelectAll = ref(false)
-const apptsCreatedPipelineDateRange = ref({label: 'Month to Date', value: 'MTD'
+const apptsCreatedPipelineDateRange = ref({
+  label: 'Month to Date', value: 'MTD'
 })
 const showApptsCreatedPipelineCustomDates = ref(false)
 const apptsToFdcPipelineDateRanges = ref([
-  {label: 'Yesterday', value: 'yesterday'},
-  {label: 'Last Week', value: 'lastWeek'},
-  {label: 'Month to Date', value: 'MTD'},
-  {label: 'Last 60 days', value: 60},
-  {label: 'Last 90 days', value: 90},
-  {label: 'Year to Date', value: 'YTD'},
-  {label: 'Custom', value: 'Custom'}
+  { label: 'Yesterday', value: 'yesterday' },
+  { label: 'Last Week', value: 'lastWeek' },
+  { label: 'Month to Date', value: 'MTD' },
+  { label: 'Last 60 days', value: 60 },
+  { label: 'Last 90 days', value: 90 },
+  { label: 'Year to Date', value: 'YTD' },
+  { label: 'Custom', value: 'Custom' }
 ])
 const initialPageLoad = ref(true)
 const maxRepLimit = ref(1000)
@@ -1442,7 +1484,8 @@ const districtValuesChanged = ref(false)
 const officeValuesChanged = ref(false)
 const repValuesChanged = ref(false)
 const repValuesChangedAppts = ref(false)
-const apptsToFdcPipelineDateRange = ref({label: 'Month to Date', value: 'MTD'
+const apptsToFdcPipelineDateRange = ref({
+  label: 'Month to Date', value: 'MTD'
 })
 const showApptsToFdcPipelineCustomDates = ref(false)
 const viewSelect = ref('standard')
@@ -1467,9 +1510,13 @@ const funnelDrilldownRowCount = ref(0)
 const totalSystemSize = ref(0)
 const repLengthOverride = ref(false)
 const repLengthOverrideUpcomingAppointments = ref(false)
-const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+const footerProps = ref({
+  showFirstLastPage: !constants.IS_MOBILE,
+  firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+  lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
-  'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]})
+  'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
+})
 const column2Values = ref([])
 const column3Values = ref([])
 const column4Values = ref([])
@@ -1477,7 +1524,7 @@ const fdcColumn2Values = ref([])
 const fdcColumn3Values = ref([])
 const fdcColumn4Values = ref([])
 const selectingCustomDates = ref(false)
-const customDate = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
+const customDate = ref({ startDate: '', endDate: '', trendStart: '', trendEnd: '' })
 const closerDashContainer = ref(null)
 
 const timezone = computed(() => {
@@ -1496,49 +1543,45 @@ const filtersSelectedAppts = computed(() => {
 })
 
 const viewAllRepsText = computed(() => {
-  if(repModel.value.length > 0){
+  if (repModel.value.length > 0) {
     return 'View Selected Reps'
   }
-  if(filtersSelected.value || hideInactiveReps.value){
+  if (filtersSelected.value || hideInactiveReps.value) {
     return 'View All Filtered Reps'
-  }
-  else {
+  } else {
     return 'View All Reps'
   }
 })
 
 const viewAllRepsTextAppts = computed(() => {
-  if(repModelAppts.value.length > 0){
+  if (repModelAppts.value.length > 0) {
     return 'View Selected Reps'
   }
-  if(filtersSelectedAppts.value || hideInactiveApptsReps.value){
+  if (filtersSelectedAppts.value || hideInactiveApptsReps.value) {
     return 'View All Filtered Reps'
-  }
-  else {
+  } else {
     return 'View All Reps'
   }
 })
 
 const upcomingApptsText = computed(() => {
-  if(upcomingAppointmentsDataLoaded.value){
-    return "No Upcoming Appointments"
-  }
-  else {
-    return "Select Reps to View Upcoming Appointments"
+  if (upcomingAppointmentsDataLoaded.value) {
+    return 'No Upcoming Appointments'
+  } else {
+    return 'Select Reps to View Upcoming Appointments'
   }
 })
 
 const filteredRepData = computed(() => {
-  if(!hideInactiveReps.value) {
+  if (!hideInactiveReps.value) {
     return repData.value
-  }
-  else{
+  } else {
     return repData.value.filter(dv => dv.active)
   }
 })
 
 const filteredApptsCreatedPipelineData = computed(() => {
-  if(!milestonesExpanded.value){
+  if (!milestonesExpanded.value) {
     return apptsCreatedPipelineData.value.filter(dv => dv.display_order < 3)
   }
   return apptsCreatedPipelineData.value
@@ -1547,21 +1590,20 @@ const filteredFdcPipelineData = computed(() => {
   // return apptsToFdcPipelineData.value?.filter((data, index) => {
   //   return fdcExpandableMilestones.value?.includes(index)
   // })
-  if(viewOnlyMajorMilestones.value){
+  if (viewOnlyMajorMilestones.value) {
     return apptsToFdcPipelineData.value?.filter((data, index) => {
       return fdcExpandableMilestones.value?.includes(index)
     })
-  }
-  else return apptsToFdcPipelineData.value
+  } else return apptsToFdcPipelineData.value
 })
 const funnelDrilldownHeaders = computed(() => {
   return [
-    {text: '', value: '', show: true, sortable: false, width: 25},
-    {text: 'Setter', value: 'setter_name', show: true, width: 90},
-    {text: 'Name', value: 'customer_name', show: true, width: 90},
-    {text: 'Project ID', value: 'project_id', show: true, width: 95},
-    {text: 'Appointment Date', value: 'appointment_date', show: true, width: 150},
-    {text: 'Closer', value: 'owner_name', show: true, width: 90},
+    { text: '', value: '', show: true, sortable: false, width: 25 },
+    { text: 'Setter', value: 'setter_name', show: true, width: 90 },
+    { text: 'Name', value: 'customer_name', show: true, width: 90 },
+    { text: 'Project ID', value: 'project_id', show: true, width: 95 },
+    { text: 'Appointment Date', value: 'appointment_date', show: true, width: 150 },
+    { text: 'Closer', value: 'owner_name', show: true, width: 90 },
     {
       text: 'Verified Setter Lead',
       value: 'verified_setter_lead',
@@ -1580,16 +1622,16 @@ const funnelDrilldownHeaders = computed(() => {
       show: !nonNormalFunnelIds.value.includes(funnelId.value),
       width: 175
     },
-    {text: 'Booking Date', value: 'installation_agreement_signed_date', show: funnelId.value === 31, width: 175},
+    { text: 'Booking Date', value: 'installation_agreement_signed_date', show: funnelId.value === 31, width: 175 },
     {
       text: 'Final Design Complete Date',
       value: 'final_design_complete_date',
       show: funnelId.value === 32,
       width: 175
     },
-    {text: 'Date Created', value: 'date_created', show: true, width: 115},
-    {text: 'State', value: 'state', show: true, width: 80},
-    {text: 'Office', value: 'office', show: true, width: 90}
+    { text: 'Date Created', value: 'date_created', show: true, width: 115 },
+    { text: 'State', value: 'state', show: true, width: 80 },
+    { text: 'Office', value: 'office', show: true, width: 90 }
   ]
 })
 const windowInnerWidth = computed(() => {
@@ -1786,9 +1828,9 @@ const showTotalSystemSize = computed(() => {
   return funnelDrilldownRowCount.value > 0
 })
 
-onMounted(async() => {
-  tomorrow.value.setDate(tomorrow.value.getDate()+1)
-  tomorrow.value = (tomorrow.value.getMonth()+1).toString().concat("/").concat(tomorrow.value.getDate()).concat("/").concat(tomorrow.value.getFullYear())
+onMounted(async () => {
+  tomorrow.value.setDate(tomorrow.value.getDate() + 1)
+  tomorrow.value = (tomorrow.value.getMonth() + 1).toString().concat('/').concat(tomorrow.value.getDate()).concat('/').concat(tomorrow.value.getFullYear())
   await getDropdownValues()
   if (userStore.details.userPositions?.length > 0) {
     let positionId = null
@@ -1836,8 +1878,8 @@ onMounted(async() => {
     }
   }
   headers.value = [
-    {text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true},
-    {text: 'Source', value: 'source', align: 'left', sortable: false, class: 'total-col-th data-col-th', show: true},
+    { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true },
+    { text: 'Source', value: 'source', align: 'left', sortable: false, class: 'total-col-th data-col-th', show: true },
     {
       text: 'Today',
       value: 'actualTotal',
@@ -1858,10 +1900,10 @@ onMounted(async() => {
       align: 'left',
       class: 'total-col-th data-col-th',
       show: !isBrCorporateUser.value
-    },
+    }
   ]
   fdcHeaders.value = [
-    {text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true}, {
+    { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true }, {
       text: 'Today',
       value: 'actualTotal',
       align: 'left',
@@ -1888,10 +1930,10 @@ onMounted(async() => {
       align: 'left',
       class: 'total-col-th data-col-th',
       show: !isBrCorporateUser.value
-    },
+    }
   ]
   upcomingAppointmentsHeaders.value = [
-    {text: 'Setter', value: 'setter_name', sortable: true, class: 'milestone-col-th', show: true}, {
+    { text: 'Setter', value: 'setter_name', sortable: true, class: 'milestone-col-th', show: true }, {
       text: 'Project Name',
       value: 'project_name',
       align: 'left',
@@ -1933,7 +1975,7 @@ onMounted(async() => {
       align: 'left',
       class: 'total-col-th data-col-th',
       show: !isBrCorporateUser.value
-    },
+    }
   ]
   appStore.loading = true
   await loadFunnels()
@@ -1942,7 +1984,7 @@ onMounted(async() => {
   funnelsWereLoaded.value = true
 })
 
-const resetFilters = async()=> {
+const resetFilters = async () => {
   areaModel.value = []
   regionModel.value = []
   districtModel.value = []
@@ -1952,7 +1994,7 @@ const resetFilters = async()=> {
   repData.value = cloneDeep(repDataMaster.value)
 }
 
-const resetFiltersAppts = async()=> {
+const resetFiltersAppts = async () => {
   areaModelAppts.value = []
   regionModelAppts.value = []
   districtModelAppts.value = []
@@ -1964,82 +2006,81 @@ const resetFiltersAppts = async()=> {
 const exportCsv = async (tableName) => {
   appStore.loading = true
   try {
-    if(tableName === 'pipeline') {
+    if (tableName === 'pipeline') {
       let filename = 'Setter Dashboard - Pipeline.csv'
       let csvData = ' , '
       if (dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).name === 'PERIOD') {
-        csvData += dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).periodList[fdcFirstPeriod.value].shortLabel;
+        csvData += dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).periodList[fdcFirstPeriod.value].shortLabel
       } else {
-        csvData += ((dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).name === 'CUSTOM') ? fdcFirstCustom.value.name : dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).friendlyName);
+        csvData += ((dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).name === 'CUSTOM') ? fdcFirstCustom.value.name : dropdownValues.value.find(x => x.id === fdcFirstDateRange.value).friendlyName)
       }
       csvData += ', ' + 'Trend 1'
       if (fdcSecondDateRange.value) {
         if (dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).name === 'PERIOD') {
-          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).periodList[fdcSecondPeriod.value].shortLabel;
+          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).periodList[fdcSecondPeriod.value].shortLabel
         } else {
-          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).name === 'CUSTOM') ? fdcSecondCustom.value.name : dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).friendlyName);
+          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).name === 'CUSTOM') ? fdcSecondCustom.value.name : dropdownValues.value.find(x => x.id === fdcSecondDateRange.value).friendlyName)
         }
         csvData += ', ' + 'Trend 2'
       }
       if (fdcThirdDateRange.value) {
         if (dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).name === 'PERIOD') {
-          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).periodList[fdcThirdPeriod.value].shortLabel;
+          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).periodList[fdcThirdPeriod.value].shortLabel
         } else {
-          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).name === 'CUSTOM') ? fdcThirdCustom.value.name : dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).friendlyName);
+          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).name === 'CUSTOM') ? fdcThirdCustom.value.name : dropdownValues.value.find(x => x.id === fdcThirdDateRange.value).friendlyName)
         }
         csvData += ', ' + 'Trend 3'
       }
       if (fdcFourthDateRange.value) {
         if (dropdownValues.value.find(x => x.id === fdcFourthDateRange.value).name === 'PERIOD') {
-          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcFourthDateRange.value).periodList[fdcFourthPeriod.value].shortLabel;
+          csvData += ' , ' + dropdownValues.value.find(x => x.id === fdcFourthDateRange.value).periodList[fdcFourthPeriod.value].shortLabel
         } else {
-          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcFourthDateRange.value).name === 'CUSTOM') ? fdcFourthCustom.value.name : dropdownValues.value.find(x => x.id === fdcFourthDateRange.value).friendlyName);
+          csvData += ', ' + ((dropdownValues.value.find(x => x.id === fdcFourthDateRange.value).name === 'CUSTOM') ? fdcFourthCustom.value.name : dropdownValues.value.find(x => x.id === fdcFourthDateRange.value).friendlyName)
         }
         csvData += ', ' + 'Trend 4'
       }
-      csvData += '\n';
+      csvData += '\n'
 
       funnelStats.value.forEach((p, i) => {
-        csvData += p.name + ',' + (p.count_count ? p.count_count : 0);
-        csvData += ', ' + (p.trend_count ? p.trend_count : 0) + '%';
+        csvData += p.name + ',' + (p.count_count ? p.count_count : 0)
+        csvData += ', ' + (p.trend_count ? p.trend_count : 0) + '%'
         if (fdcSecondDateRange.value) {
           csvData += ', ' + (column2Values.value[i].count_count ? column2Values.value[i].count_count : 0)
-          csvData += ', ' + (column2Values.value[i].trend_count ? column2Values.value[i].trend_count : 0) + '%';
+          csvData += ', ' + (column2Values.value[i].trend_count ? column2Values.value[i].trend_count : 0) + '%'
         }
         if (fdcThirdDateRange.value) {
           csvData += ', ' + (column3Values.value[i].count_count ? column3Values.value[i].count_count : 0)
-          csvData += ', ' + (column3Values.value[i].trend_count ? column3Values.value[i].trend_count : 0) + '%';
+          csvData += ', ' + (column3Values.value[i].trend_count ? column3Values.value[i].trend_count : 0) + '%'
         }
         if (fdcFourthDateRange.value) {
           csvData += ', ' + (column4Values.value[i].count_count ? column4Values.value[i].count_count : 0)
-          csvData += ', ' + (column4Values.value[i].trend_count ? column4Values.value[i].trend_count : 0) + '%';
+          csvData += ', ' + (column4Values.value[i].trend_count ? column4Values.value[i].trend_count : 0) + '%'
         }
-        csvData += '\n';
+        csvData += '\n'
       })
       let blob = new Blob([csvData], {
         type: 'text/csv;charset=utf-8'
-      });
+      })
 
-      saveAs(blob, filename);
-    }
-    else if(tableName === 'appts'){
+      saveAs(blob, filename)
+    } else if (tableName === 'appts') {
       let filename = 'Setter Dashboard - Upcoming Appointments.csv'
       let csvData = ' , '
-      csvData += moment(tomorrow.value).format('MM/DD/YYYY');
-      csvData += '\n';
-      csvData += 'Setter, Project Name, Project ID, Appointment Start Time, Closer, Phone Number, Date Created';
-      csvData += '\n';
+      csvData += moment(tomorrow.value).format('MM/DD/YYYY')
+      csvData += '\n'
+      csvData += 'Setter, Project Name, Project ID, Appointment Start Time, Closer, Phone Number, Date Created'
+      csvData += '\n'
 
       upcomingAppointmentsData.value.forEach((p, i) => {
-        csvData += p.setter_name + ',' + p.project_name + ',' + p.project_id + ',"' + moment(p.appointment_start_time).format('MM/DD/YYYY, h:mm a') + '",' + p.closer_name + ',' + p.phone_number + ',' + moment(p.date_created).format('MM/DD/YYYY');
-        csvData += '\n';
+        csvData += p.setter_name + ',' + p.project_name + ',' + p.project_id + ',"' + moment(p.appointment_start_time).format('MM/DD/YYYY, h:mm a') + '",' + p.closer_name + ',' + p.phone_number + ',' + moment(p.date_created).format('MM/DD/YYYY')
+        csvData += '\n'
       })
 
       let blob = new Blob([csvData], {
         type: 'text/csv;charset=utf-8'
-      });
+      })
 
-      saveAs(blob, filename);
+      saveAs(blob, filename)
     }
 
 
@@ -2052,12 +2093,12 @@ const exportCsv = async (tableName) => {
   }
 }
 const expandMilestones = () => {
-  milestonesExpanded.value = true;
+  milestonesExpanded.value = true
 }
 const hideMilestones = () => {
-  milestonesExpanded.value = false;
+  milestonesExpanded.value = false
 }
-const getDropdownValues = async() => {
+const getDropdownValues = async () => {
   try {
     appStore.loading = true
 
@@ -2065,11 +2106,11 @@ const getDropdownValues = async() => {
       today: moment().format('YYYY-MM-DD')
     }
 
-    const {data, status} = await getRequestWithParams('/setterDashboard/dropdownValues', {params}, 'blueraven', [])
+    const { data, status } = await getRequestWithParams('/setterDashboard/dropdownValues', { params }, 'blueraven', [])
     // Rearanging the menu here
-    dropdownValues.value = data;
+    dropdownValues.value = data
     isLoading.value = false
-    handleHidingGlobalLoader( status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving data')
@@ -2077,39 +2118,34 @@ const getDropdownValues = async() => {
     appStore.loading = false
   }
 }
-const openDrilldown = async(item, column) => {
-  if(column === 1){
-    if(dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'PERIOD'){
-      startDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
-      endDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
-    }
-    else {
+const openDrilldown = async (item, column) => {
+  if (column === 1) {
+    if (dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'PERIOD') {
+      startDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss')
+    } else {
       startDate.value = dropdownValues.value.find(x => x.id === firstDateRange.value).startDate ? dropdownValues.value.find(x => x.id === firstDateRange.value).startDate : moment(firstCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
       endDate.value = dropdownValues.value.find(x => x.id === firstDateRange.value).endDate ? dropdownValues.value.find(x => x.id === firstDateRange.value).endDate : moment(firstCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
     }
-  }
-  else if(column === 2){
-    if(dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'PERIOD'){
-      startDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
-      endDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
-    }
-    else {
+  } else if (column === 2) {
+    if (dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'PERIOD') {
+      startDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss')
+    } else {
       startDate.value = dropdownValues.value.find(x => x.id === secondDateRange.value).startDate ? dropdownValues.value.find(x => x.id === secondDateRange.value).startDate : moment(secondCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
       endDate.value = dropdownValues.value.find(x => x.id === secondDateRange.value).endDate ? dropdownValues.value.find(x => x.id === secondDateRange.value).endDate : moment(secondCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
     }
-  }
-  else if(column === 3){
-    if(dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'PERIOD'){
-      startDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
-      endDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
-    }
-    else {
+  } else if (column === 3) {
+    if (dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'PERIOD') {
+      startDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss')
+    } else {
       startDate.value = dropdownValues.value.find(x => x.id === thirdDateRange.value).startDate ? dropdownValues.value.find(x => x.id === thirdDateRange.value).startDate : moment(thirdCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
       endDate.value = dropdownValues.value.find(x => x.id === thirdDateRange.value).endDate ? dropdownValues.value.find(x => x.id === thirdDateRange.value).endDate : moment(thirdCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
     }
   }
-  if((moment(endDate.value).diff(moment(startDate.value), 'days')+1) > 100){
-    return;
+  if ((moment(endDate.value).diff(moment(startDate.value), 'days') + 1) > 100) {
+    return
   }
   selectedMilestone.value = item
   await getDrilldownHeaders()
@@ -2117,270 +2153,270 @@ const openDrilldown = async(item, column) => {
   showDrilldown.value = true
 }
 
-const changeFdcDropdownSelection = async(dropdown) => {
+const changeFdcDropdownSelection = async (dropdown) => {
   customTable.value = 'FDC'
-  lastColumnSelected.value = dropdown;
+  lastColumnSelected.value = dropdown
   if (dropdown === 1) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcFirstDateRange.value))
     if (result === null) {
-      return null;
+      return null
     }
     if (result.startDate === null) {
       if (!fdcFirstCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
           if (fdcFirstCustom.value.startDate.toString().length > 0) {
-            customDate.value.startDate = fdcFirstCustom.value.startDate.format('YYYY-MM-DD').toString();
+            customDate.value.startDate = fdcFirstCustom.value.startDate.format('YYYY-MM-DD').toString()
           }
           if (fdcFirstCustom.value.endDate.toString().length > 0) {
-            customDate.value.endDate = fdcFirstCustom.value.endDate.format('YYYY-MM-DD').toString();
+            customDate.value.endDate = fdcFirstCustom.value.endDate.format('YYYY-MM-DD').toString()
           }
-          selectingCustomDates.value = true;
-          return;
+          selectingCustomDates.value = true
+          return
         } else if (result.name === 'PERIOD') {
-          result.startDate = result.periodList[firstPeriod.value].startDate;
-          result.endDate = result.periodList[firstPeriod.value].endDate;
+          result.startDate = result.periodList[firstPeriod.value].startDate
+          result.endDate = result.periodList[firstPeriod.value].endDate
           if (firstPeriod.value != result.periodList.length - 1) {
-            result.trendStart = result.periodList[firstPeriod.value + 1].startDate;
-            result.trendEnd = result.periodList[firstPeriod.value + 1].endDate;
+            result.trendStart = result.periodList[firstPeriod.value + 1].startDate
+            result.trendEnd = result.periodList[firstPeriod.value + 1].endDate
           } else {
-            delete result.trendStart;
-            delete result.trendEnd;
+            delete result.trendStart
+            delete result.trendEnd
           }
         }
       } else {
-        result = cloneDeep(fdcFirstCustom.value);
-        resetCustomDate();
-        fdcFirstCustom.value.isActive = false;
+        result = cloneDeep(fdcFirstCustom.value)
+        resetCustomDate()
+        fdcFirstCustom.value.isActive = false
       }
     } else if (result.name === 'ALL_TIME') {
-      delete result.trendStart;
-      delete result.trendEnd;
+      delete result.trendStart
+      delete result.trendEnd
     }
-    await pipelineLoad(1);
+    await pipelineLoad(1)
   } else if (dropdown === 2) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcSecondDateRange.value))
     if (result === null) {
-      return null;
+      return null
     }
     if (result.startDate === null) {
       if (!fdcSecondCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
           if (fdcSecondCustom.value.startDate.toString().length > 0) {
-            customDate.value.startDate = fdcSecondCustom.value.startDate.format('YYYY-MM-DD').toString();
+            customDate.value.startDate = fdcSecondCustom.value.startDate.format('YYYY-MM-DD').toString()
           }
           if (fdcSecondCustom.value.endDate.toString().length > 0) {
-            customDate.value.endDate = fdcSecondCustom.value.endDate.format('YYYY-MM-DD').toString();
+            customDate.value.endDate = fdcSecondCustom.value.endDate.format('YYYY-MM-DD').toString()
           }
-          selectingCustomDates.value = true;
-          return;
+          selectingCustomDates.value = true
+          return
         } else if (result.name === 'PERIOD') {
-          result.startDate = result.periodList[secondPeriod.value].startDate;
-          result.endDate = result.periodList[secondPeriod.value].endDate;
+          result.startDate = result.periodList[secondPeriod.value].startDate
+          result.endDate = result.periodList[secondPeriod.value].endDate
           if (secondPeriod.value != result.periodList.length - 1) {
-            result.trendStart = result.periodList[secondPeriod.value + 1].startDate;
-            result.trendEnd = result.periodList[secondPeriod.value + 1].endDate;
+            result.trendStart = result.periodList[secondPeriod.value + 1].startDate
+            result.trendEnd = result.periodList[secondPeriod.value + 1].endDate
           } else {
-            delete result.trendStart;
-            delete result.trendEnd;
+            delete result.trendStart
+            delete result.trendEnd
           }
         }
       } else {
-        result = cloneDeep(fdcSecondCustom.value);
-        resetCustomDate();
-        fdcSecondCustom.value.isActive = false;
+        result = cloneDeep(fdcSecondCustom.value)
+        resetCustomDate()
+        fdcSecondCustom.value.isActive = false
       }
     } else if (result.name === 'ALL_TIME') {
-      delete result.trendStart;
-      delete result.trendEnd;
+      delete result.trendStart
+      delete result.trendEnd
     }
-    await pipelineLoad(2);
+    await pipelineLoad(2)
   } else if (dropdown === 3) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcThirdDateRange.value))
     if (result == null) {
-      return null;
+      return null
     }
     if (result.startDate === null) {
       if (!fdcThirdCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
           if (fdcThirdCustom.value.startDate.toString().length > 0) {
-            customDate.value.startDate = fdcThirdCustom.value.startDate.format('YYYY-MM-DD').toString();
+            customDate.value.startDate = fdcThirdCustom.value.startDate.format('YYYY-MM-DD').toString()
           }
           if (fdcThirdCustom.value.endDate.toString().length > 0) {
-            customDate.value.endDate = fdcThirdCustom.value.endDate.format('YYYY-MM-DD').toString();
+            customDate.value.endDate = fdcThirdCustom.value.endDate.format('YYYY-MM-DD').toString()
           }
-          selectingCustomDates.value = true;
-          return;
+          selectingCustomDates.value = true
+          return
         } else if (result.name === 'PERIOD') {
-          result.startDate = result.periodList[thirdPeriod.value].startDate;
-          result.endDate = result.periodList[thirdPeriod.value].endDate;
+          result.startDate = result.periodList[thirdPeriod.value].startDate
+          result.endDate = result.periodList[thirdPeriod.value].endDate
           if (thirdPeriod.value != result.periodList.length - 1) {
-            result.trendStart = result.periodList[thirdPeriod.value + 1].startDate;
-            result.trendEnd = result.periodList[thirdPeriod.value + 1].endDate;
+            result.trendStart = result.periodList[thirdPeriod.value + 1].startDate
+            result.trendEnd = result.periodList[thirdPeriod.value + 1].endDate
           } else {
-            delete result.trendStart;
-            delete result.trendEnd;
+            delete result.trendStart
+            delete result.trendEnd
           }
         }
       } else {
-        result = cloneDeep(fdcThirdCustom.value);
-        resetCustomDate();
+        result = cloneDeep(fdcThirdCustom.value)
+        resetCustomDate()
       }
     } else if (result.name === 'ALL_TIME') {
-      delete result.trendStart;
-      delete result.trendEnd;
+      delete result.trendStart
+      delete result.trendEnd
     }
-    await pipelineLoad(3);
-  }else if (dropdown === 4) {
+    await pipelineLoad(3)
+  } else if (dropdown === 4) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === fdcFourthDateRange.value))
     if (result == null) {
-      return null;
+      return null
     }
     if (result.startDate === null) {
       if (!fdcFourthCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
           if (fdcFourthCustom.value.startDate.toString().length > 0) {
-            customDate.value.startDate = fdcFourthCustom.value.startDate.format('YYYY-MM-DD').toString();
+            customDate.value.startDate = fdcFourthCustom.value.startDate.format('YYYY-MM-DD').toString()
           }
           if (fdcFourthCustom.value.endDate.toString().length > 0) {
-            customDate.value.endDate = fdcFourthCustom.value.endDate.format('YYYY-MM-DD').toString();
+            customDate.value.endDate = fdcFourthCustom.value.endDate.format('YYYY-MM-DD').toString()
           }
-          selectingCustomDates.value = true;
-          return;
+          selectingCustomDates.value = true
+          return
         } else if (result.name === 'PERIOD') {
-          result.startDate = result.periodList[fourthPeriod.value].startDate;
-          result.endDate = result.periodList[fourthPeriod.value].endDate;
+          result.startDate = result.periodList[fourthPeriod.value].startDate
+          result.endDate = result.periodList[fourthPeriod.value].endDate
           if (fourthPeriod.value != result.periodList.length - 1) {
-            result.trendStart = result.periodList[fourthPeriod.value + 1].startDate;
-            result.trendEnd = result.periodList[fourthPeriod.value + 1].endDate;
+            result.trendStart = result.periodList[fourthPeriod.value + 1].startDate
+            result.trendEnd = result.periodList[fourthPeriod.value + 1].endDate
           } else {
-            delete result.trendStart;
-            delete result.trendEnd;
+            delete result.trendStart
+            delete result.trendEnd
           }
         }
       } else {
-        result = cloneDeep(fdcFourthCustom.value);
-        resetCustomDate();
+        result = cloneDeep(fdcFourthCustom.value)
+        resetCustomDate()
       }
     } else if (result.name === 'ALL_TIME') {
-      delete result.trendStart;
-      delete result.trendEnd;
+      delete result.trendStart
+      delete result.trendEnd
     }
-    await pipelineLoad(4);
+    await pipelineLoad(4)
   }
 }
 
-const changeDropdownSelection = async(dropdown) => {
+const changeDropdownSelection = async (dropdown) => {
   customTable.value = 'apptsCreated'
   if (dropdown === 1) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === firstDateRange.value))
     if (result === null) {
-      return null;
+      return null
     }
     if (result.startDate === null) {
       if (!firstCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
           if (firstCustom.value.startDate.toString().length > 0) {
-            customDate.value.startDate = firstCustom.value.startDate.format('YYYY-MM-DD').toString();
+            customDate.value.startDate = firstCustom.value.startDate.format('YYYY-MM-DD').toString()
           }
           if (firstCustom.value.endDate.toString().length > 0) {
-            customDate.value.endDate = firstCustom.value.endDate.format('YYYY-MM-DD').toString();
+            customDate.value.endDate = firstCustom.value.endDate.format('YYYY-MM-DD').toString()
           }
-          selectingCustomDates.value = true;
-          return;
+          selectingCustomDates.value = true
+          return
         } else if (result.name === 'PERIOD') {
-          result.startDate = result.periodList[firstPeriod.value].startDate;
-          result.endDate = result.periodList[firstPeriod.value].endDate;
+          result.startDate = result.periodList[firstPeriod.value].startDate
+          result.endDate = result.periodList[firstPeriod.value].endDate
           if (firstPeriod.value != result.periodList.length - 1) {
-            result.trendStart = result.periodList[firstPeriod.value + 1].startDate;
-            result.trendEnd = result.periodList[firstPeriod.value + 1].endDate;
+            result.trendStart = result.periodList[firstPeriod.value + 1].startDate
+            result.trendEnd = result.periodList[firstPeriod.value + 1].endDate
           } else {
-            delete result.trendStart;
-            delete result.trendEnd;
+            delete result.trendStart
+            delete result.trendEnd
           }
         }
       } else {
-        result = cloneDeep(firstCustom.value);
-        resetCustomDate();
-        firstCustom.value.isActive = false;
+        result = cloneDeep(firstCustom.value)
+        resetCustomDate()
+        firstCustom.value.isActive = false
       }
     } else if (result.name === 'ALL_TIME') {
-      delete result.trendStart;
-      delete result.trendEnd;
+      delete result.trendStart
+      delete result.trendEnd
     }
-    await upcomingAppointmentsLoad(1);
+    await upcomingAppointmentsLoad(1)
   } else if (dropdown === 2) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === secondDateRange.value))
     if (result === null) {
-      return null;
+      return null
     }
     if (result.startDate === null) {
       if (!secondCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
           if (secondCustom.value.startDate.toString().length > 0) {
-            customDate.value.startDate = secondCustom.value.startDate.format('YYYY-MM-DD').toString();
+            customDate.value.startDate = secondCustom.value.startDate.format('YYYY-MM-DD').toString()
           }
           if (secondCustom.value.endDate.toString().length > 0) {
-            customDate.value.endDate = secondCustom.value.endDate.format('YYYY-MM-DD').toString();
+            customDate.value.endDate = secondCustom.value.endDate.format('YYYY-MM-DD').toString()
           }
-          selectingCustomDates.value = true;
-          return;
+          selectingCustomDates.value = true
+          return
         } else if (result.name === 'PERIOD') {
-          result.startDate = result.periodList[secondPeriod.value].startDate;
-          result.endDate = result.periodList[secondPeriod.value].endDate;
+          result.startDate = result.periodList[secondPeriod.value].startDate
+          result.endDate = result.periodList[secondPeriod.value].endDate
           if (secondPeriod.value != result.periodList.length - 1) {
-            result.trendStart = result.periodList[secondPeriod.value + 1].startDate;
-            result.trendEnd = result.periodList[secondPeriod.value + 1].endDate;
+            result.trendStart = result.periodList[secondPeriod.value + 1].startDate
+            result.trendEnd = result.periodList[secondPeriod.value + 1].endDate
           } else {
-            delete result.trendStart;
-            delete result.trendEnd;
+            delete result.trendStart
+            delete result.trendEnd
           }
         }
       } else {
-        result = cloneDeep(secondCustom.value);
-        resetCustomDate();
-        secondCustom.value.isActive = false;
+        result = cloneDeep(secondCustom.value)
+        resetCustomDate()
+        secondCustom.value.isActive = false
       }
     } else if (result.name === 'ALL_TIME') {
-      delete result.trendStart;
-      delete result.trendEnd;
+      delete result.trendStart
+      delete result.trendEnd
     }
-    await upcomingAppointmentsLoad(2);
+    await upcomingAppointmentsLoad(2)
   } else if (dropdown === 3) {
     let result = cloneDeep(dropdownValues.value.find(x => x.id === thirdDateRange.value))
     if (result == null) {
-      return null;
+      return null
     }
     if (result.startDate === null) {
       if (!thirdCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
           if (thirdCustom.value.startDate.toString().length > 0) {
-            customDate.value.startDate = thirdCustom.value.startDate.format('YYYY-MM-DD').toString();
+            customDate.value.startDate = thirdCustom.value.startDate.format('YYYY-MM-DD').toString()
           }
           if (thirdCustom.value.endDate.toString().length > 0) {
-            customDate.value.endDate = thirdCustom.value.endDate.format('YYYY-MM-DD').toString();
+            customDate.value.endDate = thirdCustom.value.endDate.format('YYYY-MM-DD').toString()
           }
-          selectingCustomDates.value = true;
-          return;
+          selectingCustomDates.value = true
+          return
         } else if (result.name === 'PERIOD') {
-          result.startDate = result.periodList[thirdPeriod.value].startDate;
-          result.endDate = result.periodList[thirdPeriod.value].endDate;
+          result.startDate = result.periodList[thirdPeriod.value].startDate
+          result.endDate = result.periodList[thirdPeriod.value].endDate
           if (thirdPeriod.value != result.periodList.length - 1) {
-            result.trendStart = result.periodList[thirdPeriod.value + 1].startDate;
-            result.trendEnd = result.periodList[thirdPeriod.value + 1].endDate;
+            result.trendStart = result.periodList[thirdPeriod.value + 1].startDate
+            result.trendEnd = result.periodList[thirdPeriod.value + 1].endDate
           } else {
-            delete result.trendStart;
-            delete result.trendEnd;
+            delete result.trendStart
+            delete result.trendEnd
           }
         }
       } else {
-        result = cloneDeep(thirdCustom.value);
-        resetCustomDate();
+        result = cloneDeep(thirdCustom.value)
+        resetCustomDate()
       }
     } else if (result.name === 'ALL_TIME') {
-      delete result.trendStart;
-      delete result.trendEnd;
+      delete result.trendStart
+      delete result.trendEnd
     }
-    await upcomingAppointmentsLoad(3);
+    await upcomingAppointmentsLoad(3)
   }
 }
 
@@ -2396,20 +2432,20 @@ const getDropdownTrendText = (id, columnNum) => {
       2: fdcSecondCustom.value,
       3: fdcThirdCustom.value,
       4: fdcFourthCustom.value
-    };
+    }
 
     // Get the appropriate custom object based on column number
-    const customObj = customObjects[columnNum];
+    const customObj = customObjects[columnNum]
 
     // Return formatted date range if the custom object exists
     if (customObj) {
-      return `${moment(customObj.trendStart).format('MM/DD/YYYY')} - ${moment(customObj.trendEnd).format('MM/DD/YYYY')}`;
+      return `${moment(customObj.trendStart).format('MM/DD/YYYY')} - ${moment(customObj.trendEnd).format('MM/DD/YYYY')}`
     }
   }
 
   // Return trend text for non-custom dropdown values
-  return dropdownValues.value.find(x => x.id === id).trendText;
-};
+  return dropdownValues.value.find(x => x.id === id).trendText
+}
 
 const exportDrilldownCsv = () => {
   let csv = ''
@@ -2436,7 +2472,7 @@ const exportDrilldownCsv = () => {
     csv += `\n`
   })
 
-  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
   saveAs(blob, `${funnelDrilldownTitle.value}.csv`)
 }
 const itemRowBackground = (item) => {
@@ -2446,13 +2482,13 @@ const fdcRowBackground = (item) => {
   return (item.display_order % 2) ? 'shaded-row' : ''
 }
 
-const fdcExpandMilestone = (index)=> {
+const fdcExpandMilestone = (index) => {
   milestonesSwitching.value = true
   fdcMilestonesExpanded.value[fdcExpandableMilestones.value.indexOf(index)] = true
   milestonesSwitching.value = false
 
 }
-const fdcHideMilestone = (index)=> {
+const fdcHideMilestone = (index) => {
   milestonesSwitching.value = true
   fdcMilestonesExpanded.value[fdcExpandableMilestones.value.indexOf(index)] = false
   milestonesSwitching.value = false
@@ -2470,19 +2506,17 @@ const resetScrollBarPosition = () => {
 /* FUNNEL-RELATED CODE START */
 
 const filteredRepDataMaster = computed(() => {
-  if(!hideInactiveReps.value) {
+  if (!hideInactiveReps.value) {
     return repDataMaster.value
-  }
-  else{
+  } else {
     return repDataMaster.value.filter(dv => dv.active)
   }
 })
 
 const filteredApptsRepDataMaster = computed(() => {
-  if(!hideInactiveApptsReps.value) {
+  if (!hideInactiveApptsReps.value) {
     return repDataMasterAppts.value
-  }
-  else{
+  } else {
     return repDataMasterAppts.value.filter(dv => dv.active)
   }
 })
@@ -2528,53 +2562,49 @@ const pipelineLoad = async (column) => {
   setterPipelineLoading.value = true
   appStore.loading = true
   let dateSelected = null
-  if(column === 1){
+  if (column === 1) {
     dateSelected = getDropdownById(fdcFirstDateRange.value)
-    if(dateSelected.periodList != null){
-      dateSelected.startDate = dateSelected.periodList[firstPeriod.value].startDate;
-      dateSelected.endDate = dateSelected.periodList[firstPeriod.value].endDate;
-      dateSelected.trendStart = dateSelected.periodList[firstPeriod.value].trendStart;
-      dateSelected.trendEnd = dateSelected.periodList[firstPeriod.value].trendEnd;
-    }
-    else if(dateSelected.name === 'CUSTOM'){
-      dateSelected = fdcFirstCustom.value;
+    if (dateSelected.periodList != null) {
+      dateSelected.startDate = dateSelected.periodList[firstPeriod.value].startDate
+      dateSelected.endDate = dateSelected.periodList[firstPeriod.value].endDate
+      dateSelected.trendStart = dateSelected.periodList[firstPeriod.value].trendStart
+      dateSelected.trendEnd = dateSelected.periodList[firstPeriod.value].trendEnd
+    } else if (dateSelected.name === 'CUSTOM') {
+      dateSelected = fdcFirstCustom.value
     }
   }
-  if(column === 2){
+  if (column === 2) {
     dateSelected = getDropdownById(fdcSecondDateRange.value)
-    if(dateSelected.periodList != null){
-      dateSelected.startDate = dateSelected.periodList[secondPeriod.value].startDate;
-      dateSelected.endDate = dateSelected.periodList[secondPeriod.value].endDate;
-      dateSelected.trendStart = dateSelected.periodList[secondPeriod.value].trendStart;
-      dateSelected.trendEnd = dateSelected.periodList[secondPeriod.value].trendEnd;
-    }
-    else if(dateSelected.name === 'CUSTOM'){
-      dateSelected = fdcSecondCustom.value;
+    if (dateSelected.periodList != null) {
+      dateSelected.startDate = dateSelected.periodList[secondPeriod.value].startDate
+      dateSelected.endDate = dateSelected.periodList[secondPeriod.value].endDate
+      dateSelected.trendStart = dateSelected.periodList[secondPeriod.value].trendStart
+      dateSelected.trendEnd = dateSelected.periodList[secondPeriod.value].trendEnd
+    } else if (dateSelected.name === 'CUSTOM') {
+      dateSelected = fdcSecondCustom.value
     }
   }
 
-  if(column === 3){
+  if (column === 3) {
     dateSelected = getDropdownById(fdcThirdDateRange.value)
-    if(dateSelected.periodList != null){
-      dateSelected.startDate = dateSelected.periodList[thirdPeriod.value].startDate;
-      dateSelected.endDate = dateSelected.periodList[thirdPeriod.value].endDate;
-      dateSelected.trendStart = dateSelected.periodList[thirdPeriod.value].trendStart;
-      dateSelected.trendEnd = dateSelected.periodList[thirdPeriod.value].trendEnd;
-    }
-    else if(dateSelected.name === 'CUSTOM'){
-      dateSelected = fdcThirdCustom.value;
+    if (dateSelected.periodList != null) {
+      dateSelected.startDate = dateSelected.periodList[thirdPeriod.value].startDate
+      dateSelected.endDate = dateSelected.periodList[thirdPeriod.value].endDate
+      dateSelected.trendStart = dateSelected.periodList[thirdPeriod.value].trendStart
+      dateSelected.trendEnd = dateSelected.periodList[thirdPeriod.value].trendEnd
+    } else if (dateSelected.name === 'CUSTOM') {
+      dateSelected = fdcThirdCustom.value
     }
   }
-  if(column === 4){
+  if (column === 4) {
     dateSelected = getDropdownById(fdcFourthDateRange.value)
-    if(dateSelected.periodList != null){
-      dateSelected.startDate = dateSelected.periodList[fourthPeriod.value].startDate;
-      dateSelected.endDate = dateSelected.periodList[fourthPeriod.value].endDate;
-      dateSelected.trendStart = dateSelected.periodList[fourthPeriod.value].trendStart;
-      dateSelected.trendEnd = dateSelected.periodList[fourthPeriod.value].trendEnd;
-    }
-    else if(dateSelected.name === 'CUSTOM'){
-      dateSelected = fdcFourthCustom.value;
+    if (dateSelected.periodList != null) {
+      dateSelected.startDate = dateSelected.periodList[fourthPeriod.value].startDate
+      dateSelected.endDate = dateSelected.periodList[fourthPeriod.value].endDate
+      dateSelected.trendStart = dateSelected.periodList[fourthPeriod.value].trendStart
+      dateSelected.trendEnd = dateSelected.periodList[fourthPeriod.value].trendEnd
+    } else if (dateSelected.name === 'CUSTOM') {
+      dateSelected = fdcFourthCustom.value
     }
   }
   let orgs = []
@@ -2588,10 +2618,9 @@ const pipelineLoad = async (column) => {
   officeModel.value.forEach(org => orgs.push(org.org_id))
 
   selectedRepData.value = []
-  if(viewAllFilteredReps.value && repModel.value.length === 0){
+  if (viewAllFilteredReps.value && repModel.value.length === 0) {
     filteredRepData.value.forEach(rep => selectedRepData.value.push(rep.user_position_id))
-  }
-  else {
+  } else {
     repModel.value.forEach(rep => selectedRepData.value.push(rep.user_position_id))
   }
 
@@ -2607,7 +2636,7 @@ const pipelineLoad = async (column) => {
       trendEnd: dateSelected.trendEnd,
       hideInactive: hideInactiveReps.value
     }
-    await postRequest('/setterDashboard/funnel', requestBody, 'blueraven').then(({data}) => {
+    await postRequest('/setterDashboard/funnel', requestBody, 'blueraven').then(({ data }) => {
       data.forEach(row => {
         // TODAY column
         row.countTodayState = row.today_day_count < 0 ? 'red' : 'green'
@@ -2633,16 +2662,13 @@ const pipelineLoad = async (column) => {
       })
 
 
-      if(column === 1){
+      if (column === 1) {
         funnelStats.value = data
-      }
-      else if(column === 2){
+      } else if (column === 2) {
         fdcColumn2Values.value = data
-      }
-      else if(column === 3){
+      } else if (column === 3) {
         fdcColumn3Values.value = data
-      }
-      else if(column === 4){
+      } else if (column === 4) {
         fdcColumn4Values.value = data
       }
       setterPipelineLoading.value = false
@@ -2670,19 +2696,18 @@ const upcomingAppointmentsLoad = async () => {
   modelOverride.value = false
 
   selectedRepDataAppts.value = []
-  if(viewAllFilteredRepsAppts.value && repModelAppts.value.length === 0){
+  if (viewAllFilteredRepsAppts.value && repModelAppts.value.length === 0) {
     repDataAppts.value.forEach(rep => selectedRepDataAppts.value.push(rep.user_position_id))
-  }
-  else {
+  } else {
     repModelAppts.value.forEach(rep => selectedRepDataAppts.value.push(rep.user_position_id))
   }
 
   try {
     const requestBody = {
       users: selectedRepDataAppts.value,
-      orgs: orgs,
+      orgs: orgs
     }
-    await postRequest('/setterDashboard/upcomingAppointments', requestBody, 'blueraven').then(({data}) => {
+    await postRequest('/setterDashboard/upcomingAppointments', requestBody, 'blueraven').then(({ data }) => {
       upcomingAppointmentsData.value = data
       upcomingAppointmentsDataLoaded.value = true
       setterPipelineLoading.value = false
@@ -2727,10 +2752,10 @@ const futureAppointmentsLoad = async (column) => {
       if (repDataSelectAll.value && repDataMaster.value?.length > maxRepLimit.value) {
         modelOverride.value = true
         repModel.value = [
-          {user_id: null, user_position_id: null, name: 'All Filtered Reps', active: true}
+          { user_id: null, user_position_id: null, name: 'All Filtered Reps', active: true }
         ]
         repData.value = [
-          {user_id: null, user_position_id: null, name: 'All Filtered Reps', active: true}
+          { user_id: null, user_position_id: null, name: 'All Filtered Reps', active: true }
         ]
       }
     }
@@ -2755,7 +2780,7 @@ const futureAppointmentsLoad = async (column) => {
       trendEnd: dateSelected.trendEnd,
       hideInactive: hideInactiveReps.value
     }
-    await postRequest('/setterDashboard/funnel', requestBody, 'blueraven').then(({data}) => {
+    await postRequest('/setterDashboard/funnel', requestBody, 'blueraven').then(({ data }) => {
       data.forEach(row => {
         // TODAY column
         row.countTodayState = row.today_day_count < 0 ? 'red' : 'green'
@@ -2781,16 +2806,13 @@ const futureAppointmentsLoad = async (column) => {
       })
 
 
-      if(column === 1){
+      if (column === 1) {
         funnelStats.value = data
-      }
-      else if(column === 2){
+      } else if (column === 2) {
         fdcColumn2Values.value = data
-      }
-      else if(column === 3){
+      } else if (column === 3) {
         fdcColumn3Values.value = data
-      }
-      else if(column === 4){
+      } else if (column === 4) {
         fdcColumn4Values.value = data
       }
       setterPipelineLoading.value = false
@@ -2826,7 +2848,7 @@ const getPercentHover = (percent, dayNum) => {
   return '% ' + state + ' than ' + previousTime
 }
 
-const loadFunnels = async() => {
+const loadFunnels = async () => {
 
   if (apptsToFdcPipelineData.value?.length === 0) {
     if (isSetter.value || isSetterMgr.value || isSetterRegional.value) {
@@ -2847,7 +2869,7 @@ const loadFunnels = async() => {
   }
 }
 
-const funnelAllReps = async() => {
+const funnelAllReps = async () => {
   viewAllFilteredReps.value = true
   pipelineLoad(1)
   if (fdcSecondDateRange.value) {
@@ -2861,89 +2883,88 @@ const funnelAllReps = async() => {
   }
 }
 
-const funnelAllRepsUpcomingAppointments = async() => {
+const funnelAllRepsUpcomingAppointments = async () => {
   viewAllFilteredRepsAppts.value = true
   upcomingAppointmentsLoad()
 }
 
-const applyCustomDates = async()=> {
-  if(customTable.value === 'apptsCreated') {
+const applyCustomDates = async () => {
+  if (customTable.value === 'apptsCreated') {
     if (lastColumnSelected.value === 1) {
-      firstCustom.value.startDate = moment(customDate.value.startDate);
-      firstCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days');
-      firstCustom.value.trendEnd = firstCustom.value.startDate.clone().subtract(1, 'days');
-      firstCustom.value.trendStart = firstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
-      getDropdownById(firstDateRange.value).trendText = moment(firstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(firstCustom.value.trendEnd).format('MM/DD/YYYY');
-      firstCustom.value.name = moment(firstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(firstCustom.value.endDate).format('MM/DD/YY');
+      firstCustom.value.startDate = moment(customDate.value.startDate)
+      firstCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days')
+      firstCustom.value.trendEnd = firstCustom.value.startDate.clone().subtract(1, 'days')
+      firstCustom.value.trendStart = firstCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
+      getDropdownById(firstDateRange.value).trendText = moment(firstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(firstCustom.value.trendEnd).format('MM/DD/YYYY')
+      firstCustom.value.name = moment(firstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(firstCustom.value.endDate).format('MM/DD/YY')
     }
     if (lastColumnSelected.value === 2) {
-      secondCustom.value.startDate = moment(customDate.value.startDate);
-      secondCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = secondCustom.value.endDate.diff(secondCustom.value.startDate, 'days');
-      secondCustom.value.trendEnd = secondCustom.value.startDate.clone().subtract(1, 'days');
-      secondCustom.value.trendStart = secondCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
-      getDropdownById(secondDateRange.value).trendText = moment(secondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(secondCustom.value.trendEnd).format('MM/DD/YYYY');
-      secondCustom.value.name = moment(secondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(secondCustom.value.endDate).format('MM/DD/YY');
+      secondCustom.value.startDate = moment(customDate.value.startDate)
+      secondCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = secondCustom.value.endDate.diff(secondCustom.value.startDate, 'days')
+      secondCustom.value.trendEnd = secondCustom.value.startDate.clone().subtract(1, 'days')
+      secondCustom.value.trendStart = secondCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
+      getDropdownById(secondDateRange.value).trendText = moment(secondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(secondCustom.value.trendEnd).format('MM/DD/YYYY')
+      secondCustom.value.name = moment(secondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(secondCustom.value.endDate).format('MM/DD/YY')
     }
     if (lastColumnSelected.value === 3) {
-      thirdCustom.value.startDate = moment(customDate.value.startDate);
-      thirdCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = thirdCustom.value.endDate.diff(thirdCustom.value.startDate, 'days');
-      thirdCustom.value.trendEnd = thirdCustom.value.startDate.clone().subtract(1, 'days');
-      thirdCustom.value.trendStart = thirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
-      getDropdownById(thirdDateRange.value).trendText = moment(thirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(thirdCustom.value.trendEnd).format('MM/DD/YYYY');
-      thirdCustom.value.name = moment(thirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(thirdCustom.value.endDate).format('MM/DD/YY');
+      thirdCustom.value.startDate = moment(customDate.value.startDate)
+      thirdCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = thirdCustom.value.endDate.diff(thirdCustom.value.startDate, 'days')
+      thirdCustom.value.trendEnd = thirdCustom.value.startDate.clone().subtract(1, 'days')
+      thirdCustom.value.trendStart = thirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
+      getDropdownById(thirdDateRange.value).trendText = moment(thirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(thirdCustom.value.trendEnd).format('MM/DD/YYYY')
+      thirdCustom.value.name = moment(thirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(thirdCustom.value.endDate).format('MM/DD/YY')
     }
     if (lastColumnSelected.value === 4) {
-      fourthCustom.value.startDate = moment(customDate.value.startDate);
-      fourthCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = fourthCustom.value.endDate.diff(fourthCustom.value.startDate, 'days');
-      fourthCustom.value.trendEnd = fourthCustom.value.startDate.clone().subtract(1, 'days');
-      fourthCustom.value.trendStart = fourthCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
-      getDropdownById(fourthDateRange.value).trendText = moment(fourthCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fourthCustom.value.trendEnd).format('MM/DD/YYYY');
-      fourthCustom.value.name = moment(fourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fourthCustom.value.endDate).format('MM/DD/YY');
+      fourthCustom.value.startDate = moment(customDate.value.startDate)
+      fourthCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = fourthCustom.value.endDate.diff(fourthCustom.value.startDate, 'days')
+      fourthCustom.value.trendEnd = fourthCustom.value.startDate.clone().subtract(1, 'days')
+      fourthCustom.value.trendStart = fourthCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
+      getDropdownById(fourthDateRange.value).trendText = moment(fourthCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fourthCustom.value.trendEnd).format('MM/DD/YYYY')
+      fourthCustom.value.name = moment(fourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fourthCustom.value.endDate).format('MM/DD/YY')
     }
 
     await upcomingAppointmentsLoad(lastColumnSelected.value)
-  }
-  else{
+  } else {
     if (lastColumnSelected.value === 1) {
-      fdcFirstCustom.value.startDate = moment(customDate.value.startDate);
-      fdcFirstCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = fdcFirstCustom.value.endDate.diff(fdcFirstCustom.value.startDate, 'days');
-      fdcFirstCustom.value.trendEnd = fdcFirstCustom.value.startDate.clone().subtract(1, 'days');
-      fdcFirstCustom.value.trendStart = fdcFirstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+      fdcFirstCustom.value.startDate = moment(customDate.value.startDate)
+      fdcFirstCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = fdcFirstCustom.value.endDate.diff(fdcFirstCustom.value.startDate, 'days')
+      fdcFirstCustom.value.trendEnd = fdcFirstCustom.value.startDate.clone().subtract(1, 'days')
+      fdcFirstCustom.value.trendStart = fdcFirstCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
 
-      getDropdownById(fdcFirstDateRange.value).trendText = moment(fdcFirstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFirstCustom.value.trendEnd).format('MM/DD/YYYY');
-      fdcFirstCustom.value.name = moment(fdcFirstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFirstCustom.value.endDate).format('MM/DD/YY');
+      getDropdownById(fdcFirstDateRange.value).trendText = moment(fdcFirstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFirstCustom.value.trendEnd).format('MM/DD/YYYY')
+      fdcFirstCustom.value.name = moment(fdcFirstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFirstCustom.value.endDate).format('MM/DD/YY')
     }
     if (lastColumnSelected.value === 2) {
-      fdcSecondCustom.value.startDate = moment(customDate.value.startDate);
-      fdcSecondCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = fdcSecondCustom.value.endDate.diff(fdcSecondCustom.value.startDate, 'days');
-      fdcSecondCustom.value.trendEnd = fdcSecondCustom.value.startDate.clone().subtract(1, 'days');
-      fdcSecondCustom.value.trendStart = fdcSecondCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
-      getDropdownById(fdcSecondDateRange.value).trendText = moment(fdcSecondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcSecondCustom.value.trendEnd).format('MM/DD/YYYY');
-      fdcSecondCustom.value.name = moment(fdcSecondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcSecondCustom.value.endDate).format('MM/DD/YY');
+      fdcSecondCustom.value.startDate = moment(customDate.value.startDate)
+      fdcSecondCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = fdcSecondCustom.value.endDate.diff(fdcSecondCustom.value.startDate, 'days')
+      fdcSecondCustom.value.trendEnd = fdcSecondCustom.value.startDate.clone().subtract(1, 'days')
+      fdcSecondCustom.value.trendStart = fdcSecondCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
+      getDropdownById(fdcSecondDateRange.value).trendText = moment(fdcSecondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcSecondCustom.value.trendEnd).format('MM/DD/YYYY')
+      fdcSecondCustom.value.name = moment(fdcSecondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcSecondCustom.value.endDate).format('MM/DD/YY')
     }
     if (lastColumnSelected.value === 3) {
-      fdcThirdCustom.value.startDate = moment(customDate.value.startDate);
-      fdcThirdCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = fdcThirdCustom.value.endDate.diff(fdcThirdCustom.value.startDate, 'days');
-      fdcThirdCustom.value.trendEnd = fdcThirdCustom.value.startDate.clone().subtract(1, 'days');
-      fdcThirdCustom.value.trendStart = fdcThirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
-      getDropdownById(fdcThirdDateRange.value).trendText = moment(fdcThirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcThirdCustom.value.trendEnd).format('MM/DD/YYYY');
-      fdcThirdCustom.value.name = moment(fdcThirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcThirdCustom.value.endDate).format('MM/DD/YY');
+      fdcThirdCustom.value.startDate = moment(customDate.value.startDate)
+      fdcThirdCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = fdcThirdCustom.value.endDate.diff(fdcThirdCustom.value.startDate, 'days')
+      fdcThirdCustom.value.trendEnd = fdcThirdCustom.value.startDate.clone().subtract(1, 'days')
+      fdcThirdCustom.value.trendStart = fdcThirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
+      getDropdownById(fdcThirdDateRange.value).trendText = moment(fdcThirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcThirdCustom.value.trendEnd).format('MM/DD/YYYY')
+      fdcThirdCustom.value.name = moment(fdcThirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcThirdCustom.value.endDate).format('MM/DD/YY')
     }
     if (lastColumnSelected.value === 4) {
-      fdcFourthCustom.value.startDate = moment(customDate.value.startDate);
-      fdcFourthCustom.value.endDate = moment(customDate.value.endDate);
-      let dateDiff = fdcFourthCustom.value.endDate.diff(fdcFourthCustom.value.startDate, 'days');
-      fdcFourthCustom.value.trendEnd = fdcFourthCustom.value.startDate.clone().subtract(1, 'days');
-      fdcFourthCustom.value.trendStart = fdcFourthCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
-      getDropdownById(fdcFourthDateRange.value).trendText = moment(fdcFourthCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFourthCustom.value.trendEnd).format('MM/DD/YYYY');
-      fdcFourthCustom.value.name = moment(fdcFourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFourthCustom.value.endDate).format('MM/DD/YY');
+      fdcFourthCustom.value.startDate = moment(customDate.value.startDate)
+      fdcFourthCustom.value.endDate = moment(customDate.value.endDate)
+      let dateDiff = fdcFourthCustom.value.endDate.diff(fdcFourthCustom.value.startDate, 'days')
+      fdcFourthCustom.value.trendEnd = fdcFourthCustom.value.startDate.clone().subtract(1, 'days')
+      fdcFourthCustom.value.trendStart = fdcFourthCustom.value.trendEnd.clone().subtract(dateDiff, 'days')
+      getDropdownById(fdcFourthDateRange.value).trendText = moment(fdcFourthCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(fdcFourthCustom.value.trendEnd).format('MM/DD/YYYY')
+      fdcFourthCustom.value.name = moment(fdcFourthCustom.value.startDate).format('MM/DD/YY') + '-' + moment(fdcFourthCustom.value.endDate).format('MM/DD/YY')
     }
 
     await pipelineLoad(lastColumnSelected.value)
@@ -2958,26 +2979,26 @@ const getPercentage = (numerator, denominator) => {
   }
 }
 
-const areaLoad = async(preSelectLists) => {
-  if(repValuesChanged.value || initialPageLoad.value) {
+const areaLoad = async (preSelectLists) => {
+  if (repValuesChanged.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
     await getSetterAreas(currentUserId.value, false).then(res => {
       if (res?.length > 0) {
         areaData.value = res
-        if(initialPageLoad.value){
+        if (initialPageLoad.value) {
           areaDataAppts.value = cloneDeep(areaData.value)
         }
       }
 
       if (preSelectLists && (isSetterMgr.value || isSetterRegional.value)) {
         areaModel.value = areaData.value.filter(od => od.active)
-        if(initialPageLoad.value){
+        if (initialPageLoad.value) {
           areaModelAppts.value = areaData.value.filter(od => od.active)
         }
       } else if (preSelectLists) {
         areaModel.value = cloneDeep(areaData.value)
-        if(initialPageLoad.value){
+        if (initialPageLoad.value) {
           areaModelAppts.value = cloneDeep(areaData.value)
         }
       }
@@ -2997,8 +3018,8 @@ const areaLoad = async(preSelectLists) => {
     apptsToFdcPipelineLoaded.value = true
   }
 }
-const areaLoadAppts = async(preSelectLists) => {
-  if(repValuesChangedAppts.value || initialPageLoad.value) {
+const areaLoadAppts = async (preSelectLists) => {
+  if (repValuesChangedAppts.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
     await getSetterAreas(currentUserId.value, false).then(res => {
@@ -3028,11 +3049,11 @@ const areaLoadAppts = async(preSelectLists) => {
   }
 }
 
-const regionLoad = async(preSelectLists) => {
-  if(repValuesChanged.value || initialPageLoad.value) {
+const regionLoad = async (preSelectLists) => {
+  if (repValuesChanged.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
-    let areas = areaModel.value.map(function (area) {
+    let areas = areaModel.value.map(function(area) {
       return {
         area_id: area.org_id
       }
@@ -3045,18 +3066,18 @@ const regionLoad = async(preSelectLists) => {
 
     await getSetterRegions(currentUserId.value, JSON.stringify(areas), false).then(res => {
       regionData.value = res
-      if(initialPageLoad.value){
+      if (initialPageLoad.value) {
         regionDataAppts.value = cloneDeep(regionData.value)
       }
 
       if (preSelectLists && (isSetterMgr.value || isSetterRegional.value)) {
         regionModel.value = regionData.value.filter(od => od.active)
-        if(initialPageLoad.value){
+        if (initialPageLoad.value) {
           regionModelAppts.value = regionData.value.filter(od => od.active)
         }
       } else if (preSelectLists) {
         regionModel.value = cloneDeep(regionData.value)
-        if(initialPageLoad.value){
+        if (initialPageLoad.value) {
           regionModelAppts.value = cloneDeep(regionData.value)
         }
 
@@ -3071,11 +3092,11 @@ const regionLoad = async(preSelectLists) => {
   }
 }
 
-const regionLoadAppts = async(preSelectLists) => {
-  if(repValuesChangedAppts.value || initialPageLoad.value) {
+const regionLoadAppts = async (preSelectLists) => {
+  if (repValuesChangedAppts.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
-    let areas = areaModelAppts.value.map(function (area) {
+    let areas = areaModelAppts.value.map(function(area) {
       return {
         area_id: area.org_id
       }
@@ -3105,16 +3126,16 @@ const regionLoadAppts = async(preSelectLists) => {
   }
 }
 
-const districtLoad = async(preSelectLists) => {
+const districtLoad = async (preSelectLists) => {
   if (!currentUserId.value) return
 
-  let areas = areaModel.value.map(function (area) {
+  let areas = areaModel.value.map(function(area) {
     return {
       area_id: area.org_id
     }
   })
 
-  let regions = regionModel.value.map(function (region) {
+  let regions = regionModel.value.map(function(region) {
     return {
       region_id: region.org_id
     }
@@ -3123,19 +3144,19 @@ const districtLoad = async(preSelectLists) => {
   await getSetterDistricts(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), false).then(res => {
     if (res?.length > 0) {
       districtData.value = res
-      if(initialPageLoad.value){
+      if (initialPageLoad.value) {
         districtDataAppts.value = cloneDeep(districtData.value)
       }
     }
 
     if (preSelectLists && (isSetterMgr.value || isSetterRegional.value)) {
       districtModel.value = districtData.value.filter(od => od.active)
-      if(initialPageLoad.value){
+      if (initialPageLoad.value) {
         districtModelAppts.value = districtData.value.filter(od => od.active)
       }
     } else if (preSelectLists) {
       districtModel.value = cloneDeep(districtData.value)
-      if(initialPageLoad.value){
+      if (initialPageLoad.value) {
         districtModelAppts.value = cloneDeep(districtData.value)
       }
     }
@@ -3153,16 +3174,16 @@ const districtLoad = async(preSelectLists) => {
   pipelineLoaded.value = true
 }
 
-const districtLoadAppts = async(preSelectLists) => {
+const districtLoadAppts = async (preSelectLists) => {
   if (!currentUserId.value) return
 
-  let areas = areaModelAppts.value.map(function (area) {
+  let areas = areaModelAppts.value.map(function(area) {
     return {
       area_id: area.org_id
     }
   })
 
-  let regions = regionModelAppts.value.map(function (region) {
+  let regions = regionModelAppts.value.map(function(region) {
     return {
       region_id: region.org_id
     }
@@ -3192,24 +3213,24 @@ const districtLoadAppts = async(preSelectLists) => {
   pipelineLoaded.value = true
 }
 
-const officeLoad = async(preSelectLists) => {
+const officeLoad = async (preSelectLists) => {
   if (repValuesChanged.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
 
-    let areas = areaModel.value.map(function (area) {
+    let areas = areaModel.value.map(function(area) {
       return {
         area_id: area.org_id
       }
     })
 
-    let regions = regionModel.value.map(function (region) {
+    let regions = regionModel.value.map(function(region) {
       return {
         region_id: region.org_id
       }
     })
 
-    let districts = districtModel.value.map(function (district) {
+    let districts = districtModel.value.map(function(district) {
       return {
         district_id: district.org_id
       }
@@ -3219,17 +3240,17 @@ const officeLoad = async(preSelectLists) => {
     apptsToFdcPipelineData.value = []
     await getSetterOffices(currentUserId.value, JSON.stringify(areas), JSON.stringify(regions), JSON.stringify(districts), false).then(res => {
       officeData.value = res
-      if(initialPageLoad.value){
+      if (initialPageLoad.value) {
         officeDataAppts.value = cloneDeep(officeData.value)
       }
       if (preSelectLists && (isSetterMgr.value || isSetterRegional.value)) {
         officeModel.value = officeData.value.filter(od => od.active)
-        if(initialPageLoad.value){
+        if (initialPageLoad.value) {
           officeModelAppts.value = officeData.value.filter(od => od.active)
         }
       } else if (preSelectLists) {
         officeModel.value = cloneDeep(officeData.value)
-        if(initialPageLoad.value){
+        if (initialPageLoad.value) {
           officeModelAppts.value = cloneDeep(officeData.value)
         }
       }
@@ -3241,27 +3262,27 @@ const officeLoad = async(preSelectLists) => {
 
     repModel.value = []
   }
-  repValuesChanged.value = false;
+  repValuesChanged.value = false
 }
 
-const officeLoadAppts = async(preSelectLists) => {
+const officeLoadAppts = async (preSelectLists) => {
   if (repValuesChangedAppts.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
 
-    let areas = areaModelAppts.value.map(function (area) {
+    let areas = areaModelAppts.value.map(function(area) {
       return {
         area_id: area.org_id
       }
     })
 
-    let regions = regionModelAppts.value.map(function (region) {
+    let regions = regionModelAppts.value.map(function(region) {
       return {
         region_id: region.org_id
       }
     })
 
-    let districts = districtModelAppts.value.map(function (district) {
+    let districts = districtModelAppts.value.map(function(district) {
       return {
         district_id: district.org_id
       }
@@ -3285,12 +3306,12 @@ const officeLoadAppts = async(preSelectLists) => {
 
     repModelAppts.value = []
   }
-  repValuesChangedAppts.value = false;
+  repValuesChangedAppts.value = false
 }
 
-const repLoad = async(preSelectLists) => {
+const repLoad = async (preSelectLists) => {
   if (repValuesChanged.value || initialPageLoad.value) {
-    if(!initialPageLoad.value){
+    if (!initialPageLoad.value) {
       appStore.loading = true
     }
     repModel.value = []
@@ -3299,25 +3320,25 @@ const repLoad = async(preSelectLists) => {
 
     if (!currentUserId.value) return
 
-    let areas = areaModel.value.map(function (area) {
+    let areas = areaModel.value.map(function(area) {
       return {
         area_id: area.org_id
       }
     })
 
-    let regions = regionModel.value.map(function (region) {
+    let regions = regionModel.value.map(function(region) {
       return {
         region_id: region.org_id
       }
     })
 
-    let districts = districtModel.value.map(function (district) {
+    let districts = districtModel.value.map(function(district) {
       return {
         district_id: district.org_id
       }
     })
 
-    let offices = officeModel.value.map(function (office) {
+    let offices = officeModel.value.map(function(office) {
       return {
         office_id: office.org_id
       }
@@ -3329,7 +3350,7 @@ const repLoad = async(preSelectLists) => {
 
       repDataMaster.value = cloneDeep(res)
 
-      if(initialPageLoad){
+      if (initialPageLoad) {
         repDataAppts.value = res
 
         repDataMasterAppts.value = cloneDeep(res)
@@ -3341,14 +3362,14 @@ const repLoad = async(preSelectLists) => {
     initialPageLoad.value = false
     dropdownValuesLoading.value = false
     repValuesChanged.value = false
-    if(!initialPageLoad.value){
+    if (!initialPageLoad.value) {
       appStore.loading = false
     }
   }
 }
-const repLoadAppts = async(preSelectLists) => {
+const repLoadAppts = async (preSelectLists) => {
   if (repValuesChangedAppts.value || initialPageLoad.value) {
-    if(!initialPageLoad.value){
+    if (!initialPageLoad.value) {
       appStore.loading = true
     }
     repModelAppts.value = []
@@ -3356,25 +3377,25 @@ const repLoadAppts = async(preSelectLists) => {
 
     if (!currentUserId.value) return
 
-    let areas = areaModelAppts.value.map(function (area) {
+    let areas = areaModelAppts.value.map(function(area) {
       return {
         area_id: area.org_id
       }
     })
 
-    let regions = regionModelAppts.value.map(function (region) {
+    let regions = regionModelAppts.value.map(function(region) {
       return {
         region_id: region.org_id
       }
     })
 
-    let districts = districtModelAppts.value.map(function (district) {
+    let districts = districtModelAppts.value.map(function(district) {
       return {
         district_id: district.org_id
       }
     })
 
-    let offices = officeModelAppts.value.map(function (office) {
+    let offices = officeModelAppts.value.map(function(office) {
       return {
         office_id: office.org_id
       }
@@ -3399,7 +3420,7 @@ const repLoadAppts = async(preSelectLists) => {
     initialPageLoad.value = false
     dropdownValuesLoading.value = false
     repValuesChangedAppts.value = false
-    if(!initialPageLoad.value){
+    if (!initialPageLoad.value) {
       appStore.loading = false
     }
   }
@@ -3489,7 +3510,7 @@ const yearToDate = (pipelineName) => {
   }
 }
 const funnelDrilldown = async (funnel, dateRange, funnelName, index) => {
-  if(funnel.name === 'Pitch Percentage'){
+  if (funnel.name === 'Pitch Percentage') {
     return
   }
   funnelId.value = funnel.id
@@ -3503,22 +3524,22 @@ const funnelDrilldown = async (funnel, dateRange, funnelName, index) => {
     2: fdcSecondCustom.value,
     3: fdcThirdCustom.value,
     4: fdcFourthCustom.value
-  };
+  }
 
-  let dateRangeFinal = dateRange.name === "CUSTOM" ? {
-      ...customValues[index],
-      startDate: customValues[index].startDate.format('YYYY-MM-DD'),
-      endDate: customValues[index].endDate.format('YYYY-MM-DD'),
-      trendEnd: customValues[index].trendEnd.format('YYYY-MM-DD'),
-      trendStart: customValues[index].trendStart.format('YYYY-MM-DD'),
+  let dateRangeFinal = dateRange.name === 'CUSTOM' ? {
+    ...customValues[index],
+    startDate: customValues[index].startDate.format('YYYY-MM-DD'),
+    endDate: customValues[index].endDate.format('YYYY-MM-DD'),
+    trendEnd: customValues[index].trendEnd.format('YYYY-MM-DD'),
+    trendStart: customValues[index].trendStart.format('YYYY-MM-DD')
   } : dateRange
 
-  if (dateRangeFinal.name === "CUSTOM") {
+  if (dateRangeFinal.name === 'CUSTOM') {
     datesMatch = dateRangeFinal
       ? moment(dateRangeFinal.startDate).format('YYYY-MM-DD') === moment(dateRangeFinal.endDate).format('YYYY-MM-DD')
-      : false;
+      : false
   } else {
-    datesMatch = moment(dateRangeFinal.startDate).format('YYYY-MM-DD') === moment(dateRangeFinal.endDate).format('YYYY-MM-DD');
+    datesMatch = moment(dateRangeFinal.startDate).format('YYYY-MM-DD') === moment(dateRangeFinal.endDate).format('YYYY-MM-DD')
   }
 
   if (datesMatch) {
@@ -3538,7 +3559,7 @@ const funnelDrilldown = async (funnel, dateRange, funnelName, index) => {
 
   appStore.loading = true
   try {
-    await postRequest(`/setterDashboard/funnelDrilldown`, requestBody, 'blueraven').then(({data}) => {
+    await postRequest(`/setterDashboard/funnelDrilldown`, requestBody, 'blueraven').then(({ data }) => {
       funnelDrilldownData.value = data?.length > 0 ? data : []
 
       if (funnelDrilldownData.value?.length > 0) {
@@ -3569,17 +3590,17 @@ const funnelDrilldown = async (funnel, dateRange, funnelName, index) => {
 }
 
 const markMissingDrilldownData = () => {
-  funnelDrilldownData.value = funnelDrilldownData.value.map(function (line) {
+  funnelDrilldownData.value = funnelDrilldownData.value.map(function(line) {
     let newLine = {}
 
-    Object.keys(line).forEach(function (key) {
+    Object.keys(line).forEach(function(key) {
       newLine[key] = line[key]
       if (key === 'cash_down_payment') {
-        if (line.financier && line.financier.includes("Cash")) {
+        if (line.financier && line.financier.includes('Cash')) {
           newLine[key + '_class'] = line[key] == null ? 'missing' : ''
         }
       } else if (key === 'credit_decision_date') {
-        if (line.financier && !line.financier.includes("Cash")) {
+        if (line.financier && !line.financier.includes('Cash')) {
           newLine[key + '_class'] = line[key] == null ? 'missing' : ''
         }
       } else {
@@ -3635,7 +3656,7 @@ const toggleSelectAllLeadsCreatedSources = () => {
   })
 }
 
-const toggleSelectAllAreas = async() => {
+const toggleSelectAllAreas = async () => {
   if (selectAllAreas.value) {
     areaModel.value = []
     regionData.value = []
@@ -3656,7 +3677,7 @@ const toggleSelectAllAreas = async() => {
   repValuesChanged.value = false
 }
 
-const toggleSelectAllAreasAppts = async() => {
+const toggleSelectAllAreasAppts = async () => {
   if (selectAllAreasAppts.value) {
     areaModelAppts.value = []
     regionDataAppts.value = []
@@ -3678,7 +3699,7 @@ const toggleSelectAllAreasAppts = async() => {
   repValuesChangedAppts.value = false
 }
 
-const toggleSelectAllRegions = async() => {
+const toggleSelectAllRegions = async () => {
   if (selectAllRegions.value) {
     regionModel.value = []
     officeData.value = []
@@ -3696,7 +3717,7 @@ const toggleSelectAllRegions = async() => {
   repValuesChanged.value = false
 }
 
-const toggleSelectAllRegionsAppts = async() => {
+const toggleSelectAllRegionsAppts = async () => {
   if (selectAllRegionsAppts.value) {
     regionModelAppts.value = []
     officeDataAppts.value = []
@@ -3714,7 +3735,7 @@ const toggleSelectAllRegionsAppts = async() => {
   repValuesChangedAppts.value = false
 }
 
-const toggleSelectAllDistricts = async() => {
+const toggleSelectAllDistricts = async () => {
   if (selectAllDistricts.value) {
     districtModel.value = []
     officeData.value = []
@@ -3732,7 +3753,7 @@ const toggleSelectAllDistricts = async() => {
   repValuesChanged.value = false
 }
 
-const toggleSelectAllDistrictsAppts = async() => {
+const toggleSelectAllDistrictsAppts = async () => {
   if (selectAllDistrictsAppts.value) {
     districtModelAppts.value = []
     officeDataAppts.value = []
@@ -3750,7 +3771,7 @@ const toggleSelectAllDistrictsAppts = async() => {
   repValuesChangedAppts.value = false
 }
 
-const toggleSelectAllOffices = async() => {
+const toggleSelectAllOffices = async () => {
   if (selectAllOffices.value) {
     officeModel.value = []
     repData.value = []
@@ -3765,7 +3786,7 @@ const toggleSelectAllOffices = async() => {
   repValuesChanged.value = false
 }
 
-const toggleSelectAllOfficesAppts = async() => {
+const toggleSelectAllOfficesAppts = async () => {
   if (selectAllOfficesAppts.value) {
     officeModelAppts.value = []
     repDataAppts.value = []
@@ -3792,7 +3813,7 @@ const toggleSelectAllReps = () => {
         // -2 was updated to mean - select all reps in the selected orgs
         repLengthOverride.value = true
         repModel.value = [
-          {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
+          { user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true }
         ]
         doRepWatcher()
         repModel.value = cloneDeep(repData.value)
@@ -3815,7 +3836,7 @@ const toggleSelectAllRepsUpcomingAppointments = () => {
         // -2 was updated to mean - select all reps in the selected orgs
         repLengthOverrideUpcomingAppointments.value = true
         repModelAppts.value = [
-          {user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true}
+          { user_id: -2, user_position_id: -2, name: 'All Filtered Reps', active: true }
         ]
         doRepWatcher()
         repModelAppts.value = cloneDeep(repDataAppts.value)
@@ -3830,8 +3851,7 @@ const toggleSelectAppointmentTypes = () => {
   vueInstance.$nextTick(() => {
     if (appointmentTypesSelectAll.value) {
       appointmentTypesModel.value = cloneDeep(appointmentTypes.value)
-    }
-    else{
+    } else {
       appointmentTypesModel.value = []
     }
   })
@@ -3845,112 +3865,131 @@ const closeFunnelDrilldownDialog = () => {
 </script>
 
 <style lang="scss" scoped>
-#all-reps-btn{
+#all-reps-btn {
   text-transform: none;
-  font-size: 0.75rem!important;
-  margin-right: 8px!important;
+  font-size: 0.75rem !important;
+  margin-right: 8px !important;
   letter-spacing: normal;
 }
 
-#closer-funnel-table{
-  overflow-x: auto!important;
+#closer-funnel-table {
+  overflow-x: auto !important;
 }
-.rep-filter-placeholder{
+
+.rep-filter-placeholder {
   font-family: lato;
 }
-.col-9{
+
+.col-9 {
   padding-left: 0px;
 }
-.rep-filters-text{
+
+.rep-filters-text {
   margin-right: 18px;
   color: var(--v-grey-darken1);
 }
-.reset-button-inactive{
+
+.reset-button-inactive {
   color: var(--v-grey-darken2);
   border-radius: 4px;
   border: 1px solid #9E9E9E;
   text-transform: none;
-  font-size: 0.75rem!important;
+  font-size: 0.75rem !important;
   margin: 0px 10px 10px 0;
-  height: 40px!important;
+  height: 40px !important;
   letter-spacing: normal;
 }
-.reset-button-active{
-  color: var(--v-primary-base)!important;
+
+.reset-button-active {
+  color: var(--v-primary-base) !important;
   border-radius: 4px;
   border: 1px solid var(--v-primary-base);
   text-transform: none;
-  font-size: 0.75rem!important;
+  font-size: 0.75rem !important;
   margin: 0px 10px 10px 0;
-  height: 40px!important;
+  height: 40px !important;
   letter-spacing: normal;
 }
-.hide-inactive-label{
+
+.hide-inactive-label {
   margin-right: 8px;
   margin-bottom: 10px;
   letter-spacing: normal;
 }
-.hide-inactive-switch-container{
+
+.hide-inactive-switch-container {
   width: 200px;
 }
-.hide-inactive-switch{
+
+.hide-inactive-switch {
   margin-right: 8px;
   margin-bottom: 6px;
   margin-top: -4px;
 }
-.checked_in_trend_hidden{
+
+.checked_in_trend_hidden {
   padding-left: 200px;
 }
-.checked_in_trend_visible{
+
+.checked_in_trend_visible {
   padding-left: 200px;
 }
-.other-filters-text{
+
+.other-filters-text {
   margin-right: 12px;
 }
-.hide-inactive-label{
+
+.hide-inactive-label {
   margin-right: 8px;
   margin-bottom: 10px;
 }
-.reps-container{
+
+.reps-container {
   padding-right: 6px;
 }
-.hide-inactive-switch{
+
+.hide-inactive-switch {
   margin-right: 8px;
   margin-bottom: 6px;
 }
 
-.table-gap{
+.table-gap {
   min-height: 16px;
 }
-.other-filters{
-  padding-left: 22px!important;
+
+.other-filters {
+  padding-left: 22px !important;
 }
-.disabled-export{
+
+.disabled-export {
   color: var(--v-grey-lighten1) !important;
 }
-.placeholder-option{
+
+.placeholder-option {
   color: var(--v-grey-darken2) !important;
 }
-.selected-option{
+
+.selected-option {
   color: var(--v-primary-base) !important;
 }
 
 
-.reset-button{
+.reset-button {
   color: var(--v-grey-darken2);
   border-radius: 4px;
   border: 1px solid #9E9E9E;
   text-transform: none;
 
 }
+
 .material-symbols-outlined {
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24
+  font-variation-settings: 'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
 }
-.checked_in_container{
+
+.checked_in_container {
   display: inline;
   background-color: var(--v-grey-lighten2);
   align-items: center;
@@ -3960,35 +3999,44 @@ const closeFunnelDrilldownDialog = () => {
   border-radius: 4px;
   margin-top: 8px;
 }
-.table-collapse-button{
+
+.table-collapse-button {
   margin: 16px;
   padding-right: 16px;
 }
-.positive-percentage{
+
+.positive-percentage {
   color: green;
 }
-.negative-percentage{
+
+.negative-percentage {
   padding-left: 4px;
   color: red;
 }
-.negative-trendline{
+
+.negative-trendline {
   color: red;
 }
-.positive-percentage{
+
+.positive-percentage {
   padding-left: 4px;
   color: green;
 }
-.positive-trendline{
+
+.positive-trendline {
   color: green;
 }
-.neutral-percentage{
+
+.neutral-percentage {
   padding-left: 4px;
   color: grey;
 }
-.neutral-trendline{
+
+.neutral-trendline {
   color: grey;
 }
-.dropdown-header{
+
+.dropdown-header {
   border: 1px solid var(--v-grey-lighten1);
   text-transform: unset !important;
   background-color: transparent !important;
@@ -4000,37 +4048,45 @@ const closeFunnelDrilldownDialog = () => {
   letter-spacing: normal;
 
 }
-.dashboard-menu-option{
+
+.dashboard-menu-option {
   display: flex;
   min-height: 48px;
-  align-items: center!important;
+  align-items: center !important;
   padding-right: 16px;
   padding-left: 16px;
   cursor: pointer;
 }
-.export-icon{
+
+.export-icon {
   color: #1F3C73;
 }
-.export-button{
+
+.export-button {
   margin-top: 25px;
   color: #1F3C73;
 }
-.checkbox-container{
+
+.checkbox-container {
   margin-top: 0px !important;
   margin-right: 12px !important;
 }
-.fdc-checkbox-container{
+
+.fdc-checkbox-container {
   text-align: center;
   margin-bottom: 8px;
 }
-.filter-row{
+
+.filter-row {
   margin-left: 16px;
 }
-.closer-dashboard-header{
+
+.closer-dashboard-header {
   margin-left: 28px;
   margin-right: 16px;
   margin-top: 25px;
 }
+
 .funnel-relative {
   position: relative;
 }
@@ -4063,7 +4119,7 @@ const closeFunnelDrilldownDialog = () => {
 #closer-dash-container {
   letter-spacing: 0.02em !important;
   overflow: auto;
-  padding: 0px!important;
+  padding: 0px !important;
   overflow-x: hidden;
 }
 
@@ -4276,7 +4332,7 @@ const closeFunnelDrilldownDialog = () => {
   box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   width: 100%;
-  padding-left: 0px!important;
+  padding-left: 0px !important;
   margin: 0px !important;
 
   .pipeline-header-container {
@@ -4297,7 +4353,7 @@ const closeFunnelDrilldownDialog = () => {
 
   .appts-created-pipeline-dropdown {
     transform: scale(0.875);
-    margin: 12px 0 12px 0!important;
+    margin: 12px 0 12px 0 !important;
     width: 110px;
 
     ::v-deep {
@@ -4431,7 +4487,7 @@ const closeFunnelDrilldownDialog = () => {
   box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   width: 100%;
-  margin: 0px!important;
+  margin: 0px !important;
 
   .pipeline-header-container {
     display: flex;
@@ -4490,7 +4546,7 @@ const closeFunnelDrilldownDialog = () => {
       }
 
       #all-reps-btn {
-        text-transform: none!important;
+        text-transform: none !important;
         font-size: 10px;
         margin: 2px;
         width: 87px;
@@ -5140,7 +5196,7 @@ const closeFunnelDrilldownDialog = () => {
         }
 
         #all-reps-btn {
-          text-transform: none!important;
+          text-transform: none !important;
           font-size: 14px;
           margin: 0 0 10px 0;
           height: 40px;
@@ -5624,7 +5680,7 @@ const closeFunnelDrilldownDialog = () => {
 
         .appts-to-fdc-pipeline-dropdown,
         #all-reps-btn {
-          text-transform: none!important;
+          text-transform: none !important;
           margin: 0 10px 10px 0;
         }
       }
@@ -6087,56 +6143,57 @@ const closeFunnelDrilldownDialog = () => {
 }
 </style>
 <style lang="scss">
-#closer-funnel-table  > div > table > thead > tr > th {
+#closer-funnel-table > div > table > thead > tr > th {
   z-index: 1 !important;
 }
+
 #closer-funnel-table > div > table > thead > tr > th.text-start.milestone-col-th,
-#closer-funnel-table > div > table > tbody > tr > td.text-start{
-  position: sticky!important;
+#closer-funnel-table > div > table > tbody > tr > td.text-start {
+  position: sticky !important;
   left: 0;
   z-index: 2 !important;
   background-color: white;
   min-width: 220px;
 }
 
-#closer-funnel-table > div > table > tbody > tr.shaded-row > td.text-start{
+#closer-funnel-table > div > table > tbody > tr.shaded-row > td.text-start {
   background-color: var(--v-primary-lighten9) !important;
 }
 
 #closer-funnel-table > div > table > thead > tr:hover,
-#closer-funnel-table > div > table > tbody > tr:hover{
+#closer-funnel-table > div > table > tbody > tr:hover {
   background-color: transparent;
 }
 
-#closer-funnel-table > div > table > thead > tr > th.text-left.data-col-th{
-  min-width: 220px!important;
+#closer-funnel-table > div > table > thead > tr > th.text-left.data-col-th {
+  min-width: 220px !important;
 }
 
 #fdc-dash-table > div > table > thead > tr > th.text-start.milestone-col-th,
-#fdc-dash-table > div > table > tbody > tr > td.text-start{
-  position: sticky!important;
+#fdc-dash-table > div > table > tbody > tr > td.text-start {
+  position: sticky !important;
   left: 0;
   z-index: 2 !important;
   background-color: white;
   min-width: 220px;
 }
 
-#fdc-dash-table > div > table > tbody > tr.shaded-row > td.text-start{
+#fdc-dash-table > div > table > tbody > tr.shaded-row > td.text-start {
   background-color: var(--v-primary-lighten9) !important;
 }
 
 #fdc-dash-table > div > table > thead > tr:hover,
-#fdc-dash-table > div > table > tbody > tr:hover{
+#fdc-dash-table > div > table > tbody > tr:hover {
   background-color: transparent;
 }
 
-#fdc-dash-table > div > table > thead > tr > th.text-left.data-col-th{
-  min-width: 220px!important;
+#fdc-dash-table > div > table > thead > tr > th.text-left.data-col-th {
+  min-width: 220px !important;
 }
 
 #upcoming-data-table > div > table > thead > tr > th.text-start.milestone-col-th,
-#upcoming-data-table > div > table > tbody > tr > td.text-start{
-  position: sticky!important;
+#upcoming-data-table > div > table > tbody > tr > td.text-start {
+  position: sticky !important;
   left: 0;
   z-index: 2 !important;
   min-width: 220px;
@@ -6148,12 +6205,12 @@ const closeFunnelDrilldownDialog = () => {
 
 
 #upcoming-data-table > div > table > thead > tr:hover,
-#upcoming-data-table > div > table > tbody > tr:hover{
+#upcoming-data-table > div > table > tbody > tr:hover {
   background-color: transparent;
 }
 
-#upcoming-data-table > div > table > thead > tr > th.text-left.data-col-th{
-  min-width: 220px!important;
+#upcoming-data-table > div > table > thead > tr > th.text-left.data-col-th {
+  min-width: 220px !important;
 }
 </style>
 }

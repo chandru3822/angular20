@@ -3,7 +3,7 @@
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
 
-    <div id="appts-created-pipeline-container" v-if="userCanViewAllProjects">
+    <div v-if="userCanViewAllProjects" id="appts-created-pipeline-container">
       <v-row align="center">
         <div class="title-large closer-dashboard-header">
           Appointments Created Pipeline
@@ -25,13 +25,13 @@
           </v-icon>
         </div>
       </v-row>
-      <v-row v-if="apptsCreatedExpanded" class="filter-row" align="center">
+      <v-row v-if="apptsCreatedExpanded" align="center" class="filter-row">
         <span class="other-filters-text">Filters:</span>
         <div class="checkbox-container">
           <v-checkbox
-            label="View Trends"
-            :disabled="disableTrends"
             v-model="viewTrends"
+            :disabled="disableTrends"
+            label="View Trends"
           ></v-checkbox>
         </div>
       </v-row>
@@ -54,39 +54,39 @@
         <v-data-table
           v-if="apptsCreatedExpanded"
           id="closer-funnel-table"
-          class="elevation-1"
-          :items="filteredApptsCreatedPipelineData"
-          :headers="headers"
           ref="pageable-table"
-          disable-sort
-          :item-class="itemRowBackground"
           :footer-props="footerProps"
-          :loading="apptsCreatedPipelineDataLoading"
+          :headers="headers"
           :hide-default-footer="true"
+          :item-class="itemRowBackground"
+          :items="filteredApptsCreatedPipelineData"
+          :loading="apptsCreatedPipelineDataLoading"
           :mobile-breakpoint="0"
+          class="elevation-1"
+          disable-sort
         >
           <template #no-data>
             <span class="default-text-color">No available data</span>
           </template>
 
-          <template #header.milestone="{}" id="milestones-header">
+          <template id="milestones-header" #header.milestone="{}">
             Milestones
           </template>
           <template #header.source="{}">Source</template>
           <template #header.actualTotal="{}">
             <v-menu
+              v-model="openFirstMenu"
+              :close-on-content-click="true"
+              :max-height="`calc(100vh - 20px)`"
+              class="dropdown-header body-small"
               data-app
               left
               offset-y
-              :max-height="`calc(100vh - 20px)`"
-              class="dropdown-header body-small"
-              v-model="openFirstMenu"
-              :close-on-content-click="true"
             >
               <template v-slot:activator="{ on }">
                 <a-btn
-                  class="dropdown-header body-small"
                   :activation-handler="on"
+                  class="dropdown-header body-small"
                 >
                   <span
                     v-if="
@@ -120,19 +120,19 @@
                 <v-list style="height: 400px; overflow-y: auto">
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
-                    style="padding: 0px"
                     link
+                    style="padding: 0px"
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover offset-x>
+                      <v-menu offset-x open-on-hover>
                         <template v-slot:activator="{ on }">
                           <span
-                            v-on="on"
                             class="d-flex justify-space-between dashboard-menu-option"
+                            v-on="on"
                           >
                             {{ item.friendlyName }}
                             <v-icon style="display: flex"
-                              >mdi-chevron-right</v-icon
+                            >mdi-chevron-right</v-icon
                             >
                           </span>
                         </template>
@@ -158,13 +158,13 @@
                     </v-list-item-title>
                     <v-list-item-title
                       v-else
+                      class="dashboard-menu-option"
                       @click="
                         firstDateRange = item.id
                         changeDropdownSelection(1)
                         firstCustom.isActive = item.name === 'CUSTOM'
                       "
-                      class="dashboard-menu-option"
-                      >{{ item.friendlyName }}
+                    >{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -173,18 +173,18 @@
           </template>
           <template #header.actualTotal2="{}">
             <v-menu
+              v-model="openSecondMenu"
+              :close-on-content-click="true"
+              :max-height="`calc(100vh - 20px)`"
+              class="dropdown-header body-small"
               data-app
               left
               offset-y
-              :max-height="`calc(100vh - 20px)`"
-              class="dropdown-header body-small"
-              v-model="openSecondMenu"
-              :close-on-content-click="true"
             >
               <template v-slot:activator="{ on }">
                 <a-btn
-                  class="dropdown-header body-small"
                   :activation-handler="on"
+                  class="dropdown-header body-small"
                 >
                   <span
                     v-if="
@@ -223,15 +223,15 @@
                 <v-list style="height: 400px; overflow-y: auto">
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
-                    style="padding: 0px"
                     link
+                    style="padding: 0px"
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover location="end" :offset-x="true">
+                      <v-menu :offset-x="true" location="end" open-on-hover>
                         <template v-slot:activator="{ on }">
                           <span
-                            v-on="on"
                             class="d-flex justify-space-between dashboard-menu-option"
+                            v-on="on"
                           >
                             {{ item.friendlyName }}
                             <v-icon>mdi-chevron-right</v-icon>
@@ -259,13 +259,13 @@
                     </v-list-item-title>
                     <v-list-item-title
                       v-else
+                      class="dashboard-menu-option"
                       @click="
                         secondDateRange = item.id
                         changeDropdownSelection(2)
                         secondCustom.isActive = item.name === 'CUSTOM'
                       "
-                      class="dashboard-menu-option"
-                      >{{ item.friendlyName }}
+                    >{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -274,18 +274,18 @@
           </template>
           <template #header.actualTotal3="{}">
             <v-menu
+              v-model="openThirdMenu"
+              :close-on-content-click="true"
+              :max-height="`calc(100vh - 20px)`"
+              class="dropdown-header body-small"
               data-app
               left
               offset-y
-              :max-height="`calc(100vh - 20px)`"
-              class="dropdown-header body-small"
-              v-model="openThirdMenu"
-              :close-on-content-click="true"
             >
               <template v-slot:activator="{ on }">
                 <a-btn
-                  class="dropdown-header body-small"
                   :activation-handler="on"
+                  class="dropdown-header body-small"
                 >
                   <span
                     v-if="
@@ -324,15 +324,15 @@
                 <v-list style="height: 400px; overflow-y: auto">
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
-                    style="padding: 0px"
                     link
+                    style="padding: 0px"
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover location="end">
+                      <v-menu location="end" open-on-hover>
                         <template v-slot:activator="{ on }">
                           <span
-                            v-on="on"
                             class="d-flex justify-space-between dashboard-menu-option"
+                            v-on="on"
                           >
                             {{ item.friendlyName }}
                             <v-icon>mdi-chevron-right</v-icon>
@@ -360,13 +360,13 @@
                     </v-list-item-title>
                     <v-list-item-title
                       v-else
+                      class="dashboard-menu-option"
                       @click="
                         thirdDateRange = item.id
                         changeDropdownSelection(3)
                         thirdCustom.isActive = item.name === 'CUSTOM'
                       "
-                      class="dashboard-menu-option"
-                      >{{ item.friendlyName }}
+                    >{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -375,16 +375,16 @@
           </template>
 
           <template
-            #item.milestone="{ item, index }"
             id="milestones-col"
+            #item.milestone="{ item, index }"
             class="milestone-name-col-td"
-            ><span
-              :class="{ 'label-medium': index < 2 }"
-              class="milestone-name-col-td"
-            >
+          ><span
+            :class="{ 'label-medium': index < 2 }"
+            class="milestone-name-col-td"
+          >
               <span v-if="index === 1">
                 <v-icon v-if="milestonesExpanded" @click="hideMilestones()"
-                  >expand_less</v-icon
+                >expand_less</v-icon
                 >
                 <v-icon v-else @click="expandMilestones()">expand_more</v-icon>
               </span>
@@ -394,17 +394,17 @@
           <template #item.source="{ item, index }">
             <a-select
               v-if="index === 0 && !isCloser"
-              class="appts-created-pipeline-dropdown"
               v-model="leadsCreatedSourceModel"
               :items="leadsCreatedSourceData"
+              background-color="white"
+              class="appts-created-pipeline-dropdown"
+              density="compact"
               item-title="sourceName"
               item-value="sourceId"
-              placeholder="Select"
               multiple
-              background-color="white"
-              variant="outlined"
-              density="compact"
+              placeholder="Select"
               return-object
+              variant="outlined"
               @blur="changeSources()"
             >
               <template v-slot:selection="{ item, index }">
@@ -430,17 +430,17 @@
 
             <a-select
               v-if="index === 2 && !isCloser"
-              class="appts-created-pipeline-dropdown"
               v-model="brsProvidedSourceModel"
               :items="brsProvidedSourceData"
+              background-color="white"
+              class="appts-created-pipeline-dropdown"
+              density="compact"
               item-title="sourceName"
               item-value="sourceId"
-              placeholder="Select"
               multiple
-              background-color="white"
-              variant="outlined"
-              density="compact"
+              placeholder="Select"
               return-object
+              variant="outlined"
               @blur="changeSources()"
             >
               <template v-slot:selection="{ item, index }">
@@ -465,17 +465,17 @@
             </a-select>
             <a-select
               v-if="index === 3"
-              class="appts-created-pipeline-dropdown"
               v-model="selfGenSourceModel"
               :items="selfGenSourceData"
+              background-color="white"
+              class="appts-created-pipeline-dropdown"
+              density="compact"
               item-title="sourceName"
               item-value="sourceId"
-              placeholder="Select"
               multiple
-              background-color="white"
-              variant="outlined"
-              density="compact"
+              placeholder="Select"
               return-object
+              variant="outlined"
               @blur="changeSources()"
             >
               <template v-slot:selection="{ item, index }">
@@ -503,6 +503,7 @@
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
                 <span
+                  class="appts-data"
                   @click="
                     funnelDrilldown(
                       item,
@@ -512,14 +513,13 @@
                       firstCustom
                     )
                   "
-                  class="appts-data"
                 >
                   {{ item.leads_created_count ? item.leads_created_count : 0 }}
                   <span v-on="viewTrends ? on : null">
                     <span
                       v-if="viewTrends && item.trend > 0"
                       class="positive-percentage"
-                      >+{{ (item.trend / 100) | percent }}
+                    >+{{ (item.trend / 100) | percent }}
                       <v-icon class="positive-trendline"> trending_up </v-icon>
                     </span>
                     <span
@@ -545,32 +545,33 @@
               </template>
               <span v-if="viewTrends && item.trend > 0">
                 {{ (Math.abs(item.trend) / 100) | percent }} more than
-                {{ getDropdownById(firstDateRange).trendText }}
+                {{ getDropdownTrendText(firstDateRange, 1) }}
               </span>
               <span v-if="viewTrends && item.trend < 0">
                 {{ (Math.abs(item.trend) / 100) | percent }} less than
-                {{ getDropdownById(firstDateRange).trendText }}
+                {{ getDropdownTrendText(firstDateRange, 1) }}
               </span>
               <span
                 v-if="viewTrends && (item.trend === null || item.trend === 0)"
               >
-                Same as {{ getDropdownById(firstDateRange).trendText }}
+                Same as {{ getDropdownTrendText(firstDateRange, 1) }}
               </span>
             </v-tooltip>
           </template>
 
           <template
-            #item.actualTotal2="{ item, index }"
-            class="milestone-col-td"
             v-if="
               secondDateRange != null &&
               column2Values != null &&
               column2Values.length > 0
             "
+            #item.actualTotal2="{ item, index }"
+            class="milestone-col-td"
           >
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
                 <span
+                  class="appts-data"
                   @click="
                     funnelDrilldown(
                       item,
@@ -580,7 +581,6 @@
                       secondCustom
                     )
                   "
-                  class="appts-data"
                 >
                   {{
                     column2Values[index].leads_created_count
@@ -620,11 +620,11 @@
               </template>
               <span v-if="viewTrends && column2Values[index].trend > 0">
                 {{ (Math.abs(column2Values[index].trend) / 100) | percent }}
-                more than {{ getDropdownById(secondDateRange).trendText }}</span
+                more than {{ getDropdownTrendText(secondDateRange, 2) }}</span
               >
               <span v-if="viewTrends && column2Values[index].trend < 0">
                 {{ (Math.abs(column2Values[index].trend) / 100) | percent }}
-                less than {{ getDropdownById(secondDateRange).trendText }}</span
+                less than {{ getDropdownTrendText(secondDateRange, 2) }}</span
               >
               <span
                 v-if="
@@ -633,22 +633,23 @@
                     column2Values[index].trend === 0)
                 "
               >
-                Same as {{ getDropdownById(secondDateRange).trendText }}</span
+                Same as {{ getDropdownTrendText(secondDateRange, 2) }}</span
               >
             </v-tooltip>
           </template>
           <template
-            #item.actualTotal3="{ item, index }"
-            class="milestone-col-td"
             v-if="
               thirdDateRange != null &&
               column3Values != null &&
               column3Values.length > 0
             "
+            #item.actualTotal3="{ item, index }"
+            class="milestone-col-td"
           >
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
                 <span
+                  class="appts-data"
                   @click="
                     funnelDrilldown(
                       item,
@@ -658,7 +659,6 @@
                       thirdCustom
                     )
                   "
-                  class="appts-data"
                 >
                   {{
                     column3Values[index].leads_created_count
@@ -698,11 +698,11 @@
               </template>
               <span v-if="viewTrends && column3Values[index].trend > 0">
                 {{ (Math.abs(column3Values[index].trend) / 100) | percent }}
-                more than {{ getDropdownById(thirdDateRange).trendText }}</span
+                more than {{ getDropdownTrendText(thirdDateRange, 3) }}</span
               >
               <span v-if="viewTrends && column3Values[index].trend < 0">
                 {{ (Math.abs(column3Values[index].trend) / 100) | percent }}
-                less than {{ getDropdownById(thirdDateRange).trendText }}</span
+                less than {{ getDropdownTrendText(thirdDateRange, 3) }}</span
               >
               <span
                 v-if="
@@ -711,7 +711,7 @@
                     column3Values[index].trend === 0)
                 "
               >
-                Same as {{ getDropdownById(thirdDateRange).trendText }}</span
+                Same as {{ getDropdownTrendText(thirdDateRange, 3) }}</span
               >
             </v-tooltip>
           </template>
@@ -735,7 +735,7 @@
           <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
           Export
         </a>
-        <div v-else class="export-button" :class="{ 'disabled-export': true }">
+        <div v-else :class="{ 'disabled-export': true }" class="export-button">
           <v-icon class="export-icon disabled-export">
             mdi-tray-arrow-down
           </v-icon>
@@ -746,7 +746,8 @@
           <v-icon
             v-if="fdcPipelineExpanded"
             @click="fdcPipelineExpanded = !fdcPipelineExpanded"
-            >expand_less</v-icon
+          >expand_less
+          </v-icon
           >
           <v-icon v-else @click="fdcPipelineExpanded = !fdcPipelineExpanded">
             expand_more
@@ -754,31 +755,31 @@
         </div>
       </v-row>
       <v-row>
-        <div class="pipeline-header-container" v-if="fdcPipelineExpanded">
-          <v-col cols="9" class="d-flex">
+        <div v-if="fdcPipelineExpanded" class="pipeline-header-container">
+          <v-col class="d-flex" cols="9">
             <div id="pipeline-header-left-side">
               <div class="reps-container">
                 <span class="rep-filters-text label-small">Rep Filters</span>
               </div>
               <a-autocomplete
-                class="appts-to-fdc-pipeline-dropdown"
                 ref="areaSelect"
                 v-model="areaModel"
                 :items="areaData"
+                class="appts-to-fdc-pipeline-dropdown"
+                density="compact"
+                hide-details
                 item-title="org_name"
                 item-value="org_id"
                 label="Area"
-                no-data-text="No areas available"
-                variant="outlined"
-                density="compact"
                 multiple
-                hide-details
-                @input="repValuesChanged = true"
+                no-data-text="No areas available"
+                return-object
+                variant="outlined"
                 @blur="
                   areaValuesChanged = true
                   regionLoad()
                 "
-                return-object
+                @input="repValuesChanged = true"
               >
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-lg">Area</span>
@@ -823,24 +824,24 @@
               </a-autocomplete>
 
               <a-autocomplete
-                class="appts-to-fdc-pipeline-dropdown"
+                ref="regionSelect"
                 v-model="regionModel"
                 :items="regionData"
+                class="appts-to-fdc-pipeline-dropdown"
+                density="compact"
+                hide-details
                 item-title="org_name"
                 item-value="org_id"
                 label="Region"
-                no-data-text="No regions available"
-                variant="outlined"
-                density="compact"
                 multiple
-                @input="repValuesChanged = true"
+                no-data-text="No regions available"
+                return-object
+                variant="outlined"
                 @blur="
                   regionValuesChanged = true
                   districtLoad()
                 "
-                hide-details
-                return-object
-                ref="regionSelect"
+                @input="repValuesChanged = true"
               >
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-md">Region</span>
@@ -885,24 +886,24 @@
               </a-autocomplete>
 
               <a-autocomplete
-                class="appts-to-fdc-pipeline-dropdown"
                 ref="districtSelect"
                 v-model="districtModel"
                 :items="districtData"
+                class="appts-to-fdc-pipeline-dropdown"
+                density="compact"
+                hide-details
                 item-title="org_name"
                 item-value="org_id"
                 label="District"
-                no-data-text="No districts available"
                 multiple
+                no-data-text="No districts available"
+                return-object
                 variant="outlined"
-                density="compact"
-                hide-details
+                @blur="officeLoad()"
                 @input="
                   repValuesChanged = true
                   districtValuesChanged = true
                 "
-                @blur="officeLoad()"
-                return-object
               >
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-md">District</span>
@@ -950,24 +951,24 @@
               </a-autocomplete>
 
               <a-autocomplete
-                class="appts-to-fdc-pipeline-dropdown"
+                ref="officeSelect"
                 v-model="officeModel"
                 :items="officeData"
+                class="appts-to-fdc-pipeline-dropdown"
+                density="compact"
+                hide-details
                 item-title="org_name"
                 item-value="org_id"
                 label="Office"
-                no-data-text="No offices available"
                 multiple
+                no-data-text="No offices available"
+                return-object
                 variant="outlined"
-                density="compact"
-                @input="repValuesChanged = true"
                 @blur="
                   officeValuesChanged = true
                   repLoad()
                 "
-                hide-details
-                return-object
-                ref="officeSelect"
+                @input="repValuesChanged = true"
               >
                 <template v-slot:label="{ item, index }">
                   <span class="text-caption-md">Office</span>
@@ -1011,23 +1012,23 @@
                 </template>
               </a-autocomplete>
               <a-autocomplete
-                class="appts-to-fdc-pipeline-dropdown"
+                ref="repSelect"
                 v-model="repModel"
                 :items="filteredRepData"
+                class="appts-to-fdc-pipeline-dropdown"
+                density="compact"
+                hide-details
                 item-title="name"
                 item-value="user_position_id"
                 label="Rep"
-                no-data-text="No reps available"
                 multiple
+                no-data-text="No reps available"
+                return-object
                 variant="outlined"
-                density="compact"
                 @input="
                   repValuesChanged = true
                   apptsToFdcPipelineData.value = []
                 "
-                hide-details
-                return-object
-                ref="repSelect"
               >
                 <template v-slot:selection="{ item, index }">
                   <span
@@ -1071,15 +1072,14 @@
                   Hide Inactive Reps
                 </v-label>
                 <v-switch
-                  hide-details
                   v-model="hideInactiveReps"
-                  @click="switchInactiveReps()"
                   class="hide-inactive-switch"
+                  hide-details
+                  @click="switchInactiveReps()"
                 ></v-switch>
               </div>
               <a-btn
                 v-if="!isCloser && !isCloserMgr"
-                class="body-small"
                 :class="{
                   'reset-button-inactive':
                     !filtersSelected &&
@@ -1088,25 +1088,26 @@
                   'reset-button-active':
                     filtersSelected || repModel?.length > 0 || hideInactiveReps
                 }"
+                class="body-small"
+                color="unset"
+                text="Reset Rep Filters"
                 variant="outlined"
                 @click="
                   resetFilters()
                   repValuesChanged = true
                   loadFunnels()
                 "
-                color="unset"
-                text="Reset Rep Filters"
               ></a-btn>
             </div>
           </v-col>
-          <v-col cols="3" class="d-flex justify-end">
+          <v-col class="d-flex justify-end" cols="3">
             <a-btn
               id="all-reps-btn"
-              variant="outlined"
-              color="primary"
-              class="body-small"
-              @click="funnelAllReps"
               :text="viewAllRepsText"
+              class="body-small"
+              color="primary"
+              variant="outlined"
+              @click="funnelAllReps"
             ></a-btn>
           </v-col>
         </div>
@@ -1119,19 +1120,19 @@
           <span class="other-filters-text label-small"> Other Filters </span>
           <a-select
             v-if="!isCloser"
-            class="appts-to-fdc-pipeline-dropdown"
             v-model="fdcSourceModel"
             :items="fdcSourceData"
+            background-color="white"
+            class="appts-to-fdc-pipeline-dropdown"
+            density="compact"
+            hide-details
             item-title="sourceName"
             item-value="sourceId"
-            placeholder="Select"
-            multiple
-            hide-details
-            background-color="white"
-            variant="outlined"
-            density="compact"
-            return-object
             label="Lead Source"
+            multiple
+            placeholder="Select"
+            return-object
+            variant="outlined"
             @input="repValuesChanged = true"
           >
             <template v-slot:selection="{ item, index }">
@@ -1152,21 +1153,21 @@
             </template>
           </a-select>
           <a-autocomplete
-            class="appts-to-fdc-pipeline-dropdown"
+            ref="repSelect"
             v-model="appointmentTypesModel"
             :items="appointmentTypes"
             :menu-props="{ bottom: true, offsetY: true }"
+            class="appts-to-fdc-pipeline-dropdown"
+            density="compact"
+            hide-details
             item-title="name"
             item-value="user_position_id"
             label="Appointment Type"
-            no-data-text="No reps available"
             multiple
-            variant="outlined"
-            density="compact"
-            @input="repValuesChanged = true"
-            hide-details
+            no-data-text="No reps available"
             return-object
-            ref="repSelect"
+            variant="outlined"
+            @input="repValuesChanged = true"
           >
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="selected-option text-caption">
@@ -1206,15 +1207,15 @@
           </a-autocomplete>
           <div class="checkbox-container fdc-checkbox-container">
             <v-checkbox
-              label="View Trends"
-              :disabled="disableTrends"
               v-model="viewFdcTrends"
+              :disabled="disableTrends"
+              label="View Trends"
             ></v-checkbox>
           </div>
           <div class="checkbox-container fdc-checkbox-container">
             <v-checkbox
-              label="Only View Major Milestones"
               v-model="viewOnlyMajorMilestones"
+              label="Only View Major Milestones"
             ></v-checkbox>
           </div>
         </div>
@@ -1238,16 +1239,16 @@
         <v-data-table
           v-if="fdcPipelineExpanded"
           id="fdc-dash-table"
-          class="elevation-1"
-          :items="filteredFdcPipelineData"
-          :headers="fdcHeaders"
           ref="pageable-table"
-          disable-sort
-          :item-class="fdcRowBackground"
           :footer-props="footerProps"
-          :loading="isLoading"
+          :headers="fdcHeaders"
           :hide-default-footer="true"
+          :item-class="fdcRowBackground"
+          :items="filteredFdcPipelineData"
+          :loading="isLoading"
           :mobile-breakpoint="0"
+          class="elevation-1"
+          disable-sort
         >
           <template #no-data>
             <span class="default-text-color">
@@ -1255,23 +1256,23 @@
             </span>
           </template>
 
-          <template #header.milestone="{}" id="milestones-header">
+          <template id="milestones-header" #header.milestone="{}">
             <span class="milestones-header">Milestones</span>
           </template>
           <template #header.actualTotal="{}">
             <v-menu
+              v-model="fdcOpenFirstMenu"
+              :close-on-content-click="true"
+              :max-height="`calc(100vh - 20px)`"
+              class="dropdown-header body-small"
               data-app
               left
               offset-y
-              :max-height="`calc(100vh - 20px)`"
-              class="dropdown-header body-small"
-              v-model="fdcOpenFirstMenu"
-              :close-on-content-click="true"
             >
               <template v-slot:activator="{ on }">
                 <a-btn
-                  class="dropdown-header body-small"
                   :activation-handler="on"
+                  class="dropdown-header body-small"
                 >
                   <span
                     v-if="
@@ -1305,19 +1306,19 @@
                 <v-list style="height: 400px; overflow-y: auto">
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
-                    style="padding: 0px"
                     link
+                    style="padding: 0px"
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover offset-x>
+                      <v-menu offset-x open-on-hover>
                         <template v-slot:activator="{ on }">
                           <span
-                            v-on="on"
                             class="d-flex justify-space-between dashboard-menu-option"
+                            v-on="on"
                           >
                             {{ item.friendlyName }}
                             <v-icon style="display: flex"
-                              >mdi-chevron-right
+                            >mdi-chevron-right
                             </v-icon>
                           </span>
                         </template>
@@ -1343,12 +1344,12 @@
                     </v-list-item-title>
                     <v-list-item-title
                       v-else
+                      class="dashboard-menu-option"
                       @click="
                         fdcFirstDateRange = item.id
                         changeFdcDropdownSelection(1)
                         fdcFirstCustom.isActive = item.name === 'CUSTOM'
                       "
-                      class="dashboard-menu-option"
                     >
                       {{ item.friendlyName }}
                     </v-list-item-title>
@@ -1359,18 +1360,18 @@
           </template>
           <template #header.actualTotal2="{}">
             <v-menu
+              v-model="fdcOpenSecondMenu"
+              :close-on-content-click="true"
+              :max-height="`calc(100vh - 20px)`"
+              class="dropdown-header body-small"
               data-app
               left
               offset-y
-              :max-height="`calc(100vh - 20px)`"
-              class="dropdown-header body-small"
-              v-model="fdcOpenSecondMenu"
-              :close-on-content-click="true"
             >
               <template v-slot:activator="{ on }">
                 <a-btn
-                  class="dropdown-header body-small"
                   :activation-handler="on"
+                  class="dropdown-header body-small"
                 >
                   <span
                     v-if="
@@ -1390,7 +1391,7 @@
                     {{
                       getDropdownById(fdcSecondDateRange).periodList[
                         secondPeriod
-                      ].shortLabel
+                        ].shortLabel
                     }}
                   </span>
                   <span
@@ -1410,15 +1411,15 @@
                 <v-list style="height: 400px; overflow-y: auto">
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
-                    style="padding: 0px"
                     link
+                    style="padding: 0px"
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover location="end" :offset-x="true">
+                      <v-menu :offset-x="true" location="end" open-on-hover>
                         <template v-slot:activator="{ on }">
                           <span
-                            v-on="on"
                             class="d-flex justify-space-between dashboard-menu-option"
+                            v-on="on"
                           >
                             {{ item.friendlyName }}
                             <v-icon>mdi-chevron-right</v-icon>
@@ -1446,13 +1447,13 @@
                     </v-list-item-title>
                     <v-list-item-title
                       v-else
+                      class="dashboard-menu-option"
                       @click="
                         fdcSecondDateRange = item.id
                         changeFdcDropdownSelection(2)
                         secondCustom.isActive = item.name === 'CUSTOM'
                       "
-                      class="dashboard-menu-option"
-                      >{{ item.friendlyName }}
+                    >{{ item.friendlyName }}
                     </v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -1461,18 +1462,18 @@
           </template>
           <template #header.actualTotal3="{}">
             <v-menu
+              v-model="fdcOpenThirdMenu"
+              :close-on-content-click="true"
+              :max-height="`calc(100vh - 20px)`"
+              class="dropdown-header body-small"
               data-app
               left
               offset-y
-              :max-height="`calc(100vh - 20px)`"
-              class="dropdown-header body-small"
-              v-model="fdcOpenThirdMenu"
-              :close-on-content-click="true"
             >
               <template v-slot:activator="{ on }">
                 <a-btn
-                  class="dropdown-header body-small"
                   :activation-handler="on"
+                  class="dropdown-header body-small"
                 >
                   <span
                     v-if="
@@ -1511,15 +1512,15 @@
                 <v-list style="height: 400px; overflow-y: auto">
                   <v-list-item
                     v-for="(item, index) in dropdownValues"
-                    style="padding: 0px"
                     link
+                    style="padding: 0px"
                   >
                     <v-list-item-title v-if="item.name === 'PERIOD'">
-                      <v-menu open-on-hover location="end">
+                      <v-menu location="end" open-on-hover>
                         <template v-slot:activator="{ on }">
                           <span
-                            v-on="on"
                             class="d-flex justify-space-between dashboard-menu-option"
+                            v-on="on"
                           >
                             {{ item.friendlyName }}
                             <v-icon>mdi-chevron-right</v-icon>
@@ -1547,12 +1548,12 @@
                     </v-list-item-title>
                     <v-list-item-title
                       v-else
+                      class="dashboard-menu-option"
                       @click="
                         fdcThirdDateRange = item.id
                         changeFdcDropdownSelection(3)
                         thirdCustom.isActive = item.name === 'CUSTOM'
                       "
-                      class="dashboard-menu-option"
                     >
                       {{ item.friendlyName }}
                     </v-list-item-title>
@@ -1563,8 +1564,8 @@
           </template>
 
           <template
-            #item.milestone="{ item, index }"
             id="milestones-col"
+            #item.milestone="{ item, index }"
             class="milestone-name-col-td"
           >
             <span
@@ -1584,17 +1585,17 @@
           >
             <a-select
               v-if="index === 0"
-              class="appts-created-pipeline-dropdown"
               v-model="leadsCreatedSourceModel"
               :items="leadsCreatedSourceData"
+              background-color="white"
+              class="appts-created-pipeline-dropdown"
+              density="compact"
               item-text="sourceName"
               item-value="sourceId"
-              placeholder="Select"
               multiple
-              background-color="white"
-              variant="outlined"
-              density="compact"
+              placeholder="Select"
               return-object
+              variant="outlined"
               @input="repValuesChanged = true"
             >
               <template v-slot:selection="{ item, index }">
@@ -1620,17 +1621,17 @@
 
             <a-select
               v-if="index === 2"
-              class="appts-created-pipeline-dropdown"
               v-model="brsProvidedSourceModel"
               :items="brsProvidedSourceData"
+              background-color="white"
+              class="appts-created-pipeline-dropdown"
+              density="compact"
               item-text="sourceName"
               item-value="sourceId"
-              placeholder="Select"
               multiple
-              background-color="white"
-              variant="outlined"
-              density="compact"
+              placeholder="Select"
               return-object
+              variant="outlined"
               @input="repValuesChanged = true"
             >
               <template v-slot:selection="{ item, index }">
@@ -1655,17 +1656,17 @@
             </a-select>
             <a-select
               v-if="index === 3"
-              class="appts-created-pipeline-dropdown"
               v-model="selfGenSourceModel"
               :items="selfGenSourceData"
+              background-color="white"
+              class="appts-created-pipeline-dropdown"
+              density="compact"
               item-text="sourceName"
               item-value="sourceId"
-              placeholder="Select"
               multiple
-              background-color="white"
-              variant="outlined"
-              density="compact"
+              placeholder="Select"
               return-object
+              variant="outlined"
               @input="repValuesChanged = true"
             >
               <template v-slot:selection="{ item, index }">
@@ -1692,6 +1693,7 @@
           >
             <span class="d-flex align-items-center">
               <span
+                class="fdc-data"
                 @click="
                   funnelDrilldown(
                     item,
@@ -1701,7 +1703,6 @@
                     fdcFirstCustom
                   )
                 "
-                class="fdc-data"
               >
                 {{
                   item.custom_date_range_count
@@ -1709,11 +1710,11 @@
                     : 0
                 }}
               </span>
-              <v-tooltip bottom v-if="viewFdcTrends">
+              <v-tooltip v-if="viewFdcTrends" bottom>
                 <template v-slot:activator="{ on }">
                   <span
-                    v-on="viewFdcTrends ? on : null"
                     class="trends-container"
+                    v-on="viewFdcTrends ? on : null"
                   >
                     <span
                       v-if="viewFdcTrends && item.trend_count > 0"
@@ -1772,11 +1773,11 @@
                 </template>
                 <span v-if="viewFdcTrends && item.trend_count > 0">
                   {{ (Math.abs(item.trend_count) / 100) | percent }} more than
-                  {{ getDropdownById(fdcFirstDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcFirstDateRange, 1) }}</span
                 >
                 <span v-if="viewFdcTrends && item.trend_count < 0">
                   {{ (Math.abs(item.trend_count) / 100) | percent }} less than
-                  {{ getDropdownById(fdcFirstDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcFirstDateRange, 1) }}</span
                 >
                 <span
                   v-if="
@@ -1785,7 +1786,7 @@
                   "
                 >
                   Same as
-                  {{ getDropdownById(fdcFirstDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcFirstDateRange, 1) }}</span
                 >
               </v-tooltip>
               <span
@@ -1804,7 +1805,7 @@
                   )
                 "
               >
-                <v-icon size="20" class="checked_in_icon">
+                <v-icon class="checked_in_icon" size="20">
                   mdi-check-circle-outline
                 </v-icon>
                 {{ item.checked_in_custom_date_range_count }}
@@ -1813,16 +1814,17 @@
           </template>
 
           <template
-            #item.actualTotal2="{ item, index }"
-            class="milestone-col-td"
             v-if="
               fdcSecondDateRange != null &&
               filteredFdcColumn2Values != null &&
               filteredFdcColumn2Values.length > 0
             "
+            #item.actualTotal2="{ item, index }"
+            class="milestone-col-td"
           >
             <span class="d-flex align-items-center">
               <span
+                class="fdc-data"
                 @click="
                   funnelDrilldown(
                     filteredFdcColumn2Values[index],
@@ -1832,7 +1834,6 @@
                     fdcSecondCustom
                   )
                 "
-                class="fdc-data"
               >
                 {{
                   filteredFdcColumn2Values[index].custom_date_range_count
@@ -1840,11 +1841,11 @@
                     : 0
                 }}
               </span>
-              <v-tooltip bottom v-if="viewFdcTrends">
+              <v-tooltip v-if="viewFdcTrends" bottom>
                 <template v-slot:activator="{ on }">
                   <span
-                    v-on="viewFdcTrends ? on : null"
                     class="trends-container"
+                    v-on="viewFdcTrends ? on : null"
                   >
                     <span
                       v-if="
@@ -1936,7 +1937,7 @@
                       | percent
                   }}
                   more than
-                  {{ getDropdownById(fdcSecondDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcSecondDateRange, 2) }}</span
                 >
                 <span
                   v-if="
@@ -1950,7 +1951,7 @@
                       | percent
                   }}
                   less than
-                  {{ getDropdownById(fdcSecondDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcSecondDateRange, 2) }}</span
                 >
                 <span
                   v-if="
@@ -1960,7 +1961,7 @@
                   "
                 >
                   Same as
-                  {{ getDropdownById(fdcSecondDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcSecondDateRange, 2) }}</span
                 >
               </v-tooltip>
               <span
@@ -1980,7 +1981,7 @@
                   )
                 "
               >
-                <v-icon size="20" class="checked_in_icon">
+                <v-icon class="checked_in_icon" size="20">
                   mdi-check-circle-outline
                 </v-icon>
                 {{
@@ -1991,16 +1992,17 @@
             </span>
           </template>
           <template
-            #item.actualTotal3="{ item, index }"
-            class="milestone-col-td"
             v-if="
               fdcThirdDateRange != null &&
               filteredFdcColumn3Values != null &&
               filteredFdcColumn3Values.length > 0
             "
+            #item.actualTotal3="{ item, index }"
+            class="milestone-col-td"
           >
             <span class="d-flex align-items-center">
               <span
+                class="fdc-data"
                 @click="
                   funnelDrilldown(
                     filteredFdcColumn3Values[index],
@@ -2010,7 +2012,6 @@
                     fdcThirdCustom
                   )
                 "
-                class="fdc-data"
               >
                 {{
                   filteredFdcColumn3Values[index].custom_date_range_count
@@ -2018,11 +2019,11 @@
                     : 0
                 }}
               </span>
-              <v-tooltip bottom v-if="viewFdcTrends">
+              <v-tooltip v-if="viewFdcTrends" bottom>
                 <template v-slot:activator="{ on }">
                   <span
-                    v-on="viewFdcTrends ? on : null"
                     class="trends-container"
+                    v-on="viewFdcTrends ? on : null"
                   >
                     <span
                       v-if="
@@ -2114,7 +2115,7 @@
                       | percent
                   }}
                   more than
-                  {{ getDropdownById(fdcThirdDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcSecondDateRange, 3) }}</span
                 >
                 <span
                   v-if="
@@ -2128,7 +2129,7 @@
                       | percent
                   }}
                   less than
-                  {{ getDropdownById(fdcThirdDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcSecondDateRange, 3) }}</span
                 >
                 <span
                   v-if="
@@ -2138,7 +2139,7 @@
                   "
                 >
                   Same as
-                  {{ getDropdownById(fdcThirdDateRange).trendText }}</span
+                  {{ getfdcDropdownTrendText(fdcSecondDateRange, 3) }}</span
                 >
               </v-tooltip>
               <span
@@ -2158,7 +2159,7 @@
                   )
                 "
               >
-                <v-icon size="20" class="checked_in_icon">
+                <v-icon class="checked_in_icon" size="20">
                   mdi-check-circle-outline
                 </v-icon>
                 {{
@@ -2176,25 +2177,25 @@
 
       <!--       FUNNEL DRILLDOWN START -->
       <FunnelDrilldownDialog
-          :value="funnelDrilldownDialog"
-          :funnelDrilldownTitle="funnelDrilldownTitle"
-          :funnelDrilldownData="funnelDrilldownData"
-          :funnelDrilldownLoading="funnelDrilldownLoading"
-          :funnelDrilldownHeaders="funnelDrilldownHeaders"
-          :selectedFunnel="selectedFunnel"
-          @close="closeFunnelDrilldownDialog"
-          @export="exportDrilldownCsv"
+        :funnelDrilldownData="funnelDrilldownData"
+        :funnelDrilldownHeaders="funnelDrilldownHeaders"
+        :funnelDrilldownLoading="funnelDrilldownLoading"
+        :funnelDrilldownTitle="funnelDrilldownTitle"
+        :selectedFunnel="selectedFunnel"
+        :value="funnelDrilldownDialog"
+        @close="closeFunnelDrilldownDialog"
+        @export="exportDrilldownCsv"
       ></FunnelDrilldownDialog>
     </div>
     <FunnelDrilldownDialogWithLotsOfColumns
-        :value="fdcFunnelDrilldownDialog"
-        :funnelDrilldownTitle="funnelDrilldownTitle"
-        :funnelDrilldownData="funnelDrilldownData"
-        :funnelDrilldownLoading="funnelDrilldownLoading"
-        :funnelDrilldownHeaders="funnelDrilldownHeaders"
-        :selectedFunnel="selectedFunnel"
-        @close="closeFunnelDrilldownDialog"
-        @export="exportDrilldownCsv"
+      :funnelDrilldownData="funnelDrilldownData"
+      :funnelDrilldownHeaders="funnelDrilldownHeaders"
+      :funnelDrilldownLoading="funnelDrilldownLoading"
+      :funnelDrilldownTitle="funnelDrilldownTitle"
+      :selectedFunnel="selectedFunnel"
+      :value="fdcFunnelDrilldownDialog"
+      @close="closeFunnelDrilldownDialog"
+      @export="exportDrilldownCsv"
     />
     <!-- FUNNEL DRILLDOWN END -->
     <!------------------------------------- FUNNEL TAB END ------------------------------------>
@@ -2208,25 +2209,25 @@
         customDate.endDate?.length === 0
       "
       :open-dialog="selectingCustomDates"
-      @confirm="applyCustomDates()"
       @cancel="cancelCustomDialogue()"
+      @confirm="applyCustomDates()"
       @close-dialog="selectingCustomDates = false"
     >
       <template v-slot:title>Custom Date Range</template>
       <div>
         <DatetimePickerInput
           v-model="customDate.startDate"
+          :format="'MMMM DD, YYYY'"
           :timezone="timezone"
           :type="'date'"
-          :format="'MMMM DD, YYYY'"
           input-format="HH:mm:ss"
           label="Start Date"
         />
         <DatetimePickerInput
           v-model="customDate.endDate"
+          :format="'MMMM DD, YYYY'"
           :timezone="timezone"
           :type="'date'"
-          :format="'MMMM DD, YYYY'"
           input-format="HH:mm:ss"
           label="End Date"
         />
@@ -2243,29 +2244,24 @@ import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
-import {
-  handleHidingGlobalLoader,
-  getRequest,
-  postRequest,
-  getRequestWithParams
-} from '@/helpers/helpers'
+import { getRequest, getRequestWithParams, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers'
 
 import { saveAs } from 'file-saver'
 import {
   getCloserAreas,
-  getCloserRegions,
   getCloserDistricts,
   getCloserOffices,
+  getCloserRegions,
   getCloserReps
 } from '@/services/dashboardService'
 
-import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
-import FunnelDrilldownDialog from "@/views/blueraven/closerDashboard/AppointmentCreatedFunnelDrilldownDialog.vue";
+import FunnelDrilldownDialog from '@/views/blueraven/closerDashboard/AppointmentCreatedFunnelDrilldownDialog.vue'
 import FunnelDrilldownDialogWithLotsOfColumns
-  from "@/views/blueraven/closerDashboard/FunnelDrilldownDialogWithLotsOfColumns.vue";
+  from '@/views/blueraven/closerDashboard/FunnelDrilldownDialogWithLotsOfColumns.vue'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -2334,6 +2330,7 @@ const isBrCorporateUser = ref(userStore.details.companyId === 2)
 const openFirstMenu = ref(false)
 const openSecondMenu = ref(false)
 const openThirdMenu = ref(false)
+const lastColumnSelected = ref(0)
 const fdcOpenFirstMenu = ref(false)
 const fdcOpenSecondMenu = ref(false)
 const fdcOpenThirdMenu = ref(false)
@@ -2360,7 +2357,7 @@ const apptsToFdcPipelineLoaded = ref(false)
 const appointmentTypes = ref([])
 const appointmentTypesModel = ref([])
 const funnelsWereLoaded = ref(false)
-const customColumn = ref(1)
+const customColumn = ref([])
 const customTable = ref('apptsCreated')
 const milestonesExpanded = ref(true)
 const apptsCreatedExpanded = ref(true)
@@ -2492,7 +2489,7 @@ const funnelDrilldownHeaders = computed(() => {
       value: 'count',
       show: true,
       sortable: false,
-      width: "0.5%",
+      width: '0.5%',
       optional: false
     }, // 0
     {
@@ -3002,7 +2999,7 @@ const exportCsv = async (tableName) => {
             .name === 'CUSTOM'
             ? firstCustom.value.name
             : dropdownValues.value.find((x) => x.id === firstDateRange.value)
-                .friendlyName
+              .friendlyName
       }
       if (viewTrends.value) {
         csvData += ', ' + 'Trend 1'
@@ -3023,7 +3020,7 @@ const exportCsv = async (tableName) => {
               .name === 'CUSTOM'
               ? secondCustom.value.name
               : dropdownValues.value.find((x) => x.id === secondDateRange.value)
-                  .friendlyName)
+                .friendlyName)
         }
         if (viewTrends.value) {
           csvData += ', ' + 'Trend 2'
@@ -3045,7 +3042,7 @@ const exportCsv = async (tableName) => {
               .name === 'CUSTOM'
               ? thirdCustom.value.name
               : dropdownValues.value.find((x) => x.id === thirdDateRange.value)
-                  .friendlyName)
+                .friendlyName)
         }
         if (viewTrends.value) {
           csvData += ', ' + 'Trend 3'
@@ -3112,7 +3109,7 @@ const exportCsv = async (tableName) => {
             .name === 'CUSTOM'
             ? firstCustom.value.name
             : dropdownValues.value.find((x) => x.id === fdcFirstDateRange.value)
-                .friendlyName
+              .friendlyName
       }
       if (viewFdcTrends.value) {
         csvData += ', ' + 'Trend 1'
@@ -3133,8 +3130,8 @@ const exportCsv = async (tableName) => {
               .name === 'CUSTOM'
               ? secondCustom.value.name
               : dropdownValues.value.find(
-                  (x) => x.id === fdcSecondDateRange.value
-                ).friendlyName)
+                (x) => x.id === fdcSecondDateRange.value
+              ).friendlyName)
         }
         if (viewFdcTrends.value) {
           csvData += ', ' + 'Trend 2'
@@ -3156,8 +3153,8 @@ const exportCsv = async (tableName) => {
               .name === 'CUSTOM'
               ? thirdCustom.value.name
               : dropdownValues.value.find(
-                  (x) => x.id === fdcThirdDateRange.value
-                ).friendlyName)
+                (x) => x.id === fdcThirdDateRange.value
+              ).friendlyName)
         }
         if (viewFdcTrends.value) {
           csvData += ', ' + 'Trend 3'
@@ -3298,13 +3295,13 @@ const openDrilldown = async (item, column) => {
         (x) => x.id === firstDateRange.value
       ).startDate
         ? dropdownValues.value.find((x) => x.id === firstDateRange.value)
-            .startDate
+          .startDate
         : moment(firstCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
       endDate.value = dropdownValues.value.find(
         (x) => x.id === firstDateRange.value
       ).endDate
         ? dropdownValues.value.find((x) => x.id === firstDateRange.value)
-            .endDate
+          .endDate
         : moment(firstCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
     }
   } else if (column === 2) {
@@ -3325,13 +3322,13 @@ const openDrilldown = async (item, column) => {
         (x) => x.id === secondDateRange.value
       ).startDate
         ? dropdownValues.value.find((x) => x.id === secondDateRange.value)
-            .startDate
+          .startDate
         : moment(secondCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
       endDate.value = dropdownValues.value.find(
         (x) => x.id === secondDateRange.value
       ).endDate
         ? dropdownValues.value.find((x) => x.id === secondDateRange.value)
-            .endDate
+          .endDate
         : moment(secondCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
     }
   } else if (column === 3) {
@@ -3352,13 +3349,13 @@ const openDrilldown = async (item, column) => {
         (x) => x.id === thirdDateRange.value
       ).startDate
         ? dropdownValues.value.find((x) => x.id === thirdDateRange.value)
-            .startDate
+          .startDate
         : moment(thirdCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
       endDate.value = dropdownValues.value.find(
         (x) => x.id === thirdDateRange.value
       ).endDate
         ? dropdownValues.value.find((x) => x.id === thirdDateRange.value)
-            .endDate
+          .endDate
         : moment(thirdCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
     }
   }
@@ -3373,6 +3370,7 @@ const openDrilldown = async (item, column) => {
 
 const changeFdcDropdownSelection = async (dropdown) => {
   customTable.value = 'FDC'
+  lastColumnSelected.value = dropdown
   if (dropdown === 1) {
     let result = cloneDeep(
       dropdownValues.value.find((x) => x.id === fdcFirstDateRange.value)
@@ -3383,7 +3381,7 @@ const changeFdcDropdownSelection = async (dropdown) => {
     if (result.startDate === null) {
       if (!fdcFirstCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 1
+          customColumn.value.push(1)
           if (fdcFirstCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = fdcFirstCustom.value.startDate
               .format('YYYY-MM-DD')
@@ -3428,7 +3426,7 @@ const changeFdcDropdownSelection = async (dropdown) => {
     if (result.startDate === null) {
       if (!fdcSecondCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 2
+          customColumn.value.push(2)
           if (fdcSecondCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = fdcSecondCustom.value.startDate
               .format('YYYY-MM-DD')
@@ -3473,7 +3471,7 @@ const changeFdcDropdownSelection = async (dropdown) => {
     if (result.startDate === null) {
       if (!fdcThirdCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 3
+          customColumn.value.push(3)
           if (fdcThirdCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = fdcThirdCustom.value.startDate
               .format('YYYY-MM-DD')
@@ -3512,6 +3510,7 @@ const changeFdcDropdownSelection = async (dropdown) => {
 
 const changeDropdownSelection = async (dropdown) => {
   customTable.value = 'apptsCreated'
+  lastColumnSelected.value = dropdown
   if (dropdown === 1) {
     let result = cloneDeep(
       dropdownValues.value.find((x) => x.id === firstDateRange.value)
@@ -3522,7 +3521,7 @@ const changeDropdownSelection = async (dropdown) => {
     if (result.startDate === null) {
       if (!firstCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 1
+          customColumn.value.push(1)
           if (firstCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = firstCustom.value.startDate
               .format('YYYY-MM-DD')
@@ -3567,7 +3566,7 @@ const changeDropdownSelection = async (dropdown) => {
     if (result.startDate === null) {
       if (!secondCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 2
+          customColumn.value.push(2)
           if (secondCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = secondCustom.value.startDate
               .format('YYYY-MM-DD')
@@ -3612,7 +3611,7 @@ const changeDropdownSelection = async (dropdown) => {
     if (result.startDate === null) {
       if (!thirdCustom.value.isActive) {
         if (result.name === 'CUSTOM') {
-          customColumn.value = 3
+          customColumn.value.push(3)
           if (thirdCustom.value.startDate.toString().length > 0) {
             customDate.value.startDate = thirdCustom.value.startDate
               .format('YYYY-MM-DD')
@@ -3648,9 +3647,55 @@ const changeDropdownSelection = async (dropdown) => {
     await apptsCreatedPipelineLoad(3)
   }
 }
+
 const getDropdownById = (id) => {
-  return dropdownValues.value.find((x) => x.id === id)
+  return dropdownValues.value.find(x => x.id === id)
 }
+
+const getfdcDropdownTrendText = (id, columnNum) => {
+  // Handle Custom case
+  if (id === 12) {
+    const customObjects = {
+      1: fdcFirstCustom.value,
+      2: fdcSecondCustom.value,
+      3: fdcThirdCustom.value
+    }
+
+    // Get the appropriate custom object based on column number
+    const customObj = customObjects[columnNum]
+
+    // Return formatted date range if the custom object exists
+    if (customObj) {
+      return `${moment(customObj.trendStart).format('MM/DD/YYYY')} - ${moment(customObj.trendEnd).format('MM/DD/YYYY')}`
+    }
+  }
+
+  // Return trend text for non-custom dropdown values
+  return dropdownValues.value.find(x => x.id === id).trendText
+}
+
+const getDropdownTrendText = (id, columnNum) => {
+  // Handle Custom case
+  if (id === 12) {
+    const customObjects = {
+      1: firstCustom.value,
+      2: secondCustom.value,
+      3: thirdCustom.value
+    }
+
+    // Get the appropriate custom object based on column number
+    const customObj = customObjects[columnNum]
+
+    // Return formatted date range if the custom object exists
+    if (customObj) {
+      return `${moment(customObj.trendStart).format('MM/DD/YYYY')} - ${moment(customObj.trendEnd).format('MM/DD/YYYY')}`
+    }
+  }
+
+  // Return trend text for non-custom dropdown values
+  return dropdownValues.value.find(x => x.id === id).trendText
+}
+
 const exportDrilldownCsv = () => {
   let csv = ''
 
@@ -4035,7 +4080,7 @@ const apptsCreatedPipelineLoad = async (column) => {
 }
 const applyCustomDates = async () => {
   if (customTable.value === 'apptsCreated') {
-    if (customColumn.value === 1) {
+    if (lastColumnSelected.value === 1) {
       firstCustom.value.startDate = moment(customDate.value.startDate)
       firstCustom.value.endDate = moment(customDate.value.endDate)
       let dateDiff = firstCustom.value.endDate.diff(
@@ -4056,7 +4101,8 @@ const applyCustomDates = async () => {
         moment(firstCustom.value.startDate).format('MM/DD/YY') +
         '-' +
         moment(firstCustom.value.endDate).format('MM/DD/YY')
-    } else if (customColumn.value === 2) {
+    }
+    if (lastColumnSelected.value === 2) {
       secondCustom.value.startDate = moment(customDate.value.startDate)
       secondCustom.value.endDate = moment(customDate.value.endDate)
       let dateDiff = secondCustom.value.endDate.diff(
@@ -4077,7 +4123,8 @@ const applyCustomDates = async () => {
         moment(secondCustom.value.startDate).format('MM/DD/YY') +
         '-' +
         moment(secondCustom.value.endDate).format('MM/DD/YY')
-    } else if (customColumn.value === 3) {
+    }
+    if (lastColumnSelected.value === 3) {
       thirdCustom.value.startDate = moment(customDate.value.startDate)
       thirdCustom.value.endDate = moment(customDate.value.endDate)
       let dateDiff = thirdCustom.value.endDate.diff(
@@ -4100,9 +4147,9 @@ const applyCustomDates = async () => {
         moment(thirdCustom.value.endDate).format('MM/DD/YY')
     }
 
-    await apptsCreatedPipelineLoad(customColumn.value)
+    await apptsCreatedPipelineLoad(lastColumnSelected.value)
   } else {
-    if (customColumn.value === 1) {
+    if (lastColumnSelected.value === 1) {
       fdcFirstCustom.value.startDate = moment(customDate.value.startDate)
       fdcFirstCustom.value.endDate = moment(customDate.value.endDate)
       let dateDiff = fdcFirstCustom.value.endDate.diff(
@@ -4123,7 +4170,8 @@ const applyCustomDates = async () => {
         moment(fdcFirstCustom.value.startDate).format('MM/DD/YY') +
         '-' +
         moment(fdcFirstCustom.value.endDate).format('MM/DD/YY')
-    } else if (customColumn.value === 2) {
+    }
+    if (lastColumnSelected.value === 2) {
       fdcSecondCustom.value.startDate = moment(customDate.value.startDate)
       fdcSecondCustom.value.endDate = moment(customDate.value.endDate)
       let dateDiff = fdcSecondCustom.value.endDate.diff(
@@ -4144,7 +4192,8 @@ const applyCustomDates = async () => {
         moment(fdcSecondCustom.value.startDate).format('MM/DD/YY') +
         '-' +
         moment(fdcSecondCustom.value.endDate).format('MM/DD/YY')
-    } else if (customColumn.value === 3) {
+    }
+    if (lastColumnSelected.value === 3) {
       fdcThirdCustom.value.startDate = moment(customDate.value.startDate)
       fdcThirdCustom.value.endDate = moment(customDate.value.endDate)
       let dateDiff = fdcThirdCustom.value.endDate.diff(
@@ -4167,7 +4216,7 @@ const applyCustomDates = async () => {
         moment(fdcThirdCustom.value.endDate).format('MM/DD/YY')
     }
 
-    await apptsToFdcPipelineLoad(customColumn.value)
+    await apptsToFdcPipelineLoad(lastColumnSelected.value)
   }
 }
 const apptsToFdcPipelineLoad = async (column) => {
@@ -4348,7 +4397,7 @@ const regionLoad = async (preSelectLists) => {
   if (repValuesChanged.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
-    let areas = areaModel.value.map(function (area) {
+    let areas = areaModel.value.map(function(area) {
       return {
         area_id: area.org_id
       }
@@ -4398,13 +4447,13 @@ const districtLoad = async (preSelectLists) => {
   if (repValuesChanged.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
-    let areas = areaModel.value.map(function (area) {
+    let areas = areaModel.value.map(function(area) {
       return {
         area_id: area.org_id
       }
     })
 
-    let regions = regionModel.value.map(function (region) {
+    let regions = regionModel.value.map(function(region) {
       return {
         region_id: region.org_id
       }
@@ -4448,19 +4497,19 @@ const officeLoad = async (preSelectLists) => {
   if (repValuesChanged.value || initialPageLoad.value) {
     if (!currentUserId.value) return
 
-    let areas = areaModel.value.map(function (area) {
+    let areas = areaModel.value.map(function(area) {
       return {
         area_id: area.org_id
       }
     })
 
-    let regions = regionModel.value.map(function (region) {
+    let regions = regionModel.value.map(function(region) {
       return {
         region_id: region.org_id
       }
     })
 
-    let districts = districtModel.value.map(function (district) {
+    let districts = districtModel.value.map(function(district) {
       return {
         district_id: district.org_id
       }
@@ -4517,25 +4566,25 @@ const repLoad = async (preSelectLists) => {
 
     if (!currentUserId.value) return
 
-    let areas = areaModel.value.map(function (area) {
+    let areas = areaModel.value.map(function(area) {
       return {
         area_id: area.org_id
       }
     })
 
-    let regions = regionModel.value.map(function (region) {
+    let regions = regionModel.value.map(function(region) {
       return {
         region_id: region.org_id
       }
     })
 
-    let districts = districtModel.value.map(function (district) {
+    let districts = districtModel.value.map(function(district) {
       return {
         district_id: district.org_id
       }
     })
 
-    let offices = officeModel.value.map(function (office) {
+    let offices = officeModel.value.map(function(office) {
       return {
         office_id: office.org_id
       }
@@ -4799,10 +4848,10 @@ const funnelDrilldown = async (
 }
 
 const markMissingDrilldownData = () => {
-  funnelDrilldownData.value = funnelDrilldownData.value.map(function (line) {
+  funnelDrilldownData.value = funnelDrilldownData.value.map(function(line) {
     let newLine = {}
 
-    Object.keys(line).forEach(function (key) {
+    Object.keys(line).forEach(function(key) {
       newLine[key] = line[key]
       if (key === 'cash_down_payment') {
         if (line.financier && line.financier.includes('Cash')) {
@@ -5068,35 +5117,44 @@ const closeFunnelDrilldownDialog = () => {
 .checked_in_icon {
   padding-right: 4px;
 }
+
 .trends-container {
   width: 88px;
 }
+
 .fdc-data {
   min-width: 72px;
   cursor: pointer;
 }
+
 .appts-data {
   cursor: pointer;
 }
+
 .other-filters-text {
   margin-right: 12px;
   color: var(--v-grey-darken1);
 }
+
 .rep-filters-text {
   margin-right: 18px;
   color: var(--v-grey-darken1);
 }
+
 .hide-inactive-label {
   margin-right: 8px;
   margin-bottom: 10px;
   letter-spacing: normal;
 }
+
 .hide-inactive-switch-container {
   width: 200px;
 }
+
 .reps-container {
   padding-right: 6px;
 }
+
 .hide-inactive-switch {
   margin-right: 8px;
   margin-bottom: 6px;
@@ -5106,15 +5164,19 @@ const closeFunnelDrilldownDialog = () => {
 .table-gap {
   min-height: 16px;
 }
+
 .other-filters {
   padding-left: 22px !important;
 }
+
 .disabled-export {
   color: var(--v-grey-lighten1) !important;
 }
+
 .placeholder-option {
   color: var(--v-grey-darken2) !important;
 }
+
 .selected-option {
   color: var(--v-primary-base) !important;
 }
@@ -5129,6 +5191,7 @@ const closeFunnelDrilldownDialog = () => {
   height: 40px !important;
   letter-spacing: normal;
 }
+
 .reset-button-active {
   color: var(--v-primary-base) !important;
   border-radius: 4px;
@@ -5139,13 +5202,14 @@ const closeFunnelDrilldownDialog = () => {
   height: 40px !important;
   letter-spacing: normal;
 }
+
 .material-symbols-outlined {
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
+  font-variation-settings: 'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
 }
+
 .checked_in_container {
   display: flex;
   background-color: var(--v-grey-lighten2);
@@ -5157,34 +5221,43 @@ const closeFunnelDrilldownDialog = () => {
   cursor: pointer;
   height: 28px;
 }
+
 .table-collapse-button {
   margin: 16px;
   padding-right: 16px;
 }
+
 .positive-percentage {
   color: green;
 }
+
 .negative-percentage {
   padding-left: 4px;
   color: red;
 }
+
 .negative-trendline {
   color: red;
 }
+
 .positive-percentage {
   padding-left: 4px;
   color: green;
 }
+
 .positive-trendline {
   color: green;
 }
+
 .neutral-percentage {
   padding-left: 4px;
   color: grey;
 }
+
 .neutral-trendline {
   color: grey;
 }
+
 .dropdown-header {
   border: 1px solid var(--v-grey-lighten1);
   text-transform: unset !important;
@@ -5196,6 +5269,7 @@ const closeFunnelDrilldownDialog = () => {
   margin: 12px 0px 12px 0px;
   letter-spacing: normal;
 }
+
 .dashboard-menu-option {
   display: flex;
   min-height: 48px;
@@ -5203,29 +5277,36 @@ const closeFunnelDrilldownDialog = () => {
   padding-right: 16px;
   padding-left: 16px;
 }
+
 .export-icon {
   color: #1f3c73;
 }
+
 .export-button {
   margin-top: 25px;
   color: #1f3c73;
 }
+
 .checkbox-container {
   margin-top: 0px !important;
   margin-right: 12px !important;
 }
+
 .fdc-checkbox-container {
   text-align: center;
   margin-bottom: 8px;
 }
+
 .filter-row {
   margin-left: 16px;
 }
+
 .closer-dashboard-header {
   margin-left: 28px;
   margin-right: 16px;
   margin-top: 25px;
 }
+
 .funnel-relative {
   position: relative;
 }
@@ -5882,10 +5963,10 @@ const closeFunnelDrilldownDialog = () => {
 
 @media (min-width: 500px) {
   #closer-dash-toolbar-container
-    #closer-dash-toolbar
-    .v-toolbar
-    .v-toolbar__content
-    .v-toolbar__title {
+  #closer-dash-toolbar
+  .v-toolbar
+  .v-toolbar__content
+  .v-toolbar__title {
     font-size: 16px;
   }
 
@@ -7058,12 +7139,13 @@ const closeFunnelDrilldownDialog = () => {
 #closer-funnel-table > div > table > thead > tr > th {
   z-index: 1 !important;
 }
+
 #closer-funnel-table
-  > div
-  > table
-  > thead
-  > tr
-  > th.text-start.milestone-col-th,
+> div
+> table
+> thead
+> tr
+> th.text-start.milestone-col-th,
 #closer-funnel-table > div > table > tbody > tr > td.text-start {
   position: sticky !important;
   left: 0;
