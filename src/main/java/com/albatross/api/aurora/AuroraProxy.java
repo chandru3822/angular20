@@ -199,6 +199,7 @@ public class AuroraProxy {
             project.setCustomerFirstName(flowProject.getFirstName());
             project.setCustomerLastName(flowProject.getLastName());
             project.setCustomerPhone(null != flowProject.getMobile() ? flowProject.getMobile() : flowProject.getPhone());
+            project.setCustomerEmail(flowProject.getEmail());
             project.setAddress(getProjectAddress(flowProject.getStreet1(), flowProject.getCity(), flowProject.getState(), flowProject.getPostalCode()));
 
             RestClient client2 = RestClient.builder().baseUrl(host).build();

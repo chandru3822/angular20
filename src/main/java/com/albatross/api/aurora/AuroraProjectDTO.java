@@ -26,6 +26,9 @@ public class AuroraProjectDTO {
     @JsonProperty("customer_last_name")
     private String customerLastName;
 
+    @JsonProperty("customer_email")
+    private String customerEmail;
+
     @JsonProperty("customer_phone")
     private String customerPhone;
 
