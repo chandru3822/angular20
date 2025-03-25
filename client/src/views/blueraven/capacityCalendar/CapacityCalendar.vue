@@ -313,7 +313,12 @@ onUnmounted(() => {
     </template>
     <template v-slot:eventContent="{event}">
       <div v-if="!editMode" class="capacity-booked-grid">
-        <div class="capacity-col label-medium  d-flex justify-center align-center" :class="{'error--text capacity-exceeded': event.extendedProps.maxCapacity < event.extendedProps.currentlyBooked}">
+        <div :class="['capacity-col', 'label-medium', 'd-flex', 'justify-center', 'align-center', {
+      'error--text capacity-exceeded': event.extendedProps.maxCapacity < event.extendedProps.currentlyBooked,
+      'capacity-full': event.extendedProps.maxCapacity === event.extendedProps.currentlyBooked,
+      'warning--text capacity-warning': event.extendedProps.maxCapacity - event.extendedProps.currentlyBooked === 1,
+      'neutral--text capacity-neutral': event.extendedProps.maxCapacity === 0 && event.extendedProps.currentlyBooked === 0
+    }]">
           {{ event.extendedProps.maxCapacity || 0}}
         </div>
         <div class="booked-col label-medium grey--text text--darken-2 d-flex justify-center align-center">
@@ -321,7 +326,6 @@ onUnmounted(() => {
         </div>
       </div>
       <EditCapacityItem v-else :max-capacity="event.extendedProps.maxCapacity" :booked=" event.extendedProps.currentlyBooked" @input="v => addInputToChangedSchedule({id: event.id, start: moment.utc(event.start).toString(), end: moment.utc(event.end).toString(), maxCapacity:Number(v), currentlyBooked: event.extendedProps.currentlyBooked})"/>
-
     </template>
   </FullCalendar>
 </div>
@@ -379,6 +383,18 @@ onUnmounted(() => {
   .capacity-col.capacity-exceeded {
     border: var(--v-error-base) solid 2px;
     margin: -1px;
+  }
+
+  .capacity-col.capacity-full {
+    color: var(--v-error-base); /* Red text for full capacity */
+  }
+
+  .capacity-col.capacity-warning {
+    color: var(--v-warning-base); /* Yellow text for one remaining slot */
+  }
+
+  .capacity-col.capacity-neutral {
+    color: inherit; /* Neutral display for 0 capacity and 0 appointments */
   }
 
   th{
