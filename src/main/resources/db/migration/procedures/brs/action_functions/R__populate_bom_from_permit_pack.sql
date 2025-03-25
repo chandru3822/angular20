@@ -1,10 +1,11 @@
-drop FUNCTION if exists brs.populate_bom_from_permit_pack(p_project_id bigint,p_permit_pack_log_nbr int);
-CREATE OR REPLACE FUNCTION brs.populate_bom_from_permit_pack(p_project_id bigint,p_permit_pack_log_nbr int)
+drop FUNCTION if exists brs.populate_bom_from_permit_pack(p_project_id bigint);
+CREATE OR REPLACE FUNCTION brs.populate_bom_from_permit_pack(p_project_id bigint)
     RETURNS JSON
     LANGUAGE plpgsql
 AS
 $function$
 DECLARE
+	permit_pack_log_nbr; --permit pack log number selected using cfgaId 26343
 	log_record RECORD; --used to hold the permit pack row
     json_item  JSONB; --used to hold a single part json item from the log_record's bom data
     part_num   TEXT; --used within a loop to hold each part_number
@@ -14,18 +15,37 @@ DECLARE
     unmatched_parts JSON := '[]';  -- JSON array to store unmatched parts
 
 BEGIN
-    -- Select the specific permit pack row based on project_id and permit_pack_log_nbr passed into the function params
+
+	--get the permit pack log number for the project
+	SELECT pplh.permit_pack_log_nbr
+	INTO permit_pack_log_nbr
+	FROM flow.project_process_step pps
+		     INNER JOIN flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
+		     INNER JOIN brs.permit_pack_log_history pplh on pplh.id = ppscfv.int_value
+	WHERE pps.project_id = :projectId
+	  AND pps.main = true
+		AND ppscfv.custom_field_group_assignment_id = 26343 --the custom field group assignment id for permit pack log number
+	LIMIT 1;
+
+	-- Exit if no matching permit pack log number is found
+	IF NOT FOUND THEN
+		        RAISE NOTICE 'No permit pack log number found for project_id = %',
+		            p_project_id;
+	RETURN '[]'::JSON;
+	END IF;
+
+    -- Select the specific permit pack row based on project_id and permit_pack_log_nbr
 	SELECT pplh.id, pplh.bom
 	INTO log_record
 	FROM brs.permit_pack_log_history pplh
 	WHERE pplh.project_id = p_project_id
-	  AND pplh.permit_pack_log_nbr = p_permit_pack_log_nbr
+	  AND pplh.permit_pack_log_nbr = permit_pack_log_nbr
 	LIMIT 1;
 
 	-- Exit if no matching record is found
 	IF NOT FOUND THEN
 	        RAISE NOTICE 'No matching record found for project_id = %, permit_pack_log_nbr = %',
-	            p_project_id, p_permit_pack_log_nbr;
+	            p_project_id, permit_pack_log_nbr;
 		RETURN '[]'::JSON;
 	END IF;
 
