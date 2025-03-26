@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION brs.populate_bom_from_permit_pack(p_project_id bigint
 AS
 $function$
 DECLARE
-	permit_pack_log_nbr; --permit pack log number selected using cfgaId 26343
+	permit_pack_log_nbr INT; --permit pack log number selected using cfgaId 26343
 	log_record RECORD; --used to hold the permit pack row
     json_item  JSONB; --used to hold a single part json item from the log_record's bom data
     part_num   TEXT; --used within a loop to hold each part_number
@@ -22,7 +22,7 @@ BEGIN
 	FROM flow.project_process_step pps
 		     INNER JOIN flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
 		     INNER JOIN brs.permit_pack_log_history pplh on pplh.id = ppscfv.int_value
-	WHERE pps.project_id = :projectId
+	WHERE pps.project_id = p_project_id
 	  AND pps.main = true
 		AND ppscfv.custom_field_group_assignment_id = 26343 --the custom field group assignment id for permit pack log number
 	LIMIT 1;
