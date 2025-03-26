@@ -434,6 +434,7 @@ public class PayrollQuery {
                   s.project_total_value as "projectTotalValue",
                   s.ahj_final_inspection_verified as "ahjFinalInspectionVerified",
                   s.id,
+                  s.base_commission as "baseCommission",
                   s.payroll_id as "payrollId",
                   s.remaining_value as "remainingValue",
                   s.remaining_value_commissions as "remainingValueCommissions",
