@@ -1,6 +1,6 @@
 with newFunction as (
 insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, process_step_actionable, description)
-values ('brs.populate_bom_from_permit_pack', 11, 2, 'Populate BOM from Permit Pack Log', true,'Given the project id, and permit pack log number, archives all existing bom parts and adds the bom parts from the permit pack to the project bom')
+values ('brs.populate_bom_from_permit_pack', 11, 2, 'Populate BOM from Permit Pack Log', true,'Given the project id, archives all existing bom parts and adds the bom parts from the permit pack to the project bom')
 	returning id, display_name),
 	assign as (
 insert into flow.company_function (company_function_name, db_function_id, company_id)
