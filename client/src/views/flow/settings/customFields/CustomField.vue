@@ -100,7 +100,7 @@
               <a-autocomplete
                 v-model="customField.flowCustomFieldId"
                 :items="availableCustomFields"
-                :search-input="customFieldQuery"
+                :search-input.sync="customFieldQuery"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Flow System Field"

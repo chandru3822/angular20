@@ -16,7 +16,7 @@ declare
 BEGIN
 
 
-  select proposal_version_id,
+  select p.proposal_version_id,
          pd.closer_user_id,
          pd.closer_office,
          opau.override_plan_id,
@@ -66,7 +66,7 @@ BEGIN
       into v_allocation_sum
       from brs.insert_override_plan_from_template(
         v_closer_org_id, v_closer_user_id);
-      select proposal_version_id,
+      select p.proposal_version_id,
              pd.closer_user_id,
              pd.closer_office,
              opau.override_plan_id,
