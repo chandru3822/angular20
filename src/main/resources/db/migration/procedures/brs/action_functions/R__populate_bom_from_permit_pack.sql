@@ -95,7 +95,7 @@ BEGIN
 		part_num := json_item->>'number';
 		part_name := json_item->>'name';
 	    quantity := (json_item->>'quantity')::INT;
-RAISE NOTICE 'json_item = %s', json_item;
+RAISE NOTICE 'json_item = %', json_item;
 
 	     -- Try matching by part_number first
 		SELECT pmd.parts_master_id INTO part_id
