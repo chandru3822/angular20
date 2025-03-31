@@ -66,6 +66,27 @@ public class BillOfMaterialsQuery {
                              , object_type
     """;
 
+
+    //language=PostgreSQL
+    public final static String getNonPartsMasterPartsForProjectBom = """
+        select  bomnpmp.id
+        	 , bomnpmp.quantity
+        	 , bomnpmp.project_id
+        	 , bomnpmp.non_parts_master_parts_id
+        	 , bomnpmp.supplier_id
+        	 , s.name as "supplierName"
+        	 , bomnpmp.supplier_confirmed
+        	 , npmp.name as description
+        	 , npmp.part_number
+        	 , 'PARTS_OTHER' as "objectCode"
+        	 , 'Parts Other' as "objectType"
+        from brs.bill_of_materials_non_parts_master_parts bomnpmp
+        	left join brs.non_parts_master_parts npmp on bomnpmp.non_parts_master_parts_id = npmp.id
+        	left join brs.feat_db_supplier s
+        	          ON s.id = bomnpmp.supplier_id
+        	where project_id = :projectId;
+    """;
+
     //language=PostgreSQL
     public final static String deleteAllBomParts = """
     UPDATE brs.bill_of_materials_parts

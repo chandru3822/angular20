@@ -96,7 +96,10 @@ public class BillOfMaterialsService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
 
-        return sqlCache.queryBySql(BillOfMaterialsQuery.getBomForProject, params, BillOfMaterialsPart.class);
+        List<BillOfMaterialsPart> parts = sqlCache.queryBySql(BillOfMaterialsQuery.getBomForProject, params, BillOfMaterialsPart.class);
+        List<BillOfMaterialsPart> tempParts = sqlCache.queryBySql(BillOfMaterialsQuery.getNonPartsMasterPartsForProjectBom, params, BillOfMaterialsPart.class);
+        parts.addAll(tempParts);
+        return parts;
     }
 
     public void deleteBillOfMaterialsAllParts(Long projectId){
