@@ -57,6 +57,8 @@ BEGIN
 	     UPDATE brs.bill_of_materials_parts
 	     SET archived = TRUE
 	     WHERE project_id = p_project_id;
+	     RAISE NOTICE 'Archived existing brs.bill_of_materials_parts for project_id = %', p_project_id;
+	 END IF;
 
 	     IF EXISTS (
         SELECT 1
@@ -67,7 +69,7 @@ BEGIN
 	     SET archived = TRUE
 	     WHERE project_id = p_project_id;
 
-		RAISE NOTICE 'Archived existing brs.bill_of_materials_parts for project_id = %', p_project_id;
+		RAISE NOTICE 'Archived existing brs.bill_of_materials_non_parts_master_parts for project_id = %', p_project_id;
 	END IF;
 
 	-- Use query to get the parts_master_data as a CTE so we can get the parts_master_id
