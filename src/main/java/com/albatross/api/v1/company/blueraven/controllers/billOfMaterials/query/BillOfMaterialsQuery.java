@@ -21,6 +21,24 @@ public class BillOfMaterialsQuery {
     """;
 
     //language=PostgreSQL
+    public final static String insertBomNonPartsMasterParts = """
+            INSERT INTO brs.bill_of_materials_non_parts_master_parts (quantity, non_parts_master_parts_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
+            VALUES (:quantity, :nonPartsMasterId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
+    """;
+
+    //language=PostgreSQL
+    public final static String updateBomNonPartsMasterParts = """
+             UPDATE brs.bill_of_materials_non_parts_master_parts
+                set quantity = coalesce(:quantity, quantity)
+                    , supplier_id = coalesce(:supplierId, supplier_id)
+                    , supplier_confirmed = :supplierConfirmed
+                    , archived = :archived
+                    , modified_by_id = :userId
+                    , date_modified = now()
+            WHERE id = :id
+    """;
+
+    //language=PostgreSQL
     public final static String getBomForProject = """
       WITH parts_data AS (
                           SELECT

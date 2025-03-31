@@ -58,6 +58,15 @@ BEGIN
 	     SET archived = TRUE
 	     WHERE project_id = p_project_id;
 
+	     IF EXISTS (
+        SELECT 1
+        FROM brs.bill_of_materials_non_parts_master_parts bomnpmp
+        WHERE bomnpmp.project_id = p_project_id
+    ) THEN
+	     UPDATE brs.bill_of_materials_non_parts_master_parts
+	     SET archived = TRUE
+	     WHERE project_id = p_project_id;
+
 		RAISE NOTICE 'Archived existing brs.bill_of_materials_parts for project_id = %', p_project_id;
 	END IF;
 
