@@ -62,14 +62,14 @@ BEGIN
 
 	     IF EXISTS (
         SELECT 1
-        FROM brs.bill_of_materials_non_parts_master_parts bomnpmp
-        WHERE bomnpmp.project_id = p_project_id
+        FROM brs.bill_of_materials_custom_parts bomcp
+        WHERE bomcp.project_id = p_project_id
     ) THEN
-	     UPDATE brs.bill_of_materials_non_parts_master_parts
+	     UPDATE brs.bill_of_materials_custom_parts
 	     SET archived = TRUE
 	     WHERE project_id = p_project_id;
 
-		RAISE NOTICE 'Archived existing brs.bill_of_materials_non_parts_master_parts for project_id = %', p_project_id;
+		RAISE NOTICE 'Archived existing brs.bill_of_materials_custom_parts for project_id = %', p_project_id;
 	END IF;
 
 	-- Use query to get the parts_master_data as a CTE so we can get the parts_master_id
@@ -119,39 +119,39 @@ RAISE NOTICE 'json_item = %', json_item;
             INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, project_id, date_created, date_modified, created_by_id, modified_by_id)
             VALUES (quantity, part_id, p_project_id, now(), now(), 99999999, 99999999);
 		ELSE
-			--if it's not in the parts_master table, we're going to use the non_parts_master_parts table
+			--if it's not in the parts_master table, we're going to use the custom_parts table
 			RAISE NOTICE 'No matching part found for part_number = % and name = %', part_num, part_name;
 
-			--try matching on the non_parts_master_parts table
-			SELECT npmp.id INTO part_id
-			FROM brs.non_parts_master_parts npmp
-			WHERE npmp.part_number = part_num
-			  AND npmp.name = part_name
+			--try matching on the custom_parts table
+			SELECT cp.id INTO part_id
+			FROM brs.custom_parts cp
+			WHERE cp.part_number = part_num
+			  AND cp.name = part_name
 			LIMIT 1;
 
 			IF part_id IS NULL THEN
-				-- if it's also not in the non_parts_master_parts table then add it.
-				INSERT INTO brs.non_parts_master_parts (name, part_number, date_created, date_modified, created_by_id, modified_by_id)
+				-- if it's also not in the custom_parts table then add it.
+				INSERT INTO brs.custom_parts (name, part_number, date_created, date_modified, created_by_id, modified_by_id)
 				VALUES (part_name, part_num, now(), now(), 99999999, 99999999)
 				RETURNING id into part_id;
 
-				RAISE NOTICE 'Adding part_number = % to the non_parts_master_parts table', part_num;
+				RAISE NOTICE 'Adding part_number = % to the custom_parts table', part_num;
 			END IF;
 
 			--no matter what, we should have a part_id now from the non_parts_master_part table (but it's usually safer to check)
 			IF part_id IS NOT NULL THEN
 
-				--increment the usage on the non_parts_master_parts table
-				UPDATE brs.non_parts_master_parts
-				SET usage=(SELECT COALESCE(MAX(usage), 0) + 1 FROM brs.non_parts_master_parts)
+				--increment the usage on the custom_parts table
+				UPDATE brs.custom_parts
+				SET usage=(SELECT COALESCE(MAX(usage), 0) + 1 FROM brs.custom_parts)
 				WHERE id = part_id;
 
-				--Insert into the bill_of_materials_non_parts_master_parts table
-				INSERT INTO brs.bill_of_materials_non_parts_master_parts (quantity, non_parts_master_parts_id, project_id, date_created, date_modified, created_by_id, modified_by_id)
+				--Insert into the bill_of_materials_custom_parts table
+				INSERT INTO brs.bill_of_materials_custom_parts (quantity, custom_part_id, project_id, date_created, date_modified, created_by_id, modified_by_id)
 				VALUES (quantity, part_id, p_project_id, now(), now(), 99999999, 99999999);
 
 			ELSE
-				RAISE NOTICE 'Something went wrong updating the non_parts_master_parts table for part_number = %', part_num;
+				RAISE NOTICE 'Something went wrong updating the custom_parts table for part_number = %', part_num;
 			END IF;
 
 		END IF;--end Insert into brs.bill_of_materials_parts table if/else
