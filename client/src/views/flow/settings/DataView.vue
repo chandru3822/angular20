@@ -143,7 +143,7 @@
                               item-title="name"
                               return-object
                               autocomplete="off"
-                              @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents(), () => parentProcessStepEvent = null]"
+                              @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents()]"
               >
                 <template v-slot:item="{ props, item }">
                   {{ item.name }}
@@ -156,7 +156,7 @@
                               item-title="eventName"
                               return-object
                               autocomplete="off"
-                              @input="[loadFieldsByParent(true), setObjectTypeId({objectTypeId: objectTypes.EVENT})]"
+                              @input="[loadFieldsByParent(true), setObjectTypeId({objectTypeId: objectTypes.EVENT}), -resetCheckboxes(), newField.resetOnNew = false]"
               >
               </a-autocomplete>
               <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.id"
@@ -165,7 +165,8 @@
                               label="Custom Field"
                               item-title="fieldName"
                               item-value="customFieldGroupAssignmentId"
-                              autocomplete="off">
+                              autocomplete="off"
+                              @input="[resetCheckboxes(), newField.resetOnNew = false]">
               </a-autocomplete>
 
               <div class="mb-3" v-if="(fieldType === DEFAULT_FIELD_TYPE_ID && Object.keys(selectedDefaultField).length > 0) ||
@@ -489,7 +490,7 @@
                   multiple
                   readonly
                   class="no-arrow no-underline"
-                  :items="dataView.dataViewFieldConfigs"
+                  :items="getFilteredParentOptions(item)"
                   item-title="parentMenuOption"
                   item-value="customFieldGroupAssignmentId"
                 />
@@ -676,6 +677,7 @@ const resetAllFields = () => {
   vueInstance.$set(newField.value, 'resetOnNew', false)
   vueInstance.$set(newField.value, 'resetValuesOnMain', false)
   vueInstance.$set(newField.value, 'ignoreIfNull', false)
+  resetCheckboxes()
   cfgaParentObject.value = {}
   newField.value.processStepEventId = null
   newField.value.processStepId = null
@@ -743,6 +745,18 @@ watch(
   },
   { deep: true }
 )
+const getFilteredParentOptions = (item) => {
+  return dataView.value.dataViewFieldConfigs.filter(dvfc =>
+      dvfc.id !== item.id &&
+      dvfc.fieldToUpdate === item.fieldToUpdate &&
+      dvfc.displayName === item.displayName &&
+      item.parentCfgaIds.includes(dvfc.customFieldGroupAssignmentId) && (
+        (!!item.customFieldGroupAssignmentId && !!dvfc.customFieldGroupAssignmentId) ||
+        (!!item.processStepId && !!dvfc.processStepId) ||
+        (!!item.processStepEventId && !!dvfc.processStepEventId)
+      )
+  )
+}
 const getUniqueBehaviorTypes = async () => {
   if (uniqueBehaviorTypes.value.length === 0) {
     appStore.loading = true
@@ -817,6 +831,12 @@ const getParentObjects = async () => {
     appStore.loading = false
   }
 }
+const resetCheckboxes = () => {
+  newField.value.updateFirstValueOnly = false;
+  newField.value.resetOnNew = false;
+  newField.value.resetValuesOnMain = false;
+  newField.value.ignoreIfNull = false;
+}
 const getProcessStepEventData = async () => {
   newField.value.processStepEventId = null
   newField.value.processStepId = null
@@ -875,6 +895,7 @@ const fixData = () => {
   dataView.value.companyProcesses = cloneDeep(oldCompanyProcesses.value)
   dataView.value.companyProcessIds = cloneDeep(oldCompanyProcessIds.value)
   resetAllFields()
+  resetCheckboxes()
 }
 
 const getDataView = async () => {
