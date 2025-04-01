@@ -27,6 +27,9 @@ const capacityCalendar = ref(null)
 const editMode = ref(false)
 const capacityScheduleChanged = ref([])
 const showConfirmDialog = ref(false)
+const selectedDate = ref(null)
+const showBookedDialog = ref(false)
+const bookedAppointments = ref([])
 const dialogBodyText = ref('The following time slot is currently overbooked, with bookings exceeding the allowed capacity.')
 const dialogBodyDates = ref([])
 const dialogShowMore = ref(false)
@@ -242,6 +245,33 @@ const clickEditSaveBtn = async function() {
   }
 }
 
+const openBookedDialog = async (event) => {
+  if (event && event.start) {
+    selectedDate.value = event.start
+    showBookedDialog.value = true
+    try {
+      const params = {
+        orgId: virtualConsultingOrgId,
+        startTime: event.start.toISOString(),
+        endTime: event.end.toISOString()
+      }
+      const { data } = await getRequestWithParams('/virtualResourceCapacity/virtualResourceBookedEvents', { params })
+      bookedAppointments.value = data
+    } catch (e) {
+      console.error('Error:', e)
+      appStore.showSnack('ERROR', 'Error loading appointments')
+    }
+  }
+}
+
+const bookedHeaders = ref([
+  { text: '', value: 'index', show: true },
+  { text: 'Project ID', value: 'projectId', show: true },
+  { text: 'Customer', value: 'customerName', show: true },
+  { text: 'State', value: 'state', show: true },
+  { text: 'Created', value: 'appointmentCreated', show: true }
+])
+
 const duplicateWeek = async () => {
   const calendarApi = capacityCalendar.value.getApi()
   const start = calendarApi.view.activeStart
@@ -321,13 +351,37 @@ onUnmounted(() => {
     }]">
           {{ event.extendedProps.maxCapacity || 0}}
         </div>
-        <div class="booked-col label-medium grey--text text--darken-2 d-flex justify-center align-center">
-          {{ event.extendedProps.currentlyBooked }}
+        <div class="booked-col label-medium grey--text text--darken-2 d-flex justify-center align-center clickable" @click="openBookedDialog(event)">
+        {{ event.extendedProps.currentlyBooked }}
         </div>
       </div>
       <EditCapacityItem v-else :max-capacity="event.extendedProps.maxCapacity" :booked=" event.extendedProps.currentlyBooked" @input="v => addInputToChangedSchedule({id: event.id, start: moment.utc(event.start).toString(), end: moment.utc(event.end).toString(), maxCapacity:Number(v), currentlyBooked: event.extendedProps.currentlyBooked})"/>
     </template>
   </FullCalendar>
+  <ConfirmationDialog
+    :open-dialog="showBookedDialog"
+    @close-dialog="showBookedDialog = false"
+    :width="fullSize ? '100%' : '95%'"
+    hide-cancel
+  >
+    <template v-slot:title>Virtual Appointments Scheduled for {{ getTimeSlotLabel(selectedDate) }}, {{ selectedDate | formatDate('date', 'MMM D') }}</template>
+    <v-data-table
+      :headers="bookedHeaders"
+      :items="bookedAppointments"
+      :hide-default-footer="true"
+    >
+      <template v-slot:item="{item, index}">
+        <tr>
+          <td>{{ index + 1 }}</td>
+          <td>{{ item.projectId }}</td>
+          <td>{{ item.customerName }}</td>
+          <td>{{ item.state }}</td>
+          <td>{{ item.appointmentCreated | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+        </tr>
+      </template>
+    </v-data-table>
+    <template v-slot:yes>Close</template>
+  </ConfirmationDialog>
 </div>
 </template>
 

@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.VirtualResourceBookedEvents;
 import com.albatross.api.v1.flow.model.VirtualResourceCapacitySchedule;
 import com.albatross.api.v1.flow.services.VirtualResourceCapacityService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,21 @@ public class VirtualResourceCapacityController {
             @RequestParam String startTime,
             @RequestParam String endTime){
         return virtualResourceCapacityService.getCapacitySchedule(orgId, startTime, endTime);
+    }
+
+    /**
+     * Gets a list of all the half hour timeslots within a given range (typically a week) and the max capacity and count of booked events for each timeslot
+     * @param orgId
+     * @param startTime - format: "EEE MMM dd yyyy HH:mm:ss 'GMT'Z" (should already be converted to UTC)
+     * @param endTime - format: "EEE MMM dd yyyy HH:mm:ss 'GMT'Z" (should already be converted to UTC)
+     * @return
+     */
+    @GetMapping(value="/virtualResourceBookedEvents")
+    public List<VirtualResourceBookedEvents> getBookedEvents(
+      @RequestParam Long orgId,
+      @RequestParam String startTime,
+      @RequestParam String endTime){
+      return virtualResourceCapacityService.getBookedEventDetails(orgId, startTime, endTime);
     }
 
     /**

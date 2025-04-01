@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.VirtualResourceBookedEvents;
 import com.albatross.api.v1.flow.model.VirtualResourceCapacitySchedule;
 import com.albatross.api.v1.flow.queries.CapacityQuery;
 import lombok.Data;
@@ -46,18 +47,19 @@ public class VirtualResourceCapacityService {
         return null == results ? new ArrayList<VirtualResourceCapacitySchedule>() : results;
     }
 
-    @Data
-    public static class BookedEvents {
-        private Long ppseId;
-        private Timestamp startTime;
-    }
-
     public List<VirtualResourceCapacitySchedule> getBookedForRange(Long orgId, String startTime, String endTime) {
         HashMap<String, Object> params = new HashMap<>();
+        params.put("orgId", orgId);
         params.put("startTime", startTime);
         params.put("endTime", endTime);
+        params.put("positionId", 761L);
+        params.put("companyId", securityService.getCurrentUser().getCompanyId());
 
-        List<BookedEvents> bookedEventStartTimes = sqlCache.queryBySql(CapacityQuery.getBookedForRanged, params,BookedEvents.class);
+        List<VirtualResourceBookedEvents> bookedEventStartTimes = sqlCache.queryBySql(
+            CapacityQuery.getBookedForRanged,
+            params,
+            VirtualResourceBookedEvents.class
+        );
 
         // Define a formatter for the input string format
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -85,12 +87,44 @@ public class VirtualResourceCapacityService {
          return bookedForRange;
     }
 
-    public Long countEventsInInterval(List<BookedEvents> events, LocalDateTime start, LocalDateTime end){
-        List<BookedEvents> eventsInInterval = events.stream().filter(event -> {
+    public Long countEventsInInterval(List<VirtualResourceBookedEvents> events, LocalDateTime start, LocalDateTime end){
+        List<VirtualResourceBookedEvents> eventsInInterval = events.stream().filter(event -> {
             LocalDateTime eventStart = event.getStartTime().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
             return (eventStart.isEqual(start) || eventStart.isAfter(start)) && eventStart.isBefore(end);
         }).toList();
         return (long) eventsInInterval.size();
+    }
+
+    public List<VirtualResourceBookedEvents> getBookedEventDetails(Long orgId, String startTime, String endTime) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("orgId", orgId);
+        params.put("companyId", securityService.getCurrentUser().getCompanyId());
+        params.put("positionId", 761L);
+        params.put("startTime", startTime);
+        params.put("endTime", endTime);
+
+        List<VirtualResourceBookedEvents> bookedEvents = sqlCache.queryBySql(
+            CapacityQuery.getBookedForRanged,
+            params,
+            VirtualResourceBookedEvents.class
+        );
+
+        // Parse the time window
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        LocalDateTime start = LocalDateTime.parse(startTime, formatter);
+        LocalDateTime end = LocalDateTime.parse(endTime, formatter);
+
+        // Filter events within the time window
+        return bookedEvents.stream()
+            .filter(event -> {
+              LocalDateTime eventStart = event.getStartTime()
+                .toInstant()
+                .atZone(ZoneOffset.UTC)
+                .toLocalDateTime();
+              return (eventStart.isEqual(start) || eventStart.isAfter(start))
+                && eventStart.isBefore(end);
+          })
+          .toList();
     }
 
     public Long getCurrentBookedCountForCapacityScheduleRow(Long orgId, String startTime, String endTime){
