@@ -1,4 +1,4 @@
-ALTER TABLE brs.bill_of_materials_non_parts_master_parts
+ALTER TABLE if exists brs.bill_of_materials_parts
 	ADD permit_pack_id integer REFERENCES brs.permit_pack_log_history (id);
 
 DROP TABLE if exists brs.bill_of_materials_non_parts_master_parts;
@@ -23,6 +23,7 @@ CREATE TABLE if not exists brs.bill_of_materials_custom_parts
 	quantity                        integer NOT NULL CHECK (quantity > 0), -- Ensuring positive quantity
 	custom_part_id       bigInt NOT NULL,
 	project_id                      integer NOT NULL,
+	permit_pack_id                  integer,
 	supplier_id                     integer,
 	supplier_confirmed              boolean default false,
 	date_created                    timestamp without time zone DEFAULT now(),
@@ -36,6 +37,9 @@ CREATE TABLE if not exists brs.bill_of_materials_custom_parts
 	                                          ON UPDATE RESTRICT ON DELETE RESTRICT ,
 	CONSTRAINT flow_project_id_fk FOREIGN KEY (project_id)
 	REFERENCES flow.project (id) MATCH SIMPLE
+	                                          ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT brs_permit_pack_id_fk FOREIGN KEY (permit_pack_id)
+	REFERENCES brs.permit_pack_log_history (id) MATCH SIMPLE
 	                                          ON UPDATE RESTRICT ON DELETE RESTRICT,
 	CONSTRAINT brs_supplier_id_fk FOREIGN KEY (supplier_id)
 	REFERENCES brs.feat_db_supplier (id) MATCH SIMPLE
