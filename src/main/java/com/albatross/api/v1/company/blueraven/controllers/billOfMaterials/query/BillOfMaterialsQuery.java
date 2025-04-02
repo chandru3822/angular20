@@ -22,13 +22,13 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String insertBomNonPartsMasterParts = """
-            INSERT INTO brs.bill_of_materials_non_parts_master_parts (quantity, non_parts_master_parts_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
+            INSERT INTO brs.bill_of_materials_custom_parts (quantity, non_parts_master_parts_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
             VALUES (:quantity, :nonPartsMasterId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
     """;
 
     //language=PostgreSQL
     public final static String updateBomNonPartsMasterParts = """
-             UPDATE brs.bill_of_materials_non_parts_master_parts
+             UPDATE brs.bill_of_materials_custom_parts
                 set quantity = coalesce(:quantity, quantity)
                     , supplier_id = coalesce(:supplierId, supplier_id)
                     , supplier_confirmed = :supplierConfirmed
@@ -60,6 +60,7 @@ public class BillOfMaterialsQuery {
                            , bomp.project_id
                            , bomp.parts_master_id
                            , bomp.supplier_id
+                           , pplh.permit_pack_log_nbr
                            , s.name as "supplierName"
                            , bomp.supplier_confirmed
                            , pmvcfg.parts_master_group_uuid
@@ -75,10 +76,12 @@ public class BillOfMaterialsQuery {
                                          ON s.id = bomp.supplier_id
                                LEFT JOIN parts_data vv
                                          ON pmvcfg.parts_master_group_uuid = vv.parts_master_group_uuid
+                                LEFT JOIN brs.permit_pack_log_history pplh on pplh.id = bomp.permit_pack_id
                       WHERE bomp.project_id = :projectId
                         and bomp.archived is false
                       GROUP BY bomp.id
                              , pmvcfg.id
+                             , pplh.permit_pack_log_nbr
                              , s.name
                              , object_code
                              , object_type
@@ -87,22 +90,24 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String getNonPartsMasterPartsForProjectBom = """
-        select  bomnpmp.id
-        	 , bomnpmp.quantity
-        	 , bomnpmp.project_id
-        	 , bomnpmp.non_parts_master_parts_id
-        	 , bomnpmp.supplier_id
+        select  bomcp.id
+        	 , bomcp.quantity
+        	 , bomcp.project_id
+        	 , bomcp.custom_part_id
+        	 , bomcp.supplier_id
+        	 , pplh.permit_pack_log_nbr
         	 , s.name as "supplierName"
-        	 , bomnpmp.supplier_confirmed
-        	 , npmp.name as description
-        	 , npmp.part_number
+        	 , bomcp.supplier_confirmed
+        	 , cp.name as description
+        	 , cp.part_number
         	 , 'PARTS_OTHER' as "objectCode"
         	 , 'Parts Other' as "objectType"
-        from brs.bill_of_materials_non_parts_master_parts bomnpmp
-        	left join brs.non_parts_master_parts npmp on bomnpmp.non_parts_master_parts_id = npmp.id
+        from brs.bill_of_materials_custom_parts bomcp
+        	left join brs.custom_parts cp on bomcp.custom_part_id = cp.id
+        	left join brs.permit_pack_log_history pplh on pplh.id = bomcp.permit_pack_id
         	left join brs.feat_db_supplier s
-        	          ON s.id = bomnpmp.supplier_id
-        	where project_id = :projectId;
+        	          ON s.id = bomcp.supplier_id
+        	where bomcp.project_id = :projectId and bomcp.archived = false;
     """;
 
     //language=PostgreSQL

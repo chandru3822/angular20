@@ -6,6 +6,7 @@ AS
 $function$
 DECLARE
 	permit_pack_log_number INT; --permit pack log number selected using cfgaId 26343
+	permit_pack_id INT; --permit pack id selected using cfgaId 26343
 	log_record RECORD; --used to hold the permit pack row
     json_item  JSONB; --used to hold a single part json item from the log_record's bom data
     part_num   TEXT; --used within a loop to hold each part_number
@@ -16,8 +17,8 @@ DECLARE
 BEGIN
 
 	--get the permit pack log number for the project
-	SELECT pplh.permit_pack_log_nbr
-	INTO permit_pack_log_number
+	SELECT pplh.permit_pack_log_nbr, pplh.id
+	INTO permit_pack_log_number, permit_pack_id
 	FROM flow.project_process_step pps
 		     INNER JOIN flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
 		     INNER JOIN brs.permit_pack_log_history pplh on pplh.id = ppscfv.int_value
@@ -116,8 +117,8 @@ RAISE NOTICE 'json_item = %', json_item;
 
         -- Insert into brs.bill_of_materials_parts table if match is found
         IF part_id IS NOT NULL THEN
-            INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, project_id, date_created, date_modified, created_by_id, modified_by_id)
-            VALUES (quantity, part_id, p_project_id, now(), now(), 99999999, 99999999);
+            INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, project_id, permit_pack_id, date_created, date_modified, created_by_id, modified_by_id)
+            VALUES (quantity, part_id, p_project_id, permit_pack_id, now(), now(), 99999999, 99999999);
 		ELSE
 			--if it's not in the parts_master table, we're going to use the custom_parts table
 			RAISE NOTICE 'No matching part found for part_number = % and name = %', part_num, part_name;
@@ -147,8 +148,8 @@ RAISE NOTICE 'json_item = %', json_item;
 				WHERE id = part_id;
 
 				--Insert into the bill_of_materials_custom_parts table
-				INSERT INTO brs.bill_of_materials_custom_parts (quantity, custom_part_id, project_id, date_created, date_modified, created_by_id, modified_by_id)
-				VALUES (quantity, part_id, p_project_id, now(), now(), 99999999, 99999999);
+				INSERT INTO brs.bill_of_materials_custom_parts (quantity, custom_part_id, project_id, permit_pack_id, date_created, date_modified, created_by_id, modified_by_id)
+				VALUES (quantity, part_id, p_project_id, permit_pack_id, now(), now(), 99999999, 99999999);
 
 			ELSE
 				RAISE NOTICE 'Something went wrong updating the custom_parts table for part_number = %', part_num;

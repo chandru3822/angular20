@@ -32,6 +32,7 @@ const newPartQuantity = ref(null)
 const newPartSupplier = ref(null)
 const localBomParts = ref([])
 const editParts = ref([])
+const addExisting = ref(0)
 
 const bomSaving = ref(false)
 const unsavedModal = ref(false);
@@ -196,7 +197,7 @@ const findBestMatchDuplicatePart = () => {
 </script>
 
 <template>
-  <v-container>
+  <v-container id="bom-edit-view">
     <v-row
         no-gutters
         class="py-0 relative overflow-y-auto"
@@ -219,6 +220,32 @@ const findBestMatchDuplicatePart = () => {
     <v-card v-if="showAddPart" class="mb-3">
       <v-card-title class="label-medium">Add Material</v-card-title>
       <v-card-text class="d-flex flex-wrap pr-0">
+        <v-btn-toggle
+            id="customPartToggle"
+            v-model="addExisting"
+            color="primary"
+            mandatory
+            borderless
+            class="body-medium transparent"
+            style="opacity: 1 !important"
+        >
+          <a-btn id="customPartToggle"
+                 class="fix-toggle-opacity body-medium"
+                 :color="addExisting === 0 ? 'primary' : 'white'"
+                 :class="{
+                  'white--text': addExisting === 0,
+                  'primary--text': addExisting === 1
+                 }"
+          >Choose from Existing Parts</a-btn>
+          <a-btn id="customPartToggle"
+                 class="fix-toggle-opacity body-medium"
+                 :color="addExisting === 1 ? 'primary' : 'white'"
+                 :class="{
+                  'white--text': addExisting === 1,
+                  'primary--text': addExisting === 0
+                 }"
+          >Add a Custom Part</a-btn>
+        </v-btn-toggle>
         <a-autocomplete
             :items="partsMasterParts"
             :value="newPart"
@@ -329,5 +356,7 @@ const findBestMatchDuplicatePart = () => {
 </template>
 
 <style scoped lang="scss">
-
+#bom-edit-view .fix-toggle-opacity:before {
+  background-color: unset !important;
+}
 </style>

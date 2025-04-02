@@ -78,6 +78,7 @@ const getParts = async () => {
   try {
     const { data } = await getRequest(`/bom/${projectId.value}`, 'blueraven', [])
     bomParts.value = data
+    debugger
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error loading BOM')
@@ -225,6 +226,7 @@ const exportPdf = async ($event) => {
       >
         <v-toolbar-title class="headline-small d-flex align-center">
           <span >Bill of Materials</span>
+          <span class="body-medium grey--text text--darken-1 pl-2">#{{bomParts[0]?.permitPackLogNbr}}</span>
           <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
