@@ -69,6 +69,23 @@
                 <label
                   class="wq-follow-up-switch-label"
                   :class="{
+                    'grey--text': cardsLoading || metricsLoading || !selectedWorkQueueCategoryId
+                  }"
+                >
+                  Show empty work queues
+                </label>
+                <v-switch
+                  dense
+                  :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
+                  hide-details
+                  v-model="showZeroCountBoxes"
+                  class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
+                />
+              </div>
+              <div class="future-switch">
+                <label
+                  class="wq-follow-up-switch-label"
+                  :class="{
                     'grey--text':
                       cardsLoading ||
                       metricsLoading ||
@@ -130,6 +147,7 @@
             </div>
             <v-card
               v-else
+              v-if="showZeroCountBoxes || wq.workQueueCount > 0"
               flat
               tile
               v-for="wq in workQueues"
@@ -345,6 +363,7 @@ const appStore = useAppStore()
 const router = useRouter()
 const vueInstance = getCurrentInstance().proxy
 
+const showZeroCountBoxes = ref(false)
 const categoriesLoading = ref(true)
 const metricsLoading = ref(true)
 const cardsLoading = ref(false)
