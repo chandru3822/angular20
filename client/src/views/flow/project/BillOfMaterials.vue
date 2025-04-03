@@ -35,6 +35,8 @@ const bomParts = ref([])
 const partsTypes = ref([])
 const suppliers = ref([])
 const partsMasterParts = ref([])
+const permitPackIds = ref([])
+const selectedPermitPackId = ref(null)
 const editMode = ref(false)
 const addPart = ref(false)
 const duplicatedPart = ref(false)
@@ -70,6 +72,7 @@ onMounted(async() =>{
   await getPartsTypes()
   await getSuppliers()
   await getProject()
+  await getPermitPackIds()
   bomLoading.value = false
 })
 
@@ -78,7 +81,6 @@ const getParts = async () => {
   try {
     const { data } = await getRequest(`/bom/${projectId.value}`, 'blueraven', [])
     bomParts.value = data
-    debugger
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error loading BOM')
@@ -116,6 +118,16 @@ const getProject = async () => {
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error getting project info')
+  }
+}
+
+const getPermitPackIds = async () => {
+  try{
+    const {data} = await getRequest(`/bom/${projectId.value}/permitPackLogNumbers`, 'blueraven', [])
+    permitPackIds.value = data
+    selectedPermitPackId.value = permitPackIds.value?.find(ppid => ppid.primary)
+  }catch (e) {
+
   }
 }
 
@@ -224,9 +236,26 @@ const exportPdf = async ($event) => {
           color="transparent"
           class="elevation-0 bom-toolbar"
       >
-        <v-toolbar-title class="headline-small d-flex align-center">
+        <v-toolbar-title class="headline-small d-flex align-baseline">
           <span >Bill of Materials</span>
-          <span class="body-medium grey--text text--darken-1 pl-2">#{{bomParts[0]?.permitPackLogNbr}}</span>
+<!--          <v-select-->
+<!--              :items="permitPackIds"-->
+<!--              filled-->
+<!--              v-model="selectedPermitPackId"-->
+<!--              item-value="id"-->
+<!--              dense-->
+<!--              hide-details-->
+<!--              :disable="permitPackIds?.length <= 1"-->
+<!--              class="permit-pack-id-select pl-2"-->
+<!--          >-->
+<!--            <template v-slot:item="{item}">-->
+<!--              <span class="body-medium grey&#45;&#45;text text&#45;&#45;darken-1 pl-2">#{{item.permitPackLogNbr}}</span>-->
+<!--            </template>-->
+<!--            <template v-slot:selection="{item}">-->
+<!--              <span class="body-medium primary&#45;&#45;text pl-2">#{{item.permitPackLogNbr}}</span>-->
+<!--            </template>-->
+<!--          </v-select>-->
+          <span class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPackId?.permitPackLogNbr}}</span>
           <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -252,6 +281,7 @@ const exportPdf = async ($event) => {
           disable-sort
           fixed-header
           hide-default-footer
+          item-key="index"
           class="table-striped elevation-1"
       >
         <template v-slot:group.header="{ groupBy, group, headers, isOpen=true, toggle, remove }">
@@ -323,6 +353,7 @@ const exportPdf = async ($event) => {
                              :headers="headers"
                              :showAddPart="addPart"
                              :suppliers="suppliers"
+                             :selectedPermitPackId="selectedPermitPackId"
                              :partsMasterParts="partsMasterParts"
                              :partsMasterLoading="partsMasterLoading"
                              @openAddForm="openAddForm"
@@ -363,6 +394,9 @@ const exportPdf = async ($event) => {
 }
 .new-part-quantity {
   max-width: 6rem;
+}
+.permit-pack-id-select{
+  max-width:110px;
 }
 </style>
 

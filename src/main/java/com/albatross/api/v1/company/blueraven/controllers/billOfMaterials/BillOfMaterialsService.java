@@ -7,6 +7,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterialsPart;
 import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterialsPdfTemplatePart;
 import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterialsPdfTemplatePartDetails;
+import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterialsPermitPack;
 import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.query.BillOfMaterialsQuery;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.BlueravenProposalService;
 import com.albatross.api.v1.flow.model.User;
@@ -145,6 +146,12 @@ public class BillOfMaterialsService {
         params.put("projectId", projectId);
 
         sqlCache.updateBySql(BillOfMaterialsQuery.deleteAllBomParts, params);
+    }
+
+    public List<BillOfMaterialsPermitPack> getBomPermitPacksForProject(Long projectId){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("projectId", projectId);
+        return sqlCache.queryBySql(BillOfMaterialsQuery.getBomPermitPacksForProject, params, BillOfMaterialsPermitPack.class);
     }
 
     public Resource generateMaterialListPDF (Long projectId, List<BillOfMaterialsPart> parts){

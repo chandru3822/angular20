@@ -21,6 +21,7 @@ const props = defineProps({
   headers: Array,
   showAddPart: Boolean,
   suppliers: Array,
+  selectedPermitPackId: Object,
   partsMasterParts: Array,
   partsMasterLoading: Boolean
 })
@@ -208,6 +209,7 @@ const findBestMatchDuplicatePart = () => {
       >
         <v-toolbar-title class="headline-small d-flex align-center">
           <span >Bill of Materials</span>
+          <span class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPackId?.permitPackLogNbr}}</span>
           <a-btn @click="emit('openAddForm')" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -297,6 +299,7 @@ const findBestMatchDuplicatePart = () => {
       disable-sort
       fixed-header
       hide-default-footer
+      item-key="index"
       :loading="bomSaving"
       class="table-striped elevation-1"
   >

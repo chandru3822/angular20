@@ -140,5 +140,16 @@ public class BillOfMaterialsQuery {
         where pps.project_id = :projectId and
             pps.main = true and
             ppscfv.custom_field_group_assignment_id = 26343
-            """; //26343 is the custom field group assignment id for permit pack log number
+    """; //26343 is the custom field group assignment id for permit pack log number
+
+    //language=PostgreSQL
+    public final static String getBomPermitPacksForProject = """
+      select pplh.id, pplh.permit_pack_log_nbr, pps.main as "primary"
+           from flow.project_process_step pps
+                 inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
+                 inner join brs.permit_pack_log_history pplh on pplh.id = ppscfv.int_value
+           where pps.project_id = :projectId
+           and  ppscfv.custom_field_group_assignment_id = 26343
+      """;//26343 is the custom field group assignment id for permit pack log number
+    //todo: this is NOT right
 }

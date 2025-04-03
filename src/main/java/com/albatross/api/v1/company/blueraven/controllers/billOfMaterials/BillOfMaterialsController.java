@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.billOfMaterials;
 
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterialsPart;
+import com.albatross.api.v1.company.blueraven.controllers.billOfMaterials.models.BillOfMaterialsPermitPack;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,12 @@ public class BillOfMaterialsController {
     @PreAuthorize("hasFeatureAccessLevel('BILL_OF_MATERIALS_EDIT')")
     public void deleteBillOfMaterialsAllParts(@PathVariable Long projectId){
         billOfMaterialsService.deleteBillOfMaterialsAllParts(projectId);
+    }
+
+    @GetMapping(value="/{projectId}/permitPackLogNumbers")
+    @PreAuthorize("hasFeatureAccessLevel('BILL_OF_MATERIALS_VIEW')")
+    public List<BillOfMaterialsPermitPack>getBomPermitPacksForProject(@PathVariable Long projectId){
+        return billOfMaterialsService.getBomPermitPacksForProject(projectId);
     }
 
     @PostMapping(value="/{projectId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
