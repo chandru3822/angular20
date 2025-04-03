@@ -70,7 +70,9 @@ const populateDirtyRows = (event, item, column) => {
   })
   if(!alreadyEdited){
     const editedItem = {
-      id:item.id
+      id:item.id,
+      partsMasterId: item.partsMasterId,
+      customPartId: item.customPartId
     }
     editedItem[column] = event
     editParts.value.push(editedItem)
@@ -124,9 +126,11 @@ const setNewPart = (input) => {
 const addNewPartToList = () => {
   let partForUpdate = {
     partsMasterId: newPart.value.id,
+    customPartId: newPart.value.customPartId,
     quantity: newPartQuantity.value,
     supplierId: newPartSupplier.value?.id,
-    supplierConfirmed: null
+    supplierConfirmed: null,
+    permitPackId: newPart.value.permitPackId
   }
   //first check the list of edited parts to see if we're adding a part that matches a previously added or edited part
   const prevEditedPart = findBestEditedMatchDuplicatePart()
@@ -223,6 +227,7 @@ const findBestMatchDuplicatePart = () => {
       <v-card-title class="label-medium">Add Material</v-card-title>
       <v-card-text class="d-flex flex-wrap pr-0">
         <v-btn-toggle
+            v-if="false"
             id="customPartToggle"
             v-model="addExisting"
             color="primary"

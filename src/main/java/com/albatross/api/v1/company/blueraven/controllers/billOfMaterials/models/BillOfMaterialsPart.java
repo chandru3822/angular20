@@ -9,7 +9,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class BillOfMaterialsPart {
-    private Long id, quantity, partsMasterId, customPartId, permitPackLogNbr, supplierId, createdById, modifiedById;
+    private Long id, quantity, partsMasterId, customPartId, permitPackLogNbr, permitPackId, supplierId, createdById, modifiedById;
     private Date dateCreated, dateModified;
     private Boolean supplierConfirmed, archived;
     private UUID partsMasterGroupUuid;

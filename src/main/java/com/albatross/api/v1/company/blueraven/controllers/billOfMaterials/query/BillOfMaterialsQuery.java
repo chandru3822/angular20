@@ -4,8 +4,8 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String insertBomParts = """
-            INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
-            VALUES (:quantity, :partsMasterId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
+            INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, permit_pack_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
+            VALUES (:quantity, :partsMasterId, :permitPackId :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
     """;
 
     //language=PostgreSQL
@@ -22,8 +22,8 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String insertBomNonPartsMasterParts = """
-            INSERT INTO brs.bill_of_materials_custom_parts (quantity, non_parts_master_parts_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
-            VALUES (:quantity, :nonPartsMasterId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
+            INSERT INTO brs.bill_of_materials_custom_parts (quantity, custom_part_id, permit_pack_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
+            VALUES (:quantity, :customPartId, :permitPackId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
     """;
 
     //language=PostgreSQL
@@ -61,6 +61,7 @@ public class BillOfMaterialsQuery {
                            , bomp.parts_master_id
                            , bomp.supplier_id
                            , pplh.permit_pack_log_nbr
+                           , pplh.id as "permitPackId"
                            , s.name as "supplierName"
                            , bomp.supplier_confirmed
                            , pmvcfg.parts_master_group_uuid
@@ -82,6 +83,7 @@ public class BillOfMaterialsQuery {
                       GROUP BY bomp.id
                              , pmvcfg.id
                              , pplh.permit_pack_log_nbr
+                             , pplh.id
                              , s.name
                              , object_code
                              , object_type
@@ -96,6 +98,7 @@ public class BillOfMaterialsQuery {
         	 , bomcp.custom_part_id
         	 , bomcp.supplier_id
         	 , pplh.permit_pack_log_nbr
+        	 , pplh.id as "PermitPackId"
         	 , s.name as "supplierName"
         	 , bomcp.supplier_confirmed
         	 , cp.name as description

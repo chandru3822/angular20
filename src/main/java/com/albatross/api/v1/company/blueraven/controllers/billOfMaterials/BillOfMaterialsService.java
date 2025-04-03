@@ -61,6 +61,7 @@ public class BillOfMaterialsService {
                     map.put("id", p.getId());
                     map.put("quantity", (p.getQuantity() == null || p.getQuantity() == 0) ? null : p.getQuantity());
                     map.put("partsMasterId", p.getPartsMasterId());
+                    map.put("permitPackId", p.getPermitPackId());
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
@@ -91,6 +92,7 @@ public class BillOfMaterialsService {
                     map.put("id", p.getId());
                     map.put("quantity", (p.getQuantity() == null || p.getQuantity() == 0) ? null : p.getQuantity());
                     map.put("nonPartsMasterId", p.getCustomPartId());
+                    map.put("permitPackId", p.getPermitPackId());
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
@@ -105,7 +107,7 @@ public class BillOfMaterialsService {
                     map.put("userId", user.getId());
                     map.put("id", p.getId());
                     map.put("quantity", (p.getQuantity() == null || p.getQuantity() == 0) ? null : p.getQuantity());
-                    map.put("nonPartsMasterId", p.getCustomPartId());
+                    map.put("customPartId", p.getCustomPartId());
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
