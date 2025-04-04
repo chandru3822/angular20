@@ -5,7 +5,7 @@ public class BillOfMaterialsQuery {
     //language=PostgreSQL
     public final static String insertBomParts = """
             INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, permit_pack_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
-            VALUES (:quantity, :partsMasterId, :permitPackId :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
+            VALUES (:quantity, :partsMasterId, :permitPackId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)
     """;
 
     //language=PostgreSQL
@@ -79,6 +79,7 @@ public class BillOfMaterialsQuery {
                                          ON pmvcfg.parts_master_group_uuid = vv.parts_master_group_uuid
                                 LEFT JOIN brs.permit_pack_log_history pplh on pplh.id = bomp.permit_pack_id
                       WHERE bomp.project_id = :projectId
+                            and pplh.id = :permitPackId
                         and bomp.archived is false
                       GROUP BY bomp.id
                              , pmvcfg.id
@@ -103,14 +104,16 @@ public class BillOfMaterialsQuery {
         	 , bomcp.supplier_confirmed
         	 , cp.name as description
         	 , cp.part_number
-        	 , 'PARTS_OTHER' as "objectCode"
-        	 , 'Parts Other' as "objectType"
+        	 , 'PARTS_CUSTOM' as "objectCode"
+        	 , 'Parts Custom' as "objectType"
         from brs.bill_of_materials_custom_parts bomcp
         	left join brs.custom_parts cp on bomcp.custom_part_id = cp.id
         	left join brs.permit_pack_log_history pplh on pplh.id = bomcp.permit_pack_id
         	left join brs.feat_db_supplier s
         	          ON s.id = bomcp.supplier_id
-        	where bomcp.project_id = :projectId and bomcp.archived = false;
+        	where bomcp.project_id = :projectId
+        	    and pplh.id = :permitPackId
+        	    and bomcp.archived = false;
     """;
 
     //language=PostgreSQL
@@ -147,12 +150,24 @@ public class BillOfMaterialsQuery {
 
     //language=PostgreSQL
     public final static String getBomPermitPacksForProject = """
-      select pplh.id, pplh.permit_pack_log_nbr, pps.main as "primary"
-           from flow.project_process_step pps
-                 inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-                 inner join brs.permit_pack_log_history pplh on pplh.id = ppscfv.int_value
-           where pps.project_id = :projectId
-           and  ppscfv.custom_field_group_assignment_id = 26343
+      select
+      	pplh.id,
+      	pplh.permit_pack_log_nbr,
+      	CASE WHEN primary_ids.int_value IS NOT NULL THEN true ELSE false END as "primary"
+      from brs.permit_pack_log_history pplh
+      	     left join (
+      	select ppscfv.int_value
+      	from flow.project_process_step_custom_field_value ppscfv
+      	where ppscfv.custom_field_group_assignment_id = 26343
+      	  and ppscfv.project_process_step_id = (
+      		select id
+      		from flow.project_process_step pps
+      		where pps.project_id = :projectId
+      		  and pps.process_step_id = 3361
+      		  and pps.archived is false
+      		  and pps.main is true
+      	)
+      ) primary_ids ON pplh.id = primary_ids.int_value
+      where pplh.project_id = :projectId
       """;//26343 is the custom field group assignment id for permit pack log number
-    //todo: this is NOT right
 }

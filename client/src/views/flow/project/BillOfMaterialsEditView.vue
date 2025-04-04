@@ -21,7 +21,7 @@ const props = defineProps({
   headers: Array,
   showAddPart: Boolean,
   suppliers: Array,
-  selectedPermitPackId: Object,
+  selectedPermitPack: Object,
   partsMasterParts: Array,
   partsMasterLoading: Boolean
 })
@@ -95,9 +95,10 @@ const cancel = () => {
 
 const save = async () => {
   bomSaving.value = true
+  debugger
   try {
     const {data} = await postRequest(
-        `/bom/${props.projectId}/parts`,
+        `/bom/${props.projectId}/${props.selectedPermitPack.id}/parts`,
         editParts.value,
         'blueraven')
     editParts.value = [] //make sure we clear the edit parts before we save the data to avoid the route guard triggering the unsaved changes dialog
@@ -129,8 +130,7 @@ const addNewPartToList = () => {
     customPartId: newPart.value.customPartId,
     quantity: newPartQuantity.value,
     supplierId: newPartSupplier.value?.id,
-    supplierConfirmed: null,
-    permitPackId: newPart.value.permitPackId
+    supplierConfirmed: null
   }
   //first check the list of edited parts to see if we're adding a part that matches a previously added or edited part
   const prevEditedPart = findBestEditedMatchDuplicatePart()
@@ -213,7 +213,7 @@ const findBestMatchDuplicatePart = () => {
       >
         <v-toolbar-title class="headline-small d-flex align-center">
           <span >Bill of Materials</span>
-          <span class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPackId?.permitPackLogNbr}}</span>
+          <span class="body-medium grey--text text--darken-1 pl-2">#{{ selectedPermitPack?.permitPackLogNbr }}</span>
           <a-btn @click="emit('openAddForm')" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>

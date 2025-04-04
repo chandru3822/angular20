@@ -28,21 +28,23 @@ public class BillOfMaterialsController {
     private static final String CACHE_CONTROL_VALUE = "no-store, no-cache, must-revalidate, max-age=0";
 
 
-    @PostMapping(value="/{projectId}/parts")
+    @PostMapping(value="/{projectId}/{permitPackId}/parts")
     @PreAuthorize("hasFeatureAccessLevel('BILL_OF_MATERIALS_EDIT')")
     public List<BillOfMaterialsPart> upsertBomParts(
             @PathVariable Long projectId,
+            @PathVariable Long permitPackId,
             @RequestBody List<BillOfMaterialsPart> parts
             ){
-        return billOfMaterialsService.upsertBomParts(projectId, parts);
+        return billOfMaterialsService.upsertBomParts(projectId, permitPackId, parts);
     }
 
-    @GetMapping(value="/{projectId}")
+    @GetMapping(value="/{projectId}/{permitPackId}")
     @PreAuthorize("hasFeatureAccessLevel('BILL_OF_MATERIALS_VIEW')")
-    public List<BillOfMaterialsPart> getBomByTypeForProject(
-            @PathVariable Long projectId
+    public List<BillOfMaterialsPart> getBomForProjectAndPermitPackId(
+            @PathVariable Long projectId,
+            @PathVariable Long permitPackId
     ){
-        return billOfMaterialsService.getBomForProject(projectId);
+        return billOfMaterialsService.getBomForProject(projectId, permitPackId);
     }
 
     @DeleteMapping(value="/{projectId}")

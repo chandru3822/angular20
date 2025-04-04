@@ -48,7 +48,7 @@ public class BillOfMaterialsService {
 
 
     @Transactional
-    public List<BillOfMaterialsPart> upsertBomParts(Long projectId, List<BillOfMaterialsPart> parts){
+    public List<BillOfMaterialsPart> upsertBomParts(Long projectId, Long permitPackId, List<BillOfMaterialsPart> parts){
         //the passed in list of parts should be only the parts that have somehow changed;
         // we can then simply update their quantity, whether they're archived, and their dateModified/modifiedById
         User user = securityService.getCurrentUser();
@@ -61,7 +61,7 @@ public class BillOfMaterialsService {
                     map.put("id", p.getId());
                     map.put("quantity", (p.getQuantity() == null || p.getQuantity() == 0) ? null : p.getQuantity());
                     map.put("partsMasterId", p.getPartsMasterId());
-                    map.put("permitPackId", p.getPermitPackId());
+                    map.put("permitPackId", permitPackId);
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
@@ -78,6 +78,7 @@ public class BillOfMaterialsService {
                     map.put("quantity", (p.getQuantity() == null || p.getQuantity() == 0) ? null : p.getQuantity());
                     map.put("partsMasterId", p.getPartsMasterId());
                     map.put("projectId", projectId);
+                    map.put("permitPackId", permitPackId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
                     Boolean archived = (p.getQuantity()!= null && p.getQuantity() <= 0) || p.getArchived() != null && p.getArchived(); //make sure if they set the quantity to zero the part gets archived
@@ -92,7 +93,7 @@ public class BillOfMaterialsService {
                     map.put("id", p.getId());
                     map.put("quantity", (p.getQuantity() == null || p.getQuantity() == 0) ? null : p.getQuantity());
                     map.put("nonPartsMasterId", p.getCustomPartId());
-                    map.put("permitPackId", p.getPermitPackId());
+                    map.put("permitPackId", permitPackId);
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
@@ -128,12 +129,13 @@ public class BillOfMaterialsService {
         if(updateParamsNoPartsMasterId.size() > 0) {
             sqlCache.updateBatchBySql(BillOfMaterialsQuery.updateBomNonPartsMasterParts, updateParamsNoPartsMasterId);
         }
-        return getBomForProject(projectId);
+        return getBomForProject(projectId, permitPackId);
     }
 
-    public List<BillOfMaterialsPart> getBomForProject(Long projectId){
+    public List<BillOfMaterialsPart> getBomForProject(Long projectId, Long permitPackId){
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
+        params.put("permitPackId", permitPackId);
 
         List<BillOfMaterialsPart> parts = sqlCache.queryBySql(BillOfMaterialsQuery.getBomForProject, params, BillOfMaterialsPart.class);
         List<BillOfMaterialsPart> tempParts = sqlCache.queryBySql(BillOfMaterialsQuery.getNonPartsMasterPartsForProjectBom, params, BillOfMaterialsPart.class);

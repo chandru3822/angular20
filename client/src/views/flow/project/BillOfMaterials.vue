@@ -36,7 +36,7 @@ const partsTypes = ref([])
 const suppliers = ref([])
 const partsMasterParts = ref([])
 const permitPackIds = ref([])
-const selectedPermitPackId = ref(null)
+const selectedPermitPack = ref(null)
 const editMode = ref(false)
 const addPart = ref(false)
 const duplicatedPart = ref(false)
@@ -65,10 +65,17 @@ const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('BILL_OF_MATERIALS', 'EDIT')
 })
 
+watch(selectedPermitPack, async () => {
+  if(selectedPermitPack.value) {
+    bomLoading.value = true
+    await getParts()
+    bomLoading.value = false
+  }
+})
+
 
 onMounted(async() =>{
   bomLoading.value = true
-  await getParts()
   await getPartsTypes()
   await getSuppliers()
   await getProject()
@@ -79,7 +86,7 @@ onMounted(async() =>{
 
 const getParts = async () => {
   try {
-    const { data } = await getRequest(`/bom/${projectId.value}`, 'blueraven', [])
+    const { data } = await getRequest(`/bom/${projectId.value}/${selectedPermitPack.value.id}`, 'blueraven', [])
     bomParts.value = data
   } catch (e) {
     logError(e)
@@ -125,7 +132,7 @@ const getPermitPackIds = async () => {
   try{
     const {data} = await getRequest(`/bom/${projectId.value}/permitPackLogNumbers`, 'blueraven', [])
     permitPackIds.value = data
-    selectedPermitPackId.value = permitPackIds.value?.find(ppid => ppid.primary)
+    selectedPermitPack.value = permitPackIds.value?.find(ppid => ppid.primary)
   }catch (e) {
 
   }
@@ -238,24 +245,25 @@ const exportPdf = async ($event) => {
       >
         <v-toolbar-title class="headline-small d-flex align-baseline">
           <span >Bill of Materials</span>
-<!--          <v-select-->
-<!--              :items="permitPackIds"-->
-<!--              filled-->
-<!--              v-model="selectedPermitPackId"-->
-<!--              item-value="id"-->
-<!--              dense-->
-<!--              hide-details-->
-<!--              :disable="permitPackIds?.length <= 1"-->
-<!--              class="permit-pack-id-select pl-2"-->
-<!--          >-->
-<!--            <template v-slot:item="{item}">-->
-<!--              <span class="body-medium grey&#45;&#45;text text&#45;&#45;darken-1 pl-2">#{{item.permitPackLogNbr}}</span>-->
-<!--            </template>-->
-<!--            <template v-slot:selection="{item}">-->
-<!--              <span class="body-medium primary&#45;&#45;text pl-2">#{{item.permitPackLogNbr}}</span>-->
-<!--            </template>-->
-<!--          </v-select>-->
-          <span class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPackId?.permitPackLogNbr}}</span>
+          <v-select
+              v-if="permitPackIds?.length > 0"
+              :items="permitPackIds"
+              filled
+              v-model="selectedPermitPack"
+              return-object
+              dense
+              hide-details
+              :disable="permitPackIds?.length <= 1"
+              class="permit-pack-id-select pl-2"
+          >
+            <template v-slot:item="{item}">
+              <span class="body-medium grey--text text--darken-1 pl-2">#{{item.permitPackLogNbr}}</span>
+            </template>
+            <template v-slot:selection="{item}">
+              <span class="body-medium primary--text pl-2">#{{item.permitPackLogNbr}}</span>
+            </template>
+          </v-select>
+          <span v-else class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPackId?.permitPackLogNbr}}</span>
           <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -353,7 +361,7 @@ const exportPdf = async ($event) => {
                              :headers="headers"
                              :showAddPart="addPart"
                              :suppliers="suppliers"
-                             :selectedPermitPackId="selectedPermitPackId"
+                             :selectedPermitPack="selectedPermitPack"
                              :partsMasterParts="partsMasterParts"
                              :partsMasterLoading="partsMasterLoading"
                              @openAddForm="openAddForm"
