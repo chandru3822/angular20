@@ -3,7 +3,7 @@
 GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 
-scp ubuntu@52.4.148.2:br_full_app.dump .
+#scp ubuntu@52.4.148.2:br_full_app.dump .
 
 CONTAINER=blueraven-albatross-db-1
 
