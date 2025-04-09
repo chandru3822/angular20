@@ -7,7 +7,7 @@
 *@description
 *
 */
-import {onMounted, ref, toRefs, watch} from "vue";
+import {computed, onMounted, ref, toRefs, watch} from "vue";
 import {postRequest, logError} from "@/helpers/helpers.js";
 import { useAppStore } from '@/stores/AppStore.js'
 import {onBeforeRouteLeave, onBeforeRouteUpdate} from "vue-router/composables";
@@ -33,7 +33,9 @@ const newPartQuantity = ref(null)
 const newPartSupplier = ref(null)
 const localBomParts = ref([])
 const editParts = ref([])
-const addExisting = ref(0)
+const addCustom = ref(false)
+const customPartDescription = ref(null)
+const customPartNumber = ref(null)
 
 const bomSaving = ref(false)
 const unsavedModal = ref(false);
@@ -56,6 +58,23 @@ const routeGuard = async (to, from, next) => {
     next()
   }
 }
+
+/*
+customPartPlaceholder: object to display in dropdown when 'Add New Part' is selected; prop values should not change
+ */
+const customPartPlaceholder = ref({
+  description: "Add Custom Part",
+  id: null,
+  objectCode: "PARTS_CUSTOM",
+  objectType: "Parts Custom",
+  partNumber:"",
+})
+/*
+Add customPartPlaceholder to the list of parts for the dropdown so it can display correctly on 'Add New Part'
+ */
+const partsList = computed(() => {
+  return [...props.partsMasterParts, customPartPlaceholder.value]
+})
 
 watch(props.bomParts, () => {
   localBomParts.value = [...props.bomParts]
@@ -80,9 +99,14 @@ const populateDirtyRows = (event, item, column) => {
 }
 
 const closeAddPart = () => {
+  //clear out the new part so another may be added
   newPart.value = null
   newPartQuantity.value = null
   newPartSupplier.value = null
+  customPartDescription.value = null
+  customPartNumber.value = null
+  addCustom.value = false
+  //close the add card
   emit('hideAddPart')
 }
 
@@ -90,12 +114,15 @@ const cancel = () => {
   editParts.value = [] //clear the editParts list
   newPart.value = null //clear the new part values
   newPartQuantity.value = null
+  addCustom.value = false
   emit('cancel')
 }
 
+/*
+Save all part list changes to database and emit result to parent(BillOfMaterials.vue) to refresh the part list
+ */
 const save = async () => {
   bomSaving.value = true
-  debugger
   try {
     const {data} = await postRequest(
         `/bom/${props.projectId}/${props.selectedPermitPack.id}/parts`,
@@ -111,7 +138,9 @@ const save = async () => {
   bomSaving.value = false
 }
 
-
+/*
+Search the description and part number on Add Part autocomplete
+ */
 const newPartSearch = (item, queryText, itemText) => {
   const description = item.description?.toLowerCase()
   const partNumber = item.partNumber?.toLowerCase()
@@ -119,7 +148,16 @@ const newPartSearch = (item, queryText, itemText) => {
   return description?.indexOf(searchText) > -1 || partNumber?.indexOf(searchText) > -1
 }
 
-const setNewPart = (input) => {
+/*
+* Called when a part is selected from the Add Part dropdown or when 'Add Custom Part' is clicked
+* input is the selected part or customPartPlaceholder if called from 'Add Custom Part'
+* newPart is the v-model object for the dropdown
+*/
+const selectNewPart = (input) => {
+  if(input.objectCode === "PARTS_CUSTOM"){
+    input = customPartPlaceholder.value
+    addCustom.value = true
+  }
   newPart.value = input
 }
 
@@ -131,6 +169,10 @@ const addNewPartToList = () => {
     quantity: newPartQuantity.value,
     supplierId: newPartSupplier.value?.id,
     supplierConfirmed: null
+  }
+  if(addCustom.value){
+    partForUpdate.partNumber = customPartNumber.value
+    partForUpdate.description = customPartDescription.value
   }
   //first check the list of edited parts to see if we're adding a part that matches a previously added or edited part
   const prevEditedPart = findBestEditedMatchDuplicatePart()
@@ -163,19 +205,19 @@ const addNewPartToList = () => {
   localNewPart.quantity = newPartQuantity.value
   localNewPart.supplierId = newPartSupplier.value?.id
   localNewPart.supplierName = newPartSupplier.value?.supplierName
+  if(addCustom.value){
+    localNewPart.description = customPartDescription.value
+    localNewPart.partNumber = customPartNumber.value
+  }
   localBomParts.value.push(localNewPart)
-
-
-  //clear out the new part so another may be added
-  newPartQuantity.value = null
-  newPartSupplier.value = null
-  newPart.value = null
-  //close the add card
-  emit('hideAddPart')
+ closeAddPart()
 }
 
 const findBestEditedMatchDuplicatePart = () => {
-  let possibleEditedMatches = editParts.value.filter(bp => (bp.partsMasterId === newPart.value.id))
+  let possibleEditedMatches = editParts.value.filter(bp =>
+      addCustom.value ?
+          (bp.description === customPartDescription.value && bp.partNumber === customPartNumber.value) :
+          (bp.partsMasterId === newPart.value.id))
   if(possibleEditedMatches?.length === 0) {
     return null
   }
@@ -188,7 +230,10 @@ const findBestEditedMatchDuplicatePart = () => {
 
 const findBestMatchDuplicatePart = () => {
   //if it hasn't been previously added/edited, check the list of parts already in the bom
-  let possibleMatches = localBomParts.value.filter(bp => (bp.partsMasterGroupUuid === newPart.value.partsMasterGroupUuid))
+  let possibleMatches = localBomParts.value.filter(bp =>
+      addCustom.value ?
+          (bp.description === customPartDescription.value && bp.partNumber === customPartNumber.value) :
+          (bp.partsMasterGroupUuid === newPart.value.partsMasterGroupUuid))
   if(possibleMatches?.length === 0){
     return null
   }
@@ -214,7 +259,7 @@ const findBestMatchDuplicatePart = () => {
         <v-toolbar-title class="headline-small d-flex align-center">
           <span >Bill of Materials</span>
           <span class="body-medium grey--text text--darken-1 pl-2">#{{ selectedPermitPack?.permitPackLogNbr }}</span>
-          <a-btn @click="emit('openAddForm')" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
+          <a-btn @click="emit('openAddForm')" size="small" variant="text" prepend-icon="mdi-plus" text="Add Part"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <div>
@@ -224,52 +269,47 @@ const findBestMatchDuplicatePart = () => {
       </v-toolbar>
     </v-row>
     <v-card v-if="showAddPart" class="mb-3">
-      <v-card-title class="label-medium">Add Material</v-card-title>
+      <v-card-title class="label-medium">Add Part</v-card-title>
       <v-card-text class="d-flex flex-wrap pr-0">
-        <v-btn-toggle
-            v-if="false"
-            id="customPartToggle"
-            v-model="addExisting"
-            color="primary"
-            mandatory
-            borderless
-            class="body-medium transparent"
-            style="opacity: 1 !important"
-        >
-          <a-btn id="customPartToggle"
-                 class="fix-toggle-opacity body-medium"
-                 :color="addExisting === 0 ? 'primary' : 'white'"
-                 :class="{
-                  'white--text': addExisting === 0,
-                  'primary--text': addExisting === 1
-                 }"
-          >Choose from Existing Parts</a-btn>
-          <a-btn id="customPartToggle"
-                 class="fix-toggle-opacity body-medium"
-                 :color="addExisting === 1 ? 'primary' : 'white'"
-                 :class="{
-                  'white--text': addExisting === 1,
-                  'primary--text': addExisting === 0
-                 }"
-          >Add a Custom Part</a-btn>
-        </v-btn-toggle>
         <a-autocomplete
-            :items="partsMasterParts"
+            :items="partsList"
             :value="newPart"
             :filter="newPartSearch"
             :loading = partsMasterLoading
-            @input="setNewPart"
-            label="Material(Find in Parts Master by Description, Part Number)"
+            @input="selectNewPart"
+            label="Part (Find in Parts Master by Description, Part Number)"
             clearable
+            menu-props="closeOnContentClick"
             class="one-hunned new-part-autocomplete pr-4"
         >
+          <template v-slot:no-data>
+            <div class="d-flex align-baseline">
+            <span class="px-2">No data available,</span>
+            <span class="primary--text underline clickable" @click="[addCustom=true, selectNewPart(customPartPlaceholder)]">Add Custom Part</span>
+            </div>
+          </template>
           <template v-slot:item="{item}">
-            {{item.description}} ({{item.partNumber}})
+            {{item.description}} <span v-if="item.partNumber?.length > 0">({{item.partNumber}})</span>
           </template>
           <template v-slot:selection="{item}">
-            {{item.description}} ({{item.partNumber}})
+            {{item.description}} <span v-if="item.partNumber?.length > 0">({{item.partNumber}})</span>
           </template>
         </a-autocomplete>
+
+        <div v-if="addCustom" class="d-flex one-hunned">
+        <a-text-field
+            type="text"
+            v-model="customPartDescription"
+            label="Description"
+            customClasses="new-custom-part-field pr-4"
+        />
+          <a-text-field
+            type="text"
+            v-model="customPartNumber"
+            label="Part Number"
+            customClasses="new-custom-part-field pr-4"
+        />
+        </div>
         <a-text-field
             type="number"
             v-model="newPartQuantity"
@@ -281,7 +321,7 @@ const findBestMatchDuplicatePart = () => {
             :items="suppliers"
             item-title="name"
             return-object
-            placeholder="Unspecified"
+            label="Supplier"
             clearable
             class="pr-4"
         />
@@ -367,4 +407,11 @@ const findBestMatchDuplicatePart = () => {
 #bom-edit-view .fix-toggle-opacity:before {
   background-color: unset !important;
 }
+.new-custom-part-field {
+}
+.new-part-quantity {
+  max-width: 100px;
+}
+
+
 </style>

@@ -263,8 +263,8 @@ const exportPdf = async ($event) => {
               <span class="body-medium primary--text pl-2">#{{item.permitPackLogNbr}}</span>
             </template>
           </v-select>
-          <span v-else class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPackId?.permitPackLogNbr}}</span>
-          <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Material"/>
+          <span v-else class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPack?.permitPackLogNbr}}</span>
+          <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Part"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <div>

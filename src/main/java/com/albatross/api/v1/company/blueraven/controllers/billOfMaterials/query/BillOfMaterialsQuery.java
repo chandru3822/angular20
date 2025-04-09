@@ -21,6 +21,25 @@ public class BillOfMaterialsQuery {
     """;
 
     //language=PostgreSQL
+    public final static String getFromCustomPartsByNamePartNumber = """
+        SELECT id from brs.custom_parts where part_number=:partNum and name=:partName;
+    """;
+
+    //language=PostgreSQL
+    public final static String addToCustomParts = """
+        INSERT INTO brs.custom_parts (name, part_number, date_created, date_modified, created_by_id, modified_by_id)
+        VALUES (:partName, :partNum, now(), now(), :userId, :userId)
+        RETURNING id
+    """;
+
+    //language=PostgreSQL
+    public final static String increaseCustomPartsUsage = """
+        UPDATE brs.custom_parts
+        SET usage=(SELECT COALESCE(MAX(usage), 0) + 1 FROM brs.custom_parts)
+        WHERE id = :customPartId
+    """;
+
+    //language=PostgreSQL
     public final static String insertBomNonPartsMasterParts = """
             INSERT INTO brs.bill_of_materials_custom_parts (quantity, custom_part_id, permit_pack_id, project_id, supplier_id, supplier_confirmed, date_created, date_modified, created_by_id, modified_by_id)
             VALUES (:quantity, :customPartId, :permitPackId, :projectId, :supplierId, :supplierConfirmed, now(), now(), :userId, :userId)

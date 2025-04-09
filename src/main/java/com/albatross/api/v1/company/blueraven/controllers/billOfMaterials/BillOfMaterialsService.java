@@ -54,8 +54,14 @@ public class BillOfMaterialsService {
         User user = securityService.getCurrentUser();
 
         //do a batch update using upsertBomParts
+
+        //first get all the parts with:
+        //  - a parts master id
+        //  - NO id
+        //  - a non-zero quantity
+        // to insert into the Parts Master BillOfMaterialsParts
         final List<Map<String, Object>> insertParamsWithPartsMasterId =
-                parts.stream().filter(p ->p.getId() == null && p.getPartsMasterId() != null).map(p -> {
+                parts.stream().filter(p ->p.getId() == null && p.getPartsMasterId() != null && p.getQuantity()>0).map(p -> {
                     final Map<String, Object> map = new HashMap<>();
                     map.put("userId", user.getId());
                     map.put("id", p.getId());
@@ -65,11 +71,16 @@ public class BillOfMaterialsService {
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
+                    //archived should always be false; we filter out any trying to insert with a quantity of zero, but we'll leave this here just in case
                     Boolean archived = p.getQuantity() <= 0 || p.getArchived() != null && p.getArchived(); //make sure if they set the quantity to zero the part gets archived
                     map.put("archived", archived);
                     return map;
                 }).toList();
 
+        //get all the parts with:
+        //  - a parts master id
+        //  - an id
+        // these are already in the Parts Master BillOfMaterialsParts, and need to be updated
         final List<Map<String, Object>> updateParamsWithPartsMasterId =
                 parts.stream().filter(p ->p.getId() != null && p.getPartsMasterId() != null).map(p -> {
                     final Map<String, Object> map = new HashMap<>();
@@ -86,22 +97,58 @@ public class BillOfMaterialsService {
                     return map;
                 }).toList();
 
- final List<Map<String, Object>> insertParamsNoPartsMasterId =
-                parts.stream().filter(p ->p.getId() == null && p.getPartsMasterId() == null).map(p -> {
+
+        // for all the parts with no customPartsId and no partsMasterId
+        // check if a part with the same part number and name exists in the part table
+        // if so, get it's id; if not, add it and get the new id
+        //
+        // this adds the id to the part, so it should be picked up by the next filter
+        for(BillOfMaterialsPart p : parts){
+            if(p.getPartsMasterId() == null && p.getCustomPartId() == null && p.getQuantity() > 0) {
+                final Map<String, Object> map = new HashMap<>();
+                map.put("userId", user.getId());
+                map.put("partName", p.getDescription());
+                map.put("partNum", p.getPartNumber());
+
+                //first check if a part with the same name and part number exists in the custom parts table
+                Long id = sqlCache.queryForObjectBySql(BillOfMaterialsQuery.getFromCustomPartsByNamePartNumber, map, Long.class);
+                if(id == null) {
+                    //if not, add it
+                    //todo: check if it's in the parts master table, if so, don't set an id and return an error somehow
+                    id = sqlCache.updateBySqlReturningId(BillOfMaterialsQuery.addToCustomParts, map, "id").longValue();
+                }
+                p.setCustomPartId(id);
+            }
+        }
+
+        //get all the parts with:
+        //  - NO parts master id
+        //  - NO id
+        //  - a custom part id
+        //  - a non-zero quantity
+        // to insert into the Custom BillOfMaterialsParts
+        final List<Map<String, Object>> insertParamsNoPartsMasterId =
+                parts.stream().filter(p ->p.getId() == null && p.getPartsMasterId() == null && p.getCustomPartId() != null && p.getQuantity() > 0).map(p -> {
                     final Map<String, Object> map = new HashMap<>();
                     map.put("userId", user.getId());
                     map.put("id", p.getId());
                     map.put("quantity", (p.getQuantity() == null || p.getQuantity() == 0) ? null : p.getQuantity());
-                    map.put("nonPartsMasterId", p.getCustomPartId());
+                    map.put("customPartId", p.getCustomPartId());
                     map.put("permitPackId", permitPackId);
                     map.put("projectId", projectId);
                     map.put("supplierId", p.getSupplierId());
                     map.put("supplierConfirmed", p.getSupplierConfirmed() != null && p.getSupplierConfirmed()); //if no value for supplierConfirmed, then false
+                    //archived should always be false; we filter out any trying to insert with a quantity of zero, but we'll leave this here just in case
                     Boolean archived = p.getQuantity() <= 0 || p.getArchived() != null && p.getArchived(); //make sure if they set the quantity to zero the part gets archived
                     map.put("archived", archived);
                     return map;
                 }).toList();
 
+
+        //get all the parts with:
+        //  - NO parts master id
+        //  - an id
+        // these already exist in the Custom BillOfMaterialsParts, and need to be
         final List<Map<String, Object>> updateParamsNoPartsMasterId =
                 parts.stream().filter(p ->p.getId() != null && p.getPartsMasterId() == null).map(p -> {
                     final Map<String, Object> map = new HashMap<>();
@@ -125,9 +172,11 @@ public class BillOfMaterialsService {
         }
         if(insertParamsNoPartsMasterId.size() > 0) {
             sqlCache.updateBatchBySql(BillOfMaterialsQuery.insertBomNonPartsMasterParts, insertParamsNoPartsMasterId);
+            sqlCache.updateBatchBySql(BillOfMaterialsQuery.increaseCustomPartsUsage, insertParamsNoPartsMasterId);
         }
         if(updateParamsNoPartsMasterId.size() > 0) {
             sqlCache.updateBatchBySql(BillOfMaterialsQuery.updateBomNonPartsMasterParts, updateParamsNoPartsMasterId);
+            sqlCache.updateBatchBySql(BillOfMaterialsQuery.increaseCustomPartsUsage, updateParamsNoPartsMasterId);
         }
         return getBomForProject(projectId, permitPackId);
     }
