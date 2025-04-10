@@ -36,6 +36,8 @@ const editParts = ref([])
 const addCustom = ref(false)
 const customPartDescription = ref(null)
 const customPartNumber = ref(null)
+const showPartsMasterDuplicateDialog = ref(false)
+const partsMasterDupes = ref([])
 
 const bomSaving = ref(false)
 const unsavedModal = ref(false);
@@ -161,6 +163,26 @@ const selectNewPart = (input) => {
   newPart.value = input
 }
 
+const checkForPartsMasterDupe = () => {
+  partsMasterDupes.value = props.bomParts.filter(pmp => pmp.description === customPartDescription.value && pmp.partNumber)
+}
+
+const confirmPartsMasterDupe = () => {
+  newPart.value = partsMasterDupes.value[0]
+  addCustom.value = false
+  showPartsMasterDuplicateDialog.value = false
+  addNewPartToList()
+}
+
+const addNewCustomPartToList = () => {
+  checkForPartsMasterDupe()
+  if(partsMasterDupes.value?.length > 0){
+    showPartsMasterDuplicateDialog.value = true
+  } else {
+    addNewPartToList()
+  }
+}
+
 
 const addNewPartToList = () => {
   let partForUpdate = {
@@ -174,6 +196,7 @@ const addNewPartToList = () => {
     partForUpdate.partNumber = customPartNumber.value
     partForUpdate.description = customPartDescription.value
   }
+
   //first check the list of edited parts to see if we're adding a part that matches a previously added or edited part
   const prevEditedPart = findBestEditedMatchDuplicatePart()
   if(prevEditedPart){
@@ -329,7 +352,7 @@ const findBestMatchDuplicatePart = () => {
       <v-card-actions class="px-4 pt-0 pb-4">
         <v-spacer/>
         <a-btn variant="text" @click="closeAddPart" text="Cancel"></a-btn>
-        <a-btn :disabled="!newPart || !newPartQuantity" @click="addNewPartToList" text="Add"></a-btn>
+        <a-btn :disabled="!newPart || !newPartQuantity" @click="addCustom ? addNewCustomPartToList() : addNewPartToList()" text="Add"></a-btn>
       </v-card-actions>
     </v-card>
     <div v-if="bomParts?.length === 0" class="grey--text body-medium">
@@ -399,6 +422,27 @@ const findBestMatchDuplicatePart = () => {
       <template>You have unsaved changes.  Are you sure you want to leave this page without saving?</template>
       <template v-slot:yes>Leave Without Saving</template>
       <template v-slot:no>Stay and Keep Editing</template>
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="showPartsMasterDuplicateDialog" @confirm="confirmPartsMasterDupe" @cancel="[addNewPartToList(), showPartsMasterDuplicateDialog = false]">
+      <template v-slot:title>Did you mean this part?</template>
+        <div class="pb-4">
+          <span class="label-large">Existing Part</span>
+          <div v-for="part in partsMasterDupes" class="pt-2">
+            <div class="label-medium">Description: {{part.description}}</div>
+            <div><span class="label-medium">Part Number:</span> {{part.partNumber}}</div>
+            <div><span class="label-medium">Type: </span>{{part.objectType}}</div>
+            <div><span class="label-medium">Manufacturer: </span>{{part.brand}}</div>
+          </div>
+        </div>
+      <v-divider/>
+        <div class="pt-4">
+          <div class="label-large">Your Custom Part</div>
+          <div class="label-medium pt-2">Description: {{customPartDescription}}</div>
+          <div><span class="label-medium">Part Number:</span> {{customPartNumber}}</div>
+          <div><span class="label-medium">Type: </span>Parts Custom</div>
+        </div>
+      <template v-slot:yes>Yes, use existing part</template>
+      <template v-slot:no>No, add my custom part</template>
     </ConfirmationDialog>
   </v-container>
 </template>
