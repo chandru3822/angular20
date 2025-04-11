@@ -103,15 +103,15 @@ BEGIN
 			-- Try matching by part_number first
 			SELECT pmd.parts_master_id INTO part_id
 			FROM parts_master_data_temp pmd
-			WHERE pmd.part_number = part_num
+			WHERE LOWER(pmd.part_number) = LOWER(part_num)
 			LIMIT 1;
 
 			-- If no match, try matching by description
-			IF NOT FOUND THEN
+			IF part_id IS NULL THEN
 				SELECT pmd.parts_master_id INTO part_id
 				FROM parts_master_data_temp pmd
-				WHERE pmd.part_number = part_num
-				  AND pmd.description ILIKE '%' || part_name || '%'
+				WHERE LOWER(pmd.part_number) = LOWER(part_num)
+				  AND LOWER(pmd.description) ILIKE '%' || LOWER(part_name) || '%'
 				LIMIT 1;
 			END IF;
 
@@ -126,7 +126,7 @@ BEGIN
 				--try matching on the custom_parts table
 				SELECT cp.id INTO part_id
 				FROM brs.custom_parts cp
-				WHERE cp.part_number = part_num
+				WHERE LOWER(cp.part_number) = LOWER(part_num)
 				  AND cp.name = part_name
 				LIMIT 1;
 
