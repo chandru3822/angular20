@@ -116,7 +116,7 @@ RAISE NOTICE 'json_item = %', json_item;
 		END IF;
 
         -- Insert into brs.bill_of_materials_parts table if match is found
-        IF part_id IS NOT NULL THEN
+        IF part_id IS NOT NULL AND quantity > 0 THEN
             INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, project_id, permit_pack_id, date_created, date_modified, created_by_id, modified_by_id)
             VALUES (quantity, part_id, p_project_id, permit_pack_id, now(), now(), 99999999, 99999999);
 		ELSE
@@ -148,6 +148,7 @@ RAISE NOTICE 'json_item = %', json_item;
 				WHERE id = part_id;
 
 				--Insert into the bill_of_materials_custom_parts table
+				IF quantity IS NOT NULL THEN
 				INSERT INTO brs.bill_of_materials_custom_parts (quantity, custom_part_id, project_id, permit_pack_id, date_created, date_modified, created_by_id, modified_by_id)
 				VALUES (quantity, part_id, p_project_id, permit_pack_id, now(), now(), 99999999, 99999999);
 
