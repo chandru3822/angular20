@@ -181,9 +181,8 @@ public class BlueravenProposalService {
         }
       }
 
-      // Map for selected adders to add / remove
+      // Map for selected adders (only including applied ones)
       List<Long> selectedAdderIds = new ArrayList<>();
-      List<Long> removeSelectedAdderIds = new ArrayList<>();
 
       // Map Custom CFGA ID to amount
       Map<Long, Long> customAdders = new HashMap<>();
@@ -191,10 +190,9 @@ public class BlueravenProposalService {
       for (ProposalAdderRequest.AdderItem item : adderItems) {
         switch (item.getAdderType()) {
           case "selected_adders":
+            // Only include adders that are applied
             if (item.getApplied()) {
               selectedAdderIds.add(item.getId());
-            } else {
-              removeSelectedAdderIds.add(item.getId());
             }
             break;
           case "custom_adders":
@@ -212,10 +210,8 @@ public class BlueravenProposalService {
         }
       }
 
-      // Update selected adders if needed
-      if (!selectedAdderIds.isEmpty() || !removeSelectedAdderIds.isEmpty()) {
-        updateSelectedAdders(proposalId, selectedAdderIds, removeSelectedAdderIds, userId);
-      }
+      // Update selected adders directly - overwrite the entire array value
+      updateSelectedAddersArray(proposalId, selectedAdderIds, userId);
 
       // Update custom adders if needed
       for (Map.Entry<Long, Long> entry : customAdders.entrySet()) {
@@ -230,32 +226,23 @@ public class BlueravenProposalService {
   }
 
   @Transactional
-  public void updateSelectedAdders(@NonNull Long proposalId,
-                                   List<Long> adderIds,
-                                   List<Long> removeIds,
-                                   @NonNull Long userId) {
+  public void updateSelectedAddersArray(@NonNull Long proposalId,
+                               List<Long> adderIds,
+                               @NonNull Long userId) {
     try {
       // Create a PostgreSQL array representation
-      String addArrayStr = adderIds.toString().replace("[", "{").replace("]", "}");
-      String removeArrayStr = removeIds.toString().replace("[", "{").replace("]", "}");
+      String adderArrayStr = adderIds.toString().replace("[", "{").replace("]", "}");
 
       final Map<String, Object> params = Map.of(
         "proposalId", proposalId,
-        "adderIds", addArrayStr,
-        "removeIds", removeArrayStr,
+        "adderIds", adderArrayStr,
         "userId", userId,
         "cfgaId", SELECTED_ADDERS_CFGA_ID
       );
 
-      if (!removeIds.isEmpty()) {
-        sqlCache.updateBySql(ProposalQuery.removeSelectedAdders, params);
-        log.debug("Removed selected adders for proposal #{}: {}", proposalId, adderIds);
-      }
-
-      if (!adderIds.isEmpty()) {
-        sqlCache.updateBySql(ProposalQuery.updateSelectedAdders, params);
-        log.debug("Updated selected adders for proposal #{}: {}", proposalId, adderIds);
-      }
+      // Simply update the int_array_value with the complete list of selected adders
+      sqlCache.updateBySql(ProposalQuery.updateSelectedAdders, params);
+      log.debug("Updated selected adders for proposal #{} with {} adders", proposalId, adderIds.size());
     } catch (Exception e) {
       log.error("Error updating selected adders for proposal #{}: {}", proposalId, e.getMessage());
       throw new ApiException("Failed to update selected adders: " + e.getMessage());

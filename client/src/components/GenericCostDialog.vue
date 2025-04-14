@@ -374,20 +374,27 @@ const calculatedTotal = computed(() => {
 
         if (amountField) {
           const [, field] = amountField;
-          total += parseFloat(field.value) || 0;
+          const fieldValue = parseFloat(field.value) || 0;
+          total += fieldValue;
+          // Update rawAmount to ensure it's passed correctly to apply handler
+          item.rawAmount = fieldValue;
         } else if (item.rawAmount !== undefined) {
           // Use the raw amount value if available
           total += item.rawAmount;
         } else if (item.amount && item.amount !== '--') {
           // Fall back to parsing the amount field if it exists
-          total += parseCurrency(item.amount);
+          const parsedAmount = parseCurrency(item.amount);
+          total += parsedAmount;
+          item.rawAmount = parsedAmount;
         }
       } else if (item.rawAmount !== undefined) {
         // Use the raw amount value if available
         total += item.rawAmount;
       } else if (item.amount && item.amount !== '--') {
         // For selected and auto adders, parse the amount field
-        total += parseCurrency(item.amount);
+        const parsedAmount = parseCurrency(item.amount);
+        total += parsedAmount;
+        item.rawAmount = parsedAmount;
       }
     }
   });

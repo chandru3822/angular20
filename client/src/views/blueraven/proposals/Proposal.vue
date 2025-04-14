@@ -489,42 +489,14 @@ const options = ref({
     size: ''
   }
 })
-const showAdderDialog = ref(false);
-const currentProposalId = ref(null);
-const savedAdders = ref({});
-
-const openAdderDialog = (proposalId, existingAdders = {}) => {
-  currentProposalId.value = proposalId;
-  savedAdders.value = existingAdders;
-  showAdderDialog.value = true;
-};
-
-const handleAdderCosts = (costs) => {
-  console.log('Applied costs:', costs);
-  // Handle the applied costs
-  showAdderDialog.value = false;
-};
 
 const findOrCreateAdderCostField = () => {
-  // First check if there's an existing field for adder costs
+  // Check if there's an existing field for adder costs
   const existingField = proposal.value?.customFieldGroups
     ?.flatMap(cfg => cfg.customFieldValues)
-    ?.find(f => f.customFieldId === 'adderCosts') // Use the appropriate field ID
+    ?.find(f => f.customFieldId) // Use the appropriate field ID
 
-  if (existingField) {
-    return existingField
-  }
-
-  // For demonstration, we'll just create a mock field
-  // In a real implementation, you might need to create this field through an API
-  return {
-    id: null,
-    customFieldId: 'adderCosts',
-    customFieldGroupAssignmentId: 9999, // Use an appropriate ID
-    stringValue: '',
-    hasListValues: false,
-    required: false
-  }
+  return existingField
 }
 
 const loadExistingAdders = () => {
@@ -546,7 +518,7 @@ const loadExistingAdders = () => {
         // Process selected regular adders
         if (adderData.selectedAdderIds && Array.isArray(adderData.selectedAdderIds)) {
           adderData.selectedAdderIds.forEach(id => {
-            const originalAdder = this.adderData.value.find(a => a.id === id)
+            const originalAdder = adderData.value?.find(a => a.id === id)
             if (originalAdder) {
               selectedAdders.value.push({
                 id,
@@ -697,8 +669,13 @@ const getProposalAdders = async () => {
     // Store the raw adder data for the AdderCostDialog
     adderData.value = data;
 
+    console.log('Retrieved adder data:', data);
+
     // Load any existing adder selections after getting the raw data
     loadExistingAdders();
+
+    // Update selectedAdders based on received API data
+    updateSelectedAddersFromApi(data);
 
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -717,6 +694,54 @@ const getAdderChipColor = (adder) => {
 
   return 'primary'
 }
+
+// Function to update selectedAdders from API data
+const updateSelectedAddersFromApi = (adderApiData) => {
+  if (!adderApiData || !Array.isArray(adderApiData)) return;
+
+  // Reset the arrays
+  selectedAdders.value = [];
+  adderTotalCost.value = 0;
+
+  // Process each adder from the API
+  adderApiData.forEach(adder => {
+    if (adder.selectedProposalAdder) {
+      if (adder.adderType === 'selected_adders') {
+        // Handle regular adders
+        selectedAdders.value.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: adder.selectedAdderAmount || 0,
+          isCustom: false
+        });
+        adderTotalCost.value += adder.selectedAdderAmount || 0;
+      } else if (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) {
+        // Handle custom adders
+        selectedAdders.value.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: adder.customProposalAdderAmount || 0,
+          isCustom: true
+        });
+        adderTotalCost.value += adder.customProposalAdderAmount || 0;
+      }
+    }
+  });
+
+  // Update adderCostData to reflect the current state
+  adderCostData.value = {
+    items: {},
+    total: adderTotalCost.value
+  };
+
+  adderApiData.forEach(adder => {
+    if (adder.adderType === 'selected_adders') {
+      adderCostData.value.items[adder.id] = adder.selectedProposalAdder || false;
+    } else if (adder.adderType === 'custom_adders') {
+      adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
+    }
+  });
+};
 
 provide('editor', undefined)
 
@@ -754,14 +779,13 @@ const isFieldVisible = (field) => {
 }
 
 onMounted(async() => {
-  await getProposalAdders()
   await getProposalDetails()
+  await getProposalAdders()
   await loadAuroraProjectId()
   await store.fetchTemplateContext({
     proposalId: proposalId.value
   })
   window.addEventListener('beforeunload', beforeWindowUnload.value)
-  loadExistingAdders()
 })
 
 onBeforeRouteLeave(async (to, from, next) => {

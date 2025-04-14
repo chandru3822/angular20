@@ -198,30 +198,11 @@ const handleApply = async (result) => {
   try {
     appStore.loading = true;
 
+    // Create proper request data format that matches ProposalAdderRequest
     const requestData = {
       adderItems: result.items
-        // TODO: Filtering out auto_applied_adder items until tested
-        .filter(item => item.type !== 'auto_applied_adder')
-        // For selected_adders, only include if applied
-        .filter(item => {
-          if (item.type === 'selected_adders') {
-            return item.applied;
-          }
-
-          // For custom_adders, only include if applied and has amount > 0
-          if (item.type === 'custom_adders') {
-            let amount = 0;
-            if (item.customFields?.amount?.value) {
-              amount = parseFloat(item.customFields.amount.value);
-            } else if (item.rawAmount) {
-              amount = parseFloat(item.rawAmount);
-            }
-
-            return item.applied && !isNaN(amount) && amount > 0;
-          }
-
-          return false;
-        })
+        // For selected_adders, include all of them - backend will handle the filtering based on applied status
+        .filter(item => item.type === 'selected_adders' || item.type === 'custom_adders')
         .map(item => {
           const adderItem = {
             id: item.id,
@@ -239,7 +220,7 @@ const handleApply = async (result) => {
               amount = parseFloat(item.rawAmount);
             }
 
-            if (!isNaN(amount) && amount > 0) {
+            if (!isNaN(amount)) {
               adderItem.customAdderAmount = amount;
             }
           }
@@ -250,26 +231,38 @@ const handleApply = async (result) => {
 
     console.log('Sending adder items to API:', JSON.stringify(requestData));
 
-    await postRequest(
+    const response = await postRequest(
       `/proposal/${props.proposalId}/adders/update`,
       requestData,
       'blueraven'
     );
 
+    console.log('Adder update response:', response);
+
+    // Create the right format for the parent component
     const appliedCosts = {
       totalCost: parseFloat(result.total.replace(/,/g, '')),
-      selectedAdderIds: requestData.adderItems
-        .filter(item => item.adderType === 'selected_adders' && item.applied)
+      selectedAdderIds: result.items
+        .filter(item => item.type === 'selected_adders' && item.applied)
         .map(item => item.id),
-      customAdders: requestData.adderItems
-        .filter(item => item.adderType === 'custom_adders' && item.applied)
-        .map(item => ({
-          id: item.id,
-          fieldName: item.fieldName,
-          amount: item.customAdderAmount,
-          adderType: 'custom_adders',
-          selectedProposalAdder: true
-        }))
+      customAdders: result.items
+        .filter(item => item.type === 'custom_adders' && item.applied)
+        .map(item => {
+          let amount = 0;
+          if (item.customFields?.amount?.value) {
+            amount = parseFloat(item.customFields.amount.value);
+          } else if (item.rawAmount) {
+            amount = parseFloat(item.rawAmount);
+          }
+          
+          return {
+            id: item.id,
+            fieldName: item.description,
+            amount: amount,
+            adderType: 'custom_adders',
+            selectedProposalAdder: true
+          };
+        })
     };
 
     emit('apply-costs', appliedCosts);
