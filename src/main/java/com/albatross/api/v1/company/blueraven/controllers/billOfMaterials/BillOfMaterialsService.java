@@ -111,12 +111,9 @@ public class BillOfMaterialsService {
                 map.put("partNum", p.getPartNumber());
 
                 //first check if a part with the same name and part number exists in the custom parts table
-                Long id = sqlCache.queryForObjectBySql(BillOfMaterialsQuery.getFromCustomPartsByNamePartNumber, map, Long.class);
-                if(id == null) {
-                    //if not, add it
-                    //todo: check if it's in the parts master table, if so, don't set an id and return an error somehow
-                    id = sqlCache.updateBySqlReturningId(BillOfMaterialsQuery.addToCustomParts, map, "id").longValue();
-                }
+                Optional<Long> optionalId = sqlCache.queryForObjectOptionalBySql(BillOfMaterialsQuery.getFromCustomPartsByNamePartNumber, map, Long.class);
+                //if not, add it
+                Long id = optionalId.orElseGet(() -> sqlCache.updateBySqlReturningId(BillOfMaterialsQuery.addToCustomParts, map, "id").longValue());
                 p.setCustomPartId(id);
             }
         }
