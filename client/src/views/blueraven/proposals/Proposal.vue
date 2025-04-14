@@ -269,7 +269,10 @@
                 Price Details
               </v-expansion-panel-header>
               <v-expansion-panel-content>
-                <PriceDetails />
+                <PriceDetails
+                  :proposal-id="proposalId"
+                  :adder-data="adderData"
+                />
               </v-expansion-panel-content>
             </v-expansion-panel>
           </v-expansion-panels>
@@ -684,15 +687,6 @@ const getProposalAdders = async () => {
   } finally {
     appStore.loading = false;
   }
-}
-
-// Get color for adder chip
-const getAdderChipColor = (adder) => {
-  if (adder.isCustom) {
-    return 'deep-purple'
-  }
-
-  return 'primary'
 }
 
 // Function to update selectedAdders from API data

@@ -104,10 +104,15 @@
                 <td>{{ adder.name }}</td>
                 <td class="text-center">{{ adder.unitPrice }}</td>
                 <td class="text-right">
-                  <span v-if="adder.oldAmount" class="text-decoration-line-through mr-2 grey--text">
-                    {{ formatNumber(adder.oldAmount) }}
+                  <span v-if="adder.projectAdderAmount && adder.projectAdderAmount !== adder.proposalAdderAmount" class="text-decoration-line-through mr-2 grey--text">
+                    ${{ formatNumber(adder.projectAdderAmount) }}
                   </span>
-                  <span>{{ formatNumber(adder.amount) }}</span>
+                  <span :class="{
+                    'red--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount > 0,
+                    'green--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount > 0
+                  }">
+                    ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0) }}
+                  </span>
                 </td>
               </tr>
               </tbody>
@@ -122,6 +127,16 @@
 <script>
 export default {
   name: 'PriceDetails',
+  props: {
+    proposalId: {
+      type: [Number, String],
+      required: true
+    },
+    adderData: {
+      type: Array,
+      default: () => []
+    }
+  },
   data() {
     return {
       expanded: false,
@@ -133,51 +148,59 @@ export default {
         trenchingAdjustment: 70,
         treeTrimmingAdjustment: 100
       },
-      adders: [
-        {
-          name: 'Tree Trimming',
-          unitPrice: '',
-          oldAmount: 500,
-          amount: 400
-        },
-        {
-          name: 'Metal Roof',
-          unitPrice: '115/panel',
-          amount: 2760
-        },
-        {
-          name: 'Smoke Detectors',
-          unitPrice: 'Flat Rate',
-          amount: 600
-        },
-        {
-          name: 'Trenching',
-          unitPrice: '',
-          oldAmount: 1350,
-          amount: 1280
-        },
-        {
-          name: 'Panel Upgrade',
-          unitPrice: '',
-          amount: 2000
-        },
-        {
-          name: 'Electrical Service Base Charge',
-          unitPrice: '',
-          amount: 1000
-        }
-      ]
+      adders: []
     };
+  },
+  watch: {
+    adderData: {
+      immediate: true,
+      handler(newAdderData) {
+        if (newAdderData && newAdderData.length > 0) {
+          this.processAdderData(newAdderData);
+        }
+      }
+    }
   },
   computed: {
     commissionTotal() {
       return this.commission.base + this.commission.trenchingAdjustment + this.commission.treeTrimmingAdjustment;
     },
     adderTotal() {
-      return this.adders.reduce((total, adder) => total + adder.amount, 0);
+      return this.adders.reduce((total, adder) => {
+        // Use proposalAdderAmount if available, otherwise fallback to amount for backward compatibility
+        return total + (adder.proposalAdderAmount || adder.amount || 0);
+      }, 0);
     }
   },
   methods: {
+    processAdderData(adderData) {
+      this.adders = adderData
+        .filter(adder => adder.selectedProposalAdder || (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0))
+        .map(adder => {
+          let projectAmount = 0;
+          let proposalAmount = 0;
+          
+          if (adder.adderType === 'selected_adders') {
+            projectAmount = adder.selectedAdderAmount || 0;
+            proposalAmount = adder.selectedProposalAdderAmount || adder.selectedAdderAmount || 0;
+          } else if (adder.adderType === 'custom_adders') {
+            projectAmount = adder.customAdderAmount || 0;
+            proposalAmount = adder.customProposalAdderAmount || 0;
+          } else if (adder.adderType === 'auto_applied_adder') {
+            projectAmount = adder.autoAppliedAdderAmount || 0;
+            proposalAmount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
+          }
+
+          return {
+            name: adder.fieldName || 'Unknown Adder',
+            unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
+            projectAdderAmount: projectAmount,
+            proposalAdderAmount: proposalAmount,
+            // Keep amount for backward compatibility
+            amount: proposalAmount
+          };
+        });
+    },
     formatNumber(value) {
       return new Intl.NumberFormat('en-US').format(value);
     }
