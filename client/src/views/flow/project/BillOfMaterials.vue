@@ -228,7 +228,7 @@ const exportPdf = async ($event) => {
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <div>
-            <a-btn v-if="userCanEdit" prepend-icon="mdi-list-box-outline" text="Export Material List" :disabled="editMode" @click="showExportDialog = true"></a-btn>
+            <a-btn v-if="userCanEdit" prepend-icon="mdi-list-box-outline" text="Export Material List" :disabled="editMode || !selectedPermitPack || bomParts?.length === 0" @click="showExportDialog = true"></a-btn>
           </div>
         </v-toolbar>
       </div>
@@ -246,7 +246,7 @@ const exportPdf = async ($event) => {
         <v-toolbar-title class="headline-small d-flex align-baseline">
           <span >Bill of Materials</span>
           <v-select
-              v-if="permitPackIds?.length > 0"
+              v-if="permitPackIds?.length > 1"
               :items="permitPackIds"
               filled
               v-model="selectedPermitPack"
@@ -263,12 +263,12 @@ const exportPdf = async ($event) => {
               <span class="body-medium primary--text pl-2">#{{item.permitPackLogNbr}}</span>
             </template>
           </v-select>
-          <span v-else class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPack?.permitPackLogNbr}}</span>
-          <a-btn @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Part"/>
+          <span v-else-if="selectedPermitPack" class="body-medium grey--text text--darken-1 pl-2">#{{selectedPermitPack?.permitPackLogNbr}}</span>
+          <a-btn v-if="selectedPermitPack && userCanEdit" @click="openAddForm" size="small" variant="text" prepend-icon="mdi-plus" text="Add Part"/>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <div>
-          <a-btn v-if="userCanEdit && !editMode" @click="editMode = true" variant="outlined" prepend-icon="mdi-pencil" text="Edit"></a-btn>
+          <a-btn v-if="userCanEdit && !editMode && selectedPermitPack" @click="editMode = true" variant="outlined" prepend-icon="mdi-pencil" text="Edit"></a-btn>
         </div>
       </v-toolbar>
     </v-row>
