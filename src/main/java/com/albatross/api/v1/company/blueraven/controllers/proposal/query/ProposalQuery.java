@@ -350,15 +350,12 @@ from project p
   //language=PostgreSQL
   public final static String updateSelectedAdders = """
     UPDATE brs.proposal_custom_field_value
-    SET int_array_value = (
-      SELECT array_agg(DISTINCT adders)
-      FROM unnest(COALESCE(int_array_value, '{}'::bigint[]) || :adderIds::bigint[]) AS adders
-    ),
-    created_by_id = :userId,
-    modified_by_id = :userId
+    SET int_array_value = :adderIds::bigint[],
+        modified_by_id = :userId,
+        date_modified = now()
     WHERE proposal_id = :proposalId
-      AND custom_field_group_assignment_id = :cfgaId
-  """;
+      AND custom_field_group_assignment_id = :cfgaId;
+    """;
 
   //language=PostgreSQL
   public final static String removeSelectedAdders = """
