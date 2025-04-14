@@ -343,6 +343,46 @@ from project p
     """;
 
   //language=PostgreSQL
+  public final static String getAdderDetails = """
+    SELECT * FROM  brs.get_selected_custom_auto_adders(:proposalId::bigint, :commissionStrategyId::bigint, :storageId::bigint)
+    """;
+
+  //language=PostgreSQL
+  public final static String updateSelectedAdders = """
+    UPDATE brs.proposal_custom_field_value
+    SET int_array_value = (
+      SELECT array_agg(DISTINCT adders)
+      FROM unnest(COALESCE(int_array_value, '{}'::bigint[]) || :adderIds::bigint[]) AS adders
+    ),
+    created_by_id = :userId,
+    modified_by_id = :userId
+    WHERE proposal_id = :proposalId
+      AND custom_field_group_assignment_id = :cfgaId
+  """;
+
+  //language=PostgreSQL
+  public final static String removeSelectedAdders = """
+    UPDATE brs.proposal_custom_field_value
+    SET int_array_value = (
+      SELECT array_agg(adders)
+      FROM unnest(int_array_value) AS adders
+      WHERE adders <> ALL(:removeIds::bigint[])
+    ),
+    modified_by_id = :userId
+    WHERE proposal_id = :proposalId
+      AND custom_field_group_assignment_id = :cfgaId
+      AND int_array_value IS NOT NULL
+  """;
+
+  //language=PostgreSQL
+  public final static String updateCustomAdders = """
+    UPDATE brs.proposal_custom_field_value
+    SET int_value = :customAdderValue::bigint
+    WHERE proposal_id = :proposalId::bigint
+      AND custom_field_group_assignment_id = :cfgaId::bigint
+  """;
+
+  //language=PostgreSQL
   public final static String updateProposalVersion = """
     update brs.proposal
     set proposal_version_id = :versionId,

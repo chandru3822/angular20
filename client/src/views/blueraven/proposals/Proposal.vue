@@ -2,7 +2,7 @@
   <v-container
     id="proposals-container"
     :style="cssVars"
-    class="pa-4"
+    class="pa-2"
     v-if="proposalExists"
   >
     <v-row>
@@ -21,7 +21,6 @@
             </v-alert>
           </v-col>
         </v-row>
-
         <v-card class="d-flex mb-2 pa-4">
           <div class="new-proposal-header">
             <router-link
@@ -107,102 +106,176 @@
         </v-card>
       </v-col>
     </v-row>
-
     <v-form ref="proposalForm">
       <v-row>
-        <v-col cols="12" sm="6" md="4" class="mt-1 configurations-column">
-          <v-row cols="12" class="px-3 config-row">
-            <v-card width="100%" class="rounded-0 configurations-card">
-              <label class="config-label">Configurations</label>
-              <v-spacer />
-              <div
-                class="config-buttons-group"
-                v-if="canEdit && !proposal.locked"
-              >
-                <a-btn
-                  depressed
-                  variant="text"
-                  color="primary"
-                  :disabled="dirtyCfvs.length === 0"
-                  class="text-capitalize config-buttons"
-                  @click="resetToDefault"
-                  text="Reset to Default"
-                ></a-btn>
-                <a-btn
-                  v-if="canEdit && !proposal.locked"
-                  color="primary"
-                  depressed
-                  :dark="dirtyCfvs.length !== 0"
-                  :disabled="dirtyCfvs.length === 0"
-                  @click="validateForm()"
-                  class="text-capitalize font-weight-bold config-buttons"
-                  text="Save"
-                ></a-btn>
-              </div>
-            </v-card>
-          </v-row>
-          <v-card class="proposal-container prop-custom-field-groups">
-            <div class="ml-4 mr-2 mt-2">
-              <v-expansion-panels multiple v-model="expansionPanelsStatus">
-                <v-expansion-panel
-                  v-for="cfg in sortedCustomFieldGroups"
-                  :key="cfg.id"
-                  class="my-2 pr-4"
+        <v-col cols="12" sm="6" md="4" class="configurations-column">
+          <div class="configurations-wrapper">
+            <v-card class="configurations-card-container">
+              <div class="configurations-scroll-area">
+                <v-expansion-panels multiple class="rounded-0">
+                  <v-expansion-panel class="rounded-0">
+                    <v-expansion-panel-header class="parent-expansion-header">
+                      Configuration
+                      <div class="config-buttons-group">
+                        <a-btn
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          class="text-capitalize config-buttons"
+                          @click="resetToDefault"
+                          text="Reset"
+                        ></a-btn>
+                        <a-btn
+                          size="small"
+                          v-if="canEdit && !proposal.locked"
+                          color="primary"
+                          @click="validateForm()"
+                          class="text-capitalize config-buttons"
+                          text="Save"
+                        ></a-btn>
+                      </div>
+                    </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-expansion-panels
+                  multiple
+                  focusable
+                  class="rounded-0"
+                  v-model="expansionPanelsStatus"
                 >
-                  <v-expansion-panel-header>
-                    <v-toolbar flat dense>
-                      <v-toolbar-title class="configuration-group-title ml-0">
-                        {{ cfg.groupName }}
-                      </v-toolbar-title>
-                    </v-toolbar>
-                  </v-expansion-panel-header>
-                  <v-expansion-panel-content
-                    v-for="field in filteredCustomFields(cfg.customFieldValues)"
-                    :key="field.id"
+                  <v-expansion-panel
+                    v-for="cfg in sortedCustomFieldGroups"
+                    :key="cfg.id"
+                    class="child-expansion-panel"
                   >
-                    <CustomValueInput
-                      v-if="isFieldVisible(field)"
-                      :required="field.required"
-                      :callback="inputChangeCallback"
-                      :readonly="
-                        !canEdit ||
-                        proposal.locked ||
-                        !isConditionalFieldPopulated(field) ||
-                        (field.conditionalOnId && loading) ||
-                        !userHasWhiteListedPosition(field, 'readonly') ||
-                        field.ancillaryCustomFieldGroupAssignmentId !== null
-                      "
-                      :field="field"
-                      :show-field-name="false"
-                      :list-of-value-filter="filters[field.customFieldId]"
-                      :hint="getHint(field)"
-                    />
-                    <CommissionDetailsMenu
-                      v-if="
-                        field.customFieldGroupAssignmentId === 454 &&
-                        isFieldVisible(field)
-                      "
-                      :custom-field-groups="sortedCustomFieldGroups"
-                      :proposal-id="proposalId"
-                    />
-<!--                    Only show the Aurora Storage options link for the Storage Type custom field and only if the selected value has "Grid-tied" in the name-->
-                    <div v-if="field.customFieldGroupAssignmentId === 200 && field.listOfValues.find(v => v.id === field.intValue)?.name.search(/\bgrid[-\s]+tied\b/i) >= 0 && auroraProjectId && auroraDesignId"
-                         class="mb-4 mt-n4"
+                    <v-expansion-panel-header class="child-expansion-header">
+                      {{ cfg.groupName }}
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content
+                      v-for="field in filteredCustomFields(cfg.customFieldValues)"
+                      :key="field.id"
+                      class="child-expansion-panel"
                     >
-                      <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                      <a :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
-                        target="_blank" class="pr-1" v-on="on" v-bind="attrs">
-                        <v-icon small color="primary" class="pr-1">mdi-open-in-new</v-icon>Aurora Storage Options <v-icon small>mdi-information</v-icon></a>
+                      <CustomValueInput
+                        v-if="isFieldVisible(field)"
+                        :required="field.required"
+                        :callback="inputChangeCallback"
+                        :readonly="
+                            !canEdit ||
+                            proposal.locked ||
+                            !isConditionalFieldPopulated(field) ||
+                            (field.conditionalOnId && loading) ||
+                            !userHasWhiteListedPosition(field, 'readonly') ||
+                            field.ancillaryCustomFieldGroupAssignmentId !== null
+                          "
+                        :field="field"
+                        :show-field-name="false"
+                        :list-of-value-filter="filters[field.customFieldId]"
+                        :hint="getHint(field)"
+                      />
+                      <CommissionDetailsMenu
+                        v-if="
+                            field.customFieldGroupAssignmentId === 454 &&
+                            isFieldVisible(field)
+                          "
+                        :custom-field-groups="sortedCustomFieldGroups"
+                        :proposal-id="proposalId"
+                      />
+                      <!-- Only show the Aurora Storage options link for the Storage Type custom field and only if the selected value has "Grid-tied" in the name -->
+                      <div
+                        v-if="field.customFieldGroupAssignmentId === 200 &&
+                            field.listOfValues.find(v => v.id === field.intValue)?.name.search(/\bgrid[-\s]+tied\b/i) >= 0 &&
+                            auroraProjectId &&
+                            auroraDesignId"
+                        class="mb-4 mt-n4"
+                      >
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on, attrs }">
+                            <a
+                              :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
+                              target="_blank"
+                              class="pr-1"
+                              v-on="on"
+                              v-bind="attrs"
+                            >
+                              <v-icon
+                                small
+                                color="primary"
+                                class="pr-1"
+                              >
+                                mdi-open-in-new
+                              </v-icon>
+                              Aurora Storage Options
+                              <v-icon small>
+                                mdi-information
+                              </v-icon>
+                            </a>
+                          </template>
+                          <span>
+                            Aurora savings calculator for grid-tied batteries
+                          </span>
+                        </v-tooltip>
+                      </div>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                  <v-expansion-panel class="child-expansion-panel">
+                    <v-expansion-panel-header class="child-expansion-header">
+                      Adders
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content class="child-expansion-panel">
+                      <!-- Clickable field that opens the dialog -->
+                      <v-combobox
+                        label="Selected Adders"
+                        multiple
+                        chips
+                        small-chips
+                        append-icon="mdi-table-edit"
+                        :value="selectedAdders"
+                        @focus="showAdderCostDialog = true"
+                        :disabled="!canEdit || proposal.locked"
+                        readonly
+                      >
+                        <template v-slot:selection="{ item }">
+                          <v-chip
+                            x-small
+                            class="ma-1"
+                          >
+                            {{ item.label }}
+                          </v-chip>
                         </template>
-                        <span> Aurora savings calculator for grid-tied batteries</span>
-                      </v-tooltip>
-                    </div>
-                  </v-expansion-panel-content>
-                </v-expansion-panel>
-              </v-expansion-panels>
-            </div>
-          </v-card>
+                      </v-combobox>
+                      <!-- Display total cost if there are selected adders -->
+                      <div v-if="selectedAdders.length > 0" class="d-flex flex-column mb-2">
+                        <div class="d-flex justify-start">
+                          <v-chip color="primary" text-color="white" class="font-weight-medium">
+                            Total Adder Cost: ${{ adderTotalCost.toLocaleString() }}
+                          </v-chip>
+                        </div>
+                      </div>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+                <AdderCostDialog
+                  :openDialog="showAdderCostDialog"
+                  :existingAdders="adderCostData"
+                  :proposalId="proposalId"
+                  @close-dialog="showAdderCostDialog = false"
+                  @apply-costs="handleAppliedCosts"
+                  @cancel="showAdderCostDialog = false"
+                />
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+            <v-expansion-panel>
+              <v-expansion-panel-header class="parent-expansion-header">
+                Price Details
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <PriceDetails />
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+          </div>
+            </v-card>
+          </div>
         </v-col>
         <v-col cols="12" sm="6" md="8" class="px-6 pt-4">
           <v-row class="prop-view-row" ref="proposalFullscreenViewerEl">
@@ -302,21 +375,6 @@
                 >
                 </a-select>
               </div>
-              <!--              <a-btn-->
-              <!--                variant="text"-->
-              <!--                class="text-capitalize primary&#45;&#45;text"-->
-              <!--                @click="toggleFullscreen"-->
-              <!--              >-->
-              <!--                <v-icon v-if="isFullscreen">mdi-fullscreen-exit</v-icon>-->
-              <!--                <span v-if="isFullscreen" class="d-none d-md-inline"-->
-              <!--                  >Minimize</span-->
-              <!--                >-->
-
-              <!--                <v-icon v-if="!isFullscreen">mdi-fullscreen</v-icon>-->
-              <!--                <span v-if="!isFullscreen" class="d-none d-md-inline"-->
-              <!--                  >Fullscreen</span-->
-              <!--                >-->
-              <!--              </a-btn>-->
             </v-card>
           </v-row>
         </v-col>
@@ -368,7 +426,9 @@ import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
-
+import AdderCostDialog from '@/components/AdderCostDialog.vue'
+import GenericCostDialog from '@/components/GenericCostDialog.vue'
+import PriceDetails from '@/components/PriceDetails.vue'
 import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router/composables'
@@ -414,7 +474,249 @@ const viewportEl = ref(null)
 const proposalViewerEl = ref(null)
 const auroraProjectId = ref(null)
 const auroraDesignId = ref(null)
-const gridUrlIsLoading = ref(null)
+
+// Adder costs via dialog
+const adderData = ref([]);
+const showAdderCostDialog = ref(false)
+const selectedAdders = ref([])
+const adderCostField = ref(null)
+const adderTotalCost = ref(0)
+const adderCostData = ref({})
+const estimates = ref({ treeTrimming: '' })  // For the custom field values
+const options = ref({
+  trenching: {
+    type: 'Type 1',
+    size: ''
+  }
+})
+const showAdderDialog = ref(false);
+const currentProposalId = ref(null);
+const savedAdders = ref({});
+
+const openAdderDialog = (proposalId, existingAdders = {}) => {
+  currentProposalId.value = proposalId;
+  savedAdders.value = existingAdders;
+  showAdderDialog.value = true;
+};
+
+const handleAdderCosts = (costs) => {
+  console.log('Applied costs:', costs);
+  // Handle the applied costs
+  showAdderDialog.value = false;
+};
+
+const findOrCreateAdderCostField = () => {
+  // First check if there's an existing field for adder costs
+  const existingField = proposal.value?.customFieldGroups
+    ?.flatMap(cfg => cfg.customFieldValues)
+    ?.find(f => f.customFieldId === 'adderCosts') // Use the appropriate field ID
+
+  if (existingField) {
+    return existingField
+  }
+
+  // For demonstration, we'll just create a mock field
+  // In a real implementation, you might need to create this field through an API
+  return {
+    id: null,
+    customFieldId: 'adderCosts',
+    customFieldGroupAssignmentId: 9999, // Use an appropriate ID
+    stringValue: '',
+    hasListValues: false,
+    required: false
+  }
+}
+
+const loadExistingAdders = () => {
+  const adderField = proposal.value?.customFieldGroups
+    ?.flatMap(cfg => cfg.customFieldValues)
+    ?.find(f => f.customFieldId === 'adderCosts')
+
+  if (adderField && adderField.stringValue) {
+    try {
+      const adderData = JSON.parse(adderField.stringValue)
+
+      // Update selectedAdders from the stored data
+      if (adderData.selectedAdders && Array.isArray(adderData.selectedAdders)) {
+        selectedAdders.value = adderData.selectedAdders
+      } else {
+        // Handle legacy data where we need to build selectedAdders
+        selectedAdders.value = []
+
+        // Process selected regular adders
+        if (adderData.selectedAdderIds && Array.isArray(adderData.selectedAdderIds)) {
+          adderData.selectedAdderIds.forEach(id => {
+            const originalAdder = this.adderData.value.find(a => a.id === id)
+            if (originalAdder) {
+              selectedAdders.value.push({
+                id,
+                label: originalAdder.fieldName,
+                price: originalAdder.selectedAdderAmount,
+                isCustom: false
+              })
+            }
+          })
+        }
+
+        // Process custom adders
+        if (adderData.customAdders && Array.isArray(adderData.customAdders)) {
+          adderData.customAdders.forEach(adder => {
+            selectedAdders.value.push({
+              id: adder.id,
+              label: adder.fieldName,
+              price: adder.amount,
+              isCustom: true
+            })
+          })
+        }
+      }
+
+      adderCostField.value = adderField
+      adderTotalCost.value = adderData.totalCost || 0
+
+      // Prepare data for the dialog in the expected format
+      adderCostData.value = {
+        items: {},
+        total: adderTotalCost.value
+      }
+
+      // Add selected adder IDs to adderCostData
+      if (adderData.selectedAdderIds) {
+        adderData.selectedAdderIds.forEach(id => {
+          adderCostData.value.items[id] = true
+        })
+      }
+
+      // Add custom adders to adderCostData
+      if (adderData.customAdders) {
+        adderData.customAdders.forEach(adder => {
+          adderCostData.value.items[adder.id] = adder.amount
+        })
+      }
+    } catch (e) {
+      console.error('Error parsing adder data', e)
+    }
+  }
+}
+
+const formatAdderLabel = (key) => {
+  if (!key) return ''
+
+  // Convert camelCase to Title Case with spaces
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
+}
+
+const handleAppliedCosts = (costs) => {
+  // Clear previous selections
+  selectedAdders.value = []
+  adderTotalCost.value = 0
+
+  // Format selections for display in the combobox
+  if (costs) {
+    // Calculate total cost
+    let totalCost = 0
+
+    // Transform the data based on the new structure
+    if (costs.selectedAdderIds && Array.isArray(costs.selectedAdderIds)) {
+      // Process selected adders
+      costs.selectedAdderIds.forEach(id => {
+        const originalAdder = adderData.value.find(adder => adder.id === id);
+        if (!originalAdder) return;
+
+        const amount = originalAdder.selectedAdderAmount || 0;
+        totalCost += amount;
+
+        selectedAdders.value.push({
+          id: id,
+          label: originalAdder.fieldName,
+          price: amount,
+          isCustom: false
+        });
+      });
+    }
+
+    // Process custom adders
+    if (costs.customAdders && Array.isArray(costs.customAdders)) {
+      costs.customAdders.forEach(adder => {
+        const amount = adder.amount || 0;
+        totalCost += amount;
+
+        selectedAdders.value.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: amount,
+          isCustom: true
+        });
+      });
+    }
+
+    // Update total cost
+    adderTotalCost.value = totalCost;
+
+    // Create a custom field value if needed to store the adder data
+    if (!adderCostField.value) {
+      // Find or create a field for storing adder costs
+      adderCostField.value = findOrCreateAdderCostField()
+    }
+
+    // Update the field with the JSON data of selected adders
+    if (adderCostField.value) {
+      adderCostField.value.stringValue = JSON.stringify({
+        totalCost: adderTotalCost.value,
+        selectedAdderIds: costs.selectedAdderIds || [],
+        customAdders: costs.customAdders || [],
+        selectedAdders: selectedAdders.value
+      })
+
+      // Add to dirty fields to be saved
+      populateDirtyCfvs(adderCostField.value)
+    }
+
+    appStore.showSnack('SUCCESS', `Added ${selectedAdders.value.length} cost adders`)
+  }
+}
+
+const getProposalAdders = async () => {
+  try {
+    appStore.loading = true;
+
+    const params = {
+      proposalId: proposalId.value,
+      commissionStrategyId: 123, // Hardcoded for now
+      storageId: 123 // Hardcoded for now
+    }
+
+    const { data, status } = await postRequest(
+      `/proposal/${proposalId.value}/adders`,
+      params,
+      'blueraven'
+    )
+
+    // Store the raw adder data for the AdderCostDialog
+    adderData.value = data;
+
+    // Load any existing adder selections after getting the raw data
+    loadExistingAdders();
+
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    appStore.showSnack('ERROR', 'Error retrieving proposal adders')
+    console.error('Error retrieving proposal adders', e);
+  } finally {
+    appStore.loading = false;
+  }
+}
+
+// Get color for adder chip
+const getAdderChipColor = (adder) => {
+  if (adder.isCustom) {
+    return 'deep-purple'
+  }
+
+  return 'primary'
+}
 
 provide('editor', undefined)
 
@@ -452,12 +754,14 @@ const isFieldVisible = (field) => {
 }
 
 onMounted(async() => {
+  await getProposalAdders()
   await getProposalDetails()
   await loadAuroraProjectId()
   await store.fetchTemplateContext({
     proposalId: proposalId.value
   })
   window.addEventListener('beforeunload', beforeWindowUnload.value)
+  loadExistingAdders()
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
@@ -488,6 +792,32 @@ const filteredCustomFields = (values = []) => {
   })
 }
 
+const adderSummaryText = computed(() => {
+  if (selectedAdders.value.length === 0) {
+    return '';
+  }
+
+  // Format each adder with its price if available
+  return selectedAdders.value.map(adder => {
+    if (adder.isCustom) {
+      if (adder.id === 'treeTrimming' && estimates.value.treeTrimming) {
+        return `${adder.label} ($${parseFloat(estimates.value.treeTrimming).toLocaleString()})`;
+      } else if (adder.id === 'trenching') {
+        const type = options.value.trenching.type || '';
+        const size = options.value.trenching.size ? `${options.value.trenching.size}ft` : '';
+        return `${adder.label}${type ? ` (${type}${size ? ', ' + size : ''})` : ''}`;
+      }
+      return adder.label;
+    }
+
+    if (adder.price) {
+      return `${adder.label} ($${adder.price.toLocaleString()})`;
+    }
+
+    return adder.label;
+  }).join(', ');
+});
+
 const userIsAdmin = computed(() =>
   userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
 )
@@ -507,6 +837,14 @@ const defaultProposalName = computed(() => {
     return proposal.value.name
   }
   return 'New Proposal'
+})
+
+// Display text for the selected adders field
+const selectedAddersText = computed(() => {
+  if (selectedAdders.value.length === 0) {
+    return 'No adders selected'
+  }
+  return `${selectedAdders.value.length} adder${selectedAdders.value.length > 1 ? 's' : ''} selected • ${adderTotalCost.value.toLocaleString()} total`
 })
 
 const pages = computed(() => {
@@ -615,6 +953,7 @@ const handleNameChange = async ({ save, value }) => {
     }
   }
 }
+
 const getProposalDetails = async () => {
   appStore.loading = true
 
@@ -1006,7 +1345,7 @@ const isConditionalFieldPopulated = ({ conditionalOnId }) => {
 const loadAuroraProjectId = async() => {
   try{
     const { data } = await getRequest( `/proposal/projects/${proposal.value?.projectId}/${proposal.value?.projectProcessStepId}/auroraProjectId`,
-        'blueraven'
+      'blueraven'
     )
     auroraProjectId.value = data?.projectId
     auroraDesignId.value = data?.designId
@@ -1028,6 +1367,74 @@ const beforeWindowUnload = (e) => {
 </script>
 
 <style scoped lang="scss">
+/* Base layout and containers */
+.configurations-wrapper {
+  height: calc(100vh - (var(--padding-and-margins) - var(--dirty-cfv-height)) + var(--proposal-action-height) + 14px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.configurations-card-container {
+  background-color: white;
+  border-radius: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.configurations-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.configurations-column {
+  margin-top: 4px;
+  padding-left: 12px;
+  padding-right: 4px;
+
+  @media (max-width: 600px) {
+    padding-right: 12px;
+  }
+}
+
+/* Card styling */
+.configurations-card,
+.prop-view-card {
+  display: flex;
+  padding: 14px 18px;
+  font-size: 20px;
+  align-content: center;
+}
+
+/* Headers and buttons */
+.config-label {
+  font-size: 20px;
+}
+
+.config-buttons-group,
+.prop-button-group {
+  display: flex;
+  justify-content: flex-end;
+  color: var(--primary-color);
+  margin-right: 4px;
+}
+
+.config-buttons {
+  white-space: nowrap;
+}
+
+.new-proposal-header {
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  word-break: break-word;
+}
+
 #back-btn {
   display: flex;
   flex-wrap: nowrap;
@@ -1037,12 +1444,17 @@ const beforeWindowUnload = (e) => {
   font-weight: 500;
 }
 
+.delete-btn {
+  color: rgba(180, 34, 31, 1);
+}
+
+/* Proposal viewer and actions */
 .proposal-viewer {
   padding-left: 16px;
   height: calc(
     100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - var(
-        --proposal-action-height
-      )
+      --proposal-action-height
+    )
   );
 }
 
@@ -1056,154 +1468,11 @@ const beforeWindowUnload = (e) => {
   justify-content: center;
 }
 
-/* WRAPS THE BUTTONS UNDERNEATH HEADER TITLES BASED ON SCREEN SIZE */
-@media (min-width: 1232px) {
-  .configurations-card {
-    flex-wrap: nowrap;
-    flex-direction: row;
-  }
-  .config-row {
-    height: 64px;
-  }
-  .prop-custom-field-groups {
-    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
-  }
-}
-
-@media (max-width: 1232px) and (min-width: 960px) {
-  .configurations-card {
-    flex-wrap: nowrap;
-    flex-direction: column;
-    height: 96px;
-  }
-  .config-row,
-  .prop-view-row {
-    height: 96px;
-  }
-  .prop-custom-field-groups {
-    height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
-    );
-  }
-}
-
-@media (max-width: 960px) and (min-width: 827px) {
-  .configurations-card {
-    flex-wrap: wrap;
-    flex-direction: row;
-  }
-  .config-row,
-  .prop-view-row {
-    height: 56px;
-  }
-  .prop-custom-field-groups {
-    height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) + 8px
-    );
-  }
-}
-
-@media (max-width: 827px) and (min-width: 600px) {
-  .configurations-card,
-  .prop-view-card {
-    flex-wrap: nowrap;
-    flex-direction: column;
-    height: 96px;
-  }
-  .config-row,
-  .prop-view-row {
-    height: 96px;
-  }
-
-  .prop-custom-field-groups {
-    height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px
-    );
-  }
-
-  .proposal-viewer {
-    height: calc(
-      100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - var(
-          --proposal-action-height
-        ) - 32px
-    );
-  }
-}
-
-@media (max-width: 600px) and (min-width: 440px) {
-  .configurations-card {
-    flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: flex-start;
-    height: 56px;
-  }
-  .config-row,
-  .prop-view-row {
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
-}
-
-@media (max-width: 440px) and (min-width: 1px) {
-  .configurations-card,
-  .prop-view-card {
-    flex-wrap: nowrap;
-    flex-direction: column;
-    height: 96px;
-  }
-  .config-row,
-  .prop-view-row {
-    height: 96px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
-}
-
-.configurations-card,
-.prop-view-card {
-  display: flex;
-  padding: 14px 18px;
-  font-size: 20px;
-  align-content: center;
-}
-
-.config-label {
-  font-size: 20px;
-}
-
-.config-buttons-group,
-.prop-button-group {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.config-buttons {
-  white-space: nowrap;
-}
-
-.configurations-column {
-  margin-top: 4px;
-  padding-left: 12px;
-  padding-right: 4px;
-  @media (max-width: 600px) {
-    padding-right: 12px;
-  }
-}
-
-.delete-btn {
-  color: rgba(180, 34, 31, 1);
-}
-
-.new-proposal-header {
-  font-size: 20px;
-  font-weight: 700;
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  word-break: break-word;
+.prop-custom-field-groups,
+.proposal-viewer {
+  border-radius: 0;
+  overflow-y: auto;
+  background-color: var(--v-grey-lighten4);
 }
 
 .prop-view-row {
@@ -1226,22 +1495,28 @@ const beforeWindowUnload = (e) => {
   }
 }
 
-.prop-custom-field-groups,
-.proposal-viewer {
+/* Expansion panel styling */
+.v-expansion-panels {
+  width: 100%;
   border-radius: 0;
-  overflow-y: scroll;
-  background-color: var(--v-grey-lighten4);
 }
 
-/* EXPANSION PANEL STYLING */
-.v-expansion-panel-header {
-  padding: 0;
+.parent-expansion-header {
+  font-size: 20px;
 }
 
-::v-deep .v-expansion-panel-content__wrap {
-  padding: 0 0 0 16px;
-  margin-right: 0;
+.child-expansion-header {
+  font-size: 16px;
 }
+
+.child-expansion-panel {
+  margin: 0 16px 8px 0;
+}
+
+//::v-deep .v-expansion-panel-content__wrap {
+//  padding: 0 0 8px 16px;
+//  margin-right: 0;
+//}
 
 .configuration-group-title {
   &.v-toolbar__title {
@@ -1249,11 +1524,17 @@ const beforeWindowUnload = (e) => {
   }
 }
 
-/* PROPOSAL VIEWER ZOOM STYLING */
+.v-text-field.v-text-field--enclosed .v-input__slot {
+  cursor: pointer;
+}
+
+$expansion-panel-active-margin: 0 0 0 0;
+$expansion-panel-inactive-margin: 0 0 0 0;
+/* Zoom styling */
 .proposal-zoom-lock {
-  transform: scale(var(--scale));
+  transform: scale(var(--scale, 0.75));
   transform-origin: top left;
-  margin-bottom: calc((var(--scale) - 1) * 100%);
+  margin-bottom: calc((var(--scale, 0.75) - 1) * 100%);
 
   @media (min-width: 1548px) {
     transform-origin: top center;
@@ -1261,6 +1542,111 @@ const beforeWindowUnload = (e) => {
 
   @media (max-width: 600px) {
     --scale: 0.45;
+  }
+}
+
+/* Responsive layouts */
+@media (min-width: 1232px) {
+  .configurations-card {
+    flex-wrap: nowrap;
+    flex-direction: row;
+  }
+
+  .config-row {
+    height: 64px;
+  }
+
+  .prop-custom-field-groups {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height));
+  }
+}
+
+@media (max-width: 1232px) and (min-width: 960px) {
+  .configurations-card {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    height: 96px;
+  }
+
+  .config-row,
+  .prop-view-row {
+    height: 96px;
+  }
+
+  .prop-custom-field-groups {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px);
+  }
+}
+
+@media (max-width: 960px) and (min-width: 827px) {
+  .configurations-card {
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+
+  .config-row,
+  .prop-view-row {
+    height: 56px;
+  }
+
+  .prop-custom-field-groups {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) + 8px);
+  }
+}
+
+@media (max-width: 827px) and (min-width: 600px) {
+  .configurations-card,
+  .prop-view-card {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    height: 96px;
+  }
+
+  .config-row,
+  .prop-view-row {
+    height: 96px;
+  }
+
+  .prop-custom-field-groups {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - 32px);
+  }
+
+  .proposal-viewer {
+    height: calc(100vh - var(--padding-and-margins) - var(--dirty-cfv-height) - var(--proposal-action-height) - 32px);
+  }
+}
+
+@media (max-width: 600px) and (min-width: 440px) {
+  .configurations-card {
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    height: 56px;
+  }
+
+  .config-row,
+  .prop-view-row {
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+}
+
+@media (max-width: 440px) {
+  .configurations-card,
+  .prop-view-card {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    height: 96px;
+  }
+
+  .config-row,
+  .prop-view-row {
+    height: 96px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
   }
 }
 </style>

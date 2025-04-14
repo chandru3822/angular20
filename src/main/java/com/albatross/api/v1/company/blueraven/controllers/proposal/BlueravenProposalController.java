@@ -151,6 +151,24 @@ public class BlueravenProposalController {
     return proposalService.getProposal(proposalId, details.getId());
   }
 
+  @PostMapping(value = "/{proposalId}/adders")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN') || isBrSystemUser()")
+  public List<ProposalAdderDetail> getProposalAdders(@PathVariable Long proposalId,
+                                                     @RequestBody ProposalAdderDetailRequest proposalAdderDetailRequest) {
+    return proposalService.getProposalAdderDetail(proposalId, proposalAdderDetailRequest.commissionStrategyId, proposalAdderDetailRequest.storageId);
+  }
+
+  @PostMapping(value = "/{proposalId}/adders/update")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN') || isBrSystemUser()")
+  public ResponseEntity<?> updateAdderItems(
+    @PathVariable Long proposalId,
+    @RequestBody ProposalAdderRequest request,
+    @AuthenticationPrincipal UserAccountDetails details) {
+
+    proposalService.updateAdderItems(proposalId, request.getAdderItems(), details.getTrueUserId());
+    return ResponseEntity.ok().build();
+  }
+
   @GetMapping(value = "/{proposalId}/commissionDetails")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public List<ProposalCommissionDetail> getProposalCommissionDetails(@PathVariable Long proposalId,
@@ -375,6 +393,15 @@ public class BlueravenProposalController {
   }
 
   public record ProposalNameUpdateRequest(@NotBlank String name) {
+  }
+
+  public record ProposalAdderDetailRequest(@NotNull Long commissionStrategyId, @NotNull Long storageId) {
+  }
+
+  public record CustomAdderRequest(@NotNull Long customAdderValue, @NotNull Long cfgaId) {
+  }
+
+  public record SelectedAdderRequest(@NotBlank List<Long> adderIds) {
   }
 
   public record ProposalPostalApprovalRequest(String comments) {
