@@ -343,6 +343,44 @@ from project p
     """;
 
   //language=PostgreSQL
+  public final static String getAdderDetails = """
+    SELECT * FROM  brs.get_selected_custom_auto_adders(:proposalId::bigint, :commissionStrategyId::bigint, :storageId::bigint)
+    """;
+
+  //language=PostgreSQL
+  public final static String updateSelectedAdders = """
+    UPDATE brs.proposal_custom_field_value
+    SET int_array_value = :adderIds::bigint[],
+        modified_by_id = :userId,
+        date_modified = now()
+    WHERE proposal_id = :proposalId
+      AND custom_field_group_assignment_id = :cfgaId;
+    """;
+
+  //language=PostgreSQL
+  public final static String updateCustomAdders = """
+  INSERT INTO brs.proposal_custom_field_value (
+    proposal_id,
+    custom_field_group_assignment_id,
+    int_value,
+    created_by_id,
+    modified_by_id
+  )
+  VALUES (
+    :proposalId,
+    :cfgaId,
+    :customAdderValue::bigint,
+    :userId,
+    :userId
+  )
+  ON CONFLICT (proposal_id, custom_field_group_assignment_id) DO UPDATE
+  SET
+    int_value = :customAdderValue::bigint,
+    modified_by_id = :userId,
+    date_modified = now()
+  """;
+
+  //language=PostgreSQL
   public final static String updateProposalVersion = """
     update brs.proposal
     set proposal_version_id = :versionId,

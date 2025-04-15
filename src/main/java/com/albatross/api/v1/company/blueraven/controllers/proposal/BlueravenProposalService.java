@@ -75,6 +75,7 @@ import java.util.stream.Collectors;
 public class BlueravenProposalService {
   private static final Long CREATE_PROPOSAL_DESIGN_ID = 3507L;
   private static final Long ZIP_CODE_APPROVAL_ID = 3546L;
+  private static final Long SELECTED_ADDERS_CFGA_ID = 1328L;
   private final SqlCache sqlCache;
   private final ObjectMapper om;
   private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
@@ -153,6 +154,122 @@ public class BlueravenProposalService {
       updateEnergyUsage(ppsId, auroraProjectId, null, null);
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public List<ProposalAdderDetail> getProposalAdderDetail(@NonNull Long proposalId, Long commissionStrategyId, Long storageId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+    params.put("commissionStrategyId", commissionStrategyId);
+    params.put("storageId", storageId);
+
+    return sqlCache.queryBySql(ProposalQuery.getAdderDetails, params, ProposalAdderDetail.class);
+  }
+
+  @Transactional
+  public void updateAdderItems(@NonNull Long proposalId,
+                               List<ProposalAdderRequest.AdderItem> adderItems,
+                               @NonNull Long userId) {
+    try {
+      // Validate required fields
+      for (ProposalAdderRequest.AdderItem item : adderItems) {
+        if (item.getFieldName() == null || item.getFieldName().isEmpty()) {
+          throw new ApiException("fieldName is required for all adder items");
+        }
+        if (item.getAdderType() == null || item.getAdderType().trim().isEmpty()) {
+          throw new ApiException("adderType is required for all adder items");
+        }
+      }
+
+      // Map for selected adders (only including applied ones)
+      List<Long> selectedAdderIds = new ArrayList<>();
+
+      // Map Custom CFGA ID to amount
+      Map<Long, Long> customAdders = new HashMap<>();
+
+      for (ProposalAdderRequest.AdderItem item : adderItems) {
+        switch (item.getAdderType()) {
+          case "selected_adders":
+            // Only include adders that are applied
+            if (item.getApplied()) {
+              selectedAdderIds.add(item.getId());
+            }
+            break;
+          case "custom_adders":
+            if (item.getApplied() && item.getCustomAdderAmount() != null) {
+              customAdders.put(item.getId(), item.getCustomAdderAmount());
+            }
+            break;
+          case "auto_applied_adder":
+            // Auto-applied adders don't need to be updated
+            log.debug("Auto-applied adder processed: {}", item.getFieldName());
+            break;
+          default:
+            log.warn("Unknown adder type: {} for field: {}",
+              item.getAdderType(), item.getFieldName());
+        }
+      }
+
+      // Update selected adders directly - overwrite the entire array value
+      updateSelectedAddersArray(proposalId, selectedAdderIds, userId);
+
+      // Update custom adders if needed
+      for (Map.Entry<Long, Long> entry : customAdders.entrySet()) {
+        updateCustomAdders(proposalId, entry.getKey(), entry.getValue(), userId);
+      }
+
+      log.debug("Updated adder items for proposal #{}", proposalId);
+    } catch (Exception e) {
+      log.error("Error updating adder items for proposal #{}: {}", proposalId, e.getMessage());
+      throw new ApiException("Failed to update adder items: " + e.getMessage());
+    }
+  }
+
+  @Transactional
+  public void updateSelectedAddersArray(@NonNull Long proposalId,
+                               List<Long> adderIds,
+                               @NonNull Long userId) {
+    try {
+      // Create a PostgreSQL array representation
+      String adderArrayStr = adderIds.toString().replace("[", "{").replace("]", "}");
+
+      final Map<String, Object> params = Map.of(
+        "proposalId", proposalId,
+        "adderIds", adderArrayStr,
+        "userId", userId,
+        "cfgaId", SELECTED_ADDERS_CFGA_ID
+      );
+
+      // Simply update the int_array_value with the complete list of selected adders
+      sqlCache.updateBySql(ProposalQuery.updateSelectedAdders, params);
+      log.debug("Updated selected adders for proposal #{} with {} adders", proposalId, adderIds.size());
+    } catch (Exception e) {
+      log.error("Error updating selected adders for proposal #{}: {}", proposalId, e.getMessage());
+      throw new ApiException("Failed to update selected adders: " + e.getMessage());
+    }
+  }
+
+  @Transactional
+  public void updateCustomAdders(@NonNull Long proposalId,
+                                @NonNull Long cfgaId,
+                                @NonNull Long customAdderValue,
+                                @NonNull Long userId) {
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+    params.put("customAdderValue", customAdderValue);
+    params.put("cfgaId", cfgaId);
+    params.put("userId", userId);
+
+    try {
+      // Execute the update
+      sqlCache.updateBySql(ProposalQuery.updateCustomAdders, params);
+      log.debug("Updated custom adder with CFGA ID #{} for proposal #{} with value {}",
+        cfgaId, proposalId, customAdderValue);
+    } catch (Exception e) {
+      log.error("Error updating custom adder for proposal #{}, CFGA ID #{}: {}",
+        proposalId, cfgaId, e.getMessage());
+      throw new ApiException("Failed to update custom adder: " + e.getMessage());
     }
   }
 
