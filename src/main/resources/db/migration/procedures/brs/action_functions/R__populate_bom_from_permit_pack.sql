@@ -5,20 +5,20 @@ CREATE OR REPLACE FUNCTION brs.populate_bom_from_permit_pack(p_project_id bigint
 AS
 $function$
 DECLARE
-	permit_pack_log_number INT; --permit pack log number selected using cfgaId 26343
-	permit_pack_id         INT; --permit pack id selected using cfgaId 26343
-	log_record             RECORD; --used to hold the permit pack row
-	json_item              JSONB; --used to hold a single part json item from the log_record's bom data
-	part_num               TEXT; --used within a loop to hold each part_number
-	part_name              TEXT; --used within a loop to hold each part_name/description
-	quantity               INT; --used within a loop to hold the quantity of each part
-	part_id                INT; --used within a loop to hold each part's part_master_id
+	permit_pack_log_number      INT; --permit pack log number selected using cfgaId 26343
+	selected_permit_pack_id     INT; --permit pack id selected using cfgaId 26343
+	log_record                  RECORD; --used to hold the permit pack row
+	json_item                   JSONB; --used to hold a single part json item from the log_record's bom data
+	part_num                    TEXT; --used within a loop to hold each part_number
+	part_name                   TEXT; --used within a loop to hold each part_name/description
+	quantity                    INT; --used within a loop to hold the quantity of each part
+	part_id                     INT; --used within a loop to hold each part's part_master_id
 
 BEGIN
 
 	--get the permit pack log number for the project
 	SELECT pplh.permit_pack_log_nbr, pplh.id
-	INTO permit_pack_log_number, permit_pack_id
+	INTO permit_pack_log_number, selected_permit_pack_id
 	FROM flow.project_process_step pps
 		     INNER JOIN flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
 		     INNER JOIN brs.permit_pack_log_history pplh on pplh.id = ppscfv.int_value
@@ -52,21 +52,23 @@ BEGIN
 	-- Archive permit_pack_log_number existing brs.bill_of_materials_parts for the given project_id
 	IF EXISTS (SELECT 1
 	           FROM brs.bill_of_materials_parts bomp
-	           WHERE bomp.project_id = p_project_id) THEN
-		UPDATE brs.bill_of_materials_parts
+	           WHERE bomp.project_id = p_project_id and bomp.permit_pack_id = selected_permit_pack_id) THEN
+		UPDATE brs.bill_of_materials_parts bomp2
 		SET archived = TRUE
-		WHERE project_id = p_project_id;
-		RAISE NOTICE 'Archived existing brs.bill_of_materials_parts for project_id = %', p_project_id;
+		WHERE bomp2.project_id = p_project_id
+		AND bomp2.permit_pack_id = selected_permit_pack_id;
+		RAISE NOTICE 'Archived existing brs.bill_of_materials_parts for project_id = % and permit_pack_id = %', p_project_id, selected_permit_pack_id;
 	END IF;
 
 	IF EXISTS (SELECT 1
 	           FROM brs.bill_of_materials_custom_parts bomcp
-	           WHERE bomcp.project_id = p_project_id) THEN
-		UPDATE brs.bill_of_materials_custom_parts
+	           WHERE bomcp.project_id = p_project_id AND bomcp.permit_pack_id = selected_permit_pack_id) THEN
+		UPDATE brs.bill_of_materials_custom_parts bomcp2
 		SET archived = TRUE
-		WHERE project_id = p_project_id;
+		WHERE bomcp2.project_id = p_project_id
+		AND bomcp2.permit_pack_id = selected_permit_pack_id;
 
-		RAISE NOTICE 'Archived existing brs.bill_of_materials_custom_parts for project_id = %', p_project_id;
+		RAISE NOTICE 'Archived existing brs.bill_of_materials_custom_parts for project_id = % and permit_pack_id = %', p_project_id, selected_permit_pack_id;
 	END IF;
 
 	-- Use query to get the parts_master_data as a CTE so we can get the parts_master_id
@@ -117,7 +119,7 @@ BEGIN
 				IF part_id IS NOT NULL THEN
 					INSERT INTO brs.bill_of_materials_parts (quantity, parts_master_id, project_id, permit_pack_id,
 					                                         date_created, date_modified, created_by_id, modified_by_id)
-					VALUES (quantity, part_id, p_project_id, permit_pack_id, now(), now(), 99999999, 99999999);
+					VALUES (quantity, part_id, p_project_id, selected_permit_pack_id, now(), now(), 99999999, 99999999);
 				ELSE
 					--if it's not in the parts_master table, we're going to use the custom_parts table
 					RAISE NOTICE 'No matching part found for part_number = % and name = %', part_num, part_name;
@@ -152,7 +154,7 @@ BEGIN
 						INSERT INTO brs.bill_of_materials_custom_parts (quantity, custom_part_id, project_id,
 						                                                permit_pack_id, date_created, date_modified,
 						                                                created_by_id, modified_by_id)
-						VALUES (quantity, part_id, p_project_id, permit_pack_id, now(), now(), 99999999, 99999999);
+						VALUES (quantity, part_id, p_project_id, selected_permit_pack_id, now(), now(), 99999999, 99999999);
 
 					ELSE
 						RAISE NOTICE 'Something went wrong updating the custom_parts table for part_number = %', part_num;
