@@ -38,6 +38,7 @@ const customPartDescription = ref(null)
 const customPartNumber = ref(null)
 const showPartsMasterDuplicateDialog = ref(false)
 const partsMasterDupes = ref([])
+const selectedPartDupe = ref(null)
 
 const bomSaving = ref(false)
 const unsavedModal = ref(false);
@@ -100,6 +101,12 @@ const populateDirtyRows = (event, item, column) => {
   }
 }
 
+const closeDupeDialog = () => {
+  showPartsMasterDuplicateDialog.value = false
+  selectedPartDupe.value = null
+  partsMasterDupes.value = null
+}
+
 const closeAddPart = () => {
   //clear out the new part so another may be added
   newPart.value = null
@@ -108,6 +115,7 @@ const closeAddPart = () => {
   customPartDescription.value = null
   customPartNumber.value = null
   addCustom.value = false
+  selectedPartDupe.value = null
   //close the add card
   emit('hideAddPart')
 }
@@ -164,11 +172,11 @@ const selectNewPart = (input) => {
 }
 
 const checkForPartsMasterDupe = () => {
-  partsMasterDupes.value = props.bomParts.filter(pmp => pmp.description === customPartDescription.value && pmp.partNumber)
+  partsMasterDupes.value = props.bomParts.filter(pmp => pmp.description === customPartDescription.value || pmp.partNumber === customPartNumber.value)
 }
 
 const confirmPartsMasterDupe = () => {
-  newPart.value = partsMasterDupes.value[0]
+  newPart.value = selectedPartDupe.value
   addCustom.value = false
   showPartsMasterDuplicateDialog.value = false
   addNewPartToList()
@@ -423,16 +431,32 @@ const findBestMatchDuplicatePart = () => {
       <template v-slot:yes>Leave Without Saving</template>
       <template v-slot:no>Stay and Keep Editing</template>
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="showPartsMasterDuplicateDialog" @confirm="confirmPartsMasterDupe" @cancel="[addNewPartToList(), showPartsMasterDuplicateDialog = false]">
-      <template v-slot:title>Did you mean this part?</template>
+    <ConfirmationDialog :open-dialog="showPartsMasterDuplicateDialog"
+                        @confirm="confirmPartsMasterDupe"
+                        @cancel="[addNewPartToList(), showPartsMasterDuplicateDialog = false]"
+                        @close-dialog="closeDupeDialog"
+                        :disable-confirm="!selectedPartDupe"
+    >
+      <template v-slot:title>
+        <div class="d-flex justify-space-between one-hunned">
+          <span>Did you mean one of these parts?</span>
+          <a-btn variant="text" icon prepend-icon="close" @click="closeDupeDialog"></a-btn>
+        </div>
+      </template>
         <div class="pb-4">
-          <span class="label-large">Existing Part</span>
-          <div v-for="part in partsMasterDupes" class="pt-2">
-            <div class="label-medium">Description: {{part.description}}</div>
-            <div><span class="label-medium">Part Number:</span> {{part.partNumber}}</div>
-            <div><span class="label-medium">Type: </span>{{part.objectType}}</div>
-            <div><span class="label-medium">Manufacturer: </span>{{part.brand}}</div>
-          </div>
+          <v-radio-group v-model="selectedPartDupe">
+            <template v-slot:label><span class="label-large">Existing Parts</span></template>
+            <v-radio v-for="part in partsMasterDupes" :value="part">
+              <template v-slot:label>
+                <div>
+                <div class="label-medium">Description: {{part.description}}</div>
+                <div><span class="label-medium">Part Number:</span> {{part.partNumber}}</div>
+                <div><span class="label-medium">Type: </span>{{part.objectType}}</div>
+                <div><span class="label-medium">Manufacturer: </span>{{part.brand}}</div>
+                </div>
+              </template>
+            </v-radio>
+          </v-radio-group>
         </div>
       <v-divider/>
         <div class="pt-4">

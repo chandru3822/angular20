@@ -4,7 +4,8 @@
       v-model="show"
       :retain-focus="retainFocus"
       :width="fullSize ? '100%' : (width || 500)"
-      @click:outside="no"
+      @click:outside="closeDialog"
+      @keydown.esc="closeDialog"
       id = "dialogBox"
       ref="dialogBox"
   >
@@ -104,6 +105,10 @@ const yes = () => {
 
 const no = ()  => {
   emit('cancel')
+  emit('close-dialog', false)
+}
+
+const closeDialog = () => {
   emit('close-dialog', false)
 }
 </script>
