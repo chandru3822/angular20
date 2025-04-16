@@ -363,6 +363,7 @@ from project p
     proposal_id,
     custom_field_group_assignment_id,
     int_value,
+    numeric_value,
     created_by_id,
     modified_by_id
   )
@@ -370,12 +371,14 @@ from project p
     :proposalId,
     :cfgaId,
     :customAdderValue::bigint,
+    :customAdderValue::bigint,
     :userId,
     :userId
   )
   ON CONFLICT (proposal_id, custom_field_group_assignment_id) DO UPDATE
   SET
     int_value = :customAdderValue::bigint,
+    numeric_value = :customAdderValue::bigint,
     modified_by_id = :userId,
     date_modified = now()
   """;

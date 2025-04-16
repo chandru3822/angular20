@@ -8,14 +8,15 @@
     :id="dialogId"
     :ref="dialogId"
     :persistent="persistent"
+    :eager="true"
   >
     <v-card>
       <v-card-title
-        class="albatross-header-2 lighten-2 pb-1 d-flex justify-space-between align-center"
+        class="albatross-header-2 pb-1 d-flex justify-space-between align-center"
         primary-title
       >
         <span>{{ title }}</span>
-        <v-btn icon @click="cancel">
+        <v-btn icon @click.stop="cancel">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -106,12 +107,18 @@
                       />
                     </template>
 
-                    <span v-else class="field-value" :class="{
-                      'text--secondary': item[header.value] === 'Auto' || item[header.value] === 'Limited to 1',
-                      'font-weight-bold': item.applied && item[header.value] !== 'Limited to 1' && item[header.value] !== 'Auto'
+                    <div v-else :class="{
+                      'w-100': true, 
+                      'text-right': header.value === 'amount',
+                      'd-block': true
                     }">
-                      {{ item[header.value] }}
-                    </span>
+                      <span class="field-value" :class="{
+                        'text--secondary': item[header.value] === 'Auto' || item[header.value] === 'Limited to 1',
+                        'font-weight-bold': item.applied && item[header.value] !== 'Limited to 1' && item[header.value] !== 'Auto'
+                      }">
+                        {{ item[header.value] }}
+                      </span>
+                    </div>
                   </td>
                 </template>
 
@@ -134,14 +141,15 @@
                   </v-icon>
                 </td>
                 <td v-else>
-                  <v-icon
+                  <v-subheader
                     v-model="item.applied"
+                    class="text-center"
                     hide-details
                     disabled
-                    color="--v-primary-base"
+                    readonly
                   >
-                    mdi-check
-                  </v-icon>
+                    Auto
+                  </v-subheader>
                 </td>
               </tr>
             </template>
@@ -157,7 +165,7 @@
         <v-btn
           text
           :color="cancelButtonColor"
-          @click="cancel"
+          @click.stop="cancel"
           class="text-capitalize mr-2"
         >
           {{ cancelButtonText }}
@@ -165,9 +173,7 @@
         <v-btn
           :color="applyButtonColor"
           class="elevation-2 text-capitalize"
-          @click="apply"
-          :disabled="!hasAppliedItems"
-          :readonly="!hasAppliedItems"
+          @click.stop="apply"
         >
           {{ applyButtonText }}
         </v-btn>
@@ -217,10 +223,10 @@ const props = defineProps({
   headers: {
     type: Array,
     default: () => [
-      { text: 'Description', value: 'description', width: '30%' },
-      { text: 'Other', value: 'other', width: '15%' },
-      { text: 'Quantity', value: 'quantity', width: '15%' },
-      { text: 'Charge Amount', value: 'amount', width: '25%' },
+      { text: 'Description', value: 'description', width: '30%', align: 'left' },
+      { text: 'Other', value: 'other', width: '15%', align: 'left' },
+      { text: 'Quantity', value: 'quantity', width: '15%', align: 'left' },
+      { text: 'Charge Amount (Total)', value: 'amount', width: '25%', align: 'right', class: 'text-right' },
       { text: 'Apply', value: 'apply', width: '15%', align: 'center' }
     ]
   },
@@ -230,7 +236,7 @@ const props = defineProps({
   },
   totalLabel: {
     type: String,
-    default: 'Total Cost'
+    default: 'Subtotal'
   },
   cancelButtonText: {
     type: String,
@@ -252,8 +258,16 @@ const props = defineProps({
 
 const emit = defineEmits(['close-dialog', 'apply', 'cancel']);
 
-const show = computed(() => {
-  return props.openDialog;
+// Create a local variable to track dialog state
+const dialogOpen = ref(false);
+
+const show = computed({
+  get: () => props.openDialog,
+  set: (value) => {
+    if (!value) {
+      emit('close-dialog', false);
+    }
+  }
 });
 
 const tableItems = ref([]);
@@ -305,7 +319,7 @@ const handleCustomFieldInput = (item) => {
     if (hasValue) {
       item.applied = true;
     } else {
-      // If the value is 0 or empty, auto-disable
+      // If the value is 0 or empty, ALWAYS auto-disable
       const currencyField = Object.values(item.customFields).find(field =>
         field.type === 'currency' || field.type === 'number'
       );
@@ -315,6 +329,9 @@ const handleCustomFieldInput = (item) => {
         if (isNaN(numValue) || numValue <= 0) {
           item.applied = false;
         }
+      } else {
+        // If no currency field is found, disable it anyway
+        item.applied = false;
       }
     }
   }
@@ -399,8 +416,11 @@ const calculatedTotal = computed(() => {
     }
   });
 
-  // Format with commas for thousands
-  return total.toLocaleString();
+  // Format with commas for thousands and always show 2 decimal places
+  return total.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 });
 
 // Handle apply action
@@ -408,7 +428,7 @@ const apply = () => {
   // Collect all applied items and their values
   const result = {
     total: calculatedTotal.value,
-    items: tableItems.value.map(item => {
+    items: JSON.parse(JSON.stringify(tableItems.value.map(item => {
       // Include all items, not just applied ones, to preserve their state
       const resultItem = {
         id: item.id,
@@ -434,17 +454,27 @@ const apply = () => {
       }
 
       return resultItem;
-    })
+    })))
   };
 
+  // Emit apply event with the result data first
   emit('apply', result);
-  emit('close-dialog', false);
+  
+  // Then close the dialog
+  setTimeout(() => {
+    show.value = false;
+    emit('close-dialog', false);
+  }, 100);
 };
 
 // Handle cancel action
 const cancel = () => {
-  emit('cancel');
+  // Set the dialog to close immediately
+  show.value = false;
   emit('close-dialog', false);
+  
+  // Emit cancel event
+  emit('cancel');
 };
 </script>
 
@@ -464,6 +494,29 @@ const cancel = () => {
       color: rgba(0, 0, 0, 0.6);
       font-weight: normal;
     }
+    
+    &.text-right {
+      text-align: right;
+      display: block;
+      width: 100%;
+    }
+  }
+  
+  // Override td styles for amount column
+  ::v-deep td:nth-child(4) {
+    text-align: right;
+  }
+  
+  .w-100 {
+    width: 100%;
+  }
+  
+  .d-block {
+    display: block;
+  }
+  
+  .text-right {
+    text-align: right;
   }
 
   // Clean up table styles

@@ -112,7 +112,7 @@
           <div class="configurations-wrapper">
             <v-card class="configurations-card-container">
               <div class="configurations-scroll-area">
-                <v-expansion-panels multiple class="rounded-0">
+                <v-expansion-panels class="rounded-0" v-model="expandedPanel">
                   <v-expansion-panel class="rounded-0">
                     <v-expansion-panel-header class="parent-expansion-header">
                       Configuration
@@ -123,12 +123,16 @@
                           color="primary"
                           class="text-capitalize config-buttons"
                           @click="resetToDefault"
+                          v-if="!proposal.locked && dirtyCfvs.length > 0"
                           text="Reset"
                         ></a-btn>
                         <a-btn
                           size="small"
-                          v-if="canEdit && !proposal.locked"
+                          v-if="canEdit && !proposal.locked && dirtyCfvs.length > 0"
                           color="primary"
+                          depressed
+                          :dark="dirtyCfvs.length !== 0"
+                          :readonly="dirtyCfvs.length === 0"
                           @click="validateForm()"
                           class="text-capitalize config-buttons"
                           text="Save"
@@ -138,8 +142,7 @@
               <v-expansion-panel-content>
                 <v-expansion-panels
                   multiple
-                  focusable
-                  class="rounded-0"
+                  class="rounded-0 mb-2"
                   v-model="expansionPanelsStatus"
                 >
                   <v-expansion-panel
@@ -230,6 +233,7 @@
                         small-chips
                         append-icon="mdi-table-edit"
                         :value="selectedAdders"
+                        class="my-4"
                         @focus="showAdderCostDialog = true"
                         :disabled="!canEdit || proposal.locked"
                         readonly
@@ -238,6 +242,8 @@
                           <v-chip
                             x-small
                             class="ma-1"
+                            color="primary lighten-9"
+                            text-color="black"
                           >
                             {{ item.label }}
                           </v-chip>
@@ -245,10 +251,15 @@
                       </v-combobox>
                       <!-- Display total cost if there are selected adders -->
                       <div v-if="selectedAdders.length > 0" class="d-flex flex-column mb-2">
-                        <div class="d-flex justify-start">
-                          <v-chip color="primary" text-color="white" class="font-weight-medium">
-                            Total Adder Cost: ${{ adderTotalCost.toLocaleString() }}
-                          </v-chip>
+                        <div class="d-flex">
+                          <v-text-field
+                            disabled
+                            readonly
+                            label="Total Adder Cost"
+                            :value="`$${adderTotalCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`"
+                            dense
+                            class="font-weight-medium"
+                          />
                         </div>
                       </div>
                     </v-expansion-panel-content>
@@ -264,7 +275,7 @@
                 />
               </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel>
+            <v-expansion-panel class="sticky-price-details">
               <v-expansion-panel-header class="parent-expansion-header">
                 Price Details
               </v-expansion-panel-header>
@@ -470,7 +481,10 @@ const filters = ref({})
 const confirmDialogRef = ref(null)
 const proposalForm = ref(null)
 const deleteConfirmDialogRef = ref(null)
-const expansionPanelsStatus = ref([0, 1, 2, 3, 4])
+const expansionPanelsStatus = ref([0, 1, 2, 3, 4, 5, 6])
+// This controls which parent expansion panel is open (Configuration or Price Details)
+// Only one can be open at a time: 0 = Configuration, 1 = Price Details
+const expandedPanel = ref([0])
 const proposalFullscreenViewerEl = ref(undefined)
 const isFullscreen = ref(false)
 const viewportEl = ref(null)
@@ -509,18 +523,18 @@ const loadExistingAdders = () => {
 
   if (adderField && adderField.stringValue) {
     try {
-      const adderData = JSON.parse(adderField.stringValue)
+      const savedAdderData = JSON.parse(adderField.stringValue)
 
       // Update selectedAdders from the stored data
-      if (adderData.selectedAdders && Array.isArray(adderData.selectedAdders)) {
-        selectedAdders.value = adderData.selectedAdders
+      if (savedAdderData.selectedAdders && Array.isArray(savedAdderData.selectedAdders)) {
+        selectedAdders.value = savedAdderData.selectedAdders
       } else {
         // Handle legacy data where we need to build selectedAdders
         selectedAdders.value = []
 
         // Process selected regular adders
-        if (adderData.selectedAdderIds && Array.isArray(adderData.selectedAdderIds)) {
-          adderData.selectedAdderIds.forEach(id => {
+        if (savedAdderData.selectedAdderIds && Array.isArray(savedAdderData.selectedAdderIds)) {
+          savedAdderData.selectedAdderIds.forEach(id => {
             const originalAdder = adderData.value?.find(a => a.id === id)
             if (originalAdder) {
               selectedAdders.value.push({
@@ -534,8 +548,8 @@ const loadExistingAdders = () => {
         }
 
         // Process custom adders
-        if (adderData.customAdders && Array.isArray(adderData.customAdders)) {
-          adderData.customAdders.forEach(adder => {
+        if (savedAdderData.customAdders && Array.isArray(savedAdderData.customAdders)) {
+          savedAdderData.customAdders.forEach(adder => {
             selectedAdders.value.push({
               id: adder.id,
               label: adder.fieldName,
@@ -547,7 +561,7 @@ const loadExistingAdders = () => {
       }
 
       adderCostField.value = adderField
-      adderTotalCost.value = adderData.totalCost || 0
+      adderTotalCost.value = savedAdderData.totalCost || 0
 
       // Prepare data for the dialog in the expected format
       adderCostData.value = {
@@ -555,19 +569,47 @@ const loadExistingAdders = () => {
         total: adderTotalCost.value
       }
 
-      // Add selected adder IDs to adderCostData
-      if (adderData.selectedAdderIds) {
-        adderData.selectedAdderIds.forEach(id => {
-          adderCostData.value.items[id] = true
-        })
+      // Apply adder states from saved data to original adder data
+      if (savedAdderData.allAdderStates && Array.isArray(savedAdderData.allAdderStates)) {
+        // Update the selectedProposalAdder flag on each adder based on stored state
+        adderData.value.forEach(adder => {
+          const savedState = savedAdderData.allAdderStates.find(state => state.id === adder.id);
+          if (savedState !== undefined) {
+            adder.selectedProposalAdder = savedState.selectedProposalAdder;
+          }
+        });
+      } else {
+        // For legacy data, apply selections based on selectedAdderIds
+        adderData.value.forEach(adder => {
+          // Default to unselected
+          adder.selectedProposalAdder = false;
+
+          // Check if it's in the selected adder IDs
+          if (savedAdderData.selectedAdderIds &&
+              Array.isArray(savedAdderData.selectedAdderIds) &&
+              savedAdderData.selectedAdderIds.includes(adder.id)) {
+            adder.selectedProposalAdder = true;
+          }
+
+          // Check if it's a custom adder
+          if (savedAdderData.customAdders && Array.isArray(savedAdderData.customAdders)) {
+            const customAdder = savedAdderData.customAdders.find(ca => ca.id === adder.id);
+            if (customAdder) {
+              adder.selectedProposalAdder = true;
+              adder.customProposalAdderAmount = customAdder.amount;
+            }
+          }
+        });
       }
 
-      // Add custom adders to adderCostData
-      if (adderData.customAdders) {
-        adderData.customAdders.forEach(adder => {
-          adderCostData.value.items[adder.id] = adder.amount
-        })
-      }
+      // Now prepare the adderCostData for the dialog
+      adderData.value.forEach(adder => {
+        if (adder.adderType === 'selected_adders') {
+          adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
+        } else if (adder.adderType === 'custom_adders' && adder.selectedProposalAdder) {
+          adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
+        }
+      });
     } catch (e) {
       console.error('Error parsing adder data', e)
     }
@@ -584,31 +626,70 @@ const formatAdderLabel = (key) => {
 }
 
 const handleAppliedCosts = (costs) => {
-  // Clear previous selections
-  selectedAdders.value = []
-  adderTotalCost.value = 0
-
   // Format selections for display in the combobox
   if (costs) {
-    // Calculate total cost
-    let totalCost = 0
+    // Close the dialog after processing the data
+    showAdderCostDialog.value = false;
 
-    // Transform the data based on the new structure
+    // Properly update the state of all adders in the original data
+    if (costs.allItems && Array.isArray(costs.allItems)) {
+      adderData.value.forEach(adder => {
+        // Find the corresponding item in the dialog result
+        const resultItem = costs.allItems.find(item => item.id === adder.id);
+        // Only update if we found a matching item
+        if (resultItem) {
+          // Update the selected state based on what was in the dialog
+          adder.selectedProposalAdder = resultItem.applied;
+          
+          // Update custom adder amounts if this is a custom adder
+          if (adder.adderType === 'custom_adders' && resultItem.applied && resultItem.customFields?.amount?.value) {
+            adder.customProposalAdderAmount = parseFloat(resultItem.customFields.amount.value);
+          }
+        }
+      });
+    } else {
+      // Fallback to old method if allItems is not available
+      // Reset all adders to unselected state
+      adderData.value.forEach(adder => {
+        adder.selectedProposalAdder = false;
+      });
+    }
+
+    // Clear previous selections for the display
+    selectedAdders.value = [];
+    adderTotalCost.value = 0;
+
+    // Calculate total cost
+    let totalCost = 0;
+
+    // Process selected adders
     if (costs.selectedAdderIds && Array.isArray(costs.selectedAdderIds)) {
-      // Process selected adders
       costs.selectedAdderIds.forEach(id => {
         const originalAdder = adderData.value.find(adder => adder.id === id);
         if (!originalAdder) return;
+
+        // Mark this adder as selected in the original data
+        originalAdder.selectedProposalAdder = true;
 
         const amount = originalAdder.selectedAdderAmount || 0;
         totalCost += amount;
 
         selectedAdders.value.push({
-          id: id,
+          id,
           label: originalAdder.fieldName,
           price: amount,
           isCustom: false
         });
+      });
+    }
+
+    // Explicitly mark unselected adders
+    if (costs.unselectedAdderIds && Array.isArray(costs.unselectedAdderIds)) {
+      costs.unselectedAdderIds.forEach(id => {
+        const originalAdder = adderData.value.find(adder => adder.id === id);
+        if (originalAdder) {
+          originalAdder.selectedProposalAdder = false;
+        }
       });
     }
 
@@ -617,6 +698,13 @@ const handleAppliedCosts = (costs) => {
       costs.customAdders.forEach(adder => {
         const amount = adder.amount || 0;
         totalCost += amount;
+
+        // Find the original adder and update its customProposalAdderAmount
+        const originalAdder = adderData.value.find(a => a.id === adder.id);
+        if (originalAdder) {
+          originalAdder.customProposalAdderAmount = amount;
+          originalAdder.selectedProposalAdder = true;
+        }
 
         selectedAdders.value.push({
           id: adder.id,
@@ -632,26 +720,50 @@ const handleAppliedCosts = (costs) => {
 
     // Create a custom field value if needed to store the adder data
     if (!adderCostField.value) {
-      // Find or create a field for storing adder costs
-      adderCostField.value = findOrCreateAdderCostField()
+      adderCostField.value = findOrCreateAdderCostField();
     }
 
-    // Update the field with the JSON data of selected adders
-    if (adderCostField.value) {
-      adderCostField.value.stringValue = JSON.stringify({
-        totalCost: adderTotalCost.value,
-        selectedAdderIds: costs.selectedAdderIds || [],
-        customAdders: costs.customAdders || [],
-        selectedAdders: selectedAdders.value
-      })
+    // Store the data and mark it as dirty so save button appears
+    adderCostField.value.stringValue = JSON.stringify({
+      totalCost: adderTotalCost.value,
+      selectedAdderIds: costs.selectedAdderIds || [],
+      unselectedAdderIds: costs.unselectedAdderIds || [], // Store unselected adders
+      customAdders: costs.customAdders || [],
+      selectedAdders: selectedAdders.value,
+      // Store the complete state of all adders for next opening
+      allAdderStates: adderData.value.map(adder => ({
+        id: adder.id,
+        selectedProposalAdder: adder.selectedProposalAdder,
+        // Include custom adder amounts
+        customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null
+      }))
+    });
 
-      // Add to dirty fields to be saved
-      populateDirtyCfvs(adderCostField.value)
-    }
+    // Add to dirty fields to make the save button appear
+    populateDirtyCfvs(adderCostField.value);
 
-    appStore.showSnack('SUCCESS', `Added ${selectedAdders.value.length} cost adders`)
+    // Update adderCostData with the latest applied items for reopening the dialog
+    adderCostData.value = {
+      items: {},
+      total: totalCost
+    };
+
+    // Set correct state for each adder in adderCostData
+    adderData.value.forEach(adder => {
+      if (adder.adderType === 'selected_adders') {
+        adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
+      } else if (adder.adderType === 'custom_adders' && adder.selectedProposalAdder) {
+        adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
+      }
+    });
+
+    const message = selectedAdders.value.length > 0
+      ? `Added ${selectedAdders.value.length} cost adders`
+      : "Removed all cost adders";
+    appStore.showSnack('SUCCESS', message);
   }
 }
+
 
 const getProposalAdders = async () => {
   try {
@@ -678,6 +790,7 @@ const getProposalAdders = async () => {
     loadExistingAdders();
 
     // Update selectedAdders based on received API data
+    // Make sure to honor the applied status
     updateSelectedAddersFromApi(data);
 
     handleHidingGlobalLoader(status)
@@ -1057,6 +1170,10 @@ const resetToDefault = async () => {
 const validateForm = () => {
   //checks for required fields prior to opening the save dialog
   if (proposalForm.value.validate()) {
+    // If we have adderCostField with changes, add it to dirty fields now
+    if (adderCostField.value && adderCostField.value.stringValue) {
+      populateDirtyCfvs(adderCostField.value)
+    }
     saveCustomFieldValues()
   } else {
     appStore.showSnack('ERROR', 'Missing Required Fields')
@@ -1098,12 +1215,67 @@ const updateProposalVersion = async () => {
 const saveCustomFieldValues = async () => {
   try {
     appStore.loading = true
-
+    
+    // First check if we have adder changes to save
+    const customAddersToUpdate = []
+    if (adderCostField.value && adderCostField.value.stringValue) {
+      try {
+        const adderData = JSON.parse(adderCostField.value.stringValue)
+        
+        // Process custom adders for direct API update
+        if (adderData.customAdders && Array.isArray(adderData.customAdders)) {
+          adderData.customAdders.forEach(adder => {
+            if (adder.id && adder.amount !== undefined) {
+              customAddersToUpdate.push({
+                id: adder.id,
+                customAdderAmount: adder.amount,
+                adderType: 'custom_adders',
+                fieldName: adder.fieldName,
+                applied: true
+              })
+            }
+          })
+        }
+        
+        // Add selected adders
+        if (adderData.selectedAdderIds && Array.isArray(adderData.selectedAdderIds)) {
+          adderData.selectedAdderIds.forEach(id => {
+            const adder = adderData.selectedAdders.find(a => a.id === id && !a.isCustom)
+            if (adder) {
+              customAddersToUpdate.push({
+                id: id,
+                adderType: 'selected_adders',
+                fieldName: adder.label || 'Selected Adder',
+                applied: true
+              })
+            }
+          })
+        }
+      } catch (e) {
+        console.error('Error parsing adder data for save:', e)
+      }
+    }
+    
+    // If we have custom adders to update, make the API call
+    if (customAddersToUpdate.length > 0) {
+      try {
+        await postRequest(
+          `/proposal/${proposalId.value}/adders/update`,
+          { adderItems: customAddersToUpdate },
+          'blueraven'
+        )
+      } catch (e) {
+        console.error('Error updating adders:', e)
+      }
+    }
+    
+    // Now save custom field values as usual
     const { data, status } = await postRequest(
       `/proposal/${proposalId.value}`,
       dirtyCfvs.value,
       'blueraven'
     )
+    
     proposal.value = data
     dirtyCfvs.value = []
     appStore.showSnack('SUCCESS', 'Proposal Updated')
@@ -1385,6 +1557,69 @@ const beforeWindowUnload = (e) => {
 </script>
 
 <style scoped lang="scss">
+/* Add styles for sticky price details */
+.sticky-price-details {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background-color: white;
+}
+
+// Style overrides to remove rounded corners and add dividers
+:deep(.v-expansion-panel) {
+  border-radius: 0 !important;
+}
+
+:deep(.v-expansion-panel-header) {
+  padding: 12px 16px;
+}
+
+:deep(.v-expansion-panel-content__wrap) {
+  padding: 0 16px 16px;
+}
+
+:deep(.v-expansion-panel--active) {
+  border-radius: 0 !important;
+  margin: 0;
+}
+
+/* Add divider between expansion panel header and content */
+:deep(.v-expansion-panel--active > .v-expansion-panel-header) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+:deep(.v-expansion-panel:not(:first-child)::after) {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+:deep(.parent-expansion-header) {
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+:deep(.v-expansion-panels--accordion .v-expansion-panel) {
+  margin-bottom: 8px;
+}
+
+/* Set consistent padding and margin for panels */
+:deep(.child-expansion-panel) {
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
+  &:first-child {
+    margin-top: 8px !important;
+  }
+}
+
+:deep(.child-expansion-panel) {
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
+}
+
 /* Base layout and containers */
 .configurations-wrapper {
   height: calc(100vh - (var(--padding-and-margins) - var(--dirty-cfv-height)) + var(--proposal-action-height) + 14px);
@@ -1529,6 +1764,9 @@ const beforeWindowUnload = (e) => {
 
 .child-expansion-panel {
   margin: 0 16px 8px 0;
+  &:first-child {
+    margin-top: 8px;
+  }
 }
 
 //::v-deep .v-expansion-panel-content__wrap {
