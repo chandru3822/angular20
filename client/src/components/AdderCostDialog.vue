@@ -37,10 +37,10 @@ const emit = defineEmits(['close-dialog', 'apply-costs', 'cancel']);
 
 // Define table headers
 const headers = [
-  { text: 'Description', value: 'description', width: '30%' },
-  { text: 'Other', value: 'other', width: '15%' },
-  { text: 'Quantity', value: 'quantity', width: '15%' },
-  { text: 'Charge Amount (Total)', value: 'amount', width: '25%' },
+  { text: 'Description', value: 'description', width: '30%', align: 'left' },
+  { text: 'Other', value: 'other', width: '15%', align: 'left' },
+  { text: 'Quantity', value: 'quantity', width: '15%', align: 'left' },
+  { text: 'Charge Amount (Total)', value: 'amount', width: '25%', align: 'right', class: 'text-right' },
   { text: 'Apply', value: 'apply', width: '15%', align: 'center' }
 ];
 
@@ -52,12 +52,8 @@ const adderData = ref([]);
 const formatCurrency = (value) => {
   if (value === null || value === undefined) return '--';
 
-  // Handle decimal vs whole numbers - show decimals only if present
-  if (value === Math.floor(value)) {
-    return `$${value.toLocaleString()}`;
-  } else {
-    return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
+  // Always show 2 decimal places for consistency
+  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 // Parse currency string back to number
@@ -197,53 +193,17 @@ onMounted(() => {
 const handleApply = async (result) => {
   try {
     appStore.loading = true;
-
-    // Create proper request data format that matches ProposalAdderRequest
-    const requestData = {
-      adderItems: result.items
-        // For selected_adders, include all of them - backend will handle the filtering based on applied status
-        .filter(item => item.type === 'selected_adders' || item.type === 'custom_adders')
-        .map(item => {
-          const adderItem = {
-            id: item.id,
-            adderType: item.type,
-            fieldName: item.description,
-            applied: item.applied
-          };
-
-          // Add amount for custom adders
-          if (item.type === 'custom_adders') {
-            let amount = 0;
-            if (item.customFields?.amount?.value) {
-              amount = parseFloat(item.customFields.amount.value);
-            } else if (item.rawAmount) {
-              amount = parseFloat(item.rawAmount);
-            }
-
-            if (!isNaN(amount)) {
-              adderItem.customAdderAmount = amount;
-            }
-          }
-
-          return adderItem;
-        })
-    };
-
-    console.log('Sending adder items to API:', JSON.stringify(requestData));
-
-    const response = await postRequest(
-      `/proposal/${props.proposalId}/adders/update`,
-      requestData,
-      'blueraven'
-    );
-
-    console.log('Adder update response:', response);
-
-    // Create the right format for the parent component
+    
+    // Create the right format for the parent component without API call
     const appliedCosts = {
       totalCost: parseFloat(result.total.replace(/,/g, '')),
+      // Include ALL selected adders with their applied state (true or false)
       selectedAdderIds: result.items
         .filter(item => item.type === 'selected_adders' && item.applied)
+        .map(item => item.id),
+      // Track explicitly unselected adders to properly remove them
+      unselectedAdderIds: result.items
+        .filter(item => item.type === 'selected_adders' && !item.applied)
         .map(item => item.id),
       customAdders: result.items
         .filter(item => item.type === 'custom_adders' && item.applied)
@@ -254,7 +214,7 @@ const handleApply = async (result) => {
           } else if (item.rawAmount) {
             amount = parseFloat(item.rawAmount);
           }
-          
+
           return {
             id: item.id,
             fieldName: item.description,
@@ -262,16 +222,48 @@ const handleApply = async (result) => {
             adderType: 'custom_adders',
             selectedProposalAdder: true
           };
-        })
+        }),
+      // Include all adder items with their current applied state for accurate tracking
+      allItems: result.items.map(item => ({
+        id: item.id,
+        type: item.type,
+        applied: item.applied
+      }))
     };
 
+    // Emit the apply-costs event with the processed data
     emit('apply-costs', appliedCosts);
+    
+    // No need to close dialog here, as GenericCostDialog will handle the closing
   } catch (error) {
-    appStore.showSnack('ERROR', 'Error updating adders');
-    console.error('Error updating adders:', error);
+    appStore.showSnack('ERROR', 'Error processing adders');
+    console.error('Error processing adders:', error);
+    
+    // In case of error, close the dialog
+    emit('close-dialog', false);
   } finally {
     appStore.loading = false;
-    emit('close-dialog', false);
   }
 };
 </script>
+
+<style lang="scss" scoped>
+/* Make sure the charge amount column is right-aligned */
+:deep(.v-data-table) {
+  td:nth-child(4) {
+    text-align: right !important;
+  }
+  
+  .amount-column,
+  .text-right {
+    text-align: right !important;
+    width: 100% !important;
+    display: block !important;
+  }
+}
+
+/* Make sure header alignment is correct */
+:deep(.v-data-table__header tr th:nth-child(4)) {
+  text-align: right !important;
+}
+</style>

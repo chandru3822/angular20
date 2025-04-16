@@ -18,7 +18,7 @@
     </v-alert>
 
     <!-- Base Price Card -->
-    <v-expansion-panels multiple focusable>
+    <v-expansion-panels multiple>
       <v-expansion-panel readonly class="child-expansion-panel">
         <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center">
           <span class="text-subtitle-1 font-weight-medium">
@@ -52,15 +52,15 @@
               <tbody>
               <tr>
                 <td>Base</td>
-                <td class="text-right">{{ formatNumber(commission.base) }}</td>
+                <td class="text-right">${{ formatNumber(commission.base, true) }}</td>
               </tr>
               <tr class="light-blue lighten-5">
                 <td>Adjustment (Trenching Cost Update)</td>
-                <td class="text-right">{{ formatNumber(commission.trenchingAdjustment) }}</td>
+                <td class="text-right">${{ formatNumber(commission.trenchingAdjustment, true) }}</td>
               </tr>
               <tr class="light-blue lighten-5">
                 <td>Adjustment (Tree Trimming Cost Update)</td>
-                <td class="text-right">{{ formatNumber(commission.treeTrimmingAdjustment) }}</td>
+                <td class="text-right">${{ formatNumber(commission.treeTrimmingAdjustment, true) }}</td>
               </tr>
               </tbody>
             </template>
@@ -82,7 +82,7 @@
           </span>
           <span class="d-flex align-center justify-end ml-auto">
             <span class="text-subtitle-2 grey--text mr-2">Subtotal:</span>
-            <span class="text-subtitle-1 font-weight-medium">$ {{ formatNumber(adderTotal) }}</span>
+            <span class="text-subtitle-1 font-weight-medium">${{ formatNumber(adderTotal, true) }}</span>
           </span>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="child-expansion-panel-content">
@@ -105,13 +105,13 @@
                 <td class="text-center">{{ adder.unitPrice }}</td>
                 <td class="text-right">
                   <span v-if="adder.projectAdderAmount && adder.projectAdderAmount !== adder.proposalAdderAmount" class="text-decoration-line-through mr-2 grey--text">
-                    ${{ formatNumber(adder.projectAdderAmount) }}
+                    ${{ formatNumber(adder.projectAdderAmount, true) }}
                   </span>
                   <span :class="{
                     'red--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount > 0,
                     'green--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount > 0
                   }">
-                    ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0) }}
+                    ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
                   </span>
                 </td>
               </tr>
@@ -179,7 +179,7 @@ export default {
         .map(adder => {
           let projectAmount = 0;
           let proposalAmount = 0;
-          
+
           if (adder.adderType === 'selected_adders') {
             projectAmount = adder.selectedAdderAmount || 0;
             proposalAmount = adder.selectedProposalAdderAmount || adder.selectedAdderAmount || 0;
@@ -201,8 +201,11 @@ export default {
           };
         });
     },
-    formatNumber(value) {
-      return new Intl.NumberFormat('en-US').format(value);
+    formatNumber(value, showDecimals = true) {
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: showDecimals ? 2 : 0,
+        maximumFractionDigits: showDecimals ? 2 : 0
+      }).format(value);
     }
   }
 }
@@ -215,11 +218,27 @@ export default {
 
 .child-expansion-panel-content {
   width: 100%;
-  padding-right: -4px !important;
-  margin-right: -4px !important;
+  padding: 16px !important;
+  margin: 0 !important;
 }
 
 .text-decoration-line-through {
   text-decoration: line-through;
+}
+
+.v-expansion-panel {
+  margin-bottom: 12px;
+}
+
+::v-deep .v-expansion-panel--active > .v-expansion-panel-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-expansion-panel-content ::v-deep .v-expansion-panel-content__wrap {
+  padding: 0;
+}
+
+.text-right {
+  text-align: right;
 }
 </style>
