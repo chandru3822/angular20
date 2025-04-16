@@ -223,12 +223,21 @@ const handleApply = async (result) => {
             selectedProposalAdder: true
           };
         }),
-      // Include all adder items with their current applied state for accurate tracking
-      allItems: result.items.map(item => ({
-        id: item.id,
-        type: item.type,
-        applied: item.applied
-      }))
+      // Include all adder items with their current applied state and custom field values for accurate tracking
+      allItems: result.items.map(item => {
+        const resultItem = {
+          id: item.id,
+          type: item.type,
+          applied: item.applied
+        };
+        
+        // Include the customFields if they exist
+        if (item.customFields) {
+          resultItem.customFields = item.customFields;
+        }
+        
+        return resultItem;
+      })
     };
 
     // Emit the apply-costs event with the processed data

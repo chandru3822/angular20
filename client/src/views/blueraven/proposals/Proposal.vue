@@ -640,6 +640,11 @@ const handleAppliedCosts = (costs) => {
         if (resultItem) {
           // Update the selected state based on what was in the dialog
           adder.selectedProposalAdder = resultItem.applied;
+          
+          // Update custom adder amounts if this is a custom adder
+          if (adder.adderType === 'custom_adders' && resultItem.applied && resultItem.customFields?.amount?.value) {
+            adder.customProposalAdderAmount = parseFloat(resultItem.customFields.amount.value);
+          }
         }
       });
     } else {
@@ -694,6 +699,13 @@ const handleAppliedCosts = (costs) => {
         const amount = adder.amount || 0;
         totalCost += amount;
 
+        // Find the original adder and update its customProposalAdderAmount
+        const originalAdder = adderData.value.find(a => a.id === adder.id);
+        if (originalAdder) {
+          originalAdder.customProposalAdderAmount = amount;
+          originalAdder.selectedProposalAdder = true;
+        }
+
         selectedAdders.value.push({
           id: adder.id,
           label: adder.fieldName,
@@ -721,7 +733,9 @@ const handleAppliedCosts = (costs) => {
       // Store the complete state of all adders for next opening
       allAdderStates: adderData.value.map(adder => ({
         id: adder.id,
-        selectedProposalAdder: adder.selectedProposalAdder
+        selectedProposalAdder: adder.selectedProposalAdder,
+        // Include custom adder amounts
+        customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null
       }))
     });
 
@@ -1201,12 +1215,67 @@ const updateProposalVersion = async () => {
 const saveCustomFieldValues = async () => {
   try {
     appStore.loading = true
-
+    
+    // First check if we have adder changes to save
+    const customAddersToUpdate = []
+    if (adderCostField.value && adderCostField.value.stringValue) {
+      try {
+        const adderData = JSON.parse(adderCostField.value.stringValue)
+        
+        // Process custom adders for direct API update
+        if (adderData.customAdders && Array.isArray(adderData.customAdders)) {
+          adderData.customAdders.forEach(adder => {
+            if (adder.id && adder.amount !== undefined) {
+              customAddersToUpdate.push({
+                id: adder.id,
+                customAdderAmount: adder.amount,
+                adderType: 'custom_adders',
+                fieldName: adder.fieldName,
+                applied: true
+              })
+            }
+          })
+        }
+        
+        // Add selected adders
+        if (adderData.selectedAdderIds && Array.isArray(adderData.selectedAdderIds)) {
+          adderData.selectedAdderIds.forEach(id => {
+            const adder = adderData.selectedAdders.find(a => a.id === id && !a.isCustom)
+            if (adder) {
+              customAddersToUpdate.push({
+                id: id,
+                adderType: 'selected_adders',
+                fieldName: adder.label || 'Selected Adder',
+                applied: true
+              })
+            }
+          })
+        }
+      } catch (e) {
+        console.error('Error parsing adder data for save:', e)
+      }
+    }
+    
+    // If we have custom adders to update, make the API call
+    if (customAddersToUpdate.length > 0) {
+      try {
+        await postRequest(
+          `/proposal/${proposalId.value}/adders/update`,
+          { adderItems: customAddersToUpdate },
+          'blueraven'
+        )
+      } catch (e) {
+        console.error('Error updating adders:', e)
+      }
+    }
+    
+    // Now save custom field values as usual
     const { data, status } = await postRequest(
       `/proposal/${proposalId.value}`,
       dirtyCfvs.value,
       'blueraven'
     )
+    
     proposal.value = data
     dirtyCfvs.value = []
     appStore.showSnack('SUCCESS', 'Proposal Updated')
