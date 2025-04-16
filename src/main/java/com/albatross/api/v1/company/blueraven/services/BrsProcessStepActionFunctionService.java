@@ -469,8 +469,10 @@ public class BrsProcessStepActionFunctionService {
           if(storageType.equals("energy_arbitrage") || storageType.equals("energy arbitrage")) {
             //(right now it's energy_arbitrage but just in case it changes to a space instead)
             finalStorageType = "Grid-Tied";
-            //we're using a different name than Aurora is for this one; I don't know why
-          } else {
+            //we're using a different name than Aurora is for these two that don't have _ in them
+          } else if(storageType.equals("self_consumption") || storageType.equals("self consumption")){
+              finalStorageType = "Partial Home";
+          }else {
             finalStorageType = storageType;
           }
           final Long storageTypeLovId = values.stream()
