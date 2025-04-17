@@ -159,6 +159,7 @@ const newPartSearch = (item, queryText, itemText) => {
   const description = item.description?.toLowerCase()
   const partNumber = item.partNumber?.toLowerCase()
   const searchText = queryText?.toLowerCase()
+  customPartDescription.value = queryText //this is so that if they type in a part that doesn't exist and decide to add a custom part, we auto add what they typed to the custom part description; if they don't add a custom part, nothing is done with this variable
   return description?.indexOf(searchText) > -1 || partNumber?.indexOf(searchText) > -1
 }
 
@@ -167,7 +168,7 @@ const newPartSearch = (item, queryText, itemText) => {
 * input is the selected part or customPartPlaceholder if called from 'Add Custom Part'
 * newPart is the v-model object for the dropdown
 */
-const selectNewPart = (input) => {
+const selectNewPart = (input, queryText) => {
   if(input?.objectCode === "PARTS_CUSTOM"){
     input = customPartPlaceholder.value
     addCustom.value = true
