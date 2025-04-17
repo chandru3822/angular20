@@ -108,7 +108,7 @@
                     </template>
 
                     <div v-else :class="{
-                      'w-100': true, 
+                      'w-100': true,
                       'text-right': header.value === 'amount',
                       'd-block': true
                     }">
@@ -138,7 +138,7 @@
                       v-if="item.applied"
                       hide-details
                       disabled
-                      color="--v-primary-base"
+                      color="primary"
                     >
                       mdi-check
                     </v-icon>
@@ -146,7 +146,7 @@
                 </td>
                 <td class="text-center" v-else>
                   <div class="d-flex justify-center">
-                    <span class="auto-badge">Auto</span>
+                    <span class="auto-badge grey--text text--darken-1">Auto</span>
                   </div>
                 </td>
               </tr>
@@ -457,7 +457,7 @@ const apply = () => {
 
   // Emit apply event with the result data first
   emit('apply', result);
-  
+
   // Then close the dialog
   setTimeout(() => {
     show.value = false;
@@ -470,7 +470,7 @@ const cancel = () => {
   // Set the dialog to close immediately
   show.value = false;
   emit('close-dialog', false);
-  
+
   // Emit cancel event
   emit('cancel');
 };
@@ -492,27 +492,27 @@ const cancel = () => {
       color: rgba(0, 0, 0, 0.6);
       font-weight: normal;
     }
-    
+
     &.text-right {
       text-align: right;
       display: block;
       width: 100%;
     }
   }
-  
+
   // Override td styles for amount column
   ::v-deep td:nth-child(4) {
     text-align: right;
   }
-  
+
   .w-100 {
     width: 100%;
   }
-  
+
   .d-block {
     display: block;
   }
-  
+
   .text-right {
     text-align: right;
   }
@@ -541,13 +541,14 @@ const cancel = () => {
       height: 48px;
     }
   }
-  
+
   .auto-badge {
     display: inline-block;
     padding: 2px 8px;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.06);
     font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
   }
 
   // Make switches more compact
