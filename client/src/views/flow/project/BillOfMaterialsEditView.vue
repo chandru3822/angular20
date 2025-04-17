@@ -79,6 +79,10 @@ const partsList = computed(() => {
   return [...props.partsMasterParts, customPartPlaceholder.value]
 })
 
+const disableAdd = computed(() => {
+  return addCustom.value ? !(customPartDescription.value && customPartNumber.value && newPartQuantity?.value > 0) : (!newPart.value || !newPartQuantity?.value > 0)
+})
+
 watch(props.bomParts, () => {
   localBomParts.value = [...props.bomParts]
 })
@@ -164,9 +168,11 @@ const newPartSearch = (item, queryText, itemText) => {
 * newPart is the v-model object for the dropdown
 */
 const selectNewPart = (input) => {
-  if(input.objectCode === "PARTS_CUSTOM"){
+  if(input?.objectCode === "PARTS_CUSTOM"){
     input = customPartPlaceholder.value
     addCustom.value = true
+  } else {
+    addCustom.value = false
   }
   newPart.value = input
 }
@@ -360,7 +366,7 @@ const findBestMatchDuplicatePart = () => {
       <v-card-actions class="px-4 pt-0 pb-4">
         <v-spacer/>
         <a-btn variant="text" @click="closeAddPart" text="Cancel"></a-btn>
-        <a-btn :disabled="!newPart || !newPartQuantity" @click="addCustom ? addNewCustomPartToList() : addNewPartToList()" text="Add"></a-btn>
+        <a-btn :disabled="disableAdd" @click="addCustom ? addNewCustomPartToList() : addNewPartToList()" text="Add"></a-btn>
       </v-card-actions>
     </v-card>
     <div v-if="bomParts?.length === 0" class="grey--text body-medium">

@@ -122,10 +122,11 @@ public class BillOfMaterialsService {
         //  - NO parts master id
         //  - NO id
         //  - a custom part id
+        // - a description
         //  - a non-zero quantity
         // to insert into the Custom BillOfMaterialsParts
         final List<Map<String, Object>> insertParamsNoPartsMasterId =
-                parts.stream().filter(p ->p.getId() == null && p.getPartsMasterId() == null && p.getCustomPartId() != null && p.getQuantity() > 0).map(p -> {
+                parts.stream().filter(p ->p.getId() == null && p.getPartsMasterId() == null && p.getCustomPartId() != null && p.getDescription() != null && p.getQuantity() > 0).map(p -> {
                     final Map<String, Object> map = new HashMap<>();
                     map.put("userId", user.getId());
                     map.put("id", p.getId());
