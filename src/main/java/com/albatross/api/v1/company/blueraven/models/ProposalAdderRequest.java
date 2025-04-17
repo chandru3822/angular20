@@ -17,5 +17,6 @@ public class ProposalAdderRequest {
     private String adderType;
     private String fieldName;
     private Boolean applied = true;
+    private Integer customAdderDataType; // Data type ID from constants.DATA_FIELD_TYPES
   }
 }

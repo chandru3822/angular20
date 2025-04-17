@@ -184,8 +184,8 @@ public class BlueravenProposalService {
       // Map for selected adders (only including applied ones)
       List<Long> selectedAdderIds = new ArrayList<>();
 
-      // Map Custom CFGA ID to amount
-      Map<Long, Long> customAdders = new HashMap<>();
+      // Custom adders with their data types and values
+      Map<Long, CustomAdderData> customAdders = new HashMap<>();
 
       for (ProposalAdderRequest.AdderItem item : adderItems) {
         switch (item.getAdderType()) {
@@ -197,7 +197,19 @@ public class BlueravenProposalService {
             break;
           case "custom_adders":
             if (item.getApplied() && item.getCustomAdderAmount() != null) {
-              customAdders.put(item.getId(), item.getCustomAdderAmount());
+              // Store both the value and the data type
+              Integer dataTypeId = item.getCustomAdderDataType();
+
+              // If the data type is null but field name contains 'currency',
+              // default to NUMERIC (4) type
+              if (dataTypeId == null &&
+                  item.getFieldName() != null &&
+                  item.getFieldName().toLowerCase().contains("currency")) {
+                dataTypeId = 4; // NUMERIC
+              }
+
+              customAdders.put(item.getId(),
+                  new CustomAdderData(item.getCustomAdderAmount(), dataTypeId));
             }
             break;
           case "auto_applied_adder":
@@ -214,14 +226,34 @@ public class BlueravenProposalService {
       updateSelectedAddersArray(proposalId, selectedAdderIds, userId);
 
       // Update custom adders if needed
-      for (Map.Entry<Long, Long> entry : customAdders.entrySet()) {
-        updateCustomAdders(proposalId, entry.getKey(), entry.getValue(), userId);
+      for (Map.Entry<Long, CustomAdderData> entry : customAdders.entrySet()) {
+        CustomAdderData data = entry.getValue();
+        updateCustomAdders(proposalId, entry.getKey(), data.getValue(), userId, data.getDataTypeId());
       }
 
       log.debug("Updated adder items for proposal #{}", proposalId);
     } catch (Exception e) {
       log.error("Error updating adder items for proposal #{}: {}", proposalId, e.getMessage());
       throw new ApiException("Failed to update adder items: " + e.getMessage());
+    }
+  }
+
+  // Helper class to store custom adder data with data type
+  private static class CustomAdderData {
+    private final Long value;
+    private final Integer dataTypeId;
+
+    public CustomAdderData(Long value, Integer dataTypeId) {
+      this.value = value;
+      this.dataTypeId = dataTypeId;
+    }
+
+    public Long getValue() {
+      return value;
+    }
+
+    public Integer getDataTypeId() {
+      return dataTypeId;
     }
   }
 
@@ -253,19 +285,63 @@ public class BlueravenProposalService {
   public void updateCustomAdders(@NonNull Long proposalId,
                                 @NonNull Long cfgaId,
                                 @NonNull Long customAdderValue,
-                                @NonNull Long userId) {
+                                @NonNull Long userId,
+                                Integer dataTypeId) {
+
+    // Default to INTEGER (6) if dataTypeId is null - for backwards compatibility
+    if (dataTypeId == null) {
+      dataTypeId = 6; // INTEGER
+    }
 
     Map<String, Object> params = new HashMap<>();
     params.put("proposalId", proposalId);
-    params.put("customAdderValue", customAdderValue);
     params.put("cfgaId", cfgaId);
     params.put("userId", userId);
 
+    // Set all value fields to null initially
+    params.put("intValue", null);
+    params.put("numericValue", null);
+    params.put("textValue", null);
+    params.put("dateValue", null);
+    params.put("timestampValue", null);
+    params.put("booleanValue", null);
+
+    // Set only the appropriate value based on data type
     try {
+      switch (dataTypeId) {
+        case 1: // DATE
+          // Convert Long to java.sql.Date - assuming customAdderValue is epoch millis
+          java.sql.Date date = new java.sql.Date(customAdderValue);
+          params.put("dateValue", date);
+          break;
+        case 2: // TIMESTAMP
+          // Convert Long to java.sql.Timestamp - assuming customAdderValue is epoch millis
+          java.sql.Timestamp timestamp = new java.sql.Timestamp(customAdderValue);
+          params.put("timestampValue", timestamp);
+          break;
+        case 3: // BOOLEAN
+          // Convert Long to Boolean (0 = false, non-zero = true)
+          params.put("booleanValue", customAdderValue != 0);
+          break;
+        case 4: // NUMERIC
+          // Use BigDecimal for numeric values to preserve precision
+          params.put("numericValue", new BigDecimal(customAdderValue));
+          break;
+        case 5: // TEXT
+          // Convert Long to String
+          params.put("textValue", customAdderValue.toString());
+          break;
+        case 6: // INTEGER
+        default:
+          // Use Long directly
+          params.put("intValue", customAdderValue);
+          break;
+      }
+
       // Execute the update
       sqlCache.updateBySql(ProposalQuery.updateCustomAdders, params);
-      log.debug("Updated custom adder with CFGA ID #{} for proposal #{} with value {}",
-        cfgaId, proposalId, customAdderValue);
+      log.debug("Updated custom adder with CFGA ID #{} for proposal #{} with value {} and dataType {}",
+        cfgaId, proposalId, customAdderValue, dataTypeId);
     } catch (Exception e) {
       log.error("Error updating custom adder for proposal #{}, CFGA ID #{}: {}",
         proposalId, cfgaId, e.getMessage());

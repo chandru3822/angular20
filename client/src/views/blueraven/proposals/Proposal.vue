@@ -114,7 +114,7 @@
               <div class="configurations-scroll-area">
                 <v-expansion-panels class="rounded-0" v-model="expandedPanel">
                   <v-expansion-panel class="rounded-0">
-                    <v-expansion-panel-header class="parent-expansion-header">
+                    <v-expansion-panel-header class="parent-expansion-header sticky-configuration-header">
                       Configuration
                       <div class="config-buttons-group">
                         <a-btn
@@ -640,7 +640,7 @@ const handleAppliedCosts = (costs) => {
         if (resultItem) {
           // Update the selected state based on what was in the dialog
           adder.selectedProposalAdder = resultItem.applied;
-          
+
           // Update custom adder amounts if this is a custom adder
           if (adder.adderType === 'custom_adders' && resultItem.applied && resultItem.customFields?.amount?.value) {
             adder.customProposalAdderAmount = parseFloat(resultItem.customFields.amount.value);
@@ -704,13 +704,19 @@ const handleAppliedCosts = (costs) => {
         if (originalAdder) {
           originalAdder.customProposalAdderAmount = amount;
           originalAdder.selectedProposalAdder = true;
+
+          // Store the data type if available
+          if (adder.customAdderDataType) {
+            originalAdder.customAdderDataType = adder.customAdderDataType;
+          }
         }
 
         selectedAdders.value.push({
           id: adder.id,
           label: adder.fieldName,
           price: amount,
-          isCustom: true
+          isCustom: true,
+          customAdderDataType: adder.customAdderDataType
         });
       });
     }
@@ -734,8 +740,9 @@ const handleAppliedCosts = (costs) => {
       allAdderStates: adderData.value.map(adder => ({
         id: adder.id,
         selectedProposalAdder: adder.selectedProposalAdder,
-        // Include custom adder amounts
-        customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null
+        // Include custom adder amounts and data types
+        customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null,
+        customAdderDataType: adder.adderType === 'custom_adders' ? adder.customAdderDataType : null
       }))
     });
 
@@ -1215,13 +1222,13 @@ const updateProposalVersion = async () => {
 const saveCustomFieldValues = async () => {
   try {
     appStore.loading = true
-    
+
     // First check if we have adder changes to save
     const customAddersToUpdate = []
     if (adderCostField.value && adderCostField.value.stringValue) {
       try {
         const adderData = JSON.parse(adderCostField.value.stringValue)
-        
+
         // Process custom adders for direct API update
         if (adderData.customAdders && Array.isArray(adderData.customAdders)) {
           adderData.customAdders.forEach(adder => {
@@ -1231,12 +1238,13 @@ const saveCustomFieldValues = async () => {
                 customAdderAmount: adder.amount,
                 adderType: 'custom_adders',
                 fieldName: adder.fieldName,
-                applied: true
+                applied: true,
+                customAdderDataType: adder.customAdderDataType ?? 4
               })
             }
           })
         }
-        
+
         // Add selected adders
         if (adderData.selectedAdderIds && Array.isArray(adderData.selectedAdderIds)) {
           adderData.selectedAdderIds.forEach(id => {
@@ -1255,7 +1263,7 @@ const saveCustomFieldValues = async () => {
         console.error('Error parsing adder data for save:', e)
       }
     }
-    
+
     // If we have custom adders to update, make the API call
     if (customAddersToUpdate.length > 0) {
       try {
@@ -1268,14 +1276,14 @@ const saveCustomFieldValues = async () => {
         console.error('Error updating adders:', e)
       }
     }
-    
+
     // Now save custom field values as usual
     const { data, status } = await postRequest(
       `/proposal/${proposalId.value}`,
       dirtyCfvs.value,
       'blueraven'
     )
-    
+
     proposal.value = data
     dirtyCfvs.value = []
     appStore.showSnack('SUCCESS', 'Proposal Updated')
@@ -1557,7 +1565,16 @@ const beforeWindowUnload = (e) => {
 </script>
 
 <style scoped lang="scss">
-/* Add styles for sticky price details */
+/* Add styles for sticky headers */
+.sticky-configuration-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;  /* Increased z-index to ensure it stays on top */
+  background-color: white !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; /* Added subtle shadow for visual separation */
+}
+
 .sticky-price-details {
   position: sticky;
   bottom: 0;
@@ -1641,6 +1658,8 @@ const beforeWindowUnload = (e) => {
   flex: 1;
   overflow-y: auto;
   padding: 0;
+  position: relative; /* Ensures proper stacking context for sticky elements */
+  height: 100%; /* Ensures the scroll area takes full height */
 }
 
 .configurations-column {

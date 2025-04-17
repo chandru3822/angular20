@@ -6,7 +6,7 @@
     title="Adder Cost"
     dialog-class="adder-cost-dialog"
     dialog-id="adderCostDialog"
-    total-label="Total Cost"
+    total-label="Subtotal"
     @close-dialog="$emit('close-dialog', false)"
     @apply="handleApply"
     @cancel="$emit('cancel')"
@@ -193,7 +193,7 @@ onMounted(() => {
 const handleApply = async (result) => {
   try {
     appStore.loading = true;
-    
+
     // Create the right format for the parent component without API call
     const appliedCosts = {
       totalCost: parseFloat(result.total.replace(/,/g, '')),
@@ -215,12 +215,19 @@ const handleApply = async (result) => {
             amount = parseFloat(item.rawAmount);
           }
 
+          // Default to Numeric value
+          let dataTypeId = 4;
+          if (item.customFields?.amount?.type === 'currency') {
+            dataTypeId = 4;
+          }
+
           return {
             id: item.id,
             fieldName: item.description,
             amount: amount,
             adderType: 'custom_adders',
-            selectedProposalAdder: true
+            selectedProposalAdder: true,
+            customAdderDataType: dataTypeId
           };
         }),
       // Include all adder items with their current applied state and custom field values for accurate tracking
@@ -230,24 +237,24 @@ const handleApply = async (result) => {
           type: item.type,
           applied: item.applied
         };
-        
+
         // Include the customFields if they exist
         if (item.customFields) {
           resultItem.customFields = item.customFields;
         }
-        
+
         return resultItem;
       })
     };
 
     // Emit the apply-costs event with the processed data
     emit('apply-costs', appliedCosts);
-    
+
     // No need to close dialog here, as GenericCostDialog will handle the closing
   } catch (error) {
     appStore.showSnack('ERROR', 'Error processing adders');
     console.error('Error processing adders:', error);
-    
+
     // In case of error, close the dialog
     emit('close-dialog', false);
   } finally {
@@ -262,7 +269,7 @@ const handleApply = async (result) => {
   td:nth-child(4) {
     text-align: right !important;
   }
-  
+
   .amount-column,
   .text-right {
     text-align: right !important;

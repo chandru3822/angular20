@@ -18,7 +18,7 @@
     </v-alert>
 
     <!-- Base Price Card -->
-    <v-expansion-panels multiple>
+    <v-expansion-panels multiple v-model="expandedPanels">
       <v-expansion-panel readonly class="child-expansion-panel">
         <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center">
           <span class="text-subtitle-1 font-weight-medium">
@@ -139,7 +139,7 @@ export default {
   },
   data() {
     return {
-      expanded: false,
+      expandedPanels: [0, 1, 2], // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
       showNotification: false,
       notificationText: '',
       basePrice: 29700,
@@ -240,5 +240,24 @@ export default {
 
 .text-right {
   text-align: right;
+}
+
+::v-deep .v-data-table td,
+::v-deep .v-simple-table td,
+::v-deep .v-simple-table th {
+  padding: 0 8px !important; /* Reduce padding for all table cells */
+}
+
+/* Fix borders and alignment for tables */
+::v-deep .v-simple-table {
+  border-collapse: collapse;
+  
+  th, td {
+    padding: 8px !important;
+  }
+  
+  tr {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
 }
 </style>

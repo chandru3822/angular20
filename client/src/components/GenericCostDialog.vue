@@ -124,32 +124,30 @@
 
                 <!-- Apply Switch -->
                 <td class="text-center" v-if="item.type === 'selected_adders'">
-                  <v-switch
-                    v-model="item.applied"
-                    hide-details
-                  />
+                  <div class="d-flex justify-center">
+                    <v-switch
+                      v-model="item.applied"
+                      hide-details
+                    />
+                  </div>
                 </td>
-                <td v-else-if="item.type === 'custom_adders'">
-                  <v-icon
-                    v-model="item.applied"
-                    v-if="item.applied"
-                    hide-details
-                    disabled
-                    color="--v-primary-base"
-                  >
-                    mdi-check
-                  </v-icon>
+                <td class="text-center" v-else-if="item.type === 'custom_adders'">
+                  <div class="d-flex justify-center">
+                    <v-icon
+                      v-model="item.applied"
+                      v-if="item.applied"
+                      hide-details
+                      disabled
+                      color="--v-primary-base"
+                    >
+                      mdi-check
+                    </v-icon>
+                  </div>
                 </td>
-                <td v-else>
-                  <v-subheader
-                    v-model="item.applied"
-                    class="text-center"
-                    hide-details
-                    disabled
-                    readonly
-                  >
-                    Auto
-                  </v-subheader>
+                <td class="text-center" v-else>
+                  <div class="d-flex justify-center">
+                    <span class="auto-badge">Auto</span>
+                  </div>
                 </td>
               </tr>
             </template>
@@ -532,11 +530,24 @@ const cancel = () => {
       top: 0;
       z-index: 1;
       background-color: white;
+      padding: 0 8px !important; // Reduce padding for headers
+    }
+
+    td {
+      padding: 0 8px !important; // Reduce padding for cells
     }
 
     tr {
       height: 48px;
     }
+  }
+  
+  .auto-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.06);
+    font-size: 12px;
   }
 
   // Make switches more compact

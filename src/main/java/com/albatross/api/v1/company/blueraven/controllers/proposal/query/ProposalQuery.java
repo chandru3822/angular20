@@ -364,21 +364,33 @@ from project p
     custom_field_group_assignment_id,
     int_value,
     numeric_value,
+    text_value,
+    date_value,
+    timestamp_value,
+    boolean_value,
     created_by_id,
     modified_by_id
   )
   VALUES (
     :proposalId,
     :cfgaId,
-    :customAdderValue::bigint,
-    :customAdderValue::bigint,
+    :intValue,
+    :numericValue,
+    :textValue,
+    :dateValue,
+    :timestampValue,
+    :booleanValue,
     :userId,
     :userId
   )
   ON CONFLICT (proposal_id, custom_field_group_assignment_id) DO UPDATE
   SET
-    int_value = :customAdderValue::bigint,
-    numeric_value = :customAdderValue::bigint,
+    int_value = :intValue,
+    numeric_value = :numericValue,
+    text_value = :textValue,
+    date_value = :dateValue,
+    timestamp_value = :timestampValue,
+    boolean_value = :booleanValue,
     modified_by_id = :userId,
     date_modified = now()
   """;
