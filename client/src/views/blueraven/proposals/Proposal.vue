@@ -114,7 +114,7 @@
               <div class="configurations-scroll-area">
                 <v-expansion-panels class="rounded-0" v-model="expandedPanel">
                   <v-expansion-panel class="rounded-0">
-                    <v-expansion-panel-header class="parent-expansion-header sticky-configuration-header">
+                    <v-expansion-panel-header class="parent-expansion-header sticky-configuration-header configuration-header">
                       Configuration
                       <div class="config-buttons-group">
                         <a-btn
@@ -276,7 +276,7 @@
               </v-expansion-panel-content>
             </v-expansion-panel>
             <v-expansion-panel class="sticky-price-details">
-              <v-expansion-panel-header class="parent-expansion-header">
+              <v-expansion-panel-header class="parent-expansion-header price-details-header">
                 Price Details
               </v-expansion-panel-header>
               <v-expansion-panel-content>
@@ -1575,11 +1575,26 @@ const beforeWindowUnload = (e) => {
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; /* Added subtle shadow for visual separation */
 }
 
+.configuration-header {
+  position: sticky !important;
+  top: 0 !important; 
+  z-index: 10 !important;
+  background-color: white !important;
+}
+
+.price-details-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-color: white !important;
+}
+
 .sticky-price-details {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  background-color: white;
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 9 !important;
+  background-color: white !important;
+  margin-top: auto !important;
 }
 
 // Style overrides to remove rounded corners and add dividers
@@ -1660,6 +1675,8 @@ const beforeWindowUnload = (e) => {
   padding: 0;
   position: relative; /* Ensures proper stacking context for sticky elements */
   height: 100%; /* Ensures the scroll area takes full height */
+  display: flex;
+  flex-direction: column;
 }
 
 .configurations-column {

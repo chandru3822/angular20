@@ -20,7 +20,7 @@
     <!-- Base Price Card -->
     <v-expansion-panels multiple v-model="expandedPanels">
       <v-expansion-panel readonly class="child-expansion-panel">
-        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center">
+        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center panel-header-sticky">
           <span class="text-subtitle-1 font-weight-medium">
             Base Price
           </span>
@@ -35,7 +35,7 @@
 
       <!-- Commission Card -->
       <v-expansion-panel class="child-expansion-panel">
-        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center">
+        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center panel-header-sticky">
           <span class="text-subtitle-1 font-weight-medium">
             Commission
           </span>
@@ -47,12 +47,12 @@
           </span>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="child-expansion-panel-content">
-          <v-simple-table dense>
+          <v-simple-table dense class="commission-table">
             <template v-slot:default>
               <tbody>
               <tr>
                 <td>Base</td>
-                <td class="text-right">${{ formatNumber(commission.base, true) }}</td>
+                <td class="text-right">${{ formatNumber(commissionBaseTotal, true) }}</td>
               </tr>
               <tr class="light-blue lighten-5">
                 <td>Adjustment (Trenching Cost Update)</td>
@@ -70,7 +70,7 @@
 
       <!-- Estimated Adders Card -->
       <v-expansion-panel class="child-expansion-panel">
-        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center">
+        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center panel-header-sticky">
           <span class="text-subtitle-1 font-weight-medium d-flex align-center">
             Estimated Adders
             <v-tooltip bottom>
@@ -86,7 +86,7 @@
           </span>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="child-expansion-panel-content">
-          <v-simple-table dense bordered>
+          <v-simple-table dense bordered class="adder-table">
             <template v-slot:default>
               <thead>
               <tr>
@@ -145,8 +145,8 @@ export default {
       basePrice: 29700,
       commission: {
         base: 3000,
-        trenchingAdjustment: 70,
-        treeTrimmingAdjustment: 100
+        trenchingAdjustment: 0,
+        treeTrimmingAdjustment: 0
       },
       adders: []
     };
@@ -157,13 +157,18 @@ export default {
       handler(newAdderData) {
         if (newAdderData && newAdderData.length > 0) {
           this.processAdderData(newAdderData);
+          this.extractSpecialAdderAdjustments(newAdderData);
         }
       }
     }
   },
   computed: {
+    commissionBaseTotal() {
+      // Base amount that includes the tree trimming and trenching adjustments
+      return this.commission.base;
+    },
     commissionTotal() {
-      return this.commission.base + this.commission.trenchingAdjustment + this.commission.treeTrimmingAdjustment;
+      return this.commissionBaseTotal + this.commission.trenchingAdjustment + this.commission.treeTrimmingAdjustment;
     },
     adderTotal() {
       return this.adders.reduce((total, adder) => {
@@ -192,14 +197,48 @@ export default {
           }
 
           return {
+            id: adder.id,
+            fieldName: adder.fieldName,
             name: adder.fieldName || 'Unknown Adder',
             unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
             projectAdderAmount: projectAmount,
             proposalAdderAmount: proposalAmount,
+            adderType: adder.adderType,
             // Keep amount for backward compatibility
             amount: proposalAmount
           };
         });
+    },
+    extractSpecialAdderAdjustments(adderData) {
+      // Initialize default values
+      this.commission.trenchingAdjustment = 0;
+      this.commission.treeTrimmingAdjustment = 0;
+
+      // Look for Tree Trimming and Trenching adders
+      const trenchingAdder = adderData.find(adder =>
+        adder.fieldName && adder.fieldName.toLowerCase().includes('trenching'));
+
+      const treeTrimmingAdder = adderData.find(adder =>
+        adder.fieldName && adder.fieldName.toLowerCase().includes('tree trimming'));
+
+      // Set commission adjustments if found
+      if (trenchingAdder && trenchingAdder.selectedProposalAdder) {
+        const amount = trenchingAdder.adderType === 'custom_adders'
+          ? trenchingAdder.customProposalAdderAmount || 0
+          : trenchingAdder.selectedProposalAdderAmount || trenchingAdder.selectedAdderAmount || 0;
+
+        // Calculate adjustment - typically a small percentage
+        this.commission.trenchingAdjustment = Math.round(amount * 0.02);
+      }
+
+      if (treeTrimmingAdder && treeTrimmingAdder.selectedProposalAdder) {
+        const amount = treeTrimmingAdder.adderType === 'custom_adders'
+          ? treeTrimmingAdder.customProposalAdderAmount || 0
+          : treeTrimmingAdder.selectedProposalAdderAmount || treeTrimmingAdder.selectedAdderAmount || 0;
+
+        // Calculate adjustment - typically a small percentage
+        this.commission.treeTrimmingAdjustment = Math.round(amount * 0.03);
+      }
     },
     formatNumber(value, showDecimals = true) {
       return new Intl.NumberFormat('en-US', {
@@ -218,7 +257,7 @@ export default {
 
 .child-expansion-panel-content {
   width: 100%;
-  padding: 16px !important;
+  padding: 0 !important;
   margin: 0 !important;
 }
 
@@ -226,8 +265,21 @@ export default {
   text-decoration: line-through;
 }
 
-.v-expansion-panel {
-  margin-bottom: 12px;
+.panel-header-sticky {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 5 !important;
+  background-color: white !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  min-height: 48px !important;
+  height: 48px !important;
+}
+
+/* Apply consistent height to all expansion panel headers */
+::v-deep .v-expansion-panel-header {
+  min-height: 48px !important;
+  height: 48px !important;
+  padding: 0 16px !important;
 }
 
 ::v-deep .v-expansion-panel--active > .v-expansion-panel-header {
@@ -251,13 +303,42 @@ export default {
 /* Fix borders and alignment for tables */
 ::v-deep .v-simple-table {
   border-collapse: collapse;
-  
+  width: 100%;
+
   th, td {
     padding: 8px !important;
   }
-  
+
   tr {
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* Specific styles for the commission table */
+.commission-table {
+  width: 100%;
+  margin: 0 !important;
+
+  ::v-deep table {
+    width: 100%;
+  }
+
+  ::v-deep td, ::v-deep th {
+    padding: 8px !important;
+  }
+}
+
+/* Specific styles for the adder table */
+.adder-table {
+  width: 100%;
+  margin: 0 !important;
+
+  ::v-deep table {
+    width: 100%;
+  }
+
+  ::v-deep td, ::v-deep th {
+    padding: 8px !important;
   }
 }
 </style>
