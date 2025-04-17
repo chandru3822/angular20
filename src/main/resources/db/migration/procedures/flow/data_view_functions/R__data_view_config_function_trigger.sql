@@ -1552,7 +1552,7 @@ declare
   v_company_id                    bigint;
   v_project_id                    bigint;
   v_project_ids                   text;
-  v_parent_process_step_ids bigint;
+  v_parent_process_step_ids bigint[];
   v_parent_records_with_data bigint;
 BEGIN
 
