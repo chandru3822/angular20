@@ -171,7 +171,6 @@ const cancel = () => {
 }
 
 const afterSave = ($event) => {
-  debugger
   //this makes it update in the child (edit) view
   bomParts.value.splice(0)
   bomParts.value = bomParts.value.concat($event)
