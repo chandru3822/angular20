@@ -1569,7 +1569,7 @@ const beforeWindowUnload = (e) => {
 .sticky-configuration-header {
   position: sticky !important;
   top: 0 !important;
-  z-index: 10 !important;  /* Increased z-index to ensure it stays on top */
+  z-index: 20 !important;  /* Increased z-index to ensure it stays on top */
   background-color: white !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; /* Added subtle shadow for visual separation */
@@ -1577,8 +1577,8 @@ const beforeWindowUnload = (e) => {
 
 .configuration-header {
   position: sticky !important;
-  top: 0 !important; 
-  z-index: 10 !important;
+  top: 0 !important;
+  z-index: 20 !important;
   background-color: white !important;
 }
 
@@ -1589,12 +1589,11 @@ const beforeWindowUnload = (e) => {
   background-color: white !important;
 }
 
-.sticky-price-details {
+.sticky-price-details:not(.v-expansion-panel--active) {
   position: sticky !important;
   bottom: 0 !important;
-  z-index: 9 !important;
+  z-index: 10 !important;
   background-color: white !important;
-  margin-top: auto !important;
 }
 
 // Style overrides to remove rounded corners and add dividers
@@ -1622,11 +1621,7 @@ const beforeWindowUnload = (e) => {
 
 :deep(.v-expansion-panel:not(:first-child)::after) {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
-  content: '';
-  position: absolute;
-  top: 0;
   width: 100%;
-  z-index: 1;
 }
 
 :deep(.parent-expansion-header) {
@@ -1673,7 +1668,6 @@ const beforeWindowUnload = (e) => {
   flex: 1;
   overflow-y: auto;
   padding: 0;
-  position: relative; /* Ensures proper stacking context for sticky elements */
   height: 100%; /* Ensures the scroll area takes full height */
   display: flex;
   flex-direction: column;

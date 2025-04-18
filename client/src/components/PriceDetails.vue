@@ -19,8 +19,8 @@
 
     <!-- Base Price Card -->
     <v-expansion-panels multiple v-model="expandedPanels">
-      <v-expansion-panel readonly class="child-expansion-panel">
-        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center panel-header-sticky">
+      <v-expansion-panel readonly class="my-2">
+        <v-expansion-panel-header hide-actions>
           <span class="text-subtitle-1 font-weight-medium">
             Base Price
           </span>
@@ -34,8 +34,8 @@
       </v-expansion-panel>
 
       <!-- Commission Card -->
-      <v-expansion-panel class="child-expansion-panel">
-        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center panel-header-sticky">
+      <v-expansion-panel class="mb-2">
+        <v-expansion-panel-header hide-actions>
           <span class="text-subtitle-1 font-weight-medium">
             Commission
           </span>
@@ -49,18 +49,24 @@
         <v-expansion-panel-content class="child-expansion-panel-content">
           <v-simple-table dense class="commission-table">
             <template v-slot:default>
-              <tbody>
+              <thead>
               <tr>
-                <td>Base</td>
-                <td class="text-right">${{ formatNumber(commissionBaseTotal, true) }}</td>
+                <th class="text-left font-weight-bold">Item</th>
+                <th class="text-right font-weight-bold">Amount</th>
               </tr>
-              <tr class="light-blue lighten-5">
-                <td>Adjustment (Trenching Cost Update)</td>
-                <td class="text-right">${{ formatNumber(commission.trenchingAdjustment, true) }}</td>
+              </thead>
+              <tbody>
+              <tr class="dense-row">
+                <td class="caption light-blue lighten-5">Base</td>
+                <td class="text-right caption light-blue lighten-5">${{ formatNumber(commissionBaseTotal, true) }}</td>
               </tr>
-              <tr class="light-blue lighten-5">
-                <td>Adjustment (Tree Trimming Cost Update)</td>
-                <td class="text-right">${{ formatNumber(commission.treeTrimmingAdjustment, true) }}</td>
+              <tr class="dense-row">
+                <td class="caption">Adjustment (Trenching Cost Update)</td>
+                <td class="text-right caption">${{ formatNumber(commission.trenchingAdjustment, true) }}</td>
+              </tr>
+              <tr class="light-blue lighten-5 dense-row">
+                <td class="caption">Adjustment (Tree Trimming Cost Update)</td>
+                <td class="text-right caption">${{ formatNumber(commission.treeTrimmingAdjustment, true) }}</td>
               </tr>
               </tbody>
             </template>
@@ -69,8 +75,8 @@
       </v-expansion-panel>
 
       <!-- Estimated Adders Card -->
-      <v-expansion-panel class="child-expansion-panel">
-        <v-expansion-panel-header hide-actions class="d-flex justify-space-between align-center panel-header-sticky">
+      <v-expansion-panel>
+        <v-expansion-panel-header hide-actions >
           <span class="text-subtitle-1 font-weight-medium d-flex align-center">
             Estimated Adders
             <v-tooltip bottom>
@@ -86,13 +92,13 @@
           </span>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="child-expansion-panel-content">
-          <v-simple-table dense bordered class="adder-table">
+          <v-simple-table dense class="adder-table">
             <template v-slot:default>
               <thead>
               <tr>
                 <th class="text-left font-weight-bold">Item</th>
                 <th class="text-center font-weight-bold">Unit Price</th>
-                <th class="text-right font-weight-bold">Total Amount</th>
+                <th width="180" class="text-right font-weight-bold">Total Amount</th>
               </tr>
               </thead>
               <tbody>
@@ -100,19 +106,23 @@
                 v-for="(adder, index) in adders"
                 :key="index"
                 :class="{ 'light-blue lighten-5': index % 2 === 0 }"
+                class="dense-row"
               >
-                <td>{{ adder.name }}</td>
-                <td class="text-center">{{ adder.unitPrice }}</td>
-                <td class="text-right">
-                  <span v-if="adder.projectAdderAmount && adder.projectAdderAmount !== adder.proposalAdderAmount" class="text-decoration-line-through mr-2 grey--text">
-                    ${{ formatNumber(adder.projectAdderAmount, true) }}
-                  </span>
-                  <span :class="{
-                    'red--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount > 0,
-                    'green--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount > 0
-                  }">
-                    ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
-                  </span>
+                <td class="caption">{{ adder.name }}</td>
+                <td class="text-center caption">{{ adder.unitPrice }}</td>
+                <td class="text-right caption">
+                  <div class="d-flex justify-end align-center">
+                    <span v-if="adder.customProjectAdderAmount !== null && adder.customProjectAdderAmount !== undefined && adder.customProjectAdderAmount !== adder.customProposalAdderAmount" class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                      ${{ formatNumber(adder.customProjectAdderAmount, true) }}
+                    </span>
+                    <span :class="{
+                      'red--text': adder.customProposalAdderAmount < adder.customProjectAdderAmount && adder.customProjectAdderAmount > 0,
+                      'green--text': adder.customProposalAdderAmount > adder.customProjectAdderAmount && adder.customProjectAdderAmount > 0,
+                      'text-no-wrap': true
+                    }">
+                      ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
+                    </span>
+                  </div>
                 </td>
               </tr>
               </tbody>
@@ -139,12 +149,12 @@ export default {
   },
   data() {
     return {
-      expandedPanels: [0, 1, 2], // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
+      expandedPanels: [1, 2], // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
       showNotification: false,
       notificationText: '',
-      basePrice: 29700,
+      basePrice: 0,
       commission: {
-        base: 3000,
+        base: 0,
         trenchingAdjustment: 0,
         treeTrimmingAdjustment: 0
       },
@@ -203,6 +213,8 @@ export default {
             unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
             projectAdderAmount: projectAmount,
             proposalAdderAmount: proposalAmount,
+            customProjectAdderAmount: adder.customProjectAdderAmount || null,
+            customProposalAdderAmount: adder.customProposalAdderAmount || null,
             adderType: adder.adderType,
             // Keep amount for backward compatibility
             amount: proposalAmount
@@ -257,88 +269,22 @@ export default {
 
 .child-expansion-panel-content {
   width: 100%;
-  padding: 0 !important;
-  margin: 0 !important;
 }
 
 .text-decoration-line-through {
   text-decoration: line-through;
 }
 
-.panel-header-sticky {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 5 !important;
-  background-color: white !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  min-height: 48px !important;
-  height: 48px !important;
-}
-
-/* Apply consistent height to all expansion panel headers */
-::v-deep .v-expansion-panel-header {
-  min-height: 48px !important;
-  height: 48px !important;
-  padding: 0 16px !important;
-}
-
-::v-deep .v-expansion-panel--active > .v-expansion-panel-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
 .v-expansion-panel-content ::v-deep .v-expansion-panel-content__wrap {
   padding: 0;
 }
 
-.text-right {
-  text-align: right;
+.dense-row td {
+  padding: 0 0 0 0;
 }
 
-::v-deep .v-data-table td,
-::v-deep .v-simple-table td,
-::v-deep .v-simple-table th {
-  padding: 0 8px !important; /* Reduce padding for all table cells */
-}
-
-/* Fix borders and alignment for tables */
-::v-deep .v-simple-table {
-  border-collapse: collapse;
+.adder-table, .commission-table {
   width: 100%;
-
-  th, td {
-    padding: 8px !important;
-  }
-
-  tr {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  }
 }
 
-/* Specific styles for the commission table */
-.commission-table {
-  width: 100%;
-  margin: 0 !important;
-
-  ::v-deep table {
-    width: 100%;
-  }
-
-  ::v-deep td, ::v-deep th {
-    padding: 8px !important;
-  }
-}
-
-/* Specific styles for the adder table */
-.adder-table {
-  width: 100%;
-  margin: 0 !important;
-
-  ::v-deep table {
-    width: 100%;
-  }
-
-  ::v-deep td, ::v-deep th {
-    padding: 8px !important;
-  }
-}
 </style>
