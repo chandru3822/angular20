@@ -282,6 +282,24 @@ const findBestMatchDuplicatePart = () => {
   return possibleMatches.find(pm => (!pm.supplierId))
 }
 
+const sortCustomPartsToEnd = (items) => {
+  items.sort((a,b) => {
+    //if one part is a custom part and the other is not, the custom part should be sorted after the parts master part
+    if(a.objectType === 'Parts Custom' && b.objectType != 'Parts Custom'){
+      return 1
+    } else if (a.objectType !== 'Parts Custom' && b.objectType === 'Parts Custom'){
+      return -1
+    } else if(a.objectType !== b.objectType){
+      //if neither part is custom, but they are different types, sort alphabetically by type
+      return a.objectType.localeCompare(b.objectType)
+    } else {
+      //if both parts are the same type, sort alphabetically by description
+      return a.description.localeCompare(b.description)
+    }
+  });
+  return items;
+}
+
 </script>
 
 <template>
@@ -378,6 +396,7 @@ const findBestMatchDuplicatePart = () => {
       :items="localBomParts"
       :headers="headers"
       group-by="objectType"
+      :custom-sort="sortCustomPartsToEnd"
       :items-per-page="-1"
       disable-sort
       fixed-header

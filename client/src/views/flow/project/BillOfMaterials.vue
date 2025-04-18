@@ -213,6 +213,23 @@ const exportPdf = async ($event) => {
   }
 }
 
+const sortCustomPartsToEnd = (items) => {
+  items.sort((a,b) => {
+    //if one part is a custom part and the other is not, the custom part should be sorted after the parts master part
+     if(a.objectType === 'Parts Custom' && b.objectType != 'Parts Custom'){
+      return 1
+    } else if (a.objectType !== 'Parts Custom' && b.objectType === 'Parts Custom'){
+      return -1
+    } else if(a.objectType !== b.objectType){
+       //if neither part is custom, but they are different types, sort alphabetically by type
+      return a.objectType.localeCompare(b.objectType)
+    } else {
+       //if both parts are the same type, sort alphabetically by description
+       return a.description.localeCompare(b.description)
+     }
+  });
+  return items;
+}
 
 </script>
 
@@ -286,6 +303,7 @@ const exportPdf = async ($event) => {
           :items="bomParts"
           :headers="headers"
           group-by="objectType"
+          :custom-sort="sortCustomPartsToEnd"
           :items-per-page="-1"
           disable-sort
           fixed-header
@@ -416,5 +434,6 @@ const exportPdf = async ($event) => {
 }
 #bom-parts-table > div.v-data-table__wrapper > table > tbody > tr > td.group-header {
   border-top: 1px solid var(--v-grey-lighten1) !important;
+  height: 36px;
 }
 </style>
