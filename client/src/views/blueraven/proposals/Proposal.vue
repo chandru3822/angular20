@@ -576,6 +576,13 @@ const loadExistingAdders = () => {
           const savedState = savedAdderData.allAdderStates.find(state => state.id === adder.id);
           if (savedState !== undefined) {
             adder.selectedProposalAdder = savedState.selectedProposalAdder;
+            
+            // Load stored amounts for different adder types
+            if (adder.adderType === 'custom_adders' && savedState.customProposalAdderAmount !== null) {
+              adder.customProposalAdderAmount = savedState.customProposalAdderAmount;
+            } else if (adder.adderType === 'auto_applied_adder' && savedState.autoAppliedProposalAdderAmount !== null) {
+              adder.autoAppliedProposalAdderAmount = savedState.autoAppliedProposalAdderAmount;
+            }
           }
         });
       } else {
@@ -608,6 +615,8 @@ const loadExistingAdders = () => {
           adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
         } else if (adder.adderType === 'custom_adders' && adder.selectedProposalAdder) {
           adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
+        } else if (adder.adderType === 'auto_applied_adder') {
+          adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
         }
       });
     } catch (e) {
@@ -721,6 +730,25 @@ const handleAppliedCosts = (costs) => {
       });
     }
 
+    // Process auto-applied adders (ensure they're always shown in the UI)
+    adderData.value.forEach(adder => {
+      if (adder.adderType === 'auto_applied_adder' && adder.selectedProposalAdder) {
+        const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
+        totalCost += amount;
+        
+        // Add to selected adders list if not already there
+        if (!selectedAdders.value.some(selected => selected.id === adder.id)) {
+          selectedAdders.value.push({
+            id: adder.id,
+            label: adder.fieldName,
+            price: amount,
+            isCustom: false,
+            isAutoApplied: true
+          });
+        }
+      }
+    });
+
     // Update total cost
     adderTotalCost.value = totalCost;
 
@@ -742,6 +770,7 @@ const handleAppliedCosts = (costs) => {
         selectedProposalAdder: adder.selectedProposalAdder,
         // Include custom adder amounts and data types
         customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null,
+        autoAppliedProposalAdderAmount: adder.adderType === 'auto_applied_adder' ? adder.autoAppliedProposalAdderAmount : null,
         customAdderDataType: adder.adderType === 'custom_adders' ? adder.customAdderDataType : null
       }))
     });
@@ -761,6 +790,8 @@ const handleAppliedCosts = (costs) => {
         adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
       } else if (adder.adderType === 'custom_adders' && adder.selectedProposalAdder) {
         adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
+      } else if (adder.adderType === 'auto_applied_adder') {
+        adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
       }
     });
 
@@ -838,6 +869,16 @@ const updateSelectedAddersFromApi = (adderApiData) => {
           isCustom: true
         });
         adderTotalCost.value += adder.customProposalAdderAmount || 0;
+      } else if (adder.adderType === 'auto_applied_adder') {
+        // Handle auto-applied adders
+        selectedAdders.value.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0,
+          isCustom: false,
+          isAutoApplied: true
+        });
+        adderTotalCost.value += adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
       }
     }
   });
@@ -853,6 +894,8 @@ const updateSelectedAddersFromApi = (adderApiData) => {
       adderCostData.value.items[adder.id] = adder.selectedProposalAdder || false;
     } else if (adder.adderType === 'custom_adders') {
       adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
+    } else if (adder.adderType === 'auto_applied_adder') {
+      adderCostData.value.items[adder.id] = adder.selectedProposalAdder || false;
     }
   });
 };
@@ -1569,7 +1612,7 @@ const beforeWindowUnload = (e) => {
 .sticky-configuration-header {
   position: sticky !important;
   top: 0 !important;
-  z-index: 10 !important;  /* Increased z-index to ensure it stays on top */
+  z-index: 20 !important;  /* Increased z-index to ensure it stays on top */
   background-color: white !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; /* Added subtle shadow for visual separation */
@@ -1577,8 +1620,8 @@ const beforeWindowUnload = (e) => {
 
 .configuration-header {
   position: sticky !important;
-  top: 0 !important; 
-  z-index: 10 !important;
+  top: 0 !important;
+  z-index: 20 !important;
   background-color: white !important;
 }
 
@@ -1589,12 +1632,11 @@ const beforeWindowUnload = (e) => {
   background-color: white !important;
 }
 
-.sticky-price-details {
+.sticky-price-details:not(.v-expansion-panel--active) {
   position: sticky !important;
   bottom: 0 !important;
-  z-index: 9 !important;
+  z-index: 10 !important;
   background-color: white !important;
-  margin-top: auto !important;
 }
 
 // Style overrides to remove rounded corners and add dividers
@@ -1622,11 +1664,7 @@ const beforeWindowUnload = (e) => {
 
 :deep(.v-expansion-panel:not(:first-child)::after) {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
-  content: '';
-  position: absolute;
-  top: 0;
   width: 100%;
-  z-index: 1;
 }
 
 :deep(.parent-expansion-header) {
@@ -1673,7 +1711,6 @@ const beforeWindowUnload = (e) => {
   flex: 1;
   overflow-y: auto;
   padding: 0;
-  position: relative; /* Ensures proper stacking context for sticky elements */
   height: 100%; /* Ensures the scroll area takes full height */
   display: flex;
   flex-direction: column;
