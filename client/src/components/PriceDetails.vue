@@ -60,14 +60,6 @@
                 <td class="caption light-blue lighten-5">Base</td>
                 <td class="text-right caption light-blue lighten-5">${{ formatNumber(commissionBaseTotal, true) }}</td>
               </tr>
-              <tr class="dense-row">
-                <td class="caption">Adjustment (Trenching Cost Update)</td>
-                <td class="text-right caption">${{ formatNumber(commission.trenchingAdjustment, true) }}</td>
-              </tr>
-              <tr class="light-blue lighten-5 dense-row">
-                <td class="caption">Adjustment (Tree Trimming Cost Update)</td>
-                <td class="text-right caption">${{ formatNumber(commission.treeTrimmingAdjustment, true) }}</td>
-              </tr>
               </tbody>
             </template>
           </v-simple-table>
@@ -154,18 +146,15 @@ const notificationText = ref('')
 const basePrice = ref(0)
 const commission = ref({
   base: 0,
-  trenchingAdjustment: 0,
-  treeTrimmingAdjustment: 0
 })
 const adders = ref([])
 
 const commissionBaseTotal = computed(() => {
-  // Base amount that includes the tree trimming and trenching adjustments
   return commission.value.base
 })
 
 const commissionTotal = computed(() => {
-  return commissionBaseTotal.value + commission.value.trenchingAdjustment + commission.value.treeTrimmingAdjustment
+  return commissionBaseTotal.value
 })
 
 const adderTotal = computed(() => {
@@ -177,9 +166,9 @@ const adderTotal = computed(() => {
 
 const processAdderData = (adderData) => {
   adders.value = adderData
-    // Include adders that are selectedProposalAdder (any type) or custom/auto adders with amounts > 0
-    .filter(adder => 
-      adder.selectedProposalAdder || 
+    // Include adders of all types
+    .filter(adder =>
+      adder.selectedProposalAdder ||
       (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) ||
       (adder.adderType === 'auto_applied_adder'))
     .map(adder => {
@@ -213,38 +202,6 @@ const processAdderData = (adderData) => {
     })
 }
 
-const extractSpecialAdderAdjustments = (adderData) => {
-  // Initialize default values
-  commission.value.trenchingAdjustment = 0
-  commission.value.treeTrimmingAdjustment = 0
-
-  // Look for Tree Trimming and Trenching adders
-  const trenchingAdder = adderData.find(adder =>
-    adder.fieldName && adder.fieldName.toLowerCase().includes('trenching'))
-
-  const treeTrimmingAdder = adderData.find(adder =>
-    adder.fieldName && adder.fieldName.toLowerCase().includes('tree trimming'))
-
-  // Set commission adjustments if found
-  if (trenchingAdder && trenchingAdder.selectedProposalAdder) {
-    const amount = trenchingAdder.adderType === 'custom_adders'
-      ? trenchingAdder.customProposalAdderAmount || 0
-      : trenchingAdder.selectedProposalAdderAmount || trenchingAdder.selectedAdderAmount || 0
-
-    // Calculate adjustment - typically a small percentage
-    commission.value.trenchingAdjustment = Math.round(amount * 0.02)
-  }
-
-  if (treeTrimmingAdder && treeTrimmingAdder.selectedProposalAdder) {
-    const amount = treeTrimmingAdder.adderType === 'custom_adders'
-      ? treeTrimmingAdder.customProposalAdderAmount || 0
-      : treeTrimmingAdder.selectedProposalAdderAmount || treeTrimmingAdder.selectedAdderAmount || 0
-
-    // Calculate adjustment - typically a small percentage
-    commission.value.treeTrimmingAdjustment = Math.round(amount * 0.03)
-  }
-}
-
 const formatNumber = (value, showDecimals = true) => {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: showDecimals ? 2 : 0,
@@ -256,7 +213,6 @@ const formatNumber = (value, showDecimals = true) => {
 watch(() => props.adderData, (newAdderData) => {
   if (newAdderData && newAdderData.length > 0) {
     processAdderData(newAdderData)
-    extractSpecialAdderAdjustments(newAdderData)
   }
 }, { immediate: true })
 </script>

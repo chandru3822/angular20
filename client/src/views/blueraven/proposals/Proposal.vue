@@ -576,7 +576,7 @@ const loadExistingAdders = () => {
           const savedState = savedAdderData.allAdderStates.find(state => state.id === adder.id);
           if (savedState !== undefined) {
             adder.selectedProposalAdder = savedState.selectedProposalAdder;
-            
+
             // Load stored amounts for different adder types
             if (adder.adderType === 'custom_adders' && savedState.customProposalAdderAmount !== null) {
               adder.customProposalAdderAmount = savedState.customProposalAdderAmount;
@@ -623,15 +623,6 @@ const loadExistingAdders = () => {
       console.error('Error parsing adder data', e)
     }
   }
-}
-
-const formatAdderLabel = (key) => {
-  if (!key) return ''
-
-  // Convert camelCase to Title Case with spaces
-  return key
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, str => str.toUpperCase())
 }
 
 const handleAppliedCosts = (costs) => {
@@ -735,7 +726,7 @@ const handleAppliedCosts = (costs) => {
       if (adder.adderType === 'auto_applied_adder' && adder.selectedProposalAdder) {
         const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
         totalCost += amount;
-        
+
         // Add to selected adders list if not already there
         if (!selectedAdders.value.some(selected => selected.id === adder.id)) {
           selectedAdders.value.push({
@@ -973,32 +964,6 @@ const filteredCustomFields = (values = []) => {
   })
 }
 
-const adderSummaryText = computed(() => {
-  if (selectedAdders.value.length === 0) {
-    return '';
-  }
-
-  // Format each adder with its price if available
-  return selectedAdders.value.map(adder => {
-    if (adder.isCustom) {
-      if (adder.id === 'treeTrimming' && estimates.value.treeTrimming) {
-        return `${adder.label} ($${parseFloat(estimates.value.treeTrimming).toLocaleString()})`;
-      } else if (adder.id === 'trenching') {
-        const type = options.value.trenching.type || '';
-        const size = options.value.trenching.size ? `${options.value.trenching.size}ft` : '';
-        return `${adder.label}${type ? ` (${type}${size ? ', ' + size : ''})` : ''}`;
-      }
-      return adder.label;
-    }
-
-    if (adder.price) {
-      return `${adder.label} ($${adder.price.toLocaleString()})`;
-    }
-
-    return adder.label;
-  }).join(', ');
-});
-
 const userIsAdmin = computed(() =>
   userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
 )
@@ -1018,20 +983,6 @@ const defaultProposalName = computed(() => {
     return proposal.value.name
   }
   return 'New Proposal'
-})
-
-// Display text for the selected adders field
-const selectedAddersText = computed(() => {
-  if (selectedAdders.value.length === 0) {
-    return 'No adders selected'
-  }
-  return `${selectedAdders.value.length} adder${selectedAdders.value.length > 1 ? 's' : ''} selected • ${adderTotalCost.value.toLocaleString()} total`
-})
-
-const pages = computed(() => {
-  return template.value
-    ?.filter((x) => x.parentId === undefined)
-    ?.sort((a, b) => a.blockOrder - b.blockOrder)
 })
 
 //temporary until we can display the name of the block?
@@ -1351,7 +1302,7 @@ const inputChangeCallback = async(field, remove=false) => {
 }
 
 const populateDirtyCfvs = async (field, remove = false) => {
-  //some fields are for unique behavior and they dont need to be saved. this check should filter them out
+  //some fields are for unique behavior and they don't need to be saved. this check should filter them out
   let match = dirtyCfvs.value.find(
     (f) =>
       (null !== f.id && f.id === field.id) ||
