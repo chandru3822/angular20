@@ -134,132 +134,131 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PriceDetails',
-  props: {
-    proposalId: {
-      type: [Number, String],
-      required: true
-    },
-    adderData: {
-      type: Array,
-      default: () => []
-    }
+<script setup>
+import { ref, computed, watch } from 'vue'
+
+const props = defineProps({
+  proposalId: {
+    type: [Number, String],
+    required: true
   },
-  data() {
-    return {
-      expandedPanels: [1, 2], // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
-      showNotification: false,
-      notificationText: '',
-      basePrice: 0,
-      commission: {
-        base: 0,
-        trenchingAdjustment: 0,
-        treeTrimmingAdjustment: 0
-      },
-      adders: []
-    };
-  },
-  watch: {
-    adderData: {
-      immediate: true,
-      handler(newAdderData) {
-        if (newAdderData && newAdderData.length > 0) {
-          this.processAdderData(newAdderData);
-          this.extractSpecialAdderAdjustments(newAdderData);
-        }
-      }
-    }
-  },
-  computed: {
-    commissionBaseTotal() {
-      // Base amount that includes the tree trimming and trenching adjustments
-      return this.commission.base;
-    },
-    commissionTotal() {
-      return this.commissionBaseTotal + this.commission.trenchingAdjustment + this.commission.treeTrimmingAdjustment;
-    },
-    adderTotal() {
-      return this.adders.reduce((total, adder) => {
-        // Use proposalAdderAmount if available, otherwise fallback to amount for backward compatibility
-        return total + (adder.proposalAdderAmount || adder.amount || 0);
-      }, 0);
-    }
-  },
-  methods: {
-    processAdderData(adderData) {
-      this.adders = adderData
-        .filter(adder => adder.selectedProposalAdder || (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0))
-        .map(adder => {
-          let projectAmount = 0;
-          let proposalAmount = 0;
+  adderData: {
+    type: Array,
+    default: () => []
+  }
+})
 
-          if (adder.adderType === 'selected_adders') {
-            projectAmount = adder.selectedAdderAmount || 0;
-            proposalAmount = adder.selectedProposalAdderAmount || adder.selectedAdderAmount || 0;
-          } else if (adder.adderType === 'custom_adders') {
-            projectAmount = adder.customAdderAmount || 0;
-            proposalAmount = adder.customProposalAdderAmount || 0;
-          } else if (adder.adderType === 'auto_applied_adder') {
-            projectAmount = adder.autoAppliedAdderAmount || 0;
-            proposalAmount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
-          }
+const expandedPanels = ref([1, 2]) // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
+const showNotification = ref(false)
+const notificationText = ref('')
+const basePrice = ref(0)
+const commission = ref({
+  base: 0,
+  trenchingAdjustment: 0,
+  treeTrimmingAdjustment: 0
+})
+const adders = ref([])
 
-          return {
-            id: adder.id,
-            fieldName: adder.fieldName,
-            name: adder.fieldName || 'Unknown Adder',
-            unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
-            projectAdderAmount: projectAmount,
-            proposalAdderAmount: proposalAmount,
-            customProjectAdderAmount: adder.customProjectAdderAmount || null,
-            customProposalAdderAmount: adder.customProposalAdderAmount || null,
-            adderType: adder.adderType,
-            // Keep amount for backward compatibility
-            amount: proposalAmount
-          };
-        });
-    },
-    extractSpecialAdderAdjustments(adderData) {
-      // Initialize default values
-      this.commission.trenchingAdjustment = 0;
-      this.commission.treeTrimmingAdjustment = 0;
+const commissionBaseTotal = computed(() => {
+  // Base amount that includes the tree trimming and trenching adjustments
+  return commission.value.base
+})
 
-      // Look for Tree Trimming and Trenching adders
-      const trenchingAdder = adderData.find(adder =>
-        adder.fieldName && adder.fieldName.toLowerCase().includes('trenching'));
+const commissionTotal = computed(() => {
+  return commissionBaseTotal.value + commission.value.trenchingAdjustment + commission.value.treeTrimmingAdjustment
+})
 
-      const treeTrimmingAdder = adderData.find(adder =>
-        adder.fieldName && adder.fieldName.toLowerCase().includes('tree trimming'));
+const adderTotal = computed(() => {
+  return adders.value.reduce((total, adder) => {
+    // Use proposalAdderAmount if available, otherwise fallback to amount for backward compatibility
+    return total + (adder.proposalAdderAmount || adder.amount || 0)
+  }, 0)
+})
 
-      // Set commission adjustments if found
-      if (trenchingAdder && trenchingAdder.selectedProposalAdder) {
-        const amount = trenchingAdder.adderType === 'custom_adders'
-          ? trenchingAdder.customProposalAdderAmount || 0
-          : trenchingAdder.selectedProposalAdderAmount || trenchingAdder.selectedAdderAmount || 0;
+const processAdderData = (adderData) => {
+  adders.value = adderData
+    // Include adders that are selectedProposalAdder (any type) or custom/auto adders with amounts > 0
+    .filter(adder => 
+      adder.selectedProposalAdder || 
+      (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) ||
+      (adder.adderType === 'auto_applied_adder'))
+    .map(adder => {
+      let projectAmount = 0
+      let proposalAmount = 0
 
-        // Calculate adjustment - typically a small percentage
-        this.commission.trenchingAdjustment = Math.round(amount * 0.02);
+      if (adder.adderType === 'selected_adders') {
+        projectAmount = adder.selectedAdderAmount || 0
+        proposalAmount = adder.selectedProposalAdderAmount || adder.selectedAdderAmount || 0
+      } else if (adder.adderType === 'custom_adders') {
+        projectAmount = adder.customAdderAmount || 0
+        proposalAmount = adder.customProposalAdderAmount || 0
+      } else if (adder.adderType === 'auto_applied_adder') {
+        projectAmount = adder.autoAppliedAdderAmount || 0
+        proposalAmount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0
       }
 
-      if (treeTrimmingAdder && treeTrimmingAdder.selectedProposalAdder) {
-        const amount = treeTrimmingAdder.adderType === 'custom_adders'
-          ? treeTrimmingAdder.customProposalAdderAmount || 0
-          : treeTrimmingAdder.selectedProposalAdderAmount || treeTrimmingAdder.selectedAdderAmount || 0;
-
-        // Calculate adjustment - typically a small percentage
-        this.commission.treeTrimmingAdjustment = Math.round(amount * 0.03);
+      return {
+        id: adder.id,
+        fieldName: adder.fieldName,
+        name: adder.fieldName || 'Unknown Adder',
+        unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
+        projectAdderAmount: projectAmount,
+        proposalAdderAmount: proposalAmount,
+        customProjectAdderAmount: adder.customProjectAdderAmount || null,
+        customProposalAdderAmount: adder.customProposalAdderAmount || null,
+        adderType: adder.adderType,
+        // Keep amount for backward compatibility
+        amount: proposalAmount
       }
-    },
-    formatNumber(value, showDecimals = true) {
-      return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: showDecimals ? 2 : 0,
-        maximumFractionDigits: showDecimals ? 2 : 0
-      }).format(value);
-    }
+    })
+}
+
+const extractSpecialAdderAdjustments = (adderData) => {
+  // Initialize default values
+  commission.value.trenchingAdjustment = 0
+  commission.value.treeTrimmingAdjustment = 0
+
+  // Look for Tree Trimming and Trenching adders
+  const trenchingAdder = adderData.find(adder =>
+    adder.fieldName && adder.fieldName.toLowerCase().includes('trenching'))
+
+  const treeTrimmingAdder = adderData.find(adder =>
+    adder.fieldName && adder.fieldName.toLowerCase().includes('tree trimming'))
+
+  // Set commission adjustments if found
+  if (trenchingAdder && trenchingAdder.selectedProposalAdder) {
+    const amount = trenchingAdder.adderType === 'custom_adders'
+      ? trenchingAdder.customProposalAdderAmount || 0
+      : trenchingAdder.selectedProposalAdderAmount || trenchingAdder.selectedAdderAmount || 0
+
+    // Calculate adjustment - typically a small percentage
+    commission.value.trenchingAdjustment = Math.round(amount * 0.02)
+  }
+
+  if (treeTrimmingAdder && treeTrimmingAdder.selectedProposalAdder) {
+    const amount = treeTrimmingAdder.adderType === 'custom_adders'
+      ? treeTrimmingAdder.customProposalAdderAmount || 0
+      : treeTrimmingAdder.selectedProposalAdderAmount || treeTrimmingAdder.selectedAdderAmount || 0
+
+    // Calculate adjustment - typically a small percentage
+    commission.value.treeTrimmingAdjustment = Math.round(amount * 0.03)
   }
 }
+
+const formatNumber = (value, showDecimals = true) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: showDecimals ? 2 : 0,
+    maximumFractionDigits: showDecimals ? 2 : 0
+  }).format(value)
+}
+
+// Watch for changes in adder data
+watch(() => props.adderData, (newAdderData) => {
+  if (newAdderData && newAdderData.length > 0) {
+    processAdderData(newAdderData)
+    extractSpecialAdderAdjustments(newAdderData)
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>
