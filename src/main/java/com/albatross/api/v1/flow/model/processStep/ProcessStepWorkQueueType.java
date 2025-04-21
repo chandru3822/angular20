@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model.processStep;
 
+import com.albatross.api.v1.flow.model.filter.WorkTypeFilters;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import lombok.Data;
@@ -12,9 +13,10 @@ import java.util.List;
 
 @Data
 public class ProcessStepWorkQueueType {
-    private Long id, processStepId, workQueueTypeId, workQueueCategoryId;
-    private String workQueueType, workQueueCategory, projectStatusType;
-    private Boolean archived;
-    private List<WorkQueueTypeProjectStatus> projectStatuses;
-    private List<WorkQueueTypeProcessStepStatus> processStepStatuses;
+  private Long id, processStepId, workQueueTypeId, workQueueCategoryId;
+  private String workQueueType, workQueueCategory, projectStatusType;
+  private Boolean archived;
+  private List<WorkQueueTypeProjectStatus> projectStatuses;
+  private List<WorkQueueTypeProcessStepStatus> processStepStatuses;
+  private WorkTypeFilters selectedFilters;
 }

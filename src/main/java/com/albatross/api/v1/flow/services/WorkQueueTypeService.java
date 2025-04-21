@@ -9,6 +9,8 @@ import com.albatross.api.v1.flow.model.DurationType;
 import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
+import com.albatross.api.v1.flow.model.filter.WorkFiltersDTO;
+import com.albatross.api.v1.flow.model.filter.WorkTypeFilters;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.*;
@@ -445,6 +447,131 @@ public class WorkQueueTypeService {
       WorkQueueTypeQuery.getEventStatusesForWorkQueueType, params, WorkQueueTypeProjectStatus.class);
   }
 
+  public void saveWorkQueueTypeFilters(Long workQueueTypeId,
+                                       WorkTypeFilters filter,
+                                       Long processStepId,
+                                       Long eventWorkQueueTypeId) {
+
+    User user = securityService.getCurrentUser();
+
+    // Log inputs to help with debugging
+    log.debug("Saving filter for workQueueTypeId: {}, processStepId: {}, eventId: {}, filterId: {}",
+      workQueueTypeId, processStepId, eventWorkQueueTypeId, filter.getId());
+
+    // Create parameters map for the SQL query
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("workQueueTypeId", workQueueTypeId);
+    params.put("processStepId", processStepId);
+    params.put("eventId", eventWorkQueueTypeId);
+
+    // Handle nullable filter fields safely
+    params.put("filterId", filter.getId());
+
+    // Handle nested objects properly - without name fields
+    if (filter.getOperator() != null) {
+      params.put("operatorId", filter.getOperator().getId());
+    } else {
+      params.put("operatorId", null);
+    }
+
+    if (filter.getValue() != null) {
+      params.put("valueId", filter.getValue().getId());
+    } else {
+      params.put("valueId", null);
+    }
+
+    params.put("modifiedById", user.trueUserId());
+    params.put("createdById", user.trueUserId());
+
+    try {
+      // Verify we have a valid workQueueTypeId
+      if (workQueueTypeId == null && eventWorkQueueTypeId != null) {
+        // If workQueueTypeId is null but we have an eventWorkQueueTypeId, get the associated workQueueTypeId
+        ProcessStepEventWorkQueueType eventWqt = getEventWorkQueueType(eventWorkQueueTypeId).orElse(null);
+        if (eventWqt != null) {
+          workQueueTypeId = eventWqt.getWorkQueueTypeId();
+          params.put("workQueueTypeId", workQueueTypeId);
+          log.debug("Using workQueueTypeId {} from eventWorkQueueTypeId {}", workQueueTypeId, eventWorkQueueTypeId);
+        }
+      }
+
+      // Create a query that checks for matching work_queue_type_id, process_step_id, AND filter_id
+      String getSpecificFilterQuery = """
+        SELECT id FROM flow.work_queue_type_filters
+        WHERE work_queue_type_id = :workQueueTypeId
+        AND (:processStepId IS NULL OR process_step_id = :processStepId)
+        AND filter_id = :filterId
+        AND archived = false
+        LIMIT 1
+        """;
+
+      // Get the filter ID if it exists with all matching criteria
+      Long existingFilterId = queryForObjectOrNull(
+        getSpecificFilterQuery, params, Long.class);
+      log.debug("Existing filter ID for workQueueTypeId: {}, processStepId: {}, filterId: {}: {}",
+        workQueueTypeId, processStepId, filter.getId(), existingFilterId);
+
+      // Check if filter exists based on all criteria
+      if (existingFilterId != null) {
+        // Update existing filter by ID
+        params.put("id", existingFilterId);
+        String updateSpecificFilterQuery = """
+            UPDATE flow.work_queue_type_filters SET
+            operator_id = :operatorId,
+            value_id = :valueId,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+            WHERE id = :id AND archived = false
+            """;
+        sqlCache.updateBySql(updateSpecificFilterQuery, params);
+        log.debug("Updated existing filter with ID: {}", existingFilterId);
+      } else {
+        // Insert new filter
+        sqlCache.updateBySql(WorkQueueTypeQuery.insertWorkQueueTypeFilter, params);
+        log.debug("Inserted new filter for workQueueTypeId: {}, processStepId: {}, filterId: {}",
+          workQueueTypeId, processStepId, filter.getId());
+      }
+
+      // Call config change function to reflect changes in the work queue
+      if (eventWorkQueueTypeId == null) {
+        callConfigChangeFunction(workQueueTypeId, null);
+      } else {
+        callConfigChangeFunction(null, eventWorkQueueTypeId);
+      }
+    } catch (Exception e) {
+      log.error("Error saving work queue type filters: {}", e.getMessage(), e);
+      throw e;
+    }
+  }
+
+  public List<WorkFiltersDTO> getWorkQueueTypeFilters(Long workQueueTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("workQueueTypeId", workQueueTypeId);
+
+    log.debug("Getting filters for workQueueTypeId: {}", workQueueTypeId);
+    return sqlCache.queryBySql(
+      WorkQueueTypeQuery.getWorkQueueTypeFilter, params, WorkFiltersDTO.class);
+  }
+
+  public void deleteWorkQueueTypeFilter(Long filterId) {
+    log.debug("Deleting filter with ID: {}", filterId);
+
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", filterId);
+    params.put("modifiedById", user.trueUserId());
+
+    String deleteSql = """
+        UPDATE flow.work_queue_type_filters
+        SET archived = true,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+        WHERE id = :id
+        """;
+
+    sqlCache.updateBySql(deleteSql, params);
+  }
+
   public List<WorkQueueTypeProjectStatus> getProjectStatusTypesForWorkQueueType(
       Long processStepWorkQueueTypeId, Long processStepEventWorkQueueTypeId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -528,6 +655,15 @@ public class WorkQueueTypeService {
     callConfigChangeFunction(null, wqt.getId());
 
     return getEventWorkQueueType(id);
+  }
+
+  // Add the helper method here, around line 600-610 before the inner classes
+  private <T> T queryForObjectOrNull(String sql, Map<String, Object> params, Class<T> type) {
+    try {
+      return sqlCache.queryForObjectBySql(sql, params, type);
+    } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+      return null;
+    }
   }
 
   public static class ProcessStepWorkQueueTypeMapper<T> extends BeanPropertyRowMapper<T> {

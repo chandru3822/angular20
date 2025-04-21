@@ -223,11 +223,11 @@
                   item-title="uniqueText"
                   return-object>
                   <template #selection="{ item: status, index }" v-if="showPsShit">
-                          <span :class="{'bold': status.isRoot}">
-                            <span class="" v-if="!status.archived">{{ status.processStepStatusType }}</span>
-                            <span v-if="!status.archived && index !== item.processStepStatuses.length - 1"
-                                  class="mr-1">,</span>
-                          </span>
+          <span :class="{'bold': status.isRoot}">
+            <span class="" v-if="!status.archived">{{ status.processStepStatusType }}</span>
+            <span v-if="!status.archived && index !== item.processStepStatuses.length - 1"
+                  class="mr-1">,</span>
+          </span>
                   </template>
                   <template #item="data" v-if="showPsShit">
                     <template v-if="data.item.header !== null">
@@ -248,6 +248,164 @@
                     </template>
                   </template>
                 </a-autocomplete>
+
+                <template>
+                  <v-row>
+                    <v-col cols="3" class="field-container elevation-1">
+                      <v-tabs v-model="tab" class="tabs">
+                        <v-tab>Filters</v-tab>
+                      </v-tabs>
+                      <v-tabs-items v-model="tab" class="show-overflow">
+                        <v-tab-item>
+                          <!-- Add Filter dropdown - always visible -->
+                          <v-autocomplete
+                            v-model="selectedFilters"
+                            :items="availableFilters"
+                            @change="handleFilterChange"
+                            hide-details
+                            class="mx-4 mt-4 filter-text"
+                            density="compact"
+                            variant="outlined"
+                            item-title="name"
+                            item-value="id"
+                            label="Add Filter"
+                            return-object
+                            :menu-props="{ closeOnContentClick: true }"
+                            :search-input.sync="filterSearch"
+                            :filter="customFilter"
+                          >
+                            <template v-slot:selection="{ item }">
+                              <div class="text-left mt-2">
+                                <v-btn
+                                  v-if="selectedFilters && selectedFilters.name"
+                                  class="ma-1"
+                                  color="primary"
+                                  variant="tonal"
+                                  @click="toggleFilter"
+                                  size="small"
+                                  rounded
+                                  style="text-transform: none;"
+                                >
+                                  {{ truncateText(selectedFilters.name + (selectedFilters.processStepName ? ` - (${selectedFilters.processStepName})` : '')) }}
+                                  <v-icon end size="small" class="ml-1" @click.stop="toggleFilter">mdi-close</v-icon>
+                                </v-btn>
+                              </div>
+                            </template>
+                            <template v-slot:item="{ item }">
+                              <v-list-item-title>
+                                {{ item.name }}{{ item.processStepName ? ` - ${item.processStepName}` : '' }}
+                              </v-list-item-title>
+                            </template>
+                          </v-autocomplete>
+
+                          <!-- Operator selection - only visible after filter is selected -->
+                          <template v-if="selectedFilters && selectedFilters.id && operators.length > 0">
+                            <v-autocomplete
+                              v-model="selectedFilters.operator"
+                              :items="operators"
+                              hide-details
+                              class="mx-4 mt-4"
+                              density="compact"
+                              variant="outlined"
+                              item-title="name"
+                              item-value="id"
+                              label="Select Operator"
+                              @update:model-value="handleOperatorChange"
+                              return-object
+                            >
+                              <template v-slot:selection="{ item }">
+                                {{ item.name }}
+                              </template>
+                              <template v-slot:item="{ item }">
+                                <v-list-item-title>
+                                  {{ item.name }}
+                                </v-list-item-title>
+                              </template>
+                            </v-autocomplete>
+
+                            <!-- Value selection - only visible after operator is selected -->
+                            <template v-if="selectedFilters.operator">
+                              <v-autocomplete
+                                v-model="selectedFilters.value"
+                                :items="valueTypes"
+                                hide-details
+                                class="mx-4 mt-4"
+                                density="compact"
+                                variant="outlined"
+                                item-title="name"
+                                item-value="id"
+                                label="Select Value"
+                                return-object
+                              >
+                                <template v-slot:selection="{ item }">
+                                  {{ item.name }}
+                                </template>
+                                <template v-slot:item="{ item }">
+                                  <v-list-item-title>
+                                    {{ item.name }}
+                                  </v-list-item-title>
+                                </template>
+                              </v-autocomplete>
+                            </template>
+                          </template>
+                        </v-tab-item>
+                      </v-tabs-items>
+                    </v-col>
+
+                    <!-- Added column to display selected filter -->
+                    <v-col cols="9" v-if="selectedFilters && selectedFilters.name">
+                      <v-card flat class="mx-4">
+                        <v-card-text class="pb-0 pt-2">
+                          <div class="text-subtitle-2 mb-2">Selected Filters:</div>
+                          <v-btn
+                            class="mx-1 mb-0"
+                            color="primary"
+                            variant="tonal"
+                            @click="toggleFilter"
+                            size="small"
+                            rounded
+                            style="text-transform: none;"
+                          >
+                            {{ truncateNameField(selectedFilters.name + (selectedFilters.processStepName ? ` - (${selectedFilters.processStepName})` : ''))
+                          + (selectedFilters.operator ? `, ${selectedFilters.operator.name}` : '')
+                          + (selectedFilters.value ? `, ${selectedFilters.value.name}` : '') }}
+                            <v-icon end size="small" class="ml-1" @click.stop="toggleFilter">mdi-close</v-icon>
+                          </v-btn>
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+
+                    <!-- Added section to display saved filters from database -->
+                    <v-col cols="9" v-if="item && savedFilters.length > 0">
+                      <v-card flat class="mx-4">
+                        <v-card-text>
+                          <div class="text-subtitle-2 mb-2">Saved Filters:</div>
+                          <div class="d-flex flex-column align-items-start">
+                            <v-btn
+                              v-for="filter in savedFilters"
+                              :key="filter.id"
+                              class="mb-2"
+                              color="secondary"
+                              variant="tonal"
+                              style="text-transform: none; align-self: flex-start; color: black !important;"
+                              @click="editSavedFilter(filter)"
+                              size="small"
+                              rounded
+                            >
+                              {{ getFilterDisplayText(filter) }}
+                              <v-icon
+                                end
+                                size="small"
+                                class="ml-1"
+                                @click.capture.stop.prevent="(event) => deleteSavedFilter(filter, event)"
+                              >mdi-close</v-icon>
+                            </v-btn>
+                          </div>
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                </template>
 
                 <a-autocomplete
                   v-if="showEventFields"
@@ -320,14 +478,20 @@
                           <span :class="{'bold': pss.isRoot}">{{ pss.eventStatusType }}</span>
                         </span>
                 </template>
+                <template #item.filters="{item}" class="clickable text-left">
+                  <span v-for="(filter, idx) in item.selectedFilters" :key="filter.id">
+                    <span v-if="idx !== 0">, </span>
+                    <span>{{ filter.name }}</span>
+                  </span>
+                </template>
                 <template #item.icons="{item}" class="clickable text-right">
                   <div class="flex-display">
                     <a-btn
-                        variant="text"
-                        color="primary"
-                        @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true)]"
-                        v-if="!expanded.includes(item)"
-                        prepend-icon="edit"
+                      variant="text"
+                      color="primary"
+                      @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true), loadSavedFilters(item)]"
+                      v-if="!expanded.includes(item)"
+                      prepend-icon="edit"
                     ></a-btn>
                     <a-btn
                         variant="text"
@@ -372,6 +536,7 @@ import {
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import { watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
@@ -381,6 +546,13 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const filterSearch = ref('')
+const tab = ref(null)
+const availableFilters = ref([])
+const operators = ref([])
+const valueTypes = ref([])
+const savedFilters = ref([])
+const selectedFilters = ref([])
 
 const props = defineProps({
   processStep: Object,
@@ -414,6 +586,7 @@ const {processStep, event} = props;
   {text: 'Type', value: 'workQueueType', show: true},
   {text: 'Project Status', value: 'projectStatus', show: true},
   {text: 'Process Step Status', value: 'processStepStatus', show: true},
+  {text: 'Filters', value: 'filters', show: true},
   {text: 'Event Status', value: 'eventStatus', show: event?.id},
   {text: '', value: 'icons', show: true, width: '100px'},
 ])
@@ -422,6 +595,255 @@ const {processStep, event} = props;
       projectStatuses: [],
       eventStatuses: [],
 })
+
+const getAvailableFilters = async (forceUpdate = false) => {
+  if (availableFilters.value.length === 0 || forceUpdate) {
+    try {
+      appStore.loading = true
+      const objectTypeId = 4
+      const projectDetails = false
+
+      const {data, status} = await getRequest(`/smartlist/fields?objectTypeIds=${objectTypeId}&projectDetails=${projectDetails}`)
+
+      availableFilters.value = data.map(filter => ({
+        id: filter.customFieldGroupAssignmentId, // Change back to this
+        name: filter.name,
+        processStepName: filter.processStepName,
+        dataTypeId: filter.dataTypeId,
+        objectTypeId: filter.objectTypeId,
+        hasListValues: filter.hasListValues
+      }))
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error retrieving available filters')
+      appStore.loading = false
+    }
+  }
+}
+
+const fetchOperators = async (dataTypeId) => {
+  try {
+    appStore.loading = true
+    const { data } = await getRequest(`/operator/${dataTypeId}`)
+    operators.value = data.map(op => ({
+      id: op.id,
+      name: op.operatorType,
+      operatorType: op.operatorType // Keep the original operatorType
+    }))
+  } catch (e) {
+    console.error('Error fetching operators:', e)
+    appStore.showSnack('ERROR', 'Error fetching operators')
+    operators.value = []
+  } finally {
+    appStore.loading = false
+  }
+}
+
+const fetchValueTypes = async (dataTypeId) => {
+  try {
+    appStore.loading = true
+    const { data } = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
+
+    valueTypes.value = data.map(requirement => ({
+      id: requirement.id,
+      name: requirement.dataTypeValue, // Changed from requirement.name to requirement.dataTypeValue
+      dataTypeId: requirement.dataTypeId,
+      secondaryRequirement: requirement.secondaryRequirement
+    }))
+
+  } catch (e) {
+    console.error('Error fetching value types:', e)
+    appStore.showSnack('ERROR', 'Error fetching value types')
+  } finally {
+    appStore.loading = false
+  }
+}
+
+const fetchSavedFilters = async (item) => {
+  if (!item) return
+
+  try {
+    appStore.loading = true
+
+    const { data, status } = await getRequestWithParams('/workQueueType/filters', {
+      params: { workQueueTypeId: item.workQueueTypeId }
+    })
+
+    savedFilters.value = data || []
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('Error fetching saved filters:', e)
+    appStore.loading = false
+  }
+}
+
+const editSavedFilter = (filter) => {
+  selectedFilters.value = {
+    id: filter.id,
+    name: filter.name,
+    processStepName: filter.processStepName,
+    operator: { id: filter.operatorId, name: filter.operatorName },
+    value: { id: filter.valueId, name: filter.valueName }
+  }
+
+  if (filter.dataTypeId) {
+    fetchOperators(filter.dataTypeId)
+    fetchValueTypes(filter.dataTypeId)
+  }
+}
+
+const deleteSavedFilter = async (filter, event) => {
+  // Immediately clear UI values to prevent displaying stale data
+  selectedFilters.value = [];
+  operators.value = [];
+  valueTypes.value = [];
+
+  if (event) {
+    event.stopImmediatePropagation();
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  try {
+    appStore.loading = true
+    await deleteRequest(`/workQueueType/filter/${filter.id}`)
+
+    // Update saved filters list after successful deletion
+    savedFilters.value = savedFilters.value.filter(f => f.id !== filter.id)
+    appStore.showSnack('SUCCESS', 'Filter removed successfully')
+  } catch (e) {
+    console.error('Error removing filter:', e)
+    appStore.showSnack('ERROR', 'Error removing filter')
+  } finally {
+    appStore.loading = false
+  }
+}
+
+watch(selectedFilters, (newVal) => {
+  if (newVal === null) {
+    selectedFilters.value = []
+  }
+}, { deep: true })
+
+const handleFilterChange = async (filter) => {
+  if (filter) {
+    selectedFilters.value = {
+      id: filter.id,
+      name: filter.name,
+      processStepName: filter.processStepName,
+      dataTypeId: filter.dataTypeId,
+      operator: null,
+      value: null
+    }
+
+    if (filter.dataTypeId) {
+      await fetchOperators(filter.dataTypeId)
+      await fetchValueTypes(filter.dataTypeId)
+    }
+  } else {
+    selectedFilters.value = null
+    operators.value = []
+    valueTypes.value = []
+  }
+}
+
+const handleOperatorChange = () => {
+  if (selectedFilters.value) {
+    selectedFilters.value.value = null
+  }
+}
+
+const removeFilter = () => {
+  selectedFilters.value = []
+}
+
+const loadSavedFilters = async (item) => {
+  if (item && expanded.value.includes(item)) {
+    try {
+      selectedFilters.value = []
+
+      await fetchSavedFilters(item)
+      await getAvailableFilters()
+
+      if (savedFilters.value && savedFilters.value.length > 0) {
+        for (const filter of savedFilters.value) {
+          if (filter.filterId) {
+            const availableFilter = availableFilters.value.find(af => af.id === filter.filterId)
+            if (availableFilter && availableFilter.dataTypeId) {
+              filter.dataTypeId = availableFilter.dataTypeId
+
+              await fetchOperators(availableFilter.dataTypeId)
+              await fetchValueTypes(availableFilter.dataTypeId)
+            } else {
+              console.warn('No matching filter or dataTypeId for filterId:', filter.filterId)
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error in loadSavedFilters:', e)
+    }
+  }
+}
+
+const toggleFilter = () => {
+  if (selectedFilters.value) {
+    selectedFilters.value = []
+    operators.value = []
+    valueTypes.value = []
+  }
+}
+
+const customFilter = (item, queryText) => {
+  const searchText = queryText.toLowerCase()
+  const name = item.name.toLowerCase()
+  const processStepName = item.processStepName ? item.processStepName.toLowerCase() : ''
+
+  return name.includes(searchText) ||
+    processStepName.includes(searchText)
+}
+
+const truncateText = (text) => {
+  const maxLength = 55;
+  if (text.length > maxLength) {
+    return text.substring(0, maxLength) + '...';
+  }
+  return text;
+}
+
+const truncateNameField = (text) => {
+  const maxLength = 20;
+  if (text.length > maxLength) {
+    return text.substring(0, maxLength) + '...';
+  }
+  return text;
+}
+
+const getFilterDisplayText = (filter) => {
+  const filterObj = availableFilters.value.find(f => f.id === filter.filterId)
+  let filterName = filterObj ? filterObj.name : `Filter ${filter.filterId}`
+
+  if (filterObj && filterObj.processStepName) {
+    filterName += ` - (${filterObj.processStepName})`
+  }
+
+  let operatorName = filter.operatorName;
+  if (!operatorName) {
+    const operatorObj = operators.value.find(o => o.id === filter.operatorId)
+    operatorName = operatorObj ? operatorObj.name : `Operator ${filter.operatorId}`
+  }
+
+  let valueName = filter.valueName;
+  if (!valueName) {
+    const valueObj = valueTypes.value.find(v => v.id === filter.valueId)
+    valueName = valueObj ? valueObj.name : `Value ${filter.valueId}`
+  }
+
+  const result = `${truncateNameField(filterName)}, ${operatorName}, ${valueName}`;
+  return result;
+}
 
 const eventId = computed(() => {
   return route.params.eventId
@@ -460,13 +882,48 @@ const filteredWorkQueueTypes = computed(() => {
 })
 
 onMounted(() => {
+  // Show loading state immediately
+  appStore.loading = true;
+
+  // Set event fields if needed
   if (event?.id) {
-    showEventFields.value = true
-    getEventStatusTypesForWorkQueue()
+    showEventFields.value = true;
   }
-  getProjectStatusTypesForWorkQueue()
-  getProcessStepStatusTypesForWorkQueue()
-})
+
+  // Collect all loading promises to run in parallel
+  const loadingPromises = [];
+
+  // Only push the promises we need based on component state
+  loadingPromises.push(getAvailableFilters());
+  loadingPromises.push(getProjectStatusTypesForWorkQueue());
+  loadingPromises.push(getProcessStepStatusTypesForWorkQueue());
+
+  if (showEventFields.value) {
+    loadingPromises.push(getEventStatusTypesForWorkQueue());
+  }
+
+  // Execute all promises in parallel
+  Promise.all(loadingPromises)
+    .then(() => {
+      // After main data is loaded, preload operators and value types
+      const uniqueDataTypeIds = [...new Set(availableFilters.value
+        .filter(f => f.dataTypeId)
+        .map(f => f.dataTypeId))];
+
+      // Load these in the background without awaiting
+      uniqueDataTypeIds.forEach(dataTypeId => {
+        fetchOperators(dataTypeId);
+        fetchValueTypes(dataTypeId);
+      });
+    })
+    .catch(error => {
+      console.error('Error loading initial data:', error);
+      appStore.showSnack('ERROR', 'Error loading data');
+    })
+    .finally(() => {
+      appStore.loading = false;
+    });
+});
 
     const addValueToNew = (selectedItem) => {
       if (selectedItem.selected) {
@@ -849,7 +1306,22 @@ onMounted(() => {
           appStore.loading = true
           let url = showEventFields.value ? `/workQueueType/event/${eventId.value}` :  `/workQueueType/processStep/${processStepId.value}`
           const {data, status} = await getRequest(url, null, [])
-          workQueueTypes.value = data
+
+          // Add more robust null checks and data validation
+          workQueueTypes.value = (data || [])
+            .filter(wqt => wqt && typeof wqt === 'object')  // Ensure item exists and is an object
+            .map(wqt => ({
+              id: wqt.id || null,  // Ensure id exists
+              workQueueCategory: wqt.workQueueCategory || '',
+              workQueueType: wqt.workQueueType || '',
+              workQueueTypeId: wqt.workQueueTypeId || null,
+              selectedFilters: Array.isArray(wqt.selectedFilters) ? wqt.selectedFilters : [],
+              projectStatuses: Array.isArray(wqt.projectStatuses) ? wqt.projectStatuses : [],
+              processStepStatuses: Array.isArray(wqt.processStepStatuses) ? wqt.processStepStatuses : [],
+              eventStatuses: Array.isArray(wqt.eventStatuses) ? wqt.eventStatuses : [],
+              ...wqt  // Keep other properties
+            }))
+
           handleHidingGlobalLoader(status)
         }
       } catch (e) {
@@ -859,21 +1331,33 @@ onMounted(() => {
       }
     }
     const assignNewWorkQueueType = async() => {
-      //todo make this work for both proj and process step types
       appStore.loading = true
       try {
         newWorkQueueType.value.processStepId = processStepId.value
         newWorkQueueType.value.processStepEventId = eventId.value
+        newWorkQueueType.value.selectedFilters = selectedFilters.value
+
         let url = showEventFields.value ? `/workQueueType/event` : `/workQueueType/processStep`
         const {data, status} = await postRequest(url, newWorkQueueType.value)
+
+        // Ensure filters are included in the response data
         if(showEventFields.value) {
-          event?.workQueueTypes.push(data)
+          event?.workQueueTypes.push({
+            ...data,
+            selectedFilters: data.selectedFilters || null
+          })
         } else {
-          processStep?.workQueueTypes.push(data)
+          processStep?.workQueueTypes.push({
+            ...data,
+            selectedFilters: data.selectedFilters || null
+          })
         }
-        // reset fields
+
+        // Reset fields
         addNewWorkQueueType.value = false
         newWorkQueueType.value = {projectStatuses: [], processStepStatuses: [], eventStatuses: []}
+        selectedFilters.value = []
+
         appStore.showSnack('SUCCESS', 'Work Queue Type Added')
         handleHidingGlobalLoader(status)
       } catch (e) {
@@ -883,21 +1367,48 @@ onMounted(() => {
       }
     }
     const saveStatusesToWorkQueueType = async(item) => {
-      //todo: fix this to save both things
       appStore.loading = true
       try {
-        let url = showEventFields.value ? `/workQueueType/saveStatusTypesToProcessStepEventWorkQueueType` : `/workQueueType/saveStatusTypesToProcessStepWorkQueueType`
-        const {data, status} = await putRequest(url, item)
-        item.projectStatuses = data.projectStatuses
-        item.processStepStatuses = data.processStepStatuses
-        item.eventStatuses = data.eventStatuses || []
-        expanded.value = []
-        appStore.showSnack('SUCCESS', 'Status Types Saved')
-        handleHidingGlobalLoader(status)
+        // Convert selectedFilters to the expected format if needed
+        item.selectedFilters = selectedFilters.value ? {
+          id: selectedFilters.value.id,
+          name: selectedFilters.value.name,
+          processStepName: selectedFilters.value.processStepName,
+          operator: selectedFilters.value.operator ? {
+            id: selectedFilters.value.operator.id,
+            name: selectedFilters.value.operator.name
+          } : null,
+          value: selectedFilters.value.value ? {
+            id: selectedFilters.value.value.id,
+            name: selectedFilters.value.value.name
+          } : null
+        } : null;
+
+        let url = showEventFields.value
+          ? `/workQueueType/saveStatusTypesToProcessStepEventWorkQueueType`
+          : `/workQueueType/saveStatusTypesToProcessStepWorkQueueType`;
+
+        const {data, status} = await putRequest(url, item);
+
+        // Update with saved data
+        item.projectStatuses = data.projectStatuses;
+        item.processStepStatuses = data.processStepStatuses;
+        item.eventStatuses = data.eventStatuses || [];
+        item.selectedFilters = data.selectedFilters || null;
+
+        // Reset all filter-related fields for consistent behavior
+        selectedFilters.value = [];
+        operators.value = [];
+        valueTypes.value = [];
+        expanded.value = [];
+
+        appStore.showSnack('SUCCESS', 'Filter saved successfully');
+        handleHidingGlobalLoader(status);
       } catch (e) {
-        console.error('*** ERROR ***', e)
-        appStore.showSnack('ERROR', 'Error Adding Status Types')
-        appStore.loading = false
+        console.error('*** ERROR SAVING FILTERS ***', e);
+        console.error('Failed item data:', JSON.stringify(item, null, 2));
+        appStore.showSnack('ERROR', 'Error saving filter');
+        appStore.loading = false;
       }
     }
     const deleteWorkQueueTypeFromStep = async() => {
@@ -930,6 +1441,37 @@ onMounted(() => {
 .wqt-header-bar {
   border-bottom: 1px solid #E6E6E6;
   border-top: 1px solid #E6E6E6;
+}
+
+/* Update filter-text class to ensure consistent width */
+.filter-text {
+  :deep(.v-field) {
+    max-width: 500px !important;
+    margin: 0 auto;
+
+    .v-field__input {
+      max-width: 500px !important;
+
+      input {
+        max-width: 460px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+    }
+  }
+}
+
+.field-container {
+  width: 500px;
+  min-width: 500px;
+  max-width: 500px;
+  background-color: white;
+  z-index: 0;
+}
+
+.tabs {
+  border-bottom: solid 1px var(--v-grey-lighten2) !important;
 }
 
 </style>

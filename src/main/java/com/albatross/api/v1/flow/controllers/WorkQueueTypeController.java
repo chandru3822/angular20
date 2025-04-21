@@ -2,12 +2,15 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.DurationType;
 import com.albatross.api.v1.flow.model.FieldInUse;
+import com.albatross.api.v1.flow.model.filter.WorkFiltersDTO;
+import com.albatross.api.v1.flow.model.filter.WorkTypeFilters;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
 import com.albatross.api.v1.flow.services.WorkQueueTypeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -95,10 +98,34 @@ public class WorkQueueTypeController {
     return workQueueTypeService.insertProcessStepWorkQueueType(workQueueType);
   }
 
+  @GetMapping("/filters")
+  public List<WorkFiltersDTO> getWorkQueueTypeFilters(@RequestParam Long workQueueTypeId) {
+    return workQueueTypeService.getWorkQueueTypeFilters(workQueueTypeId);
+  }
+
+  @DeleteMapping("/filter/{id}")
+  public ResponseEntity<Void> deleteWorkQueueTypeFilter(@PathVariable Long id) {
+    try {
+      workQueueTypeService.deleteWorkQueueTypeFilter(id);
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
+      log.error("Error deleting work queue type filter: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+  }
+
   @PutMapping(value = "/saveStatusTypesToProcessStepWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepWorkQueueType> saveProjectStatusTypesToWorkQueueType(@RequestBody ProcessStepWorkQueueType processStepWorkQueueType) {
     workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType, null);
     workQueueTypeService.saveProcessStepStatusTypesToWorkQueueType(processStepWorkQueueType, null);
+
+    // Add code to save filters
+    if (processStepWorkQueueType.getSelectedFilters() != null) {
+      workQueueTypeService.saveWorkQueueTypeFilters(processStepWorkQueueType.getWorkQueueTypeId(),
+        processStepWorkQueueType.getSelectedFilters(),
+        processStepWorkQueueType.getProcessStepId(),
+        null);
+    }
 
     workQueueTypeService.callConfigChangeFunction(processStepWorkQueueType.getId(), null);
     return workQueueTypeService.getProcessStepWorkQueueType(processStepWorkQueueType.getId());
@@ -109,6 +136,14 @@ public class WorkQueueTypeController {
     workQueueTypeService.saveProjectStatusTypesToWorkQueueType(null, processStepEventWorkQueueType);
     workQueueTypeService.saveProcessStepStatusTypesToWorkQueueType(null, processStepEventWorkQueueType);
     workQueueTypeService.saveEventStatusTypesToWorkQueueType(processStepEventWorkQueueType);
+
+    // Add code to save filters
+    if (processStepEventWorkQueueType.getSelectedFilters() != null) {
+      workQueueTypeService.saveWorkQueueTypeFilters(null,
+        processStepEventWorkQueueType.getSelectedFilters(),
+        null,
+        processStepEventWorkQueueType.getId());
+    }
 
     workQueueTypeService.callConfigChangeFunction(null, processStepEventWorkQueueType.getId());
     return workQueueTypeService.getEventWorkQueueType(processStepEventWorkQueueType.getId());

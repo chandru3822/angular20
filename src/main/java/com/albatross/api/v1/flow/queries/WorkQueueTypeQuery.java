@@ -30,6 +30,61 @@ public class WorkQueueTypeQuery {
          and wqt.archived is not true
     """;
 
+    //language=PostgreSQL
+  public final static String checkWorkQueueTypeFilterExists = """
+    SELECT COUNT(*) FROM flow.work_queue_type_filters
+    WHERE (work_queue_type_id = :workQueueTypeId)
+    AND archived = false
+    """;
+
+    //language=PostgreSQL
+  public final static String insertWorkQueueTypeFilter = """
+    INSERT INTO flow.work_queue_type_filters (
+      work_queue_type_id, process_step_id, filter_id,
+      operator_id, value_id,
+      created_by_id, modified_by_id, date_created, date_modified, archived
+    )
+    VALUES (
+      :workQueueTypeId, :processStepId, :filterId,
+      :operatorId, :valueId,
+      :createdById, :modifiedById, now(), now(), false
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getWorkQueueTypeFilter = """
+    SELECT
+      f.id,
+      f.work_queue_type_id as workQueueTypeId,
+      f.process_step_id as processStepId,
+      f.filter_id as filterId,
+      f.operator_id as operatorId,
+      f.value_id as valueId
+    FROM flow.work_queue_type_filters f
+    WHERE (f.work_queue_type_id = :workQueueTypeId)
+      AND f.archived = false
+    """;
+
+    //language=PostgreSQL
+    public final static String getWorkQueueTypeFilterId = """
+      SELECT id FROM flow.work_queue_type_filters
+      WHERE (work_queue_type_id = :workQueueTypeId)
+      AND archived = false
+      LIMIT 1
+    """;
+
+    //language=PostgreSQL
+    public final static String updateWorkQueueTypeFilter = """
+      UPDATE flow.work_queue_type_filters SET
+        filter_id = :filterId,
+        operator_id = :operatorId,
+        value_id = :valueId,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      WHERE (work_queue_type_id = :workQueueTypeId)
+        AND archived = false
+    """;
+
   //language=PostgreSQL
   public final static String getItemsUsingType = """
     SELECT array_to_json(array_agg(row_to_json(results)))
