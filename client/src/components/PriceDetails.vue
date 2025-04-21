@@ -35,7 +35,7 @@
 
       <!-- Commission Card -->
       <v-expansion-panel class="mb-2">
-        <v-expansion-panel-header hide-actions>
+        <v-expansion-panel-header readonly hide-actions>
           <span class="text-subtitle-1 font-weight-medium">
             Commission
           </span>
@@ -46,24 +46,24 @@
             </span>
           </span>
         </v-expansion-panel-header>
-        <v-expansion-panel-content class="child-expansion-panel-content">
-          <v-simple-table dense class="commission-table">
-            <template v-slot:default>
-              <thead>
-              <tr>
-                <th class="text-left font-weight-bold">Item</th>
-                <th class="text-right font-weight-bold">Amount</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr class="dense-row">
-                <td class="caption light-blue lighten-5">Base</td>
-                <td class="text-right caption light-blue lighten-5">${{ formatNumber(commissionBaseTotal, true) }}</td>
-              </tr>
-              </tbody>
-            </template>
-          </v-simple-table>
-        </v-expansion-panel-content>
+<!--        <v-expansion-panel-content class="child-expansion-panel-content">-->
+<!--          <v-simple-table dense class="commission-table">-->
+<!--            <template v-slot:default>-->
+<!--              <thead>-->
+<!--              <tr>-->
+<!--                <th class="text-left font-weight-bold">Item</th>-->
+<!--                <th class="text-right font-weight-bold">Amount</th>-->
+<!--              </tr>-->
+<!--              </thead>-->
+<!--              <tbody>-->
+<!--              <tr class="dense-row">-->
+<!--                <td class="caption light-blue lighten-5">Base</td>-->
+<!--                <td class="text-right caption light-blue lighten-5">${{ formatNumber(commissionBaseTotal, true) }}</td>-->
+<!--              </tr>-->
+<!--              </tbody>-->
+<!--            </template>-->
+<!--          </v-simple-table>-->
+<!--        </v-expansion-panel-content>-->
       </v-expansion-panel>
 
       <!-- Estimated Adders Card -->
@@ -127,7 +127,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+
+import { getRequest } from '@/helpers/helpers'
+import { useAppStore } from '@/stores/AppStore.js'
+
+const appStore = useAppStore()
 
 const props = defineProps({
   proposalId: {
@@ -140,7 +145,7 @@ const props = defineProps({
   }
 })
 
-const expandedPanels = ref([1, 2]) // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
+const expandedPanels = ref([2]) // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
 const showNotification = ref(false)
 const notificationText = ref('')
 const basePrice = ref(0)
@@ -209,12 +214,52 @@ const formatNumber = (value, showDecimals = true) => {
   }).format(value)
 }
 
+// Function to fetch base and commission amounts from the backend
+const fetchPriceDetailAmounts = async () => {
+  if (!props.proposalId) return;
+
+  try {
+    appStore.loading = true;
+
+    const { data } = await getRequest(
+      `/proposal/${props.proposalId}/adders/details`,
+      'blueraven'
+    );
+
+    if (data) {
+      basePrice.value = data.base_amount || 0;
+      commission.value.base = data.commission_amount || 0;
+    }
+  } catch (error) {
+    console.error('Error fetching price detail amounts:', error);
+    // Optional: Show error notification
+    showNotification.value = true;
+    notificationText.value = 'Error loading price details. Please refresh the page.';
+  } finally {
+    appStore.loading = false;
+  }
+};
+
 // Watch for changes in adder data
 watch(() => props.adderData, (newAdderData) => {
   if (newAdderData && newAdderData.length > 0) {
-    processAdderData(newAdderData)
+    processAdderData(newAdderData);
+    // Also refresh price details when adders change
+    fetchPriceDetailAmounts();
   }
-}, { immediate: true })
+}, { immediate: true, deep: true })
+
+// Call fetchPriceDetailAmounts when component mounts
+onMounted(() => {
+  fetchPriceDetailAmounts();
+});
+
+// Watch for changes in proposal ID and refetch data when it changes
+watch(() => props.proposalId, (newProposalId, oldProposalId) => {
+  if (newProposalId && newProposalId !== oldProposalId) {
+    fetchPriceDetailAmounts();
+  }
+});
 </script>
 
 <style scoped>

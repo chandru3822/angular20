@@ -56,14 +56,6 @@ const formatCurrency = (value) => {
   return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-// Parse currency string back to number
-const parseCurrency = (value) => {
-  if (typeof value === 'number') return value;
-  if (!value || value === '--') return 0;
-
-  return parseFloat(value.replace(/[$,]/g, ''));
-};
-
 const fetchAdderData = async () => {
   try {
     appStore.loading = true;
@@ -235,7 +227,8 @@ const handleApply = async (result) => {
         const resultItem = {
           id: item.id,
           type: item.type,
-          applied: item.applied
+          applied: item.applied,
+          description: item.description
         };
 
         // Include the customFields if they exist
@@ -247,8 +240,18 @@ const handleApply = async (result) => {
       })
     };
 
-    // Emit the apply-costs event with the processed data
-    emit('apply-costs', appliedCosts);
+    // Immediately save to the database
+    const saveSuccess = await saveAddersToDatabase(appliedCosts);
+
+    if (saveSuccess) {
+      // Refresh the adder data to ensure the dialog shows the latest state
+      await fetchAdderData();
+
+      // Emit the apply-costs event with the processed data
+      emit('apply-costs', appliedCosts);
+    } else {
+      appStore.showSnack('ERROR', 'Failed to save adders');
+    }
 
     // No need to close dialog here, as GenericCostDialog will handle the closing
   } catch (error) {
@@ -259,6 +262,81 @@ const handleApply = async (result) => {
     emit('close-dialog', false);
   } finally {
     appStore.loading = false;
+  }
+};
+
+// Function to save adder values to database
+const saveAddersToDatabase = async (appliedCosts) => {
+  try {
+    // Prepare the adder items array for API call
+    const customAddersToUpdate = [];
+
+    // Process custom adders for direct API update
+    if (appliedCosts.customAdders && Array.isArray(appliedCosts.customAdders)) {
+      appliedCosts.customAdders.forEach(adder => {
+        if (adder.id && adder.amount !== undefined) {
+          customAddersToUpdate.push({
+            id: adder.id,
+            customAdderAmount: adder.amount,
+            adderType: 'custom_adders',
+            fieldName: adder.fieldName,
+            applied: true,
+            customAdderDataType: adder.customAdderDataType ?? 4
+          });
+        }
+      });
+    }
+
+    // Add selected adders
+    if (appliedCosts.selectedAdderIds && Array.isArray(appliedCosts.selectedAdderIds)) {
+      const selectedAdderItems = appliedCosts.allItems.filter(
+        item => appliedCosts.selectedAdderIds.includes(item.id) && !item.isCustom
+      );
+
+      appliedCosts.selectedAdderIds.forEach(id => {
+        const adderItem = selectedAdderItems.find(item => item.id === id) ||
+                          { id, type: 'selected_adders' };
+
+        customAddersToUpdate.push({
+          id: id,
+          adderType: 'selected_adders',
+          fieldName: adderItem.description || 'Selected Adder',
+          applied: true
+        });
+      });
+    }
+
+    // Add unselected adders for proper tracking
+    if (appliedCosts.unselectedAdderIds && Array.isArray(appliedCosts.unselectedAdderIds)) {
+      appliedCosts.unselectedAdderIds.forEach(id => {
+        customAddersToUpdate.push({
+          id: id,
+          adderType: 'selected_adders',
+          fieldName: 'Selected Adder',
+          applied: false
+        });
+      });
+    }
+
+    // If we have adder items to update, make the API call
+    if (customAddersToUpdate.length > 0) {
+      const response = await postRequest(
+        `/proposal/${props.proposalId}/adders/update`,
+        { adderItems: customAddersToUpdate },
+        'blueraven'
+      );
+
+      // Refresh the adder data after successful update
+      await fetchAdderData();
+
+      appStore.showSnack('SUCCESS', 'Adders saved successfully');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    appStore.showSnack('ERROR', 'Error saving adders to database');
+    console.error('Error saving adders to database:', error);
+    return false;
   }
 };
 </script>

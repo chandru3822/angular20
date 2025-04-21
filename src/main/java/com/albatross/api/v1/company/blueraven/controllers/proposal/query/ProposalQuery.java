@@ -883,4 +883,9 @@ where jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 160)')
   public final static String getProposalLogHistoryId = """
       select id from brs.proposal_log_history where proposal_nbr = :proposalNbr and project_id = :projectId
     """;
+
+  //language=PostgreSQL
+  public final static String getBaseAndCommissionAmounts = """
+      SELECT base_amount, commission_amount FROM brs.get_base_and_commission_amounts(:proposalId)
+    """;
 }

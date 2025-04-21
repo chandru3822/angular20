@@ -323,18 +323,17 @@ public class BlueravenProposalService {
           // Convert Long to Boolean (0 = false, non-zero = true)
           params.put("booleanValue", customAdderValue != 0);
           break;
-        case 4: // NUMERIC
-          // Use BigDecimal for numeric values to preserve precision
-          params.put("numericValue", new BigDecimal(customAdderValue));
+        case 6: // INTEGER
+          params.put("intValue", customAdderValue);
           break;
         case 5: // TEXT
           // Convert Long to String
           params.put("textValue", customAdderValue.toString());
           break;
-        case 6: // INTEGER
+        case 4: // NUMERIC
         default:
           // Use Long directly
-          params.put("intValue", customAdderValue);
+          params.put("numericValue", customAdderValue);
           break;
       }
 
@@ -347,6 +346,12 @@ public class BlueravenProposalService {
         proposalId, cfgaId, e.getMessage());
       throw new ApiException("Failed to update custom adder: " + e.getMessage());
     }
+  }
+
+  public Map<String, Object> getBaseAndCommissionAmounts(Long proposalId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+    return sqlCache.queryForMapBySql(ProposalQuery.getBaseAndCommissionAmounts, params);
   }
 
   public Map<String, String> getAuroraProjectId(Long projectId, Long ppsId) {

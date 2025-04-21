@@ -169,6 +169,12 @@ public class BlueravenProposalController {
     return ResponseEntity.ok().build();
   }
 
+  @GetMapping(value = "/{proposalId}/adders/details")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN') || isBrSystemUser()")
+  public Map<String, Object> getBaseAndCommissionAmounts(@PathVariable Long proposalId) {
+    return proposalService.getBaseAndCommissionAmounts(proposalId);
+  }
+
   @GetMapping(value = "/{proposalId}/commissionDetails")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public List<ProposalCommissionDetail> getProposalCommissionDetails(@PathVariable Long proposalId,
