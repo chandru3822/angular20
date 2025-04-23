@@ -478,12 +478,23 @@
                           <span :class="{'bold': pss.isRoot}">{{ pss.eventStatusType }}</span>
                         </span>
                 </template>
-                <template #item.filters="{item}" class="clickable text-left">
-                  <span v-for="(filter, idx) in item.selectedFilters" :key="filter.id">
-                    <span v-if="idx !== 0">, </span>
-                    <span>{{ filter.name }}</span>
-                  </span>
-                </template>
+            <template #item.filters="{item}" class="clickable text-left">
+              <div>
+                <span v-for="(filter, idx) in item.selectedFilters" :key="filter.id">
+                  <span v-if="idx !== 0">, </span>
+                  <span>{{ filter.name }}</span>
+                </span>
+                <span v-if="item.filterCount > 0" class="filter-count ml-2">
+                  {{ item.filterCount }}
+                </span>
+                <span v-else-if="filterCountsLoaded && (!item.selectedFilters || item.selectedFilters.length === 0)" class="grey--text">
+                  No filters
+                </span>
+                <span v-else-if="!filterCountsLoaded" class="grey--text">
+                  Loading...
+                </span>
+              </div>
+            </template>
                 <template #item.icons="{item}" class="clickable text-right">
                   <div class="flex-display">
                     <a-btn
@@ -553,6 +564,7 @@ const operators = ref([])
 const valueTypes = ref([])
 const savedFilters = ref([])
 const selectedFilters = ref([])
+const filterCountsLoaded = ref(false);
 
 const props = defineProps({
   processStep: Object,
@@ -677,6 +689,47 @@ const fetchSavedFilters = async (item) => {
     console.error('Error fetching saved filters:', e)
     appStore.loading = false
   }
+}
+
+const loadAllFilterCounts = async () => {
+  console.log('loadAllFilterCounts called');
+  filterCountsLoaded.value = false;
+
+  // Determine which work queue types to use based on the component state
+  const filteredWorkQueueTypes = showEventFields.value
+    ? event?.workQueueTypes?.filter(u => !u.archived)
+    : processStep?.workQueueTypes?.filter(u => !u.archived);
+
+  if (!filteredWorkQueueTypes?.length) {
+    console.log('No work queue types found to load filters for');
+    filterCountsLoaded.value = true;
+    return;
+  }
+
+  console.log(`Loading filter counts for ${filteredWorkQueueTypes.length} work queue types`);
+
+  // Initialize all filter counts to 0 before loading
+  filteredWorkQueueTypes.forEach(wqt => {
+    wqt.filterCount = 0;
+  });
+
+  // Process each work queue type
+  for (const wqt of filteredWorkQueueTypes) {
+    console.log(`Fetching filters for work queue type: ${wqt.workQueueType} (ID: ${wqt.workQueueTypeId})`);
+    try {
+      const { data, status } = await getRequestWithParams('/workQueueType/filters', {
+        params: { workQueueTypeId: wqt.workQueueTypeId }
+      });
+
+      console.log(`Received ${data?.length || 0} filters for ${wqt.workQueueType}`);
+      // Store the filter count on the work queue type object
+      wqt.filterCount = data?.length || 0;
+    } catch (error) {
+      console.error(`Error fetching filters for ${wqt.workQueueType}:`, error);
+    }
+  }
+
+  filterCountsLoaded.value = true;
 }
 
 const editSavedFilter = (filter) => {
@@ -888,15 +941,16 @@ onMounted(() => {
   // Set event fields if needed
   if (event?.id) {
     showEventFields.value = true;
+    console.log('Event fields enabled');
   }
 
-  // Collect all loading promises to run in parallel
-  const loadingPromises = [];
-
-  // Only push the promises we need based on component state
-  loadingPromises.push(getAvailableFilters());
-  loadingPromises.push(getProjectStatusTypesForWorkQueue());
-  loadingPromises.push(getProcessStepStatusTypesForWorkQueue());
+  // Add loadAllFilterCounts to the main promises array
+  const loadingPromises = [
+    getAvailableFilters(),
+    getProjectStatusTypesForWorkQueue(),
+    getProcessStepStatusTypesForWorkQueue(),
+    loadAllFilterCounts() // Move this up to load in parallel with other data
+  ];
 
   if (showEventFields.value) {
     loadingPromises.push(getEventStatusTypesForWorkQueue());
@@ -1460,6 +1514,12 @@ onMounted(() => {
       }
     }
   }
+}
+
+.filter-count {
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .field-container {
