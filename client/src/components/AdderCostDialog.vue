@@ -80,15 +80,33 @@ const fetchAdderData = async () => {
       'blueraven'
     );
 
-    // Store the raw adder data
-    adderData.value = data;
+    // Store the raw adder data but filter out zero/null auto adders
+    adderData.value = data.filter(adder => {
+      // Filter out auto-applied adders with no valid amount
+      if (adder.adderType === 'auto_applied_adder') {
+        const amount = adder.autoAppliedAdderAmount;
+        // Keep only if amount exists and is greater than 0
+        return amount && amount > 0;
+      }
+      // Keep all other types of adders
+      return true;
+    });
 
     // Transform the adder data into the format needed for the dialog
     const transformedItems = data.map(adder => {
+      // Skip auto adders with null or zero amounts at the data level
+      if (adder.adderType === 'auto_applied_adder' && 
+          (!adder.autoAppliedAdderAmount || adder.autoAppliedAdderAmount === 0)) {
+        return null;
+      }
       // Determine the adder type and set fields accordingly
       let itemType, amount, applied, rawAmount;
 
       if (adder.adderType === 'auto_applied_adder') {
+        // Skip auto adders with null or zero amounts
+        if (!adder.autoAppliedAdderAmount || adder.autoAppliedAdderAmount === 0) {
+          return null; // Will be filtered out later
+        }
         itemType = 'auto_applied_adder';
         rawAmount = adder.autoAppliedAdderAmount;
         amount = formatCurrency(rawAmount);
@@ -138,7 +156,7 @@ const fetchAdderData = async () => {
       }
 
       return item;
-    });
+    }).filter(item => item !== null); // Filter out any null items
 
     costItems.value = transformedItems;
   } catch (error) {
@@ -154,8 +172,19 @@ watch(() => props.existingAdders, (newValue) => {
     try {
       // If existingAdders has items, apply them to our costItems
       if (newValue.items) {
+        // First reset all items to ensure a clean state
+        costItems.value.forEach(item => {
+          // Auto-applied adders should always stay applied
+          if (item.type !== 'auto_applied_adder') {
+            item.applied = false;
+          }
+        });
+        
+        // Then apply the current state from existingAdders
         costItems.value.forEach(item => {
           const existingItem = newValue.items[item.id];
+          
+          // Only process if the item exists in the current state
           if (existingItem !== undefined) {
             if (typeof existingItem === 'boolean') {
               item.applied = existingItem;
@@ -163,7 +192,7 @@ watch(() => props.existingAdders, (newValue) => {
               item.applied = true;
             } else if (typeof existingItem === 'string' || typeof existingItem === 'number') {
               item.applied = true;
-              if (item.type === 'custom_adders' && item.customFields.amount) {
+              if (item.type === 'custom_adders' && item.customFields?.amount) {
                 item.customFields.amount.value = existingItem;
                 item.rawAmount = existingItem;
               }
@@ -178,16 +207,37 @@ watch(() => props.existingAdders, (newValue) => {
 }, { immediate: true, deep: true });
 
 // Fetch data on dialog open
+// Create a ref to store if we've already fetched the data at least once
+const dataFetched = ref(false);
+
 watch(() => props.openDialog, (isOpen) => {
-  if (isOpen && costItems.value.length === 0) {
-    fetchAdderData();
+  if (isOpen) {
+    // Only fetch data the first time or when explicitly requested
+    if (!dataFetched.value) {
+      fetchAdderData();
+      dataFetched.value = true;
+    }
   }
+  // We don't need to do anything when the dialog closes
+  // as the parent component will handle this through event handlers
 });
 
 onMounted(() => {
   if (props.openDialog) {
     fetchAdderData();
+    dataFetched.value = true;
   }
+});
+
+// Create a function to explicitly refresh data if needed
+const refreshData = () => {
+  fetchAdderData();
+  dataFetched.value = true;
+};
+
+// Expose this function to parent component
+defineExpose({
+  refreshData
 });
 
 const handleApply = async (result) => {

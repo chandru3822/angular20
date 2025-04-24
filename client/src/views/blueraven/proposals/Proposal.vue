@@ -274,7 +274,7 @@
                   :storageId="storageId"
                   @close-dialog="showAdderCostDialog = false"
                   @apply-costs="handleAppliedCosts"
-                  @cancel="showAdderCostDialog = false"
+                  @cancel="handleAdderDialogCancel"
                 />
               </v-expansion-panel-content>
             </v-expansion-panel>
@@ -548,10 +548,12 @@ const loadExistingAdders = () => {
 
   // Don't look for adders in customFieldGroups - rely on API data
   if (adderData.value && adderData.value.length > 0) {
-    // Mark auto-applied adders as selected
+    // Mark auto-applied adders as selected, but only if they have a valid amount
     adderData.value.forEach(adder => {
       if (adder.adderType === 'auto_applied_adder') {
-        adder.selectedProposalAdder = true;
+        const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount;
+        // Only mark as selected if amount exists and is greater than 0
+        adder.selectedProposalAdder = !!(amount && amount > 0);
       }
     });
 
@@ -565,6 +567,12 @@ const updateAdderSelections = () => {
   // Reset selections
   selectedAdders.value = [];
   adderTotalCost.value = 0;
+  
+  // Reset adderCostData to ensure clean state
+  adderCostData.value = {
+    items: {},
+    total: 0
+  };
 
   // Process each adder from the adderData
   adderData.value.forEach(adder => {
@@ -599,19 +607,23 @@ const updateAdderSelections = () => {
         adderCostData.value.items[adder.id] = amount;
       }
       else if (adder.adderType === 'auto_applied_adder') {
-        // Handle auto-applied adders
+        // Only include auto-applied adders if they have a valid amount
         const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
-        selectedAdders.value.push({
-          id: adder.id,
-          label: adder.fieldName,
-          price: amount,
-          isCustom: false,
-          isAutoApplied: true
-        });
-        adderTotalCost.value += amount;
-
-        // Update items for dialog
-        adderCostData.value.items[adder.id] = true;
+        
+        // Only include if amount is greater than 0
+        if (amount > 0) {
+          selectedAdders.value.push({
+            id: adder.id,
+            label: adder.fieldName,
+            price: amount,
+            isCustom: false,
+            isAutoApplied: true
+          });
+          adderTotalCost.value += amount;
+  
+          // Update items for dialog
+          adderCostData.value.items[adder.id] = true;
+        }
       }
     }
   });
@@ -651,11 +663,24 @@ const handleAppliedCosts = async (costs) => {
     // Close the dialog after processing the data
     showAdderCostDialog.value = false;
 
-    // Properly update the state of all adders in the original data
+    // Clear any previous state first - all adders unselected by default
+    adderData.value.forEach(adder => {
+      // Auto-applied adders are always selected
+      if (adder.adderType !== 'auto_applied_adder') {
+        adder.selectedProposalAdder = false;
+      }
+      
+      // Reset custom adder amounts for non-selected items
+      if (adder.adderType === 'custom_adders') {
+        adder.customProposalAdderAmount = 0;
+      }
+    });
+
+    // STEP 1: Get comprehensive state from allItems - this is the most complete view
     if (costs.allItems && Array.isArray(costs.allItems)) {
-      adderData.value.forEach(adder => {
-        const resultItem = costs.allItems.find(item => item.id === adder.id);
-        if (resultItem) {
+      costs.allItems.forEach(resultItem => {
+        const adder = adderData.value.find(a => a.id === resultItem.id);
+        if (adder) {
           // Update the selected state based on what was in the dialog
           adder.selectedProposalAdder = resultItem.applied;
 
@@ -665,58 +690,63 @@ const handleAppliedCosts = async (costs) => {
           }
         }
       });
-    } else {
-      // Reset all adders to unselected state
-      adderData.value.forEach(adder => {
-        adder.selectedProposalAdder = false;
-      });
     }
 
-    // Update adders in the original data
-
-    // Process selected adders
+    // STEP 2: Process selected standard adders (extra safety)
     if (costs.selectedAdderIds && Array.isArray(costs.selectedAdderIds)) {
       costs.selectedAdderIds.forEach(id => {
-        const originalAdder = adderData.value.find(adder => adder.id === id);
-        if (originalAdder) {
-          originalAdder.selectedProposalAdder = true;
+        const adder = adderData.value.find(a => a.id === id);
+        if (adder && adder.adderType === 'selected_adders') {
+          adder.selectedProposalAdder = true;
         }
       });
     }
 
-    // Explicitly mark unselected adders
+    // STEP 3: Process explicitly unselected adders (extra safety)
     if (costs.unselectedAdderIds && Array.isArray(costs.unselectedAdderIds)) {
       costs.unselectedAdderIds.forEach(id => {
-        const originalAdder = adderData.value.find(adder => adder.id === id);
-        if (originalAdder) {
-          originalAdder.selectedProposalAdder = false;
+        const adder = adderData.value.find(a => a.id === id);
+        if (adder && adder.adderType !== 'auto_applied_adder') {
+          adder.selectedProposalAdder = false;
         }
       });
     }
 
-    // Process custom adders
+    // STEP 4: Process custom adders (extra safety)
     if (costs.customAdders && Array.isArray(costs.customAdders)) {
-      costs.customAdders.forEach(adder => {
-        const amount = adder.amount || 0;
-
-        // Find the original adder and update its customProposalAdderAmount
-        const originalAdder = adderData.value.find(a => a.id === adder.id);
-        if (originalAdder) {
-          originalAdder.customProposalAdderAmount = amount;
-          originalAdder.selectedProposalAdder = true;
+      costs.customAdders.forEach(customAdderInfo => {
+        const amount = customAdderInfo.amount || 0;
+        const adder = adderData.value.find(a => a.id === customAdderInfo.id);
+        
+        if (adder && adder.adderType === 'custom_adders') {
+          // Only mark as selected if there's a positive amount
+          if (amount > 0) {
+            adder.selectedProposalAdder = true;
+            adder.customProposalAdderAmount = amount;
+          } else {
+            adder.selectedProposalAdder = false;
+            adder.customProposalAdderAmount = 0;
+          }
 
           // Store the data type if available
-          if (adder.customAdderDataType) {
-            originalAdder.customAdderDataType = adder.customAdderDataType;
+          if (customAdderInfo.customAdderDataType) {
+            adder.customAdderDataType = customAdderInfo.customAdderDataType;
           }
         }
       });
     }
 
-    // Ensure auto-applied adders are always selected
+    // STEP 5: Ensure auto-applied adders are always selected (final safety check)
+    // But only if they have a valid amount (not null or zero)
     adderData.value.forEach(adder => {
       if (adder.adderType === 'auto_applied_adder') {
-        adder.selectedProposalAdder = true;
+        // Check if amount exists and is greater than 0
+        if (adder.autoAppliedAdderAmount && adder.autoAppliedAdderAmount > 0) {
+          adder.selectedProposalAdder = true;
+        } else {
+          // If amount is null, 0, or undefined, mark as unselected
+          adder.selectedProposalAdder = false;
+        }
       }
     });
 
@@ -726,11 +756,12 @@ const handleAppliedCosts = async (costs) => {
     // Mark the adderCostField as having changes - this will show the Save button
     // but we don't add it to dirtyCfvs since we handle it separately
     adderCostField.value.hasChanges = true;
+    
+    // Set flag that adder state has changed and dialog should refresh on next open
+    adderStateChanged.value = true;
 
-    const message = selectedAdders.value.length > 0
-      ? `Added ${selectedAdders.value.length} cost adders`
-      : "Removed all cost adders";
-    appStore.showSnack('SUCCESS', message);
+    // Remove the "adders applied" green message (it'll confuse closers)
+    // appStore.showSnack('SUCCESS', message); - Removed
 
     proposalForm.value.validate();
   }
@@ -1367,6 +1398,9 @@ const saveCustomFieldValues = async () => {
 
     // Reset the hasChanges flag on adderCostField since we saved it
     adderCostField.value.hasChanges = false;
+    
+    // Also reset the adderStateChanged flag since we've saved the state
+    adderStateChanged.value = false;
 
     // Update the proposal data
     proposal.value = responseData
@@ -1645,21 +1679,42 @@ const loadAuroraProjectId = async() => {
 }
 
 
+// Handle cancel button in adder dialog - simply close without making changes
+const handleAdderDialogCancel = () => {
+  showAdderCostDialog.value = false;
+  // No need to reload data or change state
+};
+
+// Track if adders state has changed and dialog needs refresh
+const adderStateChanged = ref(false);
+
 const openAdderDialog = () => {
   // Update refs for configuration fields
   updateConfigurationRefs();
+  
   // Check if Pricing Strategy field exists
   const pricingStrategyField = findCustomFieldByAssignmentId(FIELD_IDS.PRICING_STRATEGY);
 
   // Allow dialog to open if no field is found for Admin users
   if (!pricingStrategyField) {
+    // Only update adderCostData if it's the first open or if state has changed
+    if (adderCostData.value.items && Object.keys(adderCostData.value.items).length === 0 || adderStateChanged.value) {
+      updateAdderSelections();
+      adderStateChanged.value = false; // Reset the change tracker
+    }
     showAdderCostDialog.value = true;
     return;
   }
 
   // If field exists and has a value
   if (pricingStrategyField.intValue) {
-    commissionStrategyId.value = pricingStrategyField.intValue
+    commissionStrategyId.value = pricingStrategyField.intValue;
+    
+    // Only update adderCostData if it's the first open or if state has changed
+    if (adderCostData.value.items && Object.keys(adderCostData.value.items).length === 0 || adderStateChanged.value) {
+      updateAdderSelections();
+      adderStateChanged.value = false; // Reset the change tracker
+    }
     showAdderCostDialog.value = true;
   } else {
     // Pricing Strategy field exists but has no value, show alert

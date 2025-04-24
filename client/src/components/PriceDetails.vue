@@ -27,7 +27,7 @@
           <span class="d-flex align-center justify-end ml-auto">
             <span class="text-subtitle-2 grey--text mr-2">Subtotal:</span>
             <span class="text-subtitle-1 font-weight-medium">
-              $ {{ formatNumber(basePrice) }}
+              $ {{ formatNumber(commissionBase * 1000) }}
             </span>
           </span>
         </v-expansion-panel-header>
@@ -58,7 +58,7 @@
               <tbody>
               <tr class="dense-row">
                 <td class="caption light-blue lighten-5">Base</td>
-                <td class="text-right caption light-blue lighten-5">${{ formatNumber(basePrice, true) }}</td>
+                <td class="text-right caption light-blue lighten-5">${{ formatNumber(basePrice * 1000, true) }}</td>
               </tr>
               <!-- Show adder differences between Project and Proposal amounts -->
               <template v-for="(adder, index) in adderDifferences">
@@ -106,19 +106,23 @@
               <tr
                 v-for="(adder, index) in adders"
                 :key="index"
-                :class="{ 'light-blue lighten-5': index % 2 === 0 }"
+                :class="{
+                  'light-blue lighten-5': index % 2 === 0,
+                  'grey lighten-4': adder.proposalAdderAmount && !adder.projectAdderAmount,
+                  'green lighten-5': !adder.proposalAdderAmount && adder.projectAdderAmount
+                }"
                 class="dense-row"
               >
                 <td class="caption">{{ adder.name }}</td>
                 <td class="text-center caption">{{ adder.unitPrice }}</td>
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
-                    <span v-if="adder.projectAdderAmount !== null && adder.projectAdderAmount !== undefined && adder.projectAdderAmount !== adder.proposalAdderAmount && adder.projectAdderAmount > 0 && adder.proposalAdderAmount > 0" class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                    <span v-if="adder.projectAdderAmount !== null && adder.projectAdderAmount !== undefined && adder.projectAdderAmount !== adder.proposalAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null" class="text-decoration-line-through mr-2 grey--text text-no-wrap">
                       ${{ formatNumber(adder.projectAdderAmount, true) }}
                     </span>
                     <span :class="{
-                      'red--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount > 0 && adder.proposalAdderAmount > 0,
-                      'green--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount > 0 && adder.proposalAdderAmount > 0,
+                      'red--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null,
+                      'green--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null,
                       'text-no-wrap': true
                     }">
                       ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
@@ -158,13 +162,11 @@ const expandedPanels = ref([1, 2]) // Open both Commission and Estimated Adders 
 const showNotification = ref(false)
 const notificationText = ref('')
 const basePrice = ref(0)
-const commission = ref({
-  base: 0,
-})
+const commissionBase = ref(0)
 const adders = ref([])
 
 const commissionBaseTotal = computed(() => {
-  return commission.value.base
+  return basePrice.value * 1000 // Multiply by 1000 to match the base price scale
 })
 
 // Computed property to find adders with customProjectAdderAmount and/or customProposalAdderAmount
@@ -174,16 +176,16 @@ const adderDifferences = computed(() => {
       // At least one of the values must not be null
       const hasProjectAmount = adder.customProjectAdderAmount !== null && adder.customProjectAdderAmount !== undefined;
       const hasProposalAmount = adder.customProposalAdderAmount !== null && adder.customProposalAdderAmount !== undefined;
-      
+
       // Include if at least one has a value - we want to show all adders with either value
       return hasProjectAmount || hasProposalAmount;
     })
     .map(adder => ({
       id: adder.id,
       name: adder.name,
-      // Difference: Project amount - Proposal amount
+      // Difference: Proposal amount - Project amount (reversed from original)
       // Default to 0 if either value is null/undefined
-      difference: (adder.customProjectAdderAmount || 0) - (adder.customProposalAdderAmount || 0)
+      difference: (adder.customProposalAdderAmount || 0) - (adder.customProjectAdderAmount || 0)
     }));
 });
 
@@ -193,7 +195,7 @@ const commissionTotal = computed(() => {
   const adderDifferencesTotal = adderDifferences.value.reduce(
     (total, adder) => total + adder.difference, 0
   );
-  
+
   return commissionBaseTotal.value + adderDifferencesTotal;
 })
 
@@ -223,7 +225,7 @@ const processAdderData = (adderData) => {
       } else if (adder.adderType === 'custom_adders') {
         projectAmount = adder.customAdderAmount || 0
         proposalAmount = adder.customProposalAdderAmount || 0
-        
+
         // For custom adders, we need to capture these values for difference calculation
         customProjectAmount = adder.customAdderAmount || null
         customProposalAmount = adder.customProposalAdderAmount || null
@@ -241,7 +243,7 @@ const processAdderData = (adderData) => {
         proposalAdderAmount: proposalAmount,
         // These are the values we'll use to calculate differences for the Commission dropdown
         customProjectAdderAmount: customProjectAmount,
-        customProposalAdderAmount: customProposalAmount, 
+        customProposalAdderAmount: customProposalAmount,
         adderType: adder.adderType,
         // Keep amount for backward compatibility
         amount: proposalAmount
@@ -272,8 +274,8 @@ const fetchPriceDetailAmounts = async () => {
     );
 
     if (data) {
-      basePrice.value = data.base_amount || 0;
-      commission.value.base = data.commission_amount || 0;
+      basePrice.value = data.commission_amount || 0;
+      commissionBase.value = data.base_amount || 0;
     }
   } catch (error) {
     console.error('Error fetching price detail amounts:', error);
