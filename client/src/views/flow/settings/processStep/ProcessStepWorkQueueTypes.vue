@@ -382,23 +382,19 @@
                           <div class="text-subtitle-2 mb-2">Saved Filters:</div>
                           <div class="d-flex flex-column align-items-start">
                             <v-btn
-                              v-for="filter in savedFilters"
-                              :key="filter.id"
+                              v-for="(filter, index) in savedFilters"
+                              :key="`filter-${filter.id}-${index}`"
                               class="mb-2"
                               color="secondary"
                               variant="tonal"
                               style="text-transform: none; align-self: flex-start; color: black !important;"
-                              @click="editSavedFilter(filter)"
+                              @click="deleteSavedFilter(filter, $event)"
                               size="small"
                               rounded
+                              :disabled="filter.isDeleting"
                             >
                               {{ getFilterDisplayText(filter) }}
-                              <v-icon
-                                end
-                                size="small"
-                                class="ml-1"
-                                @click.capture.stop.prevent="(event) => deleteSavedFilter(filter, event)"
-                              >mdi-close</v-icon>
+                              <v-icon end size="small" class="ml-1">mdi-close</v-icon>
                             </v-btn>
                           </div>
                         </v-card-text>
@@ -618,7 +614,7 @@ const getAvailableFilters = async (forceUpdate = false) => {
       const {data, status} = await getRequest(`/smartlist/fields?objectTypeIds=${objectTypeId}&projectDetails=${projectDetails}`)
 
       availableFilters.value = data.map(filter => ({
-        id: filter.customFieldGroupAssignmentId, // Change back to this
+        id: filter.customFieldGroupAssignmentId,
         name: filter.name,
         processStepName: filter.processStepName,
         dataTypeId: filter.dataTypeId,
@@ -642,7 +638,7 @@ const fetchOperators = async (dataTypeId) => {
     operators.value = data.map(op => ({
       id: op.id,
       name: op.operatorType,
-      operatorType: op.operatorType // Keep the original operatorType
+      operatorType: op.operatorType
     }))
   } catch (e) {
     console.error('Error fetching operators:', e)
@@ -660,7 +656,7 @@ const fetchValueTypes = async (dataTypeId) => {
 
     valueTypes.value = data.map(requirement => ({
       id: requirement.id,
-      name: requirement.dataTypeValue, // Changed from requirement.name to requirement.dataTypeValue
+      name: requirement.dataTypeValue,
       dataTypeId: requirement.dataTypeId,
       secondaryRequirement: requirement.secondaryRequirement
     }))
@@ -692,37 +688,26 @@ const fetchSavedFilters = async (item) => {
 }
 
 const loadAllFilterCounts = async () => {
-  console.log('loadAllFilterCounts called');
   filterCountsLoaded.value = false;
 
-  // Determine which work queue types to use based on the component state
   const filteredWorkQueueTypes = showEventFields.value
     ? event?.workQueueTypes?.filter(u => !u.archived)
     : processStep?.workQueueTypes?.filter(u => !u.archived);
 
   if (!filteredWorkQueueTypes?.length) {
-    console.log('No work queue types found to load filters for');
     filterCountsLoaded.value = true;
     return;
   }
-
-  console.log(`Loading filter counts for ${filteredWorkQueueTypes.length} work queue types`);
-
-  // Initialize all filter counts to 0 before loading
   filteredWorkQueueTypes.forEach(wqt => {
     wqt.filterCount = 0;
   });
 
-  // Process each work queue type
   for (const wqt of filteredWorkQueueTypes) {
-    console.log(`Fetching filters for work queue type: ${wqt.workQueueType} (ID: ${wqt.workQueueTypeId})`);
     try {
       const { data, status } = await getRequestWithParams('/workQueueType/filters', {
         params: { workQueueTypeId: wqt.workQueueTypeId }
       });
 
-      console.log(`Received ${data?.length || 0} filters for ${wqt.workQueueType}`);
-      // Store the filter count on the work queue type object
       wqt.filterCount = data?.length || 0;
     } catch (error) {
       console.error(`Error fetching filters for ${wqt.workQueueType}:`, error);
@@ -732,45 +717,36 @@ const loadAllFilterCounts = async () => {
   filterCountsLoaded.value = true;
 }
 
-const editSavedFilter = (filter) => {
-  selectedFilters.value = {
-    id: filter.id,
-    name: filter.name,
-    processStepName: filter.processStepName,
-    operator: { id: filter.operatorId, name: filter.operatorName },
-    value: { id: filter.valueId, name: filter.valueName }
-  }
-
-  if (filter.dataTypeId) {
-    fetchOperators(filter.dataTypeId)
-    fetchValueTypes(filter.dataTypeId)
-  }
-}
-
 const deleteSavedFilter = async (filter, event) => {
-  // Immediately clear UI values to prevent displaying stale data
-  selectedFilters.value = [];
-  operators.value = [];
-  valueTypes.value = [];
-
   if (event) {
     event.stopImmediatePropagation();
     event.preventDefault();
     event.stopPropagation();
   }
 
-  try {
-    appStore.loading = true
-    await deleteRequest(`/workQueueType/filter/${filter.id}`)
+  const filterId = filter.id;
+  filter.isDeleting = true;
 
-    // Update saved filters list after successful deletion
-    savedFilters.value = savedFilters.value.filter(f => f.id !== filter.id)
-    appStore.showSnack('SUCCESS', 'Filter removed successfully')
+  selectedFilters.value = [];
+  operators.value = [];
+  valueTypes.value = [];
+
+  try {
+    appStore.loading = true;
+    await deleteRequest(`/workQueueType/filter/${filterId}`);
+
+    savedFilters.value = savedFilters.value.filter(f => f.id !== filterId);
+
+    await loadAllFilterCounts();
+
+    appStore.showSnack('SUCCESS', 'Filter removed successfully');
   } catch (e) {
-    console.error('Error removing filter:', e)
-    appStore.showSnack('ERROR', 'Error removing filter')
+    console.error('Error removing filter:', e);
+    appStore.showSnack('ERROR', 'Error removing filter');
+    const filterToReset = savedFilters.value.find(f => f.id === filterId);
+    if (filterToReset) filterToReset.isDeleting = false;
   } finally {
-    appStore.loading = false
+    appStore.loading = false;
   }
 }
 
@@ -935,36 +911,29 @@ const filteredWorkQueueTypes = computed(() => {
 })
 
 onMounted(() => {
-  // Show loading state immediately
   appStore.loading = true;
 
-  // Set event fields if needed
   if (event?.id) {
     showEventFields.value = true;
-    console.log('Event fields enabled');
   }
 
-  // Add loadAllFilterCounts to the main promises array
   const loadingPromises = [
     getAvailableFilters(),
     getProjectStatusTypesForWorkQueue(),
     getProcessStepStatusTypesForWorkQueue(),
-    loadAllFilterCounts() // Move this up to load in parallel with other data
+    loadAllFilterCounts()
   ];
 
   if (showEventFields.value) {
     loadingPromises.push(getEventStatusTypesForWorkQueue());
   }
 
-  // Execute all promises in parallel
   Promise.all(loadingPromises)
     .then(() => {
-      // After main data is loaded, preload operators and value types
       const uniqueDataTypeIds = [...new Set(availableFilters.value
         .filter(f => f.dataTypeId)
         .map(f => f.dataTypeId))];
 
-      // Load these in the background without awaiting
       uniqueDataTypeIds.forEach(dataTypeId => {
         fetchOperators(dataTypeId);
         fetchValueTypes(dataTypeId);
@@ -1361,11 +1330,10 @@ onMounted(() => {
           let url = showEventFields.value ? `/workQueueType/event/${eventId.value}` :  `/workQueueType/processStep/${processStepId.value}`
           const {data, status} = await getRequest(url, null, [])
 
-          // Add more robust null checks and data validation
           workQueueTypes.value = (data || [])
-            .filter(wqt => wqt && typeof wqt === 'object')  // Ensure item exists and is an object
+            .filter(wqt => wqt && typeof wqt === 'object')
             .map(wqt => ({
-              id: wqt.id || null,  // Ensure id exists
+              id: wqt.id || null,
               workQueueCategory: wqt.workQueueCategory || '',
               workQueueType: wqt.workQueueType || '',
               workQueueTypeId: wqt.workQueueTypeId || null,
@@ -1373,7 +1341,7 @@ onMounted(() => {
               projectStatuses: Array.isArray(wqt.projectStatuses) ? wqt.projectStatuses : [],
               processStepStatuses: Array.isArray(wqt.processStepStatuses) ? wqt.processStepStatuses : [],
               eventStatuses: Array.isArray(wqt.eventStatuses) ? wqt.eventStatuses : [],
-              ...wqt  // Keep other properties
+              ...wqt
             }))
 
           handleHidingGlobalLoader(status)
@@ -1394,7 +1362,6 @@ onMounted(() => {
         let url = showEventFields.value ? `/workQueueType/event` : `/workQueueType/processStep`
         const {data, status} = await postRequest(url, newWorkQueueType.value)
 
-        // Ensure filters are included in the response data
         if(showEventFields.value) {
           event?.workQueueTypes.push({
             ...data,
@@ -1407,7 +1374,6 @@ onMounted(() => {
           })
         }
 
-        // Reset fields
         addNewWorkQueueType.value = false
         newWorkQueueType.value = {projectStatuses: [], processStepStatuses: [], eventStatuses: []}
         selectedFilters.value = []
@@ -1423,7 +1389,6 @@ onMounted(() => {
     const saveStatusesToWorkQueueType = async(item) => {
       appStore.loading = true
       try {
-        // Convert selectedFilters to the expected format if needed
         item.selectedFilters = selectedFilters.value ? {
           id: selectedFilters.value.id,
           name: selectedFilters.value.name,
@@ -1444,17 +1409,17 @@ onMounted(() => {
 
         const {data, status} = await putRequest(url, item);
 
-        // Update with saved data
         item.projectStatuses = data.projectStatuses;
         item.processStepStatuses = data.processStepStatuses;
         item.eventStatuses = data.eventStatuses || [];
         item.selectedFilters = data.selectedFilters || null;
 
-        // Reset all filter-related fields for consistent behavior
         selectedFilters.value = [];
         operators.value = [];
         valueTypes.value = [];
         expanded.value = [];
+
+        await loadAllFilterCounts();
 
         appStore.showSnack('SUCCESS', 'Filter saved successfully');
         handleHidingGlobalLoader(status);
@@ -1473,6 +1438,9 @@ onMounted(() => {
         let url = showEventFields.value ? `/workQueueType/event/${item.id}` : `/workQueueType/processStep/${item.id}`
         const {status} = await deleteRequest(url)
         item.archived = true
+
+        await loadAllFilterCounts();
+
         appStore.showSnack('SUCCESS', 'Work Queue Type Deleted')
         handleHidingGlobalLoader(status)
       } catch (e) {
