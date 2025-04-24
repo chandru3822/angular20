@@ -172,6 +172,7 @@
           :color="applyButtonColor"
           class="elevation-2 text-capitalize"
           @click.stop="apply"
+          :disabled="!hasChanges"
         >
           {{ applyButtonText }}
         </v-btn>
@@ -269,10 +270,13 @@ const show = computed({
 });
 
 const tableItems = ref([]);
+const originalItems = ref([]); // Store initial state
+const hasChanges = ref(false); // Track if any changes made
 
 watch(() => props.items, (newItems) => {
   if (newItems && newItems.length > 0) {
     tableItems.value = JSON.parse(JSON.stringify(newItems));
+    originalItems.value = JSON.parse(JSON.stringify(newItems));
 
     // Auto-apply for auto_applied_adder type items
     tableItems.value.forEach(item => {
@@ -280,13 +284,51 @@ watch(() => props.items, (newItems) => {
         item.applied = true;
       }
     });
+    
+    // Initially no changes
+    hasChanges.value = false;
   }
 }, { immediate: true, deep: true });
+
+// Watch for changes in tableItems to update hasChanges
+watch(() => tableItems.value, () => {
+  checkForChanges();
+}, { deep: true });
+
+// Check if current items differ from original state
+const checkForChanges = () => {
+  if (tableItems.value.length === 0 || originalItems.value.length === 0) {
+    hasChanges.value = false;
+    return;
+  }
+  
+  hasChanges.value = tableItems.value.some((item, index) => {
+    const original = originalItems.value[index];
+    if (!original) return true;
+    
+    // Check if applied state changed
+    if (item.applied !== original.applied) return true;
+    
+    // Check for changes in custom fields
+    if (item.type === 'custom_adders' && item.customFields) {
+      return Object.keys(item.customFields).some(key => {
+        return item.customFields[key].value !== 
+               (original.customFields?.[key]?.value || null);
+      });
+    }
+    
+    return false;
+  });
+};
 
 watch(() => props.openDialog, (newVal) => {
   if (newVal && props.items && props.items.length > 0) {
     // Reset all items to their default state
     tableItems.value = JSON.parse(JSON.stringify(props.items));
+    originalItems.value = JSON.parse(JSON.stringify(props.items));
+    
+    // Initially no changes
+    hasChanges.value = false;
 
     // Auto-apply for auto_applied_adder type items
     tableItems.value.forEach(item => {

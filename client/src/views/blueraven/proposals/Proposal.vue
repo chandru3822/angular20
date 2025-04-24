@@ -112,7 +112,7 @@
           <div class="configurations-wrapper">
             <v-card class="configurations-card-container">
               <div class="configurations-scroll-area">
-                <v-expansion-panels class="rounded-0" v-model="expandedPanel">
+                <v-expansion-panels multiple class="rounded-0" v-model="expandedPanel">
                   <v-expansion-panel class="rounded-0">
                     <v-expansion-panel-header class="parent-expansion-header sticky-configuration-header configuration-header">
                       Configuration
@@ -123,16 +123,16 @@
                           color="primary"
                           class="text-capitalize config-buttons"
                           @click="resetToDefault"
-                          v-if="!proposal.locked && dirtyCfvs.length > 0"
+                          v-if="!proposal.locked && (dirtyCfvs.length > 0 || adderCostField.hasChanges)"
                           text="Reset"
                         ></a-btn>
                         <a-btn
                           size="small"
-                          v-if="canEdit && !proposal.locked && dirtyCfvs.length > 0"
+                          v-if="canEdit && !proposal.locked && (dirtyCfvs.length > 0 || adderCostField.hasChanges)"
                           color="primary"
                           depressed
-                          :dark="dirtyCfvs.length !== 0"
-                          :readonly="dirtyCfvs.length === 0"
+                          :dark="dirtyCfvs.length !== 0 || adderCostField.hasChanges"
+                          :readonly="dirtyCfvs.length === 0 && !adderCostField.hasChanges"
                           @click="validateForm()"
                           class="text-capitalize config-buttons"
                           text="Save"
@@ -177,7 +177,7 @@
                       />
                       <CommissionDetailsMenu
                         v-if="
-                            field.customFieldGroupAssignmentId === 454 &&
+                            field.customFieldGroupAssignmentId === FIELD_IDS.COMMISSION_DETAILS &&
                             isFieldVisible(field)
                           "
                         :custom-field-groups="sortedCustomFieldGroups"
@@ -185,7 +185,7 @@
                       />
                       <!-- Only show the Aurora Storage options link for the Storage Type custom field and only if the selected value has "Grid-tied" in the name -->
                       <div
-                        v-if="field.customFieldGroupAssignmentId === 200 &&
+                        v-if="field.customFieldGroupAssignmentId === FIELD_IDS.STORAGE_TYPE &&
                             field.listOfValues.find(v => v.id === field.intValue)?.name.search(/\bgrid[-\s]+tied\b/i) >= 0 &&
                             auroraProjectId &&
                             auroraDesignId"
@@ -232,9 +232,10 @@
                         chips
                         small-chips
                         append-icon="mdi-table-edit"
-                        :value="selectedAdders"
+                        :value="selectedAddersDisplay"
                         class="my-4"
-                        @focus="showAdderCostDialog = true"
+                        @focus="openAdderDialog"
+                        @click="openAdderDialog"
                         :disabled="!canEdit || proposal.locked"
                         readonly
                       >
@@ -250,7 +251,7 @@
                         </template>
                       </v-combobox>
                       <!-- Display total cost if there are selected adders -->
-                      <div v-if="selectedAdders.length > 0" class="d-flex flex-column mb-2">
+                      <div v-if="selectedAddersDisplay.length > 0" class="d-flex flex-column mb-2">
                         <div class="d-flex">
                           <v-text-field
                             disabled
@@ -269,13 +270,15 @@
                   :openDialog="showAdderCostDialog"
                   :existingAdders="adderCostData"
                   :proposalId="proposalId"
+                  :commissionStrategyId="commissionStrategyId"
+                  :storageId="storageId"
                   @close-dialog="showAdderCostDialog = false"
                   @apply-costs="handleAppliedCosts"
                   @cancel="showAdderCostDialog = false"
                 />
               </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel class="sticky-price-details">
+            <v-expansion-panel class="sticky-price-details" v-if="proposal.id">
               <v-expansion-panel-header class="parent-expansion-header price-details-header">
                 Price Details
               </v-expansion-panel-header>
@@ -310,7 +313,7 @@
                   @click="deleteProposal"
                 >
                   <span class="delete-btn">
-                    <v-icon color="">delete</v-icon>
+                    <v-icon>delete</v-icon>
                     <span class="d-none d-md-inline">Delete</span>
                   </span>
                 </a-btn>
@@ -441,7 +444,6 @@ import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
 import AdderCostDialog from '@/components/AdderCostDialog.vue'
-import GenericCostDialog from '@/components/GenericCostDialog.vue'
 import PriceDetails from '@/components/PriceDetails.vue'
 import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
@@ -482,8 +484,6 @@ const confirmDialogRef = ref(null)
 const proposalForm = ref(null)
 const deleteConfirmDialogRef = ref(null)
 const expansionPanelsStatus = ref([0, 1, 2, 3, 4, 5, 6])
-// This controls which parent expansion panel is open (Configuration or Price Details)
-// Only one can be open at a time: 0 = Configuration, 1 = Price Details
 const expandedPanel = ref([0])
 const proposalFullscreenViewerEl = ref(undefined)
 const isFullscreen = ref(false)
@@ -496,126 +496,153 @@ const auroraDesignId = ref(null)
 const adderData = ref([]);
 const showAdderCostDialog = ref(false)
 const selectedAdders = ref([])
-const adderCostField = ref(null)
+// Create a virtual adderCostField that isn't tied to customFieldGroups
+const adderCostField = ref({
+  customFieldId: 'adderCosts',
+  stringValue: ''
+})
 const adderTotalCost = ref(0)
 const adderCostData = ref({})
+const commissionStrategyId = ref(null) // Pricing Strategy (customFieldAssignmentId=581)
+const storageId = ref(null) // Storage Type (customFieldAssignmentId=200)
 
-const findOrCreateAdderCostField = () => {
-  // Check if there's an existing field for adder costs
-  const existingField = proposal.value?.customFieldGroups
+// Helper function to find a custom field by assignment ID
+const findCustomFieldByAssignmentId = (assignmentId) => {
+  return proposal.value?.customFieldGroups
     ?.flatMap(cfg => cfg.customFieldValues)
-    ?.find(f => f.customFieldId) // Use the appropriate field ID
+    ?.find(f => f.customFieldGroupAssignmentId === assignmentId);
+}
 
-  return existingField
+// Constants for field IDs to make code more maintainable
+const FIELD_IDS = {
+  PRICING_STRATEGY: 581, // Pricing Strategy (customFieldAssignmentId)
+  STORAGE_TYPE: 200,     // Storage Type (customFieldAssignmentId)
+  COMMISSION_DETAILS: 454 // Field that shows commission details menu
+};
+
+// Helper function to update pricing strategy and storage type refs
+const updateConfigurationRefs = () => {
+  const pricingStrategyField = findCustomFieldByAssignmentId(FIELD_IDS.PRICING_STRATEGY);
+  if (pricingStrategyField && pricingStrategyField.intValue) {
+    commissionStrategyId.value = pricingStrategyField.intValue;
+  }
+
+  const storageTypeField = findCustomFieldByAssignmentId(FIELD_IDS.STORAGE_TYPE);
+  if (storageTypeField && storageTypeField.intValue) {
+    storageId.value = storageTypeField.intValue;
+  }
 }
 
 const loadExistingAdders = () => {
-  const adderField = proposal.value?.customFieldGroups
-    ?.flatMap(cfg => cfg.customFieldValues)
-    ?.find(f => f.customFieldId === 'adderCosts')
+  // Update pricing strategy and storage type refs
+  updateConfigurationRefs();
 
-  if (adderField && adderField.stringValue) {
-    try {
-      const savedAdderData = JSON.parse(adderField.stringValue)
+  // Reset the virtual adderCostField's stringValue
+  adderCostField.value.stringValue = '';
 
-      // Update selectedAdders from the stored data
-      if (savedAdderData.selectedAdders && Array.isArray(savedAdderData.selectedAdders)) {
-        selectedAdders.value = savedAdderData.selectedAdders
-      } else {
-        // Handle legacy data where we need to build selectedAdders
-        selectedAdders.value = []
+  // Initialize adderCostData for the dialog
+  adderCostData.value = {
+    items: {},
+    total: 0
+  };
 
-        // Process selected regular adders
-        if (savedAdderData.selectedAdderIds && Array.isArray(savedAdderData.selectedAdderIds)) {
-          savedAdderData.selectedAdderIds.forEach(id => {
-            const originalAdder = adderData.value?.find(a => a.id === id)
-            if (originalAdder) {
-              selectedAdders.value.push({
-                id,
-                label: originalAdder.fieldName,
-                price: originalAdder.selectedAdderAmount,
-                isCustom: false
-              })
-            }
-          })
-        }
-
-        // Process custom adders
-        if (savedAdderData.customAdders && Array.isArray(savedAdderData.customAdders)) {
-          savedAdderData.customAdders.forEach(adder => {
-            selectedAdders.value.push({
-              id: adder.id,
-              label: adder.fieldName,
-              price: adder.amount,
-              isCustom: true
-            })
-          })
-        }
+  // Don't look for adders in customFieldGroups - rely on API data
+  if (adderData.value && adderData.value.length > 0) {
+    // Mark auto-applied adders as selected
+    adderData.value.forEach(adder => {
+      if (adder.adderType === 'auto_applied_adder') {
+        adder.selectedProposalAdder = true;
       }
+    });
 
-      adderCostField.value = adderField
-      adderTotalCost.value = savedAdderData.totalCost || 0
-
-      // Prepare data for the dialog in the expected format
-      adderCostData.value = {
-        items: {},
-        total: adderTotalCost.value
-      }
-
-      // Apply adder states from saved data to original adder data
-      if (savedAdderData.allAdderStates && Array.isArray(savedAdderData.allAdderStates)) {
-        // Update the selectedProposalAdder flag on each adder based on stored state
-        adderData.value.forEach(adder => {
-          const savedState = savedAdderData.allAdderStates.find(state => state.id === adder.id);
-          if (savedState !== undefined) {
-            adder.selectedProposalAdder = savedState.selectedProposalAdder;
-
-            // Load stored amounts for different adder types
-            if (adder.adderType === 'custom_adders' && savedState.customProposalAdderAmount !== null) {
-              adder.customProposalAdderAmount = savedState.customProposalAdderAmount;
-            } else if (adder.adderType === 'auto_applied_adder' && savedState.autoAppliedProposalAdderAmount !== null) {
-              adder.autoAppliedProposalAdderAmount = savedState.autoAppliedProposalAdderAmount;
-            }
-          }
-        });
-      } else {
-        // For legacy data, apply selections based on selectedAdderIds
-        adderData.value.forEach(adder => {
-          // Default to unselected
-          adder.selectedProposalAdder = false;
-
-          // Check if it's in the selected adder IDs
-          if (savedAdderData.selectedAdderIds &&
-              Array.isArray(savedAdderData.selectedAdderIds) &&
-              savedAdderData.selectedAdderIds.includes(adder.id)) {
-            adder.selectedProposalAdder = true;
-          }
-
-          // Check if it's a custom adder
-          if (savedAdderData.customAdders && Array.isArray(savedAdderData.customAdders)) {
-            const customAdder = savedAdderData.customAdders.find(ca => ca.id === adder.id);
-            if (customAdder) {
-              adder.selectedProposalAdder = true;
-              adder.customProposalAdderAmount = customAdder.amount;
-            }
-          }
-        });
-      }
-
-      // Now prepare the adderCostData for the dialog
-      adderData.value.forEach(adder => {
-        if (adder.adderType === 'selected_adders') {
-          adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
-        } else if (adder.adderType === 'custom_adders' && adder.selectedProposalAdder) {
-          adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
-        } else if (adder.adderType === 'auto_applied_adder') {
-          adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
-        }
-      });
-    } catch (e) {
-      console.error('Error parsing adder data', e)
-    }
+    // Process the selected adders from API data
+    updateAdderSelections();
   }
+}
+
+// Helper function to update adder selections from the current adderData
+const updateAdderSelections = () => {
+  // Reset selections
+  selectedAdders.value = [];
+  adderTotalCost.value = 0;
+
+  // Process each adder from the adderData
+  adderData.value.forEach(adder => {
+    if (adder.selectedProposalAdder) {
+      if (adder.adderType === 'selected_adders') {
+        // Handle standard adders
+        const amount = adder.selectedAdderAmount || 0;
+        selectedAdders.value.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: amount,
+          isCustom: false
+        });
+        adderTotalCost.value += amount;
+
+        // Update items for dialog
+        adderCostData.value.items[adder.id] = true;
+      }
+      else if (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) {
+        // Handle custom adders
+        const amount = adder.customProposalAdderAmount || 0;
+        selectedAdders.value.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: amount,
+          isCustom: true,
+          customAdderDataType: adder.customAdderDataType
+        });
+        adderTotalCost.value += amount;
+
+        // Update items for dialog
+        adderCostData.value.items[adder.id] = amount;
+      }
+      else if (adder.adderType === 'auto_applied_adder') {
+        // Handle auto-applied adders
+        const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
+        selectedAdders.value.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: amount,
+          isCustom: false,
+          isAutoApplied: true
+        });
+        adderTotalCost.value += amount;
+
+        // Update items for dialog
+        adderCostData.value.items[adder.id] = true;
+      }
+    }
+  });
+
+  // Update the total in adderCostData
+  adderCostData.value.total = adderTotalCost.value;
+
+  // Update adderCostField with the current state
+  // This ensures that if the dialog is opened/closed without saving, the state is preserved
+  adderCostField.value.stringValue = JSON.stringify({
+    totalCost: adderTotalCost.value,
+    selectedAdderIds: selectedAdders.value
+      .filter(adder => !adder.isCustom && !adder.isAutoApplied)
+      .map(adder => adder.id),
+    customAdders: selectedAdders.value
+      .filter(adder => adder.isCustom)
+      .map(adder => ({
+        id: adder.id,
+        fieldName: adder.label,
+        amount: adder.price,
+        customAdderDataType: adder.customAdderDataType
+      })),
+    selectedAdders: selectedAdders.value,
+    allAdderStates: adderData.value.map(adder => ({
+      id: adder.id,
+      selectedProposalAdder: adder.selectedProposalAdder,
+      customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null,
+      autoAppliedProposalAdderAmount: adder.adderType === 'auto_applied_adder' ? adder.autoAppliedProposalAdderAmount : null,
+      customAdderDataType: adder.adderType === 'custom_adders' ? adder.customAdderDataType : null
+    }))
+  });
 }
 
 const handleAppliedCosts = async (costs) => {
@@ -627,9 +654,7 @@ const handleAppliedCosts = async (costs) => {
     // Properly update the state of all adders in the original data
     if (costs.allItems && Array.isArray(costs.allItems)) {
       adderData.value.forEach(adder => {
-        // Find the corresponding item in the dialog result
         const resultItem = costs.allItems.find(item => item.id === adder.id);
-        // Only update if we found a matching item
         if (resultItem) {
           // Update the selected state based on what was in the dialog
           adder.selectedProposalAdder = resultItem.applied;
@@ -641,38 +666,21 @@ const handleAppliedCosts = async (costs) => {
         }
       });
     } else {
-      // Fallback to old method if allItems is not available
       // Reset all adders to unselected state
       adderData.value.forEach(adder => {
         adder.selectedProposalAdder = false;
       });
     }
 
-    // Clear previous selections for the display
-    selectedAdders.value = [];
-    adderTotalCost.value = 0;
-
-    // Calculate total cost
-    let totalCost = 0;
+    // Update adders in the original data
 
     // Process selected adders
     if (costs.selectedAdderIds && Array.isArray(costs.selectedAdderIds)) {
       costs.selectedAdderIds.forEach(id => {
         const originalAdder = adderData.value.find(adder => adder.id === id);
-        if (!originalAdder) return;
-
-        // Mark this adder as selected in the original data
-        originalAdder.selectedProposalAdder = true;
-
-        const amount = originalAdder.selectedAdderAmount || 0;
-        totalCost += amount;
-
-        selectedAdders.value.push({
-          id,
-          label: originalAdder.fieldName,
-          price: amount,
-          isCustom: false
-        });
+        if (originalAdder) {
+          originalAdder.selectedProposalAdder = true;
+        }
       });
     }
 
@@ -690,7 +698,6 @@ const handleAppliedCosts = async (costs) => {
     if (costs.customAdders && Array.isArray(costs.customAdders)) {
       costs.customAdders.forEach(adder => {
         const amount = adder.amount || 0;
-        totalCost += amount;
 
         // Find the original adder and update its customProposalAdderAmount
         const originalAdder = adderData.value.find(a => a.id === adder.id);
@@ -703,89 +710,29 @@ const handleAppliedCosts = async (costs) => {
             originalAdder.customAdderDataType = adder.customAdderDataType;
           }
         }
-
-        selectedAdders.value.push({
-          id: adder.id,
-          label: adder.fieldName,
-          price: amount,
-          isCustom: true,
-          customAdderDataType: adder.customAdderDataType
-        });
       });
     }
 
-    // Process auto-applied adders (ensure they're always shown in the UI)
+    // Ensure auto-applied adders are always selected
     adderData.value.forEach(adder => {
-      if (adder.adderType === 'auto_applied_adder' && adder.selectedProposalAdder) {
-        const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
-        totalCost += amount;
-
-        // Add to selected adders list if not already there
-        if (!selectedAdders.value.some(selected => selected.id === adder.id)) {
-          selectedAdders.value.push({
-            id: adder.id,
-            label: adder.fieldName,
-            price: amount,
-            isCustom: false,
-            isAutoApplied: true
-          });
-        }
+      if (adder.adderType === 'auto_applied_adder') {
+        adder.selectedProposalAdder = true;
       }
     });
 
-    // Update total cost
-    adderTotalCost.value = totalCost;
+    // Use our helper function to update selections based on the updated adderData
+    updateAdderSelections();
 
-    // Create a custom field value if needed to store the adder data
-    if (!adderCostField.value) {
-      adderCostField.value = findOrCreateAdderCostField();
-    }
-
-    // Store the data and mark it as dirty so save button appears
-    adderCostField.value.stringValue = JSON.stringify({
-      totalCost: adderTotalCost.value,
-      selectedAdderIds: costs.selectedAdderIds || [],
-      unselectedAdderIds: costs.unselectedAdderIds || [], // Store unselected adders
-      customAdders: costs.customAdders || [],
-      selectedAdders: selectedAdders.value,
-      // Store the complete state of all adders for next opening
-      allAdderStates: adderData.value.map(adder => ({
-        id: adder.id,
-        selectedProposalAdder: adder.selectedProposalAdder,
-        // Include custom adder amounts and data types
-        customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null,
-        autoAppliedProposalAdderAmount: adder.adderType === 'auto_applied_adder' ? adder.autoAppliedProposalAdderAmount : null,
-        customAdderDataType: adder.adderType === 'custom_adders' ? adder.customAdderDataType : null
-      }))
-    });
-
-    // Add to dirty fields to make the save button appear
-    populateDirtyCfvs(adderCostField.value);
-
-    // Update adderCostData with the latest applied items for reopening the dialog
-    adderCostData.value = {
-      items: {},
-      total: totalCost
-    };
-
-    // Set correct state for each adder in adderCostData
-    adderData.value.forEach(adder => {
-      if (adder.adderType === 'selected_adders') {
-        adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
-      } else if (adder.adderType === 'custom_adders' && adder.selectedProposalAdder) {
-        adderCostData.value.items[adder.id] = adder.customProposalAdderAmount || 0;
-      } else if (adder.adderType === 'auto_applied_adder') {
-        adderCostData.value.items[adder.id] = adder.selectedProposalAdder;
-      }
-    });
-
-    // Refresh adder data to ensure it's up to date
-    await getProposalAdders();
+    // Mark the adderCostField as having changes - this will show the Save button
+    // but we don't add it to dirtyCfvs since we handle it separately
+    adderCostField.value.hasChanges = true;
 
     const message = selectedAdders.value.length > 0
       ? `Added ${selectedAdders.value.length} cost adders`
       : "Removed all cost adders";
     appStore.showSnack('SUCCESS', message);
+
+    proposalForm.value.validate();
   }
 }
 
@@ -794,10 +741,13 @@ const getProposalAdders = async () => {
   try {
     appStore.loading = true;
 
+    // Update pricing strategy and storage type refs
+    updateConfigurationRefs();
+
     const params = {
       proposalId: proposalId.value,
-      commissionStrategyId: 123, // Hardcoded for now
-      storageId: 123 // Hardcoded for now
+      commissionStrategyId: commissionStrategyId.value ?? 123,
+      storageId: storageId.value ?? 123
     }
 
     const { data, status } = await postRequest(
@@ -807,14 +757,17 @@ const getProposalAdders = async () => {
     )
 
     // Store the raw adder data for the AdderCostDialog
-    adderData.value = [...data]; // Create a new array reference to trigger reactive updates
+    adderData.value = [...data];
 
-    // Load any existing adder selections after getting the raw data
+    // Auto-mark auto-applied adders as selectedProposalAdder=true
+    adderData.value.forEach(adder => {
+      if (adder.adderType === 'auto_applied_adder') {
+        adder.selectedProposalAdder = true;
+      }
+    });
+
+    // Load and process adder selections from API data
     loadExistingAdders();
-
-    // Update selectedAdders based on received API data
-    // Make sure to honor the applied status
-    updateSelectedAddersFromApi(data);
 
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -920,6 +873,23 @@ const isFieldVisible = (field) => {
   return exec(field.visibility, ctx)
 }
 
+// Watch for changes to commissionStrategyId and storageId to refresh adders
+watch([commissionStrategyId, storageId], async ([newCommissionStrategy, newStorageId], [oldCommissionStrategy, oldStorageId]) => {
+  // Only refresh if values have changed and they're not null
+  if ((newCommissionStrategy !== oldCommissionStrategy || newStorageId !== oldStorageId) &&
+      (newCommissionStrategy !== null || newStorageId !== null)) {
+    await getProposalAdders();
+  }
+}, { deep: true });
+
+// Watch expandedPanel to ensure only one panel is open at a time
+watch(expandedPanel, (newValue) => {
+  // If multiple panels are opened, keep only the last opened panel
+  if (newValue && newValue.length > 1) {
+    expandedPanel.value = [newValue[newValue.length - 1]];
+  }
+});
+
 onMounted(async() => {
   await getProposalDetails()
   await getProposalAdders()
@@ -958,6 +928,33 @@ const filteredCustomFields = (values = []) => {
   })
 }
 
+// Display value with auto-applied adders
+const selectedAddersDisplay = computed(() => {
+  // Start with the existing selected adders
+  let adders = [...selectedAdders.value];
+
+  // Add any auto-applied adders that aren't already in the list
+  if (adderData.value) {
+    adderData.value
+      .filter(adder =>
+        adder.adderType === 'auto_applied_adder' &&
+        adder.selectedProposalAdder &&
+        !adders.some(sa => sa.id === adder.id)
+      )
+      .forEach(adder => {
+        adders.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0,
+          isCustom: false,
+          isAutoApplied: true
+        });
+      });
+  }
+
+  return adders;
+});
+
 const userIsAdmin = computed(() =>
   userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
 )
@@ -978,6 +975,17 @@ const defaultProposalName = computed(() => {
   }
   return 'New Proposal'
 })
+
+// Compute pages from template
+const pages = computed(() => {
+  // If template has no value, return empty array
+  if (!template.value || !Array.isArray(template.value)) {
+    return [];
+  }
+
+  // Get all blocks that are pages (typically those without parents)
+  return template.value.filter(block => !block.parentId);
+});
 
 //temporary until we can display the name of the block?
 const pageIndexes = computed(() => {
@@ -1159,15 +1167,42 @@ const getProposalDetails = async () => {
 
 const resetToDefault = async () => {
   await getProposalDetails()
+  await getProposalAdders()
   proposalForm.value.resetValidation()
+  expandedPanel.value = [0]
 }
 
 const validateForm = () => {
   //checks for required fields prior to opening the save dialog
   if (proposalForm.value.validate()) {
-    // If we have adderCostField with changes, add it to dirty fields now
-    if (adderCostField.value && adderCostField.value.stringValue) {
-      populateDirtyCfvs(adderCostField.value)
+    // Always ensure adderCostField has updated stringValue from selectedAdders
+    if (adderCostField.value) {
+      // Make sure we have the latest adder selections in the stringValue
+      adderCostField.value.stringValue = JSON.stringify({
+        totalCost: adderTotalCost.value,
+        selectedAdderIds: selectedAdders.value
+          .filter(adder => !adder.isCustom && !adder.isAutoApplied)
+          .map(adder => adder.id),
+        customAdders: selectedAdders.value
+          .filter(adder => adder.isCustom)
+          .map(adder => ({
+            id: adder.id,
+            fieldName: adder.label,
+            amount: adder.price,
+            customAdderDataType: adder.customAdderDataType
+          })),
+        selectedAdders: selectedAdders.value,
+        allAdderStates: adderData.value.map(adder => ({
+          id: adder.id,
+          selectedProposalAdder: adder.selectedProposalAdder,
+          customProposalAdderAmount: adder.adderType === 'custom_adders' ? adder.customProposalAdderAmount : null,
+          autoAppliedProposalAdderAmount: adder.adderType === 'auto_applied_adder' ? adder.autoAppliedProposalAdderAmount : null,
+          customAdderDataType: adder.adderType === 'custom_adders' ? adder.customAdderDataType : null
+        }))
+      });
+
+      // Mark proposal as having changes but do NOT add to dirtyCfvs
+      adderCostField.value.hasChanges = true
     }
     saveCustomFieldValues()
   } else {
@@ -1211,14 +1246,130 @@ const saveCustomFieldValues = async () => {
   try {
     appStore.loading = true
 
-    // Save custom field values
-    const { data, status } = await postRequest(
-      `/proposal/${proposalId.value}`,
-      dirtyCfvs.value,
-      'blueraven'
-    )
+    const customAddersToUpdate = []
+    if (adderCostField.value && adderCostField.value.stringValue) {
+      try {
+        const adderData = JSON.parse(adderCostField.value.stringValue)
 
-    proposal.value = data
+        // Process custom adders for direct API update
+        if (adderData.customAdders && Array.isArray(adderData.customAdders)) {
+          adderData.customAdders.forEach(adder => {
+            if (adder.id && adder.amount !== undefined) {
+              customAddersToUpdate.push({
+                id: adder.id,
+                customAdderAmount: adder.amount,
+                adderType: 'custom_adders',
+                fieldName: adder.fieldName,
+                applied: adder.applied,
+                customAdderDataType: adder.customAdderDataType ?? 4
+              })
+            }
+          })
+        }
+
+        // Add selected adders
+        if (adderData.selectedAdderIds && Array.isArray(adderData.selectedAdderIds)) {
+          adderData.selectedAdderIds.forEach(id => {
+            // Find the adder in the selectedAdders array
+            const adder = adderData.selectedAdders ?
+              adderData.selectedAdders.find(a => a.id === id && !a.isCustom && !a.isAutoApplied) :
+              null;
+
+            if (adder) {
+              customAddersToUpdate.push({
+                id: id,
+                adderType: 'selected_adders',
+                fieldName: adder.label || 'Selected Adder',
+                applied: true
+              })
+            }
+          })
+        }
+
+        // Also handle unselected adders
+        if (adderData.unselectedAdderIds && Array.isArray(adderData.unselectedAdderIds)) {
+          adderData.unselectedAdderIds.forEach(id => {
+            if (!customAddersToUpdate.some(a => a.id === id)) {
+              // Get name from the original adder data if available
+              const originalAdderName = adderData?.selectedAdders?.find(a => a.id === id)?.label || 'Unselected Adder';
+              customAddersToUpdate.push({
+                id: id,
+                adderType: 'selected_adders',
+                fieldName: originalAdderName,
+                applied: false
+              })
+            }
+          })
+        }
+
+        // Add auto-applied adders if any exist
+        if (adderData.selectedAdders && Array.isArray(adderData.selectedAdders)) {
+          adderData.selectedAdders
+            .filter(adder => adder.isAutoApplied)
+            .forEach(adder => {
+              customAddersToUpdate.push({
+                id: adder.id,
+                adderType: 'auto_applied_adder',
+                fieldName: adder.label || 'Auto-Applied Adder',
+                applied: true
+              })
+            }
+          )
+        }
+      } catch (e) {
+        console.error('Error parsing adder data for save:', e)
+      }
+    }
+
+    // Only make the API call if we have selected_adders or custom_adders to update
+    // Filter out auto_applied_adder types, we don't need to send those to the backend
+    const relevantAdders = customAddersToUpdate.filter(adder =>
+      adder.adderType === 'selected_adders' || adder.adderType === 'custom_adders'
+    );
+
+    // Only hit the API if we have relevant adders to update
+    if (relevantAdders.length > 0) {
+      try {
+        await postRequest(
+          `/proposal/${proposalId.value}/adders/update`,
+          { adderItems: relevantAdders }, // Only send the relevant adders, not auto-applied ones
+          'blueraven'
+        )
+      } catch (e) {
+        console.error('Error updating adders:', e)
+      }
+    }
+
+    // Filter out our virtual adderCostField if it somehow got into dirtyCfvs
+    const fieldsToSave = dirtyCfvs.value.filter(field =>
+      field.customFieldId !== 'adderCosts'
+    );
+
+    // Only send update if we have regular fields to save
+    let responseData, status;
+    if (fieldsToSave.length > 0) {
+      const response = await postRequest(
+        `/proposal/${proposalId.value}`,
+        fieldsToSave,
+        'blueraven'
+      );
+      responseData = response.data;
+      status = response.status;
+    } else {
+      // If we only had adder changes, we still need to refresh the data
+      const response = await getRequest(
+        `/proposal/${proposalId.value}`,
+        'blueraven'
+      );
+      responseData = response.data;
+      status = response.status;
+    }
+
+    // Reset the hasChanges flag on adderCostField since we saved it
+    adderCostField.value.hasChanges = false;
+
+    // Update the proposal data
+    proposal.value = responseData
     dirtyCfvs.value = []
     appStore.showSnack('SUCCESS', 'Proposal Updated')
     await store.fetchTemplateContext({
@@ -1231,18 +1382,25 @@ const saveCustomFieldValues = async () => {
     appStore.showSnack('ERROR', msg)
   } finally {
     appStore.loading = false
+    expandedPanel.value = [0]
   }
 }
 
 const inputChangeCallback = async(field, remove=false) => {
   await populateDirtyCfvs(field, remove)
+
+  // Update configuration refs if any relevant field changes
+  if (field.customFieldGroupAssignmentId === FIELD_IDS.PRICING_STRATEGY ||
+      field.customFieldGroupAssignmentId === FIELD_IDS.STORAGE_TYPE) {
+    updateConfigurationRefs();
+  }
+
   if(field.customFieldGroupAssignmentId === 1312 && (!auroraDesignId.value || !auroraProjectId.value)){
     await loadAuroraProjectId()
   }
 }
 
 const populateDirtyCfvs = async (field, remove = false) => {
-  //some fields are for unique behavior and they don't need to be saved. this check should filter them out
   let match = dirtyCfvs.value.find(
     (f) =>
       (null !== f.id && f.id === field.id) ||
@@ -1485,6 +1643,36 @@ const loadAuroraProjectId = async() => {
     console.error('*** ERROR ***', e)
   }
 }
+
+
+const openAdderDialog = () => {
+  // Update refs for configuration fields
+  updateConfigurationRefs();
+  // Check if Pricing Strategy field exists
+  const pricingStrategyField = findCustomFieldByAssignmentId(FIELD_IDS.PRICING_STRATEGY);
+
+  // Allow dialog to open if no field is found for Admin users
+  if (!pricingStrategyField) {
+    showAdderCostDialog.value = true;
+    return;
+  }
+
+  // If field exists and has a value
+  if (pricingStrategyField.intValue) {
+    commissionStrategyId.value = pricingStrategyField.intValue
+    showAdderCostDialog.value = true;
+  } else {
+    // Pricing Strategy field exists but has no value, show alert
+    appStore.showSnack('ERROR', 'Pricing Strategy must be selected before applying adders.');
+    pricingStrategyField.required = true;
+
+    // Force validation to highlight the required field
+    if (proposalForm.value) {
+      proposalForm.value.validate();
+    }
+  }
+}
+
 const handleStepChange = (updated) => {
   proposal.value = { ...updated }
 }

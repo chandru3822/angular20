@@ -40,30 +40,39 @@
             Commission
           </span>
           <span class="d-flex align-center justify-end ml-auto">
-            <span class="text-subtitle-2 grey--text mr-2">Subtotal:</span>
-            <span class="text-subtitle-1 font-weight-medium">
+            <span class="text-subtitle-2 mr-2" :class="commissionTotal < 0 ? 'red--text' : 'grey--text'">Subtotal:</span>
+            <span class="text-subtitle-1 font-weight-medium" :class="commissionTotal < 0 ? 'red--text' : ''">
               $ {{ formatNumber(commissionTotal) }}
             </span>
           </span>
         </v-expansion-panel-header>
-<!--        <v-expansion-panel-content class="child-expansion-panel-content">-->
-<!--          <v-simple-table dense class="commission-table">-->
-<!--            <template v-slot:default>-->
-<!--              <thead>-->
-<!--              <tr>-->
-<!--                <th class="text-left font-weight-bold">Item</th>-->
-<!--                <th class="text-right font-weight-bold">Amount</th>-->
-<!--              </tr>-->
-<!--              </thead>-->
-<!--              <tbody>-->
-<!--              <tr class="dense-row">-->
-<!--                <td class="caption light-blue lighten-5">Base</td>-->
-<!--                <td class="text-right caption light-blue lighten-5">${{ formatNumber(commissionBaseTotal, true) }}</td>-->
-<!--              </tr>-->
-<!--              </tbody>-->
-<!--            </template>-->
-<!--          </v-simple-table>-->
-<!--        </v-expansion-panel-content>-->
+        <v-expansion-panel-content class="child-expansion-panel-content">
+          <v-simple-table dense class="commission-table">
+            <template v-slot:default>
+              <thead>
+              <tr>
+                <th class="text-left font-weight-bold">Item</th>
+                <th class="text-right font-weight-bold">Amount</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr class="dense-row">
+                <td class="caption light-blue lighten-5">Base</td>
+                <td class="text-right caption light-blue lighten-5">${{ formatNumber(basePrice, true) }}</td>
+              </tr>
+              <!-- Show adder differences between Project and Proposal amounts -->
+              <template v-for="(adder, index) in adderDifferences">
+                <tr :key="'diff-' + index" class="dense-row">
+                  <td class="caption">{{ adder.name }} Adjustment</td>
+                  <td class="text-right caption" :class="adder.difference > 0 ? 'green--text' : 'red--text'">
+                    {{ adder.difference > 0 ? '+' : '' }}${{ formatNumber(adder.difference, true) }}
+                  </td>
+                </tr>
+              </template>
+              </tbody>
+            </template>
+          </v-simple-table>
+        </v-expansion-panel-content>
       </v-expansion-panel>
 
       <!-- Estimated Adders Card -->
@@ -104,12 +113,12 @@
                 <td class="text-center caption">{{ adder.unitPrice }}</td>
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
-                    <span v-if="adder.customProjectAdderAmount !== null && adder.customProjectAdderAmount !== undefined && adder.customProjectAdderAmount !== adder.customProposalAdderAmount" class="text-decoration-line-through mr-2 grey--text text-no-wrap">
-                      ${{ formatNumber(adder.customProjectAdderAmount, true) }}
+                    <span v-if="adder.projectAdderAmount !== null && adder.projectAdderAmount !== undefined && adder.projectAdderAmount !== adder.proposalAdderAmount && adder.projectAdderAmount > 0 && adder.proposalAdderAmount > 0" class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                      ${{ formatNumber(adder.projectAdderAmount, true) }}
                     </span>
                     <span :class="{
-                      'red--text': adder.customProposalAdderAmount < adder.customProjectAdderAmount && adder.customProjectAdderAmount > 0,
-                      'green--text': adder.customProposalAdderAmount > adder.customProjectAdderAmount && adder.customProjectAdderAmount > 0,
+                      'red--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount > 0 && adder.proposalAdderAmount > 0,
+                      'green--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount > 0 && adder.proposalAdderAmount > 0,
                       'text-no-wrap': true
                     }">
                       ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
@@ -145,7 +154,7 @@ const props = defineProps({
   }
 })
 
-const expandedPanels = ref([2]) // All panels expanded by default (0=Base Price, 1=Commission, 2=Estimated Adders)
+const expandedPanels = ref([1, 2]) // Open both Commission and Estimated Adders by default (0=Base Price, 1=Commission, 2=Estimated Adders)
 const showNotification = ref(false)
 const notificationText = ref('')
 const basePrice = ref(0)
@@ -158,8 +167,34 @@ const commissionBaseTotal = computed(() => {
   return commission.value.base
 })
 
+// Computed property to find adders with customProjectAdderAmount and/or customProposalAdderAmount
+const adderDifferences = computed(() => {
+  return adders.value
+    .filter(adder => {
+      // At least one of the values must not be null
+      const hasProjectAmount = adder.customProjectAdderAmount !== null && adder.customProjectAdderAmount !== undefined;
+      const hasProposalAmount = adder.customProposalAdderAmount !== null && adder.customProposalAdderAmount !== undefined;
+      
+      // Include if at least one has a value - we want to show all adders with either value
+      return hasProjectAmount || hasProposalAmount;
+    })
+    .map(adder => ({
+      id: adder.id,
+      name: adder.name,
+      // Difference: Project amount - Proposal amount
+      // Default to 0 if either value is null/undefined
+      difference: (adder.customProjectAdderAmount || 0) - (adder.customProposalAdderAmount || 0)
+    }));
+});
+
+// Update commission total to include adder differences
 const commissionTotal = computed(() => {
-  return commissionBaseTotal.value
+  // Base amount plus sum of all adder differences
+  const adderDifferencesTotal = adderDifferences.value.reduce(
+    (total, adder) => total + adder.difference, 0
+  );
+  
+  return commissionBaseTotal.value + adderDifferencesTotal;
 })
 
 const adderTotal = computed(() => {
@@ -179,6 +214,8 @@ const processAdderData = (adderData) => {
     .map(adder => {
       let projectAmount = 0
       let proposalAmount = 0
+      let customProjectAmount = null
+      let customProposalAmount = null
 
       if (adder.adderType === 'selected_adders') {
         projectAmount = adder.selectedAdderAmount || 0
@@ -186,6 +223,10 @@ const processAdderData = (adderData) => {
       } else if (adder.adderType === 'custom_adders') {
         projectAmount = adder.customAdderAmount || 0
         proposalAmount = adder.customProposalAdderAmount || 0
+        
+        // For custom adders, we need to capture these values for difference calculation
+        customProjectAmount = adder.customAdderAmount || null
+        customProposalAmount = adder.customProposalAdderAmount || null
       } else if (adder.adderType === 'auto_applied_adder') {
         projectAmount = adder.autoAppliedAdderAmount || 0
         proposalAmount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0
@@ -198,8 +239,9 @@ const processAdderData = (adderData) => {
         unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
         projectAdderAmount: projectAmount,
         proposalAdderAmount: proposalAmount,
-        customProjectAdderAmount: adder.customProjectAdderAmount || null,
-        customProposalAdderAmount: adder.customProposalAdderAmount || null,
+        // These are the values we'll use to calculate differences for the Commission dropdown
+        customProjectAdderAmount: customProjectAmount,
+        customProposalAdderAmount: customProposalAmount, 
         adderType: adder.adderType,
         // Keep amount for backward compatibility
         amount: proposalAmount
@@ -208,6 +250,9 @@ const processAdderData = (adderData) => {
 }
 
 const formatNumber = (value, showDecimals = true) => {
+  if (value === null || value === undefined) {
+    return 'N/A'
+  }
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: showDecimals ? 2 : 0,
     maximumFractionDigits: showDecimals ? 2 : 0
