@@ -12,7 +12,7 @@ where slt.system_list_type = 'attachment_types'
             (select id from flow.system_list where system_list = 'Attachment Types by Type');
 
 --add column to flow.db_function_param
-alter table flow.db_function_param add system_list_id INTEGER;
+alter table flow.db_function_param add column if not exists system_list_id INTEGER;
 
 -- create the function
 -- next, assign new function to BR
