@@ -991,7 +991,7 @@ const selectedAddersDisplay = computed(() => {
   if (adderData.value && adderData.value.length > 0) {
     adderData.value
       .filter(adder =>
-        // Include auto-applied adders that have a valid amount
+        // Include auto-applied adders that have a valid amount greater than 0
         adder.adderType === 'auto_applied_adder' &&
         adder.selectedProposalAdder &&
         (adder.autoAppliedProposalAdderAmount > 0 || adder.autoAppliedAdderAmount > 0) &&

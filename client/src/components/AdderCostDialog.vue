@@ -92,11 +92,8 @@ const fetchAdderData = async () => {
         // For auto-applied adders, check if they have a valid amount
         const autoAmount = adder.autoAppliedAdderAmount || adder.autoAppliedProposalAdderAmount;
         if (!autoAmount || autoAmount === 0) {
-          // We still include them in the dialog, but with 0 amount
-          itemType = 'auto_applied_adder';
-          rawAmount = 0;
-          amount = formatCurrency(0);
-          applied = false;
+          // Skip auto-applied adders with null or 0 amount
+          return null;
         } else {
           itemType = 'auto_applied_adder';
           rawAmount = autoAmount;
@@ -150,7 +147,8 @@ const fetchAdderData = async () => {
       return item;
     });
 
-    costItems.value = transformedItems;
+    // Filter out null items (auto-applied adders with null or 0 amount)
+    costItems.value = transformedItems.filter(item => item !== null);
   } catch (error) {
     appStore.showSnack('ERROR', 'Error retrieving proposal adders');
     console.error('Error retrieving proposal adders:', error);
