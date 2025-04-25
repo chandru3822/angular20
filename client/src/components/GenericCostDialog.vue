@@ -260,14 +260,13 @@ const emit = defineEmits(['close-dialog', 'apply', 'cancel']);
 // Create a local variable to track dialog state
 const dialogOpen = ref(false);
 
-const show = computed({
-  get: () => props.openDialog,
-  set: (value) => {
-    if (!value) {
-      emit('close-dialog', false);
-    }
-  }
-});
+// Replace computed property with ref for more direct control
+const show = ref(false);
+
+// Watch for changes in openDialog prop and update show
+watch(() => props.openDialog, (newVal) => {
+  show.value = newVal;
+}, { immediate: true });
 
 const tableItems = ref([]);
 const originalItems = ref([]); // Store initial state
@@ -339,13 +338,26 @@ watch(() => props.openDialog, (newVal) => {
   }
 });
 
-// Automatically apply custom adders when value > 0
+// Automatically apply custom adders when value > 0, properly handle 0 values
 const handleCustomFieldInput = (item) => {
   if (item.type === 'custom_adders') {
     // Check if any custom field has a value > 0 for currency/number fields
     const hasValue = Object.values(item.customFields).some(field => {
       if (field.type === 'currency' || field.type === 'number') {
+        // Special handling for '0' and '0.0' input values
+        if (field.value === '0' || field.value === '0.0' || field.value === 0) {
+          // Explicitly set the raw amount for this item to 0
+          item.rawAmount = 0;
+          return false;
+        }
+        
         const numValue = parseFloat(field.value);
+        
+        // Explicitly update the rawAmount to match the parsed value
+        if (!isNaN(numValue)) {
+          item.rawAmount = numValue;
+        }
+        
         return !isNaN(numValue) && numValue > 0; // Only consider values > 0
       } else if (field.type === 'text') {
         return field.value !== '';
@@ -365,9 +377,17 @@ const handleCustomFieldInput = (item) => {
       );
 
       if (currencyField) {
-        const numValue = parseFloat(currencyField.value);
-        if (isNaN(numValue) || numValue <= 0) {
+        // Specifically check for 0 values to ensure they're handled correctly
+        if (currencyField.value === '0' || currencyField.value === '0.0' || currencyField.value === 0) {
           item.applied = false;
+          item.rawAmount = 0;
+        } else {
+          const numValue = parseFloat(currencyField.value);
+          if (isNaN(numValue) || numValue <= 0) {
+            item.applied = false;
+            // Set rawAmount to 0 if the value is not a valid number or <= 0
+            item.rawAmount = 0;
+          }
         }
       } else {
         // If no currency field is found, disable it anyway
@@ -431,10 +451,18 @@ const calculatedTotal = computed(() => {
 
         if (amountField) {
           const [, field] = amountField;
-          const fieldValue = parseFloat(field.value) || 0;
-          total += fieldValue;
-          // Update rawAmount to ensure it's passed correctly to apply handler
-          item.rawAmount = fieldValue;
+          
+          // Special handling for '0' and '0.0' values
+          if (field.value === '0' || field.value === '0.0' || field.value === 0) {
+            total += 0;
+            item.rawAmount = 0;
+          } else {
+            const fieldValue = parseFloat(field.value);
+            const safeValue = isNaN(fieldValue) ? 0 : fieldValue;
+            total += safeValue;
+            // Update rawAmount to ensure it's passed correctly to apply handler
+            item.rawAmount = safeValue;
+          }
         } else if (item.rawAmount !== undefined) {
           // Use the raw amount value if available
           total += item.rawAmount;
@@ -497,24 +525,30 @@ const apply = () => {
     })))
   };
 
-  // Emit apply event with the result data first
-  emit('apply', result);
-
-  // Then close the dialog
+  // Force close the dialog first
+  hasChanges.value = false;
+  show.value = false;
+  
+  // Emit events after a slight delay
   setTimeout(() => {
-    show.value = false;
+    emit('apply', result);
     emit('close-dialog', false);
-  }, 100);
+  }, 0);
 };
 
 // Handle cancel action
 const cancel = () => {
-  // Set the dialog to close immediately
+  // Reset all state flags to ensure clean closing
+  hasChanges.value = false;
+  
+  // Force close the dialog
   show.value = false;
-  emit('close-dialog', false);
-
-  // Emit cancel event
-  emit('cancel');
+  
+  // Emit events after a slight delay to ensure Vue has processed the state change
+  setTimeout(() => {
+    emit('close-dialog', false);
+    emit('cancel');
+  }, 0);
 };
 </script>
 

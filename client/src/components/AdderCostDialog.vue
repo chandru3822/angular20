@@ -7,9 +7,10 @@
     dialog-class="adder-cost-dialog"
     dialog-id="adderCostDialog"
     total-label="Subtotal"
+    :persistent="false"
     @close-dialog="$emit('close-dialog', false)"
     @apply="handleApply"
-    @cancel="$emit('cancel')"
+    @cancel="handleCancel"
   />
 </template>
 
@@ -43,7 +44,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close-dialog', 'apply-costs', 'cancel']);
 
-// Define table headers
+// Use the default headers from GenericCostDialog
 const headers = [
   { text: 'Description', value: 'description', width: '30%', align: 'left' },
   { text: 'Other', value: 'other', width: '15%', align: 'left' },
@@ -56,11 +57,18 @@ const headers = [
 const costItems = ref([]);
 const adderData = ref([]);
 
-// Format amount as currency for display purposes only
-const formatCurrency = (value) => {
-  if (value === null || value === undefined) return '--';
 
-  // Always show 2 decimal places for consistency
+// Format amount as currency for display purposes only
+const formatCurrency = (value, adderType) => {
+  if (value === null || value === undefined) return '--';
+  
+  // Don't format currency for custom_adders - return the raw value
+  if (adderType === 'custom_adders') {
+    // Return the exact number value, not formatted as currency
+    return value;
+  }
+
+  // For other adder types, format as currency with 2 decimal places
   return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
@@ -97,20 +105,21 @@ const fetchAdderData = async () => {
         } else {
           itemType = 'auto_applied_adder';
           rawAmount = autoAmount;
-          amount = formatCurrency(rawAmount);
+          amount = formatCurrency(rawAmount, 'auto_applied_adder');
           applied = true;
         }
       } else if (adder.adderType === 'custom_adders') {
         itemType = 'custom_adders';
-        rawAmount = adder.customProposalAdderAmount;
-        amount = formatCurrency(rawAmount);
+        rawAmount = adder.customProposalAdderAmount === 0 ? 0 : (adder.customProposalAdderAmount || 0);
+        // Don't format custom adder amounts - pass exact value
+        amount = formatCurrency(rawAmount, 'custom_adders');
 
         // Auto-apply if amount is greater than 0
         applied = (rawAmount > 0) ? true : (adder.selectedProposalAdder || false);
       } else {
         itemType = 'selected_adders';
         rawAmount = adder.selectedAdderAmount;
-        amount = formatCurrency(rawAmount);
+        amount = formatCurrency(rawAmount, 'selected_adders');
         applied = adder.selectedProposalAdder || false;
       }
 
@@ -134,11 +143,15 @@ const fetchAdderData = async () => {
 
       // Add custom fields for custom adder type
       if (adder.adderType === 'custom_adders') {
+        // Special handling to ensure 0 values are properly handled
+        const customAmount = adder.customProposalAdderAmount === 0 ? 0 : (adder.customProposalAdderAmount || 0);
+        
+        // For custom adders, use a plain number type instead of currency to prevent formatting issues
         item.customFields = {
           amount: {
-            type: 'currency',
+            type: 'number',
             label: 'Amount',
-            value: adder.customProposalAdderAmount,
+            value: customAmount,
             includeInTotal: true
           }
         };
@@ -230,6 +243,16 @@ defineExpose({
   refreshData
 });
 
+// Handle cancel button click
+const handleCancel = () => {
+  // Reset data fetch state to ensure a clean next opening
+  dataFetched.value = false;
+
+  // Emit both events to ensure parent component updates
+  emit('close-dialog', false);
+  emit('cancel');
+};
+
 const handleApply = async (result) => {
   try {
     appStore.loading = true;
@@ -246,12 +269,15 @@ const handleApply = async (result) => {
         .filter(item => item.type === 'selected_adders' && !item.applied)
         .map(item => item.id),
       customAdders: result.items
-        .filter(item => item.type === 'custom_adders' && item.applied)
+        .filter(item => item.type === 'custom_adders')
         .map(item => {
+          // Explicitly handle 0 values
           let amount = 0;
-          if (item.customFields?.amount?.value) {
+          if (item.customFields?.amount?.value === '0' || item.customFields?.amount?.value === 0) {
+            amount = 0;
+          } else if (item.customFields?.amount?.value !== undefined) {
             amount = parseFloat(item.customFields.amount.value);
-          } else if (item.rawAmount) {
+          } else if (item.rawAmount !== undefined) {
             amount = parseFloat(item.rawAmount);
           }
 
@@ -261,39 +287,36 @@ const handleApply = async (result) => {
             dataTypeId = 4;
           }
 
+          // Make sure we include all custom adders regardless of amount
           return {
             id: item.id,
             fieldName: item.description,
-            amount: amount,
+            amount: amount, // Include exact amount value, especially for 0
             adderType: 'custom_adders',
-            selectedProposalAdder: true,
+            // For visual display: show as selected if amount > 0
+            selectedProposalAdder: amount > 0,
+            // Force inclusion in final payload
+            includeInAPI: true,
+            sendToAPI: true,
             customAdderDataType: dataTypeId
           };
         }),
-      // Include all adder items with their current applied state
-      allItems: result.items.map(item => {
-        const resultItem = {
-          id: item.id,
-          type: item.type,
-          applied: item.applied,
-          description: item.description
-        };
-
-        // Include the customFields if they exist
-        if (item.customFields) {
-          resultItem.customFields = item.customFields;
-        }
-
-        return resultItem;
-      })
+      // Use the items directly from GenericCostDialog
+      allItems: result.items
     };
 
-    await fetchAdderData();
+    // REMOVED: Don't refetch data from API, which would override our applied changes
+    // This allows the parent component to retain these changes when reopening the dialog
+    // await fetchAdderData();
+
+    // Don't reset fetch state - we want to retain the current state for reopening
+    // dataFetched.value = false;
 
     // Emit the apply-costs event with the processed data
     emit('apply-costs', appliedCosts);
 
-    // No need to close dialog here, as GenericCostDialog will handle the closing
+    // Explicitly close the dialog
+    emit('close-dialog', false);
   } catch (error) {
     appStore.showSnack('ERROR', 'Error processing adders');
     console.error('Error processing adders:', error);
@@ -307,22 +330,5 @@ const handleApply = async (result) => {
 </script>
 
 <style lang="scss" scoped>
-/* Make sure the charge amount column is right-aligned */
-:deep(.v-data-table) {
-  td:nth-child(4) {
-    text-align: right !important;
-  }
-
-  .amount-column,
-  .text-right {
-    text-align: right !important;
-    width: 100% !important;
-    display: block !important;
-  }
-}
-
-/* Make sure header alignment is correct */
-:deep(.v-data-table__header tr th:nth-child(4)) {
-  text-align: right !important;
-}
+/* All table styling is now handled by GenericCostDialog */
 </style>
