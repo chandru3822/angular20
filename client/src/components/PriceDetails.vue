@@ -114,10 +114,10 @@
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
                     <!-- For custom adders with project amount but no proposal amount -->
-                    <span v-if="isCustomProjectOnly(adder)" class="green--text text-no-wrap">
+                    <span v-if="isCustomProjectOnly(adder)" class="text-no-wrap">
                       ${{ formatNumber(adder.customProjectAdderAmount || adder.projectAdderAmount, true) }}
                     </span>
-                    
+
                     <!-- For normal cases with both values -->
                     <template v-else>
                       <!-- Show strikethrough project amount if appropriate -->
@@ -125,12 +125,12 @@
                         v-if="adder.projectAdderAmount !== null &&
                           adder.projectAdderAmount !== undefined &&
                           adder.projectAdderAmount !== adder.proposalAdderAmount &&
-                          adder.proposalAdderAmount !== null && 
+                          adder.proposalAdderAmount !== null &&
                           adder.proposalAdderAmount !== undefined"
                           class="text-decoration-line-through mr-2 grey--text text-no-wrap">
                         ${{ formatNumber(adder.projectAdderAmount, true) }}
                       </span>
-                      
+
                       <!-- Show proposal amount with appropriate coloring -->
                       <span :class="{
                         'red--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null,
@@ -366,9 +366,9 @@ const formatNumber = (value, showDecimals = true) => {
  * @returns {boolean} True if it's a custom adder with project amount but no proposal amount
  */
 const isCustomProjectOnly = (adder) => {
-  return adder.adderType === 'custom_adders' && 
-         adder.customProjectAdderAmount && 
-         adder.customProjectAdderAmount > 0 && 
+  return adder.adderType === 'custom_adders' &&
+         adder.customProjectAdderAmount &&
+         adder.customProjectAdderAmount > 0 &&
          (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
 }
 
