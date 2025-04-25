@@ -210,14 +210,7 @@ public class BlueravenProposalService {
               }
 
               // Always include the adder, even if the amount is 0
-              customAdders.put(item.getId(),
-                  new CustomAdderData(item.getCustomAdderAmount(), dataTypeId));
-              
-              // Log custom adder being processed, especially helpful for debugging 0 values
-              if (item.getCustomAdderAmount().equals(BigDecimal.ZERO)) {
-                log.debug("Processing custom adder with ZERO value: {} ({})", 
-                    item.getFieldName(), item.getId());
-              }
+              customAdders.put(item.getId(), new CustomAdderData(item.getCustomAdderAmount(), dataTypeId));
             }
             break;
           case "auto_applied_adder":
@@ -248,15 +241,15 @@ public class BlueravenProposalService {
 
   // Helper class to store custom adder data with data type
   private static class CustomAdderData {
-    private final BigDecimal value;
+    private final Long value;
     private final Integer dataTypeId;
 
-    public CustomAdderData(BigDecimal value, Integer dataTypeId) {
+    public CustomAdderData(Long value, Integer dataTypeId) {
       this.value = value;
       this.dataTypeId = dataTypeId;
     }
 
-    public BigDecimal getValue() {
+    public Long getValue() {
       return value;
     }
 
@@ -292,7 +285,7 @@ public class BlueravenProposalService {
   @Transactional
   public void updateCustomAdders(@NonNull Long proposalId,
                                 @NonNull Long cfgaId,
-                                @NonNull BigDecimal customAdderValue,
+                                @NonNull Long customAdderValue,
                                 @NonNull Long userId,
                                 Integer dataTypeId) {
 
@@ -317,9 +310,19 @@ public class BlueravenProposalService {
     // Set only the appropriate value based on data type
     try {
       switch (dataTypeId) {
+        case 1: // DATE
+          // Convert Long to java.sql.Date - assuming customAdderValue is epoch millis
+          java.sql.Date date = new java.sql.Date(customAdderValue);
+          params.put("dateValue", date);
+          break;
+        case 2: // TIMESTAMP
+          // Convert Long to java.sql.Timestamp - assuming customAdderValue is epoch millis
+          java.sql.Timestamp timestamp = new java.sql.Timestamp(customAdderValue);
+          params.put("timestampValue", timestamp);
+          break;
         case 3: // BOOLEAN
           // Convert BigDecimal to Boolean (0 = false, non-zero = true)
-          params.put("booleanValue", !customAdderValue.equals(BigDecimal.ZERO));
+          params.put("booleanValue", customAdderValue != 0);
           break;
         case 6: // INTEGER
           params.put("intValue", customAdderValue);

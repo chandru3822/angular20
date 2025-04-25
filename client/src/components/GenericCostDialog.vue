@@ -81,6 +81,8 @@
                         :label="item.customFields[header.value].label"
                         dense
                         hide-details
+                        onfocus="this.select()"
+                        prefix="$"
                         @input="handleCustomFieldInput(item)"
                       />
 
@@ -92,6 +94,9 @@
                         type="number"
                         dense
                         hide-details
+                        hide-spin-buttons
+                        prefix="$"
+                        onfocus="this.select()"
                         @input="handleCustomFieldInput(item)"
                       />
 
@@ -101,8 +106,11 @@
                         v-model="item.customFields[header.value].value"
                         :label="item.customFields[header.value].label"
                         prefix="$"
+                        type="number"
                         dense
                         hide-details
+                        hide-spin-buttons
+                        onfocus="this.select()"
                         @input="handleCustomFieldInput(item)"
                       />
                     </template>
@@ -185,7 +193,6 @@
           </div>
         </div>
       </div>
-
     </v-card>
   </v-dialog>
 </template>
@@ -350,14 +357,14 @@ const handleCustomFieldInput = (item) => {
           item.rawAmount = 0;
           return false;
         }
-        
+
         const numValue = parseFloat(field.value);
-        
+
         // Explicitly update the rawAmount to match the parsed value
         if (!isNaN(numValue)) {
           item.rawAmount = numValue;
         }
-        
+
         return !isNaN(numValue) && numValue > 0; // Only consider values > 0
       } else if (field.type === 'text') {
         return field.value !== '';
@@ -396,10 +403,6 @@ const handleCustomFieldInput = (item) => {
     }
   }
 };
-
-const hasAppliedItems = computed(() => {
-  return tableItems.value.some(item => item.applied && item.type !== 'auto_applied_adder');
-});
 
 const appliedItemsSummary = computed(() => {
   const appliedItems = tableItems.value.filter(item => item.applied);
@@ -451,7 +454,7 @@ const calculatedTotal = computed(() => {
 
         if (amountField) {
           const [, field] = amountField;
-          
+
           // Special handling for '0' and '0.0' values
           if (field.value === '0' || field.value === '0.0' || field.value === 0) {
             total += 0;
@@ -528,7 +531,7 @@ const apply = () => {
   // Force close the dialog first
   hasChanges.value = false;
   show.value = false;
-  
+
   // Emit events after a slight delay
   setTimeout(() => {
     emit('apply', result);
@@ -540,10 +543,10 @@ const apply = () => {
 const cancel = () => {
   // Reset all state flags to ensure clean closing
   hasChanges.value = false;
-  
+
   // Force close the dialog
   show.value = false;
-  
+
   // Emit events after a slight delay to ensure Vue has processed the state change
   setTimeout(() => {
     emit('close-dialog', false);

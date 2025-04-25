@@ -15,7 +15,7 @@ public class ProposalAdderRequest {
   @NoArgsConstructor
   public static class AdderItem {
     private Long id;
-    private BigDecimal customAdderAmount;
+    private Long customAdderAmount;
     private String adderType;
     private String fieldName;
     private Boolean applied = true;

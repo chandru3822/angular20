@@ -651,9 +651,6 @@ const updateAdderSelections = () => {
   // Update the total in adderCostData
   adderCostData.value.total = adderTotalCost.value;
 
-  // Update adderCostField with the current state
-  // This ensures that if the dialog is opened/closed without saving, the state is preserved
-
   // First collect ALL custom adders regardless of selection state
   const allCustomAdders = adderData.value
     .filter(adder => adder.adderType === 'custom_adders')
@@ -794,11 +791,10 @@ const handleAppliedCosts = async (costs) => {
     // Use our helper function to update selections based on the updated adderData
     updateAdderSelections();
 
-    // Mark the adderCostField as having changes - this will show the Save button and banners
-    // but we don't add it to dirtyCfvs since we handle it separately
+    // Mark the adderCostField as having changes to show Save button
     adderCostField.value.hasChanges = true;
 
-    // Set flag that adder state has changed but don't refresh on next open - we want to keep state
+    // Set flag that adder state has changed but don't refresh on next open
     adderStateChanged.value = true;
 
     proposalForm.value.validate();
@@ -843,8 +839,11 @@ const getProposalAdders = async () => {
 
       // For selected adders, preserve their selected state
       else if (adder.adderType === 'selected_adders') {
-        // If it came back as selected from the API, keep it selected
-        // No need to modify adder.selectedProposalAdder as it's already set correctly
+        // Ensure selectedProjectAdder is properly handled
+        // If it's not defined in the response, default to false
+        if (adder.selectedProjectAdder === undefined) {
+          adder.selectedProjectAdder = false;
+        }
       }
     });
 
@@ -1021,8 +1020,8 @@ const selectedAddersDisplay = computed(() => {
       .filter(adder =>
         // Include auto-applied adders that have a valid amount greater than 0
         adder.adderType === 'auto_applied_adder' &&
-        adder.selectedProposalAdder &&
-        (adder.autoAppliedProposalAdderAmount > 0 || adder.autoAppliedAdderAmount > 0) &&
+        ((adder.autoAppliedProposalAdderAmount && adder.autoAppliedProposalAdderAmount > 0) ||
+         (adder.autoAppliedAdderAmount && adder.autoAppliedAdderAmount > 0)) &&
         !adders.some(sa => sa.id === adder.id)
       )
       .forEach(adder => {
@@ -1040,6 +1039,7 @@ const selectedAddersDisplay = computed(() => {
       .filter(adder =>
         adder.adderType === 'selected_adders' &&
         adder.selectedProposalAdder &&
+        adder.selectedAdderAmount > 0 &&
         !adders.some(sa => sa.id === adder.id)
       )
       .forEach(adder => {
@@ -1055,8 +1055,8 @@ const selectedAddersDisplay = computed(() => {
     adderData.value
       .filter(adder =>
         adder.adderType === 'custom_adders' &&
-        adder.selectedProposalAdder &&
-        adder.customProposalAdderAmount > 0 &&
+        adder.customProposalAdderAmount &&
+        adder.customProposalAdderAmount > 0 &&  // Explicitly check for > 0, not just truthiness
         !adders.some(sa => sa.id === adder.id)
       )
       .forEach(adder => {
@@ -1069,7 +1069,24 @@ const selectedAddersDisplay = computed(() => {
       });
   }
 
-  return adders;
+  // Final filter to ensure we only display adders with valid values
+  return adders.filter(adder => {
+    // Find original adder in adderData to check selectedProposalAdder flag
+    const originalAdder = adderData.value?.find(a => a.id === adder.id);
+    
+    // Include if explicitly selected on proposal regardless of other conditions
+    if (originalAdder && originalAdder.selectedProposalAdder) {
+      return true;
+    }
+    
+    // For auto-applied adders, check if they have a positive amount
+    if (adder.isAutoApplied && adder.price > 0) {
+      return true;
+    }
+    
+    // For other adders, ensure they have a price > 0
+    return adder.price > 0;
+  });
 });
 
 const userIsAdmin = computed(() =>
@@ -1822,7 +1839,7 @@ const loadAuroraProjectId = async() => {
 // Handle cancel button in adder dialog - simply close without making changes
 const handleAdderDialogCancel = () => {
   showAdderCostDialog.value = false;
-  // No need to reload data or change state
+  // No need to reload data or change state - the existing state is preserved
 };
 
 // Track if adders state has changed and dialog needs refresh

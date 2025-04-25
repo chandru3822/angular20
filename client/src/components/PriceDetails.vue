@@ -106,32 +106,40 @@
               <tr
                 v-for="(adder, index) in adders"
                 :key="index"
-                :class="{
-                  'light-blue lighten-5': index % 2 === 0 && !(adder.proposalAdderAmount && !adder.projectAdderAmount),
-                  'grey lighten-2': adder.proposalAdderAmount && !adder.projectAdderAmount,
-                  'green lighten-2': !adder.proposalAdderAmount && adder.projectAdderAmount
-                }"
+                :class="getAdderRowClass(adder, index)"
                 class="dense-row"
               >
                 <td class="caption">{{ adder.name }}</td>
                 <td class="text-center caption">{{ adder.unitPrice }}</td>
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
-                    <span
-                      v-if="adder.projectAdderAmount !== null &&
-                        adder.projectAdderAmount !== undefined &&
-                        adder.projectAdderAmount !== adder.proposalAdderAmount &&
-                        adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null"
-                        class="text-decoration-line-through mr-2 grey--text text-no-wrap">
-                      ${{ formatNumber(adder.projectAdderAmount, true) }}
+                    <!-- For custom adders with project amount but no proposal amount -->
+                    <span v-if="isCustomProjectOnly(adder)" class="green--text text-no-wrap">
+                      ${{ formatNumber(adder.customProjectAdderAmount || adder.projectAdderAmount, true) }}
                     </span>
-                    <span :class="{
-                      'red--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null,
-                      'green--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null,
-                      'text-no-wrap': true
-                    }">
-                      ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
-                    </span>
+                    
+                    <!-- For normal cases with both values -->
+                    <template v-else>
+                      <!-- Show strikethrough project amount if appropriate -->
+                      <span
+                        v-if="adder.projectAdderAmount !== null &&
+                          adder.projectAdderAmount !== undefined &&
+                          adder.projectAdderAmount !== adder.proposalAdderAmount &&
+                          adder.proposalAdderAmount !== null && 
+                          adder.proposalAdderAmount !== undefined"
+                          class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                        ${{ formatNumber(adder.projectAdderAmount, true) }}
+                      </span>
+                      
+                      <!-- Show proposal amount with appropriate coloring -->
+                      <span :class="{
+                        'red--text': adder.proposalAdderAmount < adder.projectAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null,
+                        'green--text': adder.proposalAdderAmount > adder.projectAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null,
+                        'text-no-wrap': true
+                      }">
+                        ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
+                      </span>
+                    </template>
                   </div>
                 </td>
               </tr>
@@ -174,27 +182,52 @@ const commissionBaseTotal = computed(() => {
   return basePrice.value * 1000 // Multiply by 1000 to match the base price scale
 })
 
-// Computed property to find adders with customProjectAdderAmount and/or customProposalAdderAmount
+/**
+ * Computed property to find adders with differences between project and proposal amounts.
+ * Also includes adders selected only on the project to show negative values in Commission.
+ */
 const adderDifferences = computed(() => {
   return adders.value
     .filter(adder => {
-      // At least one of the values must not be null
-      const hasProjectAmount = adder.customProjectAdderAmount !== null && adder.customProjectAdderAmount !== undefined;
-      const hasProposalAmount = adder.customProposalAdderAmount !== null && adder.customProposalAdderAmount !== undefined;
+      // Include if selected on project only
+      if (adder.selectedOnProjectOnly) return true;
 
-      // Include if at least one has a value - we want to show all adders with either value
-      return hasProjectAmount || hasProposalAmount;
+      // Include if there are valid custom amounts to compare
+      const hasProjectAmount = adder.customProjectAdderAmount !== null &&
+                              adder.customProjectAdderAmount !== undefined;
+      const hasProposalAmount = adder.customProposalAdderAmount !== null &&
+                               adder.customProposalAdderAmount !== undefined;
+
+      // Check specifically for custom adders with project amount but no proposal amount
+      const isCustomAdderProjectOnly = adder.adderType === 'custom_adders' &&
+                                     adder.customProjectAdderAmount &&
+                                     adder.customProjectAdderAmount > 0 &&
+                                     (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
+
+      return hasProjectAmount || hasProposalAmount || isCustomAdderProjectOnly;
     })
-    .map(adder => ({
-      id: adder.id,
-      name: adder.name,
-      // Difference: Proposal amount - Project amount (reversed from original)
-      // Default to 0 if either value is null/undefined
-      difference: (adder.customProposalAdderAmount || 0) - (adder.customProjectAdderAmount || 0)
-    }));
+    .map(adder => {
+      // For custom adders with only project amount, ensure we always show a negative diff
+      const isCustomAdderProjectOnly = adder.adderType === 'custom_adders' &&
+                                     adder.customProjectAdderAmount &&
+                                     adder.customProjectAdderAmount > 0 &&
+                                     (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
+
+      // Difference: Proposal amount - Project amount
+      // Negative value means project has higher amount than proposal
+      const difference = (adder.customProposalAdderAmount || 0) - (adder.customProjectAdderAmount || 0);
+
+      return {
+        id: adder.id,
+        name: adder.name,
+        difference: difference
+      };
+    });
 });
 
-// Update commission total to include adder differences
+/**
+ * Calculate the total commission, including adder differences
+ */
 const commissionTotal = computed(() => {
   // Base amount plus sum of all adder differences
   const adderDifferencesTotal = adderDifferences.value.reduce(
@@ -204,59 +237,119 @@ const commissionTotal = computed(() => {
   return commissionBaseTotal.value + adderDifferencesTotal;
 })
 
+/**
+ * Calculate the total cost of all adders
+ */
 const adderTotal = computed(() => {
   return adders.value.reduce((total, adder) => {
-    // Use proposalAdderAmount if available, otherwise fallback to amount for backward compatibility
-    return total + (adder.proposalAdderAmount || adder.amount || 0)
+    // For custom adders with only project amount, use the project amount
+    if (isCustomProjectOnly(adder)) {
+      return total + (adder.customProjectAdderAmount || adder.projectAdderAmount || 0);
+    }
+    // Otherwise use proposalAdderAmount for consistency
+    return total + (adder.proposalAdderAmount || 0);
   }, 0)
 })
 
+/**
+ * Process and transform raw adder data from API
+ * @param {Array} adderData - Raw adder data from API response
+ */
 const processAdderData = (adderData) => {
-  adders.value = adderData
-    // Include adders of all types with amount greater than 0
-    .filter(adder =>
-      adder.selectedProposalAdder ||
-      (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) ||
-      (adder.adderType === 'auto_applied_adder' && adder.autoAppliedProposalAdderAmount > 0))
+  // Filter relevant adders first
+  const filteredAdders = adderData.filter(adder => {
+    // Include if selected on proposal
+    if (adder.selectedProposalAdder) return true;
 
-    .map(adder => {
-      let projectAmount = 0
-      let proposalAmount = 0
-      let customProjectAmount = null
-      let customProposalAmount = null
+    // Include if selected on project
+    if (adder.selectedProjectAdder) return true;
 
-      if (adder.adderType === 'selected_adders') {
-        projectAmount = adder.selectedAdderAmount || 0
-        proposalAmount = adder.selectedProposalAdderAmount || adder.selectedAdderAmount || 0
-      } else if (adder.adderType === 'custom_adders') {
-        projectAmount = adder.customAdderAmount || 0
-        proposalAmount = adder.customProposalAdderAmount || 0
+    // Include custom adders with positive proposal amounts
+    if (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) return true;
 
-        // For custom adders, we need to capture these values for difference calculation
-        customProjectAmount = adder.customAdderAmount || null
-        customProposalAmount = adder.customProposalAdderAmount || null
-      } else if (adder.adderType === 'auto_applied_adder') {
-        projectAmount = adder.autoAppliedAdderAmount || 0
-        proposalAmount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0
+    // Include custom adders with positive project amounts (even if proposal amount is 0/null/undefined)
+    if (adder.adderType === 'custom_adders' &&
+        adder.customProjectAdderAmount &&
+        adder.customProjectAdderAmount > 0) return true;
+
+    // Include auto-applied adders with positive amounts
+    if (adder.adderType === 'auto_applied_adder' &&
+        adder.autoAppliedProposalAdderAmount &&
+        adder.autoAppliedProposalAdderAmount > 0) return true;
+
+    // Exclude everything else
+    return false;
+  });
+
+  // Map to our internal adder format
+  adders.value = filteredAdders.map(adder => {
+    // Initialize with default values
+    const result = {
+      id: adder.id,
+      fieldName: adder.fieldName,
+      name: adder.fieldName || 'Unknown Adder',
+      unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
+      projectAdderAmount: 0,
+      proposalAdderAmount: 0,
+      customProjectAdderAmount: null,
+      customProposalAdderAmount: null,
+      adderType: adder.adderType,
+      selectedOnProjectOnly: false,
+      selectedOnProposalOnly: false
+    };
+
+    // Determine if selected on project and/or proposal
+    const isSelectedOnProject = adder.selectedProjectAdder || false;
+    const isSelectedOnProposal = adder.selectedProposalAdder || false;
+
+    result.selectedOnProjectOnly = isSelectedOnProject && !isSelectedOnProposal;
+    result.selectedOnProposalOnly = isSelectedOnProposal && !isSelectedOnProject;
+
+    // Process by adder type
+    if (adder.adderType === 'selected_adders') {
+      result.projectAdderAmount = adder.selectedAdderAmount || 0;
+      result.proposalAdderAmount = adder.selectedProposalAdderAmount || adder.selectedAdderAmount || 0;
+
+      // If selected on project only, set custom amounts for commission calculation with negative value
+      if (result.selectedOnProjectOnly) {
+        result.customProjectAdderAmount = adder.selectedAdderAmount || 0;
+        result.customProposalAdderAmount = 0;
       }
+    }
+    else if (adder.adderType === 'custom_adders') {
+      result.projectAdderAmount = adder.customProjectAdderAmount || 0;
+      result.proposalAdderAmount = adder.customProposalAdderAmount || 0;
 
-      return {
-        id: adder.id,
-        fieldName: adder.fieldName,
-        name: adder.fieldName || 'Unknown Adder',
-        unitPrice: adder.quantity ? `${adder.quantity}` : 'Flat Rate',
-        projectAdderAmount: projectAmount,
-        proposalAdderAmount: proposalAmount,
-        // These are the values we'll use to calculate differences for the Commission dropdown
-        customProjectAdderAmount: customProjectAmount,
-        customProposalAdderAmount: customProposalAmount,
-        adderType: adder.adderType,
-        // Keep amount for backward compatibility
-        amount: proposalAmount
+      // Store custom amounts for difference calculation
+      result.customProjectAdderAmount = adder.customProjectAdderAmount || null;
+      result.customProposalAdderAmount = adder.customProposalAdderAmount || null;
+
+      // Flag custom adders that have project amount but no proposal amount
+      // This helps identify them for highlighting in the table and showing in commission differences
+      if (adder.customProjectAdderAmount && adder.customProjectAdderAmount > 0 &&
+          (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0)) {
+        // Treat it similar to selectedOnProjectOnly for display purposes
+        result.selectedOnProjectOnly = true;
       }
-    })
+    }
+    else if (adder.adderType === 'auto_applied_adder') {
+      result.projectAdderAmount = adder.autoAppliedAdderAmount || 0;
+      result.proposalAdderAmount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
+    }
+
+    // Set amount for backward compatibility
+    result.amount = result.proposalAdderAmount;
+
+    return result;
+  })
 }
 
+/**
+ * Format a number as a currency string with optional decimal places
+ * @param {number} value - The number to format
+ * @param {boolean} showDecimals - Whether to show decimal places
+ * @returns {string} Formatted number string
+ */
 const formatNumber = (value, showDecimals = true) => {
   if (value === null || value === undefined) {
     return 'N/A'
@@ -265,6 +358,47 @@ const formatNumber = (value, showDecimals = true) => {
     minimumFractionDigits: showDecimals ? 2 : 0,
     maximumFractionDigits: showDecimals ? 2 : 0
   }).format(value)
+}
+
+/**
+ * Check if adder is a custom adder with only project amount
+ * @param {Object} adder - The adder to check
+ * @returns {boolean} True if it's a custom adder with project amount but no proposal amount
+ */
+const isCustomProjectOnly = (adder) => {
+  return adder.adderType === 'custom_adders' && 
+         adder.customProjectAdderAmount && 
+         adder.customProjectAdderAmount > 0 && 
+         (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
+}
+
+/**
+ * Determine CSS classes for an adder row based on its state
+ * @param {Object} adder - The adder object
+ * @param {number} index - Row index for alternating colors
+ * @returns {Object} CSS class object
+ */
+const getAdderRowClass = (adder, index) => {
+  const isEvenRow = index % 2 === 0;
+  const hasProposalOnly = adder.proposalAdderAmount && !adder.projectAdderAmount;
+  const hasProjectOnly = !adder.proposalAdderAmount && adder.projectAdderAmount;
+
+  // Check for custom adders with project amount but no proposal amount
+  const isCustomAdderProjectOnly = adder.adderType === 'custom_adders' &&
+    adder.customProjectAdderAmount &&
+    adder.customProjectAdderAmount > 0 &&
+    (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
+
+  return {
+    // Striped alternating color for base rows
+    'light-blue lighten-5': isEvenRow && !hasProposalOnly && !adder.selectedOnProjectOnly && !isCustomAdderProjectOnly,
+
+    // Gray for proposal-only adders
+    'grey lighten-2': hasProposalOnly && !adder.selectedOnProjectOnly && !isCustomAdderProjectOnly,
+
+    // Green for project-only adders (including selectedProjectAdder and custom adders with only project amount)
+    'green lighten-4': hasProjectOnly || adder.selectedOnProjectOnly || isCustomAdderProjectOnly
+  };
 }
 
 // Function to fetch base and commission amounts from the backend

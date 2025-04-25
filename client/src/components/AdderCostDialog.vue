@@ -61,7 +61,7 @@ const adderData = ref([]);
 // Format amount as currency for display purposes only
 const formatCurrency = (value, adderType) => {
   if (value === null || value === undefined) return '--';
-  
+
   // Don't format currency for custom_adders - return the raw value
   if (adderType === 'custom_adders') {
     // Return the exact number value, not formatted as currency
@@ -145,7 +145,7 @@ const fetchAdderData = async () => {
       if (adder.adderType === 'custom_adders') {
         // Special handling to ensure 0 values are properly handled
         const customAmount = adder.customProposalAdderAmount === 0 ? 0 : (adder.customProposalAdderAmount || 0);
-        
+
         // For custom adders, use a plain number type instead of currency to prevent formatting issues
         item.customFields = {
           amount: {
@@ -304,13 +304,6 @@ const handleApply = async (result) => {
       // Use the items directly from GenericCostDialog
       allItems: result.items
     };
-
-    // REMOVED: Don't refetch data from API, which would override our applied changes
-    // This allows the parent component to retain these changes when reopening the dialog
-    // await fetchAdderData();
-
-    // Don't reset fetch state - we want to retain the current state for reopening
-    // dataFetched.value = false;
 
     // Emit the apply-costs event with the processed data
     emit('apply-costs', appliedCosts);
