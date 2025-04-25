@@ -24,10 +24,10 @@ with newFunction as (
 ), assign as (
   insert into flow.company_function (company_function_name, db_function_id, company_id)
     values ('Check For Uploaded File', (select id from newFunction), 3)
-), sys_list_id as (
-    select id from flow.system_list where system_list.system_list = 'Attachment Types by Type'
 )
 insert into flow.db_function_param (db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, system_list_id)
-select f.id, 'Attachment Type', 0, 9, 2, null, sys_list_id
+select f.id, 'Attachment Type', 0, 9, 2, null, sl.id
 from newFunction f
-where not exists (select id from flow.db_function_param where parameter_name = 'Attachment Type' and data_type_id = 9);
+cross join flow.system_list sl
+where not exists (select id from flow.db_function_param where parameter_name = 'Attachment Type' and data_type_id = 9)
+and sl.system_list = 'Attachment Types by Type';
