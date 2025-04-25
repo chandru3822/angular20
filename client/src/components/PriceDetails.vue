@@ -213,11 +213,12 @@ const adderTotal = computed(() => {
 
 const processAdderData = (adderData) => {
   adders.value = adderData
-    // Include adders of all types
+    // Include adders of all types with amount greater than 0
     .filter(adder =>
       adder.selectedProposalAdder ||
       (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) ||
-      (adder.adderType === 'auto_applied_adder'))
+      (adder.adderType === 'auto_applied_adder' && adder.autoAppliedProposalAdderAmount > 0))
+
     .map(adder => {
       let projectAmount = 0
       let proposalAmount = 0
