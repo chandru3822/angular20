@@ -142,15 +142,15 @@ BEGIN
       from flow.user_positions_vw upv
       where upv.user_id = p_int_value
       order by name;
--- 5 attachment_types
-when v_system_list_id = 5 then RETURN QUERY
-select at.id,
-       at.attachment_type as "name",
-from flow.attachment_type at
-where company_id=:companyId
-  and at.archived is not true
-  and at.is_system is not true
-order by at.attachment_type;
+	-- 5 attachment_types
+	when v_system_list_id = 5 then RETURN QUERY
+	select at.id,
+	       at.attachment_type as "name"
+	from flow.attachment_type at
+	where company_id=:companyId
+	  and at.archived is not true
+	  and at.is_system is not true
+	order by at.attachment_type;
     end case;
 
 END;
