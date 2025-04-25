@@ -14,7 +14,7 @@
               color="warning"
               dense
               tile
-              :value="dirtyCfvs.length > 0"
+              :value="dirtyCfvs.length > 0 || adderStateChanged"
               transition="scale-transition"
             >
               Changes haven't been reflected on proposal
@@ -350,7 +350,7 @@
                 color="warning"
                 dense
                 tile
-                :value="dirtyCfvs.length > 0"
+                :value="dirtyCfvs.length > 0 || adderStateChanged"
                 transition="scale-transition"
               >
                 Changes haven't been reflected on proposal
@@ -763,15 +763,12 @@ const handleAppliedCosts = async (costs) => {
     // Use our helper function to update selections based on the updated adderData
     updateAdderSelections();
 
-    // Mark the adderCostField as having changes - this will show the Save button
+    // Mark the adderCostField as having changes - this will show the Save button and banners
     // but we don't add it to dirtyCfvs since we handle it separately
     adderCostField.value.hasChanges = true;
 
     // Set flag that adder state has changed and dialog should refresh on next open
     adderStateChanged.value = true;
-
-    // Remove the "adders applied" green message (it'll confuse closers)
-    // appStore.showSnack('SUCCESS', message); - Removed
 
     proposalForm.value.validate();
   }
@@ -807,12 +804,12 @@ const getProposalAdders = async () => {
         const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount;
         adder.selectedProposalAdder = !!(amount && amount > 0);
       }
-      
+
       // For custom adders, mark as selected if they have a positive amount
       else if (adder.adderType === 'custom_adders') {
         adder.selectedProposalAdder = adder.selectedProposalAdder || (adder.customProposalAdderAmount > 0);
       }
-      
+
       // For selected adders, preserve their selected state
       else if (adder.adderType === 'selected_adders') {
         // If it came back as selected from the API, keep it selected

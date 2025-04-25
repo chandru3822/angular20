@@ -70,8 +70,8 @@ const fetchAdderData = async () => {
 
     const params = {
       proposalId: props.proposalId,
-      commissionStrategyId: props.commissionStrategyId,
-      storageId: props.storageId
+      commissionStrategyId: props.commissionStrategyId ?? 123,
+      storageId: props.storageId ?? 123
     };
 
     const { data } = await postRequest(
