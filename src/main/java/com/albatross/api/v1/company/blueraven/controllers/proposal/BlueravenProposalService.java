@@ -75,7 +75,7 @@ import java.util.stream.Collectors;
 public class BlueravenProposalService {
   private static final Long CREATE_PROPOSAL_DESIGN_ID = 3507L;
   private static final Long ZIP_CODE_APPROVAL_ID = 3546L;
-  private static final Long SELECTED_ADDERS_CFGA_ID = 1328L;
+  private static final Long SELECTED_ADDERS_CFGA_ID = 1340L;
   private final SqlCache sqlCache;
   private final ObjectMapper om;
   private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;

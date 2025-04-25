@@ -555,6 +555,16 @@ const loadExistingAdders = () => {
         // Only mark as selected if amount exists and is greater than 0
         adder.selectedProposalAdder = !!(amount && amount > 0);
       }
+
+      // Make sure selectedProposalAdder is set for custom adders with an amount
+      if (adder.adderType === 'custom_adders' && adder.customProposalAdderAmount > 0) {
+        adder.selectedProposalAdder = true;
+      }
+
+      // Make sure selected adders are properly marked
+      if (adder.adderType === 'selected_adders' && adder.selectedAdderAmount > 0 && adder.applied) {
+        adder.selectedProposalAdder = true;
+      }
     });
 
     // Process the selected adders from API data
@@ -567,7 +577,7 @@ const updateAdderSelections = () => {
   // Reset selections
   selectedAdders.value = [];
   adderTotalCost.value = 0;
-  
+
   // Reset adderCostData to ensure clean state
   adderCostData.value = {
     items: {},
@@ -609,7 +619,7 @@ const updateAdderSelections = () => {
       else if (adder.adderType === 'auto_applied_adder') {
         // Only include auto-applied adders if they have a valid amount
         const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0;
-        
+
         // Only include if amount is greater than 0
         if (amount > 0) {
           selectedAdders.value.push({
@@ -620,7 +630,7 @@ const updateAdderSelections = () => {
             isAutoApplied: true
           });
           adderTotalCost.value += amount;
-  
+
           // Update items for dialog
           adderCostData.value.items[adder.id] = true;
         }
@@ -669,7 +679,7 @@ const handleAppliedCosts = async (costs) => {
       if (adder.adderType !== 'auto_applied_adder') {
         adder.selectedProposalAdder = false;
       }
-      
+
       // Reset custom adder amounts for non-selected items
       if (adder.adderType === 'custom_adders') {
         adder.customProposalAdderAmount = 0;
@@ -717,7 +727,7 @@ const handleAppliedCosts = async (costs) => {
       costs.customAdders.forEach(customAdderInfo => {
         const amount = customAdderInfo.amount || 0;
         const adder = adderData.value.find(a => a.id === customAdderInfo.id);
-        
+
         if (adder && adder.adderType === 'custom_adders') {
           // Only mark as selected if there's a positive amount
           if (amount > 0) {
@@ -756,7 +766,7 @@ const handleAppliedCosts = async (costs) => {
     // Mark the adderCostField as having changes - this will show the Save button
     // but we don't add it to dirtyCfvs since we handle it separately
     adderCostField.value.hasChanges = true;
-    
+
     // Set flag that adder state has changed and dialog should refresh on next open
     adderStateChanged.value = true;
 
@@ -790,10 +800,23 @@ const getProposalAdders = async () => {
     // Store the raw adder data for the AdderCostDialog
     adderData.value = [...data];
 
-    // Auto-mark auto-applied adders as selectedProposalAdder=true
+    // Process all adder types to ensure they're properly marked as selected
     adderData.value.forEach(adder => {
+      // For auto-applied adders, mark as selected only if they have a valid amount
       if (adder.adderType === 'auto_applied_adder') {
-        adder.selectedProposalAdder = true;
+        const amount = adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount;
+        adder.selectedProposalAdder = !!(amount && amount > 0);
+      }
+      
+      // For custom adders, mark as selected if they have a positive amount
+      else if (adder.adderType === 'custom_adders') {
+        adder.selectedProposalAdder = adder.selectedProposalAdder || (adder.customProposalAdderAmount > 0);
+      }
+      
+      // For selected adders, preserve their selected state
+      else if (adder.adderType === 'selected_adders') {
+        // If it came back as selected from the API, keep it selected
+        // No need to modify adder.selectedProposalAdder as it's already set correctly
       }
     });
 
@@ -965,11 +988,13 @@ const selectedAddersDisplay = computed(() => {
   let adders = [...selectedAdders.value];
 
   // Add any auto-applied adders that aren't already in the list
-  if (adderData.value) {
+  if (adderData.value && adderData.value.length > 0) {
     adderData.value
       .filter(adder =>
+        // Include auto-applied adders that have a valid amount
         adder.adderType === 'auto_applied_adder' &&
         adder.selectedProposalAdder &&
+        (adder.autoAppliedProposalAdderAmount > 0 || adder.autoAppliedAdderAmount > 0) &&
         !adders.some(sa => sa.id === adder.id)
       )
       .forEach(adder => {
@@ -979,6 +1004,39 @@ const selectedAddersDisplay = computed(() => {
           price: adder.autoAppliedProposalAdderAmount || adder.autoAppliedAdderAmount || 0,
           isCustom: false,
           isAutoApplied: true
+        });
+      });
+
+    // Make sure any selected standard adders are also included
+    adderData.value
+      .filter(adder =>
+        adder.adderType === 'selected_adders' &&
+        adder.selectedProposalAdder &&
+        !adders.some(sa => sa.id === adder.id)
+      )
+      .forEach(adder => {
+        adders.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: adder.selectedAdderAmount || 0,
+          isCustom: false
+        });
+      });
+
+    // Make sure any custom adders with amounts > 0 are included
+    adderData.value
+      .filter(adder =>
+        adder.adderType === 'custom_adders' &&
+        adder.selectedProposalAdder &&
+        adder.customProposalAdderAmount > 0 &&
+        !adders.some(sa => sa.id === adder.id)
+      )
+      .forEach(adder => {
+        adders.push({
+          id: adder.id,
+          label: adder.fieldName,
+          price: adder.customProposalAdderAmount || 0,
+          isCustom: true
         });
       });
   }
@@ -1398,7 +1456,7 @@ const saveCustomFieldValues = async () => {
 
     // Reset the hasChanges flag on adderCostField since we saved it
     adderCostField.value.hasChanges = false;
-    
+
     // Also reset the adderStateChanged flag since we've saved the state
     adderStateChanged.value = false;
 
@@ -1691,7 +1749,7 @@ const adderStateChanged = ref(false);
 const openAdderDialog = () => {
   // Update refs for configuration fields
   updateConfigurationRefs();
-  
+
   // Check if Pricing Strategy field exists
   const pricingStrategyField = findCustomFieldByAssignmentId(FIELD_IDS.PRICING_STRATEGY);
 
@@ -1709,7 +1767,7 @@ const openAdderDialog = () => {
   // If field exists and has a value
   if (pricingStrategyField.intValue) {
     commissionStrategyId.value = pricingStrategyField.intValue;
-    
+
     // Only update adderCostData if it's the first open or if state has changed
     if (adderCostData.value.items && Object.keys(adderCostData.value.items).length === 0 || adderStateChanged.value) {
       updateAdderSelections();

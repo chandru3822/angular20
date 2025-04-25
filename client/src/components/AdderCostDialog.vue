@@ -70,8 +70,8 @@ const fetchAdderData = async () => {
 
     const params = {
       proposalId: props.proposalId,
-      commissionStrategyId: props.commissionStrategyId, // Hardcoded for now
-      storageId: props.storageId // Hardcoded for now
+      commissionStrategyId: props.commissionStrategyId,
+      storageId: props.storageId
     };
 
     const { data } = await postRequest(
@@ -80,37 +80,29 @@ const fetchAdderData = async () => {
       'blueraven'
     );
 
-    // Store the raw adder data but filter out zero/null auto adders
-    adderData.value = data.filter(adder => {
-      // Filter out auto-applied adders with no valid amount
-      if (adder.adderType === 'auto_applied_adder') {
-        const amount = adder.autoAppliedAdderAmount;
-        // Keep only if amount exists and is greater than 0
-        return amount && amount > 0;
-      }
-      // Keep all other types of adders
-      return true;
-    });
+    // Store all adder data without filtering out auto adders
+    adderData.value = data;
 
     // Transform the adder data into the format needed for the dialog
     const transformedItems = data.map(adder => {
-      // Skip auto adders with null or zero amounts at the data level
-      if (adder.adderType === 'auto_applied_adder' && 
-          (!adder.autoAppliedAdderAmount || adder.autoAppliedAdderAmount === 0)) {
-        return null;
-      }
       // Determine the adder type and set fields accordingly
       let itemType, amount, applied, rawAmount;
 
       if (adder.adderType === 'auto_applied_adder') {
-        // Skip auto adders with null or zero amounts
-        if (!adder.autoAppliedAdderAmount || adder.autoAppliedAdderAmount === 0) {
-          return null; // Will be filtered out later
+        // For auto-applied adders, check if they have a valid amount
+        const autoAmount = adder.autoAppliedAdderAmount || adder.autoAppliedProposalAdderAmount;
+        if (!autoAmount || autoAmount === 0) {
+          // We still include them in the dialog, but with 0 amount
+          itemType = 'auto_applied_adder';
+          rawAmount = 0;
+          amount = formatCurrency(0);
+          applied = false;
+        } else {
+          itemType = 'auto_applied_adder';
+          rawAmount = autoAmount;
+          amount = formatCurrency(rawAmount);
+          applied = true;
         }
-        itemType = 'auto_applied_adder';
-        rawAmount = adder.autoAppliedAdderAmount;
-        amount = formatCurrency(rawAmount);
-        applied = true;
       } else if (adder.adderType === 'custom_adders') {
         itemType = 'custom_adders';
         rawAmount = adder.customProposalAdderAmount;
@@ -156,7 +148,7 @@ const fetchAdderData = async () => {
       }
 
       return item;
-    }).filter(item => item !== null); // Filter out any null items
+    });
 
     costItems.value = transformedItems;
   } catch (error) {
@@ -179,11 +171,11 @@ watch(() => props.existingAdders, (newValue) => {
             item.applied = false;
           }
         });
-        
+
         // Then apply the current state from existingAdders
         costItems.value.forEach(item => {
           const existingItem = newValue.items[item.id];
-          
+
           // Only process if the item exists in the current state
           if (existingItem !== undefined) {
             if (typeof existingItem === 'boolean') {

@@ -349,12 +349,29 @@ from project p
 
   //language=PostgreSQL
   public final static String updateSelectedAdders = """
-    UPDATE brs.proposal_custom_field_value
-    SET int_array_value = :adderIds::bigint[],
-        modified_by_id = :userId,
-        date_modified = now()
-    WHERE proposal_id = :proposalId
-      AND custom_field_group_assignment_id = :cfgaId;
+    INSERT INTO brs.proposal_custom_field_value (
+      proposal_id,
+      custom_field_group_assignment_id,
+      int_array_value,
+      created_by_id,
+      modified_by_id,
+      date_created,
+      date_modified
+    )
+    VALUES (
+      :proposalId,
+      :cfgaId,
+      :adderIds::bigint[],
+      :userId,
+      :userId,
+      now(),
+      now()
+    )
+    ON CONFLICT (proposal_id, custom_field_group_assignment_id) DO UPDATE
+    SET
+      int_array_value = :adderIds::bigint[],
+      modified_by_id = :userId,
+      date_modified = now()
     """;
 
   //language=PostgreSQL

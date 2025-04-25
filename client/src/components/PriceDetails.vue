@@ -107,9 +107,9 @@
                 v-for="(adder, index) in adders"
                 :key="index"
                 :class="{
-                  'light-blue lighten-5': index % 2 === 0,
-                  'grey lighten-4': adder.proposalAdderAmount && !adder.projectAdderAmount,
-                  'green lighten-5': !adder.proposalAdderAmount && adder.projectAdderAmount
+                  'light-blue lighten-5': index % 2 === 0 && !(adder.proposalAdderAmount && !adder.projectAdderAmount),
+                  'grey lighten-2': adder.proposalAdderAmount && !adder.projectAdderAmount,
+                  'green lighten-2': !adder.proposalAdderAmount && adder.projectAdderAmount
                 }"
                 class="dense-row"
               >
@@ -117,7 +117,12 @@
                 <td class="text-center caption">{{ adder.unitPrice }}</td>
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
-                    <span v-if="adder.projectAdderAmount !== null && adder.projectAdderAmount !== undefined && adder.projectAdderAmount !== adder.proposalAdderAmount && adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null" class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                    <span
+                      v-if="adder.projectAdderAmount !== null &&
+                        adder.projectAdderAmount !== undefined &&
+                        adder.projectAdderAmount !== adder.proposalAdderAmount &&
+                        adder.projectAdderAmount !== null && adder.proposalAdderAmount !== null"
+                        class="text-decoration-line-through mr-2 grey--text text-no-wrap">
                       ${{ formatNumber(adder.projectAdderAmount, true) }}
                     </span>
                     <span :class="{

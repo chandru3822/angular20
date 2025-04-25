@@ -284,7 +284,7 @@ watch(() => props.items, (newItems) => {
         item.applied = true;
       }
     });
-    
+
     // Initially no changes
     hasChanges.value = false;
   }
@@ -301,22 +301,22 @@ const checkForChanges = () => {
     hasChanges.value = false;
     return;
   }
-  
+
   hasChanges.value = tableItems.value.some((item, index) => {
     const original = originalItems.value[index];
     if (!original) return true;
-    
+
     // Check if applied state changed
     if (item.applied !== original.applied) return true;
-    
+
     // Check for changes in custom fields
     if (item.type === 'custom_adders' && item.customFields) {
       return Object.keys(item.customFields).some(key => {
-        return item.customFields[key].value !== 
+        return item.customFields[key].value !==
                (original.customFields?.[key]?.value || null);
       });
     }
-    
+
     return false;
   });
 };
@@ -326,7 +326,7 @@ watch(() => props.openDialog, (newVal) => {
     // Reset all items to their default state
     tableItems.value = JSON.parse(JSON.stringify(props.items));
     originalItems.value = JSON.parse(JSON.stringify(props.items));
-    
+
     // Initially no changes
     hasChanges.value = false;
 
