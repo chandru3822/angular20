@@ -4,10 +4,10 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.function.CompanyFunction;
-import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.function.CompanyFunction;
+import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.queries.CompanyFunctionQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +28,7 @@ public class CompanyFunctionService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final SystemListService systemListService;
   private final ObjectMapper om;
 
   public List<CompanyFunction> getCompanyFunctions() {
@@ -74,8 +75,15 @@ public class CompanyFunctionService {
     // 2 = dynamic value params - maybe we pass this in later if needed
     params.put("parameterTypeId", 2);
 //    this returns "false" as the default for boolean fields. fyi.  maybe we add this as an option to the dfp later
-    return sqlCache.queryBySql(
+    List<RequirementParamDynamicValue> paramDynamicValues = sqlCache.queryBySql(
       CompanyFunctionQuery.getFunctionDynamicParams, params, RequirementParamDynamicValue.class);
+    for(RequirementParamDynamicValue value: paramDynamicValues){
+        if(value.getSystemListId() != null) {
+           value.setListOfValues(systemListService.getSystemListOptionsForCompany(value.getSystemListId(), false, null, 3L));
+        }
+    }
+
+    return paramDynamicValues;
   }
 
   public CompanyFunctionParam saveFunctionParams(Long functionId, CompanyFunctionParam param) {

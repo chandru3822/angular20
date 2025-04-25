@@ -155,6 +155,7 @@
                     <span>{{ fp.description }}</span>
                   </v-tooltip>
                   <div class="dynamic-field-container">
+                  <!-- 4=numeric, 6=integer -->
                     <a-text-field
                         v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
                         :key="index"
@@ -163,6 +164,7 @@
                         v-model="fp.dynamicValue"
                         @input="validateRequirementForm()"
                         :label="fp.parameterName"></a-text-field>
+                    <!-- 3=boolean -->
                     <v-checkbox
                         v-else-if="fp.dataTypeId === 3"
                         :label="fp.parameterName"
@@ -171,6 +173,14 @@
                                     }"
                         :value="fp.dynamicValue === 'true'"
                         @change="changeBooleanValue($event, fp)"></v-checkbox>
+                    <!-- 9=system list -->
+                    <a-autocomplete
+                        v-else-if="fp.dataTypeId === 9"
+                        :items="fp.listOfValues"
+                        :label="fp.parameterName"
+                        item-title="name"
+                        item-value="id"
+                    ></a-autocomplete>
                     <a-text-field
                         :key="index"
                         v-else

@@ -11,7 +11,8 @@ public enum DataType {
   TEXT(5L, "text"),
   INTEGER(6L, "integer"),
   INTEGER_ARRAY(7L, "integer array"),
-  SYSTEM(8L, "system");
+  SYSTEM(8L, "system"),
+  SYSTEM_LIST(9L, "system list");
   private final Long id;
   private final String dataType;
 
