@@ -147,7 +147,7 @@ BEGIN
 	select at.id,
 	       at.attachment_type as "name"
 	from flow.attachment_type at
-	where company_id=:companyId
+	where company_id = p_company_id
 	  and at.archived is not true
 	  and at.is_system is not true
 	order by at.attachment_type;
