@@ -2,7 +2,7 @@
 --                                                      p_ppse_id bigint,
 --                                                      p_attachment_type_id bigint,
 --                                                      p_display_name_match_text varchar);
-CREATE OR REPLACE FUNCTION brs.check_for_attachment_of_type(p_pps_id bigint, p_ppse_id bigint, p_attachment_type_id)
+CREATE OR REPLACE FUNCTION brs.check_for_attachment_of_type(p_pps_id bigint, p_ppse_id bigint, p_attachment_type_id bigint)
   returns boolean AS
 $BODY$
 declare
