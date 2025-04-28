@@ -926,7 +926,6 @@ onMounted(() => {
   }
 
   const loadingPromises = [
-    getAvailableFilters(),
     getProjectStatusTypesForWorkQueue(),
     getProcessStepStatusTypesForWorkQueue(),
     loadAllFilterCounts()
