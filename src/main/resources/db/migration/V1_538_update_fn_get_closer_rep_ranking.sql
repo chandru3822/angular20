@@ -1,21 +1,4 @@
-drop function if exists brs.get_closer_rep_rankings(bigint, bigint);
-drop function if exists brs.get_closer_rep_rankings(date, date,bigint);
-CREATE OR REPLACE FUNCTION brs.get_closer_rep_rankings(p_start_date date,p_end_date date, p_org_id bigint default null )
-  RETURNS table
-          (
-            user_id              bigint,
-            closer_name          text,
-            office_name             character varying,
-            region                  character varying,
-            metro_area              character varying,
-            lead_gen_fdc_percentage numeric,
-            self_gen_fdc             bigint,
-            total_fdc            bigint,
-            rank bigint,
-            rank_label text
-          )
-AS
-$BODY$
+
 declare
   v_closer_gen_source_ids bigint[];
 v_time_interval bigint;
@@ -50,7 +33,7 @@ BEGIN
              LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
       WHERE case when p_org_id is not null then (up.org_id = p_org_id or up.sales_org_id = p_org_id) else true end
         AND ust.has_access is true
-        and ust.user_status_type = 'Active'
+		and ust.user_status_type = 'Active'
         and up.archived is false
         AND pd.company_id = 3
         and (up.end_date is null or
@@ -107,6 +90,3 @@ BEGIN
   order by r.total_fdc desc;
 
 END
-$BODY$
-  LANGUAGE plpgsql VOLATILE
-                   COST 100;
