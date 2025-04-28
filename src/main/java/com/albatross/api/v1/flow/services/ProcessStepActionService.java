@@ -37,13 +37,13 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
     params.put("id", null);
-    // @randa come back to this. i was annoyed to have to keep 2 queries up-to-date when they were
-    // basically doing the same thing. (single select by id, vs list select by process_step_id) but
-    // this requires both calls to pass in a null param, not sure i like this
-    return sqlCache.queryBySql(
+
+    List<ProcessStepAction> actions = sqlCache.queryBySql(
       ProcessStepActionQuery.getActionsForStep,
       params,
       new ProcessStepActionMapper<>(ProcessStepAction.class, om));
+
+    return actions;
   }
 
   public String getActionLogicString(Long actionId) {
@@ -231,10 +231,46 @@ public class ProcessStepActionService {
   public ProcessStepActionChildProcess addChildStepToAction(
     Long actionId, ProcessStepActionChildProcess child) {
     User currentUser = securityService.getCurrentUser();
+
+    // Check if we should reopen an existing primary process
+    if (Boolean.TRUE.equals(child.getReopenPrimaryIfApplicable())) {
+      HashMap<String, Object> findParams = new HashMap<>();
+      findParams.put("processStepActionId", actionId);
+      findParams.put("processStepId", child.getProcessStepId());
+
+      // Try to find existing primary process step (the first/oldest one)
+      Optional<ProcessStepActionChildProcess> existingPrimary = sqlCache.getBySql(
+        ProcessStepActionQuery.findPrimaryByActionIdAndProcessStepId,
+        findParams,
+        ProcessStepActionChildProcess.class
+      );
+
+      if (existingPrimary.isPresent()) {
+        // Reopen the existing primary process
+        ProcessStepActionChildProcess primary = existingPrimary.get();
+        HashMap<String, Object> updateParams = new HashMap<>();
+        updateParams.put("modifiedById", currentUser.trueUserId());
+        updateParams.put("id", primary.getId());
+        updateParams.put("initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
+
+        // Update existing record to reactivate it
+        sqlCache.updateBySql(ProcessStepActionQuery.reactivateChildProcess, updateParams);
+
+        // Return the reactivated process
+        return getActionChildStep(primary.getId());
+      }
+    }
+
+    // No existing primary or reopenPrimaryIfApplicable is false, create new
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", child.getProcessStepId());
     params.put("processStepActionId", actionId);
-    params.put("displayOrder", child.getDisplayOrder());
+
+    // Set a default display order if null - fix the NullPointerException
+    Long displayOrderLong = child.getDisplayOrder();
+    Integer displayOrder = (displayOrderLong != null) ? Math.toIntExact(displayOrderLong) : 0;
+    params.put("displayOrder", displayOrder);
+
     params.put("createdById", currentUser.trueUserId());
     params.put("companyProcessStepStatusTypeId", child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
@@ -242,6 +278,7 @@ public class ProcessStepActionService {
       child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
       "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
+    params.put("reopenPrimaryIfApplicable", child.getReopenPrimaryIfApplicable());
 
     Long id =
       sqlCache
@@ -261,6 +298,7 @@ public class ProcessStepActionService {
       child.getExistingCompanyProcessStepStatusTypeId());
     params.put(
       "initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
+    params.put("reopenPrimaryIfApplicable", child.getReopenPrimaryIfApplicable());
     params.put("modifiedById", currentUser.trueUserId());
 
     Long id =
