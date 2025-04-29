@@ -161,6 +161,7 @@ public class ProcessStepActionQuery {
                                     psacp.created_by_id as "createdById",
                                     psacp.modified_by_id as "modifiedById",
                                     ps.process_step_name as "processStepName",
+                                    COALESCE(psacp.reopen_primary_if_applicable, FALSE) as "reopenPrimaryIfApplicable",
                                     (
                                       select count(*)
                                       from flow.process_step_action psa
@@ -367,20 +368,38 @@ public class ProcessStepActionQuery {
     """;
 
   //language=PostgreSQL
+  public static final String findPrimaryByActionIdAndProcessStepId =
+    "SELECT * FROM flow.process_step_action_child_process " +
+      "WHERE process_step_action_id = :processStepActionId " +
+      "AND process_step_id = :processStepId " +
+      "AND archived is not true " +
+      "ORDER BY id ASC LIMIT 1";
+
+  //language=PostgreSQL
+  public static final String reactivateChildProcess =
+    "UPDATE flow.process_step_action_child_process " +
+      "SET modified_by_id = :modifiedById, " +
+      "date_modified = now(), " +
+      "initial_company_process_step_status_type_id = :initialCompanyProcessStepStatusTypeId " +
+      "WHERE id = :id";
+
+  //language=PostgreSQL
   public final static String addChildStepToAction = """
-    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, display_order, existing_company_process_step_status_type_id, initial_company_process_step_status_type_id, created_by_id, date_created, modified_by_id, date_modified)
-        values (:processStepActionId, :processStepId, :displayOrder, :existingCompanyProcessStepStatusTypeId, :initialCompanyProcessStepStatusTypeId, :createdById, now(), :createdById, now())
+    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, display_order, existing_company_process_step_status_type_id, initial_company_process_step_status_type_id, created_by_id, date_created, modified_by_id, date_modified, reopen_primary_if_applicable)
+        values (:processStepActionId, :processStepId, :displayOrder, :existingCompanyProcessStepStatusTypeId, :initialCompanyProcessStepStatusTypeId, :createdById, now(), :createdById, now(), :reopenPrimaryIfApplicable)
+        RETURNING id
     """;
 
   //language=PostgreSQL
   public final static String saveChildProcessStatuses = """
-    update flow.process_step_action_child_process
-          set existing_company_process_step_status_type_id = :existingCompanyProcessStepStatusTypeId,
-              initial_company_process_step_status_type_id = :initialCompanyProcessStepStatusTypeId,
-              date_modified = now(),
-              modified_by_id = :modifiedById
-        where id = :childProcessStepId
-    """;
+  update flow.process_step_action_child_process
+        set existing_company_process_step_status_type_id = :existingCompanyProcessStepStatusTypeId,
+            initial_company_process_step_status_type_id = :initialCompanyProcessStepStatusTypeId,
+            reopen_primary_if_applicable = :reopenPrimaryIfApplicable,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+      where id = :childProcessStepId
+  """;
 
   //language=PostgreSQL
   public final static String getActionChildStep = """
@@ -391,12 +410,13 @@ public class ProcessStepActionQuery {
            cp.archived,
            cp.date_created,
            cp.date_modified,
-           cp.existing_company_process_step_status_type_id,
-           cp.initial_company_process_step_status_type_id,
-           ecpsst.process_step_status_type as existingProcessStepStatusType,
-           icpsst.process_step_status_type as initialProcessStepStatusType,
            cp.created_by_id,
            cp.modified_by_id,
+           cp.existing_company_process_step_status_type_id,
+           cp.initial_company_process_step_status_type_id,
+           cp.reopen_primary_if_applicable,
+           ecpsst.process_step_status_type as existingProcessStepStatusType,
+           icpsst.process_step_status_type as initialProcessStepStatusType,
            ps.process_step_name
         from flow.process_step_action_child_process cp
             inner join flow.process_step ps on ps.id = cp.process_step_id

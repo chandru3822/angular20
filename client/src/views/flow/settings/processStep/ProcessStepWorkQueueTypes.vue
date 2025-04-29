@@ -611,16 +611,24 @@ const getAvailableFilters = async (forceUpdate = false) => {
       const objectTypeId = 4
       const projectDetails = false
 
-      const {data, status} = await getRequest(`/smartlist/fields?objectTypeIds=${objectTypeId}&projectDetails=${projectDetails}`)
+      const response = await getRequest(`/smartlist/fields?objectTypeIds=${objectTypeId}&projectDetails=${projectDetails}`)
+      const {data, status} = response
 
-      availableFilters.value = data.map(filter => ({
-        id: filter.customFieldGroupAssignmentId,
-        name: filter.name,
-        processStepName: filter.processStepName,
-        dataTypeId: filter.dataTypeId,
-        objectTypeId: filter.objectTypeId,
-        hasListValues: filter.hasListValues
-      }))
+      // Make sure data is an array before calling map
+      if (Array.isArray(data)) {
+        availableFilters.value = data.map(filter => ({
+          id: filter.customFieldGroupAssignmentId,
+          name: filter.name,
+          processStepName: filter.processStepName,
+          dataTypeId: filter.dataTypeId,
+          objectTypeId: filter.objectTypeId,
+          hasListValues: filter.hasListValues
+        }))
+      } else {
+        console.error('Expected data to be an array but got:', typeof data, data)
+        // Set to empty array if data is not an array
+        availableFilters.value = []
+      }
 
       handleHidingGlobalLoader(status)
     } catch (e) {
@@ -918,7 +926,6 @@ onMounted(() => {
   }
 
   const loadingPromises = [
-    getAvailableFilters(),
     getProjectStatusTypesForWorkQueue(),
     getProcessStepStatusTypesForWorkQueue(),
     loadAllFilterCounts()

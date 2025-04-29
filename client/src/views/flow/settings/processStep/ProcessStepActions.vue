@@ -462,21 +462,35 @@
                                     item-value="id"
                                     attach>
                     </a-autocomplete>
+
+                    <!-- Toggle for reopening primary step -->
+                    <v-checkbox
+                      dense
+                      hide-details
+                      v-model="newChildProcessStep.reopenPrimaryIfApplicable"
+                      :model-value="newChildProcessStep.reopenPrimaryIfApplicable"
+                      @update:model-value="newChildProcessStep.reopenPrimaryIfApplicable = $event"
+                      label="Reopen primary if applicable"
+                      hint="If enabled, will reopen existing completed/cancelled primary steps instead of creating new ones"
+                      persistent-hint
+                      class="mt-3 mb-3"
+                    />
+
                     <div class="mt-3">
                       <a-btn
-                          :disabled="!newChildProcessStep.processStepId || !newChildProcessStep.existingCompanyProcessStepStatusTypeId || !newChildProcessStep.initialCompanyProcessStepStatusTypeId"
-                          @click="saveProcessStepToAction(item)"
-                          color="primary"
-                          prepend-icon="save"
-                          text="Save"
+                        :disabled="!newChildProcessStep.processStepId || !newChildProcessStep.existingCompanyProcessStepStatusTypeId || !newChildProcessStep.initialCompanyProcessStepStatusTypeId"
+                        @click="saveProcessStepToAction(item)"
+                        color="primary"
+                        prepend-icon="save"
+                        text="Save"
                       ></a-btn>
                       <a-btn
-                          class="ml-3"
-                          @click="[addChildProcess = false, newChildProcessStep = {}]"
-                          variant="text"
-                          color="primary"
-                          prepend-icon="remove"
-                          text="Cancel"
+                        class="ml-3"
+                        @click="[addChildProcess = false, newChildProcessStep = {}]"
+                        variant="text"
+                        color="primary"
+                        prepend-icon="remove"
+                        text="Cancel"
                       ></a-btn>
                     </div>
                   </v-card>
@@ -516,13 +530,26 @@
                                             item-value="id"
                                             attach
                             ></a-autocomplete>
+
+                            <!-- Toggle for reopening primary step -->
+                            <v-checkbox
+                              dense
+                              hide-details
+                              v-model="cp.reopenPrimaryIfApplicable"
+                              :disabled="!userCanEdit"
+                              label="Reopen primary if applicable"
+                              hint="If enabled, will reopen existing completed/cancelled primary steps instead of creating new ones"
+                              persistent-hint
+                              class="mt-3 mb-3"
+                            />
+
                             <a-btn
-                                color="primary"
-                                class=""
-                                v-if="userCanEdit"
-                                :disabled="!cp.existingCompanyProcessStepStatusTypeId || !cp.initialCompanyProcessStepStatusTypeId"
-                                @click="saveChildProcessCancelledStatus(item, cp)"
-                                text="Save Changes"
+                              color="primary"
+                              class="mt-2"
+                              v-if="userCanEdit"
+                              :disabled="!cp.existingCompanyProcessStepStatusTypeId || !cp.initialCompanyProcessStepStatusTypeId"
+                              @click="saveChildProcessCancelledStatus(item, cp)"
+                              text="Save Changes"
                             ></a-btn>
                           </td>
                         </tr>
@@ -536,6 +563,10 @@
                       </template>
                       <template #item.existingProcessStepStatusType="{item:cp}" class="text-left">
                         {{ cp.existingProcessStepStatusType }}
+                      </template>
+                      <template #item.reopenPrimaryIfApplicable="{item}">
+                        <v-icon v-if="item.reopenPrimaryIfApplicable">mdi-check</v-icon>
+                        <v-icon v-else>mdi-close</v-icon>
                       </template>
                       <template #item.icons="{item:cp}" class="text-right">
                         <a-btn
@@ -1080,6 +1111,7 @@ const childProcessStepHeaders = ref([
   {text: 'Child Step', value: 'processStepName', show: true},
   {text: 'Initial Status', value: 'initialProcessStepStatusType', show: true},
   {text: 'Status for any Existing Active', value: 'existingProcessStepStatusType', show: true},
+  {text: 'Reopen Primary', value: 'reopenPrimaryIfApplicable', show: true},
   {text: null, value: 'icons', show: true}
 ])
 const addNewRequirement = ref(false)
@@ -1133,7 +1165,9 @@ const addChildFunction = ref(false)
 const actionLogicError = ref(false)
 const actionLogicErrorMsg = ref('')
 const actionSearch = ref('')
-const newChildProcessStep = ref({})
+const newChildProcessStep = ref({
+  reopenPrimaryIfApplicable: false  // Default to false to maintain current behavior
+})
 const cancelledCompanyStatuses = ref([])
 const activeStatusesAssignedToStep = ref([])
 const selectedChildFunction = ref({})
@@ -1357,6 +1391,11 @@ const filterItems = (items) => {
   return items.filter(i => !i.archived)
 }
 const getStatusesAssignedToStep = async (item) => {
+  // Initialize reopenPrimaryIfApplicable to false if undefined
+  if (item.reopenPrimaryIfApplicable === undefined) {
+    item.reopenPrimaryIfApplicable = false;
+  }
+
   activeStatusesAssignedToStep.value = []
   try {
     const {data} = await getActiveAssignedToProcessStep(item.processStepId)
@@ -1499,13 +1538,32 @@ const mapActionsFromData = (data) => {
 const getActions = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
-    mapActionsFromData(data)
-    handleHidingGlobalLoader(status)
+    const response = await getRequest(`/processStep/${processStepId.value}/action`)
+    const { data, status } = response
+
+    // Check if data is an array before using forEach
+    if (Array.isArray(data)) {
+      data.forEach(action => {
+        if (action.processStepActionChildProcesses?.length > 0) {
+          action.processStepActionChildProcesses.forEach(cp => {
+            cp.reopenPrimaryIfApplicable = cp.reopenPrimaryIfApplicable === true;
+          });
+        }
+      });
+
+      mapActionsFromData(data);
+    } else {
+      console.warn('Expected an array but received:', data);
+      // Initialize with empty array when we get invalid data
+      mapActionsFromData([]);
+    }
+
+    handleHidingGlobalLoader(status);
   } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Retrieving Data')
-    appStore.loading = false
+    console.error('*** ERROR ***', e);
+    appStore.showSnack('ERROR', 'Error Retrieving Data');
+    actions.value = []; // Ensure actions is initialized
+    appStore.loading = false;
   }
 }
 const loadChildFunctions = async () => {
@@ -1690,26 +1748,42 @@ const deleteAction = async () => {
 }
 //child process steps
 const loadChildProcessSteps = async (actionId) => {
-  const {data} = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/childProcessSteps`)
-  childProcessSteps.value = data
+  try {
+    const { data } = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/childProcessSteps`)
+    // Ensure reopenPrimaryIfApplicable is initialized for each child process
+    childProcessSteps.value = data.map(cp => ({
+      ...cp,
+      reopenPrimaryIfApplicable: cp.reopenPrimaryIfApplicable === undefined ? false : cp.reopenPrimaryIfApplicable
+    }))
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error loading child process steps')
+  }
 }
 const saveChildProcessCancelledStatus = async (action, cp) => {
   appStore.loading = true
   try {
+    // Ensure boolean value is properly set before sending to API
+    const reopenValue = cp.reopenPrimaryIfApplicable === true;
+
     const {
       data,
       status
     } = await putRequest(`/processStep/${processStepId.value}/action/${action.id}/child/${cp.id}/status`, {
       existingCompanyProcessStepStatusTypeId: cp.existingCompanyProcessStepStatusTypeId,
       initialCompanyProcessStepStatusTypeId: cp.initialCompanyProcessStepStatusTypeId,
+      reopenPrimaryIfApplicable: reopenValue,
     })
+
     cpExpanded.value = []
     cp.existingProcessStepStatusType = data.existingProcessStepStatusType
     cp.initialProcessStepStatusType = data.initialProcessStepStatusType
+    cp.reopenPrimaryIfApplicable = data.reopenPrimaryIfApplicable
+
     appStore.showSnack('SUCCESS', 'Child Process Status Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
-    console.error('*** ERROR ***', e)
+    console.error('*** ERROR SAVING CHILD PROCESS STATUS ***', e)
     appStore.showSnack('ERROR', 'Error Saving Child Process Status')
     appStore.loading = false
   }
@@ -1717,17 +1791,24 @@ const saveChildProcessCancelledStatus = async (action, cp) => {
 const saveProcessStepToAction = async (action) => {
   appStore.loading = true
   try {
-    const {
-      data,
-      status
-    } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildStepToAction`, {
+    const { data, status } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildStepToAction`, {
       processStepId: newChildProcessStep.value.processStepId,
-      existingCompanyProcessStepStatusTypeId: newChildProcessStep.value.existingCompanyProcessStepStatusTypeId,
       initialCompanyProcessStepStatusTypeId: newChildProcessStep.value.initialCompanyProcessStepStatusTypeId,
-      displayOrder: 0
+      existingCompanyProcessStepStatusTypeId: newChildProcessStep.value.existingCompanyProcessStepStatusTypeId,
+      reopenPrimaryIfApplicable: newChildProcessStep.value.reopenPrimaryIfApplicable || false
     })
-    action.processStepActionChildProcesses.push(data)
-    newChildProcessStep.value = {}
+
+    // Ensure the returned data preserves the reopenPrimaryIfApplicable value
+    action.processStepActionChildProcesses.push({
+      ...data,
+      reopenPrimaryIfApplicable: data.reopenPrimaryIfApplicable === undefined ? false : data.reopenPrimaryIfApplicable
+    });
+
+    // Reset form with default values
+    newChildProcessStep.value = {
+      reopenPrimaryIfApplicable: false
+    }
+
     addChildProcess.value = false
     appStore.showSnack('SUCCESS', 'Child Process Added To Action')
     handleHidingGlobalLoader(status)
