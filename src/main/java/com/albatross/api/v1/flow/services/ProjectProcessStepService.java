@@ -1342,7 +1342,7 @@ public class ProjectProcessStepService {
 
     String startingValue = param.getDynamicValue();
     Object typedValue = null;
-
+//todo: add type for 9
     try {
       switch (param.getDataTypeId().intValue()) {
         case 1:
@@ -1360,6 +1360,7 @@ public class ProjectProcessStepService {
           typedValue = "'" + startingValue + "'";
           break;
         case 6:
+        case 9:
           typedValue = Long.parseLong(startingValue);
           break;
         default:

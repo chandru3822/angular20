@@ -180,6 +180,8 @@
                         :label="fp.parameterName"
                         item-title="name"
                         item-value="id"
+                        v-model="fp.dynamicValue"
+                        @input="validateRequirementForm"
                     ></a-autocomplete>
                     <a-text-field
                         :key="index"
