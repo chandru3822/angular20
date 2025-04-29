@@ -290,6 +290,37 @@ public class ProcessStepActionService {
   public ProcessStepActionChildProcess saveChildProcessCancelledStatus(
     Long actionId, Long childProcessStepId, ProcessStepActionChildProcess child) {
     User currentUser = securityService.getCurrentUser();
+
+    // Check if we should reopen an existing primary process
+    if (Boolean.TRUE.equals(child.getReopenPrimaryIfApplicable())) {
+      HashMap<String, Object> findParams = new HashMap<>();
+      findParams.put("processStepActionId", actionId);
+      findParams.put("processStepId", child.getProcessStepId());
+
+      // Try to find existing primary process step
+      Optional<ProcessStepActionChildProcess> existingPrimary = sqlCache.getBySql(
+        ProcessStepActionQuery.findPrimaryByActionIdAndProcessStepId,
+        findParams,
+        ProcessStepActionChildProcess.class
+      );
+
+      if (existingPrimary.isPresent()) {
+        // Reopen the existing primary process
+        ProcessStepActionChildProcess primary = existingPrimary.get();
+        HashMap<String, Object> updateParams = new HashMap<>();
+        updateParams.put("modifiedById", currentUser.trueUserId());
+        updateParams.put("id", primary.getId());
+        updateParams.put("initialCompanyProcessStepStatusTypeId", child.getInitialCompanyProcessStepStatusTypeId());
+
+        // Update existing record to reactivate it
+        sqlCache.updateBySql(ProcessStepActionQuery.reactivateChildProcess, updateParams);
+
+        // Return the reactivated process
+        return getActionChildStep(primary.getId());
+      }
+    }
+
+    // No existing primary or reopenPrimaryIfApplicable is false, update current child step
     HashMap<String, Object> params = new HashMap<>();
     params.put("childProcessStepId", childProcessStepId);
     params.put("processStepActionId", actionId);
@@ -301,10 +332,9 @@ public class ProcessStepActionService {
     params.put("reopenPrimaryIfApplicable", child.getReopenPrimaryIfApplicable());
     params.put("modifiedById", currentUser.trueUserId());
 
-    Long id =
-      sqlCache
-        .updateBySqlReturningId(ProcessStepActionQuery.saveChildProcessStatuses, params, "id")
-        .longValue();
+    Long id = sqlCache
+      .updateBySqlReturningId(ProcessStepActionQuery.saveChildProcessStatuses, params, "id")
+      .longValue();
     return getActionChildStep(id);
   }
 

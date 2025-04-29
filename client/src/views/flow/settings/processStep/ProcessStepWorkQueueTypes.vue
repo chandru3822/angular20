@@ -480,13 +480,13 @@
                   <span v-if="idx !== 0">, </span>
                   <span>{{ filter.name }}</span>
                 </span>
-                <span v-if="item.filterCount > 0" class="filter-count ml-2">
+                  <span v-if="item.filterCount > 0" class="filter-count ml-2">
                   {{ item.filterCount }}
                 </span>
-                <span v-else-if="filterCountsLoaded && (!item.selectedFilters || item.selectedFilters.length === 0)" class="grey--text">
+                  <span v-else-if="filterCountsLoaded && (!item.selectedFilters || item.selectedFilters.length === 0)" class="grey--text text--darken-2">
                   No filters
                 </span>
-                <span v-else-if="!filterCountsLoaded" class="grey--text">
+                  <span v-else-if="!filterCountsLoaded" class="grey--text text--darken-2">
                   Loading...
                 </span>
               </div>
@@ -1394,7 +1394,26 @@ onMounted(() => {
       }
     }
     const saveStatusesToWorkQueueType = async(item) => {
-      appStore.loading = true
+      // Validate that a filter is selected
+      if (!selectedFilters.value || !selectedFilters.value.id) {
+        appStore.showSnack('ERROR', 'Please select a filter');
+        return;
+      }
+
+      // Validate filter selection if a filter is partially filled out
+      if (selectedFilters.value && selectedFilters.value.id) {
+        if (!selectedFilters.value.operator) {
+          appStore.showSnack('ERROR', 'Please select an operator for your filter');
+          return;
+        }
+
+        if (!selectedFilters.value.value) {
+          appStore.showSnack('ERROR', 'Please select a value for your filter');
+          return;
+        }
+      }
+
+      appStore.loading = true;
       try {
         item.selectedFilters = selectedFilters.value ? {
           id: selectedFilters.value.id,
@@ -1507,6 +1526,12 @@ onMounted(() => {
 
 .tabs {
   border-bottom: solid 1px var(--v-grey-lighten2) !important;
+}
+
+.filter-count {
+  color: black;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 </style>

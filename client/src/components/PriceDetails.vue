@@ -27,7 +27,7 @@
           <span class="d-flex align-center justify-end ml-auto">
             <span class="text-subtitle-2 grey--text mr-2">Subtotal:</span>
             <span class="text-subtitle-1 font-weight-medium">
-              $ {{ formatNumber(commissionBase * 1000) }}
+              $ {{ formatNumber(commissionBase) }}
             </span>
           </span>
         </v-expansion-panel-header>
@@ -58,7 +58,7 @@
               <tbody>
               <tr class="dense-row">
                 <td class="caption light-blue lighten-5">Base</td>
-                <td class="text-right caption light-blue lighten-5">${{ formatNumber(basePrice * 1000, true) }}</td>
+                <td class="text-right caption light-blue lighten-5">${{ formatNumber(basePrice, true) }}</td>
               </tr>
               <!-- Show adder differences between Project and Proposal amounts -->
               <template v-for="(adder, index) in adderDifferences">
@@ -179,7 +179,7 @@ const commissionBase = ref(0)
 const adders = ref([])
 
 const commissionBaseTotal = computed(() => {
-  return basePrice.value * 1000 // Multiply by 1000 to match the base price scale
+  return basePrice.value // No need to multiply as API will provide the correct scale
 })
 
 /**

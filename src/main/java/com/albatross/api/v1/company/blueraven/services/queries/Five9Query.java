@@ -94,25 +94,19 @@ public class Five9Query {
                                and ppse.company_event_status_type_id NOT IN (3,4,24) -- Cancelled, Complete, Rescheduled
                                and ppse.archived is false
                              group by pps.project_id) as next_event,
-                            (select ccfv.int_value
-                             from flow.contact_custom_field_value ccfv
-                             where ccfv.custom_field_group_assignment_id = 399 -- lead status
-                               and ccfv.contact_id = pd.contact_id) as lead_status_id
+                       (SELECT pa.date_modified
+                                FROM flow.project_activity pa
+                                WHERE pa.project_id = pd.project_id
+                                  AND pa.archived IS FALSE
+                                  AND pa.created_by_id = pd.closer_user_id
+                                ORDER BY pa.date_modified DESC
+                                LIMIT 1) AS latest_activity_note_date
                      from brs.project_details pd
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
                              'US/Mountain') :: date between current_date - 180 and current_date - 30)
-                       and
-                        (
-                          pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Setter Gen',
-                                             'Breeze', 'Retargeted', 'Virtual Lead', 'BRS-Display')
-                            OR
-                          (COALESCE((select ccfv.int_value
-                               from flow.contact_custom_field_value ccfv
-                               where ccfv.custom_field_group_assignment_id = 20977
-                               and ccfv.contact_id = pd.contact_id), 0) in
-                               (0, 1, 2, 3, 7, 40)) -- contacts with certain lead level
-                          )
+                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Setter Gen',
+                                             'Breeze', 'Retargeted', 'Virtual Lead', 'BRS-Display', 'New Homes Referral', 'SunPower')
                        AND pd.complete_date_booking is null
                        AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
                                                          from flow.company_configuration_value
@@ -130,6 +124,7 @@ public class Five9Query {
     select id
     from results
     where (next_event is null or next_event >= current_date - 30) -- Make sure latest Closer Appointment is greater than or equal to 30 days old
+    and (latest_activity_note_date IS NULL OR latest_activity_note_date < current_date - 30)  -- Make sure there is no note from the Closer in the last 30 days
     """;
 
   //language=PostgreSQL

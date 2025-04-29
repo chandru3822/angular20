@@ -369,11 +369,14 @@ public class ProcessStepActionQuery {
 
   //language=PostgreSQL
   public static final String findPrimaryByActionIdAndProcessStepId =
-    "SELECT * FROM flow.process_step_action_child_process " +
-      "WHERE process_step_action_id = :processStepActionId " +
-      "AND process_step_id = :processStepId " +
-      "AND archived is not true " +
-      "ORDER BY id ASC LIMIT 1";
+    "SELECT psacp.* FROM flow.process_step_action_child_process psacp " +
+      "JOIN flow.company_process_step_status_type cpsst " +
+      "ON psacp.existing_company_process_step_status_type_id = cpsst.id " +
+      "WHERE psacp.process_step_action_id = :processStepActionId " +
+      "AND psacp.process_step_id = :processStepId " +
+      "AND psacp.archived is not true " +
+      "AND cpsst.process_step_status_type_id = 2 " +
+      "ORDER BY psacp.id ASC LIMIT 1";
 
   //language=PostgreSQL
   public static final String reactivateChildProcess =
