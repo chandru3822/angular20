@@ -1394,7 +1394,26 @@ onMounted(() => {
       }
     }
     const saveStatusesToWorkQueueType = async(item) => {
-      appStore.loading = true
+      // Validate that a filter is selected
+      if (!selectedFilters.value || !selectedFilters.value.id) {
+        appStore.showSnack('ERROR', 'Please select a filter');
+        return;
+      }
+
+      // Validate filter selection if a filter is partially filled out
+      if (selectedFilters.value && selectedFilters.value.id) {
+        if (!selectedFilters.value.operator) {
+          appStore.showSnack('ERROR', 'Please select an operator for your filter');
+          return;
+        }
+
+        if (!selectedFilters.value.value) {
+          appStore.showSnack('ERROR', 'Please select a value for your filter');
+          return;
+        }
+      }
+
+      appStore.loading = true;
       try {
         item.selectedFilters = selectedFilters.value ? {
           id: selectedFilters.value.id,
