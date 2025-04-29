@@ -480,13 +480,13 @@
                   <span v-if="idx !== 0">, </span>
                   <span>{{ filter.name }}</span>
                 </span>
-                <span v-if="item.filterCount > 0" class="filter-count ml-2">
+                  <span v-if="item.filterCount > 0" class="filter-count ml-2">
                   {{ item.filterCount }}
                 </span>
-                <span v-else-if="filterCountsLoaded && (!item.selectedFilters || item.selectedFilters.length === 0)" class="grey--text">
+                  <span v-else-if="filterCountsLoaded && (!item.selectedFilters || item.selectedFilters.length === 0)" class="grey--text text--darken-2">
                   No filters
                 </span>
-                <span v-else-if="!filterCountsLoaded" class="grey--text">
+                  <span v-else-if="!filterCountsLoaded" class="grey--text text--darken-2">
                   Loading...
                 </span>
               </div>
@@ -1526,6 +1526,12 @@ onMounted(() => {
 
 .tabs {
   border-bottom: solid 1px var(--v-grey-lighten2) !important;
+}
+
+.filter-count {
+  color: black;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 </style>
