@@ -1763,7 +1763,6 @@ const loadChildProcessSteps = async (actionId) => {
 const saveChildProcessCancelledStatus = async (action, cp) => {
   appStore.loading = true
   try {
-    // Ensure boolean value is properly set before sending to API
     const reopenValue = cp.reopenPrimaryIfApplicable === true;
 
     const {
