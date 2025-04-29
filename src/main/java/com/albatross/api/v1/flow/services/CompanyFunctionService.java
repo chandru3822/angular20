@@ -79,7 +79,7 @@ public class CompanyFunctionService {
       CompanyFunctionQuery.getFunctionDynamicParams, params, RequirementParamDynamicValue.class);
     for(RequirementParamDynamicValue value: paramDynamicValues){
         if(value.getSystemListId() != null) {
-           value.setListOfValues(systemListService.getSystemListOptionsForCompany(value.getSystemListId(), false, null, 3L));
+           value.setListOfValues(systemListService.getSystemListOptionsForCompany(value.getSystemListId(), true, null, 3L));
         }
     }
 

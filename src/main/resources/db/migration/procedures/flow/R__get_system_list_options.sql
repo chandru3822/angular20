@@ -145,12 +145,12 @@ BEGIN
 	-- 5 attachment_types
 	when v_system_list_id = 5 then RETURN QUERY
 	select at.id,
-	       at.attachment_type as "name"
+	       cast(at.attachment_type as text) as name
 	from flow.attachment_type at
 	where company_id = p_company_id
 	  and at.archived is not true
 	  and at.is_system is not true
-	order by at.attachment_type;
+	order by name;
     end case;
 
 END;

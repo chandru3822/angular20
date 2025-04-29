@@ -10,6 +10,10 @@ from flow.system_list_type slt
 where slt.system_list_type = 'attachment_types'
 	and not exists
             (select id from flow.system_list where system_list = 'Attachment Types by Type');
+insert into flow.company_system_list(system_list_id, company_id, schedulable, archived)
+select sl.id, 3, false,false
+from flow.system_list sl where system_list='Attachment Types by Type'
+                           and not exists (select id from flow.company_system_list where system_list_id = 5);
 
 --add column to flow.db_function_param
 alter table flow.db_function_param add column if not exists system_list_id INTEGER;
@@ -26,8 +30,9 @@ with newFunction as (
     values ('Check For Uploaded File', (select id from newFunction), 3)
 )
 insert into flow.db_function_param (db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, system_list_id)
-select f.id, 'Attachment Type', 0, 9, 2, null, sl.id
+select f.id, 'Attachment Type', 0, 9, 2, null, csl.id
 from newFunction f
 cross join flow.system_list sl
+inner join flow.company_system_list csl on sl.id = csl.system_list_id
 where not exists (select id from flow.db_function_param where parameter_name = 'Attachment Type' and data_type_id = 9)
 and sl.system_list = 'Attachment Types by Type';
