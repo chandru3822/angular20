@@ -55,12 +55,15 @@ BEGIN
                              rank() over (order by count(1) desc)   as rank
                       from brs.project_details pd
                              inner join flow.user u on u.id = pd.setter_user_id
+                             INNER JOIN flow.company_user_status cus on cus.user_id = u.id
+                             INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                       where pd.source in (525, 526)
                         and ((prioritized_closer_appointment_outcome_date at time zone 'UTC') at time zone
                              'US/Mountain') :: date between p_start_date and p_end_date
                         and pd.prioritized_closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                         and pd.setter_user_id not in (2354810, 2390159)                     --Trizon and Central Solar
                         and pd.company_id = 3
+                        and ust.user_status_type = 'Active'
                       group by 1, 2)
     select top_reps.user_id,
            top_reps.name,

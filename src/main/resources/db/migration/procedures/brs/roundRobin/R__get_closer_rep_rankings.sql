@@ -50,6 +50,7 @@ BEGIN
              LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
       WHERE case when p_org_id is not null then (up.org_id = p_org_id or up.sales_org_id = p_org_id) else true end
         AND ust.has_access is true
+        and ust.user_status_type = 'Active'
         and up.archived is false
         AND pd.company_id = 3
         and (up.end_date is null or
