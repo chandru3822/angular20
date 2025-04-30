@@ -80,6 +80,7 @@
                   hide-details
                   v-model="showZeroCountBoxes"
                   class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
+                  @change="saveShowZeroCountBoxes"
                 />
               </div>
               <div class="future-switch">
@@ -146,8 +147,7 @@
               <SpinnerInline :size="60" color="primary" />
             </div>
             <v-card
-              v-else
-              v-if="showZeroCountBoxes || wq.workQueueCount > 0"
+              v-if="!cardsLoading && (showZeroCountBoxes || wq.workQueueCount > 0)"
               flat
               tile
               v-for="wq in workQueues"
@@ -396,6 +396,8 @@ onMounted(async () => {
     JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
   hideFutureEvents.value =
     JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
+  showZeroCountBoxes.value =
+    JSON.parse(localStorage.getItem('showZeroCountBoxes')) || false
   selectedWorkQueueCategoryId.value =
     parseInt(localStorage.getItem('wqCategoryId')) || null
   let requests = [getAllWorkQueueCategories(), loadBoth()]
@@ -564,6 +566,12 @@ const getMetricDifference = (valuePercent, expectationPercent, inverse) => {
     let symbol = difference >= 0 ? '+' : ''
     return symbol + vueInstance.$filters.currency(difference, '', 0) + '%'
   }
+}
+const saveShowZeroCountBoxes = () => {
+  localStorage.setItem(
+    'showZeroCountBoxes',
+    JSON.stringify(showZeroCountBoxes.value)
+  )
 }
 const getBorder = (wq) => {
   return `solid 1px ${wq.color}`
