@@ -279,6 +279,20 @@
                       <a-btn
                         v-bind="attrs"
                         :activation-handler="on"
+                        @click="showDuplicateDialog = true"
+                        :disabled="!selected"
+                        icon
+                        variant="text"
+                        prepend-icon="mdi-card-multiple-outline"
+                      />
+                    </template>
+                    Duplicate Block
+                  </v-tooltip>
+                  <v-tooltip top v-if="!editBlockName">
+                    <template #activator="{ on, attrs }">
+                      <a-btn
+                        v-bind="attrs"
+                        :activation-handler="on"
                         @click="showDeleteDialog = true"
                         :disabled="!selected"
                         icon
@@ -392,6 +406,20 @@
         ? All children will also be deleted.
       </div>
     </ConfirmationDialog>
+    <ConfirmationDialog
+      :open-dialog="showDuplicateDialog"
+      @cancel="showDuplicateDialog = false"
+      @confirm="duplicateBlock"
+      @close-dialog="showDuplicateDialog = false"
+    >
+      <template v-slot:title>Duplicate</template>
+      <div>
+        Are you sure you want to duplicate this block:
+        <b>{{ selected?.displayName }}</b>
+        ? All children will also be duplicated.
+      </div>
+      <template v-slot:yes>Duplicate</template>
+    </ConfirmationDialog>
   </div>
 </template>
 <script setup>
@@ -473,6 +501,7 @@ const addBlock = ref(false)
 const editBlockName = ref(false)
 const editedBlockName = ref(null)
 const showDeleteDialog = ref(false)
+const showDuplicateDialog = ref(false)
 const activeEditor = ref(undefined)
 const viewportEl = ref(null)
 const sortById = ref(true)
@@ -635,6 +664,11 @@ const save = async () => {
 const deleteBlock = async () => {
   appStore.loading = true
   await store.deleteSelectedBlock()
+  appStore.loading = false
+}
+const duplicateBlock = async () => {
+  appStore.loading = true
+  await store.duplicateSelectedBlock()
   appStore.loading = false
 }
 

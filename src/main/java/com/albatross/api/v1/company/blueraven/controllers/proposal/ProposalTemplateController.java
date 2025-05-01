@@ -52,6 +52,16 @@ public class ProposalTemplateController {
       templateId, update.blocks, details.getTrueUserId());
   }
 
+  @PostMapping(value = "/{templateId}/blocks/duplicate/{blockId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+  public List<ProposalTemplateBlock> duplicateTemplateBlock(
+          @PathVariable Long templateId,
+          @PathVariable Integer blockId,
+          @AuthenticationPrincipal UserAccountDetails details
+  ) {
+      return proposalTemplateService.duplicateTemplateBlock(templateId, blockId, details.getTrueUserId(), null);
+  }
+
   @DeleteMapping(value = "/{templateId}/blocks/{blockId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<Integer> archiveBlockFromTemplate(

@@ -373,6 +373,53 @@ export default defineStore('proposalStore', () => {
     }
   }
 
+  const duplicateSelectedBlock = async () => {
+    try {
+      const templateId = currentTemplate.value.id
+
+      const { data } = await postRequest(
+        `/proposal/template/${templateId}/blocks/duplicate/${selectedId.value}`,
+          null,
+        'blueraven'
+      )
+      if (data) {
+          const updated = data?.reduce((acc, obj) => {
+              const key = obj?.id
+              if (!acc[key]) {
+                  acc[key] = obj
+              }
+              return acc
+          }, {})
+
+          // update existing
+          const t = template.value
+              .filter((b) => b.id > 0)
+              .map((b) => {
+                  return updated[b.id] ? updated[b.id] : b
+              })
+
+          //add new blocks
+          for (let u in updated) {
+              const i = t.findIndex((x) => x.id === parseInt(u, 10))
+              if (i < 0) {
+                  t.push(updated[u])
+              }
+          }
+
+          t.forEach((b) => {
+              b.displayName = writeDisplayName(b)
+          })
+
+          //set template as original
+          _template.value = cloneDeep(t)
+          //reset so this becomes the new baseline
+          reset()
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const fetchTags = async () => {
     try {
       const templateId = currentTemplate.value.id
@@ -429,6 +476,7 @@ export default defineStore('proposalStore', () => {
     fetchTemplateContext,
     saveTemplate,
     deleteSelectedBlock,
+    duplicateSelectedBlock,
     fetchTags,
     undo,
     redo,
