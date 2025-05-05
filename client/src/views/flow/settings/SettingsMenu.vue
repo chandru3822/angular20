@@ -8,8 +8,10 @@
           @click="selectMenuItem(item.title)"
           :to="item.path"
           class="dense-setting-row"
-          :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? route.path.includes(`${item.pathMatch}`) && !route.path.includes(item.pathMatchExclude)
-                                          : item.pathMatch ? route.path.includes(`${item.pathMatch}`) : route.path === item.path}"
+          :class="/* {
+  'shaded-row': item.pathMatch && item.pathMatchExclude ? route.path.includes(`${item.pathMatch}`) && !route.path.includes(item.pathMatchExclude)
+                      : item.pathMatch ? route.path.includes(`${item.pathMatch}`) : route.path === item.path
+} */ {}"
       >
         <v-list-item-content>
           <v-list-item-title class="body-medium">{{item.title}}</v-list-item-title>
