@@ -286,7 +286,7 @@
                                   rounded
                                   style="text-transform: none;"
                                 >
-                                  {{ truncateText(selectedFilters.name + (selectedFilters.processStepName ? ` - (${selectedFilters.processStepName})` : '')) }}
+                                  {{ selectedFilters.name + (selectedFilters.processStepName ? ` - (${selectedFilters.processStepName})` : '') }}
                                   <v-icon end size="small" class="ml-1" @click.stop="toggleFilter">mdi-close</v-icon>
                                 </v-btn>
                               </div>
@@ -366,7 +366,7 @@
                             rounded
                             style="text-transform: none;"
                           >
-                            {{ truncateNameField(selectedFilters.name + (selectedFilters.processStepName ? ` - (${selectedFilters.processStepName})` : ''))
+                            {{ selectedFilters.name + (selectedFilters.processStepName ? ` - (${selectedFilters.processStepName})` : '')
                           + (selectedFilters.operator ? `, ${selectedFilters.operator.name}` : '')
                           + (selectedFilters.value ? `, ${selectedFilters.value.name}` : '') }}
                             <v-icon end size="small" class="ml-1" @click.stop="toggleFilter">mdi-close</v-icon>
@@ -842,22 +842,6 @@ const customFilter = (item, queryText) => {
     processStepName.includes(searchText)
 }
 
-const truncateText = (text) => {
-  const maxLength = 55;
-  if (text.length > maxLength) {
-    return text.substring(0, maxLength) + '...';
-  }
-  return text;
-}
-
-const truncateNameField = (text) => {
-  const maxLength = 20;
-  if (text.length > maxLength) {
-    return text.substring(0, maxLength) + '...';
-  }
-  return text;
-}
-
 const getFilterDisplayText = (filter) => {
   const filterObj = availableFilters.value.find(f => f.id === filter.filterId)
   let filterName = filterObj ? filterObj.name : `Filter ${filter.filterId}`
@@ -878,7 +862,7 @@ const getFilterDisplayText = (filter) => {
     valueName = valueObj ? valueObj.name : `Value ${filter.valueId}`
   }
 
-  const result = `${truncateNameField(filterName)}, ${operatorName}, ${valueName}`;
+  const result = `${filterName}, ${operatorName}, ${valueName}`;
   return result;
 }
 
@@ -1362,12 +1346,31 @@ onMounted(() => {
     const assignNewWorkQueueType = async() => {
       appStore.loading = true
       try {
-        newWorkQueueType.value.processStepId = processStepId.value
-        newWorkQueueType.value.processStepEventId = eventId.value
-        newWorkQueueType.value.selectedFilters = selectedFilters.value
+        const requestPayload = {
+          workQueueTypeId: newWorkQueueType.value.workQueueTypeId,
+          processStepId: processStepId.value,
+          processStepEventId: eventId.value,
+          projectStatuses: newWorkQueueType.value.projectStatuses.filter(status => status),
+          processStepStatuses: newWorkQueueType.value.processStepStatuses.filter(status => status),
+          eventStatuses: showEventFields.value ?
+            newWorkQueueType.value.eventStatuses.filter(status => status) : []
+        }
+
+        if (selectedFilters.value &&
+          typeof selectedFilters.value === 'object' &&
+          selectedFilters.value.id &&
+          selectedFilters.value.operator &&
+          selectedFilters.value.value) {
+
+          requestPayload.selectedFilter = {
+            filterId: selectedFilters.value.id,
+            operatorId: selectedFilters.value.operator.id,
+            valueId: selectedFilters.value.value.id
+          }
+        }
 
         let url = showEventFields.value ? `/workQueueType/event` : `/workQueueType/processStep`
-        const {data, status} = await postRequest(url, newWorkQueueType.value)
+        const {data, status} = await postRequest(url, requestPayload)
 
         if(showEventFields.value) {
           event?.workQueueTypes.push({
@@ -1389,6 +1392,7 @@ onMounted(() => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
+        console.error('Request payload:', JSON.stringify(newWorkQueueType.value, null, 2))
         appStore.showSnack('ERROR', 'Error Adding Work Queue Type')
         appStore.loading = false
       }
@@ -1491,7 +1495,6 @@ onMounted(() => {
   border-top: 1px solid #E6E6E6;
 }
 
-/* Update filter-text class to ensure consistent width */
 .filter-text {
   :deep(.v-field) {
     max-width: 500px !important;
@@ -1517,9 +1520,9 @@ onMounted(() => {
 }
 
 .field-container {
-  width: 500px;
-  min-width: 500px;
-  max-width: 500px;
+  width: 1250px;
+  min-width: 1250px;
+  max-width: 1250px;
   background-color: white;
   z-index: 0;
 }
