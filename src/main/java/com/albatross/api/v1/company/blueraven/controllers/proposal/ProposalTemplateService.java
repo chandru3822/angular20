@@ -369,6 +369,84 @@ public class ProposalTemplateService {
     return getTemplateBlocks(updated);
   }
 
+    /**
+     * duplicates the provided block and all its children and all their children
+     * parentId is for the recursion, so we can add the children to their correct parent
+     * if no parentId is passed in, we copy the parent of the existing block
+     * @param templateId
+     * @param blockId
+     * @param currentUserId
+     * @param parentBlockId
+     * @return
+     */
+    @Transactional
+    @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE, key = "#templateId")
+    @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+  public List<ProposalTemplateBlock> duplicateTemplateBlock(Long templateId, Integer blockId, Long currentUserId, Integer parentBlockId){
+        Map<String, Object> getParams = new HashMap<>();
+        getParams.put("parentId", blockId);
+        getParams.put("templateId", templateId);
+        //get the block to duplicate
+        List<ProposalTemplateBlock> parentBlockToDuplicateList = sqlCache.queryBySql(
+                ProposalTemplateQuery.findBlocksByIds,
+                Map.of("ids", Collections.singleton(blockId)),
+                new ProposalTemplateBlockMapper(objectMapper));
+        ProposalTemplateBlock parentBlockToDuplicate = parentBlockToDuplicateList != null ? parentBlockToDuplicateList.get(0) : null;
+        if(parentBlockToDuplicate == null){
+            return null;
+        }
+        //if there is a block, then duplicate it
+        ProposalTemplateBlock newParentBlock = duplicateBlock(parentBlockToDuplicate, parentBlockId);
+
+        //insert the new block into the database so we can get its id to use as parentId
+//        List<ProposalTemplateBlock> updatedBlocks = new ArrayList<>();
+//        updatedBlocks.add(newParentBlock);
+        List<ProposalTemplateBlock> updatedBlocks = updateTemplateBlocks(templateId, Collections.singletonList(newParentBlock), currentUserId);
+
+        //get list of child block ids for the block we're duplicating
+        List<Integer> childIdsToDuplicate = sqlCache.queryBySql(ProposalTemplateQuery.findBlocksByParentId, getParams, new SingleColumnRowMapper<>(Integer.class));
+        if(updatedBlocks != null && updatedBlocks.size() == 1 && childIdsToDuplicate != null && childIdsToDuplicate.size() > 0) {
+            //if we have a new parent block and a list of child ids to duplicate, get the child block data
+
+            Integer finalNewParentBlockId = updatedBlocks.get(0).getId();
+
+            //duplicate each existing child block but with the newly duplicated parent block id
+            for (Integer childBlockId : childIdsToDuplicate) {
+                updatedBlocks.addAll(duplicateTemplateBlock(templateId, childBlockId, currentUserId, finalNewParentBlockId));
+            }
+        }
+
+      return updatedBlocks;
+  }
+
+    /**
+     * duplicates everything except the id and the uuid
+     * @param blockToDuplicate
+     * @return
+     */
+    public ProposalTemplateBlock duplicateBlock(ProposalTemplateBlock blockToDuplicate, Integer parentId){
+        ProposalTemplateBlock newBlock = new ProposalTemplateBlock();
+        newBlock.setId(-1);
+        newBlock.setThemeKeyId(blockToDuplicate.getThemeKeyId());
+        newBlock.setThemeKey(blockToDuplicate.getThemeKey());
+        newBlock.setBlockTypeId(blockToDuplicate.getBlockTypeId());
+        newBlock.setBlockType(blockToDuplicate.getBlockType());
+        newBlock.setBlockName(blockToDuplicate.getBlockName());
+        newBlock.setBlockKindId(blockToDuplicate.getBlockKindId());
+        newBlock.setBlockKind(blockToDuplicate.getBlockKind());
+        newBlock.setBlockStyle(blockToDuplicate.getBlockStyle());
+        newBlock.setBlockValue(blockToDuplicate.getBlockValue());
+        newBlock.setBlockOrder(blockToDuplicate.getBlockOrder());
+        newBlock.setVersion(blockToDuplicate.getVersion());
+        if(parentId != null) {
+            newBlock.setParentId(parentId);
+        } else {
+            newBlock.setParentId(blockToDuplicate.getParentId());
+        }
+        newBlock.setVisibility(blockToDuplicate.getVisibility());
+        return newBlock;
+    }
+
   @CacheEvict(value = CachingConfig.PROPOSAL_TEMPLATE, key = "#templateId")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<Integer> archiveBlockFromTemplate(Long templateId, Integer blockId, Long currentUserId) {

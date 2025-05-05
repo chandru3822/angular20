@@ -40,4 +40,5 @@ public class ProposalTemplateBlock implements Serializable {
   private String visibility;
 
   private UUID blockUUID;
+
 }
