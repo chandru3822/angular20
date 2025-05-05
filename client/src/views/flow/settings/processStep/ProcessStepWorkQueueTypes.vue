@@ -384,17 +384,22 @@
                             <v-btn
                               v-for="(filter, index) in savedFilters"
                               :key="`filter-${filter.id}-${index}`"
-                              class="mb-2"
+                              class="mb-2 non-clickable-btn"
                               color="secondary"
                               variant="tonal"
-                              style="text-transform: none; align-self: flex-start; color: black !important;"
-                              @click="deleteSavedFilter(filter, $event)"
+                              style="text-transform: none; align-self: flex-start; color: black !important; pointer-events: none;"
                               size="small"
                               rounded
                               :disabled="filter.isDeleting"
+                              type="button"
                             >
                               {{ getFilterDisplayText(filter) }}
-                              <v-icon end size="small" class="ml-1">mdi-close</v-icon>
+                              <v-icon
+                                end
+                                size="small"
+                                class="ml-1 clickable-icon"
+                                @click.stop="deleteSavedFilter(filter, $event)"
+                              >mdi-close</v-icon>
                             </v-btn>
                           </div>
                         </v-card-text>
@@ -1347,25 +1352,48 @@ onMounted(() => {
       appStore.loading = true
       try {
         const requestPayload = {
-          workQueueTypeId: newWorkQueueType.value.workQueueTypeId,
-          processStepId: processStepId.value,
-          processStepEventId: eventId.value,
-          projectStatuses: newWorkQueueType.value.projectStatuses.filter(status => status),
-          processStepStatuses: newWorkQueueType.value.processStepStatuses.filter(status => status),
-          eventStatuses: showEventFields.value ?
-            newWorkQueueType.value.eventStatuses.filter(status => status) : []
+          workQueueTypeId: Number(newWorkQueueType.value.workQueueTypeId),
+          processStepId: Number(processStepId.value),
+          projectStatuses: newWorkQueueType.value.projectStatuses
+            .filter(status => status)
+            .map(status => ({
+              projectStatusTypeId: Number(status.projectStatusTypeId),
+              companyProjectStatusTypeId: status.companyProjectStatusTypeId ?
+                Number(status.companyProjectStatusTypeId) : null,
+              isRoot: Boolean(status.isRoot),
+              archived: false
+            })),
+          processStepStatuses: newWorkQueueType.value.processStepStatuses
+            .filter(status => status)
+            .map(status => ({
+              processStepStatusTypeId: Number(status.processStepStatusTypeId),
+              companyProcessStepStatusTypeId: status.companyProcessStepStatusTypeId ?
+                Number(status.companyProcessStepStatusTypeId) : null,
+              isRoot: Boolean(status.isRoot),
+              archived: false
+            }))
         }
 
-        if (selectedFilters.value &&
-          typeof selectedFilters.value === 'object' &&
-          selectedFilters.value.id &&
-          selectedFilters.value.operator &&
-          selectedFilters.value.value) {
+        if (showEventFields.value) {
+          requestPayload.processStepEventId = eventId.value ? Number(eventId.value) : null
+          requestPayload.eventStatuses = newWorkQueueType.value.eventStatuses
+            .filter(status => status)
+            .map(status => ({
+              eventStatusTypeId: Number(status.eventStatusTypeId),
+              companyEventStatusTypeId: status.companyEventStatusTypeId ?
+                Number(status.companyEventStatusTypeId) : null,
+              isRoot: Boolean(status.isRoot),
+              archived: false
+            }))
+        }
 
-          requestPayload.selectedFilter = {
-            filterId: selectedFilters.value.id,
-            operatorId: selectedFilters.value.operator.id,
-            valueId: selectedFilters.value.value.id
+        if (selectedFilters.value?.id &&
+          selectedFilters.value?.operator?.id &&
+          selectedFilters.value?.value?.id) {
+          requestPayload.selectedFilters = {
+            filterId: Number(selectedFilters.value.id),
+            operatorId: Number(selectedFilters.value.operator.id),
+            valueId: Number(selectedFilters.value.value.id)
           }
         }
 
@@ -1392,7 +1420,6 @@ onMounted(() => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        console.error('Request payload:', JSON.stringify(newWorkQueueType.value, null, 2))
         appStore.showSnack('ERROR', 'Error Adding Work Queue Type')
         appStore.loading = false
       }
@@ -1535,6 +1562,17 @@ onMounted(() => {
   color: black;
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+.non-clickable-btn {
+  cursor: default !important;
+}
+
+.clickable-icon {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
 }
 
 </style>
