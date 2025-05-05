@@ -11,7 +11,7 @@ public class CleanString {
     if (textToBeCleaned == null){
       return null;
     }
-    return textToBeCleaned.replace("’", "'");
+    return textToBeCleaned.replace("\u00A0", "").replace("’", "'").trim();
   }
 
   public static String cleanFilename(String filename) {

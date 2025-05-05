@@ -416,11 +416,11 @@ public class ProjectService {
 
     Map<String, Object> params = new HashMap<>();
     params.put("id", project.getId());
-    params.put("street1", project.getStreet1());
+    params.put("street1", CleanString.replaceApostrophe(project.getStreet1()));
     params.put("projectName", CleanString.replaceApostrophe(project.getProjectName()));
-    params.put("city", project.getCity());
+    params.put("city", CleanString.replaceApostrophe(project.getCity()));
     params.put("companyStateId", project.getCompanyStateId());
-    params.put("postalCode", project.getPostalCode());
+    params.put("postalCode", CleanString.replaceApostrophe(project.getPostalCode()));
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
