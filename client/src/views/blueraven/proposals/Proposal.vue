@@ -1170,13 +1170,6 @@ const getHint = (field) => {
     return undefined
   }
 
-  if (field.customFieldGroupAssignmentId === PricePerWattCfgaId) {
-    const minPricePerWatt = proposal.value.minPricePerWatt
-    if (minPricePerWatt) {
-      return `Price Per Watt must be greater than ${minPricePerWatt}`
-    }
-  }
-
   if (field.customFieldGroupAssignmentId === OtherMaxDiscountCfgaId) {
     const maxDiscountAmount = proposal.value.maxDiscountAmount
     if (maxDiscountAmount) {

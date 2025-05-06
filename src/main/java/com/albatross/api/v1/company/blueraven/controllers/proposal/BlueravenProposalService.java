@@ -864,10 +864,6 @@ public class BlueravenProposalService {
             filterCustomFieldValues(cfv, filterCommissionStrategiesByUser(proposalVersionId, userId), false);
           }
 
-          if (brsPricePerWattFieldId.equals(cfv.getCustomFieldId()) && proposal.getMinPricePerWatt() != null) {
-            cfv.setMinValue(proposal.getMinPricePerWatt().doubleValue());
-          }
-
           if (brsOtherMaxDiscount.equals(cfv.getCustomFieldId()) && proposal.getMaxDiscountAmount() != null) {
             cfv.setMaxValue(proposal.getMaxDiscountAmount().doubleValue());
           }

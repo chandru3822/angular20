@@ -443,7 +443,6 @@ from project p
            p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
            p.installation_agreement_sent_tsz is not null          as installation_agreement_sent,
            brs.get_max_proposal_discount_amount(p.id)             as max_discount_amount,
-          brs.get_minimum_price_per_watt(p.id)                    as min_price_per_watt,
            util_ppscfv.int_value                                  as utility_company_id,
            coalesce((SELECT array_to_json(array_agg(row_to_json(cfgs)))
                      FROM (select cfg.id,
