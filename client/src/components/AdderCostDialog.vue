@@ -39,6 +39,10 @@ const props = defineProps({
   storageId: {
     type: [Number, String],
     default: 123
+  },
+  financialProductId: {
+    type: [Number, String],
+    default: 123
   }
 });
 
@@ -79,7 +83,8 @@ const fetchAdderData = async () => {
     const params = {
       proposalId: props.proposalId,
       commissionStrategyId: props.commissionStrategyId ?? 123,
-      storageId: props.storageId ?? 123
+      storageId: props.storageId ?? 123,
+      financialProductId: props.financialProductId ?? 123
     };
 
     const { data } = await postRequest(

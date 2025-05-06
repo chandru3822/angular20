@@ -344,7 +344,7 @@ from project p
 
   //language=PostgreSQL
   public final static String getAdderDetails = """
-    SELECT * FROM  brs.get_selected_custom_auto_adders(:proposalId::bigint, :commissionStrategyId::bigint, :storageId::bigint)
+    SELECT * FROM  brs.get_selected_custom_auto_adders(:proposalId::bigint, :commissionStrategyId::bigint, :storageId::bigint, :financialProductId::bigint)
     """;
 
   //language=PostgreSQL
