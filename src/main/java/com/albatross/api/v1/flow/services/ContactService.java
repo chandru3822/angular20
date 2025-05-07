@@ -297,8 +297,8 @@ public class ContactService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("firstName", CleanString.replaceApostrophe(contact.getFirstName()));
-    params.put("lastName", CleanString.replaceApostrophe(contact.getLastName()));
+    params.put("firstName", CleanString.replaceApostrophesAndRemoveNBSP(contact.getFirstName()));
+    params.put("lastName", CleanString.replaceApostrophesAndRemoveNBSP(contact.getLastName()));
     params.put("street1", contact.getStreet1());
     params.put("city", contact.getCity());
     params.put("companyStateId", contact.getCompanyStateId());
