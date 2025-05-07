@@ -63,7 +63,7 @@ BEGIN
 
   if v_override_plan_id is null then
     if v_template_org_id is null then
-      return query select null,null;
+      return query select null::numeric,null::bigint;
       --raise exception 'No Override Plan is assigned for = %, please contact Rep Pay',v_closer_name;
     elsif v_template_org_id is not null then
       select *
@@ -97,7 +97,7 @@ BEGIN
     end if;
   else
     if v_base_price_per_watt is null or v_base_price_per_watt = 0 then
-      return query select null,null;
+      return query select null::numeric,null::bigint;
     else
       select sum(opru.m1_allocation + opru.m2_allocation)
       into v_allocation_sum
