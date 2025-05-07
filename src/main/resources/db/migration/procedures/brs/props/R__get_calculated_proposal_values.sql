@@ -1420,6 +1420,8 @@ BEGIN
   ---todo add these thing for Michael and make sure it's perfect  all_ancillary_costs
 
   --raise notice 'v_total_ancillary_costs = %',v_total_ancillary_costs;
+  --raise notice 'v_lead_cost_adder = %',v_lead_cost_adder;
+  --raise notice 'v_selected_adder_amount = %',v_selected_adder_amount;
 
   v_promotion_cost = 0.00;
   if v_product_id = 293 then
@@ -1540,6 +1542,8 @@ BEGIN
   --raise notice 'v_non_solar_threshold_for_additional_fee = %',v_non_solar_threshold_for_additional_fee;
 
   --raise notice 'v_zone_adder = %',v_zone_adder;
+  --raise notice 'v_redline_utility_adder = %',v_redline_utility_adder;
+
 --   --raise notice 'v_lead_cost_adder = %',v_lead_cost_adder;
   v_total_amount_to_be_financed = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
                                    case
@@ -1599,6 +1603,7 @@ BEGIN
 
   --raise notice 'v_referral_promotion = %',v_referral_promotion;
   --raise notice 'v_other_adder_and_discount_amount = %',v_other_adder_and_discount_amount;
+  --raise notice 'v_total_amount_to_be_financed = %',v_total_amount_to_be_financed;
 
   v_total_system_cost_before_rebates =
     (coalesce(v_total_amount_to_be_financed, 0) + coalesce(v_down_payment_amount, 0) +

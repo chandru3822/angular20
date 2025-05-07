@@ -35,7 +35,8 @@ BEGIN
          fd.desired_commission_amount,
          fd.commission_strategy,
          p.final_design_complete_date,
-         p.substantial_completion_date
+         p.substantial_completion_date,
+         p.cancelled_date
   into v_commission_strategy_type_id,
     v_interest_rate,
     v_loan_term,
@@ -44,7 +45,8 @@ BEGIN
     v_desired_commission_amount,
     v_commission_strategy_id,
     v_fdc_date,
-    v_sc_date
+    v_sc_date,
+    v_cancelled_date
   from brs.financial_details fd
          inner join brs.commission_plan c on c.id = fd.commission_plan_id
          inner join brs.project_details p on p.project_id = fd.project_id
@@ -120,6 +122,9 @@ BEGIN
     into v_total;
   end if;
 
+  if v_cancelled_date is not null then
+    return 0.00::numeric;
+  end if;
   return coalesce(v_total, 0);
 END;
 $BODY$
