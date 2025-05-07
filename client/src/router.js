@@ -118,7 +118,7 @@ const router = new Router({
               next('/login')
             }
           } else {
-            // Redirect back to the login page after session is expired
+            // From login page - redirect back to the original page after session is expired
             if(from.query?.redirect) {
               next()
             } 
