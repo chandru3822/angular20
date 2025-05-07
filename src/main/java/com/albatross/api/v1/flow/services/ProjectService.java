@@ -420,7 +420,7 @@ public class ProjectService {
     params.put("projectName", CleanString.replaceApostrophe(project.getProjectName()));
     params.put("city", CleanString.replaceApostrophe(project.getCity()));
     params.put("companyStateId", project.getCompanyStateId());
-    params.put("postalCode", project.getPostalCode());
+    params.put("postalCode", CleanString.replaceApostrophe(project.getPostalCode()));
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
