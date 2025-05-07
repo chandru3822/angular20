@@ -1,6 +1,9 @@
 drop function if exists brs.get_minimum_price_per_watt(p_proposal_id bigint);
 CREATE OR REPLACE FUNCTION brs.get_minimum_price_per_watt(p_proposal_id bigint)
-  returns numeric
+  returns table (
+                redline_price numeric,
+                override_plan_id bigint
+                )
 AS
 $BODY$
 declare
@@ -13,6 +16,7 @@ declare
   v_closer_name                 text;
   v_base_price_per_watt         numeric;
   v_user_commission_strategy_id bigint[];
+  v_redline_amount numeric;
 BEGIN
 
 
@@ -59,7 +63,7 @@ BEGIN
 
   if v_override_plan_id is null then
     if v_template_org_id is null then
-      return null;
+      return query select null,null;
       --raise exception 'No Override Plan is assigned for = %, please contact Rep Pay',v_closer_name;
     elsif v_template_org_id is not null then
       select *
@@ -93,7 +97,7 @@ BEGIN
     end if;
   else
     if v_base_price_per_watt is null or v_base_price_per_watt = 0 then
-      return null;
+      return query select null,null;
     else
       select sum(opru.m1_allocation + opru.m2_allocation)
       into v_allocation_sum
@@ -101,8 +105,8 @@ BEGIN
       where opru.override_plan_id = v_override_plan_id;
     end if;
   end if;
-
-  return round(coalesce((v_allocation_sum / 1000)::numeric, 0) + coalesce(v_base_price_per_watt, 0), 3);
+  v_redline_amount = round(coalesce((v_allocation_sum / 1000)::numeric, 0) + coalesce(v_base_price_per_watt, 0), 3)::numeric;
+  return query select v_redline_amount,v_override_plan_id::bigint;
 
 END
 $BODY$
