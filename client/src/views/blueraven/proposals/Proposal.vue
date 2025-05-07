@@ -820,7 +820,8 @@ const getProposalAdders = async () => {
     const params = {
       proposalId: proposalId.value,
       commissionStrategyId: commissionStrategyId.value ?? 123,
-      storageId: storageId.value ?? 123
+      storageId: storageId.value ?? 123,
+      financialProductId: financialProductId.value ?? 123
     }
 
     const { data, status } = await postRequest(
