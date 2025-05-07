@@ -118,11 +118,10 @@ const router = new Router({
               next('/login')
             }
           } else {
-            //had to do the matching or it just does a continuous loop if the user has a homepagepath
-            if (
-              userStore?.details?.homePagePath &&
-              to.path !== userStore?.details?.homePagePath
-            ) {
+            // Redirect back to the login page after session is expired
+            if(from.query?.redirect) {
+              next()
+            } else if (userStore?.details?.homePagePath && to.path !== userStore?.details?.homePagePath ) {// had to do the matching or it just does a continuous loop if the user has a homepagepath
               router.push({ path: userStore.details.homePagePath })
             } else {
               next()
