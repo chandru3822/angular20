@@ -349,7 +349,7 @@
                     group="customFields"
                     @start="drag = true"
                     @end="drag = false"
-                    @change="saveFieldChanges(item.customFields)"
+                    @change="saveFieldChanges(item.customFields,item)"
                   >
                     <v-list
                       v-for="(cf, index) in filteredCustomFields(
@@ -963,14 +963,14 @@ const dropFieldChanges = async (fields) => {
   try {
     // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
     // pull those needing to be saved out of list
-    fields = fields.filter(data => data.customFieldId !== draggedValue.value.customFieldId);
+    fields = fields.filter(data => data?.customFieldId !== draggedValue?.value?.customFieldId);
     let fieldsToSave = []
     fields.forEach((f, idx) => {
       let order = idx + 1
-      if (f.fieldOrder !== order) {
+
         f.fieldOrder = order
         fieldsToSave.push(f)
-      }
+   
     })
     // save them here
     if (fieldsToSave.length > 0) {
@@ -1026,6 +1026,7 @@ const handleFieldDrop = async (dropTarget) => {
       (field) => field.customFieldId !== data.customFieldId
     );
     // Now add the new field
+    data.fieldOrder=dropTarget?.customFields?.length+1
     dropTarget.customFields.push(data);
     // Clear drag values
     draggedValue.value = null;
@@ -1162,8 +1163,11 @@ const deleteField = async (item, customFieldGroupId) => {
     appStore.loading = false
   }
 }
-const saveFieldChanges = async (fields) => {
+const saveFieldChanges = async (fields,item) => {
   try {
+   
+
+    fields = fields.filter(data => data?.customFieldGroupId === item?.id);
     // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
     // pull those needing to be saved out of list
     let fieldsToSave = []
