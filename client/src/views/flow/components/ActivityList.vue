@@ -239,8 +239,18 @@ onMounted(() => {
   window.openUrl = openUrl;
 })
 
+const escapeHtml = (unsafe) => {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")   
+    .replace(/'/g, "&#039;");
+}
+
 const filterFormatting = (value) => {
   if (value) {
+    value = escapeHtml(value)
     formatQueries.value.forEach((q) => {
       switch (q.name) {
         case "URL":
