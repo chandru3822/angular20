@@ -35,7 +35,8 @@ BEGIN
                             from brs.financial_details f
                                    inner join brs.financial_details_partner fdp on fdp.financial_details_id = f.id
                             where f.project_id = pcfv.project_id
-                              and fdp.position_id = cp.position_id)
+                              and fdp.position_id = cp.position_id
+                             and fdp.org_id = new.org_id)
     loop
       v_count = 0;
       select id
@@ -63,9 +64,9 @@ BEGIN
                                                    partner_commission_plan,
                                                    partner_commission_plan_id, partner_commission_plan_status,
                                                    financial_details_id, org_id, position_id, custom_adder_amount,
-                                                   selected_adder_amount, base_commission_amount)
+                                                   selected_adder_amount, base_commission_amount,active)
         (select 99999999,99999999,v_partner_m1_amount,v_partner_m2_amount,v_partner_total_commissions,x.name,new.commission_plan_id,
-                x.status_type,v_financial_details_id,new.org_id,x.position_id,v_custom_adder_amount,v_selected_adder_amount,v_partner_commission_amount)
+                x.status_type,v_financial_details_id,new.org_id,x.position_id,v_custom_adder_amount,v_selected_adder_amount,v_partner_commission_amount,true)
         returning id into v_financial_details_partner_id;
 
         select m1_amount, m2_amount, total_commissions,custom_adder_amount,select_adder_amount,partner_commission_amount

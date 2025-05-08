@@ -51,8 +51,8 @@ public class ContactLeadService {
     String formattedZip = null != cl.getZip() ? cl.getZip().substring(0, Math.min(cl.getZip().length(), 10)) : null;
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("firstName", CleanString.replaceApostrophe(cl.getFirstName()));
-    params.put("lastName", CleanString.replaceApostrophe(cl.getLastName()));
+    params.put("firstName", CleanString.replaceApostrophesAndRemoveNBSP(cl.getFirstName()));
+    params.put("lastName", CleanString.replaceApostrophesAndRemoveNBSP(cl.getLastName()));
     params.put("street1", cl.getAddress());
     params.put("city", cl.getCity());
     params.put("postalCode", formattedZip);

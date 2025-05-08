@@ -346,7 +346,9 @@ BEGIN
         pcfv.custom_field_group_assignment_id = any(v_CFGA_PARTNER_ORG_ASSIGNMENT) and
         pcfv.int_value is not null;
 
-  if ((new.cancelled_date is not null and old.cancelled_date is null) or (old.cancelled_date is not null and new.cancelled_date is null)) and v_partner_count > 0 then
+  if ((new.cancelled_date is not null and old.cancelled_date is null) or (old.cancelled_date is not null and new.cancelled_date is null)) or
+     ((old.user_position_id is null and new.user_position_id is not null) or (old.user_position_id is not null and new.user_position_id is not null and
+                                                                              old.user_position_id != new.user_position_id))  then
     perform flow.company_pps_specific_tasks(3,
                                             new.id,
                                             new.created_by_id, new.modified_by_id);
@@ -462,7 +464,7 @@ BEGIN
           where code = 'CFGA_PARTNER_COMMISSIONS')::bigint[]
   into v_CFGA_PARTNER_COMMISSIONS;
 
-  if new.custom_field_group_assignment_id = any (v_CFGA_PARTNER_COMMISSIONS) and v_project_partner_org_ids is not null and array_length(v_project_partner_org_ids,1)>0 then
+  if new.custom_field_group_assignment_id = any (v_CFGA_PARTNER_COMMISSIONS) then
     perform flow.company_pps_specific_tasks(3,
                                             new.project_id,
                                             new.created_by_id, new.modified_by_id);
@@ -769,7 +771,7 @@ BEGIN
           where code = 'CFGA_PARTNER_COMMISSIONS')::bigint[]
   into v_CFGA_PARTNER_COMMISSIONS;
 
-  if new.custom_field_group_assignment_id = any (v_CFGA_PARTNER_COMMISSIONS) and v_main is true and v_project_partner_org_ids is not null and array_length(v_project_partner_org_ids,1)>0 then
+  if new.custom_field_group_assignment_id = any (v_CFGA_PARTNER_COMMISSIONS) and v_main is true  then
     perform flow.company_pps_specific_tasks(3,
                                             v_project_id,
                                             new.created_by_id, new.modified_by_id);

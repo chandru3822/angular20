@@ -155,7 +155,7 @@ public class BlueravenProposalController {
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN') || isBrSystemUser()")
   public List<ProposalAdderDetail> getProposalAdders(@PathVariable Long proposalId,
                                                      @RequestBody ProposalAdderDetailRequest proposalAdderDetailRequest) {
-    return proposalService.getProposalAdderDetail(proposalId, proposalAdderDetailRequest.commissionStrategyId, proposalAdderDetailRequest.storageId);
+    return proposalService.getProposalAdderDetail(proposalId, proposalAdderDetailRequest.commissionStrategyId, proposalAdderDetailRequest.storageId, proposalAdderDetailRequest.financialProductId);
   }
 
   @PostMapping(value = "/{proposalId}/adders/update")
@@ -401,7 +401,7 @@ public class BlueravenProposalController {
   public record ProposalNameUpdateRequest(@NotBlank String name) {
   }
 
-  public record ProposalAdderDetailRequest(@NotNull Long commissionStrategyId, @NotNull Long storageId) {
+  public record ProposalAdderDetailRequest(@NotNull Long commissionStrategyId, @NotNull Long storageId, @NotNull Long financialProductId) {
   }
 
   public record CustomAdderRequest(@NotNull Long customAdderValue, @NotNull Long cfgaId) {

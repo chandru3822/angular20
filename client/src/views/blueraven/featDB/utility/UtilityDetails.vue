@@ -207,7 +207,8 @@ http.interceptors.response.use((response) => {
 
 const getChangeLog = async() => {
   showChangeLog.value = !showChangeLog.value
-  if (hasManageAccess === true && showChangeLog.value) {
+  
+  if (hasManageAccess.value === true && showChangeLog.value) {
     appStore.loading = true
     try {
       const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}/getUtilityHistory`, 'blueraven')

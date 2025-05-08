@@ -14,7 +14,7 @@ public class Proposal {
     objectCategoryId, proposalLogHistoryId;
   private String projectName, name, email, version, proposalDetails;
   private OffsetDateTime dateCreated, dateModified;
-  private BigDecimal maxDiscountAmount, minPricePerWatt;
+  private BigDecimal maxDiscountAmount;
   private boolean locked, archived, creditCheckSubmitted, financeDocsSent, installationAgreementSent, external;
   private List<CustomFieldGroup> customFieldGroups;
 
