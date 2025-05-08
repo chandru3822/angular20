@@ -33,7 +33,7 @@
 
             <!--todo: this grid still needs some work but it's giving me a hard time so I'm going to come back to it later-->
             <template #item="{ item, index }">
-              <tr>
+              <tr   @dragover.prevent @drop="onDropEnd(item, $event)" >
                 <td style="width: 50px">
                   <a-btn
                     variant="text"
@@ -356,6 +356,8 @@
                         item.customFields
                       )"
                       :key="index"
+                    :draggable="true"
+                    @dragstart="onDragStart(cf )"
                       class="pa-0"
                       :class="{ 'shaded-row': selectedIndex % 2 }"
                     >
@@ -763,6 +765,7 @@ const count = ref(0)
 const numberValues = ref([undefined, 'One', 'Two', 'Three', 'Four'])
 const positions = ref([])
 const positionsLoading = ref(false)
+const draggedValue = ref(null);
 
 const emit = defineEmits(['group-deleted'])
 const props = defineProps({
@@ -935,6 +938,105 @@ const assignCustomField = async (cfg, isAncillary) => {
     appStore.loading = false
   }
 }
+
+const onDragStart = (cf) => {
+  draggedValue.value = cf;
+};
+
+const onDropEnd = async (item, event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  try {
+    appStore.loading = true
+    // STEP 1: Save field order changes (if any)
+    await dropFieldChanges(item.customFields);
+    // STEP 2: Then handle the drop logic
+    await handleFieldDrop(item);
+    appStore.loading = false
+  } catch (e) {
+    console.error('Drop Error:', e);
+    appStore.showSnack('ERROR', 'Failed to process field drop');
+  }
+};
+
+const dropFieldChanges = async (fields) => {
+  try {
+    // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+    // pull those needing to be saved out of list
+    fields = fields.filter(data => data.customFieldId !== draggedValue.value.customFieldId);
+    let fieldsToSave = []
+    fields.forEach((f, idx) => {
+      let order = idx + 1
+      if (f.fieldOrder !== order) {
+        f.fieldOrder = order
+        fieldsToSave.push(f)
+      }
+    })
+    // save them here
+    if (fieldsToSave.length > 0) {
+      
+      const { status } = await putRequest(
+        `/customFieldGroup/updateFieldsInGroup`,
+        fieldsToSave,
+        'blueraven'
+      )
+      appStore.showSnack('SUCCESS', 'Fields Updated')
+
+      handleHidingGlobalLoader(status)
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Updating Fields')
+
+  }
+}
+const handleFieldDrop = async (dropTarget) => {
+  const draggedField = { ...draggedValue.value };
+  // Prevent drop if same group
+  if (dropTarget.id === draggedField.customFieldGroupId) return;
+  if (draggedValue.value !== null) {
+    try {
+      // Remove field from previous group
+      const { status } = await deleteRequest(
+        `/customFieldGroup/assignment/${draggedValue.value.id}`,
+        'blueraven'
+      );
+      draggedValue.value.archived = true;
+      handleHidingGlobalLoader(status);
+    } catch (error) {
+      console.error('*** DELETE ERROR ***', error);
+      appStore.showSnack('ERROR', 'Error removing field from group');
+      return;
+    }
+  }
+
+  try {
+    // Add field to new group
+    draggedField.fieldOrder = null;
+    draggedField.customFieldGroupId = dropTarget.id;
+    draggedField.id = draggedField.customFieldId;
+    const { data } = await postRequest(
+      `/customFieldGroup/addFieldToGroup`,
+      draggedField,
+      'blueraven'
+    );
+    appStore.showSnack('SUCCESS', 'Fields Updated')
+    // Remove all existing fields with the same customFieldId
+    dropTarget.customFields = dropTarget.customFields.filter(
+      (field) => field.customFieldId !== data.customFieldId
+    );
+    // Now add the new field
+    dropTarget.customFields.push(data);
+    // Clear drag values
+    draggedValue.value = null;
+  } catch (error) {
+    console.error('*** ADD ERROR ***', error);
+    appStore.showSnack('ERROR', 'Error adding field to group');
+  }
+  emit('group-deleted');
+};
+
+
 const saveGroupChanges = async (groups) => {
   appStore.loading = true
   try {
@@ -1133,7 +1235,6 @@ const loadFieldsByParent = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Data')
-
     appStore.loading = false
   }
 }
