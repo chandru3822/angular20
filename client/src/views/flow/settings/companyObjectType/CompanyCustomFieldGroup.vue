@@ -33,7 +33,7 @@
 
             <!--todo: this grid still needs some work but it's giving me a hard time so I'm going to come back to it later-->
             <template #item="{ item, index }">
-              <tr   @dragover.prevent @drop="onDropEnd(item, $event)" >
+              <tr   @dragover.prevent @drop.prevent="onDropEnd(item, $event)" >
                 <td style="width: 50px">
                   <a-btn
                     variant="text"
@@ -946,6 +946,7 @@ const onDragStart = (cf) => {
 const onDropEnd = async (item, event) => {
   event.preventDefault();
   event.stopPropagation();
+  if(!draggedValue.value)return
   try {
     appStore.loading = true
     // STEP 1: Save field order changes (if any)
