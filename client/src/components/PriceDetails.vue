@@ -65,7 +65,8 @@
                 <tr :key="'diff-' + index" class="dense-row">
                   <td class="caption">{{ adder.name }} Adjustment</td>
                   <td class="text-right caption">
-                    {{ adder.difference > 0 ? '+' : '' }}${{ formatNumber(adder.difference, true) }}
+                    <template v-if="adder.difference >= 0">+${{ formatNumber(adder.difference, true) }}</template>
+                    <template v-else>-${{ formatNumber(Math.abs(adder.difference), true) }}</template>
                   </td>
                 </tr>
               </template>
@@ -106,11 +107,21 @@
               <tr
                 v-for="(adder, index) in adders"
                 :key="index"
-                :class="{'shaded-row': index % 2}"
+                :class="[
+                  {'shaded-row': index % 2},
+                  {'grey lighten-3 text-decoration-line-through': shouldShowStrikethrough(adder)},
+                  {'green lighten-5': shouldShowGreen(adder)}
+                ]"
                 class="dense-row"
               >
-                <td class="caption">{{ adder.name }}</td>
-                <td class="text-center caption">{{ adder.unitPrice }}</td>
+                <td class="caption" :class="{
+                  'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
+                  'green--text': shouldShowGreen(adder)
+                }">{{ adder.name }}</td>
+                <td class="text-center caption" :class="{
+                  'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
+                  'green--text': shouldShowGreen(adder)
+                }">{{ adder.unitPrice }}</td>
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
                     <!-- For custom adders with project amount but no proposal amount -->
@@ -167,23 +178,25 @@
 
                           <!-- Otherwise, apply normal difference styling -->
                           <template v-else>
-                            <!-- When proposal amount is LESS than project amount, show project as strikethrough -->
-                            <template v-if="adder.proposalAdderAmount < adder.projectAdderAmount &&
-                                        adder.projectAdderAmount !== null &&
-                                        adder.proposalAdderAmount !== null">
-                              <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                            <!-- When selected on project but NOT on proposal -->
+                            <template v-if="adder.selectedOnProjectOnly">
+                              <span class="green--text text-no-wrap">
                                 ${{ formatNumber(adder.projectAdderAmount, true) }}
                               </span>
-                              <span class="red--text text-no-wrap">
+                            </template>
+
+                            <!-- When selected on proposal but NOT on project -->
+                            <template v-else-if="adder.selectedOnProposalOnly">
+                              <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
                                 ${{ formatNumber(adder.proposalAdderAmount, true) }}
                               </span>
                             </template>
 
-                            <!-- When proposal amount is GREATER than project amount, show proposal amount as normal -->
-                            <template v-else-if="adder.proposalAdderAmount > adder.projectAdderAmount &&
-                                              adder.projectAdderAmount !== null &&
-                                              adder.proposalAdderAmount !== null">
-                              <span class="green--text text-no-wrap">
+                            <!-- When amounts are different but both are selected -->
+                            <template v-else-if="adder.proposalAdderAmount !== adder.projectAdderAmount &&
+                                    adder.projectAdderAmount !== null &&
+                                    adder.proposalAdderAmount !== null">
+                              <span class="text-no-wrap">
                                 ${{ formatNumber(adder.proposalAdderAmount, true) }}
                               </span>
                             </template>
@@ -482,6 +495,26 @@ const fetchPriceDetailAmounts = async () => {
     appStore.loading = false;
   }
 };
+
+/**
+* Helper method to determine if an adder should have strikethrough styling
+*/
+const shouldShowStrikethrough = (adder) => {
+  // Only apply strikethrough to selected adders with the specific condition
+  return adder.adderType === 'selected_adders' &&
+    adder.selectedOnProposalOnly &&
+    // Make sure we're not in any other case that would prevent reaching the "zzz" template
+    !isCustomProjectOnly(adder);
+}
+
+/**
+ * Helper method to determine if an adder should have green styling
+ */
+const shouldShowGreen = (adder) => {
+  return adder.adderType === 'selected_adders' &&
+    adder.selectedOnProjectOnly &&
+    !isCustomProjectOnly(adder);
+}
 
 // Watch for changes in adder data
 watch(() => props.adderData, (newAdderData) => {

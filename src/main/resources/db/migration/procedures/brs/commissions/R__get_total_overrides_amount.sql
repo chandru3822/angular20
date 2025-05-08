@@ -14,22 +14,22 @@ DECLARE
   v_commission_strategy_id    bigint;
   v_override_plan_id bigint;
 BEGIN
-
-
-  select interest_rate,
-         loan_term,
-         system_size,
-         primary_financier,
-         desired_commission_amount,
-         commission_strategy_id
-  from brs.get_commission_data(p_project_id)
-  into
-    v_interest_rate,
+  select pd.interest_rate,
+         pd.loan_term,
+         pd.system_size,
+         pd.primary_financier,
+         f.desired_commission_amount,
+         f.commission_strategy
+  into  v_interest_rate,
     v_loan_term,
     v_system_size,
     v_primary_financier,
     v_desired_commission_amount,
-    v_commission_strategy_id;
+    v_commission_strategy_id
+  from brs.financial_details f
+         inner join brs.project_details pd on pd.project_id = f.project_id
+  where f.project_id = p_project_id;
+
 
   select sum(u.red_line_m1_allocation), sum(u.red_line_m2_allocation),o.id
   into v_red_line_m1_allocation,v_red_line_m2_allocation,v_override_plan_id

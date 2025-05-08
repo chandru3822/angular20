@@ -11,16 +11,15 @@ DECLARE
   v_cancelled_date            timestamp;
   v_desired_commission_amount numeric;
   v_total_commission_amount   numeric;
-  v_milestone_2               bigint;
-  v_milestone_1               bigint;
   v_allocation_m1             numeric;
   v_red_line_m2_allocation    numeric;
   v_red_line_m1_allocation    numeric;
   v_commission_strategy_id    bigint;
   v_commission_strategy_type_id bigint;
   v_override_plan_id bigint;
+  v_fdc_date date;
+  v_sc_date date;
 BEGIN
-
   select c.allocation,fd.override_plan_id
   into v_allocation_m1,v_override_plan_id
   from brs.financial_details fd
@@ -28,48 +27,30 @@ BEGIN
                     on c.commission_plan_id = fd.commission_plan_id and c.milestone_id = 1
   where fd.project_id = p_project_id;
 
-  select commission_strategy_type_id
-  into v_commission_strategy_type_id
-  from brs.financial_details fd
-         inner join brs.commission_plan c on c.id = fd.commission_plan_id
-  where fd.project_id = p_project_id;
-
-
-  select cancelled_date,
-         interest_rate,
-         loan_term,
-         system_size,
-         primary_financier,
-         desired_commission_amount,
-         commission_strategy_id
-  from brs.get_commission_data(p_project_id)
-  into v_cancelled_date,
+  select commission_strategy_type_id,
+         p.interest_rate,
+         p.loan_term,
+         p.system_size,
+         p.primary_financier,
+         fd.desired_commission_amount,
+         fd.commission_strategy,
+         p.final_design_complete_date,
+         p.substantial_completion_date,
+         p.cancelled_date
+  into v_commission_strategy_type_id,
     v_interest_rate,
     v_loan_term,
     v_system_size,
     v_primary_financier,
     v_desired_commission_amount,
-    v_commission_strategy_id;
-
-  select ppscfv.id
-  into v_milestone_2
-  from flow.project_process_step pps
-         inner join flow.project_process_step_custom_field_value ppscfv
-                    on ppscfv.project_process_step_id = pps.id and
-                       ppscfv.custom_field_group_assignment_id = 21009
-  where pps.project_id = p_project_id
-    and pps.process_step_id = 3365
-    and ppscfv.date_value is not null;
-
-  select ppscfv.id
-  into v_milestone_1
-  from flow.project_process_step pps
-         inner join flow.project_process_step_custom_field_value ppscfv
-                    on ppscfv.project_process_step_id = pps.id and
-                       ppscfv.custom_field_group_assignment_id = 1251
-  where pps.project_id = p_project_id
-    and pps.process_step_id = 175
-    and ppscfv.date_value is not null;
+    v_commission_strategy_id,
+    v_fdc_date,
+    v_sc_date,
+    v_cancelled_date
+  from brs.financial_details fd
+         inner join brs.commission_plan c on c.id = fd.commission_plan_id
+         inner join brs.project_details p on p.project_id = fd.project_id
+  where fd.project_id = p_project_id;
 
   select sum(u.red_line_m1_allocation), sum(u.red_line_m2_allocation)
   into v_red_line_m1_allocation,v_red_line_m2_allocation
@@ -77,11 +58,11 @@ BEGIN
          inner join brs.override_plan o on o.id = f.override_plan_id
          inner join brs.override_plan_receiving_user u on u.override_plan_id = o.id
   where f.project_id = p_project_id
-  and (u.red_line_m1_allocation > 0 or u.red_line_m2_allocation >0);
- -- raise notice 'v_desired_commission_amount %',v_desired_commission_amount;
-  if v_commission_strategy_id = 24102 and  v_override_plan_id < 2635 and (v_commission_strategy_type_id is null or v_commission_strategy_type_id = 1) and p_code = 'M1' and v_milestone_1 is not null then
+    and (u.red_line_m1_allocation > 0 or u.red_line_m2_allocation >0);
+  -- raise notice 'v_desired_commission_amount %',v_desired_commission_amount;
+  if v_commission_strategy_id = 24102 and  v_override_plan_id < 2635 and (v_commission_strategy_type_id is null or v_commission_strategy_type_id = 1) and p_code = 'M1' and v_fdc_date is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
---     raise notice 'v_total_commission_amount %',v_total_commission_amount;
+    --     raise notice 'v_total_commission_amount %',v_total_commission_amount;
 --     raise notice 'v_allocation_m1 %',v_allocation_m1;
 --     raise notice 'v_red_line_m1_allocation %',v_red_line_m1_allocation;
 --     raise notice 'v_system_size %',v_system_size;
@@ -89,9 +70,9 @@ BEGIN
       v_total = 0.00;
     else
       v_total = v_total_commission_amount * v_red_line_m1_allocation;
-     -- raise notice 'total %',v_allocation_m1 * v_system_size * v_red_line_m1_allocation;
+      -- raise notice 'total %',v_allocation_m1 * v_system_size * v_red_line_m1_allocation;
     end if;
-  elsif v_commission_strategy_id = 24102 and v_override_plan_id < 2635 and (v_commission_strategy_type_id is null or v_commission_strategy_type_id = 1) and p_code = 'M2' and v_milestone_2 is not null then
+  elsif v_commission_strategy_id = 24102 and v_override_plan_id < 2635 and (v_commission_strategy_type_id is null or v_commission_strategy_type_id = 1) and p_code = 'M2' and v_sc_date is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
@@ -117,7 +98,7 @@ BEGIN
                      inner join brs.project_override po on po.project_id = p1.id
                      inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
               WHERE p1.id = p_project_id
-                and v_milestone_1 is not null), 0)
+                and v_fdc_date is not null), 0)
     into v_total;
   else
     select coalesce(
@@ -137,10 +118,13 @@ BEGIN
                      inner join brs.project_override po on po.project_id = p1.id
                      inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
               WHERE p1.id = p_project_id
-                and v_milestone_2 is not null), 0)
+                and v_sc_date is not null), 0)
     into v_total;
   end if;
 
+  if v_cancelled_date is not null then
+    return 0.00::numeric;
+  end if;
   return coalesce(v_total, 0);
 END;
 $BODY$

@@ -33,6 +33,7 @@ declare
   v_lead_cost_adder                   numeric;
   v_desired_commission_amount         numeric;
   v_override_plan_base_price_per_watt numeric;
+  v_redline_amount numeric;
 BEGIN
   v_override_plan_id = null;
   v_digital_lead_cost = 0::numeric;
@@ -128,7 +129,10 @@ BEGIN
                           v_digital_lead_cost
                         else 0::numeric end;
 
-        v_markup = v_minimum_funding_amount_per_watt - brs.get_minimum_price_per_watt(x.id) - v_lead_cost;
+        select redline_price
+        into v_redline_amount
+        from brs.get_minimum_price_per_watt(x.id);
+        v_markup = v_minimum_funding_amount_per_watt - v_redline_amount - v_lead_cost;
 
         if v_commission_strategy_id in (26056, 24101, 24102) then
           if v_commission_strategy_id != 26056 then
