@@ -416,11 +416,11 @@ public class ProjectService {
 
     Map<String, Object> params = new HashMap<>();
     params.put("id", project.getId());
-    params.put("street1", project.getStreet1());
-    params.put("projectName", CleanString.replaceApostrophe(project.getProjectName()));
-    params.put("city", project.getCity());
+    params.put("street1", CleanString.replaceApostrophesAndRemoveNBSP(project.getStreet1()));
+    params.put("projectName", CleanString.replaceApostrophesAndRemoveNBSP(project.getProjectName()));
+    params.put("city", CleanString.replaceApostrophesAndRemoveNBSP(project.getCity()));
     params.put("companyStateId", project.getCompanyStateId());
-    params.put("postalCode", project.getPostalCode());
+    params.put("postalCode", CleanString.replaceApostrophesAndRemoveNBSP(project.getPostalCode()));
     params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.trueUserId());
 
@@ -532,7 +532,7 @@ public class ProjectService {
       Map<String, Object> params = new HashMap<>();
       params.put("contactId", contactId);
       params.put("createdById", user.trueUserId());
-      params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
+      params.put("projectName", CleanString.replaceApostrophesAndRemoveNBSP(contact.getFullName()));
       params.put("processId", processId);
       //only save address fields if contact is in an active state
       params.put("street1", saveAddress ? contact.getStreet1() : null);

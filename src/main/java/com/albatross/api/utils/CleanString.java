@@ -7,11 +7,12 @@ import java.util.regex.Pattern;
  */
 public class CleanString {
 
-  public static String replaceApostrophe(String textToBeCleaned) {
+  public static String replaceApostrophesAndRemoveNBSP(String textToBeCleaned) {
     if (textToBeCleaned == null){
       return null;
     }
-    return textToBeCleaned.replace("’", "'");
+    // \u00A0 represents a non-breaking space
+    return textToBeCleaned.replace("\u00A0", " ").replace("’", "'").trim();
   }
 
   public static String cleanFilename(String filename) {
