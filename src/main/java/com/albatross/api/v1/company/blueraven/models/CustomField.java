@@ -17,7 +17,9 @@ import java.util.List;
 public class CustomField {
 
   private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById,
-    customFieldGroupId, customFieldGroupAssignmentId, customFieldObjectTypeId, ancillaryCustomFieldGroupAssignmentId, dataTypeId, conditionalOnId,customFieldId;
+    customFieldGroupId, customFieldGroupAssignmentId, customFieldObjectTypeId, ancillaryCustomFieldGroupAssignmentId, dataTypeId, conditionalOnId;
+  // Used to track the id for drag/drop functionality in CompanyCustomFieldGroup.vue
+  private Long customFieldId;
   private String fieldName, objectType, groupName, processStepName;
   private Double minValue, maxValue;
   private Boolean archived, showOnInsert, requireOnInsert, required, showOnUserProfile, hasListValues, allowMultiple, useParentData, customFieldGroupAssignmentReadOnly, customFieldGroupAssignmentHidden;
