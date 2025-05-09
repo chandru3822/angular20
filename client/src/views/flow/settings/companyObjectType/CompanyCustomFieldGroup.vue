@@ -357,7 +357,7 @@
                       )"
                       :key="index"
                     :draggable="true"
-                    @dragstart="onDragStart(cf )"
+                    @dragstart="onDragStart(cf,item, n)"
                       class="pa-0"
                       :class="{ 'shaded-row': selectedIndex % 2 }"
                     >
@@ -766,6 +766,9 @@ const numberValues = ref([undefined, 'One', 'Two', 'Three', 'Four'])
 const positions = ref([])
 const positionsLoading = ref(false)
 const draggedValue = ref(null);
+const draggedItemValue= ref(null);
+const draggedNValue= ref(null);
+localStorage.setItem('customFieldId',null)
 
 const emit = defineEmits(['group-deleted'])
 const props = defineProps({
@@ -939,8 +942,13 @@ const assignCustomField = async (cfg, isAncillary) => {
   }
 }
 
-const onDragStart = (cf) => {
+const onDragStart = (cf,item,n) => {
   draggedValue.value = cf;
+  draggedItemValue.value=item;
+  draggedNValue.value=n
+
+
+
 };
 
 const onDropEnd = async (item, event) => {
@@ -962,7 +970,7 @@ const onDropEnd = async (item, event) => {
 
 const dropFieldChanges = async (fields) => {
   try {
-    // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+  
     // pull those needing to be saved out of list
     fields = fields.filter(data => data?.customFieldId !== draggedValue?.value?.customFieldId);
     let fieldsToSave = []
@@ -975,7 +983,7 @@ const dropFieldChanges = async (fields) => {
     })
     // save them here
     if (fieldsToSave.length > 0) {
-      
+      localStorage.setItem('customFieldId',draggedValue.value.customFieldId)
       const { status } = await putRequest(
         `/customFieldGroup/updateFieldsInGroup`,
         fieldsToSave,
@@ -1003,6 +1011,7 @@ const handleFieldDrop = async (dropTarget) => {
         'blueraven'
       );
       draggedValue.value.archived = true;
+     
       handleHidingGlobalLoader(status);
     } catch (error) {
       console.error('*** DELETE ERROR ***', error);
@@ -1027,10 +1036,26 @@ const handleFieldDrop = async (dropTarget) => {
       (field) => field.customFieldId !== data.customFieldId
     );
     // Now add the new field
-    data.fieldOrder=dropTarget?.customFields?.length+1
+    data.fieldOrder = dropTarget?.customFields?.length + 1
     dropTarget.customFields.push(data);
+
+    // Find the index of the custom field by its customFieldId
+    const fieldIndex = groupsByColumn.value[draggedNValue.value]
+      .filter(data => data.id == draggedItemValue.value.id)[0]
+      .customFields
+      .findIndex(field => field.customFieldId === draggedValue.value.customFieldId);
+
+    if (fieldIndex !== -1) {
+      // Custom field found, now remove it
+      groupsByColumn.value[draggedNValue.value]
+        .filter(data => data.id == draggedItemValue.value.id)[0]
+        .customFields.splice(fieldIndex, 1);
+
+    }
     // Clear drag values
     draggedValue.value = null;
+    draggedItemValue.value = null;
+    draggedNValue.value = null;
   } catch (error) {
     console.error('*** ADD ERROR ***', error);
     appStore.showSnack('ERROR', 'Error adding field to group');
@@ -1166,19 +1191,29 @@ const deleteField = async (item, customFieldGroupId) => {
 }
 const saveFieldChanges = async (fields,item) => {
   try {
-   
+
+    const customFieldId = parseInt(localStorage.getItem('customFieldId'))
+    if (customFieldId) {
+      const fieldIndex = fields.filter(data => data?.customFieldGroupId === item?.id).findIndex(field => field.customFieldId === customFieldId);
+
+      if (fieldIndex !== -1) {
+        fields.splice(fieldIndex, 1);
+      }
+    }
 
     fields = fields.filter(data => data?.customFieldGroupId === item?.id);
     // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
     // pull those needing to be saved out of list
+
     let fieldsToSave = []
     fields.forEach((f, idx) => {
       let order = idx + 1
-      if (f.fieldOrder !== order) {
+      if (customFieldId || f.fieldOrder !== order) {
         f.fieldOrder = order
         fieldsToSave.push(f)
       }
     })
+    fields = fields.sort((a, b) => a.fieldOrder - b.fieldOrder);
     // save them here
     if (fieldsToSave.length > 0) {
       appStore.loading = true
@@ -1188,7 +1223,7 @@ const saveFieldChanges = async (fields,item) => {
         'blueraven'
       )
       appStore.showSnack('SUCCESS', 'Fields Updated')
-
+      localStorage.removeItem('customFieldId')
       handleHidingGlobalLoader(status)
     }
   } catch (e) {
