@@ -1190,7 +1190,7 @@ const userHasWhiteListedPosition = (cf, arg = 'readonly') => {
     arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
   const prAttr =
     arg === 'readonly'
-      ? 'customFieldGroupAssignmentReadOnly '
+      ? 'customFieldGroupAssignmentReadOnly'
       : 'customFieldGroupAssignmentHidden'
 
   //field doesn't require a white listed position
