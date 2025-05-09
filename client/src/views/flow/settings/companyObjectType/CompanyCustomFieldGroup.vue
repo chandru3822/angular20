@@ -946,9 +946,6 @@ const onDragStart = (cf,item,n) => {
   draggedValue.value = cf;
   draggedItemValue.value=item;
   draggedNValue.value=n
-
-
-
 };
 
 const onDropEnd = async (item, event) => {
