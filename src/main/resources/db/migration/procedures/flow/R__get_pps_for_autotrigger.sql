@@ -118,6 +118,7 @@ from (
                             psacp.display_order as "displayOrder",
                             psacp.created_by_id as "createdById",
                             psacp.modified_by_id as "modifiedById",
+                            psacp.reopen_primary_if_applicable as "reopenPrimaryIfApplicable",
                             ps.process_step_name as "processStepName",
                             (
                                 select count(*)
