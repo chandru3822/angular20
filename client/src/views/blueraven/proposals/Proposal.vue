@@ -286,6 +286,7 @@
               <v-expansion-panel-content>
                 <PriceDetails
                   :proposal-id="proposalId"
+                  :projectAddersLastReviewedDate="projectAddersLastReviewedDate"
                   :adder-data="adderData"
                 />
               </v-expansion-panel-content>
@@ -1152,6 +1153,10 @@ const sortedCustomFieldGroups = computed(() => {
     return 0
   })
 })
+
+const projectAddersLastReviewedDate = computed(() => {
+  return proposal.value?.projectAddersLastReviewedDate || null;
+});
 
 const toggleFullscreen = () => {
   if (document.fullscreenElement) {
