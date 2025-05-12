@@ -13,7 +13,7 @@ public class Proposal {
   private Long id, proposalNbr, projectId, projectProcessStepId, proposalVersionId, revisionNumber, stateId, utilityCompanyId, proposalTemplateId,
     objectCategoryId, proposalLogHistoryId;
   private String projectName, name, email, version, proposalDetails;
-  private OffsetDateTime dateCreated, dateModified;
+  private OffsetDateTime dateCreated, dateModified, projectAddersLastReviewedDate;
   private BigDecimal maxDiscountAmount;
   private boolean locked, archived, creditCheckSubmitted, financeDocsSent, installationAgreementSent, external;
   private List<CustomFieldGroup> customFieldGroups;
