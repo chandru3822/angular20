@@ -16,19 +16,19 @@ BEGIN
   from brs.commission_plan cp
   where cp.id = p_commission_plan_id;
 
-  if v_commission_strategy_type_id is not null and v_commission_strategy_type_id = 1 then
+  if p_commission_plan_id = 63 then
     call brs.change_to_redline(p_project_id);
+  ELSIF p_commission_plan_id = 67 then
+    call brs.change_to_true_redline(p_project_id);
   else
-
     update brs.project_commission pc
-    set commission_plan_id =p_commission_plan_id
+    set commission_plan_id = p_commission_plan_id
     where project_id = p_project_id;
 
     update brs.financial_details fd
     set commission_plan    = v_commission_plan_name,
         commission_plan_id = p_commission_plan_id
     where project_id = p_project_id;
-
 
     call brs.reset_financial_details(p_project_id);
   end if;
