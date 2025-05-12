@@ -157,11 +157,12 @@ public class BlueravenProposalService {
     }
   }
 
-  public List<ProposalAdderDetail> getProposalAdderDetail(@NonNull Long proposalId, Long commissionStrategyId, Long storageId) {
+  public List<ProposalAdderDetail> getProposalAdderDetail(@NonNull Long proposalId, Long commissionStrategyId,  Long storageId, Long financialProductId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("proposalId", proposalId);
     params.put("commissionStrategyId", commissionStrategyId);
     params.put("storageId", storageId);
+    params.put("financialProductId", financialProductId);
 
     return sqlCache.queryBySql(ProposalQuery.getAdderDetails, params, ProposalAdderDetail.class);
   }
@@ -861,10 +862,6 @@ public class BlueravenProposalService {
 
           if (commissionStrategyFieldId.equals(cfv.getCustomFieldId())) {
             filterCustomFieldValues(cfv, filterCommissionStrategiesByUser(proposalVersionId, userId), false);
-          }
-
-          if (brsPricePerWattFieldId.equals(cfv.getCustomFieldId()) && proposal.getMinPricePerWatt() != null) {
-            cfv.setMinValue(proposal.getMinPricePerWatt().doubleValue());
           }
 
           if (brsOtherMaxDiscount.equals(cfv.getCustomFieldId()) && proposal.getMaxDiscountAmount() != null) {

@@ -272,6 +272,7 @@
                   :proposalId="proposalId"
                   :commissionStrategyId="commissionStrategyId"
                   :storageId="storageId"
+                  :financialProductId="financialProductId"
                   @close-dialog="showAdderCostDialog = false"
                   @apply-costs="handleAppliedCosts"
                   @cancel="handleAdderDialogCancel"
@@ -505,6 +506,7 @@ const adderTotalCost = ref(0)
 const adderCostData = ref({})
 const commissionStrategyId = ref(null) // Pricing Strategy (customFieldAssignmentId=581)
 const storageId = ref(null) // Storage Type (customFieldAssignmentId=200)
+const financialProductId = ref(null) // Financial Product (customFieldAssignmentId=155)
 
 // Helper function to find a custom field by assignment ID
 const findCustomFieldByAssignmentId = (assignmentId) => {
@@ -517,7 +519,8 @@ const findCustomFieldByAssignmentId = (assignmentId) => {
 const FIELD_IDS = {
   PRICING_STRATEGY: 581, // Pricing Strategy (customFieldAssignmentId)
   STORAGE_TYPE: 200,     // Storage Type (customFieldAssignmentId)
-  COMMISSION_DETAILS: 454 // Field that shows commission details menu
+  COMMISSION_DETAILS: 454, // Field that shows commission details menu
+  FINANCIAL_PRODUCT: 155 // Financial Product (customFieldAssignmentId)
 };
 
 // Helper function to update pricing strategy and storage type refs
@@ -530,6 +533,11 @@ const updateConfigurationRefs = () => {
   const storageTypeField = findCustomFieldByAssignmentId(FIELD_IDS.STORAGE_TYPE);
   if (storageTypeField && storageTypeField.intValue) {
     storageId.value = storageTypeField.intValue;
+  }
+
+  const financialProductField = findCustomFieldByAssignmentId(FIELD_IDS.FINANCIAL_PRODUCT);
+  if (financialProductField && financialProductField.intValue) {
+    financialProductId.value = financialProductField.intValue;
   }
 }
 
@@ -812,7 +820,8 @@ const getProposalAdders = async () => {
     const params = {
       proposalId: proposalId.value,
       commissionStrategyId: commissionStrategyId.value ?? 123,
-      storageId: storageId.value ?? 123
+      storageId: storageId.value ?? 123,
+      financialProductId: financialProductId.value ?? 123
     }
 
     const { data, status } = await postRequest(
@@ -1073,17 +1082,17 @@ const selectedAddersDisplay = computed(() => {
   return adders.filter(adder => {
     // Find original adder in adderData to check selectedProposalAdder flag
     const originalAdder = adderData.value?.find(a => a.id === adder.id);
-    
+
     // Include if explicitly selected on proposal regardless of other conditions
     if (originalAdder && originalAdder.selectedProposalAdder) {
       return true;
     }
-    
+
     // For auto-applied adders, check if they have a positive amount
     if (adder.isAutoApplied && adder.price > 0) {
       return true;
     }
-    
+
     // For other adders, ensure they have a price > 0
     return adder.price > 0;
   });
@@ -1162,13 +1171,6 @@ const getHint = (field) => {
     return undefined
   }
 
-  if (field.customFieldGroupAssignmentId === PricePerWattCfgaId) {
-    const minPricePerWatt = proposal.value.minPricePerWatt
-    if (minPricePerWatt) {
-      return `Price Per Watt must be greater than ${minPricePerWatt}`
-    }
-  }
-
   if (field.customFieldGroupAssignmentId === OtherMaxDiscountCfgaId) {
     const maxDiscountAmount = proposal.value.maxDiscountAmount
     if (maxDiscountAmount) {
@@ -1188,7 +1190,7 @@ const userHasWhiteListedPosition = (cf, arg = 'readonly') => {
     arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
   const prAttr =
     arg === 'readonly'
-      ? 'customFieldGroupAssignmentReadOnly '
+      ? 'customFieldGroupAssignmentReadOnly'
       : 'customFieldGroupAssignmentHidden'
 
   //field doesn't require a white listed position
@@ -1582,7 +1584,8 @@ const inputChangeCallback = async(field, remove=false) => {
 
   // Update configuration refs if any relevant field changes
   if (field.customFieldGroupAssignmentId === FIELD_IDS.PRICING_STRATEGY ||
-      field.customFieldGroupAssignmentId === FIELD_IDS.STORAGE_TYPE) {
+      field.customFieldGroupAssignmentId === FIELD_IDS.STORAGE_TYPE ||
+      field.customFieldGroupAssignmentId === FIELD_IDS.FINANCIAL_PRODUCT) {
     updateConfigurationRefs();
   }
 

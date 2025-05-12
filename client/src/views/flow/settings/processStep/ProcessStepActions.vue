@@ -773,7 +773,7 @@
                                         :disabled="!cp.edit || !userCanEdit"
                                         placeholder="Enter an integer"
                                         type="number"
-                                        step="1"
+                                        :step="1"
                                         v-model.number="fp.dynamicValue"
                                         :label="fp.parameterName"></a-text-field>
                                     <a-text-field
@@ -1166,7 +1166,7 @@ const actionLogicError = ref(false)
 const actionLogicErrorMsg = ref('')
 const actionSearch = ref('')
 const newChildProcessStep = ref({
-  reopenPrimaryIfApplicable: false  // Default to false to maintain current behavior
+  reopenPrimaryIfApplicable: false
 })
 const cancelledCompanyStatuses = ref([])
 const activeStatusesAssignedToStep = ref([])

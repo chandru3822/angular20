@@ -417,7 +417,7 @@ public class ProcessStepActionQuery {
            cp.modified_by_id,
            cp.existing_company_process_step_status_type_id,
            cp.initial_company_process_step_status_type_id,
-           cp.reopen_primary_if_applicable,
+           cp.reopen_primary_if_applicable as "reopenPrimaryIfApplicable",
            ecpsst.process_step_status_type as existingProcessStepStatusType,
            icpsst.process_step_status_type as initialProcessStepStatusType,
            ps.process_step_name

@@ -34,6 +34,33 @@ public class ProjectProcessStepQuery {
   """;
 
   //language=PostgreSQL
+  public final static String findLatestCompletedStepByType = """
+  select pps.id as project_process_step_id, pps.* from flow.project_process_step pps
+  inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+  where pps.project_id = :projectId
+  and pps.process_step_id = :processStepId
+  and cpsst.process_step_status_type_id = :statusId
+  and pps.id != :projectProcessStepId
+  order by pps.id desc limit 1
+""";
+
+  //language=PostgreSQL
+  public final static String updateProjectProcessStepStatusDirect = """
+  UPDATE flow.project_process_step
+  SET company_process_step_status_type_id = :cpsst_id,
+      modified_by_id = :user_id,
+      date_modified = now()
+  WHERE id = :pps_id
+""";
+
+  //language=PostgreSQL
+  public final static String insertProjectProcessStepAuditDirect = """
+  INSERT INTO flow.project_process_step_audit
+  (project_process_step_id, company_process_step_status_type_id, created_by_id, date_created)
+  VALUES (:pps_id, :cpsst_id, :user_id, now())
+""";
+
+  //language=PostgreSQL
   public final static String getProjectProcessStep = """
     select * from flow.get_pps_with_actions_and_requirements(:stepId::bigint, :companyId::bigint)
   """;
