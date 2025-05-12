@@ -256,7 +256,6 @@ onMounted(() => {
   window.openUrl = openUrl;
 })
 
-
 const filterFormatting = (value) => {
   if (value) {
     formatQueries.value.forEach((q) => {
