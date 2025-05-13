@@ -90,4 +90,5 @@ BEGIN
       SELECT * FROM top_n_with_flag
   ) result
 END;
+
 $function$;
