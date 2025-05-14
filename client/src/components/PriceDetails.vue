@@ -139,7 +139,7 @@
                       </template>
 
                       <!-- Only show difference styling if adder is explicitly selected on project or proposal (not auto-applied) -->
-                      <template v-else-if="(adder.selectedOnProjectOnly || adder.selectedOnProposalOnly || adder.adderType === 'custom_adders')">
+                      <template v-else-if="(adder.selectedOnProjectOnly || adder.selectedOnProposalOnly || adder.adderType === 'custom_adders') && projectAddersLastReviewedDate">
                         <!-- Custom adders: Always show greater value as the primary amount -->
                         <template v-if="adder.adderType === 'custom_adders' &&
                                      adder.projectAdderAmount !== null &&
@@ -246,6 +246,10 @@ const props = defineProps({
   adderData: {
     type: Array,
     default: () => []
+  },
+  projectAddersLastReviewedDate: {
+    type: [String, Date, null],
+    default: null
   }
 })
 
@@ -266,6 +270,10 @@ const commissionBaseTotal = computed(() => basePrice.value)
  * Excludes adders with zero difference.
  */
 const adderDifferences = computed(() => {
+  if (!props.projectAddersLastReviewedDate) {
+    return [];
+  }
+
   return adders.value
     .filter(adder => {
       // Never include auto-applied adders in commission differences
@@ -348,18 +356,26 @@ const adderTotal = computed(() => {
  */
 const processAdderData = (adderData) => {
   // Filter relevant adders first - keep only those that should be displayed
-  const filteredAdders = adderData.filter(adder => (
+  const filteredAdders = adderData.filter(adder => {
+    // Exclude project-only adders when projectAddersLastReviewedDate is null
+    if (!props.projectAddersLastReviewedDate &&
+      adder.adderType === 'selected_adders' &&
+      adder.selectedProjectAdder &&
+      !adder.selectedProposalAdder) {
+      return false;
+    }
+
     // Include if selected on either proposal or project
-    adder.selectedProposalAdder ||
-    adder.selectedProjectAdder ||
-    // Include custom adders with any positive amount
-    (adder.adderType === 'custom_adders' &&
-      (adder.customProposalAdderAmount > 0 ||
-      (adder.customProjectAdderAmount && adder.customProjectAdderAmount > 0))) ||
-    // Include auto-applied adders with positive amounts
-    (adder.adderType === 'auto_applied_adder' &&
-      adder.autoAppliedProposalAdderAmount > 0)
-  ));
+    return adder.selectedProposalAdder ||
+      adder.selectedProjectAdder ||
+      // Include custom adders with any positive amount
+      (adder.adderType === 'custom_adders' &&
+        (adder.customProposalAdderAmount > 0 ||
+          (adder.customProjectAdderAmount && adder.customProjectAdderAmount > 0))) ||
+      // Include auto-applied adders with positive amounts
+      (adder.adderType === 'auto_applied_adder' &&
+        adder.autoAppliedProposalAdderAmount > 0)
+  });
 
   // Map to our internal adder format
   adders.value = filteredAdders.map(adder => {
@@ -384,7 +400,9 @@ const processAdderData = (adderData) => {
 
     // Set selection flags, only if adder is explicitly selected
     result.selectedOnProjectOnly = isSelectedOnProject && !isSelectedOnProposal;
-    result.selectedOnProposalOnly = isSelectedOnProposal && !isSelectedOnProject;
+    result.selectedOnProposalOnly = props.projectAddersLastReviewedDate
+      ? (isSelectedOnProposal && !isSelectedOnProject)
+      : false;
 
     // Process based on adder type
     switch (adder.adderType) {
@@ -413,10 +431,12 @@ const processAdderData = (adderData) => {
         break;
 
       case 'custom_adders':
-        result.projectAdderAmount = adder.customProjectAdderAmount || 0;
-        result.proposalAdderAmount = adder.customProposalAdderAmount || 0;
-        result.customProjectAdderAmount = adder.customProjectAdderAmount || null;
+        if (props.projectAddersLastReviewedDate) {
+          result.projectAdderAmount = adder.customProjectAdderAmount || 0;
+          result.customProjectAdderAmount = adder.customProjectAdderAmount || null;
+        }
         result.customProposalAdderAmount = adder.customProposalAdderAmount || null;
+        result.proposalAdderAmount = adder.customProposalAdderAmount || 0;
 
         // Flag custom adders with only project amount
         if (adder.customProjectAdderAmount > 0 &&
@@ -426,7 +446,8 @@ const processAdderData = (adderData) => {
 
         // Flag custom adders with only proposal amount
         if (adder.customProposalAdderAmount > 0 &&
-            (!adder.customProjectAdderAmount || adder.customProjectAdderAmount <= 0)) {
+            (!adder.customProjectAdderAmount || adder.customProjectAdderAmount <= 0)
+        && props.projectAddersLastReviewedDate) {
           result.selectedOnProposalOnly = true;
         }
         break;

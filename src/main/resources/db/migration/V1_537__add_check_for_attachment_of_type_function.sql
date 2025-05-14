@@ -29,25 +29,26 @@ with newFunction as (
 ), assign as (
   insert into flow.company_function (company_function_name, db_function_id, company_id)
     select 'Check For Uploaded File', newFunction.id, 3
-         from newFunction cross join flow.company_function
-         where not exists(select id from flow.company_function cf where cf.company_function_name = 'Check For Uploaded File')
+         from newFunction
+         where not exists(select id from flow.company_function cf where cf.company_function_name = 'Check For Uploaded File' AND cf.company_id = 3)
 )
 insert into flow.db_function_param (db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, system_list_id)
-select f.id, 'Attachment Type', 0, 9, 2, null, csl.id
-from newFunction f
-cross join flow.system_list sl
-inner join flow.company_system_list csl on sl.id = csl.system_list_id
-where not exists (select id from flow.db_function_param where parameter_name = 'Attachment Type' and data_type_id = 9)
-and sl.system_list = 'Attachment Types by Type';
+select f.id, 'Attachment Type', 0, 9, 2, null, (select csl.id from flow.company_system_list csl
+	                                                        inner join flow.system_list sl on sl.id = csl.system_list_id
+                                                            where sl.system_list = 'Attachment Types by Type')
+	from newFunction f
+	where not exists (select id from flow.db_function_param where parameter_name = 'Attachment Type' and data_type_id = 9);
 
 insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, system_list_id)
 select f.id,'project__process_step_id', 2, 6, 1, 3, null
 from flow.db_function f
 where function_name = 'brs.check_for_attachment_of_type' and
-    not exists (select fp.id from flow.db_function_param fp cross join flow.db_function f where db_function_id = f.id and system_value_id = 3);
+    not exists (select fp.id from flow.db_function_param fp
+	                    inner join flow.db_function f on fp.db_function_id = f.id and system_value_id = 3);
 
 insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, system_list_id)
-select f.id,'PPSE ID', 1, 6, 1, 5, null
+select f.id, 'PPSE ID', 1, 6, 1, 5, null
 from flow.db_function f
 where function_name = 'brs.check_for_attachment_of_type' and
-    not exists (select fp.id from flow.db_function_param fp cross join flow.db_function f where db_function_id = f.id and system_value_id = 3);
+	not exists (select fp.id from flow.db_function_param fp
+	            where fp.db_function_id = f.id and fp.system_value_id = 5);
