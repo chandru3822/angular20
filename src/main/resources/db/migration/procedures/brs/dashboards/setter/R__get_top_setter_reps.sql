@@ -4,37 +4,30 @@ drop function if exists brs.get_top_setter_reps(p_start_date date, p_end_date da
 drop function if exists brs.get_top_setter_reps(p_user_id bigint, p_start_date date, p_end_date date, p_limit bigint);
 -- DROP FUNCTION brs.get_top_setter_reps(int8, date, date, int8);
 
-CREATE OR REPLACE FUNCTION brs.get_top_setter_reps(
-  p_user_id bigint,
-  p_start_date date,
-  p_end_date date,
-  p_limit bigint
-)
-RETURNS TABLE (
-  user_id integer,
-  name text,
-  pitches bigint,
-  rank text,
-  show_first boolean
-)
-LANGUAGE plpgsql
+CREATE OR REPLACE FUNCTION brs.get_top_setter_reps(p_user_id bigint, p_start_date date, p_end_date date, p_limit bigint)
+ RETURNS TABLE(user_id integer, name text, pitches bigint, rank text, show_first boolean)
+ LANGUAGE plpgsql
 AS $function$
 BEGIN
+
   RETURN QUERY
   WITH top_reps AS (
       SELECT
           pd.setter_user_id AS user_id,
           CONCAT(u.first_name, ' ', u.last_name) AS name,
-          COUNT(*) AS pitches,
-          RANK() OVER (ORDER BY COUNT(*) DESC) AS rank
+          COUNT(1) AS pitches,
+          RANK() OVER (ORDER BY COUNT(1) DESC) AS rank
       FROM brs.project_details pd
       INNER JOIN flow.user u ON u.id = pd.setter_user_id
+      INNER JOIN flow.company_user_status cus ON cus.user_id = u.id
+      INNER JOIN flow.user_status_type ust ON ust.id = cus.user_status_type_id AND ust.company_id = 3
       WHERE pd.source IN (525, 526)
         AND ((pd.prioritized_closer_appointment_outcome_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::date
             BETWEEN p_start_date AND p_end_date
-        AND pd.prioritized_closer_appointment_outcome IN (2, 3, 1139, 1140)
-        AND pd.setter_user_id NOT IN (2354810, 2390159)
+        AND pd.prioritized_closer_appointment_outcome IN (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+        AND pd.setter_user_id NOT IN (2354810, 2390159) --Trizon and Central Solar
         AND pd.company_id = 3
+        AND ust.user_status_type = 'Active'
       GROUP BY pd.setter_user_id, u.first_name, u.last_name
   ),
   ranked_reps AS (
@@ -56,6 +49,7 @@ BEGIN
       ORDER BY raw_rank
       LIMIT p_limit
   ),
+  -- Flag the user if they are in top_n
   top_n_with_flag AS (
       SELECT
           tn.user_id,
@@ -76,7 +70,7 @@ BEGIN
           true AS show_first
       FROM ranked_reps rr
       WHERE rr.user_id = p_user_id
-        AND rr.user_id NOT IN (SELECT user_id FROM top_n)
+        AND rr.user_id NOT IN (SELECT tn.user_id FROM top_n tn)
   )
   SELECT
       result.user_id,
@@ -88,7 +82,8 @@ BEGIN
       SELECT * FROM user_not_in_top
       UNION ALL
       SELECT * FROM top_n_with_flag
-  ) result
-END;
+  ) result;
 
-$function$;
+END;
+$function$
+;
