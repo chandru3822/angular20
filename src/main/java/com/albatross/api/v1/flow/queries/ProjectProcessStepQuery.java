@@ -317,9 +317,9 @@ select * from flow.get_one_cfv(:objectTypeId::bigint, :cfgaId::bigint, :primaryI
           psa.archived is not true and
           psa.trigger_automatically is true and
           psa.time_based_trigger is true and
-          case when ps.id = 1 and pps.date_modified < (now() - interval '30 days') then false
-                     else true
-                end
+          case when psa.date_created >= (now() - interval '1 days') or  psa.date_modified >= (now() - interval '1 days') then true
+          when
+              (pps.date_modified > (now() - interval '7 days') or p.date_modified > (now() - interval '7 days')) then true else false end
     order by pps.date_modified desc, pps.id
   """;
 
