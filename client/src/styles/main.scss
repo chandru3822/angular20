@@ -830,3 +830,7 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 .db-change-log-menu.v-menu__content::-webkit-scrollbar {
   display: none;
 }
+.db-scroll-bar{
+   overflow-y: auto;
+  overflow-x: hidden !important;
+}

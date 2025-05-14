@@ -62,7 +62,9 @@
                 ></a-btn>
               </v-col>
             </v-row>
-            <v-form ref="supplierForm">
+            <v-form ref="supplierForm" 
+            class="db-scroll-bar"
+              :style="{ height: adjustedHeight + 'px'}">
               <!-- UPPER SECTION -->
               <v-row class="mb-4 group-row" no-gutters>
                 <TwoColumnMasonry v-if="dataReady"
@@ -128,6 +130,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
+import { useWindowHeight } from "@/helpers/useWindowHeight.js"
 
 
 const appStore = useAppStore()
@@ -136,6 +139,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const {adjustedHeight } = useWindowHeight(300); // subtract 300
 
 const itemType = ref("supplier")
 const dataWasChanged = ref(false)
