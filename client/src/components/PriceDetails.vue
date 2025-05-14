@@ -262,10 +262,6 @@ const props = defineProps({
   projectAddersLastReviewedDate: {
     type: [String, Date, null],
     default: null
-  },
-  ignoreReviewDate: {
-    type: Boolean,
-    default: true
   }
 })
 
@@ -278,7 +274,7 @@ const adders = ref([])
 
 // Direct reference to basePrice since they're equivalent
 const commissionBaseTotal = computed(() => basePrice.value)
-const hasReviewDate = computed(() => props.projectAddersLastReviewedDate !== null || props.ignoreReviewDate)
+const hasReviewDate = computed(() => props.projectAddersLastReviewedDate !== null && props.projectAddersLastReviewedDate !== undefined)
 
 /**
  * Computed property to find adders with differences between project and proposal amounts.
