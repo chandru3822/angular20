@@ -11,7 +11,7 @@
         <v-spacer />
         <v-toolbar-items>
           <a-btn
-            size="x-small"
+            size="small"
             variant="text"
             color="primary"
             @click="closeModal()"
