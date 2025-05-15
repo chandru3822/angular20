@@ -34,7 +34,7 @@ BEGIN
   /*This query looks at the new status type and determines if the new status is part of a work queue.
     If it is part of a work queue we keep processing, otherwise we set the exit date if there is currently
     a row in the work_queue_cycle table and we do this in the update section*/
-  IF (TG_OP = 'UPDATE') and old.start_time is null and new.start_time is not null THEN
+  IF (TG_OP = 'INSERT')  THEN
     insert into flow.work_queue_cycle(project_process_step_event_id, company_event_status_type_id,
                                       process_step_event_work_queue_type_event_status_type_id,
                                       date_entered_queue,
