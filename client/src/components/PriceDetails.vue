@@ -162,10 +162,10 @@
                             <!-- When proposal amount is GREATER than project amount -->
                             <template v-else>
                               <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
-                                ${{ formatNumber(adder.customProjectAdderAmount, true) }}
+                                ${{ formatNumber(adder.customProposalAdderAmount, true) }}
                               </span>
                               <span class="green-text-color text-no-wrap">
-                                ${{ formatNumber(adder.customProposalAdderAmount, true) }}
+                                ${{ formatNumber(adder.customProjectAdderAmount, true) }}
                               </span>
                             </template>
                           </template>
