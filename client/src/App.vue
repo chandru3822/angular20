@@ -1,11 +1,13 @@
 <template>
   <v-app id="app">
+
     <ReloadPrompt v-if="route.name !== 'login'"/>
     <AppNav v-if="!noNavRoutes.includes(route.name) && !hideHeader"/>
     <v-main>
       <v-container
-          class="router-container"
-          :class="{ 'extra-banner': userIsMasquerading }"
+           :class="{ 'extra-banner': userIsMasquerading,
+           'router-container': !withOutScrollBar.includes(currentPath)
+           }"
       >
         <Spinner
             v-if="appStore.loading"
@@ -55,6 +57,13 @@ const noNavRoutes = ref([
   'siteUnderMaintenance',
   'stripeSuccess'
 ])
+const withOutScrollBar = ref([
+  "/database/ahj/permit",
+  "/database/utility/details",
+  "/database/hoa/details",
+  "/database/supplier/details",
+  "/database/incentive/details"
+]);
 
 const userId = computed(() => {
   return userStore?.details?.id
@@ -76,6 +85,16 @@ watch(revokeAccessEvents, async () => {
     }
 )
 
+// Compute the cleaned path (remove the 3rd segment from the path)
+const currentPath = computed(() => {
+  const pathParts = route.path.split('/')
+  
+  // Remove the third part (ID) — index 2
+  pathParts.splice(3, 1)
+
+  // Join the remaining parts
+  return pathParts.join('/')
+})
 onMounted(() => {
   //set the theme which will use the default until one load from company
   appStore.theme = cloneDeep(theme.LIGHT)
