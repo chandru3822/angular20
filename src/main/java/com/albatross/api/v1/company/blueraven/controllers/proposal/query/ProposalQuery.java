@@ -444,6 +444,7 @@ from project p
            p.installation_agreement_sent_tsz is not null          as installation_agreement_sent,
            brs.get_max_proposal_discount_amount(p.id)             as max_discount_amount,
            util_ppscfv.int_value                                  as utility_company_id,
+           fd.project_adders_last_reviewed_date,
            coalesce((SELECT array_to_json(array_agg(row_to_json(cfgs)))
                      FROM (select cfg.id,
                                   cfg.group_name                                          as "groupName",
@@ -622,6 +623,7 @@ from project p
              left join flow.project_process_step_custom_field_value util_ppscfv
                        on pps.id = util_ppscfv.project_process_step_id
                            and util_ppscfv.custom_field_group_assignment_id = 23802
+            LEFT JOIN brs.financial_details fd ON fd.project_id = prj.id
     where p.id = :proposalId
       and p.archived is false
     """;

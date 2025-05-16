@@ -47,7 +47,8 @@
       </v-col>
     </v-row>
 
-    <v-form ref="ahjPermitForm">
+    <v-form ref="ahjPermitForm" class="db-scroll-bar"
+              :style="{ height: adjustedHeight + 'px'}">
       <v-row class="mb-4 group-row" no-gutters>
         <TwoColumnMasonry v-if="dataReady"
                           :custom-field-groups="customFieldGroups"
@@ -190,6 +191,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
+import { useWindowHeight } from "@/helpers/useWindowHeight.js"
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -233,6 +235,7 @@ const linksTypeId = ref(12)
 const ahjPermitForm = ref(null)
 const showChangeLog = ref(false);
 const changeLog = ref([])
+const {adjustedHeight } = useWindowHeight(340); // subtract 300
 
 const userCanEdit = computed(()  => {
   return userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')

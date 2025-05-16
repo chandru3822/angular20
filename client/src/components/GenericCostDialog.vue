@@ -144,8 +144,6 @@
                     <v-icon
                       v-model="item.applied"
                       v-if="item.applied"
-                      hide-details
-                      disabled
                       color="primary"
                     >
                       mdi-check
@@ -154,7 +152,7 @@
                 </td>
                 <td class="text-center" v-else>
                   <div class="d-flex justify-center">
-                    <span class="auto-badge grey--text text--darken-1">Auto</span>
+                    <v-icon color="primary">mdi-check</v-icon>
                   </div>
                 </td>
               </tr>
@@ -165,7 +163,15 @@
 
       <v-divider></v-divider>
 
-      <v-card-actions class="px-4 py-3 pb-1">
+      <div class="text-body-2 grey--text pa-4">
+        <strong>Selected Adders:&nbsp;</strong>
+        <div>
+          <div class="grey--text text-caption" v-if="appliedItemsSummary">
+            {{ appliedItemsSummary }}
+          </div>
+        </div>
+      </div>
+      <v-card-actions class="px-4 py-3 pb-4">
         <div class="font-weight-medium">{{ totalLabel }}: ${{ calculatedTotal }}</div>
         <v-spacer></v-spacer>
         <v-btn
@@ -185,14 +191,6 @@
           {{ applyButtonText }}
         </v-btn>
       </v-card-actions>
-      <div class="text-body-2 grey--text pa-4">
-        <strong>Selected Adders:&nbsp;</strong>
-        <div>
-          <div class="pb-3 grey--text text-caption" v-if="appliedItemsSummary">
-            {{ appliedItemsSummary }}
-          </div>
-        </div>
-      </div>
     </v-card>
   </v-dialog>
 </template>

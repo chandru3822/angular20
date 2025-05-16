@@ -62,7 +62,8 @@
                 ></a-btn>
               </v-col>
             </v-row>
-            <v-form ref="utilityForm">
+            <v-form ref="utilityForm"  class="db-scroll-bar"
+              :style="{ height: adjustedHeight + 'px'}">
               <!-- UPPER SECTION -->
               <v-row class="mb-4 group-row" no-gutters>
                 <TwoColumnMasonry v-if="dataReady"
@@ -142,6 +143,7 @@ import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
 import axios from "axios";
 import constants from "@/helpers/constants.js";
 import {requestInterceptor, responseInterceptor} from "@/helpers/interceptors.js";
+import { useWindowHeight } from "@/helpers/useWindowHeight.js"
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -184,6 +186,7 @@ const totalGroups = ref(2)
 const expandedGroups = ref(2)
 const isDocumentsLoading = ref(true)
 const utilityForm = ref(null)
+const {adjustedHeight } = useWindowHeight(300); // subtract 300
 
 const utilityId = computed(() => {
   return route.params.utilityId
