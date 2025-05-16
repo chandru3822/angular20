@@ -125,6 +125,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
+import {userInformation} from '@/helpers/userInformation.js';
 
 const appStore = useAppStore()
 const fileStore = useFileStore()
@@ -154,6 +155,20 @@ const userStatusTypes = ref([])
 const attachmentTypeId = ref(9)
 const imageFailed = ref(false)
 const userRouterViewContainer = ref(null)
+ 
+// Set up a watcher that observes changes to `userInformation.triggerFlag`
+watch(
+  () => userInformation.triggerFlag, // This is the reactive property being watched
+  (newValue, oldValue) => {          // This function runs when the value changes
+    // Compare the new value with the old value
+    if (newValue != oldValue) {
+      // If the value has actually changed, call the getUser() function
+      getUser();
+    }
+  }
+);
+
+
 
 onMounted(() => {
   getUser()
