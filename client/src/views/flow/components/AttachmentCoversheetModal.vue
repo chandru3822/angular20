@@ -142,7 +142,7 @@
                     prepend-icon="mdi-tray-arrow-down"
                 ></a-btn>
                 <a-btn
-                    size="x-small"
+                    size="small"
                     variant="text"
                     color="primary"
                     @click="closeModal()"
