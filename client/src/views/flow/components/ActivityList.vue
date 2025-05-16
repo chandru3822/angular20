@@ -56,8 +56,8 @@
       <v-card-text class="py-0 default-text-color">
         <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
         <div class="text-formatting">
-          <div v-if="query && query !== ''" :inner-html.prop="filterFormatting(removeNoteTagEmail(a.note)) | searchHighlight(`(?<!<[^>]*)${query}(?![^<]*>)`)"/>
-          <vue-clamp v-else ellipsis="" autoresize :max-lines="5" :inner-html.prop="filterFormatting(removeNoteTagEmail(a.note))">
+          <div v-if="query && query !== ''" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note))) | searchHighlight(`(?<!<[^>]*)${query}(?![^<]*>)`)"/>
+          <vue-clamp v-else ellipsis="" autoresize :max-lines="5" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))">
             <template #after="{ toggle, clamped, expanded }">
               <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
               <button v-if="expanded" @click="toggle" class="see-more-btn"> see less</button>
@@ -166,6 +166,23 @@ const emit = defineEmits(['bottomHitCount', 'reload', 'remove-deleted'])
 const removeNoteTagEmail = (note) => {
   const emailRegex = /\((([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\)/g
       return note.replaceAll(emailRegex, '')
+}
+
+/**
+ * Escapes special HTML characters in a string to prevent XSS (Cross-Site Scripting) attacks.
+ */
+const escapeHtml = (unsafe) => {
+  return unsafe
+    // Replace ampersand (&) with HTML entity
+    ?.replace(/&/g, "&amp;")
+    // Replace less-than sign (<) with HTML entity
+    ?.replace(/</g, "&lt;")
+    // Replace greater-than sign (>) with HTML entity
+    ?.replace(/>/g, "&gt;")
+    // Replace double quotes (") with HTML entity
+    ?.replace(/"/g, "&quot;")   
+    // Replace single quotes (') with HTML entity
+    ?.replace(/'/g, "&#039;");
 }
 
 const infiniteHandler = ($state) => {
