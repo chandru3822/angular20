@@ -277,6 +277,8 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 
+import {userInformation} from '@/helpers/userInformation.js';
+
 const projectStore = useProjectStore()
 const appStore = useAppStore()
 const route = useRoute()
@@ -397,6 +399,7 @@ const saveUserSystemFields = async () => {
     user.value.userStatusType = data.userStatusType
     user.value.hasAccess = data.hasAccess
     showEditModal.value = false
+    userInformation.triggerFlag=!userInformation.triggerFlag;
     appStore.showSnack('SUCCESS', 'User Updated')
     handleHidingGlobalLoader( status)
   } catch (e) {
