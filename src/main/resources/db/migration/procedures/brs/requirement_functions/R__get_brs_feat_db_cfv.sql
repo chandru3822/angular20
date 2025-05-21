@@ -31,7 +31,7 @@ BEGIN
                                          where p.id = p_project_id
                                      )) -- this is the id of the ahj custom field in flow
                         and pcfv.project_id = p_project_id ) -- this is the project id
-          and bcf.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
+          and bcfga.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
 
     when lower(trim(p_brs_feat_db_table)) = 'permit' then
             -- gets the selected value for the ahj custom field
@@ -56,7 +56,7 @@ BEGIN
                                                                         where p.id = p_project_id
                                                                     )) -- this is the id of the ahj custom field in flow
                                                        and pcfv.project_id = p_project_id ) -- this is the project id
-                                         and bcf.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
+                                         and bcfga.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
     when lower(trim(p_brs_feat_db_table)) = 'inspection' then
             -- gets the selected value for the ahj custom field
             return (select coalesce( ( select lov.name = p_expected_value
@@ -80,7 +80,7 @@ BEGIN
                                                                         where p.id = p_project_id
                                                                     )) -- this is the id of the ahj custom field in flow
                                                        and pcfv.project_id = p_project_id ) -- this is the project id
-                                         and bcf.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
+                                         and bcfga.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
         when lower(trim(p_brs_feat_db_table)) = 'utility' then
             -- gets the selected value for the UTILITY custom field
             return (select coalesce( ( select lov.name = p_expected_value
@@ -103,7 +103,7 @@ BEGIN
                                                                            where p.id = p_project_id
                                                                        )) -- this is the id of the ahj UTILITY custom field in flow
                                                           and pcfv.project_id = p_project_id ) -- this is the project id
-                                             and bcf.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
+                                             and bcfga.id = p_brs_feat_db_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
         else return null;
     end case;
 END
