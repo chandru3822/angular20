@@ -53,6 +53,10 @@
             </v-card-text>
           </v-card>
         </div>
+
+         <div class="d-flex  align-center"
+        :class=" selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0? 'justify-space-between ':'justify-end '"
+        >
         <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
           <div class="action-subheader albatross-header-3">
             Actions
@@ -65,7 +69,20 @@
                 :text="showUnperformableActions ? 'Hide Disabled' : 'Show All'"
             ></a-btn>
           </div>
+          </div>
+          <div class="d-flex align-center "  style="gap:12px">
+            <span>Check Logic</span>
+            <v-switch
+             v-model="showLogic"
+            color="primary"
+            ></v-switch>
+          </div>
+      
+
         </div>
+
+
+
         <div>
           <ActionButton
               v-for="action in enabledActions"
@@ -76,6 +93,17 @@
               :complete-action="validateActionRequirements"
               :follow-multiple-links="followMultipleLinks"
           />
+        </div>
+
+        <div v-if="showLogic">
+          <div class="my-3">All actions:</div>
+            <a-btn
+            style="margin: 0.25rem;" v-for="action in selectedEvent?.eventActions"
+            color="primary"
+            class="action-button"
+            >
+            {{ action.actionName }}
+            </a-btn>
         </div>
           <div v-if="showUnperformableActions">
               <div class="my-3">Other actions:</div>
@@ -506,6 +534,7 @@ const showDeleteDialog = ref(false)
 const ppseFieldsContainer = ref(null)
 const eventFieldForm = ref(null)
 const expansionOpenStatus = ref([])
+const showLogic=ref(false)
 
 
 const emit = defineEmits(['refresh-upcoming-events', 'refresh-project-status', 'refresh-upcoming-pps'])
