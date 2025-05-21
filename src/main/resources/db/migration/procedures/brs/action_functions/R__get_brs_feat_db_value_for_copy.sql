@@ -25,6 +25,7 @@ begin
   -- 12,System Read-Only
   -- 13,Rich Text
 
+ -- Dynamic assignment of data view table based on process id
   select dv.view_name into v_table_name
                from flow.data_view dv
                       inner join flow.company c on dv.company_id = c.id
