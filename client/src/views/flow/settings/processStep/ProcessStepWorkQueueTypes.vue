@@ -325,7 +325,22 @@
 
                             <!-- Value selection - only visible after operator is selected -->
                             <template v-if="selectedFilters.operator">
+                              <!-- Custom switch - only visible after operator is selected -->
+                              <v-switch
+                                v-model="selectedFilters.customValue"
+                                label="Custom"
+                                hide-details
+                                dense
+                                :disabled="false"
+                                :readonly="false"
+                                @change="handleCustomValueToggle"
+                                class="mx-2 mt-2 mb-2"
+                              ></v-switch>
+
+                              <!-- Value selection based on whether custom is enabled and list type -->
+                              <!-- Case 1: Non-custom value selection or no list values available -->
                               <v-autocomplete
+                                v-if="!selectedFilters.customValue || !selectedFilters.listOfValueId"
                                 v-model="selectedFilters.value"
                                 :items="valueTypes"
                                 hide-details
@@ -346,6 +361,44 @@
                                   </v-list-item-title>
                                 </template>
                               </v-autocomplete>
+
+                              <!-- Case 2: Custom values from list with multiple selection -->
+                              <a-select
+                                v-else-if="selectedFilters.customValue && selectedFilters.listOfValueId && selectedFilters.allowMultiple && listValues.length > 0"
+                                v-model="selectedListOfValues"
+                                :items="listValues"
+                                multiple
+                                label="Select Values"
+                                class="mx-4 mt-4"
+                                item-title="name"
+                                item-value="id"
+                                return-object
+                              ></a-select>
+
+                              <!-- Case 3: Custom values from list with single selection -->
+                              <a-select
+                                v-else-if="selectedFilters.customValue && selectedFilters.listOfValueId && listValues.length > 0"
+                                v-model="selectedFilters.value"
+                                :items="listValues"
+                                label="Select Value"
+                                class="mx-4 mt-4"
+                                item-title="name"
+                                item-value="id"
+                                return-object
+                              ></a-select>
+
+                              <!-- Case 4: No list values available, allow manual numeric input -->
+                              <v-text-field
+                                v-else-if="selectedFilters.customValue && selectedFilters.listOfValueId"
+                                v-model="selectedFilters.manualValue"
+                                label="Enter numeric value"
+                                type="number"
+                                hide-details
+                                class="mx-4 mt-4"
+                                density="compact"
+                                variant="outlined"
+                                @update:model-value="handleManualValueChange"
+                              ></v-text-field>
                             </template>
                           </template>
                         </v-tab-item>
@@ -368,7 +421,10 @@
                           >
                             {{ selectedFilters.name + (selectedFilters.processStepName ? ` - (${selectedFilters.processStepName})` : '')
                           + (selectedFilters.operator ? `, ${selectedFilters.operator.name}` : '')
-                          + (selectedFilters.value ? `, ${selectedFilters.value.name}` : '') }}
+                          + (selectedFilters.value ? `, ${selectedFilters.value.name}` : '')
+                          + (!selectedFilters.value && selectedFilters.manualValue ? `, ${selectedFilters.manualValue}` : '')
+                          + (selectedFilters.customValue && selectedListOfValues && selectedListOfValues.length > 0 ?
+                            `, ${selectedListOfValues.map(val => val?.name).filter(Boolean).join(', ')}` : '') }}
                             <v-icon end size="small" class="ml-1" @click.stop="toggleFilter">mdi-close</v-icon>
                           </v-btn>
                         </v-card-text>
@@ -481,14 +537,14 @@
                 </template>
             <template #item.filters="{item}" class="clickable text-left">
               <div>
-                <span v-for="(filter, idx) in item.selectedFilters" :key="filter.id">
+                <span v-for="(filter, idx) in (Array.isArray(item.selectedFilters) ? item.selectedFilters.filter(f => f) : [])" :key="filter ? filter.id : idx">
                   <span v-if="idx !== 0">, </span>
                   <span>{{ filter.name }}</span>
                 </span>
                   <span v-if="item.filterCount > 0" class="filter-count ml-2">
                   {{ item.filterCount }}
                 </span>
-                  <span v-else-if="filterCountsLoaded && (!item.selectedFilters || item.selectedFilters.length === 0)" class="grey--text text--darken-2">
+                <span v-else-if="filterCountsLoaded && (!Array.isArray(item.selectedFilters) || item.selectedFilters.length === 0)" class="grey--text text--darken-2">
                   No filters
                 </span>
                   <span v-else-if="!filterCountsLoaded" class="grey--text text--darken-2">
@@ -566,6 +622,65 @@ const valueTypes = ref([])
 const savedFilters = ref([])
 const selectedFilters = ref([])
 const filterCountsLoaded = ref(false);
+const listValues = ref([])
+const selectedListOfValues = ref([])
+const customFields = ref([])
+
+const handleCustomValueToggle = async () => {
+  selectedFilters.value.value = null
+  selectedListOfValues.value = []
+
+  if (selectedFilters.value.parentId) {
+    await loadValues(selectedFilters.value.parentId)
+  }
+}
+
+const handleManualValueChange = (value) => {
+  if (value === null || value === '' || isNaN(Number(value))) {
+    selectedFilters.value.value = null
+    return
+  }
+
+  selectedFilters.value.value = {
+    id: null,
+    name: value,
+    numericalValue: Number(value)
+  }
+}
+
+const loadValues = async (parentId) => {
+  appStore.loading = true
+  try {
+    const fields = await loadFieldsByParent(parentId)
+
+    let matchingField = fields.find(f => f.id === selectedFilters.value.id) ||
+      (selectedFilters.value.listOfValueId &&
+        fields.find(f => f.listOfValueId === selectedFilters.value.listOfValueId)) ||
+      fields.find(f => f.fieldName === selectedFilters.value.name)
+
+    if (matchingField && matchingField.listOfValues && matchingField.listOfValues.length > 0) {
+      listValues.value = matchingField.listOfValues
+
+      const valuesMissingIds = listValues.value.filter(v => v.id === null || v.id === undefined)
+      if (valuesMissingIds.length > 0) {
+        console.warn(`WARNING: Found ${valuesMissingIds.length} values without IDs:`, valuesMissingIds)
+
+        valuesMissingIds.forEach((val, index) => {
+          val.id = -(index + 1)
+          val.generatedId = true
+        })
+      }
+    } else {
+      console.warn('No matching field with values found')
+      listValues.value = []
+    }
+  } catch (e) {
+    console.error('*** ERROR in loadValues ***', e)
+    listValues.value = []
+  } finally {
+    appStore.loading = false
+  }
+}
 
 const props = defineProps({
   processStep: Object,
@@ -627,11 +742,11 @@ const getAvailableFilters = async (forceUpdate = false) => {
           processStepName: filter.processStepName,
           dataTypeId: filter.dataTypeId,
           objectTypeId: filter.objectTypeId,
-          hasListValues: filter.hasListValues
+          hasListValues: filter.hasListValues,
+          parentId: filter.processStepId
         }))
       } else {
         console.error('Expected data to be an array but got:', typeof data, data)
-        // Set to empty array if data is not an array
         availableFilters.value = []
       }
 
@@ -777,17 +892,57 @@ const handleFilterChange = async (filter) => {
       processStepName: filter.processStepName,
       dataTypeId: filter.dataTypeId,
       operator: null,
-      value: null
+      value: null,
+      customValue: false,
+      allowMultiple: filter.hasListValues || false,
+      listOfValueId: filter.id,
+      customFieldName: filter.name,
+      parentId: filter.parentId,
+      manualValue: null // Add field for manual numeric input
     }
 
     if (filter.dataTypeId) {
       await fetchOperators(filter.dataTypeId)
       await fetchValueTypes(filter.dataTypeId)
+
+      listValues.value = []
+      selectedListOfValues.value = []
     }
   } else {
     selectedFilters.value = null
     operators.value = []
     valueTypes.value = []
+    listValues.value = []
+    selectedListOfValues.value = []
+  }
+}
+
+const loadFieldsByParent = async (parentId) => {
+  appStore.loading = true
+  try {
+    const { data } = await getRequestWithParams(`/customField/getByParentProcessStep/${parentId}`, {
+      params: {
+        excludedUnhandledDataTypes: true
+      }
+    })
+
+    customFields.value = data.map(cf => ({
+      id: cf.id,
+      name: cf.fieldName,
+      dataTypeId: cf.dataTypeId,
+      hasListValues: cf.hasListValues || false,
+      listOfValues: cf.listOfValues || [],
+      listOfValueId: cf.listOfValueId,
+      allowMultiple: cf.allowMultiple || false
+    }))
+
+    appStore.loading = false
+    return data
+  } catch (e) {
+    console.error('*** ERROR in loadFieldsByParent ***', e);
+    console.error('Error details:', e.response?.data || e.message);
+    appStore.loading = false
+    return []
   }
 }
 
@@ -797,38 +952,100 @@ const handleOperatorChange = () => {
   }
 }
 
-const removeFilter = () => {
-  selectedFilters.value = []
-}
-
 const loadSavedFilters = async (item) => {
-  if (item && expanded.value.includes(item)) {
-    try {
-      selectedFilters.value = []
+  if (!item) return;
 
-      await fetchSavedFilters(item)
-      await getAvailableFilters()
+  try {
+    selectedFilters.value = [];
+    appStore.loading = true;
 
-      if (savedFilters.value && savedFilters.value.length > 0) {
-        for (const filter of savedFilters.value) {
-          if (filter.filterId) {
-            const availableFilter = availableFilters.value.find(af => af.id === filter.filterId)
-            if (availableFilter && availableFilter.dataTypeId) {
-              filter.dataTypeId = availableFilter.dataTypeId
+    const { data } = await getRequestWithParams('/workQueueType/filters', {
+      params: {
+        workQueueTypeId: item.workQueueTypeId,
+        processStepId: processStep?.id || null,
+        processStepEventId: event?.id || null
+      }
+    });
 
-              await fetchOperators(availableFilter.dataTypeId)
-              await fetchValueTypes(availableFilter.dataTypeId)
-            } else {
-              console.warn('No matching filter or dataTypeId for filterId:', filter.filterId)
+    savedFilters.value = data || [];
+
+    await getAvailableFilters();
+
+    for (const filter of savedFilters.value) {
+      if (!filter.filterId) continue;
+
+      const availableFilter = availableFilters.value.find(af => af.id === filter.filterId);
+      if (!availableFilter) continue;
+
+      filter.filterName = availableFilter.name;
+
+      await fetchOperators(availableFilter.dataTypeId);
+      const operator = operators.value.find(op => op.id === filter.operatorId);
+      filter.operatorName = operator?.name || `Operator ${filter.operatorId}`;
+
+      await fetchValueTypes(availableFilter.dataTypeId);
+
+      if (filter.valueId) {
+        const value = valueTypes.value.find(vt => vt.id === filter.valueId);
+        filter.valueName = value ? value.name : `Value ${filter.valueId}`;
+      }
+
+      if (availableFilter.parentId && !filter.valueName) {
+        const fields = await loadFieldsByParent(availableFilter.parentId);
+        const matchingField = fields.find(f => f.id === filter.filterId);
+
+        if (matchingField?.listOfValues?.length > 0) {
+          if (filter.valueId) {
+            const value = matchingField.listOfValues.find(v => v.id === filter.valueId);
+            filter.valueName = value ? value.name : `Value ${filter.valueId}`;
+          } else if (filter.customValues) {
+            try {
+              let customValues = filter.customValues;
+
+              if (typeof customValues === 'string') {
+                try {
+                  customValues = JSON.parse(customValues);
+                } catch(e) {
+                  console.warn('Failed to parse customValues as JSON:', e);
+                }
+              }
+
+              // Handle array format
+              if (Array.isArray(customValues)) {
+                filter.valueName = customValues.map(v => {
+                  if (v && v.name) return v.name;
+
+                  if (v && v.id && matchingField?.listOfValues) {
+                    const foundValue = matchingField.listOfValues.find(lv => lv.id === v.id);
+                    if (foundValue) return foundValue.name;
+                  }
+
+                  return String(v);
+                }).join(', ');
+
+              } else {
+                filter.valueName = String(customValues);
+              }
+            } catch (e) {
+              console.error('Error processing custom values:', e);
+              filter.valueName = '(Error)';
             }
           }
         }
       }
-    } catch (e) {
-      console.error('Error in loadSavedFilters:', e)
     }
+
+    if (!filterCountsLoaded.value) {
+      await loadAllFilterCounts();
+    }
+  } catch (e) {
+    console.error('Error loading saved filters:', e);
+    appStore.showSnack('ERROR', 'Failed to load filters');
+    savedFilters.value = [];
+  } finally {
+    appStore.loading = false;
   }
-}
+};
 
 const toggleFilter = () => {
   if (selectedFilters.value) {
@@ -851,8 +1068,12 @@ const getFilterDisplayText = (filter) => {
   const filterObj = availableFilters.value.find(f => f.id === filter.filterId)
   let filterName = filterObj ? filterObj.name : `Filter ${filter.filterId}`
 
-  if (filterObj && filterObj.processStepName) {
-    filterName += ` - (${filterObj.processStepName})`
+  if (filter.customValue && filter.customFieldName) {
+    const parentStep = availableFilters.value.find(f => f.id === filter.parentId)?.processStepName
+    const parentDisplay = parentStep ? ` (in ${parentStep})` : ''
+    filterName = `${filter.customFieldName}${parentDisplay}`
+  } else if (filterObj && filterObj.processStepName) {
+    filterName += ` (${filterObj.processStepName})`
   }
 
   let operatorName = filter.operatorName;
@@ -861,14 +1082,81 @@ const getFilterDisplayText = (filter) => {
     operatorName = operatorObj ? operatorObj.name : `Operator ${filter.operatorId}`
   }
 
-  let valueName = filter.valueName;
-  if (!valueName) {
-    const valueObj = valueTypes.value.find(v => v.id === filter.valueId)
-    valueName = valueObj ? valueObj.name : `Value ${filter.valueId}`
+  let valueName = ''
+
+  if (filter.valueName) {
+    valueName = filter.valueName;
+  }
+  else if (filter.customValues) {
+    try {
+      let customValuesData = filter.customValues;
+      if (typeof customValuesData === 'string') {
+        try {
+          customValuesData = JSON.parse(customValuesData);
+        } catch (e) {
+        }
+      }
+
+      if (Array.isArray(customValuesData) && customValuesData.length > 0) {
+        valueName = customValuesData.map(val => {
+          if (typeof val === 'object' && val !== null) {
+            return val.name || val.text || val.value || JSON.stringify(val);
+          }
+
+          if (typeof val === 'number' || !isNaN(Number(val))) {
+            const numericVal = Number(val);
+            const matchedValue = listValues.value.find(lv => lv.id === numericVal);
+            return matchedValue ? matchedValue.name : val;
+          }
+
+          return val;
+        }).filter(Boolean).join(', ');
+      }
+      else if (customValuesData && typeof customValuesData === 'object') {
+        if (customValuesData.name || customValuesData.text) {
+          valueName = customValuesData.name || customValuesData.text;
+        }
+        else if (customValuesData.id && !isNaN(Number(customValuesData.id))) {
+          const matchedValue = listValues.value.find(lv => lv.id === Number(customValuesData.id));
+          valueName = matchedValue ? matchedValue.name : customValuesData.id;
+        }
+        else {
+          valueName = JSON.stringify(customValuesData);
+        }
+      }
+      else if (!isNaN(Number(customValuesData))) {
+        const numericVal = Number(customValuesData);
+        const matchedValue = listValues.value.find(lv => lv.id === numericVal);
+        valueName = matchedValue ? matchedValue.name : String(customValuesData);
+      }
+      else {
+        valueName = String(customValuesData);
+      }
+    } catch (e) {
+      console.error('DEBUG: Error processing custom values:', e);
+      valueName = String(filter.customValues);
+    }
+  }
+  else if (filter.multipleValues && Array.isArray(filter.multipleValues)) {
+    const valueNames = filter.multipleValues.map(id => {
+      const valueObj = valueTypes.value.find(v => v.id === id);
+      return valueObj ? valueObj.name : `Value ${id}`;
+    });
+    valueName = valueNames.join(', ');
+  }
+  else if (filter.manualValue) {
+    valueName = filter.manualValue;
+  }
+  else if (filter.valueId) {
+    const valueObj = valueTypes.value.find(v => v.id === filter.valueId);
+    valueName = valueObj ? valueObj.name : `Value ${filter.valueId}`;
   }
 
-  const result = `${filterName}, ${operatorName}, ${valueName}`;
-  return result;
+  if (!valueName) {
+    valueName = '(None)';
+  }
+
+  return `${filterName}, ${operatorName}, ${valueName}`;
 }
 
 const eventId = computed(() => {
@@ -1424,68 +1712,92 @@ onMounted(() => {
         appStore.loading = false
       }
     }
-    const saveStatusesToWorkQueueType = async(item) => {
-      // Validate that a filter is selected
-      if (!selectedFilters.value || !selectedFilters.value.id) {
-        appStore.showSnack('ERROR', 'Please select a filter');
-        return;
-      }
 
-      // Validate filter selection if a filter is partially filled out
-      if (selectedFilters.value && selectedFilters.value.id) {
-        if (!selectedFilters.value.operator) {
-          appStore.showSnack('ERROR', 'Please select an operator for your filter');
-          return;
-        }
-
-        if (!selectedFilters.value.value) {
-          appStore.showSnack('ERROR', 'Please select a value for your filter');
-          return;
-        }
-      }
-
-      appStore.loading = true;
+    const saveStatusesToWorkQueueType = async (item) => {
       try {
-        item.selectedFilters = selectedFilters.value ? {
-          id: selectedFilters.value.id,
-          name: selectedFilters.value.name,
-          processStepName: selectedFilters.value.processStepName,
-          operator: selectedFilters.value.operator ? {
-            id: selectedFilters.value.operator.id,
-            name: selectedFilters.value.operator.name
-          } : null,
-          value: selectedFilters.value.value ? {
+        const requestPayload = {
+          id: item.id,
+          workQueueTypeId: item.workQueueTypeId ? Number(item.workQueueTypeId) : null,
+          processStepId: item.processStepId ? Number(item.processStepId) : null,
+          processStepEventId: item.processStepEventId ? Number(item.processStepEventId) : null,
+
+          // Map arrays with default archived=false for any null/undefined values
+          projectStatuses: Array.isArray(item.projectStatuses) ?
+            item.projectStatuses.map(status => ({...status, archived: status.archived ?? false})) : [],
+
+          processStepStatuses: Array.isArray(item.processStepStatuses) ?
+            item.processStepStatuses.map(status => ({...status, archived: status.archived ?? false})) : [],
+
+          eventStatuses: Array.isArray(item.eventStatuses) ?
+            item.eventStatuses.map(status => ({...status, archived: status.archived ?? false})) : []
+        };
+
+        if (selectedFilters.value?.id) {
+          requestPayload.selectedFilters = prepareFilterData(item);
+        }
+        const response = await putRequest(
+          `/workQueueType/saveStatusTypesToProcessStepWorkQueueType`,
+          requestPayload
+        );
+
+        await loadSavedFilters(item);
+
+        appStore.showSnack('SUCCESS', 'Statuses and filters saved successfully');
+        return response.data;
+      } catch (error) {
+        console.error('*** ERROR SAVING FILTERS ***', error);
+        appStore.showSnack('ERROR', 'Failed to save filters');
+        throw error;
+      }
+    };
+
+    const prepareFilterData = (item) => {
+      if (!selectedFilters.value || !selectedFilters.value.id) {
+        return null;
+      }
+      const filterData = {
+        workQueueTypeId: item.workQueueTypeId ? Number(item.workQueueTypeId) : null,
+        processStepId: item.processStepId ? Number(item.processStepId) : null,
+        filterId: Number(selectedFilters.value.id),
+        name: selectedFilters.value.name || '',
+        operatorId: selectedFilters.value.operator?.id ? Number(selectedFilters.value.operator.id) : null,
+        valueId: null,
+        customValues: null,
+        archived: false
+      };
+
+      if (selectedFilters.value.customValue) {
+        if (selectedListOfValues.value && selectedListOfValues.value.length > 0) {
+          const cleanedValues = selectedListOfValues.value.map(val => ({
+            id: val.id,
+            name: val.name
+          }));
+          filterData.customValues = JSON.stringify(cleanedValues);
+        } else if (selectedFilters.value.value) {
+          const cleanedValue = {
             id: selectedFilters.value.value.id,
             name: selectedFilters.value.value.name
-          } : null
-        } : null;
-
-        let url = showEventFields.value
-          ? `/workQueueType/saveStatusTypesToProcessStepEventWorkQueueType`
-          : `/workQueueType/saveStatusTypesToProcessStepWorkQueueType`;
-
-        const {data, status} = await putRequest(url, item);
-
-        item.projectStatuses = data.projectStatuses;
-        item.processStepStatuses = data.processStepStatuses;
-        item.eventStatuses = data.eventStatuses || [];
-        item.selectedFilters = data.selectedFilters || null;
-
-        selectedFilters.value = [];
-        operators.value = [];
-        valueTypes.value = [];
-        expanded.value = [];
-
-        await loadAllFilterCounts();
-
-        appStore.showSnack('SUCCESS', 'Filter saved successfully');
-        handleHidingGlobalLoader(status);
-      } catch (e) {
-        console.error('*** ERROR SAVING FILTERS ***', e);
-        console.error('Failed item data:', JSON.stringify(item, null, 2));
-        appStore.showSnack('ERROR', 'Error saving filter');
-        appStore.loading = false;
+          };
+          filterData.customValues = JSON.stringify([cleanedValue]);
+        }
+      } else if (selectedFilters.value.value) {
+        if (typeof selectedFilters.value.value === 'object' && selectedFilters.value.value !== null) {
+          filterData.valueId = Number(selectedFilters.value.value.id);
+        } else {
+          filterData.valueId = Number(selectedFilters.value.value);
+        }
       }
+
+      return filterData;
+    };
+
+    const resetFormState = () => {
+      selectedFilters.value = []
+      operators.value = []
+      valueTypes.value = []
+      listValues.value = []
+      selectedListOfValues.value = []
+      expanded.value = []
     }
     const deleteWorkQueueTypeFromStep = async() => {
       const item = workQueueTypeToDelete.value
