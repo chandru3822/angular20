@@ -15,7 +15,7 @@ public class ProcessStepEventAction {
 
   private Long id, companyEventStatusTypeId, companyProcessStepStatusTypeId, displayOrder, rootEventStatusTypeId, rootProcessStepStatusTypeId, createdById, actionTypeId; //rootProcessStepStatusTypeId needed to determine if action can be run, //rootEventStatusTypeId needed for mobile
   private String actionName, processStepStatusType, eventStatusType, actionRunDate, actionRunBy, color, bgColor, content, actionType;
-  private Boolean archived, requireStartTime, requireEndTime, requireResource,
+  private Boolean archived, requireStartTime, requireEndTime, requireResource,autoTrigger,
     canPerform, logicListChanged, alwaysEnabled, alreadyTriggered, multipleUses, hideFromMobile, hideFromWeb, showOnCancelledCompletedEvents, showOnCancelledCompletedProcessStep;
   private List<ProcessStepEventActionField> customFields, requiredFields, optionalFields;
   private List<ProcessStepEventLogic> processStepEventLogicList;

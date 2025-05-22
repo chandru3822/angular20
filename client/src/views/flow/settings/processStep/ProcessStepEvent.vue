@@ -234,6 +234,7 @@
                           hide-details
                           label="Require Resource"
                       />
+           
                     </v-col>
                     <v-col cols="12" md="3">
                       <v-checkbox
@@ -254,6 +255,7 @@
                           hide-details
                           label="Hide From Mobile"
                       />
+                     
                     </v-col>
                     <v-col>
                       <v-checkbox
@@ -271,6 +273,12 @@
                           :readonly="!userCanEdit || action.companyProcessStepStatusTypeId"
                           :disabled="!userCanEdit || action.companyProcessStepStatusTypeId"
                           label="Show on Cancelled/Completed Process Steps for Active Events"
+                      />
+                      <v-checkbox
+                          v-model="action.autoTrigger"
+                          dense
+                          hide-details
+                          label="Auto-Trigger"
                       />
                     </v-col>
                   </v-row>
@@ -622,6 +630,7 @@
                     </draggable>
                   </v-col>
                 </v-row>
+               
                   <EventActionChildSms :selected-action-index="selectedActionIndex"
                                        :action="action"
                                        :process-step-id="processStepId"

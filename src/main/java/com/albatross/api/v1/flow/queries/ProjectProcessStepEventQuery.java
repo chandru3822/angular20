@@ -209,6 +209,7 @@ public class ProjectProcessStepEventQuery {
                                     psea.require_start_time as "requireStartTime",
                                     psea.require_end_time as "requireEndTime",
                                     psea.require_resource as "requireResource",
+                                    psea.autoTrigger as "autoTrigger",
                                     psea.process_step_event_id as "processStepEventId",
                                     psea.action_type_id as "actionTypeId",
                                     psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
