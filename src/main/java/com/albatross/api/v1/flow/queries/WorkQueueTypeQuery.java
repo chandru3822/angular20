@@ -37,16 +37,16 @@ public class WorkQueueTypeQuery {
     AND archived = false
     """;
 
-    //language=PostgreSQL
+  //language=PostgreSQL
   public final static String insertWorkQueueTypeFilter = """
     INSERT INTO flow.work_queue_type_filters (
       work_queue_type_id, process_step_id, filter_id,
-      operator_id, value_id,
+      operator_id, value_id, custom_values,
       created_by_id, modified_by_id, date_created, date_modified, archived
     )
     VALUES (
-      :workQueueTypeId, :processStepId, :filterId,
-      :operatorId, :valueId,
+      :workQueueTypeId, :processStepId, :filterId,\s
+      :operatorId, :valueId, :customValues,
       :createdById, :modifiedById, now(), now(), false
     )
     """;
@@ -59,7 +59,8 @@ public class WorkQueueTypeQuery {
       f.process_step_id as processStepId,
       f.filter_id as filterId,
       f.operator_id as operatorId,
-      f.value_id as valueId
+      f.value_id as valueId,
+      f.custom_values as customValues
     FROM flow.work_queue_type_filters f
     WHERE (f.work_queue_type_id = :workQueueTypeId)
       AND f.archived = false
@@ -73,18 +74,18 @@ public class WorkQueueTypeQuery {
       LIMIT 1
     """;
 
-    //language=PostgreSQL
-    public final static String updateWorkQueueTypeFilter = """
-      UPDATE flow.work_queue_type_filters SET
-        filter_id = :filterId,
-        operator_id = :operatorId,
-        value_id = :valueId,
-        date_modified = now(),
-        modified_by_id = :modifiedById
-      WHERE (work_queue_type_id = :workQueueTypeId)
-        AND archived = false
+  //language=PostgreSQL
+  public final static String updateWorkQueueTypeFilter = """
+    UPDATE flow.work_queue_type_filters SET
+      filter_id = :filterId,
+      operator_id = :operatorId,
+      value_id = :valueId,
+      custom_values = :customValues,
+      date_modified = now(),
+      modified_by_id = :modifiedById
+    WHERE (work_queue_type_id = :workQueueTypeId)
+      AND archived = false
     """;
-
   //language=PostgreSQL
   public final static String getItemsUsingType = """
     SELECT array_to_json(array_agg(row_to_json(results)))
