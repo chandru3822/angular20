@@ -455,30 +455,68 @@ public class WorkQueueTypeService {
     User user = securityService.getCurrentUser();
 
     // Log inputs to help with debugging
-    log.debug("Saving filter for workQueueTypeId: {}, processStepId: {}, eventId: {}, filterId: {}",
-      workQueueTypeId, processStepId, eventWorkQueueTypeId, filter.getId());
+    log.debug("Saving filter for workQueueTypeId: {}, processStepId: {}, eventId: {}, filter: {}",
+      workQueueTypeId, processStepId, eventWorkQueueTypeId, filter);
 
     // Create parameters map for the SQL query
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
     params.put("processStepId", processStepId);
-    params.put("eventId", eventWorkQueueTypeId);
 
-    // Handle nullable filter fields safely
-    params.put("filterId", filter.getId());
-
-    // Handle nested objects properly - without name fields
-    if (filter.getOperator() != null) {
-      params.put("operatorId", filter.getOperator().getId());
-    } else {
-      params.put("operatorId", null);
+    // Handle nullable filter fields safely - get filterId from either structure
+    Long filterId = null;
+    if (filter.getId() != null) {
+      filterId = filter.getId();
+    } else if (filter.getFilterId() != null) {
+      filterId = filter.getFilterId();
     }
 
-    if (filter.getValue() != null) {
-      params.put("valueId", filter.getValue().getId());
-    } else {
-      params.put("valueId", null);
+    if (filterId == null) {
+      log.error("Filter ID is null - cannot save filter");
+      throw new IllegalArgumentException("Filter ID cannot be null");
     }
+
+    params.put("filterId", filterId);
+    log.debug("Using filter ID: {}", filterId);
+
+    // Handle operator ID - first try getOperator().getId(), then try getOperatorId()
+    Long operatorId = null;
+    if (filter.getOperator() != null && filter.getOperator().getId() != null) {
+      operatorId = filter.getOperator().getId();
+    } else if (filter.getOperatorId() != null) {
+      operatorId = filter.getOperatorId();
+    }
+    params.put("operatorId", operatorId);
+    log.debug("Using operator ID: {}", operatorId);
+
+    // Handle value ID - first try getValue().getId(), then try getValueId()
+    Long valueId = null;
+    if (filter.getValue() != null && filter.getValue().getId() != null) {
+      valueId = filter.getValue().getId();
+    } else if (filter.getValueId() != null) {
+      valueId = filter.getValueId();
+    }
+    params.put("valueId", valueId);
+    log.debug("Using value ID: {}", valueId);
+
+    // Handle custom values
+    Object customValues = null;
+    if (filter.getCustomValues() != null) {
+      try {
+        // Convert array to PostgreSQL array format or JSON string
+        if (filter.getCustomValues() instanceof List<?> list && !list.isEmpty()) {
+          // Use ObjectMapper to convert to JSON string
+          customValues = om.writeValueAsString(filter.getCustomValues());
+          log.debug("Converted custom values to JSON: {}", customValues);
+        } else {
+          customValues = filter.getCustomValues();
+        }
+      } catch (Exception e) {
+        log.error("Error converting custom values", e);
+        customValues = filter.getCustomValues();
+      }
+    }
+    params.put("customValues", customValues);
 
     params.put("modifiedById", user.trueUserId());
     params.put("createdById", user.trueUserId());
@@ -495,41 +533,50 @@ public class WorkQueueTypeService {
         }
       }
 
-      // Create a query that checks for matching work_queue_type_id, process_step_id, AND filter_id
       String getSpecificFilterQuery = """
-        SELECT id FROM flow.work_queue_type_filters
-        WHERE work_queue_type_id = :workQueueTypeId
-        AND (:processStepId IS NULL OR process_step_id = :processStepId)
-        AND filter_id = :filterId
-        AND archived = false
-        LIMIT 1
-        """;
+          SELECT id FROM flow.work_queue_type_filters
+          WHERE work_queue_type_id = :workQueueTypeId
+          AND (:processStepId IS NULL OR process_step_id = :processStepId)
+          AND filter_id = :filterId
+          AND archived = false
+          LIMIT 1
+          """;
 
-      // Get the filter ID if it exists with all matching criteria
       Long existingFilterId = queryForObjectOrNull(
         getSpecificFilterQuery, params, Long.class);
       log.debug("Existing filter ID for workQueueTypeId: {}, processStepId: {}, filterId: {}: {}",
-        workQueueTypeId, processStepId, filter.getId(), existingFilterId);
+        workQueueTypeId, processStepId, filterId, existingFilterId);
 
-      // Check if filter exists based on all criteria
       if (existingFilterId != null) {
-        // Update existing filter by ID
         params.put("id", existingFilterId);
         String updateSpecificFilterQuery = """
-            UPDATE flow.work_queue_type_filters SET
-            operator_id = :operatorId,
-            value_id = :valueId,
-            date_modified = now(),
-            modified_by_id = :modifiedById
-            WHERE id = :id AND archived = false
-            """;
+        UPDATE flow.work_queue_type_filters SET
+        operator_id = :operatorId,
+        value_id = :valueId,
+        custom_values = :customValues,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+        WHERE id = :id AND archived = false
+        """;
         sqlCache.updateBySql(updateSpecificFilterQuery, params);
         log.debug("Updated existing filter with ID: {}", existingFilterId);
       } else {
         // Insert new filter
-        sqlCache.updateBySql(WorkQueueTypeQuery.insertWorkQueueTypeFilter, params);
+        String insertWorkQueueTypeFilterQuery = """
+        INSERT INTO flow.work_queue_type_filters (
+            work_queue_type_id, process_step_id, filter_id,
+            operator_id, value_id, custom_values,
+            created_by_id, modified_by_id, date_created, date_modified
+        )
+        VALUES (
+            :workQueueTypeId, :processStepId, :filterId,
+            :operatorId, :valueId, :customValues,
+            :createdById, :modifiedById, now(), now()
+        )
+        """;
+        sqlCache.updateBySql(insertWorkQueueTypeFilterQuery, params);
         log.debug("Inserted new filter for workQueueTypeId: {}, processStepId: {}, filterId: {}",
-          workQueueTypeId, processStepId, filter.getId());
+          workQueueTypeId, processStepId, filterId);
       }
 
       // Call config change function to reflect changes in the work queue
@@ -548,9 +595,10 @@ public class WorkQueueTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
 
-    log.debug("Getting filters for workQueueTypeId: {}", workQueueTypeId);
-    return sqlCache.queryBySql(
+    List<WorkFiltersDTO> filters = sqlCache.queryBySql(
       WorkQueueTypeQuery.getWorkQueueTypeFilter, params, WorkFiltersDTO.class);
+
+    return filters;
   }
 
   public void deleteWorkQueueTypeFilter(Long filterId) {
