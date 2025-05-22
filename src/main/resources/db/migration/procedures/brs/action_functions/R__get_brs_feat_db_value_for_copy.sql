@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS brs.get_brs_feat_db_value_for_copy(p_project_id bigint, p_brs_feat_db_table character varying, p_brs_feat_db_cfga_id bigint, p_cfga_data_type_id bigint, p_use_list_of_values boolean);
+DROP FUNCTION IF EXISTS brs.get_brs_feat_db_value_for_copy(p_project_id bigint, p_brs_feat_db_table character varying, p_brs_feat_db_cfga_id bigint, p_cfga_data_type_id bigint, p_use_list_of_values boolean,p_company_process_id bigint);
  --this is a very poorly named function...
 CREATE OR REPLACE FUNCTION brs.get_brs_feat_db_value_for_copy(p_project_id bigint, p_brs_feat_db_table character varying, p_brs_feat_db_cfga_id bigint, p_cfga_data_type_id bigint, p_use_list_of_values boolean, p_company_process_id bigint)
 returns table (value_as_text text, rich_text_value text)
@@ -26,10 +26,10 @@ begin
   -- 13,Rich Text
 
  -- Dynamic assignment of data view table based on process id
-  select dv.view_name into v_table_name
-               from flow.data_view dv
-                      inner join flow.company c on dv.company_id = c.id
-               where p_company_process_id  = any (dv.company_process_ids);
+  v_table_name := CASE
+                  WHEN p_company_process_id IN (26, 27) THEN 'new_homes_details'
+                  ELSE 'project_details'
+                END;
 
   v_table_name := 'brs.' || v_table_name;
 

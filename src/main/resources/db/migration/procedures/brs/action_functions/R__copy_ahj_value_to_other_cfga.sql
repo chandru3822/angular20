@@ -1,7 +1,7 @@
 drop function if exists brs.copy_ahj_value_to_other_cfga(p_project_id bigint, p_ppse_id bigint,
                                                          p_user_id bigint,
                                                          p_cfga_copy_from bigint, p_cfga_copy_to bigint,
-                                                         p_override_existing boolean);
+                                                         p_override_existing boolean,p_pps_id bigint);
 CREATE OR REPLACE FUNCTION brs.copy_ahj_value_to_other_cfga(p_project_id bigint, p_ppse_id bigint,
                                                             p_user_id bigint,
                                                             p_cfga_copy_from bigint, p_cfga_copy_to bigint,
@@ -22,7 +22,7 @@ declare
   v_feat_db_table             text;
   v_event_id                  bigint;
   v_event_request_valid       boolean default true;
-  v_process_id                bigint;
+  v_company_process_id        bigint;
 
 BEGIN
 
@@ -84,15 +84,15 @@ BEGIN
   else
     --get the value for the first cfga
 
-    -- process id fetch
-   select psp.company_process_id into v_process_id from flow.process_step_process psp where psp.process_step_id = p_pps_id;
+    -- company process id fetch
+   select psp.company_process_id into v_company_process_id from flow.process_step_process psp where psp.process_step_id = p_pps_id limit 1;
 
     select value_as_text, rich_text_value
     into v_text_value_to_save, v_rich_text_value_to_save
     from brs.get_brs_feat_db_value_for_copy(p_project_id::bigint, v_feat_db_table::text,
                                             p_cfga_copy_from::bigint, v_from_data_type_id::bigint,
                                             v_from_has_list_of_values::boolean,
-                                            v_process_id::bigint);
+                                            v_company_process_id::bigint);
 
 
     --if there was a value then, set the value for the second cfga
