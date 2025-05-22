@@ -25,7 +25,7 @@ begin
   -- 12,System Read-Only
   -- 13,Rich Text
 
- -- Dynamic assignment of data view table based on process id
+ -- Dynamic assignment of data view table based on company process id
   v_table_name := CASE
                   WHEN p_company_process_id IN (26, 27) THEN 'new_homes_details'
                   ELSE 'project_details'
