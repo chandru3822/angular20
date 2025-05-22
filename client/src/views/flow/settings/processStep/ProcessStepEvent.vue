@@ -234,7 +234,6 @@
                           hide-details
                           label="Require Resource"
                       />
-           
                     </v-col>
                     <v-col cols="12" md="3">
                       <v-checkbox
@@ -255,7 +254,6 @@
                           hide-details
                           label="Hide From Mobile"
                       />
-                     
                     </v-col>
                     <v-col>
                       <v-checkbox
@@ -630,7 +628,6 @@
                     </draggable>
                   </v-col>
                 </v-row>
-               
                   <EventActionChildSms :selected-action-index="selectedActionIndex"
                                        :action="action"
                                        :process-step-id="processStepId"
