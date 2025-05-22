@@ -30,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -112,10 +113,13 @@ public class ContactService {
       params.put("partnerIds", (user.getPartnerIds() == null) ? List.of() : user.getPartnerIds());
 
       String searchSql = ContactQuery.searchByOwner;
+      String searchCountSql = ContactQuery.searchCountByOwner;
       if (viewCustom) {
         searchSql = ContactQuery.searchDownline;
+        searchCountSql = ContactQuery.searchCountDownline;
       } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
         searchSql = ContactQuery.search;
+        searchCountSql = ContactQuery.searchCount;
       }
 
       List<Contact> results;
@@ -126,8 +130,13 @@ public class ContactService {
           results = sqlCache.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
       }
 
-      int count = 10000;
-      return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+      Long totalCount = 10000L;
+      // Count query is executed only if filter is applied.
+      if (StringUtils.hasText(query)) {
+        totalCount = sqlCacheRO.queryForObjectBySql(searchCountSql, params, Long.class);
+      }
+
+      return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
     } catch (SQLException e) {
       throw new ResponseStatusException(
         HttpStatus.BAD_REQUEST, "Could not convert object category ids to sql array.", new Exception());

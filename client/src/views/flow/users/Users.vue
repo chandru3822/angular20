@@ -83,6 +83,14 @@
             :calculate-widths="true"
             class="elevation-1 fix-column-width-bug user-table"
         >
+
+          <template v-slot:footer.prepend>
+            <div class="default-text-color">
+              Page {{ page }} of {{ totalPages }} |
+              Showing {{ startIndex }}–{{ endIndex }} of {{ totalUsers }} results
+            </div>
+          </template>
+
           <template #no-data>
             <span class="default-text-color">No available users</span>
           </template>
@@ -715,6 +723,18 @@ const attachmentsText = computed(() => {
 })
 const useSavedFilters = computed(() => {
   return route.params.useSavedFilters
+})
+// Pagination
+const itemsPerPage = computed(() => options.value.itemsPerPage || 10);
+const totalPages = computed(() =>
+  Math.ceil(totalUsers.value / itemsPerPage.value)
+)
+const startIndex = computed(() =>
+  totalUsers.value === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
+)
+const endIndex = computed(() => {
+  const end = page.value * itemsPerPage.value
+  return end > totalUsers.value ? totalUsers.value : end
 })
 
 onMounted(() => {

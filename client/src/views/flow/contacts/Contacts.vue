@@ -72,6 +72,13 @@
             :server-items-length="totalContacts"
             class="elevation-1 fix-column-width-bug contact-table body-small"
         >
+          <template v-if="totalContacts !== 10000" v-slot:footer.prepend>
+            <div class="default-text-color">
+              Page {{ page }} of {{ totalPages }} |
+              Showing {{ startIndex }}–{{ endIndex }} of {{ totalContacts }} results
+            </div>
+          </template>
+        
           <template #no-data>
             <div class="default-text-color">No available contacts</div>
           </template>
@@ -169,6 +176,18 @@ const canAdd = computed(() => {
 })
 const useSavedFilters = computed(() => {
   return route.params.useSavedFilters
+})
+// Pagination
+const itemsPerPage = computed(() => options.value.itemsPerPage || 10);
+const totalPages = computed(() =>
+  Math.ceil(totalContacts.value / itemsPerPage.value)
+)
+const startIndex = computed(() =>
+  totalContacts.value === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
+)
+const endIndex = computed(() => {
+  const end = page.value * itemsPerPage.value
+  return end > totalContacts.value ? totalContacts.value : end
 })
 
 watch(
