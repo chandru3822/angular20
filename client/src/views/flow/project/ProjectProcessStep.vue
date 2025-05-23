@@ -247,12 +247,11 @@
             ></a-btn>
           </div>
           <div class="d-flex align-center "  style="gap:12px">
-            <span>Check Logic</span>
+            <span>Check Logic</span> 
             <v-switch
-          
-           v-model="showLogic"
-    color="primary"
-    @update:modelValue="handleToggle"
+         :model-value="showLogic"
+  color="primary"
+  @click="toggleLogic"
             ></v-switch>
           </div>
         </div>
@@ -280,7 +279,7 @@
             color="primary"
             class="action-button"
              @click="getActionInfo(action.processStepId,action.id)">
-            {{ action.actionName }}{{ action.processStepId }}
+            {{ action.actionName }}
             </a-btn>
             
         </div>
@@ -516,9 +515,9 @@
         ]
       "
     />
-    <div v-if="actionButtnInfo">
-       <ShowLogicPopup :actionButtnInfo="actionButtnInfo" :showActionPopup="showActionPopup"  />
-</div>
+    
+       <ShowLogicPopup :actionButtnInfo="actionButtnInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
+
  
   </v-main>
   <v-main v-else>
@@ -839,22 +838,17 @@ const getActionInfo = async (processId, actionId) => {
   }
 };
 
-const handleToggle = (value) => {
-  console.log('Switch toggled to:', value)
-
-  // Optional logic before or after setting
-  showActionPopup.value = false;
-  if (value) {
-    // Do something when turned ON
-    showLogic.value=true;
-  } else {
-    // Do something when turned OFF
-    showLogic.value=false;
-  }
-
-  
-  
+const closePopup = (newValue) => {
+  showActionPopup.value = newValue
+ 
 }
+const toggleLogic = () => {
+  showLogic.value = !showLogic.value
+  console.log("Switch toggled to:", showLogic.value)
+}
+
+
+
 const getProcessStep = async (reloadAll) => {
   try {
     projectMismatch.value = false

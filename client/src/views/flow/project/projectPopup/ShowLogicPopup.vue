@@ -1,47 +1,57 @@
 <!-- eslint-disable vuetify/no-deprecated-classes -->
 <template>
-    <v-dialog max-width="500" v-model="showActionPopup">
+    <v-dialog max-width="800" v-model="showActionPopup" persistent>
 
+        <v-card class="sys-p-1rem ">
 
+         
+                <div class="d-flex flex-column sys-w-100 ">
+                    <div class="d-flex align-center  justify-space-between  sys-w-100 sys-p-0_5rem">
+                        <span class="black-color">{{ actionButtnInfo?.actionName }}</span>
 
-        <v-card title="Dialog">
-            <v-card-text>
+                        <div class="d-flex align-center " style="gap:12px;height: 1rem;">
+                            <span class="check-logic">Logic Text</span>
+                            <v-switch color="primary" v-model="showText" class="sys-hover"></v-switch>
+                        </div>
 
+                        
+                    </div>
+                    <span class="sys-p-0_5rem logic-chicker">Logic Checker</span>
+                </div>
+          
 
-                <div>
+                <div class="sys-p-0_5rem showLogicScroll">
 
                     <span v-for="(l, index) in actionButtnInfo.processStepLogicList.filter(a => !a.archived)"
                         :key="index">
-                        <v-tooltip bottom max-width="300px">
+                        <v-tooltip bottom max-width="300px" >
                             <template v-slot:activator="{ on, attrs }">
-                                <v-btn  class="ml-1 mr-1 mt-1" v-bind="attrs" v-on="on"> {{ true && l.requirementNbr ?
+                                <v-btn class="ml-1 mr-1 mt-1 mb-1 " v-bind="attrs" v-on="on"  > {{ !showText && l.requirementNbr ?
                                     l.requirementNbr : getLogicButtonText(l) }}</v-btn>
                             </template>
-                               <span>
-                            {{ false && l.requirementNbr ? l.requirementNbr : getLogicButtonText(l) }}
+                            <span >
+                                {{ showText && l.requirementNbr ? l.requirementNbr : getLogicButtonText(l) }}
                             </span>
                         </v-tooltip>
-
-
                     </span>
-
                 </div>
-            </v-card-text>
+        
 
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn text="Close"></v-btn>
-                <v-btn text="Delete"></v-btn>
+             <div  class="d-flex align-center justify-end sys-p-0_5rem">
+        
+          
+                <span class="close sys-hover" @click="closePopup">Close</span>
 
-
-            </v-card-actions>
+            </div>
         </v-card>
 
     </v-dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import {ref , defineEmits, defineProps} from 'vue'
+
+const showText=ref(false)
 
 const props = defineProps({
     actionButtnInfo: {
@@ -54,7 +64,11 @@ const props = defineProps({
     }
 
 })
+const emit = defineEmits(['closePopup'])
 
+const closePopup = () => {
+  emit('closePopup', false)
+}
 
 const getLogicButtonText = (item) => {
     if (item.logicString) {
@@ -116,3 +130,39 @@ const getLogicButtonText = (item) => {
 
 
 </script>
+
+<style  scoped>
+.sys-w-100{
+    width: 100% !important;
+}
+.sys-p-1rem{
+    padding: 1rem !important;
+}
+.sys-p-0_5rem{
+    padding: 0.5rem !important;
+}
+.logic-chicker{
+    color:#5796cb;
+    font-size: smaller;
+}
+.close
+{
+    color:#1f3c73;
+}
+.check-logic{
+    color: #898383;
+
+}
+.black-color{
+    color: black;
+}
+.showLogicScroll{
+
+    overflow-x: auto;
+    overflow-y: auto;
+}
+.sys-hover:hover
+{
+cursor: pointer !important;
+}
+</style>
