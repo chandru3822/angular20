@@ -361,6 +361,18 @@ public class ContactLeadService {
       }
     }
 
+    if (cl.getCompanyBrand() != null) {
+      String companyBrandId = checkIfCustomFieldDropdownValueExists(29134, cl.getCompanyBrand());
+      CustomFieldValue companyBrand = new CustomFieldValue();
+      companyBrand.setFieldName("Company Brand");
+      if (!companyBrandId.equalsIgnoreCase("null")) {
+        companyBrand.setCustomFieldGroupAssignmentId(31423L);
+        companyBrand.setIntValue(Long.parseLong(companyBrandId));
+        companyBrand.setFieldValue(cl.getCompanyBrand());
+        cfvList.add(companyBrand);
+      }
+    }
+
     for (CustomFieldValue cfv : cfvList) {
       saveCustomFieldValue(cfv, contactId, currentUser.trueUserId());
     }
