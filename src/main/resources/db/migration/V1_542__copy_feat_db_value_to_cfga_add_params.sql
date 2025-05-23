@@ -8,7 +8,7 @@ db_function_id = 76 AND parameter_name = 'Process step ID' AND display_order = 6
 
 -- Updating param AHJ Custom Field ID to Custom Field Group Assignment ID
 
-UPDATE flow.db_function_param  SET parameter_name = 'AHJ Custom Field Group Assignment ID' WHERE db_function_id = 2
+UPDATE flow.db_function_param  SET parameter_name = 'AHJ Custom Field Group Assignment ID' , description = 'Must be the Custom Field Group Assignment ID for a Custom Field that is a dropdown or multiselect' WHERE db_function_id = 2
 AND parameter_name = 'AHJ Custom Field ID' AND display_order = 2;
 
 -- Dropping old copy_ahj_value_to_other_cfga function
