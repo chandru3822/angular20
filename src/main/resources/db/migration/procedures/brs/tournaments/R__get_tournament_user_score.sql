@@ -180,47 +180,6 @@ BEGIN
                                              where tff.tournament_formula_id = p_tournament_formula_id
                                                and tffv.tournament_id = p_tournament_id
                                                and tff.field_code = 'FDC_SCORE_VALUE')::int --- this is the FDC
-                                               from brs.project_details pd
-                                               where pd.setter_user_id = p_user_id
-                                               and pd.cancelled_date is null
-                                               and pd.final_design_complete_date between p_start_date and p_end_date
-                                               AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                                               [...])) +
-                                                    -- Add Battery FDC Score calculation here
-                                                    ((select COALESCE(SUM(
-                                                      -- Calculate number of batteries (storage size / 5) for each project
-                                                      FLOOR(COALESCE(
-                                                        -- Get storage size based on project type (Standard vs TPO)
-                                                        CASE
-                                                          WHEN EXISTS (SELECT 1 FROM flow.project_step_custom_field_answer WHERE project_id = pd.project_id AND cfga_id = 30051)
-                                                          THEN (SELECT NULLIF(regexp_replace(field_value, '[^0-9.]', '', 'g'), '')::numeric FROM flow.project_step_custom_field_answer WHERE project_id = pd.project_id AND cfga_id = 30051)
-                                                          ELSE (SELECT NULLIF(regexp_replace(field_value, '[^0-9.]', '', 'g'), '')::numeric FROM flow.project_step_custom_field_answer WHERE project_id = pd.project_id AND cfga_id = 22037)
-                                                        END, 0) / 5
-                                                      ) * (select field_value
-                                                           from brs.tournament_formula_field_value tffv
-                                                                inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                                                           where tff.tournament_formula_id = p_tournament_formula_id
-                                                             and tffv.tournament_id = p_tournament_id
-                                                             and tff.field_code = 'BATTERY_FDC_SCORE_VALUE')::numeric
-                                                    ), 0)
-                                                    from brs.project_details pd
-                                                    where pd.setter_user_id = p_user_id
-                                                      and pd.cancelled_date is null
-                                                      and pd.final_design_complete_date between p_start_date and p_end_date
-                                                      -- Only count projects with storage systems
-                                                      and (EXISTS (SELECT 1 FROM flow.project_step_custom_field_answer
-                                                                   WHERE project_id = pd.project_id AND cfga_id IN (22037, 30051))
-                                                          )
-                                                      AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                                                         (select field_value
-                                                          from brs.tournament_formula_field_value tffv
-                                                               inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                                                          where tff.tournament_formula_id = p_tournament_formula_id
-                                                            and tffv.tournament_id = p_tournament_id
-                                                            and tff.field_code = 'APPOINTMENT_DATE')::date
-                                                    )) +
-                                                     (select count(1) * (select field_value
-                                                                         from brs.tournament_formula_field_value tffv
                          from brs.project_details pd
                          where pd.setter_user_id = p_user_id
                            and pd.cancelled_date is null
