@@ -851,7 +851,6 @@ public class ProjectProcessStepService {
     // Check to if individual requirements are fulfilled
 	for (ProjectProcessStepRequirement r : requirements) {
 		try {
-			passActionMap = new HashMap<>();
 			Boolean isFulFilled = this.isRequirementMet(r, pps.getProjectProcessStepId());
 			r.setFulfilled(isFulFilled);
 			passActionMap.put(r.getId(), isFulFilled);
