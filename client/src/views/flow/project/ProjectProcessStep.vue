@@ -836,6 +836,15 @@ const getActionInfo = async (processId, actionId) => {
   } catch (e) {
     logError(e);
   }
+
+  try{
+    const { result } = await getRequest(`/projectProcessStep/${processId}/actionResult/${actionId}`);
+    console.log('API response:', result);
+  }
+  catch(e) {
+    logError(e);
+  }
+
 };
 
 const closePopup = (newValue) => {

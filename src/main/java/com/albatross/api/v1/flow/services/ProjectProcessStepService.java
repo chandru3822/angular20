@@ -847,16 +847,21 @@ public class ProjectProcessStepService {
       return action;
     }
 
+    HashMap<Long, Boolean> passActionMap = new HashMap<>();
     // Check to if individual requirements are fulfilled
-    for (ProjectProcessStepRequirement r : requirements) {
-      try {
-        r.setFulfilled(this.isRequirementMet(r, pps.getProjectProcessStepId()));
-      } catch (Exception e) {
-        final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s", r.getId());
-        throw new RuntimeException(errMessage + " *** " + e.getMessage());
-      }
-    }
-
+	for (ProjectProcessStepRequirement r : requirements) {
+		try {
+			passActionMap = new HashMap<>();
+			Boolean isFulFilled = this.isRequirementMet(r, pps.getProjectProcessStepId());
+			r.setFulfilled(isFulFilled);
+			passActionMap.put(r.getId(), isFulFilled);
+		} catch (Exception e) {
+			final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s",
+					r.getId());
+			throw new RuntimeException(errMessage + " *** " + e.getMessage());
+		}
+	}
+    action.setIsPassAction(passActionMap);
     StringBuilder logicString = new StringBuilder();
 
     // This should now just be creating logic by making a string of all the requirements in order and replacing requirementIds with their respective true/false value
