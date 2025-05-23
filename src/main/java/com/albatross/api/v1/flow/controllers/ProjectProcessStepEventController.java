@@ -131,7 +131,7 @@ public class ProjectProcessStepEventController {
             }
         }
 
-        var ppsEvent = projectProcessStepEventService.performStepEventActionTransactional(ppsId, eventId, actionId, saveEvent);
+        var ppsEvent = projectProcessStepEventService.performStepEventActionTransactional(ppsId, eventId, actionId, saveEvent, Boolean.FALSE);
         return ResponseEntity.ok(ppsEvent);
     } catch (Exception e) {
       User currentUser = securityService.getCurrentUser();

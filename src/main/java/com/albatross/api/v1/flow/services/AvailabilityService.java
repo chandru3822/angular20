@@ -775,7 +775,7 @@ public class AvailabilityService {
           // then run manually run the schedule event action which is process_step_action_id = 1
           // this will also run auto triggers if needed
           ProjectProcessStepEventService.PpseActionResult ppseActionResult = projectProcessStepEventService.performStepEventAction(
-            request.getProjectProcessStepId(), request.getProjectProcessStepEventId(), 1L);
+            request.getProjectProcessStepId(), request.getProjectProcessStepEventId(), 1L, Boolean.FALSE);
 
           if (ppseActionResult.getShouldRunProjectTagUpdate()) {
             //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
