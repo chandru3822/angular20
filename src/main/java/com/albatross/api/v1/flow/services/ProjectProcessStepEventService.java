@@ -1,33 +1,19 @@
 package com.albatross.api.v1.flow.services;
 
-import com.albatross.api.aurora.AuroraProxy;
-import com.albatross.api.convert.JsonCollectionDeserializer;
-import com.albatross.api.disclosureForm.DisclosureFormService;
-import com.albatross.api.pubsub.PubSubService;
-import com.albatross.api.pubsub.model.EventChannel;
-import com.albatross.api.pubsub.model.ProjectTagMessage;
-import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.CleanString;
-import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
-import com.albatross.api.v1.company.blueraven.services.*;
-import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
-import com.albatross.api.v1.flow.controllers.ScheduleController;
-import com.albatross.api.v1.flow.enums.EventStatusType;
-import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
-import com.albatross.api.v1.flow.enums.SystemActivity;
-import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.processStep.*;
-import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
-import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
-import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
-import com.albatross.api.v1.flow.queries.*;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
@@ -40,13 +26,56 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+import com.albatross.api.aurora.AuroraProxy;
+import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.disclosureForm.DisclosureFormService;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.CleanString;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
+import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
+import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
+import com.albatross.api.v1.company.blueraven.services.GoodleapService;
+import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.company.blueraven.services.StripeService;
+import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
+import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController.SaveEventRequest;
+import com.albatross.api.v1.flow.controllers.ScheduleController;
+import com.albatross.api.v1.flow.enums.EventStatusType;
+import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
+import com.albatross.api.v1.flow.enums.SystemActivity;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.CompanyEventStatusType;
+import com.albatross.api.v1.flow.model.Contact;
+import com.albatross.api.v1.flow.model.CustomFieldValueDisplay;
+import com.albatross.api.v1.flow.model.ResourceAppointment;
+import com.albatross.api.v1.flow.model.ScheduleEvent;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.WhiteListedPosition;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEventAction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEventActionChildFunction;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEventActionChildSmsTemplate;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepEventLogic;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirement;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
+import com.albatross.api.v1.flow.queries.ActivityQuery;
+import com.albatross.api.v1.flow.queries.AvailabilityQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
+import com.albatross.api.v1.flow.queries.ScheduleQuery;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -73,7 +102,7 @@ public class ProjectProcessStepEventService {
   private final PubSubService pubSubService;
   private final UserPositionService userPositionService;
   private final DisclosureFormService disclosureFormService;
-
+  
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
@@ -101,6 +130,7 @@ public class ProjectProcessStepEventService {
     return events;
   }
 
+  @Transactional
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
     Long projectProcessStepId, Long processStepEventId) throws Exception {
     User user = securityService.getCurrentUser();
@@ -112,7 +142,7 @@ public class ProjectProcessStepEventService {
     Long id = sqlCache.updateBySqlReturningId(ProjectProcessStepEventQuery.insertEvent, params, "id").longValue();
 
     Optional<ProjectProcessStepEvent> result = getPpsEvent(projectProcessStepId, id);
-
+	
     if (result.isPresent()) {
       //this will only add the activity if the company has it enabled
       HashMap<String, Object> actParams = new HashMap<>();
@@ -126,10 +156,21 @@ public class ProjectProcessStepEventService {
       actParams.put("newStatusId", null);
       sqlCache.queryBySql(ActivityQuery.addSystemActivity, actParams, String.class);
     }
-
-    return result;
+	// Extract the actionTypeId of actions where autoTrigger is true
+	List<Long> autoTriggeredActionTypeIds = result.map(ProjectProcessStepEvent::getEventActions)
+			.orElse(Collections.emptyList()).stream()
+			// Filter to only include actions where autoTrigger is true
+			.filter(ProcessStepEventAction::getAutoTrigger)
+			// Map each remaining action to its actionTypeId
+			.map(ProcessStepEventAction::getId)
+			// Collect the IDs into a list
+			.collect(Collectors.toList());
+	for (Long actionId : autoTriggeredActionTypeIds) {
+		performStepEventActionTransactional(projectProcessStepId, id, actionId, new SaveEventRequest(), Boolean.TRUE);
+	}
+	return result;
   }
-
+  
   public void deletePpsEvent(Long ppseId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -445,32 +486,35 @@ public class ProjectProcessStepEventService {
     Long ppsId,
     Long eventId,
     Long actionId,
-    ProjectProcessStepEventController.SaveEventRequest saveEvent
+    ProjectProcessStepEventController.SaveEventRequest saveEvent, Boolean isAutoTrigger
   ) throws Exception {
     // save the custom field values and default values
     savePpsEventDetails(ppsId, eventId, saveEvent);
 
     // do the action
-    PpseActionResult ppseActionResult = performStepEventAction(ppsId, eventId, actionId);
+    PpseActionResult ppseActionResult = performStepEventAction(ppsId, eventId, actionId, isAutoTrigger);
+	if (ppseActionResult != null) {
+		if (ppseActionResult.getShouldRunProjectTagUpdate()) {
+			// todo: when tags are assigned/removed without using db functions, remove this
+			// and move it to the new place
+			ProjectTagMessage ptm = new ProjectTagMessage();
+			ptm.setProjectId(ppseActionResult.getProjectId());
+			pubSubService.publish(EventChannel.NOTIFICATION, ptm);
+		}
 
-    if (ppseActionResult.getShouldRunProjectTagUpdate()) {
-      //todo: when tags are assigned/removed without using db functions, remove this and move it to the new place
-      ProjectTagMessage ptm = new ProjectTagMessage();
-      ptm.setProjectId(ppseActionResult.getProjectId());
-      pubSubService.publish(EventChannel.NOTIFICATION, ptm);
-    }
+		// why in the world do we return the entire object here?
+		Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
 
-    //why in the world do we return the entire object here?
-    Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
-
-    //add in the child function returned strings
-    ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
-
-    return ppsEvent.orElse(null);
+		// add in the child function returned strings
+		ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent
+				.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
+		return ppsEvent.orElse(null);
+	}
+	return null;
   }
 
   @Transactional
-  public PpseActionResult performStepEventAction(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
+  public PpseActionResult performStepEventAction(Long ppsId, Long ppsEventId, Long actionId, Boolean isAutoTrigger) throws Exception {
     /*
      **High level pseudo logic:**
 
@@ -624,7 +668,7 @@ public class ProjectProcessStepEventService {
 
           return ppseActionResult;
 //          return ResponseEntity.ok(getPpsEvent(ppsId, ppsEventId));
-        } else {
+        } else if(!isAutoTrigger) {
           throw new ResponseStatusException(
             HttpStatus.PRECONDITION_FAILED,
             "The requirements for this event action were not met.",
@@ -638,6 +682,7 @@ public class ProjectProcessStepEventService {
       throw new ResponseStatusException(
         HttpStatus.NOT_FOUND, "This action could not be found.", new Exception());
     }
+	return null;
   }
 
   public void performSmsTemplates(Long actionId, Long ppsId, Long projectId, Long contactId) {

@@ -28,6 +28,7 @@ public class ProcessStepEventQuery {
                                     psea.action_name as "actionName",
                                     psea.require_start_time as "requireStartTime",
                                     psea.require_end_time as "requireEndTime",
+                                    psea.autoTrigger as "autoTrigger",
                                     psea.require_resource as "requireResource",
                                     psea.hide_from_web as "hideFromWeb",
                                     psea.hide_from_mobile as "hideFromMobile",
@@ -166,6 +167,7 @@ public class ProcessStepEventQuery {
                                         psea.action_name as "actionName",
                                         psea.require_start_time as "requireStartTime",
                                         psea.require_end_time as "requireEndTime",
+                                        psea.autoTrigger as "autoTrigger",
                                         psea.require_resource as "requireResource",
                                         psea.hide_from_web as "hideFromWeb",
                                         psea.hide_from_mobile as "hideFromMobile",
@@ -624,6 +626,7 @@ public class ProcessStepEventQuery {
               show_on_cancelled_completed_process_step = :showOnCancelledCompletedProcessStep,
               company_process_step_status_type_id = :companyProcessStepStatusTypeId,
               modified_by_id = :userId,
+              autoTrigger = :autoTrigger,
               date_modified = now()
         where id = :id
     """;
