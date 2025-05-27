@@ -272,6 +272,12 @@
                           :disabled="!userCanEdit || action.companyProcessStepStatusTypeId"
                           label="Show on Cancelled/Completed Process Steps for Active Events"
                       />
+                      <v-checkbox
+                          v-model="action.autoTrigger"
+                          dense
+                          hide-details
+                          label="Auto-Trigger"
+                      />
                     </v-col>
                   </v-row>
                 </v-card>

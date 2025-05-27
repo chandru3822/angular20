@@ -247,6 +247,7 @@ public class ProcessStepEventService {
     params.put("showOnCancelledCompletedProcessStep", null != processStepEventAction.getShowOnCancelledCompletedProcessStep() ? processStepEventAction.getShowOnCancelledCompletedProcessStep() : false);
     params.put("userId", currentUser.trueUserId());
     params.put("processStepEventId", eventId);
+    params.put("autoTrigger", null != processStepEventAction.getAutoTrigger() ? processStepEventAction.getAutoTrigger() : false);
 
     Long id;
 
