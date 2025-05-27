@@ -800,6 +800,33 @@ public class ProjectProcessStepService {
     return actionResult;
   }
 
+  public HashMap<Long, Boolean> requirementsCheck(ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception{
+    if (!action.getProcessStepLogicList().isEmpty()) {
+      List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
+        .map(ProcessStepLogic::getProcessStepRequirementId)
+        .filter(Objects::nonNull)
+        .toList();
+      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
+
+
+      HashMap<Long, Boolean> passActionMap = new HashMap<>();
+      // Check to if individual requirements are fulfilled
+      for (ProjectProcessStepRequirement r : requirements) {
+        try {
+          Boolean isFulFilled = this.isRequirementMet(r, pps.getProjectProcessStepId());
+          r.setFulfilled(isFulFilled);
+          passActionMap.put(r.getId(), isFulFilled);
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s",
+            r.getId());
+          throw new RuntimeException(errMessage + " *** " + e.getMessage());
+        }
+      }
+      return passActionMap;
+    }
+    return null;
+  }
+
   public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
     // Allow actions to be triggered only once per PPS
     if (action.getAlreadyTriggered() && !action.getMultipleUses()) {

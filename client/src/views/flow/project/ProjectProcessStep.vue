@@ -275,7 +275,7 @@
         <div v-if="showLogic">
           <div class="my-3">All actions:</div>
             <a-btn
-            style="margin: 0.25rem;" v-for="action in processStep?.actions"
+            style="margin: 0.25rem;" v-for="action in checkLogicActions"
             color="primary"
             class="action-button"
              @click="getActionInfo(action.processStepId,action.id)">
@@ -646,6 +646,13 @@ const enabledActions = computed(() => {
   )
 })
 
+const checkLogicActions=computed(() => {
+  return (
+    processStep.value?.actions?.filter(
+      (a) => a.canPerform === false 
+    ) ?? []
+  )
+})
 // non-enabled actions having assigned status/category differing from the current PS status/category
 const disabledActions = computed(() => {
   return (
@@ -823,29 +830,40 @@ const showActionPopup = ref(false);
 
 const getActionInfo = async (processId, actionId) => {
   try {
+    // Fetch action data
     const { data } = await getRequest(`/processStep/${processId}/action`);
     console.log('API response:', data);
-
+    // Find the specific action
     actionButtnInfo.value = data.find((sample) => sample.id === actionId);
 
-    if (actionButtnInfo.value) {
-      showActionPopup.value = true;
-    } else {
-      console.warn('Action not found for actionId:', actionId);
-    }
   } catch (e) {
-    logError(e);
+    logError('Error fetching action data:', e);
   }
 
-  try{
-    const { result } = await getRequest(`/projectProcessStep/${processId}/actionResult/${actionId}`);
-    console.log('API response:', result);
-  }
-  catch(e) {
-    logError(e);
-  }
+  try {
+    // Fetch action result
+    const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/${actionId}`);
+    //  const { data } = await getRequest(`/projectProcessStep/12872902/event/3445235/2`);
+    // Safely extract and map isPassAction
+    const finalResult = Object.entries(data.content || {}).map(([key, value]) => ({
+      key: Number(key),
+      value
+    }));
 
+  if (actionButtnInfo?.value?.processStepLogicList?.length && finalResult?.length) {
+    actionButtnInfo.value.processStepLogicList.forEach((logicItem) => {
+    const match = finalResult.find((resultItem) => resultItem.key === logicItem.processStepRequirementId);
+    if (match) {
+      logicItem.isPassAction = match.value;
+    }
+      });
+    }
+    showActionPopup.value = true;
+  } catch (e) {
+    logError('Error fetching action result:', e);
+  }
 };
+
 
 const closePopup = (newValue) => {
   showActionPopup.value = newValue
@@ -860,6 +878,7 @@ const toggleLogic = () => {
 
 const getProcessStep = async (reloadAll) => {
   try {
+    showLogic.value=false
     projectMismatch.value = false
     processStepLoading.value = true
     const { data, status } = await getRequest(

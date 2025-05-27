@@ -102,7 +102,7 @@ public class ProjectProcessStepEventService {
   private final PubSubService pubSubService;
   private final UserPositionService userPositionService;
   private final DisclosureFormService disclosureFormService;
-  
+
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
@@ -142,7 +142,7 @@ public class ProjectProcessStepEventService {
     Long id = sqlCache.updateBySqlReturningId(ProjectProcessStepEventQuery.insertEvent, params, "id").longValue();
 
     Optional<ProjectProcessStepEvent> result = getPpsEvent(projectProcessStepId, id);
-	
+
     if (result.isPresent()) {
       //this will only add the activity if the company has it enabled
       HashMap<String, Object> actParams = new HashMap<>();
@@ -170,7 +170,7 @@ public class ProjectProcessStepEventService {
 	}
 	return result;
   }
-  
+
   public void deletePpsEvent(Long ppseId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -221,6 +221,50 @@ public class ProjectProcessStepEventService {
     params.put("userId", user.trueUserId());
 
     sqlCache.updateBySql(ProjectProcessStepEventQuery.setStatus, params);
+  }
+
+  public HashMap<Long,Boolean> getPpsEventActionRequirementsPassedDetails(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", ppsEventId);
+    params.put("ppsId", ppsId);
+
+    //using ppsId ensures that they cannot modify the url and have a mismatch of ppsId vs event.project_process_step_id
+    Optional<ProjectProcessStepEvent> result =
+      sqlCache.getBySql(ProjectProcessStepEventQuery.get,
+        params,
+        new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
+    if(result.isPresent()){
+      ProjectProcessStepEvent event = result.get();
+      if (null != event.getEventActions() && !event.getEventActions().isEmpty()) {
+        List<ProcessStepEventAction> eventActions = event.getEventActions();
+        ProcessStepEventAction processStepEventAction = eventActions.stream().filter(el -> el.getId().equals(actionId)).findFirst().orElseThrow(() -> new RuntimeException("Can't find event action id " + actionId));
+        List<Long> requirementIds =
+          Objects.requireNonNull(processStepEventAction).getProcessStepEventLogicList().stream()
+            .filter(step -> step.getProcessStepEventRequirementId() != null)
+            .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+            .collect(Collectors.toList());
+
+        List<ProjectProcessStepRequirement> requirements =
+          projectProcessStepRequirementService.getByProjectProcessStepId(
+            event.getProjectProcessStepId(), requirementIds, true);
+        HashMap<Long, Boolean> requirementMetMap = new HashMap<>();
+        for (ProjectProcessStepRequirement r : requirements) {
+          try {
+            boolean isRequirementMet = projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId(), event.getId());
+            requirementMetMap.put(r.getId(),isRequirementMet);
+            return requirementMetMap;
+          } catch (Exception e) {
+            log.error(
+              String.format(
+                "PPSE: Exception while parsing date requirement value for process step event requirement ID: %s",
+                r.getId()));
+            throw e;
+          }
+        }
+
+      }
+    }
+    return null;
   }
 
   public Optional<ProjectProcessStepEvent> getPpsEvent(Long ppsId, Long ppsEventId) throws Exception {

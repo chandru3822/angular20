@@ -4,42 +4,46 @@
 
         <v-card class="sys-p-1rem ">
 
-         
-                <div class="d-flex flex-column sys-w-100 ">
-                    <div class="d-flex align-center  justify-space-between  sys-w-100 sys-p-0_5rem">
-                        <span class="black-color">{{ actionButtnInfo?.actionName }}</span>
 
-                        <div class="d-flex align-center " style="gap:12px;height: 1rem;">
-                            <span class="check-logic">Logic Text</span>
-                            <v-switch color="primary" v-model="showText" class="sys-hover"></v-switch>
-                        </div>
+            <div class="d-flex flex-column sys-w-100 ">
+                <div class="d-flex align-center  justify-space-between  sys-w-100 sys-p-0_5rem">
+                    <span class="black-color">{{ actionButtnInfo?.actionName }}</span>
 
-                        
+                    <div class="d-flex align-center " style="gap:12px;height: 1rem;">
+                        <span class="check-logic">Logic Text</span>
+                        <v-switch color="primary" v-model="showText" class="sys-hover"></v-switch>
                     </div>
-                    <span class="sys-p-0_5rem logic-chicker">Logic Checker</span>
+
+
                 </div>
-          
+                <span class="sys-p-0_5rem logic-chicker">Logic Checker</span>
+            </div>
 
-                <div class="sys-p-0_5rem showLogicScroll">
 
-                    <span v-for="(l, index) in actionButtnInfo.processStepLogicList.filter(a => !a.archived)"
+            <div class="sys-p-0_5rem showLogicScroll">
+
+                <span v-if="actionButtnInfo?.processStepLogicList.length === 0"> No Action Is Available</span>
+                <span v-else>
+                    <span v-for="(l, index) in actionButtnInfo?.processStepLogicList?.filter(a => !a.archived)"
                         :key="index">
-                        <v-tooltip bottom max-width="300px" >
+                        <v-tooltip bottom max-width="300px">
                             <template v-slot:activator="{ on, attrs }">
-                                <v-btn class="ml-1 mr-1 mt-1 mb-1 " v-bind="attrs" v-on="on"  > {{ !showText && l.requirementNbr ?
-                                    l.requirementNbr : getLogicButtonText(l) }}</v-btn>
+                                <v-btn class="ml-1 mr-1 mt-1 mb-1 " v-bind="attrs" v-on="on"
+                                    :class="l.isPassAction ? 'green' : 'red'"> {{ !showText && l.requirementNbr ?
+                                        l.requirementNbr : getLogicButtonText(l) }}</v-btn>
                             </template>
-                            <span >
+                            <span>
                                 {{ showText && l.requirementNbr ? l.requirementNbr : getLogicButtonText(l) }}
                             </span>
                         </v-tooltip>
                     </span>
-                </div>
-        
+                </span>
+            </div>
 
-             <div  class="d-flex align-center justify-end sys-p-0_5rem">
-        
-          
+
+            <div class="d-flex align-center justify-end sys-p-0_5rem">
+
+
                 <span class="close sys-hover" @click="closePopup">Close</span>
 
             </div>
@@ -49,9 +53,9 @@
 </template>
 
 <script setup>
-import {ref , defineEmits, defineProps} from 'vue'
+import { ref, defineEmits, defineProps } from 'vue'
 
-const showText=ref(false)
+const showText = ref(false)
 
 const props = defineProps({
     actionButtnInfo: {
@@ -67,7 +71,7 @@ const props = defineProps({
 const emit = defineEmits(['closePopup'])
 
 const closePopup = () => {
-  emit('closePopup', false)
+    emit('closePopup', false)
 }
 
 const getLogicButtonText = (item) => {
@@ -131,38 +135,52 @@ const getLogicButtonText = (item) => {
 
 </script>
 
-<style  scoped>
-.sys-w-100{
+<style scoped>
+.sys-w-100 {
     width: 100% !important;
 }
-.sys-p-1rem{
+
+.sys-p-1rem {
     padding: 1rem !important;
 }
-.sys-p-0_5rem{
+
+.sys-p-0_5rem {
     padding: 0.5rem !important;
 }
-.logic-chicker{
-    color:#5796cb;
+
+.logic-chicker {
+    color: #5796cb;
     font-size: smaller;
 }
-.close
-{
-    color:#1f3c73;
+
+.close {
+    color: #1f3c73;
 }
-.check-logic{
+
+.check-logic {
     color: #898383;
 
 }
-.black-color{
+
+.black-color {
     color: black;
 }
-.showLogicScroll{
+
+.showLogicScroll {
 
     overflow-x: auto;
     overflow-y: auto;
 }
-.sys-hover:hover
-{
-cursor: pointer !important;
+
+.sys-hover:hover {
+    cursor: pointer !important;
+}
+
+.green {
+    background-color: rgb(194, 241, 194) !important;
+}
+
+.red {
+    background-color: #fecdd2 !important;
 }
 </style>

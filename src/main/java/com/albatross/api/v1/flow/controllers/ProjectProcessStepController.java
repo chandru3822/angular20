@@ -22,9 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -45,6 +43,28 @@ public class ProjectProcessStepController {
   private final SqlCache sqlCache;
 
   private final AutoTriggerHandlerService autoTriggerHandlerService;
+
+
+  @GetMapping(value="/{projectProcessStepId}/{actionId}")
+  public ResponseEntity<Object> getProjectProcessStepActionRequirement(@PathVariable Long projectProcessStepId,
+                                                                                   @PathVariable Long actionId){
+    try {
+      ProjectProcessStep pps =
+        projectProcessStepService.getProjectProcessStep(projectProcessStepId);
+      List<ProjectProcessStepAction> ppsActionList = pps.getActions();
+      ProjectProcessStepAction intendedAction = ppsActionList.stream().filter(el -> el.getId().equals(actionId)).findFirst().orElseThrow(()->new RuntimeException("Unable to get PPS action ID "+ actionId));
+      var actionRequirementsValidation = projectProcessStepService.requirementsCheck(intendedAction, pps);
+      Map<String, Object> response = new HashMap<>();
+      response.put("content",actionRequirementsValidation);
+      return new ResponseEntity<>(response,HttpStatus.OK);
+    } catch (Exception e) {
+      final String errMessage = "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
+      log.error(errMessage);
+      throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
+    }
+
+  }
+
 
   @GetMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(

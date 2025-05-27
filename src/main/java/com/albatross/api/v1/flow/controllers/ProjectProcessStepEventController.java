@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.graalvm.shadowed.org.jcodings.util.Hash;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +41,15 @@ public class ProjectProcessStepEventController {
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
     @PathVariable Long ppsId, @PathVariable Long eventId) throws Exception {
     return projectProcessStepEventService.insertPpsEvent(ppsId, eventId);
+  }
+
+  @GetMapping(value="/{eventId}/{actionId}")
+  public ResponseEntity<Object> getProjectProcessStepEventActionRequirement(@PathVariable Long ppsId,@PathVariable Long eventId,
+                                                                       @PathVariable Long actionId) throws Exception {
+    HashMap<String, Object> response = new HashMap<>();
+    HashMap<Long, Boolean> ppsEventActionRequirementsPassedDetails = projectProcessStepEventService.getPpsEventActionRequirementsPassedDetails(ppsId, eventId, actionId);
+    response.put("content",ppsEventActionRequirementsPassedDetails);
+    return new ResponseEntity<>(response,HttpStatus.OK);
   }
 
   @GetMapping(value = "/{eventId}")
