@@ -31,73 +31,94 @@ BEGIN
   if v_timezone is not null then
     case when p_tournament_formula_id = 1 then
       select *
-      into v_score
-      from (
-             (select (select count(1) * (select field_value
-                                          from brs.tournament_formula_field_value tffv
-                                                 inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                                          where tff.tournament_formula_id = p_tournament_formula_id
-                                            and tffv.tournament_id = p_tournament_id
-                                            and tff.field_code = 'BOOKING_SCORE_VALUE')::int
-                      from brs.project_details pd
-                      where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
-                        and pd.closer_user_id = p_user_id
-                        and pd.cancelled_date is null
-                        AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                            (select field_value
-                             from brs.tournament_formula_field_value tffv
-                                    inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                             where tff.tournament_formula_id = p_tournament_formula_id
-                               and tffv.tournament_id = p_tournament_id
-                               and tff.field_code = 'APPOINTMENT_DATE')::date) +
-                     ((select count(1) * (select field_value
-                                          from brs.tournament_formula_field_value tffv
-                                                   inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                                          where tff.tournament_formula_id = p_tournament_formula_id
-                                            and tffv.tournament_id = p_tournament_id
-                                            and tff.field_code = 'FDC_SCORE_VALUE')::int  --- this is the FDC count
-                       from brs.project_details pd
-                              left join flow.contact_custom_field_value ccfv
-                                        on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
-                       where pd.closer_user_id = p_user_id
-                         and pd.cancelled_date is null
-                         and pd.final_design_complete_date between p_start_date and p_end_date
-                         and (ccfv.boolean_value is null or ccfv.boolean_value is false)
-                         and pd.source not in (select unnest(string_to_array(value, ',')::bigint[])
-                                    from flow.company_configuration_value
-                                    where code = 'CLOSER_GEN_SOURCE_IDS')
-                         AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                             (select field_value
-                              from brs.tournament_formula_field_value tffv
-                                     inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                              where tff.tournament_formula_id = p_tournament_formula_id
-                                and tffv.tournament_id = p_tournament_id
-                                and tff.field_code = 'APPOINTMENT_DATE')::date)) +
-                     ((select count(1) * (select field_value
-                                          from brs.tournament_formula_field_value tffv
-                                                   inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                                          where tff.tournament_formula_id = p_tournament_formula_id
-                                            and tffv.tournament_id = p_tournament_id
-                                            and tff.field_code = 'SELF_GEN_FDC_SCORE_VALUE')::int
-                       from brs.project_details pd
-                              left join flow.contact_custom_field_value ccfv
-                                        on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
-                       where pd.final_design_complete_date is not null
-                         and pd.cancelled_date is null
-                         and pd.closer_user_id = p_user_id
-                         and pd.final_design_complete_date between p_start_date and p_end_date
-                         and (ccfv.boolean_value is true
-                           or pd.source in (select unnest(string_to_array(value, ',')::bigint[])
-                                                 from flow.company_configuration_value
-                                                 where code = 'CLOSER_GEN_SOURCE_IDS')
-                             )
-                         AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
-                             (select field_value
-                              from brs.tournament_formula_field_value tffv
-                                     inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
-                              where tff.tournament_formula_id = p_tournament_formula_id
-                                and tffv.tournament_id = p_tournament_id
-                                and tff.field_code = 'APPOINTMENT_DATE')::date)))) as cnt;
+into v_score
+from (
+       select (select count(1) * (select field_value
+                                    from brs.tournament_formula_field_value tffv
+                                           inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                    where tff.tournament_formula_id = p_tournament_formula_id
+                                      and tffv.tournament_id = p_tournament_id
+                                      and tff.field_code = 'BOOKING_SCORE_VALUE')::int
+                from brs.project_details pd
+                where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                  and pd.closer_user_id = p_user_id
+                  and pd.cancelled_date is null
+                  AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
+                      (select field_value
+                       from brs.tournament_formula_field_value tffv
+                              inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                       where tff.tournament_formula_id = p_tournament_formula_id
+                         and tffv.tournament_id = p_tournament_id
+                         and tff.field_code = 'APPOINTMENT_DATE')::date) +
+               ((select count(1) * (select field_value
+                                    from brs.tournament_formula_field_value tffv
+                                             inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                    where tff.tournament_formula_id = p_tournament_formula_id
+                                      and tffv.tournament_id = p_tournament_id
+                                      and tff.field_code = 'FDC_SCORE_VALUE')::int  --- this is the FDC count
+                 from brs.project_details pd
+                        left join flow.contact_custom_field_value ccfv
+                                  on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
+                 where pd.closer_user_id = p_user_id
+                   and pd.cancelled_date is null
+                   and pd.final_design_complete_date between p_start_date and p_end_date
+                   and (ccfv.boolean_value is null or ccfv.boolean_value is false)
+                   and pd.source not in (select unnest(string_to_array(value, ',')::bigint[])
+                              from flow.company_configuration_value
+                              where code = 'CLOSER_GEN_SOURCE_IDS')
+                   AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
+                       (select field_value
+                        from brs.tournament_formula_field_value tffv
+                               inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                        where tff.tournament_formula_id = p_tournament_formula_id
+                          and tffv.tournament_id = p_tournament_id
+                          and tff.field_code = 'APPOINTMENT_DATE')::date)) +
+               ((select count(1) * (select field_value
+                                    from brs.tournament_formula_field_value tffv
+                                             inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                    where tff.tournament_formula_id = p_tournament_formula_id
+                                      and tffv.tournament_id = p_tournament_id
+                                      and tff.field_code = 'SELF_GEN_FDC_SCORE_VALUE')::int
+                 from brs.project_details pd
+                        left join flow.contact_custom_field_value ccfv
+                                  on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
+                 where pd.final_design_complete_date is not null
+                   and pd.cancelled_date is null
+                   and pd.closer_user_id = p_user_id
+                   and pd.final_design_complete_date between p_start_date and p_end_date
+                   and (ccfv.boolean_value is true
+                     or pd.source in (select unnest(string_to_array(value, ',')::bigint[])
+                                           from flow.company_configuration_value
+                                           where code = 'CLOSER_GEN_SOURCE_IDS')
+                       )
+                   AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
+                       (select field_value
+                        from brs.tournament_formula_field_value tffv
+                               inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                        where tff.tournament_formula_id = p_tournament_formula_id
+                          and tffv.tournament_id = p_tournament_id
+                          and tff.field_code = 'APPOINTMENT_DATE')::date)) +
+               (select COALESCE(SUM(
+                                  FLOOR(COALESCE(pd.storage_size_kwh, 0) / 5)
+                                    * (select field_value
+                                       from brs.tournament_formula_field_value tffv
+                                              inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                       where tff.tournament_formula_id = p_tournament_formula_id
+                                         and tffv.tournament_id = p_tournament_id
+                                         and tff.field_code = 'BATTERY_FDC_SCORE_VALUE')::numeric
+                                ), 0)
+                from brs.project_details pd
+                where pd.closer_user_id = p_user_id
+                  and pd.cancelled_date is null
+                  and pd.final_design_complete_date between p_start_date and p_end_date
+                  and pd.storage_size_kwh > 0
+                  AND ((pd.first_appointment at time zone 'UTC') at time zone v_timezone)::date >=
+                      (select field_value
+                       from brs.tournament_formula_field_value tffv
+                              inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                       where tff.tournament_formula_id = p_tournament_formula_id
+                         and tffv.tournament_id = p_tournament_id
+                         and tff.field_code = 'APPOINTMENT_DATE')::date)) as cnt;
       when p_tournament_formula_id = 2 then
         select *
         into v_score
@@ -179,7 +200,7 @@ BEGIN
                                                       inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
                                              where tff.tournament_formula_id = p_tournament_formula_id
                                                and tffv.tournament_id = p_tournament_id
-                                               and tff.field_code = 'FDC_SCORE_VALUE')::int --- this is the FDC count
+                                               and tff.field_code = 'FDC_SCORE_VALUE')::int --- this is the FDC
                          from brs.project_details pd
                          where pd.setter_user_id = p_user_id
                            and pd.cancelled_date is null
