@@ -890,8 +890,7 @@ public class ProjectProcessStepService {
     // Check to if individual requirements are fulfilled
 	for (ProjectProcessStepRequirement r : requirements) {
     try {
-      Boolean isFulFilled = this.isRequirementMet(r, pps.getProjectProcessStepId());
-      r.setFulfilled(isFulFilled);
+      r.setFulfilled(this.isRequirementMet(r, pps.getProjectProcessStepId()));
     } catch (Exception e) {
       final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s",
         r.getId());
