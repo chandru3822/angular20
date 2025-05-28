@@ -273,7 +273,7 @@
           />
         </div>
         <div v-if="showLogic">
-          <div class="my-3">All actions:</div>
+          <div class="my-3">Requirements failed:</div>
             <a-btn
             style="margin: 0.25rem;" v-for="action in checkLogicActions"
             color="primary"
