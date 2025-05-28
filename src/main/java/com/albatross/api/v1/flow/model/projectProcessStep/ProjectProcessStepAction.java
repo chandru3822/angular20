@@ -1,8 +1,7 @@
 package com.albatross.api.v1.flow.model.projectProcessStep;
 
-import java.util.HashMap;
-
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
+
 import lombok.Getter;
 import lombok.Setter;
 
