@@ -1,35 +1,25 @@
 <!-- eslint-disable vuetify/no-deprecated-classes -->
 <template>
     <v-dialog max-width="800" v-model="showActionPopup" persistent>
-
         <v-card class="sys-p-1rem ">
-
-
             <div class="d-flex flex-column sys-w-100 ">
                 <div class="d-flex align-center  justify-space-between  sys-w-100 sys-p-0_5rem">
                     <span class="black-color">{{ actionButtnInfo?.actionName }}</span>
-
                     <div class="d-flex align-center " style="gap:12px;height: 1rem;">
                         <span class="check-logic">Logic Text</span>
                         <v-switch color="primary" v-model="showText" class="sys-hover"></v-switch>
                     </div>
-
-
                 </div>
                 <span class="sys-p-0_5rem logic-chicker">Logic Checker</span>
             </div>
-
-
             <div class="sys-p-0_5rem showLogicScroll">
-
                 <span v-if="actionButtnInfo?.length === 0"> No Action Is Available</span>
                 <span v-else>
-                    <span v-for="(l, index) in actionButtnInfo?.filter(a => !a.archived)"
-                        :key="index">
+                    <span v-for="(l, index) in actionButtnInfo?.filter(a => !a.archived)" :key="index">
                         <v-tooltip bottom max-width="300px">
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn class="ml-1 mr-1 mt-1 mb-1 " v-bind="attrs" v-on="on"
-                                    :class="l.isPassAction ? 'green' : 'red'"> {{ !showText && l.requirementNbr ?
+                                    :class="{ red: !l.isPassAction }"> {{ !showText && l.requirementNbr ?
                                         l.requirementNbr : getLogicButtonText(l) }}</v-btn>
                             </template>
                             <span>
@@ -39,16 +29,11 @@
                     </span>
                 </span>
             </div>
-
-
             <div class="d-flex align-center justify-end sys-p-0_5rem">
-
-
                 <span class="close sys-hover" @click="closePopup">Close</span>
 
             </div>
         </v-card>
-
     </v-dialog>
 </template>
 
@@ -176,9 +161,9 @@ const getLogicButtonText = (item) => {
     cursor: pointer !important;
 }
 
-.green {
+/* .green {
     background-color: rgb(194, 241, 194) !important;
-}
+} */
 
 .red {
     background-color: #fecdd2 !important;

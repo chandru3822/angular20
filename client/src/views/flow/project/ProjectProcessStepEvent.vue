@@ -101,7 +101,7 @@
             style="margin: 0.25rem;" v-for="action in checkLogicActions"
             color="primary"
             class="action-button"
-           @click="getActionInfo(action.processStepId,action.id)" >
+           @click="getActionInfo(action.id)" >
             {{ action.actionName }}
             </a-btn>
         </div>
@@ -538,7 +538,8 @@ const ppseFieldsContainer = ref(null)
 const eventFieldForm = ref(null)
 const expansionOpenStatus = ref([])
 const showLogic=ref(false)
-
+const actionButtnInfo = ref(null);
+const showActionPopup = ref(false);
 
 const emit = defineEmits(['refresh-upcoming-events', 'refresh-project-status', 'refresh-upcoming-pps'])
 
@@ -1244,30 +1245,22 @@ const checkFieldsForUnique = () => {
   }
 }
 
-const actionButtnInfo = ref(null);
-const showActionPopup = ref(false);
 
-const getActionInfo = async (processStepId,actionId) => {
-
-
+const getActionInfo = async (actionId) => {
   try {
     // Fetch action result
-    
     const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppsEventId.value}/${actionId}`);
-    const requirementIdsFulfilledStatus = Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => ({
-      key: Number(key),
-      value
-    }));
-
-  if (data.processStepLogicList?.length && requirementIdsFulfilledStatus?.length) {
-    data.processStepLogicList.forEach((logicItem) => {
-    const match = requirementIdsFulfilledStatus.find((resultItem) => resultItem.key === logicItem.processStepRequirementId);
-    if (match) {
-      logicItem.isPassAction = match.value;
-    }
-      });
-      actionButtnInfo.value=data.processStepLogicList;
-    }
+    const statusMap = new Map(
+      Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => [Number(key), value])
+    );
+    const logicList = data.processStepLogicList || [];
+    // Map the fulfillment status directly
+    logicList.forEach((logicItem) => {
+      logicItem.isPassAction = statusMap.has(logicItem.processStepRequirementId)
+        ? statusMap.get(logicItem.processStepRequirementId)
+        : true;
+    });
+    actionButtnInfo.value = logicList;
     showActionPopup.value = true;
   } catch (e) {
     logError('Error fetching action result:', e);
@@ -1275,7 +1268,6 @@ const getActionInfo = async (processStepId,actionId) => {
 };
 const closePopup = (newValue) => {
   showActionPopup.value = newValue
- 
 }
 const checkLogicActions=computed(() => {
   return (
