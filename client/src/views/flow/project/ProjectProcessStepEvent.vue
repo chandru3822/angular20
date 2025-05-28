@@ -96,7 +96,7 @@
         </div>
 
         <div v-if="showLogic">
-          <div class="my-3">All actions:</div>
+          <div class="my-3">Requirements failed:</div>
             <a-btn
             style="margin: 0.25rem;" v-for="action in checkLogicActions"
             color="primary"
@@ -1253,11 +1253,11 @@ const getActionInfo = async (actionId) => {
     const statusMap = new Map(
       Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => [Number(key), value])
     );
-    const logicList = data.processStepLogicList || [];
+    const logicList = data.processStepEventLogicList || [];
     // Map the fulfillment status directly
     logicList.forEach((logicItem) => {
-      logicItem.isPassAction = statusMap.has(logicItem.processStepRequirementId)
-        ? statusMap.get(logicItem.processStepRequirementId)
+      logicItem.isPassAction = statusMap.has(logicItem.processStepEventRequirementId)
+        ? statusMap.get(logicItem.processStepEventRequirementId)
         : true;
     });
     actionButtnInfo.value = logicList;
