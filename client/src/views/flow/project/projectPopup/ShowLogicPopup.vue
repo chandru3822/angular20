@@ -22,9 +22,9 @@
 
             <div class="sys-p-0_5rem showLogicScroll">
 
-                <span v-if="actionButtnInfo?.processStepLogicList.length === 0"> No Action Is Available</span>
+                <span v-if="actionButtnInfo?.length === 0"> No Action Is Available</span>
                 <span v-else>
-                    <span v-for="(l, index) in actionButtnInfo?.processStepLogicList?.filter(a => !a.archived)"
+                    <span v-for="(l, index) in actionButtnInfo?.filter(a => !a.archived)"
                         :key="index">
                         <v-tooltip bottom max-width="300px">
                             <template v-slot:activator="{ on, attrs }">
@@ -59,7 +59,7 @@ const showText = ref(false)
 
 const props = defineProps({
     actionButtnInfo: {
-        type: Object,
+        type: Array,
         required: true
     },
     showActionPopup: {

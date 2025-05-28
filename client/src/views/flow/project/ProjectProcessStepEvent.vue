@@ -70,7 +70,7 @@
             ></a-btn>
           </div>
           </div>
-          <div class="d-flex align-center "  style="gap:12px">
+          <div class="d-flex align-center "  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"  style="gap:12px">
             <span>Check Logic</span>
             <v-switch
              v-model="showLogic"
@@ -1248,35 +1248,25 @@ const actionButtnInfo = ref(null);
 const showActionPopup = ref(false);
 
 const getActionInfo = async (processStepId,actionId) => {
-  try {
-    // Fetch action data
 
-    const { data } = await getRequest(`/processStep/${processStepId}/event/${ppsEventId.value}`);
-    console.log('API response:', data);
-    // Find the specific action
-    actionButtnInfo.value = data.find((sample) => sample.id === actionId);
-
-  } catch (e) {
-    logError('Error fetching action data:', e);
-  }
 
   try {
     // Fetch action result
-    // const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/${actionId}`);
-     const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppsEventId.value}/${actionId}`);
-    // Safely extract and map isPassAction
-    const finalResult = Object.entries(data.content || {}).map(([key, value]) => ({
+    
+    const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppsEventId.value}/${actionId}`);
+    const requirementIdsFulfilledStatus = Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => ({
       key: Number(key),
       value
     }));
 
-  if (actionButtnInfo?.value?.processStepLogicList?.length && finalResult?.length) {
-    actionButtnInfo.value.processStepLogicList.forEach((logicItem) => {
-    const match = finalResult.find((resultItem) => resultItem.key === logicItem.processStepRequirementId);
+  if (data.processStepLogicList?.length && requirementIdsFulfilledStatus?.length) {
+    data.processStepLogicList.forEach((logicItem) => {
+    const match = requirementIdsFulfilledStatus.find((resultItem) => resultItem.key === logicItem.processStepRequirementId);
     if (match) {
       logicItem.isPassAction = match.value;
     }
       });
+      actionButtnInfo.value=data.processStepLogicList;
     }
     showActionPopup.value = true;
   } catch (e) {
