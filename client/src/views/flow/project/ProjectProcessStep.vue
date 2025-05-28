@@ -278,7 +278,7 @@
             style="margin: 0.25rem;" v-for="action in checkLogicActions"
             color="primary"
             class="action-button"
-             @click="getActionInfo(action.processStepId,action.id)">
+             @click="getActionInfo(action.id)">
             {{ action.actionName }}
             </a-btn>
             
@@ -609,6 +609,8 @@ const processStepEvents = ref([])
 const projectProcessStepEvents = ref([])
 const ppsFieldsContainer = ref(null)
 const showLogic=ref(false)
+const actionButtnInfo = ref(null);
+const showActionPopup = ref(false);
 
 const emit = defineEmits([
   'refresh-upcoming-pps',
@@ -646,13 +648,6 @@ const enabledActions = computed(() => {
   )
 })
 
-const checkLogicActions=computed(() => {
-  return (
-    processStep.value?.actions?.filter(
-      (a) => a.canPerform === false 
-    ) ?? []
-  )
-})
 // non-enabled actions having assigned status/category differing from the current PS status/category
 const disabledActions = computed(() => {
   return (
@@ -825,47 +820,6 @@ const getAvailableStatuses = async () => {
     }
   }
 }
-const actionButtnInfo = ref(null);
-const showActionPopup = ref(false);
-
-const getActionInfo = async (processId, actionId) => {
-
-
-  try {
-    // Fetch action result
-    const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/${actionId}`);
- 
-
-    const requirementIdsFulfilledStatus = Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => ({
-      key: Number(key),
-      value
-    }));
-
-  if (data.processStepLogicList?.length && requirementIdsFulfilledStatus?.length) {
-    data.processStepLogicList.forEach((logicItem) => {
-    const match = requirementIdsFulfilledStatus.find((resultItem) => resultItem.key === logicItem.processStepRequirementId);
-    if (match) {
-      logicItem.isPassAction = match.value;
-    }
-      });
-      actionButtnInfo.value=data.processStepLogicList;
-    }
-    showActionPopup.value = true;
-  } catch (e) {
-    logError('Error fetching action result:', e);
-  }
-};
-
-
-const closePopup = (newValue) => {
-  showActionPopup.value = newValue
- 
-}
-const toggleLogic = () => {
-  showLogic.value = !showLogic.value
-  console.log("Switch toggled to:", showLogic.value)
-}
-
 
 
 const getProcessStep = async (reloadAll) => {
@@ -1206,8 +1160,47 @@ const getProcessStepEvents = async () => {
     appStore.showSnack('ERROR', 'Error Retrieving Details')
 
     appStore.loading = false
-  }
+  } 
 }
+
+
+const getActionInfo = async (actionId) => {
+  try {
+    // Fetch action result
+    const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/${actionId}`);
+    const statusMap = new Map(
+      Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => [Number(key), value])
+    );
+    const logicList = data.processStepLogicList || [];
+    // Map the fulfillment status directly
+    logicList.forEach((logicItem) => {
+      logicItem.isPassAction = statusMap.has(logicItem.processStepRequirementId)
+        ? statusMap.get(logicItem.processStepRequirementId)
+        : true;
+    });
+    actionButtnInfo.value = logicList;
+    showActionPopup.value = true;
+  } catch (e) {
+    logError('Error fetching action result:', e);
+  }
+};
+
+const closePopup = (newValue) => {
+  showActionPopup.value = newValue
+}
+
+const toggleLogic = () => {
+  showLogic.value = !showLogic.value
+  console.log("Switch toggled to:", showLogic.value)
+}
+
+const checkLogicActions=computed(() => {
+  return (
+    processStep.value?.actions?.filter(
+      (a) => a.canPerform === false 
+    ) ?? []
+  )
+})
 </script>
 
 <style lang="scss">
