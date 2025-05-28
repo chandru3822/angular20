@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepActionRequirement;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.services.AutoTriggerHandlerService;
@@ -46,19 +47,13 @@ public class ProjectProcessStepController {
 
 
   @GetMapping(value="/{projectProcessStepId}/{actionId}")
-  public ResponseEntity<Object> getProjectProcessStepActionRequirement(@PathVariable Long projectProcessStepId,
-                                                                                   @PathVariable Long actionId){
+  public ResponseEntity<ProcessStepActionRequirement> getProjectProcessStepActionRequirement(@PathVariable Long projectProcessStepId,
+                                                                                             @PathVariable Long actionId) throws Exception {
     try {
-      ProjectProcessStep pps =
-        projectProcessStepService.getProjectProcessStep(projectProcessStepId);
-      List<ProjectProcessStepAction> ppsActionList = pps.getActions();
-      ProjectProcessStepAction intendedAction = ppsActionList.stream().filter(el -> el.getId().equals(actionId)).findFirst().orElseThrow(()->new RuntimeException("Unable to get PPS action ID "+ actionId));
-      var actionRequirementsValidation = projectProcessStepService.requirementsCheck(intendedAction, pps);
-      Map<String, Object> response = new HashMap<>();
-      response.put("content",actionRequirementsValidation);
-      return new ResponseEntity<>(response,HttpStatus.OK);
-    } catch (Exception e) {
-      final String errMessage = "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
+      var processStepActionRequirement = projectProcessStepService.requirementsCheck(actionId, projectProcessStepId);
+      return new ResponseEntity<>(processStepActionRequirement,HttpStatus.OK);
+    }catch (Exception e){
+      final String errMessage = "Unable to check requirement for ppsId: %s and actionId: %s *** %s".formatted(projectProcessStepId,actionId,e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }

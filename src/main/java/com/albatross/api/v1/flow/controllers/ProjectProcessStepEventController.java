@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.event.EventActionRequirement;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.Data;
@@ -44,12 +45,17 @@ public class ProjectProcessStepEventController {
   }
 
   @GetMapping(value="/{eventId}/{actionId}")
-  public ResponseEntity<Object> getProjectProcessStepEventActionRequirement(@PathVariable Long ppsId,@PathVariable Long eventId,
-                                                                       @PathVariable Long actionId) throws Exception {
-    HashMap<String, Object> response = new HashMap<>();
-    HashMap<Long, Boolean> ppsEventActionRequirementsPassedDetails = projectProcessStepEventService.getPpsEventActionRequirementsPassedDetails(ppsId, eventId, actionId);
-    response.put("content",ppsEventActionRequirementsPassedDetails);
-    return new ResponseEntity<>(response,HttpStatus.OK);
+  public ResponseEntity<EventActionRequirement> getProjectProcessStepEventActionRequirement(@PathVariable Long ppsId, @PathVariable Long eventId,
+                                                                                            @PathVariable Long actionId) throws Exception {
+   try {
+     var ppsEventActionRequirementsPassedDetails = projectProcessStepEventService.getPpsEventActionRequirementsPassedDetails(ppsId, eventId, actionId);
+     return  ResponseEntity.ok(ppsEventActionRequirementsPassedDetails);
+   }catch (Exception e){
+     final String errMessage = "Unable to check requirement for ppsId: %s , eventId:%s  and actionId: %s *** %s".formatted(ppsId,eventId,actionId,e.getMessage());
+     log.error(errMessage);
+     throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
+   }
+
   }
 
   @GetMapping(value = "/{eventId}")

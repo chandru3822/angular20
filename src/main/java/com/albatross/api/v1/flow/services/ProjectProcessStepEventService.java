@@ -1,31 +1,5 @@
 package com.albatross.api.v1.flow.services;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.disclosureForm.DisclosureFormService;
@@ -56,6 +30,7 @@ import com.albatross.api.v1.flow.model.ResourceAppointment;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
+import com.albatross.api.v1.flow.model.event.EventActionRequirement;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventAction;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventActionChildFunction;
@@ -72,10 +47,28 @@ import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ScheduleQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -223,48 +216,39 @@ public class ProjectProcessStepEventService {
     sqlCache.updateBySql(ProjectProcessStepEventQuery.setStatus, params);
   }
 
-  public HashMap<Long,Boolean> getPpsEventActionRequirementsPassedDetails(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", ppsEventId);
-    params.put("ppsId", ppsId);
-
-    //using ppsId ensures that they cannot modify the url and have a mismatch of ppsId vs event.project_process_step_id
-    Optional<ProjectProcessStepEvent> result =
-      sqlCache.getBySql(ProjectProcessStepEventQuery.get,
-        params,
-        new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
-    if(result.isPresent()){
-      ProjectProcessStepEvent event = result.get();
-      if (null != event.getEventActions() && !event.getEventActions().isEmpty()) {
-        List<ProcessStepEventAction> eventActions = event.getEventActions();
-        ProcessStepEventAction processStepEventAction = eventActions.stream().filter(el -> el.getId().equals(actionId)).findFirst().orElseThrow(() -> new RuntimeException("Can't find event action id " + actionId));
-        List<Long> requirementIds =
-          Objects.requireNonNull(processStepEventAction).getProcessStepEventLogicList().stream()
-            .filter(step -> step.getProcessStepEventRequirementId() != null)
-            .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
-            .collect(Collectors.toList());
-
-        List<ProjectProcessStepRequirement> requirements =
-          projectProcessStepRequirementService.getByProjectProcessStepId(
-            event.getProjectProcessStepId(), requirementIds, true);
-        HashMap<Long, Boolean> requirementMetMap = new HashMap<>();
-        for (ProjectProcessStepRequirement r : requirements) {
-          try {
-            boolean isRequirementMet = projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId(), event.getId());
-            requirementMetMap.put(r.getId(),isRequirementMet);
-            return requirementMetMap;
-          } catch (Exception e) {
-            log.error(
-              String.format(
-                "PPSE: Exception while parsing date requirement value for process step event requirement ID: %s",
-                r.getId()));
-            throw e;
-          }
-        }
-
+  public EventActionRequirement getPpsEventActionRequirementsPassedDetails(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
+    var eventActionRequirement = new EventActionRequirement();
+    try {
+      String json = sqlCache.queryForObjectBySql(
+        ProjectProcessStepEventQuery.getProjectProcessStepEventActionLogicList,
+        Map.of( "process_step_event_action_id",actionId),
+        String.class
+      );
+      if (json == null) {
+        throw new RuntimeException();
       }
+      List<ProcessStepEventLogic> processStepEventLogicList = om.readValue(json, new TypeReference<List<ProcessStepEventLogic>>() {
+      });
+      eventActionRequirement.setProcessStepEventLogicList(processStepEventLogicList);
+      List<Long> processStepEventActionRequirementIds = processStepEventLogicList.stream().map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+        .toList();
+      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(ppsId, processStepEventActionRequirementIds);
+      HashMap<Long,Boolean> fulfilledActionMap = new HashMap<>();
+      for (ProjectProcessStepRequirement r : requirements) {
+        try {
+          Boolean isFulFilled = projectProcessStepService.isRequirementMet(r, ppsId, ppsEventId);
+          fulfilledActionMap.put(r.getId(), isFulFilled);
+        } catch (Exception e) {
+          final String errMessage = String.format("PPS: Exception while checking event action requirements. PPS ID: %s and PPSEvent ID: %s",
+            ppsId,ppsEventId);
+          throw new RuntimeException(errMessage + " *** " + e.getMessage());
+        }
+      }
+      eventActionRequirement.setRequirementIdsFulfilledStatus(fulfilledActionMap);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Action Not Found", new RuntimeException());
     }
-    return null;
+    return eventActionRequirement;
   }
 
   public Optional<ProjectProcessStepEvent> getPpsEvent(Long ppsId, Long ppsEventId) throws Exception {

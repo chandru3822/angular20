@@ -800,31 +800,39 @@ public class ProjectProcessStepService {
     return actionResult;
   }
 
-  public HashMap<Long, Boolean> requirementsCheck(ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception{
-    if (!action.getProcessStepLogicList().isEmpty()) {
-      List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
-        .map(ProcessStepLogic::getProcessStepRequirementId)
-        .filter(Objects::nonNull)
+  public ProcessStepActionRequirement requirementsCheck(Long actionId,Long ppsId) throws Exception{
+    var processStepActionRequirement = new ProcessStepActionRequirement();
+    try {
+      String json = sqlCache.queryForObjectBySql(
+        ProjectProcessStepQuery.getProjectProcessStepActionButtonLogicList,
+        Map.of( "process_step_action_id",actionId),
+        String.class
+      );
+      if (json == null) {
+        throw new RuntimeException();
+      }
+      List<ProcessStepLogic> processStepLogics = om.readValue(json, new TypeReference<List<ProcessStepLogic>>() {
+      });
+      processStepActionRequirement.setProcessStepLogicList(processStepLogics);
+      List<Long> processStepActionRequirementIds = processStepLogics.stream().map(ProcessStepLogic::getProcessStepRequirementId)
         .toList();
-      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-
-
-      HashMap<Long, Boolean> passActionMap = new HashMap<>();
-      // Check to if individual requirements are fulfilled
+      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(ppsId, processStepActionRequirementIds);
+      HashMap<Long,Boolean> fulfilledActionMap = new HashMap<>();
       for (ProjectProcessStepRequirement r : requirements) {
         try {
-          Boolean isFulFilled = this.isRequirementMet(r, pps.getProjectProcessStepId());
-          r.setFulfilled(isFulFilled);
-          passActionMap.put(r.getId(), isFulFilled);
+          Boolean isFulFilled = this.isRequirementMet(r,ppsId);
+          fulfilledActionMap.put(r.getId(), isFulFilled);
         } catch (Exception e) {
           final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s",
             r.getId());
           throw new RuntimeException(errMessage + " *** " + e.getMessage());
         }
       }
-      return passActionMap;
+      processStepActionRequirement.setRequirementIdsFulfilledStatus(fulfilledActionMap);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Action Not Found", new RuntimeException());
     }
-    return null;
+    return processStepActionRequirement;
   }
 
   public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps) throws Exception {
@@ -873,21 +881,17 @@ public class ProjectProcessStepService {
       action.setCanPerform(true);
       return action;
     }
-
-    HashMap<Long, Boolean> passActionMap = new HashMap<>();
     // Check to if individual requirements are fulfilled
 	for (ProjectProcessStepRequirement r : requirements) {
-		try {
-			Boolean isFulFilled = this.isRequirementMet(r, pps.getProjectProcessStepId());
-			r.setFulfilled(isFulFilled);
-			passActionMap.put(r.getId(), isFulFilled);
-		} catch (Exception e) {
-			final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s",
-					r.getId());
-			throw new RuntimeException(errMessage + " *** " + e.getMessage());
-		}
-	}
-    action.setIsPassAction(passActionMap);
+    try {
+      Boolean isFulFilled = this.isRequirementMet(r, pps.getProjectProcessStepId());
+      r.setFulfilled(isFulFilled);
+    } catch (Exception e) {
+      final String errMessage = String.format("PPS: Exception while checking action requirements. PPS ID: %s",
+        r.getId());
+      throw new RuntimeException(errMessage + " *** " + e.getMessage());
+    }
+  }
     StringBuilder logicString = new StringBuilder();
 
     // This should now just be creating logic by making a string of all the requirements in order and replacing requirementIds with their respective true/false value
