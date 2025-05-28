@@ -46,19 +46,27 @@ public class ProjectProcessStepController {
   private final AutoTriggerHandlerService autoTriggerHandlerService;
 
 
-  @GetMapping(value="/{projectProcessStepId}/{actionId}")
-  public ResponseEntity<ProcessStepActionRequirement> getProjectProcessStepActionRequirement(@PathVariable Long projectProcessStepId,
-                                                                                             @PathVariable Long actionId) throws Exception {
-    try {
-      var processStepActionRequirement = projectProcessStepService.requirementsCheck(actionId, projectProcessStepId);
-      return new ResponseEntity<>(processStepActionRequirement,HttpStatus.OK);
-    }catch (Exception e){
-      final String errMessage = "Unable to check requirement for ppsId: %s and actionId: %s *** %s".formatted(projectProcessStepId,actionId,e.getMessage());
-      log.error(errMessage);
-      throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
-    }
+	/**
+	 * @param projectProcessStepId
+	 * @param actionId
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping(value = "/{projectProcessStepId}/{actionId}")
+	public ResponseEntity<ProcessStepActionRequirement> getProjectProcessStepActionRequirement(
+			@PathVariable Long projectProcessStepId, @PathVariable Long actionId) throws Exception {
+		try {
+			var processStepActionRequirement = projectProcessStepService.requirementsCheck(actionId,
+					projectProcessStepId);
+			return new ResponseEntity<>(processStepActionRequirement, HttpStatus.OK);
+		} catch (Exception e) {
+			final String errMessage = "Unable to check requirement for ppsId: %s and actionId: %s *** %s"
+					.formatted(projectProcessStepId, actionId, e.getMessage());
+			log.error(errMessage);
+			throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
+		}
 
-  }
+	}
 
 
   @GetMapping(value = "/{projectProcessStepId}")

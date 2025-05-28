@@ -44,19 +44,27 @@ public class ProjectProcessStepEventController {
     return projectProcessStepEventService.insertPpsEvent(ppsId, eventId);
   }
 
-  @GetMapping(value="/{eventId}/{actionId}")
-  public ResponseEntity<EventActionRequirement> getProjectProcessStepEventActionRequirement(@PathVariable Long ppsId, @PathVariable Long eventId,
-                                                                                            @PathVariable Long actionId) throws Exception {
-   try {
-     var ppsEventActionRequirementsPassedDetails = projectProcessStepEventService.getPpsEventActionRequirementsPassedDetails(ppsId, eventId, actionId);
-     return  ResponseEntity.ok(ppsEventActionRequirementsPassedDetails);
-   }catch (Exception e){
-     final String errMessage = "Unable to check requirement for ppsId: %s , eventId:%s  and actionId: %s *** %s".formatted(ppsId,eventId,actionId,e.getMessage());
-     log.error(errMessage);
-     throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
-   }
-
-  }
+	/**
+	 * @param ppsId
+	 * @param eventId
+	 * @param actionId
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping(value = "/{eventId}/{actionId}")
+	public ResponseEntity<EventActionRequirement> getProjectProcessStepEventActionRequirement(@PathVariable Long ppsId,
+			@PathVariable Long eventId, @PathVariable Long actionId) throws Exception {
+		try {
+			var ppsEventActionRequirementsPassedDetails = projectProcessStepEventService
+					.getPpsEventActionRequirementsPassedDetails(ppsId, eventId, actionId);
+			return ResponseEntity.ok(ppsEventActionRequirementsPassedDetails);
+		} catch (Exception e) {
+			final String errMessage = "Unable to check requirement for ppsId: %s , eventId:%s  and actionId: %s *** %s"
+					.formatted(ppsId, eventId, actionId, e.getMessage());
+			log.error(errMessage);
+			throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
+		}
+	}
 
   @GetMapping(value = "/{eventId}")
   public Optional<ProjectProcessStepEvent> getPpsEvent(

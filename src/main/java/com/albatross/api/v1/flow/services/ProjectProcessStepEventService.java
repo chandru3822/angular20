@@ -216,40 +216,43 @@ public class ProjectProcessStepEventService {
     sqlCache.updateBySql(ProjectProcessStepEventQuery.setStatus, params);
   }
 
-  public EventActionRequirement getPpsEventActionRequirementsPassedDetails(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
-    var eventActionRequirement = new EventActionRequirement();
-    try {
-      String json = sqlCache.queryForObjectBySql(
-        ProjectProcessStepEventQuery.getProjectProcessStepEventActionLogicList,
-        Map.of( "process_step_event_action_id",actionId),
-        String.class
-      );
-      if (json == null) {
-        throw new RuntimeException();
-      }
-      List<ProcessStepEventLogic> processStepEventLogicList = om.readValue(json, new TypeReference<List<ProcessStepEventLogic>>() {
-      });
-      eventActionRequirement.setProcessStepEventLogicList(processStepEventLogicList);
-      List<Long> processStepEventActionRequirementIds = processStepEventLogicList.stream().map(ProcessStepEventLogic::getProcessStepEventRequirementId)
-        .toList();
-      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(ppsId, processStepEventActionRequirementIds);
-      HashMap<Long,Boolean> fulfilledActionMap = new HashMap<>();
-      for (ProjectProcessStepRequirement r : requirements) {
-        try {
-          Boolean isFulFilled = projectProcessStepService.isRequirementMet(r, ppsId, ppsEventId);
-          fulfilledActionMap.put(r.getId(), isFulFilled);
-        } catch (Exception e) {
-          final String errMessage = String.format("PPS: Exception while checking event action requirements. PPS ID: %s and PPSEvent ID: %s",
-            ppsId,ppsEventId);
-          throw new RuntimeException(errMessage + " *** " + e.getMessage());
-        }
-      }
-      eventActionRequirement.setRequirementIdsFulfilledStatus(fulfilledActionMap);
-    } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Action Not Found", new RuntimeException());
-    }
-    return eventActionRequirement;
-  }
+	public EventActionRequirement getPpsEventActionRequirementsPassedDetails(Long ppsId, Long ppsEventId, Long actionId)
+			throws Exception {
+		var eventActionRequirement = new EventActionRequirement();
+		try {
+			String json = sqlCache.queryForObjectBySql(
+					ProjectProcessStepEventQuery.getProjectProcessStepEventActionLogicList,
+					Map.of("process_step_event_action_id", actionId), String.class);
+			if (json == null) {
+				throw new RuntimeException();
+			}
+			List<ProcessStepEventLogic> processStepEventLogicList = om.readValue(json,
+					new TypeReference<List<ProcessStepEventLogic>>() {
+					});
+			eventActionRequirement.setProcessStepEventLogicList(processStepEventLogicList);
+			List<Long> processStepEventActionRequirementIds = processStepEventLogicList.stream()
+					.map(ProcessStepEventLogic::getProcessStepEventRequirementId).filter(Objects::nonNull).toList();
+			List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService
+					.getByProjectProcessStepId(ppsId, processStepEventActionRequirementIds, true);
+			HashMap<Long, Boolean> fulfilledActionMap = new HashMap<>();
+			for (ProjectProcessStepRequirement r : requirements) {
+				try {
+					Boolean isFulFilled = projectProcessStepService.isRequirementMet(r, ppsId, ppsEventId);
+					fulfilledActionMap.put(r.getId(), isFulFilled);
+				} catch (Exception e) {
+					final String errMessage = String.format(
+							"PPS: Exception while checking event action requirements. PPS ID: %s and PPSEvent ID: %s",
+							ppsId, ppsEventId);
+					throw new RuntimeException(errMessage + " *** " + e.getMessage());
+				}
+			}
+			eventActionRequirement.setRequirementIdsFulfilledStatus(fulfilledActionMap);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Event Action Not Found",
+					new RuntimeException());
+		}
+		return eventActionRequirement;
+	}
 
   public Optional<ProjectProcessStepEvent> getPpsEvent(Long ppsId, Long ppsEventId) throws Exception {
     User user = securityService.getCurrentUser();
