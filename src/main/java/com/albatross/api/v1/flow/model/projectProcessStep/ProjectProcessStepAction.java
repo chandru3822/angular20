@@ -12,5 +12,4 @@ public class ProjectProcessStepAction extends ProcessStepAction {
 
     private Boolean alreadyTriggered, multipleUses, canPerform;
     private String actionRunDate, actionRunBy;
-    private HashMap<Long, Boolean> isPassAction;
 }

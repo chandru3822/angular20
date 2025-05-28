@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.processStep.ProcessStepActionRequirement;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.services.AutoTriggerHandlerService;
@@ -22,9 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -45,6 +44,22 @@ public class ProjectProcessStepController {
   private final SqlCache sqlCache;
 
   private final AutoTriggerHandlerService autoTriggerHandlerService;
+
+
+  @GetMapping(value="/{projectProcessStepId}/{actionId}")
+  public ResponseEntity<ProcessStepActionRequirement> getProjectProcessStepActionRequirement(@PathVariable Long projectProcessStepId,
+                                                                                             @PathVariable Long actionId) throws Exception {
+    try {
+      var processStepActionRequirement = projectProcessStepService.requirementsCheck(actionId, projectProcessStepId);
+      return new ResponseEntity<>(processStepActionRequirement,HttpStatus.OK);
+    }catch (Exception e){
+      final String errMessage = "Unable to check requirement for ppsId: %s and actionId: %s *** %s".formatted(projectProcessStepId,actionId,e.getMessage());
+      log.error(errMessage);
+      throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
+    }
+
+  }
+
 
   @GetMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(

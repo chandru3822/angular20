@@ -70,7 +70,7 @@
             ></a-btn>
           </div>
           </div>
-          <div class="d-flex align-center "  style="gap:12px">
+          <div class="d-flex align-center "  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"  style="gap:12px">
             <span>Check Logic</span>
             <v-switch
              v-model="showLogic"
@@ -98,10 +98,10 @@
         <div v-if="showLogic">
           <div class="my-3">All actions:</div>
             <a-btn
-            style="margin: 0.25rem;" v-for="action in selectedEvent?.eventActions"
+            style="margin: 0.25rem;" v-for="action in checkLogicActions"
             color="primary"
             class="action-button"
-            >
+           @click="getActionInfo(action.processStepId,action.id)" >
             {{ action.actionName }}
             </a-btn>
         </div>
@@ -437,6 +437,7 @@
 
 
     </div>
+      <ShowLogicPopup :actionButtnInfo="actionButtnInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
   </v-main>
   <v-main v-else>
     <SpinnerInline centered :size="50" color="primary"/>
@@ -474,6 +475,8 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
+
+import ShowLogicPopup from '@/views/flow/project/projectPopup/showLogicPopup.vue';
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
@@ -1240,6 +1243,47 @@ const checkFieldsForUnique = () => {
     checkForSchedulingConflicts();
   }
 }
+
+const actionButtnInfo = ref(null);
+const showActionPopup = ref(false);
+
+const getActionInfo = async (processStepId,actionId) => {
+
+
+  try {
+    // Fetch action result
+    
+    const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppsEventId.value}/${actionId}`);
+    const requirementIdsFulfilledStatus = Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => ({
+      key: Number(key),
+      value
+    }));
+
+  if (data.processStepLogicList?.length && requirementIdsFulfilledStatus?.length) {
+    data.processStepLogicList.forEach((logicItem) => {
+    const match = requirementIdsFulfilledStatus.find((resultItem) => resultItem.key === logicItem.processStepRequirementId);
+    if (match) {
+      logicItem.isPassAction = match.value;
+    }
+      });
+      actionButtnInfo.value=data.processStepLogicList;
+    }
+    showActionPopup.value = true;
+  } catch (e) {
+    logError('Error fetching action result:', e);
+  }
+};
+const closePopup = (newValue) => {
+  showActionPopup.value = newValue
+ 
+}
+const checkLogicActions=computed(() => {
+  return (
+    selectedEvent.value?.eventActions?.filter(
+      (a) => a.canPerform === false 
+    ) ?? []
+  )
+})
 </script>
 
 <style lang="scss">
