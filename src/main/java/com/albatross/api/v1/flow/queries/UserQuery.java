@@ -16,7 +16,8 @@ public class UserQuery {
                                array[ :positions ]::bigint[],
                                array[ :orgs ]::bigint[],
                                :limit,
-                               :offset);
+                               :offset,
+                               :initials);
    """;
 
   //language=PostgreSQL

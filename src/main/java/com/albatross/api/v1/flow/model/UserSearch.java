@@ -10,7 +10,7 @@ import java.util.List;
 public class UserSearch {
 
     //search is the generic search all fields thing
-    private String search, firstName, lastName, email, phone;
+    private String search, firstName, lastName, email, phone,initials;
     private List<Integer> statuses, positions, orgs;
     private Boolean primaryFlag;
 }

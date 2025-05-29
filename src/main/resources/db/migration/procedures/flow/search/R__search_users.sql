@@ -22,10 +22,12 @@ CREATE OR REPLACE FUNCTION flow.search_users(p_searchterm character varying,
                                              p_position_ids bigint[],
                                              p_org_ids bigint[],
                                              p_limit bigint,
-                                             p_offset bigint)
+                                             p_offset bigint,
+                                             p_initials character varying)
   RETURNS TABLE
           (
             id                  bigint,
+            initials            text,
             first_name          character varying,
             last_name           character varying,
             company_id          bigint,
@@ -69,6 +71,7 @@ BEGIN
     from (
 
       select distinct upv.user_id                                       as id,
+                      null as initials,
                       upv.first_name,
                       upv.last_name,
                       upv.company_id,
@@ -111,6 +114,7 @@ BEGIN
               else 1 = 1 end
       union
       select u.id,
+             ucfv.text_value as initials,
              u.first_name,
              u.last_name,
              uc.company_id,
@@ -131,7 +135,11 @@ BEGIN
              inner join flow.user_company uc on u.id = uc.user_id
              inner join flow.user_status_type ust on ust.company_id = uc.company_id
              inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
+             inner join flow.user_custom_field_value  ucfv on ucfv.user_id = u.id
+             inner join flow.custom_field_group_assignment cfga on cfga.id = ucfv.custom_field_group_assignment_id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
       where uc.company_id = p_company_id
+        and cf.field_name = 'Initials'
         and not exists (select up2.id
                         from flow.user_position up2
                                inner join flow.position p on p.id = up2.position_id
@@ -141,6 +149,7 @@ BEGIN
         and concat(u.first_name, ' ', u.last_name) Ilike '%' || v_clean_name_search_term || '%'
         and u.first_name ilike '%' || p_first_name || '%'
         and u.last_name ilike '%' || p_last_name || '%'
+        and ucfv.text_value ilike '%' || p_initials || '%'
         and u.archived is false
         and coalesce(u.email, '') ilike '%' || v_clean_email_search_term || '%'
         and coalesce(u.phone_number, '') ilike '%' || v_clean_phone_search_term || '%'
