@@ -680,60 +680,72 @@ public class ProjectProcessStepService {
 
     for (ProcessStepActionChildProcess childStep : action.getProcessStepActionChildProcesses()) {
       if (childStep.getReopenPrimaryIfApplicable() != null && childStep.getReopenPrimaryIfApplicable()) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("projectProcessStepId", pps.getProjectProcessStepId());
-        params.put("projectId", pps.getProjectId());
-        params.put("processStepId", childStep.getProcessStepId());
-        params.put("statusId", 2L);
-
-        List<ProjectProcessStep> existingCompletedSteps = sqlCache.queryBySql(
-          ProjectProcessStepQuery.findLatestCompletedStepByType,
+        // First check if an active primary step already exists
+        List<ProjectProcessStep> existingActiveSteps = sqlCache.queryBySql(
+          ProjectProcessStepQuery.findExistingActivePrimaryStepByType,
           Map.of(
             "projectId", pps.getProjectId(),
             "processStepId", childStep.getProcessStepId(),
-            "statusId", 2L,
             "projectProcessStepId", pps.getProjectProcessStepId()
           ),
           ProjectProcessStep.class
         );
 
-        if (!existingCompletedSteps.isEmpty()) {
-          ProjectProcessStep completedStep = existingCompletedSteps.get(0);
-
-          try {
-            this.setStatusDirectlyForReopen(
-              completedStep.getProjectProcessStepId(),
-              childStep.getInitialCompanyProcessStepStatusTypeId()
-            );
-            log.info("Successfully reopened PPS ID: {}", completedStep.getProjectProcessStepId());
-          } catch (Exception e) {
-            log.error("Failed to reopen PPS ID: {}", completedStep.getProjectProcessStepId(), e);
-            throw e;
-          }
-
-          // Log what's being added to createdPps
-          log.info("Adding to createdPps - PPS ID: {}, autoTrigger: {}",
-            completedStep.getProjectProcessStepId(),
-            childStep.getAutoTriggerActionCount() > 0);
-
-          createdPps.add(Map.of(
-            "ppsId", completedStep.getProjectProcessStepId(),
-            "shouldAutoTrigger", childStep.getAutoTriggerActionCount() > 0
-          ));
+        // If an active step already exists, do nothing
+        if (!existingActiveSteps.isEmpty()) {
+          log.info("Active primary step already exists for process step ID: {}. No action taken.",
+            childStep.getProcessStepId());
         } else {
-          // Create new step (original behavior)
-          Long ppsId = this.insertProjectProcessStep(
-            pps.getProjectId(),
-            childStep.getProcessStepId(),
-            null,
-            pps.getProjectProcessStepId(),
-            childStep.getInitialCompanyProcessStepStatusTypeId(),
-            childStep.getExistingCompanyProcessStepStatusTypeId()
+          // Check for completed steps that could be reopened
+          List<ProjectProcessStep> existingCompletedSteps = sqlCache.queryBySql(
+            ProjectProcessStepQuery.findLatestPrimaryCompletedStepByType,
+            Map.of(
+              "projectId", pps.getProjectId(),
+              "processStepId", childStep.getProcessStepId(),
+              "statusId", 2L,
+              "projectProcessStepId", pps.getProjectProcessStepId()
+            ),
+            ProjectProcessStep.class
           );
-          createdPps.add(Map.of(
-            "ppsId", ppsId,
-            "shouldAutoTrigger", childStep.getAutoTriggerActionCount() > 0
-          ));
+
+          if (!existingCompletedSteps.isEmpty()) {
+            ProjectProcessStep completedStep = existingCompletedSteps.get(0);
+
+            try {
+              this.setStatusDirectlyForReopen(
+                completedStep.getProjectProcessStepId(),
+                childStep.getInitialCompanyProcessStepStatusTypeId()
+              );
+              log.info("Successfully reopened PPS ID: {}", completedStep.getProjectProcessStepId());
+            } catch (Exception e) {
+              log.error("Failed to reopen PPS ID: {}", completedStep.getProjectProcessStepId(), e);
+              throw e;
+            }
+
+            // Log what's being added to createdPps
+            log.info("Adding to createdPps - PPS ID: {}, autoTrigger: {}",
+              completedStep.getProjectProcessStepId(),
+              childStep.getAutoTriggerActionCount() > 0);
+
+            createdPps.add(Map.of(
+              "ppsId", completedStep.getProjectProcessStepId(),
+              "shouldAutoTrigger", childStep.getAutoTriggerActionCount() > 0
+            ));
+          } else {
+            // Create new step (original behavior)
+            Long ppsId = this.insertProjectProcessStep(
+              pps.getProjectId(),
+              childStep.getProcessStepId(),
+              null,
+              pps.getProjectProcessStepId(),
+              childStep.getInitialCompanyProcessStepStatusTypeId(),
+              childStep.getExistingCompanyProcessStepStatusTypeId()
+            );
+            createdPps.add(Map.of(
+              "ppsId", ppsId,
+              "shouldAutoTrigger", childStep.getAutoTriggerActionCount() > 0
+            ));
+          }
         }
       } else {
         // Original behavior for steps without reopenPrimaryIfApplicable
