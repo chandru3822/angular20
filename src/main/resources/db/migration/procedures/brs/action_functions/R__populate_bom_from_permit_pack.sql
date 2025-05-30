@@ -94,7 +94,7 @@ BEGIN
 			-- Extract part_number, name, and quantity
 			part_num := json_item ->> 'number';
 			part_name := json_item ->> 'name';
-			quantity := (json_item ->> 'quantity')::INT;
+			quantity := COALESCE((json_item ->> 'quantity')::INT, 0);
 			RAISE NOTICE 'json_item = %', json_item;
 
 			IF quantity > 0 THEN
