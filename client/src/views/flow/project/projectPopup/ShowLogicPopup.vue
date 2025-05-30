@@ -4,7 +4,7 @@
         <v-card class="sys-p-1rem ">
             <div class="d-flex flex-column sys-w-100 ">
                 <div class="d-flex align-center  justify-space-between  sys-w-100 sys-p-0_5rem">
-                    <span class="black-color">{{ actionButtnInfo?.actionName }}</span>
+                    <span class="black-color">{{ actionButtnInfo?.heading }}</span>
                     <div class="d-flex align-center " style="gap:12px;height: 1rem;">
                         <span class="check-logic">Logic Text</span>
                         <v-switch color="primary" v-model="showText" class="sys-hover"></v-switch>
@@ -13,9 +13,9 @@
                 <span class="sys-p-0_5rem logic-chicker">Logic Checker</span>
             </div>
             <div class="sys-p-0_5rem showLogicScroll">
-                <span v-if="actionButtnInfo?.length === 0"> No Action Is Available</span>
+                <span v-if="actionButtnInfo?.processStepLogicList?.length === 0"> No Action Is Available</span>
                 <span v-else>
-                    <span v-for="(l, index) in actionButtnInfo?.filter(a => !a.archived)" :key="index">
+                    <span v-for="(l, index) in actionButtnInfo?.processStepLogicList?.filter(a => !a.archived)" :key="index">
                         <v-tooltip bottom max-width="300px">
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn class="ml-1 mr-1 mt-1 mb-1 " v-bind="attrs" v-on="on"
@@ -59,63 +59,59 @@ const closePopup = () => {
     emit('closePopup', false)
 }
 
-const getLogicButtonText = (item) => {
-    if (item.logicString) {
-        //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
-        return item.logicString
-    } else {
-        if (null != item.requirementNbr) {
-            //if not a system requirement (like AND, NOT, OR, etc)
-            let value = ''
-            if (item.dataTypeRequirement?.dataTypeValue) {
-                value = item.dataTypeRequirement?.dataTypeValue
-            } else if (item.listOfValue?.name) {
-                value = item.listOfValue?.name
-            } else if (item.listOfValues?.length > 0) {
-                item.listOfValues.forEach((lv, idx) => {
-                    if (idx !== 0) {
-                        value = value + ', '
-                    }
-                    value = value + lv.name
-                })
-            } else if (item.requirementValue) {
-                value = item.requirementValue
-            } else {
-                value = 'UNKNOWN CONTACT ADMIN'
-            }
-            if (null != item.secondaryRequirementValue) {
-                value = value + ` (${item.secondaryRequirementValue})`
-            }
-            if ([1, 3, 4].includes(item.processStepRequirementTypeId)) {
-                //custom field
-                let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
-                let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
-                item.logicString = logicString
-                return logicString
-            } else if (item.processStepRequirementTypeId === 2) {
-                //function
-                let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' ' + item.operatorType + ' ' + value
-                item.logicString = logicString
-                return logicString
-            } else if (item.processStepRequirementTypeId === 12) {
-                //function
-                let logicString = item.processStepRequirementType + ' - ' + item.dataViewFieldName + ' ' + item.operatorType + ' ' + value
-                item.logicString = logicString
-                return logicString
-            } else if ([7, 8, 9, 10].includes(item.processStepRequirementTypeId)) {
-                //status (project or process step)
-                let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
-                let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
-                item.logicString = logicString
-                return logicString
-            }
-        } else {
-            //this returns if AND, OR, NOT, etc
-            return item.operationType
-        }
-    }
-}
 
+const getLogicButtonText = (item) => {
+
+  if (item.logicString) {
+    //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
+    return item.logicString
+  } else {
+    if (null != item.requirementNbr) {
+      //if not a system requirement (like AND, NOT, OR, etc)
+      let value = ''
+      if (item.dataTypeRequirement?.dataTypeValue) {
+        value = item.dataTypeRequirement?.dataTypeValue
+      } else if (item.listOfValue?.name) {
+        value = item.listOfValue?.name
+      } else if (item.listOfValues?.length > 0) {
+        item.listOfValues.forEach((lv, idx) => {
+          if (idx !== 0) {
+            value = value + ', '
+          }
+          value = value + lv.name
+        })
+      } else if (item.requirementValue) {
+        value = item.requirementValue
+      } else {
+        value = 'UNKNOWN CONTACT ADMIN'
+      }
+      if (null != item.secondaryRequirementValue) {
+        value = value + ` (${item.secondaryRequirementValue})`
+      }
+      if ([1, 3, 4].includes(item.processStepRequirementTypeId)) {
+        //custom field
+        let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
+        let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
+        item.logicString = logicString
+        return logicString
+      } else if (item.processStepRequirementTypeId === 2) {
+        //function
+        let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' ' + item.operatorType + ' ' + value
+        item.logicString = logicString
+        return logicString
+      } else if ([7, 8, 9, 10, 11,12].includes(item.processStepRequirementTypeId)) {
+        //status (project or process step)
+        let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
+        let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
+        item.logicString = logicString
+        return logicString
+      }
+    } else {
+      //this returns if AND, OR, NOT, etc
+      return item.operationType
+    }
+  }
+}
 
 
 </script>

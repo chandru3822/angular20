@@ -70,7 +70,7 @@
             ></a-btn>
           </div>
           </div>
-          <div class="d-flex align-center "  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"  style="gap:12px">
+          <div class="d-flex align-center db-gap-12"  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
             <span>Check Logic</span>
             <v-switch
              v-model="showLogic"
@@ -101,7 +101,7 @@
             style="margin: 0.25rem;" v-for="action in checkLogicActions"
             color="primary"
             class="action-button"
-           @click="getActionInfo(action.id)" >
+           @click="getActionInfo(action.id,action.actionName)" >
             {{ action.actionName }}
             </a-btn>
         </div>
@@ -1246,7 +1246,7 @@ const checkFieldsForUnique = () => {
 }
 
 
-const getActionInfo = async (actionId) => {
+const getActionInfo = async (actionId,tittle) => {
   try {
     // Fetch action result
     const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppsEventId.value}/${actionId}`);
@@ -1260,7 +1260,11 @@ const getActionInfo = async (actionId) => {
         ? statusMap.get(logicItem.processStepEventRequirementId)
         : true;
     });
-    actionButtnInfo.value = logicList;
+    let popupData={
+      processStepLogicList:logicList,
+      heading:tittle
+    }
+    actionButtnInfo.value = popupData;
     showActionPopup.value = true;
   } catch (e) {
     logError('Error fetching action result:', e);
