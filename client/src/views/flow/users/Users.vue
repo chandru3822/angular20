@@ -213,6 +213,7 @@
             <tr
               :class="{'shaded-row': index % 2}" v-if="!showImages">
               <td><v-checkbox v-model="item.selected" :disabled="allUsersLoading" @change="toggleSingleSelect(item)"></v-checkbox></td>
+               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.initials}}</router-link></td>
               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.firstName}}</router-link></td>
               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.lastName}}</router-link></td>
               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.email}}</router-link></td>
@@ -624,7 +625,7 @@ const headers = ref([
   { text: 'User Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
   { text: 'Position', value: 'position', positionFilter: true, show: true, width: '175px' },
 ])
-const filters = ref({search: '',firstName: '',lastName: '',email: '',phone: '',orgs: {},statuses: [],positions: []})
+const filters = ref({search: '',firstName: '',lastName: '',email: '',phone: '',orgs: {},initials:'',statuses: [],positions: []})
 const usersTableHeaders = ref([
   { text: 'Name', value: 'fullName', show: true, width: '125px' },
   { text: 'Position', value: 'position', show: true, width: '125px' }
@@ -718,6 +719,12 @@ const useSavedFilters = computed(() => {
 })
 
 onMounted(() => {
+const hasAdminAccess = userStore.userHasFeatureAccessLevel('USERS', 'ADMIN');
+
+if (hasAdminAccess) {
+  headers.value.splice(1, 0, { text: 'Initials', value: 'initials', show: true, width: '125px' });
+}
+
   getPositions()
   getTheOrgFilters(true)
   getEmailSenders()
@@ -854,6 +861,7 @@ const getAllUsers = async () => {
       phone: filters.value.phone,
       statuses: filters.value.statuses,
       positions: filters.value.positions,
+       initials:filters.value.initials,
       orgs: getOrgIdsForMax(),
       primaryFlag: primaryPositionsOnly.value
     }
@@ -905,6 +913,7 @@ const getUsers = async (resetPage) => {
         phone: filters.value.phone,
         statuses: filters.value.statuses,
         positions: filters.value.positions,
+         initials:filters.value.initials,
         orgs: getOrgIdsForMax(),
         //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
         primaryFlag: primaryPositionsOnly.value
@@ -970,6 +979,7 @@ const getImageUsers = async (resetPage) => {
         phone: filters.value.phone,
         statuses: filters.value.statuses,
         positions: filters.value.positions,
+        initials:filters.value.initials,
         orgs: getOrgIdsForMax(),
         //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
         primaryFlag: primaryPositionsOnly.value
@@ -1201,6 +1211,7 @@ const handleOrgFilterChange =  (reset, selectedLevelHere) => {
     filters.value.lastName = ''
     filters.value.email = ''
     filters.value.phone = ''
+    filters.value.initials = ''
 
   } else {
     Object.keys(filters.value.orgs).forEach(k => {
@@ -1415,6 +1426,7 @@ const exportCsv = async() => {
       phone: filters.value.phone,
       statuses: filters.value.statuses,
       positions: filters.value.positions,
+      initials:filters.value.initials,
       orgs: getOrgIdsForMax(),
       //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
       primaryFlag: primaryPositionsOnly.value

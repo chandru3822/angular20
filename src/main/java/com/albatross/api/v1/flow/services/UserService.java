@@ -74,7 +74,7 @@ public class UserService {
     params.put("primaryFlag", null != search.getPrimaryFlag() ? search.getPrimaryFlag() : false);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
-    params.put("initials","");
+    params.put("initials",search.getInitials());
 
     List<User> results = sqlCacheRO.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
 
