@@ -213,7 +213,7 @@
             <tr
               :class="{'shaded-row': index % 2}" v-if="!showImages">
               <td><v-checkbox v-model="item.selected" :disabled="allUsersLoading" @change="toggleSingleSelect(item)"></v-checkbox></td>
-               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.initials}}</router-link></td>
+               <td class="text-left user-column clickable" v-if="userStore.userHasFeatureAccessLevel('USERS', 'ADMIN') || userStore.userHasFeatureAccessLevel('USERS', 'MANAGE')"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.initials}}</router-link></td>
               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.firstName}}</router-link></td>
               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.lastName}}</router-link></td>
               <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.email}}</router-link></td>
@@ -719,7 +719,7 @@ const useSavedFilters = computed(() => {
 })
 
 onMounted(() => {
-const hasAdminAccess = userStore.userHasFeatureAccessLevel('USERS', 'ADMIN');
+const hasAdminAccess = userStore.userHasFeatureAccessLevel('USERS', 'ADMIN') || userStore.userHasFeatureAccessLevel('USERS', 'MANAGE') ;
 
 if (hasAdminAccess) {
   headers.value.splice(1, 0, { text: 'Initials', value: 'initials', show: true, width: '125px' });
