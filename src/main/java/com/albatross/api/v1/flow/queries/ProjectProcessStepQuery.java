@@ -34,13 +34,27 @@ public class ProjectProcessStepQuery {
   """;
 
   //language=PostgreSQL
-  public final static String findLatestCompletedStepByType = """
+  public final static String findLatestPrimaryCompletedStepByType = """
   select pps.id as project_process_step_id, pps.* from flow.project_process_step pps
   inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
   where pps.project_id = :projectId
   and pps.process_step_id = :processStepId
   and cpsst.process_step_status_type_id = :statusId
   and pps.id != :projectProcessStepId
+  and pps.main is true
+  order by pps.id desc limit 1
+""";
+
+  //language=PostgreSQL
+  public final static String findExistingActivePrimaryStepByType = """
+  select pps.id as project_process_step_id, pps.* from flow.project_process_step pps
+  inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+  where pps.project_id = :projectId
+  and pps.process_step_id = :processStepId
+  and cpsst.process_step_status_type_id = 1
+  and pps.id != :projectProcessStepId
+  and pps.main is true
+  and pps.archived is not true
   order by pps.id desc limit 1
 """;
 
