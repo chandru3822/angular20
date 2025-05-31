@@ -95,8 +95,7 @@ BEGIN
                  SELECT DISTINCT ON (ucfv.user_id) ucfv.user_id, ucfv.text_value
                  FROM flow.user_custom_field_value ucfv
                  JOIN flow.custom_field_group_assignment cfga ON cfga.id = ucfv.custom_field_group_assignment_id
-                 JOIN flow.custom_field cf ON cf.id = cfga.custom_field_id
-                 WHERE cf.field_name = 'Initials'
+                 WHERE cfga.id = 31536
              ) AS initials_data ON initials_data.user_id = upv.user_id
       where upv.company_id = p_company_id
         and upv.archived is false
@@ -152,8 +151,7 @@ BEGIN
           SELECT DISTINCT ON (ucfv.user_id) ucfv.user_id, ucfv.text_value
           FROM flow.user_custom_field_value ucfv
           JOIN flow.custom_field_group_assignment cfga ON cfga.id = ucfv.custom_field_group_assignment_id
-          JOIN flow.custom_field cf ON cf.id = cfga.custom_field_id
-          WHERE cf.field_name = 'Initials'
+          WHERE cfga.id = 31536
       ) AS initials_data ON initials_data.user_id = u.id
       where uc.company_id = p_company_id
       and (
