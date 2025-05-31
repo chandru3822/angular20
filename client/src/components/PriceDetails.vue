@@ -543,8 +543,8 @@ const shouldShowStrikethrough = (adder) => {
   } else if (adder.adderType === 'custom_adders') {
     // For custom adders, apply strikethrough when proposal value > 0 but project value = 0
     return adder.customProposalAdderAmount > 0 &&
-           (!adder.customProjectAdderAmount || adder.customProjectAdderAmount === 0) &&
-           hasReviewDate.value;
+      (!adder.customProjectAdderAmount || adder.customProjectAdderAmount === 0) &&
+      (adder.customProjectAdderAmount !== adder.customProposalAdderAmount);
   }
   return false;
 }
@@ -558,7 +558,8 @@ const shouldShowGreen = (adder) => {
   } else if (adder.adderType === 'custom_adders') {
     // For custom adders, apply green styling when project value > 0 but proposal value = 0
     return adder.customProjectAdderAmount > 0 &&
-           (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
+      (adder.customProposalAdderAmount !== adder.customProjectAdderAmount) &&
+      (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
   }
   return false;
 }
