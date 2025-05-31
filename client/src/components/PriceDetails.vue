@@ -109,8 +109,8 @@
                 :key="index"
                 :class="[
                   {'shaded-row': index % 2},
-                  {'grey lighten-3 text-decoration-line-through': shouldShowStrikethrough(adder) && adder.adderType !== 'custom_adders'},
-                  {'green lighten-5': shouldShowGreen(adder) && adder.adderType !== 'custom_adders'}
+                  {'grey lighten-3 text-decoration-line-through': shouldShowStrikethrough(adder)},
+                  {'green lighten-5': shouldShowGreen(adder)}
                 ]"
                 class="dense-row"
               >
@@ -171,7 +171,10 @@
                           </template>
                           <!-- When only one value exists or other cases -->
                           <template v-else>
-                            <span class="text-no-wrap">
+                            <span class="text-no-wrap" :class="{
+                            'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
+                            'green-text-color': shouldShowGreen(adder)
+                            }">
                               ${{ formatNumber(adder.customProposalAdderAmount || adder.customProjectAdderAmount || 0, true) }}
                             </span>
                           </template>
@@ -534,20 +537,31 @@ const fetchPriceDetailAmounts = async () => {
  * Helper method to determine if an adder should have strikethrough styling
  */
 const shouldShowStrikethrough = (adder) => {
-  // Only apply strikethrough to selected adders with the specific condition
-  return adder.adderType === 'selected_adders' &&
-    adder.selectedOnProposalOnly &&
-    // Make sure we're not in any other case that would prevent reaching the "zzz" template
-    !isCustomProjectOnly(adder);
+  // Apply strikethrough to both selected_adders and custom_adders with the specific condition
+  if (adder.adderType === 'selected_adders') {
+    return adder.selectedOnProposalOnly && !isCustomProjectOnly(adder);
+  } else if (adder.adderType === 'custom_adders') {
+    // For custom adders, apply strikethrough when proposal value > 0 but project value = 0
+    return adder.customProposalAdderAmount > 0 &&
+      (!adder.customProjectAdderAmount || adder.customProjectAdderAmount === 0) &&
+      (adder.customProjectAdderAmount !== adder.customProposalAdderAmount);
+  }
+  return false;
 }
 
 /**
  * Helper method to determine if an adder should have green styling
  */
 const shouldShowGreen = (adder) => {
-  return adder.adderType === 'selected_adders' &&
-    adder.selectedOnProjectOnly &&
-    !isCustomProjectOnly(adder);
+  if (adder.adderType === 'selected_adders') {
+    return adder.selectedOnProjectOnly && !isCustomProjectOnly(adder);
+  } else if (adder.adderType === 'custom_adders') {
+    // For custom adders, apply green styling when project value > 0 but proposal value = 0
+    return adder.customProjectAdderAmount > 0 &&
+      (adder.customProposalAdderAmount !== adder.customProjectAdderAmount) &&
+      (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
+  }
+  return false;
 }
 
 // Watch for changes in adder data
