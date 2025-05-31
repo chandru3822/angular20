@@ -171,7 +171,7 @@
           </div>
         </div>
       </div>
-      <v-card-actions class="px-4 py-3 pb-4">
+      <v-card-actions class="px-4 pb-4">
         <div class="font-weight-medium">{{ totalLabel }}: ${{ calculatedTotal }}</div>
         <v-spacer></v-spacer>
         <v-btn

@@ -125,7 +125,7 @@
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
                     <!-- For custom adders with project amount but no proposal amount -->
-                    <span v-if="isCustomProjectOnly(adder)" class="text-no-wrap">
+                    <span v-if="isCustomProjectOnly(adder)" class="text-no-wrap" :class="{ 'green-text-color': shouldShowGreen(adder) }">
                       ${{ formatNumber(adder.customProjectAdderAmount || adder.projectAdderAmount, true) }}
                     </span>
 
@@ -175,7 +175,7 @@
                             'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
                             'green-text-color': shouldShowGreen(adder)
                             }">
-                              ${{ formatNumber(adder.customProposalAdderAmount || adder.customProjectAdderAmount || 0, true) }}
+                              ${{ formatNumber(shouldShowGreen(adder) ? adder.customProjectAdderAmount : (adder.customProposalAdderAmount || adder.customProjectAdderAmount || 0), true) }}
                             </span>
                           </template>
                         </template>
@@ -315,8 +315,7 @@ const adderDifferences = computed(() => {
       return false;
     })
     .map(adder => {
-      // Calculate difference: Proposal amount - Project amount for normal adders
-      // For custom adders, always calculate Greater amount - Lesser amount for commission
+      // Calculate difference: Proposal amount - Project amount adders
       let difference;
       const proposalAmount = adder.customProposalAdderAmount || adder.proposalAdderAmount || 0;
       const projectAmount = adder.customProjectAdderAmount || adder.projectAdderAmount || 0;
@@ -349,20 +348,36 @@ const commissionTotal = computed(() => {
  */
 const adderTotal = computed(() => {
   return adders.value.reduce((total, adder) => {
-    // For custom adders, always use the greater amount between project and proposal
+    // Only use project amounts for the calculation
+
+    // For custom adders
     if (adder.adderType === 'custom_adders') {
-      const projectAmount = adder.customProjectAdderAmount || adder.projectAdderAmount || 0;
-      const proposalAmount = adder.customProposalAdderAmount || adder.proposalAdderAmount || 0;
-      return total + Math.max(projectAmount, proposalAmount);
+      // Only add to total if there's a project amount
+      if (adder.customProjectAdderAmount > 0) {
+        return total + adder.customProjectAdderAmount;
+      }
+      // Skip if no project amount
+      return total;
     }
 
-    // For adders with only project amount (no proposal amount), use the project amount
-    if (adder.selectedOnProjectOnly || isCustomProjectOnly(adder)) {
-      return total + (adder.customProjectAdderAmount || adder.projectAdderAmount || 0);
+    // For selected adders
+    if (adder.adderType === 'selected_adders') {
+      // Only add if selected on project or has project amount
+      if (adder.selectedOnProjectOnly || adder.projectAdderAmount > 0) {
+        return total + (adder.projectAdderAmount || 0);
+      }
+      // Skip if not selected on project
+      return total;
     }
 
-    // Otherwise use proposalAdderAmount for all other cases
-    return total + (adder.proposalAdderAmount || 0);
+    // For auto-applied adders - always include these in the subtotal
+    if (adder.adderType === 'auto_applied_adder') {
+      // Auto-applied adders are exempt from project-only logic
+      return total + (adder.proposalAdderAmount || adder.autoAppliedProposalAdderAmount || adder.autoAppliedProposalAdderAmount || 0);
+    }
+
+    // Skip all other cases that don't have project amounts
+    return total;
   }, 0)
 })
 
@@ -448,10 +463,8 @@ const processAdderData = (adderData) => {
 
       case 'custom_adders':
         if (hasReviewDate.value) {
-          result.customProposalAdderAmount = adder.customProjectAdderAmount || 0;
-          result.customProjectAdderAmount = adder.customProjectAdderAmount || null;
+          result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
         }
-        result.customProposalAdderAmount = adder.customProposalAdderAmount || null;
         result.customProposalAdderAmount = adder.customProposalAdderAmount || 0;
 
         // Flag custom adders with only project amount
