@@ -12,6 +12,15 @@ public class ContactQuery {
                                                             array[ :partnerIds ]::bigint[])
     """;
 
+  public final static String searchCountDownline = """
+    select *
+    from flow.search_contacts_count_with_down_line(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
+                                                            :isParent::boolean,
+                                                            :userId::bigint,
+                                                            array[ :partnerIds ]::bigint[])
+    """;
+
+
   //language=PostgreSQL
   public final static String search = """
     select *
@@ -19,11 +28,23 @@ public class ContactQuery {
                               :isParent::boolean,:limit::bigint, :offset::bigint, array[ :partnerIds ]::bigint[])
     """;
 
+  public final static String searchCount = """
+    select *
+    from flow.search_contacts_count(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
+                              :isParent::boolean, array[ :partnerIds ]::bigint[])
+    """;
+
   //language=PostgreSQL
   public final static String searchByOwner = """
     select *
     from flow.search_contacts_by_user(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
                                    :isParent::boolean,:userId::bigint,:limit::bigint, :offset::bigint, array[ :partnerIds ]::bigint[])
+    """;
+
+  public final static String searchCountByOwner = """
+    select *
+    from flow.search_contacts_count_by_user(:query::character varying, :companyId::bigint, :objectCategoryIds::bigint[],
+                                   :isParent::boolean,:userId::bigint, array[ :partnerIds ]::bigint[])
     """;
 
   //language=PostgreSQL

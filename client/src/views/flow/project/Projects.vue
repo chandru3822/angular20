@@ -34,6 +34,14 @@
               :class="{'fix-column-width-bug': !isMobile}"
 
           >
+
+            <template v-if="totalProjects !== 10000" v-slot:footer.prepend>
+              <div class="default-text-color">
+                Page {{ page }} of {{ totalPages }} |
+                Showing {{ startIndex }}–{{ endIndex }} of {{ totalProjects }} results
+              </div>
+            </template>
+
             <template #no-data>
               <span class="default-text-color">No available projects</span>
             </template>
@@ -172,6 +180,18 @@ const columnFilterName = ref('')
 
 const useSavedFilters = computed(() => {
   return route.params.useSavedFilters
+})
+// Pagination
+const itemsPerPage = computed(() => options.value.itemsPerPage || 10);
+const totalPages = computed(() =>
+  Math.ceil(totalProjects.value / itemsPerPage.value)
+)
+const startIndex = computed(() =>
+  totalProjects.value === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
+)
+const endIndex = computed(() => {
+  const end = page.value * itemsPerPage.value
+  return end > totalProjects.value ? totalProjects.value : end
 })
 
 const reformatPhone = (phoneNumber) => {

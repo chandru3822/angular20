@@ -124,7 +124,7 @@ from flow.density_projects_with_down_line(:companyId::bigint,
 
   //language=PostgreSQL
   public final static String searchDownline = """
-select *
+    select *
     from flow.search_projects_with_down_line(:query::character varying, :companyId::bigint,
                                                             :userId::bigint,
                                                             :isParent::boolean,
@@ -132,6 +132,16 @@ select *
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
                                                             :includeCommissionDetails::boolean,
+                                                            :searchColumn::character varying,
+                                                            array[ :partnerIds ]::bigint[])
+    """;
+
+  public final static String searchCountDownline = """
+    select *
+    from flow.search_projects_count_with_down_line(:query::character varying, :companyId::bigint,
+                                                            :userId::bigint,
+                                                            :isParent::boolean,
+                                                            :companyProjectStatusTypeId::bigint,
                                                             :searchColumn::character varying,
                                                             array[ :partnerIds ]::bigint[])
     """;
@@ -151,15 +161,34 @@ select *
                                   array[ :partnerIds ]::bigint[])
     """;
 
+  public final static String searchCount = """
+    select *
+    from flow.search_all_projects_count(:query::character varying,
+                                  :companyId::bigint,
+                                  :isParent::boolean,
+                                  :companyProjectStatusTypeId::bigint,
+                                  :searchColumn::character varying,
+                                  array[ :partnerIds ]::bigint[])
+    """;
+
 
   //language=PostgreSQL
   public final static String searchByOwner = """
-select *
+    select *
     from flow.search_projects_by_user(:query::character varying, :companyId::bigint,
                                  :userId::bigint,  :isParent::boolean,:limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
                                                             :sortColumn::character varying, :sortDirection::character varying,
                                                             :includeCommissionDetails::boolean,
+                                                            :searchColumn::character varying,
+                                                            array[ :partnerIds ]::bigint[])
+    """;
+
+  public final static String searchCountByOwner = """
+    select *
+    from flow.search_projects_count_by_user(:query::character varying, :companyId::bigint,
+                                 :userId::bigint,  :isParent::boolean,
+                                                            :companyProjectStatusTypeId::bigint,
                                                             :searchColumn::character varying,
                                                             array[ :partnerIds ]::bigint[])
     """;

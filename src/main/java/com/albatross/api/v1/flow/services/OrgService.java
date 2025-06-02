@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -161,13 +162,17 @@ public class OrgService {
       params.put("createdById", user.trueUserId());
       id = sqlCache.updateBySqlReturningId(OrgQuery.insertOrg, params, "id").longValue();
     }
-
-    if (null != org.getCustomFieldGroups() && !org.getCustomFieldGroups().isEmpty()) {
-      customFieldValueService.updateCustomFieldValues(
-        org.getCustomFieldGroups().getFirst().getCustomFieldValues(),
-        id,
-        ObjectType.ORGANIZATION);
-    }
+    // Iterate over custom field groups and save custom field values
+    Optional.ofNullable(org.getCustomFieldGroups())
+      .orElse(Collections.emptyList()).stream()
+      .filter(group -> CollectionUtils.isNotEmpty(group.getCustomFieldValues()))
+      .forEach(group ->
+        customFieldValueService.updateCustomFieldValues(
+          group.getCustomFieldValues(),
+          id,
+          ObjectType.ORGANIZATION
+        )
+      );
 
     return getOrg(id);
   }
