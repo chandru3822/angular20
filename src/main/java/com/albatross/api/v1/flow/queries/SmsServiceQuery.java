@@ -24,9 +24,9 @@ public class SmsServiceQuery {
   //language=PostgreSQL
   public final static String insert = """
     WITH sq AS (INSERT INTO flow.sms_thread (
-                           message_group,sent_to_user_id, sent_to_project_id, message,media_urls,external_phone,recipient_type_id,message_sent_by_user_id, priority_level, parent_id
+                           message_group,sent_to_user_id, sent_to_project_id, message,media_urls,external_phone,recipient_type_id,message_sent_by_user_id, priority_level, parent_id,aliased_sms_team_id
                 ) VALUES (
-                           :messageGroup,:userId,:projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId, :priorityLevel, :threadId
+                           :messageGroup,:userId,:projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId, :priorityLevel, :threadId,:sentBySmsTeamId
                          )
                 RETURNING id,sent_to_user_id, sent_to_project_id,message,media_urls,
                   message_group,message_sid,message_status,error_message,

@@ -37,6 +37,7 @@ import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -179,10 +180,13 @@ public class ProjectService {
     params.put("partnerIds", user.getPartnerIds());
 
     String searchSql = ProjectQuery.searchByOwner;
+    String searchCountSql = ProjectQuery.searchCountByOwner;
     if (viewCustom) {
       searchSql = ProjectQuery.searchDownline;
+      searchCountSql = ProjectQuery.searchCountDownline;
     } else if (viewAll && (null == overrideType || !overrideType.equalsIgnoreCase("view"))) {
       searchSql = ProjectQuery.search;
+      searchCountSql = ProjectQuery.searchCount;
     }
 
     List<Project> projects;
@@ -192,8 +196,13 @@ public class ProjectService {
     } else {
         projects = sqlCache.queryBySql(searchSql, params, new ProjectMapper<>(Project.class, om));
     }
-    int total = 10000;
-    return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
+
+    Long totalCount = 10000L;
+    // Count query is executed only if filter is applied.
+    if (StringUtils.hasText(query) && StringUtils.hasText(searchColumn)) {
+      totalCount = sqlCacheRO.queryForObjectBySql(searchCountSql, params, Long.class);
+    }
+    return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
   }
 
   public List<ProjectStatusCount> projectCountsByStatus(String overrideType) {

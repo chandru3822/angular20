@@ -20,6 +20,21 @@ public class UserQuery {
                                :initials);
    """;
 
+  //
+  public final static String searchUsersCount = """
+        select *
+        from flow.search_users_count(:query,
+                               :firstName,
+                               :lastName,
+                               :email,
+                               :phone,
+                               :companyId,
+                               :primaryFlag,
+                               array[ :statuses ]::bigint[],
+                               array[ :positions ]::bigint[],
+                               array[ :orgs ]::bigint[]);
+   """;
+
   //language=PostgreSQL
   public final static String updateUser = """
     update flow."user"

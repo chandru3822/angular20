@@ -77,9 +77,10 @@ public class UserService {
     params.put("initials",search.getInitials());
 
     List<User> results = sqlCacheRO.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
+    Long totalCount = sqlCacheRO.queryForObjectBySql(UserQuery.searchUsersCount, params, Long.class);
 
     return new PageImpl<>(
-      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), 100000);
+      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
   }
 
   public void saveUserHomePage(Long homePageCompanyFeatureId) {
