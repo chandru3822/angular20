@@ -566,7 +566,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 
-import ShowLogicPopup from '@/views/flow/project/projectPopup/showLogicPopup.vue';
+import ShowLogicPopup from '@/views/flow/project/projectPopup/ShowLogicPopup.vue';
 
 
 const appStore = useAppStore()
