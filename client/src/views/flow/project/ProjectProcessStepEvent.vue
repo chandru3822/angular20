@@ -53,6 +53,10 @@
             </v-card-text>
           </v-card>
         </div>
+
+         <div class="d-flex  align-center"
+        :class=" selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0? 'justify-space-between ':'justify-end '"
+        >
         <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
           <div class="action-subheader albatross-header-3">
             Actions
@@ -65,7 +69,20 @@
                 :text="showUnperformableActions ? 'Hide Disabled' : 'Show All'"
             ></a-btn>
           </div>
+          </div>
+          <div class="d-flex align-center db-gap-12"  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
+            <span>Check Logic</span>
+            <v-switch
+             v-model="showLogic"
+            color="primary"
+            ></v-switch>
+          </div>
+      
+
         </div>
+
+
+
         <div>
           <ActionButton
               v-for="action in enabledActions"
@@ -76,6 +93,17 @@
               :complete-action="validateActionRequirements"
               :follow-multiple-links="followMultipleLinks"
           />
+        </div>
+
+        <div v-if="showLogic">
+          <div class="my-3">Requirements failed:</div>
+            <a-btn
+            style="margin: 0.25rem;" v-for="action in checkLogicActions"
+            color="primary"
+            class="action-button"
+           @click="getActionInfo(action.id,action.actionName)" >
+            {{ action.actionName }}
+            </a-btn>
         </div>
           <div v-if="showUnperformableActions">
               <div class="my-3">Other actions:</div>
@@ -409,6 +437,7 @@
 
 
     </div>
+      <ShowLogicPopup :actionButtnInfo="actionButtnInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
   </v-main>
   <v-main v-else>
     <SpinnerInline centered :size="50" color="primary"/>
@@ -446,6 +475,8 @@ import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
+
+import ShowLogicPopup from '@/views/flow/project/projectPopup/showLogicPopup.vue';
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
@@ -506,7 +537,9 @@ const showDeleteDialog = ref(false)
 const ppseFieldsContainer = ref(null)
 const eventFieldForm = ref(null)
 const expansionOpenStatus = ref([])
-
+const showLogic=ref(false)
+const actionButtnInfo = ref(null);
+const showActionPopup = ref(false);
 
 const emit = defineEmits(['refresh-upcoming-events', 'refresh-project-status', 'refresh-upcoming-pps'])
 
@@ -1211,6 +1244,42 @@ const checkFieldsForUnique = () => {
     checkForSchedulingConflicts();
   }
 }
+
+
+const getActionInfo = async (actionId,tittle) => {
+  try {
+    // Fetch action result
+    const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppsEventId.value}/${actionId}`);
+    const statusMap = new Map(
+      Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => [Number(key), value])
+    );
+    const logicList = data.processStepEventLogicList || [];
+    // Map the fulfillment status directly
+    logicList.forEach((logicItem) => {
+      logicItem.isPassAction = statusMap.has(logicItem.processStepEventRequirementId)
+        ? statusMap.get(logicItem.processStepEventRequirementId)
+        : true;
+    });
+    let popupData={
+      processStepLogicList:logicList,
+      heading:tittle
+    }
+    actionButtnInfo.value = popupData;
+    showActionPopup.value = true;
+  } catch (e) {
+    logError('Error fetching action result:', e);
+  }
+};
+const closePopup = (newValue) => {
+  showActionPopup.value = newValue
+}
+const checkLogicActions=computed(() => {
+  return (
+    selectedEvent.value?.eventActions?.filter(
+      (a) => a.canPerform === false 
+    ) ?? []
+  )
+})
 </script>
 
 <style lang="scss">

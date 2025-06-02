@@ -162,7 +162,7 @@
         cols="12"
         class="text-left py-0"
         v-if="
-          processStep && processStep.banners && processStep.banners.length > 0
+          processStep && processStep?.banners && processStep?.banners?.length > 0
         "
       >
         <div>
@@ -170,7 +170,7 @@
             flat
             class="square-card"
             :class="{ 'mt-2': idx !== 0 }"
-            v-for="(b, idx) in processStep.banners.filter((b) => b.canPerform)"
+            v-for="(b, idx) in processStep?.banners.filter((b) => b.canPerform)"
           >
             <v-card-text class="flex-display pa-0" :style="{ color: b.color }">
               <div
@@ -229,23 +229,32 @@
         </div>
       </v-col>
       <v-col cols="12" class="text-left pt-0" id="pps-actions">
-        <div
+        <div class="d-flex  align-center"
+        :class=" processStep && processStep?.actions && processStep?.actions?.length > 0? 'justify-space-between ':'justify-end '"
+        >
+          <div
           class="pps-subheader headline-small"
           v-if="
-            processStep && processStep.actions && processStep.actions.length > 0
-          "
-        >
-          Actions
-          <a-btn
+          processStep && processStep.actions && processStep.actions.length > 0">
+            Actions
+            <a-btn
             class="back-btn show-unperformable-actions-btn"
             variant="text"
             color="primary"
             :ripple="false"
             @click="showUnperformableActions = !showUnperformableActions"
             :text="showUnperformableActions ? 'Hide Disabled' : 'Show All'"
-          ></a-btn>
+            ></a-btn>
+          </div>
+          <div class="d-flex align-center db-gap-12" v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
+            <span>Check Logic</span>
+            <v-switch
+         :model-value="showLogic"
+  color="primary"
+  @click="toggleLogic"
+            ></v-switch>
+          </div>
         </div>
-
         <div
           v-for="action in enabledActions"
           :key="action.id"
@@ -263,6 +272,21 @@
             :follow-multiple-links="followMultipleLinks"
           />
         </div>
+        <div v-if="showLogic">
+          <div class="my-3">Requirements failed:</div>
+            <a-btn
+            style="margin: 0.25rem;" v-for="action in checkLogicActions"
+            color="primary"
+            class="action-button"
+             @click="getActionInfo(action.id,action.actionName)">
+            {{ action.actionName }}
+            </a-btn>
+            
+        </div>
+
+        
+       
+
 
         <div v-if="showUnperformableActions">
           <div class="my-3">Disabled actions:</div>
@@ -491,10 +515,17 @@
         ]
       "
     />
+    
+       <ShowLogicPopup :actionButtnInfo="actionButtnInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
+
+ 
   </v-main>
   <v-main v-else>
     <SpinnerInline centered :size="50" color="primary" />
   </v-main>
+
+
+
 </template>
 
 <script setup>
@@ -535,6 +566,9 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 
+import ShowLogicPopup from '@/views/flow/project/projectPopup/showLogicPopup.vue';
+
+
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
@@ -574,6 +608,9 @@ const eventToAdd = ref({})
 const processStepEvents = ref([])
 const projectProcessStepEvents = ref([])
 const ppsFieldsContainer = ref(null)
+const showLogic=ref(false)
+const actionButtnInfo = ref(null);
+const showActionPopup = ref(false);
 
 const emit = defineEmits([
   'refresh-upcoming-pps',
@@ -783,8 +820,11 @@ const getAvailableStatuses = async () => {
     }
   }
 }
+
+
 const getProcessStep = async (reloadAll) => {
   try {
+    showLogic.value=false
     projectMismatch.value = false
     processStepLoading.value = true
     const { data, status } = await getRequest(
@@ -1120,8 +1160,51 @@ const getProcessStepEvents = async () => {
     appStore.showSnack('ERROR', 'Error Retrieving Details')
 
     appStore.loading = false
-  }
+  } 
 }
+
+
+const getActionInfo = async (actionId,tittle) => {
+  try {
+    // Fetch action result
+    const { data } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/${actionId}`);
+    const statusMap = new Map(
+      Object.entries(data.requirementIdsFulfilledStatus || {}).map(([key, value]) => [Number(key), value])
+    );
+    const logicList = data.processStepLogicList || [];
+    // Map the fulfillment status directly
+    logicList.forEach((logicItem) => {
+      logicItem.isPassAction = statusMap.has(logicItem.processStepRequirementId)
+        ? statusMap.get(logicItem.processStepRequirementId)
+        : true;
+    });
+    let popupData={
+      processStepLogicList:logicList,
+      heading:tittle
+    }
+    actionButtnInfo.value = popupData;
+    showActionPopup.value = true;
+  } catch (e) {
+    logError('Error fetching action result:', e);
+  }
+};
+
+const closePopup = (newValue) => {
+  showActionPopup.value = newValue
+}
+
+const toggleLogic = () => {
+  showLogic.value = !showLogic.value
+  console.log("Switch toggled to:", showLogic.value)
+}
+
+const checkLogicActions=computed(() => {
+  return (
+    processStep.value?.actions?.filter(
+      (a) => a.canPerform === false 
+    ) ?? []
+  )
+})
 </script>
 
 <style lang="scss">
