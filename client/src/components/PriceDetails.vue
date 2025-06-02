@@ -109,8 +109,8 @@
                 :key="index"
                 :class="[
                   {'shaded-row': index % 2},
-                  {'grey lighten-3 text-decoration-line-through': shouldShowStrikethrough(adder) && adder.adderType !== 'custom_adders'},
-                  {'green lighten-5': shouldShowGreen(adder) && adder.adderType !== 'custom_adders'}
+                  {'grey lighten-3 text-decoration-line-through': shouldShowStrikethrough(adder)},
+                  {'green lighten-5': shouldShowGreen(adder)}
                 ]"
                 class="dense-row"
               >
@@ -125,7 +125,7 @@
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
                     <!-- For custom adders with project amount but no proposal amount -->
-                    <span v-if="isCustomProjectOnly(adder)" class="text-no-wrap">
+                    <span v-if="isCustomProjectOnly(adder)" class="text-no-wrap" :class="{ 'green-text-color': shouldShowGreen(adder) }">
                       ${{ formatNumber(adder.customProjectAdderAmount || adder.projectAdderAmount, true) }}
                     </span>
 
@@ -171,8 +171,11 @@
                           </template>
                           <!-- When only one value exists or other cases -->
                           <template v-else>
-                            <span class="text-no-wrap">
-                              ${{ formatNumber(adder.customProposalAdderAmount || adder.customProjectAdderAmount || 0, true) }}
+                            <span class="text-no-wrap" :class="{
+                            'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
+                            'green-text-color': shouldShowGreen(adder)
+                            }">
+                              ${{ formatNumber(shouldShowGreen(adder) ? adder.customProjectAdderAmount : (adder.customProposalAdderAmount || adder.customProjectAdderAmount || 0), true) }}
                             </span>
                           </template>
                         </template>
@@ -312,8 +315,7 @@ const adderDifferences = computed(() => {
       return false;
     })
     .map(adder => {
-      // Calculate difference: Proposal amount - Project amount for normal adders
-      // For custom adders, always calculate Greater amount - Lesser amount for commission
+      // Calculate difference: Proposal amount - Project amount adders
       let difference;
       const proposalAmount = adder.customProposalAdderAmount || adder.proposalAdderAmount || 0;
       const projectAmount = adder.customProjectAdderAmount || adder.projectAdderAmount || 0;
@@ -346,20 +348,36 @@ const commissionTotal = computed(() => {
  */
 const adderTotal = computed(() => {
   return adders.value.reduce((total, adder) => {
-    // For custom adders, always use the greater amount between project and proposal
+    // Only use project amounts for the calculation
+
+    // For custom adders
     if (adder.adderType === 'custom_adders') {
-      const projectAmount = adder.customProjectAdderAmount || adder.projectAdderAmount || 0;
-      const proposalAmount = adder.customProposalAdderAmount || adder.proposalAdderAmount || 0;
-      return total + Math.max(projectAmount, proposalAmount);
+      // Only add to total if there's a project amount
+      if (adder.customProjectAdderAmount > 0) {
+        return total + adder.customProjectAdderAmount;
+      }
+      // Skip if no project amount
+      return total;
     }
 
-    // For adders with only project amount (no proposal amount), use the project amount
-    if (adder.selectedOnProjectOnly || isCustomProjectOnly(adder)) {
-      return total + (adder.customProjectAdderAmount || adder.projectAdderAmount || 0);
+    // For selected adders
+    if (adder.adderType === 'selected_adders') {
+      // Only add if selected on project or has project amount
+      if (adder.selectedOnProjectOnly || adder.projectAdderAmount > 0) {
+        return total + (adder.projectAdderAmount || 0);
+      }
+      // Skip if not selected on project
+      return total;
     }
 
-    // Otherwise use proposalAdderAmount for all other cases
-    return total + (adder.proposalAdderAmount || 0);
+    // For auto-applied adders - always include these in the subtotal
+    if (adder.adderType === 'auto_applied_adder') {
+      // Auto-applied adders are exempt from project-only logic
+      return total + (adder.proposalAdderAmount || adder.autoAppliedProposalAdderAmount || adder.autoAppliedProposalAdderAmount || 0);
+    }
+
+    // Skip all other cases that don't have project amounts
+    return total;
   }, 0)
 })
 
@@ -445,10 +463,8 @@ const processAdderData = (adderData) => {
 
       case 'custom_adders':
         if (hasReviewDate.value) {
-          result.customProposalAdderAmount = adder.customProjectAdderAmount || 0;
-          result.customProjectAdderAmount = adder.customProjectAdderAmount || null;
+          result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
         }
-        result.customProposalAdderAmount = adder.customProposalAdderAmount || null;
         result.customProposalAdderAmount = adder.customProposalAdderAmount || 0;
 
         // Flag custom adders with only project amount
@@ -534,20 +550,31 @@ const fetchPriceDetailAmounts = async () => {
  * Helper method to determine if an adder should have strikethrough styling
  */
 const shouldShowStrikethrough = (adder) => {
-  // Only apply strikethrough to selected adders with the specific condition
-  return adder.adderType === 'selected_adders' &&
-    adder.selectedOnProposalOnly &&
-    // Make sure we're not in any other case that would prevent reaching the "zzz" template
-    !isCustomProjectOnly(adder);
+  // Apply strikethrough to both selected_adders and custom_adders with the specific condition
+  if (adder.adderType === 'selected_adders') {
+    return adder.selectedOnProposalOnly && !isCustomProjectOnly(adder);
+  } else if (adder.adderType === 'custom_adders') {
+    // For custom adders, apply strikethrough when proposal value > 0 but project value = 0
+    return adder.customProposalAdderAmount > 0 &&
+      (!adder.customProjectAdderAmount || adder.customProjectAdderAmount === 0) &&
+      (adder.customProjectAdderAmount !== adder.customProposalAdderAmount);
+  }
+  return false;
 }
 
 /**
  * Helper method to determine if an adder should have green styling
  */
 const shouldShowGreen = (adder) => {
-  return adder.adderType === 'selected_adders' &&
-    adder.selectedOnProjectOnly &&
-    !isCustomProjectOnly(adder);
+  if (adder.adderType === 'selected_adders') {
+    return adder.selectedOnProjectOnly && !isCustomProjectOnly(adder);
+  } else if (adder.adderType === 'custom_adders') {
+    // For custom adders, apply green styling when project value > 0 but proposal value = 0
+    return adder.customProjectAdderAmount > 0 &&
+      (adder.customProposalAdderAmount !== adder.customProjectAdderAmount) &&
+      (!adder.customProposalAdderAmount || adder.customProposalAdderAmount === 0);
+  }
+  return false;
 }
 
 // Watch for changes in adder data
