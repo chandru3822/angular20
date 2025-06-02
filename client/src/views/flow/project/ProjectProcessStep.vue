@@ -281,11 +281,11 @@
              @click="getActionInfo(action.id,action.actionName)">
             {{ action.actionName }}
             </a-btn>
-            
+
         </div>
 
-        
-       
+
+
 
 
         <div v-if="showUnperformableActions">
@@ -515,10 +515,10 @@
         ]
       "
     />
-    
-       <ShowLogicPopup :actionButtnInfo="actionButtnInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
 
- 
+       <ShowLogicPopup :actionButtonInfo="actionButtonInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
+
+
   </v-main>
   <v-main v-else>
     <SpinnerInline centered :size="50" color="primary" />
@@ -609,7 +609,7 @@ const processStepEvents = ref([])
 const projectProcessStepEvents = ref([])
 const ppsFieldsContainer = ref(null)
 const showLogic=ref(false)
-const actionButtnInfo = ref(null);
+const actionButtonInfo = ref(null);
 const showActionPopup = ref(false);
 
 const emit = defineEmits([
@@ -1160,7 +1160,7 @@ const getProcessStepEvents = async () => {
     appStore.showSnack('ERROR', 'Error Retrieving Details')
 
     appStore.loading = false
-  } 
+  }
 }
 
 
@@ -1182,7 +1182,7 @@ const getActionInfo = async (actionId,tittle) => {
       processStepLogicList:logicList,
       heading:tittle
     }
-    actionButtnInfo.value = popupData;
+    actionButtonInfo.value = popupData;
     showActionPopup.value = true;
   } catch (e) {
     logError('Error fetching action result:', e);
@@ -1201,7 +1201,7 @@ const toggleLogic = () => {
 const checkLogicActions=computed(() => {
   return (
     processStep.value?.actions?.filter(
-      (a) => a.canPerform === false 
+      (a) => a.canPerform === false
     ) ?? []
   )
 })

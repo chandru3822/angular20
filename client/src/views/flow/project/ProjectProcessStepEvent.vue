@@ -77,7 +77,7 @@
             color="primary"
             ></v-switch>
           </div>
-      
+
 
         </div>
 
@@ -437,7 +437,7 @@
 
 
     </div>
-      <ShowLogicPopup :actionButtnInfo="actionButtnInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
+      <ShowLogicPopup :actionButtonInfo="actionButtonInfo" :showActionPopup="showActionPopup" @closePopup=closePopup />
   </v-main>
   <v-main v-else>
     <SpinnerInline centered :size="50" color="primary"/>
@@ -476,7 +476,7 @@ import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 
-import ShowLogicPopup from '@/views/flow/project/projectPopup/showLogicPopup.vue';
+import ShowLogicPopup from '@/views/flow/project/projectPopup/ShowLogicPopup.vue';
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
@@ -538,7 +538,7 @@ const ppseFieldsContainer = ref(null)
 const eventFieldForm = ref(null)
 const expansionOpenStatus = ref([])
 const showLogic=ref(false)
-const actionButtnInfo = ref(null);
+const actionButtonInfo = ref(null);
 const showActionPopup = ref(false);
 
 const emit = defineEmits(['refresh-upcoming-events', 'refresh-project-status', 'refresh-upcoming-pps'])
@@ -1264,7 +1264,7 @@ const getActionInfo = async (actionId,tittle) => {
       processStepLogicList:logicList,
       heading:tittle
     }
-    actionButtnInfo.value = popupData;
+    actionButtonInfo.value = popupData;
     showActionPopup.value = true;
   } catch (e) {
     logError('Error fetching action result:', e);
@@ -1276,7 +1276,7 @@ const closePopup = (newValue) => {
 const checkLogicActions=computed(() => {
   return (
     selectedEvent.value?.eventActions?.filter(
-      (a) => a.canPerform === false 
+      (a) => a.canPerform === false
     ) ?? []
   )
 })

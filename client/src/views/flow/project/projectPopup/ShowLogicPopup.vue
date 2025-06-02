@@ -4,7 +4,7 @@
         <v-card class="sys-p-1rem ">
             <div class="d-flex flex-column sys-w-100 ">
                 <div class="d-flex align-center  justify-space-between  sys-w-100 sys-p-0_5rem">
-                    <span class="black-color">{{ actionButtnInfo?.heading }}</span>
+                    <span class="black-color">{{ actionButtonInfo?.heading }}</span>
                     <div class="d-flex align-center " style="gap:12px;height: 1rem;">
                         <span class="check-logic">Logic Text</span>
                         <v-switch color="primary" v-model="showText" class="sys-hover"></v-switch>
@@ -13,9 +13,9 @@
                 <span class="sys-p-0_5rem logic-chicker">Logic Checker</span>
             </div>
             <div class="sys-p-0_5rem showLogicScroll">
-                <span v-if="actionButtnInfo?.processStepLogicList?.length === 0"> No Action Is Available</span>
+                <span v-if="actionButtonInfo?.processStepLogicList?.length === 0"> No Action Is Available</span>
                 <span v-else>
-                    <span v-for="(l, index) in actionButtnInfo?.processStepLogicList?.filter(a => !a.archived)" :key="index">
+                    <span v-for="(l, index) in actionButtonInfo?.processStepLogicList?.filter(a => !a.archived)" :key="index">
                         <v-tooltip bottom max-width="300px">
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn class="ml-1 mr-1 mt-1 mb-1 " v-bind="attrs" v-on="on"
@@ -43,7 +43,7 @@ import { ref, defineEmits, defineProps } from 'vue'
 const showText = ref(false)
 
 const props = defineProps({
-    actionButtnInfo: {
+    actionButtonInfo: {
         type: Array,
         required: true
     },
