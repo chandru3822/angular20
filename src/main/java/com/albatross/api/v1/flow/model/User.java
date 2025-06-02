@@ -54,6 +54,7 @@ public class User {
       position,
       homePagePath,
       title, // title used for scheduling tool resource name
+      initials, // user initials
       defaultProjectPage;
 
   private Long companyUserStatusId, userStatusTypeId, notificationTypeId;
