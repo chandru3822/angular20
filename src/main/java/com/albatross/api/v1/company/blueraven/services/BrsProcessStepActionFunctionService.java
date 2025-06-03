@@ -583,8 +583,8 @@ public class BrsProcessStepActionFunctionService {
         }
 
         if (arrays.get(0).get("microinverter") != null) {
+          inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString().replace("\"", ""));
         }
-        inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString().replace("\"", ""));
 
         for (JsonNode array : arrays) {
           if (array.has("module")) {
