@@ -3,6 +3,7 @@ package com.albatross.api.services;
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.disclosureForm.DisclosureFormService;
 import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.solargraf.SolargrafProxy;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
@@ -70,6 +71,8 @@ public class ProjectProcessStepServiceTests {
 
   AuroraProxy auroraService = mock(AuroraProxy.class);
 
+  SolargrafProxy solargrafService = mock(SolargrafProxy.class);
+
   MarketoService marketoService = mock(MarketoService.class);
 
   ListOfValueService listOfValueService = mock(ListOfValueService.class);
@@ -91,7 +94,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, null, marketoService, listOfValueService, null, null, customerPortalService, birdeyeService, pubSubService, stripeService, disclosureFormService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, solargrafService, marketoService, listOfValueService, null, null, customerPortalService, birdeyeService, pubSubService, stripeService, disclosureFormService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
