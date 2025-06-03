@@ -91,7 +91,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, marketoService, listOfValueService, null, null, customerPortalService, birdeyeService, pubSubService, stripeService, disclosureFormService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, null, marketoService, listOfValueService, null, null, customerPortalService, birdeyeService, pubSubService, stripeService, disclosureFormService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
