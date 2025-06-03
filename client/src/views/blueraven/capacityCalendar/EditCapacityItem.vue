@@ -19,7 +19,7 @@ localMaxCapacity.value = newVal || 0
 
 // Validation rules with error messages
 const capacityRule = (value) => {
-return value >= props.booked || `Capacity must be at least ${props.booked} (current bookings)`
+return value >= props.booked
 }
 
 const nonNegativeRule = (value) => {
