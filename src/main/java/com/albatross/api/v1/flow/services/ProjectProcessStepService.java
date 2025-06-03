@@ -7,6 +7,7 @@ import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.solargraf.SolargrafProxy;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
@@ -74,6 +75,7 @@ public class ProjectProcessStepService {
   private final CustomFieldGroupAssignmentService cfgaService;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
+  private final SolargrafProxy solargrafService;
   private final MarketoService marketoService;
   private final ListOfValueService listOfValueService;
   private final CommunicationService communicationService;
@@ -1396,7 +1398,7 @@ public class ProjectProcessStepService {
           systemValues.put("companyId", user.getCompanyId());
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService,solargrafService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
             functionClass.marketoEnabled = marketoEnabled;
             //this is dumb but i really dont want to fill in the info on the design for dev-ing stuff
             functionClass.ignoreAuroraErrors = ignoreAuroraErrors;

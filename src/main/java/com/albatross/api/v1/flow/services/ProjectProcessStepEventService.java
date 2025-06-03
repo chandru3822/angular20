@@ -7,44 +7,24 @@ import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.solargraf.SolargrafProxy;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
-import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
-import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
-import com.albatross.api.v1.company.blueraven.services.GoodleapService;
-import com.albatross.api.v1.company.blueraven.services.MarketoService;
-import com.albatross.api.v1.company.blueraven.services.StripeService;
+import com.albatross.api.v1.company.blueraven.services.*;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
-import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController.SaveEventRequest;
 import com.albatross.api.v1.flow.controllers.ScheduleController;
 import com.albatross.api.v1.flow.enums.EventStatusType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.enums.SystemActivity;
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.CompanyEventStatusType;
-import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.CustomFieldValueDisplay;
-import com.albatross.api.v1.flow.model.ResourceAppointment;
-import com.albatross.api.v1.flow.model.ScheduleEvent;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.WhiteListedPosition;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.event.EventActionRequirement;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepEventAction;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepEventActionChildFunction;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepEventActionChildSmsTemplate;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepEventLogic;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirement;
+import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
-import com.albatross.api.v1.flow.queries.ActivityQuery;
-import com.albatross.api.v1.flow.queries.AvailabilityQuery;
-import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
-import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
-import com.albatross.api.v1.flow.queries.ScheduleQuery;
+import com.albatross.api.v1.flow.queries.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -85,6 +65,7 @@ public class ProjectProcessStepEventService {
   private final ObjectMapper om;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
+  private final SolargrafProxy solargrafService;
   private final MarketoService marketoService;
   private final CustomerPortalService customerPortalService;
   private final ListOfValueService listOfValueService;
@@ -123,7 +104,6 @@ public class ProjectProcessStepEventService {
     return events;
   }
 
-  @Transactional
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
     Long projectProcessStepId, Long processStepEventId) throws Exception {
     User user = securityService.getCurrentUser();
@@ -159,7 +139,7 @@ public class ProjectProcessStepEventService {
 			// Collect the IDs into a list
 			.collect(Collectors.toList());
 	for (Long actionId : autoTriggeredActionTypeIds) {
-		performStepEventActionTransactional(projectProcessStepId, id, actionId, new SaveEventRequest(), Boolean.TRUE);
+		performStepEventActionTransactional(projectProcessStepId, id, actionId, new ProjectProcessStepEventController.SaveEventRequest(), Boolean.TRUE);
 	}
 	return result;
   }
@@ -788,7 +768,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService,solargrafService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);
