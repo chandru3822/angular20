@@ -182,6 +182,10 @@ const addInputToChangedSchedule = (input) => {
   if(duplicate){
     capacityScheduleChanged.value = capacityScheduleChanged.value.filter(s => s.id !== input.id);
   }
+  if (input.maxCapacity < 0){
+    //if the max capacity is set to a negative number, remove it from the changed schedule
+    input.maxCapacity = 0
+  }
   capacityScheduleChanged.value.push(input);
 }
 
@@ -216,6 +220,12 @@ const saveCapacities = async() => {
   try {
     let params = {
       orgId: virtualConsultingOrgId
+    }
+    const negativeCapacity = capacityScheduleChanged.value.find(s => s.maxCapacity < 0)
+    if (negativeCapacity) {
+      appStore.showSnack('ERROR', 'Capacity cannot be less than 0')
+      appStore.loading = false
+      return
     }
     const {data} = await putRequestWithRequestParams('/virtualResourceCapacity/maxCapacityList', capacityScheduleChanged.value, params, null)
     const calendarApi = capacityCalendar.value.getApi()
@@ -355,7 +365,13 @@ onUnmounted(() => {
         {{ event.extendedProps.currentlyBooked }}
         </div>
       </div>
-      <EditCapacityItem v-else :max-capacity="event.extendedProps.maxCapacity" :booked=" event.extendedProps.currentlyBooked" @input="v => addInputToChangedSchedule({id: event.id, start: moment.utc(event.start).toString(), end: moment.utc(event.end).toString(), maxCapacity:Number(v), currentlyBooked: event.extendedProps.currentlyBooked})"/>
+      <EditCapacityItem
+        v-else
+        :max-capacity="event.extendedProps.maxCapacity"
+        :booked="event.extendedProps.currentlyBooked"
+        :validation-rules="[positiveCapacity]"
+        @input="v => addInputToChangedSchedule({id: event.id, start: moment.utc(event.start).toString(), end: moment.utc(event.end).toString(), maxCapacity:Number(v), currentlyBooked: event.extendedProps.currentlyBooked})"
+      />
     </template>
   </FullCalendar>
   <ConfirmationDialog

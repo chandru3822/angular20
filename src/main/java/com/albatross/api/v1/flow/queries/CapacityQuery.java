@@ -41,10 +41,11 @@ public class CapacityQuery {
                ppse.date_created as "appointmentCreated"
         from flow.project_process_step_event ppse
                  join flow.project_process_step_event_custom_field_value cfv on cfv.project_process_step_event_id = ppse.id
-                 join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-                 join flow.project p on p.id = pps.project_id
-                 join flow.state s on s.id = p.company_state_id
-                 join flow.contact c on c.id = p.contact_id
+                 LEFT join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+                 LEFT join flow.project p on p.id = pps.project_id
+                 LEFT join flow.company_state cs on cs.id = p.company_state_id
+                 LEFT join flow.state s on s.id = cs.state_id
+                 LEFT join flow.contact c on c.id = p.contact_id
         where ppse.process_step_event_id = 14
           and cfv.custom_field_group_assignment_id = 26708
           and ppse.archived is not true
