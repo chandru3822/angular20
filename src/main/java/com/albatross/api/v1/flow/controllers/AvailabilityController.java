@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.workQueue.SlotManagement;
 import com.albatross.api.v1.flow.services.AvailabilityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -137,6 +138,12 @@ public class AvailabilityController {
   @GetMapping(value = "/slotSchedules")
   public List<SlotSchedule> getSlotSchedules(@RequestParam(required = false) Long userId) {
     return availabilityService.getAllSlotSchedules(false, userId);
+  }
+
+  @PostMapping(value = "/availabilitySlotSchedule")
+  public List<Long> availabilitySlotSchedule(@RequestBody SlotManagement slotManagement)
+    throws Exception {
+    return availabilityService.saveSolts(slotManagement);
   }
 
   @GetMapping(value = "/slotSchedule/{id}")

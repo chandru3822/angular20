@@ -14,6 +14,7 @@ import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.model.workQueue.SlotManagement;
 import com.albatross.api.v1.flow.queries.AvailabilityQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -1052,6 +1053,22 @@ public class AvailabilityService {
       .getBySql(AvailabilityQuery.getAppointment, params, ResourceAppointment.class)
       .orElse(null);
   }
+
+  public List<Long> saveSolts(SlotManagement slotManagement) {
+    List<Long> insertedIds = new ArrayList<>();
+
+    for (Long scheduleId : slotManagement.getScheduleId()) {
+      Map<String, Object> params = new HashMap<>();
+      params.put("positionid", slotManagement.getPositionid());
+      params.put("scheduleId", scheduleId);
+
+      Long id = sqlCache.updateBySqlReturningId(AvailabilityQuery.insertslot, params, "id").longValue();
+      insertedIds.add(id);
+    }
+
+    return insertedIds;
+  }
+
 
   @Data
   public static class AppointmentLength {

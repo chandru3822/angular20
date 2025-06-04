@@ -98,6 +98,12 @@ public class AvailabilityQuery {
     values (:companyId, :userId, :orgId, :startDate, :endDate, :createdById, now(), :createdById, now())
     """;
 
+
+  public final static String insertslot = """
+    insert into flow.user_slot_schedules(position_id,slot_schedule_id)
+    values (:positionid,:scheduleId)
+    """;
+
   //language=PostgreSQL
   public final static String getOne = """
     SELECT
@@ -594,7 +600,7 @@ public class AvailabilityQuery {
     SELECT * from flow.company_holiday where id = :id and company_id = :companyId
   """;
 
-  //language=PostgreSQL
+  //language=PostgreSQLḥ
   public final static String insertCompanyHoliday = """
       insert into flow.company_holiday (name, date, date_created, date_modified, created_by_id, modified_by_id, company_id, archived)
       VALUES (:name, :date, now(), now(), :createdById, :modifiedById, :companyId, false)
