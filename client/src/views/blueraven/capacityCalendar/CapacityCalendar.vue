@@ -385,6 +385,7 @@ onUnmounted(() => {
       :headers="bookedHeaders"
       :items="bookedAppointments"
       :hide-default-footer="true"
+      :items-per-page="-1"
     >
       <template v-slot:item="{item, index}">
         <tr>
