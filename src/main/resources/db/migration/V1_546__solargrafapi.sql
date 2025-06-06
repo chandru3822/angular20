@@ -24,7 +24,7 @@ INSERT INTO flow.db_function_param (db_function_id, parameter_name, archived, di
      db_function_id = (select id from flow.db_function where function_name = 'brs.get_solargraf_summary')));
 INSERT INTO flow.db_function_param (db_function_id, parameter_name, archived, display_order, data_type_id, parameter_type_id, system_value_id, description, nullable, system_list_id)
   (select (select id from flow.db_function where function_name = 'brs.get_solargraf_summary'), 'Solargraf ID - Custom Field Group Assignment ID', false, 0, 6, 2, null, null, false, null
-   where not exists (select id from flow.db_function_param where parameter_name = 'Solargraf ID' and
+   where not exists (select id from flow.db_function_param where parameter_name = 'Solargraf ID - Custom Field Group Assignment ID' and
      db_function_id = (select id from flow.db_function where function_name = 'brs.get_solargraf_summary')));
 INSERT INTO flow.db_function_param (db_function_id, parameter_name, archived, display_order, data_type_id, parameter_type_id, system_value_id, description, nullable, system_list_id)
   (select (select id from flow.db_function where function_name = 'brs.get_solargraf_summary'), 'Inverter Brand - Custom Field Group Assignment ID', false, 5, 6, 2, null, null, false, null
@@ -44,5 +44,5 @@ INSERT INTO flow.db_function_param (db_function_id, parameter_name, archived, di
      db_function_id = (select id from flow.db_function where function_name = 'brs.get_solargraf_summary')));
 INSERT INTO flow.db_function_param (db_function_id, parameter_name, archived, display_order, data_type_id, parameter_type_id, system_value_id, description, nullable, system_list_id)
   (select (select id from flow.db_function where function_name = 'brs.get_solargraf_summary'), 'Storage Type - Custom Field Group Assignment ID', false, 9, 6, 2, null, null, false, null
-   where not exists (select id from flow.db_function_param where parameter_name = 'Storage Type - Custom Field Group Assignment IDx' and
+   where not exists (select id from flow.db_function_param where parameter_name = 'Storage Type - Custom Field Group Assignment ID' and
      db_function_id = (select id from flow.db_function where function_name = 'brs.get_solargraf_summary')));
