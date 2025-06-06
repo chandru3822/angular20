@@ -360,7 +360,12 @@ public class BlueravenProposalService {
     Map<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("projectProcessStepId", ppsId);
-    return sqlCache.queryForMapBySql(ProposalQuery.getAuroraProjectAndDesignIds, params);
+    try {
+      return sqlCache.queryForMapBySql(ProposalQuery.getAuroraProjectAndDesignIds, params);
+    }catch (Exception e) {
+      return Map.of();
+    }
+
   }
 
   public Resource getResourceFromUrl(String url) {
