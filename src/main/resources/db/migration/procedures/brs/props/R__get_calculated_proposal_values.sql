@@ -284,6 +284,9 @@ AS
 $BODY$
 declare
   v_aurora_design_summary                                jsonb;
+  v_solargraf_production_summary                         jsonb;
+  v_solargraf_materials_summary                          jsonb;
+  v_solargraf_panel_summary                              jsonb;
   v_version_id                                           bigint;
   v_project_process_step_id                              bigint;
   v_estimated_annual_energy_consumption_kwh              bigint;
@@ -664,7 +667,10 @@ BEGIN
          rete_incentive_applied,
          rete_depreciation_incentive_amount,
          base_price_per_watt,
-         proposal_template_id
+         proposal_template_id,
+         solargraf_proudction,
+         solargraf_materials,
+         solargraf_panel
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -735,7 +741,10 @@ BEGIN
     v_rete_incentive_applied,
     v_rete_depreciation_incentive_amount,
     v_base_price_per_watt,
-    v_proposal_template_id
+    v_proposal_template_id,
+    v_solargraf_production_summary,
+    v_solargraf_materials_summary,
+    v_solargraf_panel_summary
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -1776,7 +1785,8 @@ BEGIN
                                                 v_battery_rebate_cap_amount,
                                                 v_battery_rebate_amount,
                                                 v_equipment_storage_adder,
-                                                v_minimum_odoe_tsrf);
+                                                v_minimum_odoe_tsrf,
+                                                v_solargraf_panel_summary);
     if v_odoe_rebate_name is not null then
       v_rebates = coalesce(v_rebates, '{}'::jsonb) || jsonb_build_object(v_odoe_rebate_name, round(v_odoe_rebate, 2));
     end if;
@@ -1802,7 +1812,8 @@ BEGIN
                                               v_storage_capacity,
                                               v_storage_type_id,
                                               v_proposal_qualifies_for_swr,
-                                              coalesce(v_main_panel_upgrade_cost, 0));
+                                              coalesce(v_main_panel_upgrade_cost, 0),
+                                              v_solargraf_panel_summary);
 
   --raise notice 'v_above_the_line_utility_rebate_amount = %',v_above_the_line_utility_rebate_amount;
 --raise notice 'v_denver_care_rebate_mpu_amount = %',v_denver_care_rebate_mpu_amount;
@@ -2227,7 +2238,7 @@ BEGIN
                                               (coalesce(v_total_loan_amount, 0) + coalesce(v_down_payment_amount, 0) +
                                                coalesce(v_required_down_payment, 0)),
                                               v_state_id, v_qualifies_for_incentive, v_storage_capacity,
-                                              v_storage_type_id);
+                                              v_storage_type_id,v_solargraf_panel_summary);
 
   --raise notice 'v_below_the_line_utility_rebate_amount = %',v_below_the_line_utility_rebate_amount;
 --raise notice 'v_below_the_line_utility_rebates = %',v_below_the_line_utility_rebates;

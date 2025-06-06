@@ -25,6 +25,21 @@ drop function if exists brs.get_rebate_for_standard_low_income(p_aurora_design_s
                                                                p_battery_rebate_amount numeric,
                                                                p_cash_price_storage numeric,
                                                                p_minimum_tsrf bigint);
+drop function if exists brs.get_rebate_for_standard_low_income(p_aurora_design_summary jsonb,
+                                                               p_system_size numeric,
+                                                               p_rebate_cap_dollar_amount numeric,
+                                                               p_rebate_cap_percentage_of_total numeric,
+                                                               p_total_system_cost_before_rebates numeric,
+                                                               p_panel_wattage numeric,
+                                                               p_rebate_rate numeric,
+                                                               p_system_size_cutoff numeric,
+                                                               p_number_of_batteries numeric,
+                                                               p_battery_rebate_cap_percent_of_total numeric,
+                                                               p_battery_rebate_cap_amount numeric,
+                                                               p_battery_rebate_amount numeric,
+                                                               p_cash_price_storage numeric,
+                                                               p_minimum_tsrf bigint,
+                                                               p_solargraf_panel_summary jsonb);
 CREATE OR REPLACE FUNCTION brs.get_rebate_for_standard_low_income(p_aurora_design_summary jsonb,
                                                                    p_system_size numeric,
                                                                    p_rebate_cap_dollar_amount numeric,
@@ -38,7 +53,8 @@ CREATE OR REPLACE FUNCTION brs.get_rebate_for_standard_low_income(p_aurora_desig
                                                                    p_battery_rebate_cap_amount numeric,
                                                                    p_battery_rebate_amount numeric,
                                                                    p_cash_price_storage numeric,
-                                                                   p_minimum_tsrf bigint)
+                                                                   p_minimum_tsrf bigint,
+                                                                   p_solargraf_panel_summary jsonb)
   returns numeric AS
 $BODY$
 declare
@@ -62,6 +78,22 @@ BEGIN
     v_value = 0.00::numeric;
     v_single_plane_rebate_amount = 0.00::numeric;
     v_multiple_plane_rebate_amount = 0.00::numeric;
+
+    if p_solargraf_panel_summary is not null then
+      v_face = 0;
+      for x in select * from jsonb_path_query( p_solargraf_panel_summary, '$.data[*][*].attributes.panelArrays')
+        loop
+          v_face = v_face + 1;
+          --raise notice 'this is the face %',v_face;
+          v_total_solar_resource_fraction = (x::jsonb -> 'panelShading' -> 'tsrfYearly');
+          --raise notice 'v_total_solar_resource_fraction = %',x::jsonb -> 'shading' -> 'total_solar_resource_fraction' -> 'annual';
+          v_panel_count = (x::jsonb ->  'count')::bigint;
+          -- raise notice 'v_count = %',x::jsonb -> 'module' -> 'count';
+          insert into calculations(panel_count, total_solar_resource_fraction, face)
+          values (v_panel_count,round(v_total_solar_resource_fraction,0), v_face);
+        end loop;
+
+    elsif p_aurora_design_summary is not null then
     for x in SELECT jsonb_array_elements::jsonb
              FROM jsonb_array_elements(p_aurora_design_summary -> 'arrays')
              order by jsonb_array_elements -> 'face'
@@ -75,6 +107,7 @@ BEGIN
         insert into calculations(panel_count, total_solar_resource_fraction, face)
         values (v_panel_count,round(v_total_solar_resource_fraction,0), v_face);
       end loop;
+    end if;
 
     with multiple_faces as (select face
                             from calculations

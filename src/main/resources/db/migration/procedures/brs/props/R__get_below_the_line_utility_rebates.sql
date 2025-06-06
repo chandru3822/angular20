@@ -13,12 +13,20 @@ drop function if exists brs.get_below_the_line_utility_rebates(p_version_id bigi
                                                                p_state_id bigint, p_rebate_id bigint[],
                                                                p_storage_capacity numeric,
                                                                p_storage_type_id bigint);
+drop function if exists brs.get_below_the_line_utility_rebates(p_version_id bigint, p_utility_company_id bigint,
+                                                               p_aurora_design_summary jsonb, p_system_size numeric,
+                                                               p_total_system_cost numeric,
+                                                               p_state_id bigint, p_rebate_id bigint[],
+                                                               p_storage_capacity numeric,
+                                                               p_storage_type_id bigint,
+                                                               p_solargraf_panel_summary jsonb);
 CREATE OR REPLACE FUNCTION brs.get_below_the_line_utility_rebates(p_version_id bigint, p_utility_company_id bigint,
                                                                   p_aurora_design_summary jsonb, p_system_size numeric,
                                                                   p_total_system_cost numeric,
                                                                   p_state_id bigint, p_rebate_id bigint[],
                                                                   p_storage_capacity numeric,
-                                                                  p_storage_type_id bigint)
+                                                                  p_storage_type_id bigint,
+                                                                  p_solargraf_panel_summary jsonb)
   returns table
           (
             below_the_line_utility_rebate_amount numeric,
@@ -82,7 +90,8 @@ BEGIN
                                                   x.rebate_cap_amount,
                                                   x.rebate_amount,
                                                   x.minimum_tsrf_for_qualification,
-                                                  x.unit_type_id::bigint);
+                                                  x.unit_type_id::bigint,
+                                                  p_solargraf_panel_summary);
       else
 
         select brs.get_amount_by_unit_type(p_system_size, 'PROPOSAL_REBATE',

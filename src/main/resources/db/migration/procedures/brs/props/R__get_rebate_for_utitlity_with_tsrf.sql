@@ -12,11 +12,18 @@ drop function if exists brs.get_rebate_for_utility_with_tsrf(p_aurora_design_sum
                                                              p_rebate_rate numeric,
                                                              p_minimum_tsrf bigint,
                                                              p_unit_type_id bigint);
+drop function if exists brs.get_rebate_for_utility_with_tsrf(p_aurora_design_summary jsonb,
+                                                             p_rebate_cap_dollar_amount numeric,
+                                                             p_rebate_rate numeric,
+                                                             p_minimum_tsrf bigint,
+                                                             p_unit_type_id bigint,
+                                                             p_solargraf_panel_summary jsonb);
 CREATE OR REPLACE FUNCTION brs.get_rebate_for_utility_with_tsrf(p_aurora_design_summary jsonb,
                                                                 p_rebate_cap_dollar_amount numeric,
                                                                 p_rebate_rate numeric,
                                                                 p_minimum_tsrf bigint,
-                                                                p_unit_type_id bigint)
+                                                                p_unit_type_id bigint,
+                                                                p_solargraf_panel_summary jsonb)
   returns numeric AS
 $BODY$
 declare
@@ -38,6 +45,19 @@ BEGIN
     size                          numeric
   ) ;
   v_value = 0;
+
+  if p_solargraf_panel_summary is not null then
+    v_face = 0;
+    for x in select * from jsonb_path_query( p_solargraf_panel_summary, '$.data[*][*].attributes.panelArrays')
+      loop
+        v_face = v_face + 1;
+        v_total_solar_resource_fraction = (x::jsonb -> 'panelShading' -> 'tsrfYearly');
+        v_size = (x::jsonb -> 'sizeInWatts');
+        v_panel_count = (x::jsonb -> 'count')::bigint;
+        insert into calculations(panel_count, total_solar_resource_fraction, face, size)
+        values (v_panel_count, round(v_total_solar_resource_fraction,0), v_face, v_size);
+      end loop;
+  elsif p_aurora_design_summary is not null then
   for x in SELECT jsonb_array_elements::jsonb FROM jsonb_array_elements(p_aurora_design_summary -> 'arrays')
     loop
       v_total_solar_resource_fraction = (x::jsonb -> 'shading' -> 'total_solar_resource_fraction' -> 'annual');
@@ -47,7 +67,7 @@ BEGIN
       insert into calculations(panel_count, total_solar_resource_fraction, face, size)
       values (v_panel_count, round(v_total_solar_resource_fraction,0), v_face, v_size);
     end loop;
-
+  end if;
   if p_unit_type_id = 459 then
     select p_rebate_rate
     into v_dollar_rebate_amount

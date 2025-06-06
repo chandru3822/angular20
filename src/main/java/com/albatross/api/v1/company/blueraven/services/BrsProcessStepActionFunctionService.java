@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.disclosureForm.DisclosureFormService;
+import com.albatross.api.solargraf.SolargrafProxy;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.StreamSupport;
 
 /**
  * This class is to hold functions performed by actions which perform http calls.
@@ -51,6 +53,8 @@ public class BrsProcessStepActionFunctionService {
   private final GoodleapService goodleapService;
 
   private final AuroraProxy auroraService;
+
+  private final SolargrafProxy solargrafService;
 
   private final MarketoService marketoService;
 
@@ -91,11 +95,11 @@ public class BrsProcessStepActionFunctionService {
     inverterMap.put("IQ7X-96-2-INT", "Enphase IQ7X Microinverters");
     inverterMap.put("IQ8A-72-2-US", "Enphase IQ8A Microinverters");
     inverterMap.put("IQ8M-72-M-US", "Enphase IQ8M Microinverters");
-    inverterMap.put("IQ7HS-66-M-US (240V)", "Enphase IQ7HS Microinverters");
     inverterMap.put("IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters");
     inverterMap.put("GW9600A-MS (240V)", "GoodWe GW9600A-MS");
     inverterMap.put("Powerwall 3 (integrated inverter)", "Tesla Powerwall 3 (integrated inverter)");
     inverterMap.put("IQ8MC-72-M-US (240V)", "Enphase IQ8MC Microinverters");
+    inverterMap.put("IQ8HC-72-M-US (240V)", "Enphase IQ8HC Microinverters");
     return inverterMap.getOrDefault(inverter, null);
   }
 
@@ -297,6 +301,225 @@ public class BrsProcessStepActionFunctionService {
     }
   }
 
+  @Transactional
+  public void getSolargrafSummary(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+
+      Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
+      String solargrafCfgaId = func.getActionParamDynamicValues().stream()
+        .filter(p -> p.getParameterName().contains("Solargraf Design ID"))
+        .map(ActionParamDynamicValue::getDynamicValue)
+        .findFirst()
+        .orElse(null);
+
+      if (solargrafCfgaId == null) {
+        throw new RuntimeException("Unable to locate Solargraf ID custom field");
+      }
+
+      String solargrafId = solargrafService.getSolargrafId(ppsId, Long.parseLong(solargrafCfgaId));
+      //solargrafId = "2408140";
+      if (solargrafId == null) {
+        throw new RuntimeException("Unable to fetch Solargraf ID from Solargraf");
+      }
+
+      SolargrafProxy.SolargrafPanelArrays panelArrays;
+      SolargrafProxy.SolargrafMaterials materials;
+      SolargrafProxy.SolargrafProductions productions;
+      SolargrafProxy.SolargrafStorage storage;
+
+      try {
+        panelArrays = solargrafService.getSolargrafPanelArrays(solargrafId);
+      } catch (Exception e) {
+        throw new RuntimeException("Unable to fetch panel arrays from solargraf");
+      }
+
+      try {
+        panelArrays = solargrafService.getSolargrafPanelArrays(solargrafId);
+      } catch (Exception e) {
+        throw new RuntimeException("Unable to fetch panel arrays from solargraf");
+      }
+
+      try {
+        materials = solargrafService.getSolargrafMaterials(solargrafId);
+      } catch (Exception e) {
+        throw new RuntimeException("Unable to fetch panel arrays from solargraf");
+      }
+
+      try {
+        productions = solargrafService.getSolargrafProduction(solargrafId);
+      } catch (Exception e) {
+        throw new RuntimeException("Unable to fetch Production from solargraf");
+      }
+
+      try {
+        storage = solargrafService.getSolargrafStorage(solargrafId);
+      } catch (Exception e) {
+        throw new RuntimeException("Unable to fetch panel arrays from solargraf");
+      }
+
+      //System Size
+      int storageTypeId = 0;
+      String storageType = storage.getFields().get("data").get(0).get("attributes").get("batteryProfile").asText();
+      if (storageType.equals("selfConsumption")){
+        storageTypeId = 29139;
+      }
+      else if (storageType.equals("backupDuringOutage")){
+        storageTypeId = 26298;
+      }
+      else if (storageType.equals("savingsOnElectricityBill")){
+        storageTypeId = 26299;
+      }
+      JsonNode pa = panelArrays.getFields().get("data").get(0);
+      JsonNode production = productions.getFields().get("data").get(0);
+      double systemSize = StreamSupport.stream(pa.spliterator(), false)
+        .map(jn -> jn.get("attributes").get("panelArrays").get("sizeInWatts"))
+        .map(JsonNode::toString)
+        .mapToDouble(Double::parseDouble)
+        .sum();
+
+      //panel quantity
+      double panelQuantity = StreamSupport.stream(pa.spliterator(), false)
+        .map(jn -> jn.get("attributes").get("panelArrays").get("count"))
+        .map(JsonNode::toString)
+        .mapToDouble(Double::parseDouble)
+        .sum();
+
+      //panel Manufacturer
+      String panelBrand = pa.get(0).get("attributes").get("panelArrays").get("panelManufacturer").asText();
+      double panelSizeInWatts = pa.get(0).get("attributes").get("panelArrays").get("panelSizeInWatts").asDouble();
+      String panelName = pa.get(0).get("attributes").get("panelArrays").get("panelName").asText();
+      //production Estimate
+      double productionEstimate = production.get("attributes").get("dcAnnual").asDouble();
+
+      int panelBrandId = 0;
+      if (panelBrand != null) {
+        if ("REC Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 243;
+        } else if ("Silfab Solar Inc.".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 23877;
+        } else if ("Jinko Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 247;
+        } else if ("Hanwha Q CELLS".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 242;
+        } else if ("SEG SOLAR INC.".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 248;
+        } else if ("JA Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 26296;
+        } else if ("LONGi Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 252;
+        } else if ("Seraphim Solar System Co., Ltd.".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 24669;
+        } else if ("CertainTeed".toLowerCase().contains(panelBrand.toLowerCase())) {
+          panelBrandId = 20372;
+        }
+      }
+
+      String inverterName = null;
+      String manufacturerName = null;
+      for (JsonNode item : materials.getFields().get("data")) {
+        String materialType = item.path("attributes").path("materialType").asText();
+        if ("panel".equalsIgnoreCase(materialType)) {
+          manufacturerName = item.path("attributes")
+            .path("manufacturer")
+            .path("name")
+            .path("en")
+            .asText();
+        }
+        else if ("inverter".equalsIgnoreCase(materialType)) {
+           inverterName = item.path("attributes")
+            .path("name")
+            .path("en")
+            .asText();
+        }
+      }
+
+
+      int inverterId = 0;
+      if (inverterName != null) {
+        if (inverterName.toLowerCase().contains("IQ8M-72-2-US [240V]".toLowerCase())) {
+          inverterId = 23914;
+        } else if (inverterName.toLowerCase().contains("IQ8X-80-M-US [240V]".toLowerCase())) {
+          inverterId = 24094;
+        } else if (inverterName.toLowerCase().contains("IQ8PLUS-72-M-US [240V]".toLowerCase())) {
+          inverterId = 20285;
+        } else if (inverterName.toLowerCase().contains("IQ8MC-72-2-US [240V]".toLowerCase())) {
+          inverterId = 28308;
+        } else if (inverterName.toLowerCase().contains("IQ8HC-72-2-US [240V]".toLowerCase())) {
+          inverterId = 29236;
+        }
+      }
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+      params.put("sourceId", ppsId);
+
+      for (ActionParamDynamicValue dynamicValue : func.getActionParamDynamicValues()) {
+        final String paramName = dynamicValue.getParameterName();
+        var cfgaId = Long.parseLong(dynamicValue.getDynamicValue());
+        params.put("customFieldGroupAssignmentId", cfgaId);
+
+        //default values
+        params.put("dateValue", null);
+        params.put("textValue", null);
+        params.put("timestampValue", null);
+        params.put("booleanValue", null);
+        params.put("numericValue", null);
+        params.put("intValue", null);
+        params.put("intArrayValue", null);
+        params.put("richTextValue", null);
+        params.put("jsonValue", null);
+
+        //IDing by field name is about a generic as we can get as of now, but not ideal
+        if (paramName.contains("System Size")) {
+          // Divide by 1000 to get kilowatt system size
+          double systemSizeInKw = systemSize / 1000;
+          params.put("numericValue", systemSizeInKw);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Panel Quantity")) {
+          params.put("intValue", panelQuantity);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Production Estimate")) {
+          params.put("intValue", productionEstimate);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } //Panel Brand section
+        else if (paramName.contains("Panel Brand") && panelBrandId != 0 ){
+          params.put("intValue", panelBrandId);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        }
+       else if (paramName.contains("Inverter Brand") && inverterId != 0 ) {
+          params.put("intValue", inverterId);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        }
+        else if (paramName.contains("Panel Watts")) {
+          params.put("intValue", panelSizeInWatts);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Solargraf Production")) {
+          //store the entire json object for future proposal log history calculations
+          params.put("jsonValue", productions.getFields().toString());
+          sqlCache.updateBySql(CustomFieldValueQuery.upsertAuroraDesign, params);
+        } else if (paramName.contains("Solargraf Materials")) {
+          //store the entire json object for future proposal log history calculations
+          params.put("jsonValue", materials.getFields().toString());
+          sqlCache.updateBySql(CustomFieldValueQuery.upsertAuroraDesign, params);
+        }
+        else if (paramName.contains("Solargraf Panel")) {
+          //store the entire json object for future proposal log history calculations
+          params.put("jsonValue", panelArrays.getFields().toString());
+          sqlCache.updateBySql(CustomFieldValueQuery.upsertAuroraDesign, params);
+        }
+        else if (paramName.contains("Panel Name")) {
+          params.put("textValue", panelName);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        }
+       else if (paramName.contains("Storage Type") && !storageType.equals("null")) {
+          params.put("intValue", storageTypeId);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        }
+      }
+    } catch (Exception e) {
+        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+    }
+  }
   /**
    * Fetch design summary using Aurora's API
    * <p>
@@ -471,7 +694,7 @@ public class BrsProcessStepActionFunctionService {
             finalStorageType = "Grid-Tied";
             //we're using a different name than Aurora is for these two that don't have _ in them
           } else if(storageType.equals("self_consumption") || storageType.equals("self consumption")){
-              finalStorageType = "Partial Home";
+            finalStorageType = "Partial Home";
           }else {
             finalStorageType = storageType;
           }

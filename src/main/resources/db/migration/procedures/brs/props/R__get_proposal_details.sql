@@ -72,7 +72,10 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             rete_incentive_applied                  boolean,
             rete_depreciation_incentive_amount      numeric,
             base_price_per_watt                     numeric,
-            proposal_template_id                       bigint
+            proposal_template_id                       bigint,
+            solargraf_proudction jsonb,
+            solargraf_materials jsonb,
+            solargraf_panel jsonb
           )
 
 AS
@@ -155,7 +158,10 @@ BEGIN
            pcfv26.boolean_value,
            pcfv28.numeric_value,
            pcfv29.numeric_value,
-           pcfv70.int_value
+           pcfv70.int_value,
+           ppscfv90.json_value,--prodction
+           ppscfv91.json_value,--materials
+           ppscfv92.json_value--panel
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -235,6 +241,15 @@ BEGIN
            left join flow.project_process_step_custom_field_value ppscfv36
                      on ppscfv36.project_process_step_id = pps.id and
                         ppscfv36.custom_field_group_assignment_id = 22682
+           left join flow.project_process_step_custom_field_value ppscfv90
+                     on ppscfv90.project_process_step_id = pps.id and
+                        ppscfv90.custom_field_group_assignment_id = 31564--solargraf production
+           left join flow.project_process_step_custom_field_value ppscfv91
+                     on ppscfv91.project_process_step_id = pps.id and
+                        ppscfv91.custom_field_group_assignment_id = 31562--solargraf materials
+           left join flow.project_process_step_custom_field_value ppscfv92
+                     on ppscfv92.project_process_step_id = pps.id and
+                        ppscfv92.custom_field_group_assignment_id = 31563--solargraf panel
            left join flow.project_process_step_custom_field_value ppscfv37
                      on ppscfv37.project_process_step_id = pps.id and
                         ppscfv37.custom_field_group_assignment_id = 22566
