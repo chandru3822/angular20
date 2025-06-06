@@ -269,7 +269,7 @@
         variant="outlined"
         color="primary"
         class="one-hunned text-capitalize"
-        v-if="!addActivity && null == editedActivity.id"
+        v-if="noteStore.hasNote?false:!addActivity && null == editedActivity.id"
         :loading="topicsLoading"
         @click="[(addActivity = true), (selectedTopics = [])]"
         prepend-icon="mdi-plus"
@@ -284,6 +284,9 @@
           limit="3"
           width="400"
         >
+       
+      
+        
           <a-textarea
             class="body-large note-text-area"
             hide-details
@@ -291,7 +294,7 @@
             autofocus
             rows="2"
             variant="outlined"
-            :disabled="
+            :disabled="noteStore.hasNote?false:
               editedActivity.createdById !== currentUserId && !addActivity
             "
             v-model="editedActivity.note"
@@ -365,15 +368,15 @@
             variant="text"
             color="primary"
             class="text-capitalize"
-            @click="[(addActivity = false), (editedActivity = {})]"
+            @click="[(addActivity = false), (editedActivity = {})];noteStore.clearNote()"
             text="Cancel"
           ></a-btn>
           <a-btn
             color="primary"
             class="text-capitalize flex-grow-1"
             :loading="savingActivity"
-            @click="saveActivity(null == editedActivity.id)"
-            :disabled="!editedActivity.note"
+            @click="saveActivity(null == editedActivity.id);noteStore.clearNote()"
+            :disabled="noteStore.hasNote?false:!editedActivity.note"
             text="Save"
           ></a-btn>
         </div>
@@ -406,6 +409,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import AMentionable from '@/components/AMentionable.vue'
+import { useNoteStore } from '../../../stores/NoteStore'
 
 const appStore = useAppStore()
 const projectStore = useProjectStore()
@@ -414,6 +418,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const noteStore=useNoteStore()
 
 const stateLoadedStatus = ref(false)
 const props = defineProps({
@@ -456,7 +461,7 @@ const selectedIndex = ref(-1)
 
 const addActivity = ref(false)
 const blankActivity = ref({ id: null, activityHashtags: [] })
-const editedActivity = ref({})
+const editedActivity = ref({note:''})
 const editedIndex = ref(null)
 const activityTopics = ref([])
 const selectedTopics = ref([])
@@ -656,6 +661,8 @@ onMounted(() => {
       sectionType.value = `project`
       break
   }
+  editedActivity.value.note=noteStore.note;
+  selectedTopics.value=noteStore.selectedTopics?noteStore.selectedTopics:null;
   getTopics()
   getActivities()
   if (!timelineView.value) {
@@ -1082,6 +1089,19 @@ const removeDeletedActivity = (activityId) => {
     deletedActivity.archived = true
   }
 }
+
+watch(
+  () => editedActivity.value.note,
+  (newVal) => {
+    noteStore.setNote(newVal)
+  }
+);
+watch(
+  ()=>selectedTopics.value,
+  (newVal)=>{
+  noteStore.setSelectedTopics(newVal)
+})
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
