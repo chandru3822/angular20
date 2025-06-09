@@ -503,11 +503,11 @@
                 </a-autocomplete>
 
                 <a-btn
-                    class="mt-3"
-                    v-if="userCanEdit"
-                    color="primary"
-                    :disabled="(!item.projectStatuses || item.projectStatuses.filter(ps => !ps.archived).length === 0) || (!item.processStepStatuses || item.processStepStatuses.filter(ps => !ps.archived).length === 0) || (showEventFields && (!item.eventStatuses || item.eventStatuses.filter(ps => !ps.archived).length === 0))"
-                    @click="saveStatusesToWorkQueueType(item)"
+                  class="mt-3"
+                  v-if="userCanEdit"
+                  color="primary"
+                  :disabled="false"
+                  @click="saveStatusesToWorkQueueType(item)"
                 > Save </a-btn>
               </td>
             </template>
