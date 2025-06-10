@@ -503,11 +503,11 @@
                 </a-autocomplete>
 
                 <a-btn
-                    class="mt-3"
-                    v-if="userCanEdit"
-                    color="primary"
-                    :disabled="(!item.projectStatuses || item.projectStatuses.filter(ps => !ps.archived).length === 0) || (!item.processStepStatuses || item.processStepStatuses.filter(ps => !ps.archived).length === 0) || (showEventFields && (!item.eventStatuses || item.eventStatuses.filter(ps => !ps.archived).length === 0))"
-                    @click="saveStatusesToWorkQueueType(item)"
+                  class="mt-3"
+                  v-if="userCanEdit"
+                  color="primary"
+                  :disabled="false"
+                  @click="saveStatusesToWorkQueueType(item)"
                 > Save </a-btn>
               </td>
             </template>
@@ -637,16 +637,18 @@ const handleCustomValueToggle = async () => {
 
 const handleManualValueChange = (value) => {
   if (value === null || value === '' || isNaN(Number(value))) {
-    selectedFilters.value.value = null
-    return
+    selectedFilters.value.value = null;
+    selectedFilters.value.manualValue = null;
+    return;
   }
 
+  selectedFilters.value.manualValue = value;
   selectedFilters.value.value = {
     id: null,
     name: value,
     numericalValue: Number(value)
-  }
-}
+  };
+};
 
 const loadValues = async (parentId) => {
   appStore.loading = true
@@ -1755,6 +1757,7 @@ onMounted(() => {
       if (!selectedFilters.value || !selectedFilters.value.id) {
         return null;
       }
+
       const filterData = {
         workQueueTypeId: item.workQueueTypeId ? Number(item.workQueueTypeId) : null,
         processStepId: item.processStepId ? Number(item.processStepId) : null,
@@ -1763,10 +1766,15 @@ onMounted(() => {
         operatorId: selectedFilters.value.operator?.id ? Number(selectedFilters.value.operator.id) : null,
         valueId: null,
         customValues: null,
+        manualValue: null,
         archived: false
       };
 
-      if (selectedFilters.value.customValue) {
+      if (selectedFilters.value.manualValue) {
+        // Handle manual numeric value input
+        filterData.manualValue = selectedFilters.value.manualValue;
+        filterData.customValues = selectedFilters.value.manualValue.toString();
+      } else if (selectedFilters.value.customValue) {
         if (selectedListOfValues.value && selectedListOfValues.value.length > 0) {
           const cleanedValues = selectedListOfValues.value.map(val => ({
             id: val.id,
@@ -1790,15 +1798,6 @@ onMounted(() => {
 
       return filterData;
     };
-
-    const resetFormState = () => {
-      selectedFilters.value = []
-      operators.value = []
-      valueTypes.value = []
-      listValues.value = []
-      selectedListOfValues.value = []
-      expanded.value = []
-    }
     const deleteWorkQueueTypeFromStep = async() => {
       const item = workQueueTypeToDelete.value
       appStore.loading = true
