@@ -54,6 +54,8 @@ public class BrsProcessStepActionFunctionService {
 
   private final AuroraProxy auroraService;
 
+  private final KlaviyoService klaviyoService;
+
   private final SolargrafProxy solargrafService;
 
   private final MarketoService marketoService;
@@ -70,6 +72,7 @@ public class BrsProcessStepActionFunctionService {
 
 
   // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
+  public Boolean klaviyoEnabled;
   public Boolean marketoEnabled;
   public Boolean ignoreAuroraErrors;
 
@@ -754,6 +757,96 @@ public class BrsProcessStepActionFunctionService {
         // This is a bandaid fix to let actions run while adobe/marketo get their act together
 //        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         log.error(String.format("MARKETO: Unable to update Marketo during action: %s", e.getMessage()));
+      }
+    }
+  }
+
+  public void postUnqualifiedEventToKlaviyo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    if (klaviyoEnabled) {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      try {
+        klaviyoService.postUnqualifiedEvent(projectId);
+      }
+      catch (RuntimeException e) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+      }
+      catch (Exception e) {
+        log.error(String.format("KLAVIYO: %s", e.getMessage()));
+      }
+    }
+  }
+
+  public void postBookedEventToKlaviyo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    if (klaviyoEnabled) {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      try {
+        klaviyoService.postBookedEvent(projectId);
+      }
+      catch (RuntimeException e) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+      }
+      catch (Exception e) {
+        log.error(String.format("KLAVIYO: %s", e.getMessage()));
+      }
+    }
+  }
+
+  public void postFinalDesignCompletedEventToKlaviyo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    if (klaviyoEnabled) {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      try {
+        klaviyoService.postFinalDesignCompletedEvent(projectId);
+      }
+      catch (RuntimeException e) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+      }
+      catch (Exception e) {
+        log.error(String.format("KLAVIYO: %s", e.getMessage()));
+      }
+    }
+  }
+
+  public void postAppointmentSetEventToKlaviyo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    if (klaviyoEnabled) {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      try {
+        klaviyoService.postAppointmentSetEvent(projectId);
+      }
+      catch (RuntimeException e) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+      }
+      catch (Exception e) {
+        log.error(String.format("KLAVIYO: %s", e.getMessage()));
+      }
+    }
+  }
+
+  public void postPitchedEventToKlaviyo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    if (klaviyoEnabled) {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      try {
+        klaviyoService.postPitchedEvent(projectId);
+      }
+      catch (RuntimeException e) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+      }
+      catch (Exception e) {
+        log.error(String.format("KLAVIYO: %s", e.getMessage()));
+      }
+    }
+  }
+
+  public void postSubstantialCompletionEventToKlaviyo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    if (klaviyoEnabled) {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      try {
+        klaviyoService.postSubstantialCompletionEvent(projectId);
+      }
+      catch (RuntimeException e) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+      }
+      catch (Exception e) {
+        log.error(String.format("KLAVIYO: %s", e.getMessage()));
       }
     }
   }
