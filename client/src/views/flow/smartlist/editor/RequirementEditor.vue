@@ -455,7 +455,7 @@ watch(
       isCustomValueEnb.value = true;
     }
   },
-  { immediate: true } // Only if you need it to run once on mount
+  { immediate: true }
 );
 
 const afterValueSelected = (userCheckedToAdd) => {
