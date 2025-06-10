@@ -488,8 +488,6 @@ const afterValueSelected = (userCheckedToAdd) => {
       requirement.value.dataTypeRequirementId = value.value.id
       requirement.value.dataTypeRequirement = value.value
       value.value.displayValue = true
-      // let dataTypeValue = requirement.value.dataTypeRequirement.dataTypeValue;
-     // isCustomValueEnb.value = isCurrentDateOffset(dataTypeValue);
       focus(secondaryValueField)
     }
   } else {
