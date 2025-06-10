@@ -436,15 +436,15 @@ public class BrsProcessStepActionFunctionService {
 
       int inverterId = 0;
       if (inverterName != null) {
-        if (inverterName.toLowerCase().contains("IQ8M-72-2-US[240V]".toLowerCase())) {
+        if (inverterName.toLowerCase().contains("IQ8M-72-2-US [240V]".toLowerCase())) {
           inverterId = 23914;
-        } else if (inverterName.toLowerCase().contains("IQ8X-80-M-US[240V]".toLowerCase())) {
+        } else if (inverterName.toLowerCase().contains("IQ8X-80-M-US [240V]".toLowerCase())) {
           inverterId = 24094;
-        } else if (inverterName.toLowerCase().contains("IQ8PLUS-72-M-US[240V]".toLowerCase())) {
+        } else if (inverterName.toLowerCase().contains("IQ8PLUS-72-M-US [240V]".toLowerCase())) {
           inverterId = 20285;
-        } else if (inverterName.toLowerCase().contains("IQ8MC-72-2-US[240V]".toLowerCase())) {
+        } else if (inverterName.toLowerCase().contains("IQ8MC-72-2-US [240V]".toLowerCase())) {
           inverterId = 28308;
-        } else if (inverterName.toLowerCase().contains("IQ8HC-72-2-US[240V]".toLowerCase())) {
+        } else if (inverterName.toLowerCase().contains("IQ8HC-72-2-US [240V]".toLowerCase())) {
           inverterId = 29236;
         }
       }
