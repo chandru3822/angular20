@@ -654,7 +654,8 @@ const add = () => {
     return
   }
 
-  if (value.value?.secondaryRequirement && (secondaryValue.value == null || secondaryValue.value?.trim().length === 0)) {
+  if (value.value?.secondaryRequirement && 
+        (secondaryValue.value == null || secondaryValue.value?.trim().length === 0 || !isNumeric(secondaryValue.value))) {
     appStore.showSnack('ERROR', 'Invalid Custom Value')
     return
   }else{
@@ -718,6 +719,10 @@ const add = () => {
     emit('added', newRequirement)
   }
   reset()
+}
+
+function isNumeric(value) {
+     return !isNaN(Number(value));
 }
 
 onMounted(() => {
