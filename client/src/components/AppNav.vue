@@ -434,7 +434,7 @@ const getActiveAnnouncements = async () => {
 
 .header-logo {
   max-height: 45px;
-  max-width: 45px;
+  max-width: 72px !important;
 }
 
 .header-tab-container {
@@ -478,6 +478,10 @@ const getActiveAnnouncements = async () => {
   margin-top: 13px;
   left: -25px;
   padding-right: 41px;
+}
+.v-toolbar__content .v-btn.v-btn--icon.v-size--default, .v-toolbar__extension .v-btn.v-btn--icon.v-size--default
+{
+    width: 84px !important;
 }
 
 </style>

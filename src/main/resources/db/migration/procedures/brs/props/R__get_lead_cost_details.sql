@@ -38,7 +38,7 @@ BEGIN
              (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 994)') ->> 'value')::numeric  as sett_lead_cost_cap,
              (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 995)') ->> 'value')::numeric  as organic_lead_cost,
              (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 996)') ->> 'value')::numeric  as organic_lead_cost_cap
-      from brs.get_proposal_version_value(p_version_id, array [(977, 'ZZ - System Default', v_rr_id, null)::ProposalFieldFilter], 'PROPOSAL_LEAD_COST_ADDERS');
+      from brs.get_proposal_version_value(p_version_id, array [(977, null, 133, null)::ProposalFieldFilter], 'PROPOSAL_LEAD_COST_ADDERS');
   end if;
 
 END
