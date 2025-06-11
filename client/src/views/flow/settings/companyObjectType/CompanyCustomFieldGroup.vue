@@ -951,6 +951,21 @@ const onDragStart = (cf,item,n) => {
 const onDropEnd = async (item, event) => {
   event.preventDefault();
   event.stopPropagation();
+
+const draggedItem = draggedValue.value;     // The item being dragg
+ const draggedItemList=draggedItemValue.value
+
+ if (item.id === draggedItem.customFieldGroupId) {
+ // Prevent dropping into the same group
+ if(draggedItemList?.customFields?.length>0)
+ {
+   await dropFieldChangesSameGroup(draggedItemList?.customFields);
+   
+ emit('group-deleted');
+  return;
+ }
+}
+
   if(!draggedValue.value)return
   try {
     appStore.loading = true
@@ -965,6 +980,32 @@ const onDropEnd = async (item, event) => {
   }
 };
 
+const dropFieldChangesSameGroup=async (fields)=>{
+  try {
+  
+  // pull those needing to be saved out of list
+  let fieldsToSave = []
+  fields.forEach((f, idx) => {
+    let order = idx + 1
+      f.fieldOrder = order
+      fieldsToSave.push(f)
+ 
+  })
+  // save them here
+  if (fieldsToSave.length > 0) {
+    const { status } = await putRequest(
+      `/customFieldGroup/updateFieldsInGroup`,
+      fieldsToSave,
+      'blueraven'
+    )
+    appStore.showSnack('SUCCESS', 'Fields Updated')
+    handleHidingGlobalLoader(status)
+  }
+} catch (e) {
+  console.error('*** ERROR ***', e)
+  appStore.showSnack('ERROR', 'Error Updating Fields')
+}
+}
 const dropFieldChanges = async (fields) => {
   try {
   
@@ -1034,19 +1075,24 @@ const handleFieldDrop = async (dropTarget) => {
     );
     // Now add the new field
     data.fieldOrder = dropTarget?.customFields?.length + 1
+    dropTarget.customFields = [...new Set(dropTarget.customFields)];
+
     dropTarget.customFields.push(data);
 
+     
+    await dropFieldChangesSameGroup( dropTarget.customFields);
+
     // Find the index of the custom field by its customFieldId
-    const fieldIndex = groupsByColumn.value[draggedNValue.value]
+    const fieldIndex =[... new Set(groupsByColumn.value[draggedNValue.value]
       .filter(data => data.id == draggedItemValue.value.id)[0]
-      .customFields
+      .customFields)]
       .findIndex(field => field.customFieldId === draggedValue.value.customFieldId);
 
     if (fieldIndex !== -1) {
       // Custom field found, now remove it
-      groupsByColumn.value[draggedNValue.value]
+      [... new Set(groupsByColumn.value[draggedNValue.value]
         .filter(data => data.id == draggedItemValue.value.id)[0]
-        .customFields.splice(fieldIndex, 1);
+        .customFields)].splice(fieldIndex, 1);
 
     }
     // Clear drag values
@@ -1190,6 +1236,7 @@ const saveFieldChanges = async (fields,item) => {
   try {
 
     const customFieldId = parseInt(localStorage.getItem('customFieldId'))
+    fields = [...new Set(fields)];
     if (customFieldId) {
       const fieldIndex = fields.filter(data => data?.customFieldGroupId === item?.id).findIndex(field => field.customFieldId === customFieldId);
 
@@ -1205,10 +1252,10 @@ const saveFieldChanges = async (fields,item) => {
     let fieldsToSave = []
     fields.forEach((f, idx) => {
       let order = idx + 1
-      if (customFieldId || f.fieldOrder !== order) {
+      // if (customFieldId || f.fieldOrder !== order) {
         f.fieldOrder = order
         fieldsToSave.push(f)
-      }
+      // }
     })
     fields = fields.sort((a, b) => a.fieldOrder - b.fieldOrder);
     // save them here
