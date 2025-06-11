@@ -960,8 +960,6 @@ const draggedItem = draggedValue.value;     // The item being dragg
  if(draggedItemList?.customFields?.length>0)
  {
    await dropFieldChangesSameGroup(draggedItemList?.customFields);
-   
- emit('group-deleted');
   return;
  }
 }
@@ -970,7 +968,7 @@ const draggedItem = draggedValue.value;     // The item being dragg
   try {
     appStore.loading = true
     // STEP 1: Save field order changes (if any)
-    await dropFieldChanges(item.customFields);
+    // await dropFieldChanges(item.customFields);
     // STEP 2: Then handle the drop logic
     await handleFieldDrop(item);
     appStore.loading = false
@@ -1099,13 +1097,34 @@ const handleFieldDrop = async (dropTarget) => {
     draggedValue.value = null;
     draggedItemValue.value = null;
     draggedNValue.value = null;
+    getCustomFieldGroups();
   } catch (error) {
     console.error('*** ADD ERROR ***', error);
     appStore.showSnack('ERROR', 'Error adding field to group');
   }
-  emit('group-deleted');
+
 };
 
+const getCustomFieldGroups = async () => {
+  appStore.loading = true
+  try {
+    const { data, status } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
+      params: {
+        companyObjectTypeId: route.params.id
+      }
+    }, 'blueraven')
+    // eslint-disable-next-line vue/no-mutating-props
+    props.customFieldGroups = cloneDeep(data?.map(d => {
+      d?.customFields?.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
+      return d
+    }))
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
 
 const saveGroupChanges = async (groups) => {
   appStore.loading = true
