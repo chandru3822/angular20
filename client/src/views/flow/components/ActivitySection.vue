@@ -662,6 +662,7 @@ onMounted(() => {
       break
   }
   editedActivity.value.note=noteStore.note;
+  addActivity.value=noteStore.addActivity
   selectedTopics.value=noteStore.selectedTopics?noteStore.selectedTopics:null;
   getTopics()
   getActivities()
@@ -1099,8 +1100,15 @@ watch(
 watch(
   ()=>selectedTopics.value,
   (newVal)=>{
-  noteStore.setSelectedTopics(newVal)
+  noteStore.setSelectedTopics(newVal);
 })
+
+watch(
+  ()=>addActivity.value,
+  (newVal)=>{
+  noteStore.addActivityNote(newVal);
+})
+
 
 </script>
 

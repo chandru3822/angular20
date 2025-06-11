@@ -6,12 +6,13 @@ export const useNoteStore = defineStore('noteStore', {
   state: () => ({
     note: '',
     selectedTopics: [],
+    addActivity:false
   }),
 
   //  Getter: true if note is not empty or selectedTopics has items
   getters: {
     hasNote: (state) =>
-      !!state.note || (Array.isArray(state.selectedTopics) && state.selectedTopics.length > 0),
+      !!state.note  || (Array.isArray(state.selectedTopics) && state.selectedTopics.length > 0),  
   },
 
   //  Actions to update or clear state
@@ -26,5 +27,9 @@ export const useNoteStore = defineStore('noteStore', {
       this.note = '';
       this.selectedTopics = [];
     },
+    addActivityNote(value)
+    {
+      this.addActivity=value;
+    }
   },
 });
