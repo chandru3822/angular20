@@ -967,9 +967,6 @@ const draggedItem = draggedValue.value;     // The item being dragg
   if(!draggedValue.value)return
   try {
     appStore.loading = true
-    // STEP 1: Save field order changes (if any)
-    // await dropFieldChanges(item.customFields);
-    // STEP 2: Then handle the drop logic
     await handleFieldDrop(item);
     appStore.loading = false
   } catch (e) {
@@ -1004,37 +1001,6 @@ const dropFieldChangesSameGroup=async (fields)=>{
   appStore.showSnack('ERROR', 'Error Updating Fields')
 }
 }
-const dropFieldChanges = async (fields) => {
-  try {
-  
-    // pull those needing to be saved out of list
-    fields = fields.filter(data => data?.customFieldId !== draggedValue?.value?.customFieldId);
-    let fieldsToSave = []
-    fields.forEach((f, idx) => {
-      let order = idx + 1
-
-        f.fieldOrder = order
-        fieldsToSave.push(f)
-   
-    })
-    // save them here
-    if (fieldsToSave.length > 0) {
-      localStorage.setItem('customFieldId',draggedValue.value.customFieldId)
-      const { status } = await putRequest(
-        `/customFieldGroup/updateFieldsInGroup`,
-        fieldsToSave,
-        'blueraven'
-      )
-      appStore.showSnack('SUCCESS', 'Fields Updated')
-
-      handleHidingGlobalLoader(status)
-    }
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Updating Fields')
-
-  }
-}
 const handleFieldDrop = async (dropTarget) => {
   const draggedField = { ...draggedValue.value };
   // Prevent drop if same group
@@ -1066,34 +1032,7 @@ const handleFieldDrop = async (dropTarget) => {
       draggedField,
       'blueraven'
     );
-    appStore.showSnack('SUCCESS', 'Fields Updated')
-    // Remove all existing fields with the same customFieldId
-    dropTarget.customFields = dropTarget.customFields.filter(
-      (field) => field.customFieldId !== data.customFieldId
-    );
-    // Now add the new field
-    data.fieldOrder = dropTarget?.customFields?.length + 1
-    dropTarget.customFields = [...new Set(dropTarget.customFields)];
-
-    dropTarget.customFields.push(data);
-
-     
-    await dropFieldChangesSameGroup( dropTarget.customFields);
-
-    // Find the index of the custom field by its customFieldId
-    const fieldIndex =[... new Set(groupsByColumn.value[draggedNValue.value]
-      .filter(data => data.id == draggedItemValue.value.id)[0]
-      .customFields)]
-      .findIndex(field => field.customFieldId === draggedValue.value.customFieldId);
-
-    if (fieldIndex !== -1) {
-      // Custom field found, now remove it
-      [... new Set(groupsByColumn.value[draggedNValue.value]
-        .filter(data => data.id == draggedItemValue.value.id)[0]
-        .customFields)].splice(fieldIndex, 1);
-
-    }
-    // Clear drag values
+    appStore.showSnack('SUCCESS', 'Fields Updated')         
     draggedValue.value = null;
     draggedItemValue.value = null;
     draggedNValue.value = null;
@@ -1118,6 +1057,7 @@ const getCustomFieldGroups = async () => {
       d?.customFields?.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
       return d
     }))
+      groupsByColumn.value = [undefined, getGroupsByCol(1), getGroupsByCol(2)]
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -1232,37 +1172,8 @@ const deleteFieldFromGroup = async () => {
   cFieldToDelete.value = null
   cfgToDelete.value = null
 }
-const deleteField = async (item, customFieldGroupId) => {
-  appStore.loading = true
-  try {
-    const { status } = await deleteRequest(
-      `/customFieldGroup/${customFieldGroupId}`,
-      'blueraven'
-    )
-    fieldsInUse.value = []
-    item.archived = true
-    appStore.showSnack('SUCCESS', 'Item Deleted')
-
-    handleHidingGlobalLoader(status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    appStore.showSnack('ERROR', 'Error Deleting')
-
-    appStore.loading = false
-  }
-}
 const saveFieldChanges = async (fields,item) => {
   try {
-
-    const customFieldId = parseInt(localStorage.getItem('customFieldId'))
-    fields = [...new Set(fields)];
-    if (customFieldId) {
-      const fieldIndex = fields.filter(data => data?.customFieldGroupId === item?.id).findIndex(field => field.customFieldId === customFieldId);
-
-      if (fieldIndex !== -1) {
-        fields.splice(fieldIndex, 1);
-      }
-    }
 
     fields = fields.filter(data => data?.customFieldGroupId === item?.id);
     // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
@@ -1271,10 +1182,10 @@ const saveFieldChanges = async (fields,item) => {
     let fieldsToSave = []
     fields.forEach((f, idx) => {
       let order = idx + 1
-      // if (customFieldId || f.fieldOrder !== order) {
+      if (f.fieldOrder !== order) {
         f.fieldOrder = order
         fieldsToSave.push(f)
-      // }
+      }
     })
     fields = fields.sort((a, b) => a.fieldOrder - b.fieldOrder);
     // save them here
