@@ -65,6 +65,7 @@ public class ProjectProcessStepEventService {
   private final ObjectMapper om;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
+  private final KlaviyoService klaviyoService;
   private final SolargrafProxy solargrafService;
   private final MarketoService marketoService;
   private final CustomerPortalService customerPortalService;
@@ -76,6 +77,9 @@ public class ProjectProcessStepEventService {
   private final PubSubService pubSubService;
   private final UserPositionService userPositionService;
   private final DisclosureFormService disclosureFormService;
+
+  @Value(value = "${app.cron.blueraven.processKlaviyoContacts.enabled:false}")
+  private Boolean klaviyoEnabled;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
@@ -768,7 +772,8 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService,solargrafService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, klaviyoService, solargrafService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
+            functionClass.klaviyoEnabled = klaviyoEnabled;
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);

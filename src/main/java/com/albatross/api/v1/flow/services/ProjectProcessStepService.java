@@ -75,6 +75,7 @@ public class ProjectProcessStepService {
   private final CustomFieldGroupAssignmentService cfgaService;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
+  private final KlaviyoService klaviyoService;
   private final SolargrafProxy solargrafService;
   private final MarketoService marketoService;
   private final ListOfValueService listOfValueService;
@@ -85,6 +86,9 @@ public class ProjectProcessStepService {
   private final PubSubService pubSubService;
   private final StripeService stripeService;
   private final DisclosureFormService disclosureFormService;
+
+  @Value(value = "${app.cron.blueraven.processKlaviyoContacts.enabled:false}")
+  private Boolean klaviyoEnabled;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
@@ -1398,7 +1402,8 @@ public class ProjectProcessStepService {
           systemValues.put("companyId", user.getCompanyId());
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService,solargrafService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, klaviyoService, solargrafService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService, disclosureFormService);
+            functionClass.klaviyoEnabled = klaviyoEnabled;
             functionClass.marketoEnabled = marketoEnabled;
             //this is dumb but i really dont want to fill in the info on the design for dev-ing stuff
             functionClass.ignoreAuroraErrors = ignoreAuroraErrors;
