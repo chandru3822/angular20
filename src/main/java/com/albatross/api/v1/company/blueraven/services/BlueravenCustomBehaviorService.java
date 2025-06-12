@@ -61,8 +61,12 @@ public class BlueravenCustomBehaviorService {
       }
 
       if (DIGITAL_LEAD_SOURCES.contains(leadSource)) {
-        klaviyoService.handleContact(contactId, cfvs, false);
+        klaviyoService.handleContact(contactId, cfvs, false, true);
       }
+      else {
+        klaviyoService.handleContact(contactId, cfvs, false, false);
+      }
+
 
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
         five9Service.handleContact(contactId, cfvs, false, null, leadLevel, leadSource);
@@ -73,7 +77,10 @@ public class BlueravenCustomBehaviorService {
     }
     else {
       if (DIGITAL_LEAD_SOURCES.contains(leadSource)) {
-        klaviyoService.handleContact(contactId, cfvs, true);
+        klaviyoService.handleContact(contactId, cfvs, true, true);
+      }
+      else {
+        klaviyoService.handleContact(contactId, cfvs, true, false);
       }
 
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {

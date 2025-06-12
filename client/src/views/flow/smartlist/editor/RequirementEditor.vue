@@ -184,7 +184,7 @@
       </a-autocomplete>
 
       <a-text-field
-        v-show="showSecondaryValueInput"
+        v-show="isCustomValueEnb"
         ref="secondaryValueField"
         v-model="secondaryValue"
         placeholder="Type Value"
@@ -216,9 +216,12 @@
 
 <script setup>
 import { getRequest, logError, UUID } from '@/helpers/helpers'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
 import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js';
+
+const appStore = useAppStore();
 
 const emit = defineEmits(['adding', 'added', 'updated', 'cancelled', 'in-progress'])
 
@@ -257,6 +260,8 @@ const valueField = ref(null)
 const listOfValueField = ref(null)
 const secondaryValueField = ref(null)
 const isEditorInUse = ref(false)
+
+const isCustomValueEnb = ref(false)
 
 const isEditing = computed(() => props.existingRequirement !== null)
 
@@ -441,8 +446,24 @@ const afterOperatorSelected = () => {
   }
 }
 
+const selectedValue = computed(() => value.value?.dataTypeValue || '');
+
+watch(
+  selectedValue,
+  (newVal) => {
+    if (isCurrentDateOffset(newVal)) {
+      isCustomValueEnb.value = true;
+    }
+  },
+  { immediate: true }
+);
+
 const afterValueSelected = (userCheckedToAdd) => {
   if (isEditing.value) {
+    let dataTypeValue = value.value.dataTypeValue;
+    if(!isCustomValueEnb.value && isCurrentDateOffset(dataTypeValue)) {
+        return
+    }
     add()
     return
   }
@@ -473,6 +494,13 @@ const afterValueSelected = (userCheckedToAdd) => {
     add()
   }
 }
+
+const isCurrentDateOffset = (selectedType = "") => {
+  return (
+    (selectedType.includes("current date -") || selectedType.includes("current date +")) &&
+    selectedType.includes("days")
+  );
+};
 
 const operatorDisplayClicked = () => {
   operator.value = {...operator.value, displayValue: false}
@@ -624,9 +652,12 @@ const add = () => {
     return
   }
 
-  if (value.value?.secondaryRequirement && secondaryValue.value.trim().length === 0) {
-    appStore.showSnack('ERROR', 'Invalid value')
+  if (value.value?.secondaryRequirement && 
+        (secondaryValue.value == null || secondaryValue.value?.trim().length === 0 || !isNumeric(secondaryValue.value))) {
+    appStore.showSnack('ERROR', 'Invalid Custom Value')
     return
+  }else{
+    isCustomValueEnb.value = false;
   }
 
   if (psEvent.value !== null) {
@@ -686,6 +717,10 @@ const add = () => {
     emit('added', newRequirement)
   }
   reset()
+}
+
+function isNumeric(value) {
+     return !isNaN(Number(value));
 }
 
 onMounted(() => {

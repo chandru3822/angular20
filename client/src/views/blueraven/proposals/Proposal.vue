@@ -114,318 +114,334 @@
               <div class="configurations-scroll-area">
                 <v-expansion-panels multiple class="rounded-0" v-model="expandedPanel">
                   <v-expansion-panel class="rounded-0">
-                    <v-expansion-panel-header class="parent-expansion-header sticky-configuration-header configuration-header">
-                      Configuration
-                      <div class="config-buttons-group">
-                        <a-btn
-                          size="small"
-                          variant="text"
-                          color="primary"
-                          class="text-capitalize config-buttons"
-                          @click="resetToDefault"
-                          v-if="!proposal.locked && (dirtyCfvs.length > 0 || adderCostField.hasChanges)"
-                          text="Reset"
-                        ></a-btn>
-                        <a-btn
-                          size="small"
-                          v-if="canEdit && !proposal.locked && (dirtyCfvs.length > 0 || adderCostField.hasChanges)"
-                          color="primary"
-                          depressed
-                          :dark="dirtyCfvs.length !== 0 || adderCostField.hasChanges"
-                          :readonly="dirtyCfvs.length === 0 && !adderCostField.hasChanges"
-                          @click="validateForm()"
-                          class="text-capitalize config-buttons"
-                          text="Save"
-                        ></a-btn>
-                      </div>
-                    </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <v-expansion-panels
-                  multiple
-                  class="rounded-0 mb-2"
-                  v-model="expansionPanelsStatus"
-                >
-                  <v-expansion-panel
-                    v-for="cfg in sortedCustomFieldGroups"
-                    :key="cfg.id"
-                    class="child-expansion-panel"
-                  >
-                    <v-expansion-panel-header class="child-expansion-header">
-                      {{ cfg.groupName }}
-                    </v-expansion-panel-header>
-                    <v-expansion-panel-content
-                      v-for="field in filteredCustomFields(cfg.customFieldValues)"
-                      :key="field.id"
-                      class="child-expansion-panel"
-                    >
-                      <CustomValueInput
-                        v-if="isFieldVisible(field)"
-                        :required="field.required"
-                        :callback="inputChangeCallback"
-                        :readonly="
-                            !canEdit ||
-                            proposal.locked ||
-                            !isConditionalFieldPopulated(field) ||
-                            (field.conditionalOnId && loading) ||
-                            !userHasWhiteListedPosition(field, 'readonly') ||
-                            field.ancillaryCustomFieldGroupAssignmentId !== null
-                          "
-                        :field="field"
-                        :show-field-name="false"
-                        :list-of-value-filter="filters[field.customFieldId]"
-                        :hint="getHint(field)"
-                      />
-                      <CommissionDetailsMenu
-                        v-if="
-                            field.customFieldGroupAssignmentId === FIELD_IDS.COMMISSION_DETAILS &&
-                            isFieldVisible(field)
-                          "
-                        :custom-field-groups="sortedCustomFieldGroups"
-                        :proposal-id="proposalId"
-                      />
-                      <!-- Only show the Aurora Storage options link for the Storage Type custom field and only if the selected value has "Grid-tied" in the name -->
-                      <div
-                        v-if="field.customFieldGroupAssignmentId === FIELD_IDS.STORAGE_TYPE &&
-                            field.listOfValues.find(v => v.id === field.intValue)?.name.search(/\bgrid[-\s]+tied\b/i) >= 0 &&
-                            auroraProjectId &&
-                            auroraDesignId"
-                        class="mb-4 mt-n4"
-                      >
-                        <v-tooltip bottom>
-                          <template v-slot:activator="{ on, attrs }">
-                            <a
-                              :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
-                              target="_blank"
-                              class="pr-1"
-                              v-on="on"
-                              v-bind="attrs"
-                            >
-                              <v-icon
-                                small
-                                color="primary"
-                                class="pr-1"
-                              >
-                                mdi-open-in-new
-                              </v-icon>
-                              Aurora Storage Options
-                              <v-icon small>
-                                mdi-information
-                              </v-icon>
-                            </a>
-                          </template>
-                          <span>
-                            Aurora savings calculator for grid-tied batteries
-                          </span>
-                        </v-tooltip>
-                      </div>
-                    </v-expansion-panel-content>
-                  </v-expansion-panel>
-                  <v-expansion-panel class="child-expansion-panel">
-                    <v-expansion-panel-header class="child-expansion-header">
-                      Adders
-                    </v-expansion-panel-header>
-                    <v-expansion-panel-content class="child-expansion-panel">
-                      <!-- Clickable field that opens the dialog -->
-                      <v-combobox
-                        label="Selected Adders"
-                        multiple
-                        chips
-                        small-chips
-                        append-icon="mdi-table-edit"
-                        :value="selectedAddersDisplay"
-                        class="my-4"
-                        @focus="openAdderDialog"
-                        @click="openAdderDialog"
-                        :disabled="!canEdit || proposal.locked"
-                        readonly
-                      >
-                        <template v-slot:selection="{ item }">
-                          <v-chip
-                            x-small
-                            class="ma-1"
-                            color="primary lighten-9"
-                            text-color="black"
-                          >
-                            {{ item.label }}
-                          </v-chip>
-                        </template>
-                      </v-combobox>
-                      <!-- Display total cost if there are selected adders -->
-                      <div v-if="selectedAddersDisplay.length > 0" class="d-flex flex-column mb-2">
-                        <div class="d-flex">
-                          <v-text-field
-                            disabled
-                            readonly
-                            label="Total Adder Cost"
-                            :value="`$${adderTotalCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`"
-                            dense
-                            class="font-weight-medium"
-                          />
+                    <!-- Loading skeleton for entire Configuration panel -->
+                    <ProposalSkeleton v-if="appStore.loading" :subpanel-count="6" />
+
+                    <!-- Loaded Configuration content -->
+                    <template v-else>
+                      <v-expansion-panel-header class="parent-expansion-header sticky-configuration-header configuration-header">
+                        Configuration
+                        <div class="config-buttons-group">
+                          <a-btn
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            class="text-capitalize config-buttons"
+                            @click="resetToDefault"
+                            v-if="!proposal.locked && (dirtyCfvs.length > 0 || adderCostField.hasChanges)"
+                            text="Reset"
+                          ></a-btn>
+                          <a-btn
+                            size="small"
+                            v-if="canEdit && !proposal.locked && (dirtyCfvs.length > 0 || adderCostField.hasChanges)"
+                            color="primary"
+                            depressed
+                            :dark="dirtyCfvs.length !== 0 || adderCostField.hasChanges"
+                            :readonly="dirtyCfvs.length === 0 && !adderCostField.hasChanges"
+                            @click="validateForm()"
+                            class="text-capitalize config-buttons"
+                            text="Save"
+                          ></a-btn>
                         </div>
-                      </div>
-                    </v-expansion-panel-content>
+                      </v-expansion-panel-header>
+                      <v-expansion-panel-content>
+                        <v-expansion-panels
+                          multiple
+                          class="rounded-0 mb-2"
+                          v-model="expansionPanelsStatus"
+                        >
+                          <v-expansion-panel
+                            v-for="cfg in sortedCustomFieldGroups"
+                            :key="cfg.id"
+                            class="child-expansion-panel"
+                          >
+                            <v-expansion-panel-header class="child-expansion-header">
+                              {{ cfg.groupName }}
+                            </v-expansion-panel-header>
+                            <v-expansion-panel-content
+                              v-for="field in filteredCustomFields(cfg.customFieldValues)"
+                              :key="field.id"
+                              class="child-expansion-panel"
+                            >
+                              <CustomValueInput
+                                v-if="isFieldVisible(field)"
+                                :required="field.required"
+                                :callback="inputChangeCallback"
+                                :readonly="
+                                    !canEdit ||
+                                    proposal.locked ||
+                                    !isConditionalFieldPopulated(field) ||
+                                    (field.conditionalOnId && loading) ||
+                                    !userHasWhiteListedPosition(field, 'readonly') ||
+                                    field.ancillaryCustomFieldGroupAssignmentId !== null
+                                  "
+                                :field="field"
+                                :show-field-name="false"
+                                :list-of-value-filter="filters[field.customFieldId]"
+                                :hint="getHint(field)"
+                              />
+                              <CommissionDetailsMenu
+                                v-if="
+                                    field.customFieldGroupAssignmentId === FIELD_IDS.COMMISSION_DETAILS &&
+                                    isFieldVisible(field)
+                                  "
+                                :custom-field-groups="sortedCustomFieldGroups"
+                                :proposal-id="proposalId"
+                              />
+                              <!-- Only show the Aurora Storage options link for the Storage Type custom field and only if the selected value has "Grid-tied" in the name -->
+                              <div
+                                v-if="field.customFieldGroupAssignmentId === FIELD_IDS.STORAGE_TYPE &&
+                                    field.listOfValues.find(v => v.id === field.intValue)?.name.search(/\bgrid[-\s]+tied\b/i) >= 0 &&
+                                    auroraProjectId &&
+                                    auroraDesignId"
+                                class="mb-4 mt-n4"
+                              >
+                                <v-tooltip bottom>
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <a
+                                      :href="`https://v2.aurorasolar.com/projects/${auroraProjectId}/designs/${auroraDesignId}/storage`"
+                                      target="_blank"
+                                      class="pr-1"
+                                      v-on="on"
+                                      v-bind="attrs"
+                                    >
+                                      <v-icon
+                                        small
+                                        color="primary"
+                                        class="pr-1"
+                                      >
+                                        mdi-open-in-new
+                                      </v-icon>
+                                      Aurora Storage Options
+                                      <v-icon small>
+                                        mdi-information
+                                      </v-icon>
+                                    </a>
+                                  </template>
+                                  <span>
+                                    Aurora savings calculator for grid-tied batteries
+                                  </span>
+                                </v-tooltip>
+                              </div>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
+                          <v-expansion-panel class="child-expansion-panel">
+                            <v-expansion-panel-header class="child-expansion-header">
+                              Adders
+                            </v-expansion-panel-header>
+                            <v-expansion-panel-content class="child-expansion-panel">
+                              <!-- Clickable field that opens the dialog -->
+                              <v-combobox
+                                label="Selected Adders"
+                                multiple
+                                chips
+                                small-chips
+                                append-icon="mdi-table-edit"
+                                :value="selectedAddersDisplay"
+                                class="my-4"
+                                @focus="openAdderDialog"
+                                @click="openAdderDialog"
+                                @click:append="openAdderDialog"
+                                @click:prepend-inner="openAdderDialog"
+                                @mousedown="handleAdderFieldMousedown"
+                                :disabled="!canEdit || proposal.locked"
+                                readonly
+                              >
+                                <template v-slot:selection="{ item }">
+                                  <v-chip
+                                    x-small
+                                    class="ma-1"
+                                    color="primary lighten-9"
+                                    text-color="black"
+                                  >
+                                    {{ item.label }}
+                                  </v-chip>
+                                </template>
+                              </v-combobox>
+                              <!-- Display total cost if there are selected adders -->
+                              <div v-if="selectedAddersDisplay.length > 0" class="d-flex flex-column mb-2">
+                                <div class="d-flex">
+                                  <v-text-field
+                                    disabled
+                                    readonly
+                                    label="Total Adder Cost"
+                                    :value="`$${adderTotalCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`"
+                                    dense
+                                    class="font-weight-medium"
+                                  />
+                                </div>
+                              </div>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
+                        </v-expansion-panels>
+                        <AdderCostDialog
+                          :openDialog="showAdderCostDialog"
+                          :existingAdders="adderCostData"
+                          :proposalId="proposalId"
+                          :commissionStrategyId="commissionStrategyId"
+                          :storageId="storageId"
+                          :financialProductId="financialProductId"
+                          :adder-data="adderData"
+                          @close-dialog="showAdderCostDialog = false"
+                          @apply-costs="handleAppliedCosts"
+                          @cancel="handleAdderDialogCancel"
+                        />
+                      </v-expansion-panel-content>
+                    </template>
                   </v-expansion-panel>
-                </v-expansion-panels>
-                <AdderCostDialog
-                  :openDialog="showAdderCostDialog"
-                  :existingAdders="adderCostData"
-                  :proposalId="proposalId"
-                  :commissionStrategyId="commissionStrategyId"
-                  :storageId="storageId"
-                  :financialProductId="financialProductId"
-                  @close-dialog="showAdderCostDialog = false"
-                  @apply-costs="handleAppliedCosts"
-                  @cancel="handleAdderDialogCancel"
-                />
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-            <v-expansion-panel class="sticky-price-details" v-if="proposal.id">
-              <v-expansion-panel-header class="parent-expansion-header price-details-header">
-                Price Details
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <PriceDetails
-                  :proposal-id="proposalId"
-                  :projectAddersLastReviewedDate="projectAddersLastReviewedDate"
-                  :adder-data="adderData"
-                />
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
-          </div>
-            </v-card>
-          </div>
-        </v-col>
-        <v-col cols="12" sm="6" md="8" class="px-6 pt-4">
-          <v-row class="prop-view-row" ref="proposalFullscreenViewerEl">
-            <v-card
-              width="100vw"
-              class="rounded-0 prop-view-card"
-              elevation="4"
-            >
-              <label class="config-label">
-                Proposal <span>#{{ proposal.proposalNbr }}</span>
-              </label>
-              <v-spacer />
-              <div class="prop-button-group" v-if="canEdit">
-                <a-btn
-                  v-if="canEdit && !proposal.locked"
-                  variant="text"
-                  class="text-capitalize primary--text"
-                  @click="deleteProposal"
-                >
-                  <span class="delete-btn">
-                    <v-icon>delete</v-icon>
-                    <span class="d-none d-md-inline">Delete</span>
-                  </span>
-                </a-btn>
-                <a-btn
-                  v-if="canEdit && pages && pages.length"
-                  variant="text"
-                  class="text-capitalize primary--text"
-                  :disabled="dirtyCfvs.length > 0"
-                  @click="duplicate"
-                >
-                  <v-icon>mdi-content-copy</v-icon>
-                  <span class="d-none d-md-inline">Duplicate</span>
-                </a-btn>
-                <a-btn
-                  v-if="pages && pages.length"
-                  variant="text"
-                  :disabled="dirtyCfvs.length > 0"
-                  class="text-capitalize primary--text"
-                  @click="downloadPdf"
-                >
-                  <v-icon>download</v-icon>
-                  <span class="d-none d-md-inline">Download</span>
-                </a-btn>
+                  <!-- Price Details -->
+                  <v-expansion-panel class="sticky-price-details">
+                    <PriceDetailsSkeleton v-if="appStore.loading" />
+                    <template v-else>
+                      <v-expansion-panel-header class="parent-expansion-header price-details-header">
+                        Price Details
+                      </v-expansion-panel-header>
+                      <v-expansion-panel-content>
+                        <PriceDetails
+                          v-if="proposal.id"
+                          :proposal-id="proposalId"
+                          :projectAddersLastReviewedDate="projectAddersLastReviewedDate"
+                          :adder-data="adderData"
+                        />
+                      </v-expansion-panel-content>
+                    </template>
+                  </v-expansion-panel>
+              </v-expansion-panels>
               </div>
-            </v-card>
-            <v-card
-              v-if="!hideProposalSection"
-              class="pt-4 proposal-container proposal-viewer"
-              :class="{ paged: isPageable }"
-              ref="proposalViewerEl"
-            >
-              <v-alert
-                class="text-center overlay-alert"
-                color="warning"
-                dense
-                tile
-                :value="dirtyCfvs.length > 0 || adderStateChanged"
-                transition="scale-transition"
-              >
-                Changes haven't been reflected on proposal
-              </v-alert>
-              <div
-                v-if="pages && pages.length > 0"
-                class="proposal-zoom-lock"
-                ref="viewportEl"
-              >
-                <proposal-template
-                  :children="pages"
-                  :debug="false"
-                  :editable="false"
-                />
+                </v-card>
               </div>
-              <div v-else>
-                <v-alert
-                  v-if="!templateLoading && loadingErrorMessage"
-                  prominent
-                  type="error"
+            </v-col>
+            <v-col cols="12" sm="6" md="8" class="px-6 pt-4">
+              <ProposalDocumentSkeleton v-if="appStore.loading || templateLoading" />
+              <v-row v-else class="prop-view-row" ref="proposalFullscreenViewerEl">
+                <v-card
+                  width="100vw"
+                  class="rounded-0 prop-view-card"
+                  elevation="4"
                 >
-                  <v-row>
-                    <v-col class="grow"> {{ loadingErrorMessage }}</v-col>
-                  </v-row>
-                </v-alert>
-              </div>
-            </v-card>
-            <v-card class="rounded-0 proposal-actions">
-              <div class="text-center max-width" v-if="isPageable">
-                <a-select
-                  attach
-                  v-if="pages && pages.length"
-                  v-model="currentPage"
-                  prepend-icon="mdi-page-next"
-                  :items="pageIndexes"
-                  :item-title="(item) => `Page #${item.idx}`"
-                  item-value="id"
-                  @change="moveToPage"
+                  <label class="config-label">
+                    Proposal <span>#{{ proposal.proposalNbr }}</span>
+                  </label>
+                  <v-spacer />
+                  <div class="prop-button-group" v-if="canEdit">
+                    <a-btn
+                      v-if="canEdit && !proposal.locked"
+                      variant="text"
+                      class="text-capitalize primary--text"
+                      @click="deleteProposal"
+                    >
+                      <span class="delete-btn">
+                        <v-icon>delete</v-icon>
+                        <span class="d-none d-md-inline">Delete</span>
+                      </span>
+                    </a-btn>
+                    <a-btn
+                      v-if="canEdit && pages && pages.length"
+                      variant="text"
+                      class="text-capitalize primary--text"
+                      :disabled="dirtyCfvs.length > 0"
+                      @click="duplicate"
+                    >
+                      <v-icon>mdi-content-copy</v-icon>
+                      <span class="d-none d-md-inline">Duplicate</span>
+                    </a-btn>
+                    <a-btn
+                      v-if="pages && pages.length"
+                      variant="text"
+                      :disabled="dirtyCfvs.length > 0"
+                      class="text-capitalize primary--text"
+                      @click="downloadPdf"
+                    >
+                      <v-icon>download</v-icon>
+                      <span class="d-none d-md-inline">Download</span>
+                    </a-btn>
+                  </div>
+                </v-card>
+                <v-card
+                  v-if="!hideProposalSection"
+                  class="pt-4 proposal-container proposal-viewer"
+                  :class="{ paged: isPageable }"
+                  ref="proposalViewerEl"
                 >
-                </a-select>
-              </div>
-            </v-card>
+                  <v-alert
+                    class="text-center overlay-alert"
+                    color="warning"
+                    dense
+                    tile
+                    :value="dirtyCfvs.length > 0 || adderStateChanged"
+                    transition="scale-transition"
+                  >
+                    Changes haven't been reflected on proposal
+                  </v-alert>
+                  <div
+                    v-if="pages && pages.length > 0"
+                    class="proposal-zoom-lock"
+                    ref="viewportEl"
+                  >
+                    <proposal-template
+                      :children="pages"
+                      :debug="false"
+                      :editable="false"
+                    />
+                  </div>
+                  <div v-else>
+                    <v-alert
+                      v-if="!templateLoading && loadingErrorMessage"
+                      prominent
+                      type="error"
+                    >
+                      <v-row>
+                        <v-col class="grow"> {{ loadingErrorMessage }}</v-col>
+                      </v-row>
+                    </v-alert>
+                  </div>
+                </v-card>
+                <v-card class="rounded-0 proposal-actions">
+                  <div class="text-center max-width" v-if="isPageable">
+                    <a-select
+                      attach
+                      v-if="pages && pages.length"
+                      v-model="currentPage"
+                      prepend-icon="mdi-page-next"
+                      :items="pageIndexes"
+                      :item-title="(item) => `Page #${item.idx}`"
+                      item-value="id"
+                      @change="moveToPage"
+                    >
+                    </a-select>
+                  </div>
+                </v-card>
+              </v-row>
+            </v-col>
           </v-row>
-        </v-col>
-      </v-row>
-    </v-form>
-    <confirm-dialog ref="confirmDialogRef" />
-    <confirm-dialog ref="deleteConfirmDialogRef">
-      <p>Are you sure you want to delete this proposal?</p>
-    </confirm-dialog>
-  </v-container>
-  <v-container v-else>
-    <v-alert prominent type="error">
-      <v-row align="center">
-        <v-col class="grow"> Proposal #{{ proposalId }} does not exist. </v-col>
-        <v-col class="shrink">
-          <router-link
-            v-if="proposal && proposal.projectId"
-            :to="`/proposalDesigns/${proposal.projectId}`"
-            custom
-            v-slot="{ navigate }"
-          >
-            <a-btn
-              @click="navigate"
-              color="unset"
-              text="Back to project"
-            ></a-btn>
-          </router-link>
-        </v-col>
-      </v-row>
-    </v-alert>
-  </v-container>
-</template>
+        </v-form>
+        <confirm-dialog ref="confirmDialogRef" />
+        <confirm-dialog ref="deleteConfirmDialogRef">
+          <p>Are you sure you want to delete this proposal?</p>
+        </confirm-dialog>
+      </v-container>
+      <v-container v-else>
+        <v-alert prominent type="error">
+          <v-row align="center">
+            <v-col class="grow"> Proposal #{{ proposalId }} does not exist. </v-col>
+            <v-col class="shrink">
+              <router-link
+                v-if="proposal && proposal.projectId"
+                :to="`/proposalDesigns/${proposal.projectId}`"
+                custom
+                v-slot="{ navigate }"
+              >
+                <a-btn
+                  @click="navigate"
+                  color="unset"
+                  text="Back to project"
+                ></a-btn>
+              </router-link>
+            </v-col>
+          </v-row>
+        </v-alert>
+      </v-container>
+    </template>
 
 <script setup>
 import {
@@ -447,6 +463,9 @@ import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
 import AdderCostDialog from '@/components/AdderCostDialog.vue'
 import PriceDetails from '@/components/PriceDetails.vue'
+import ProposalSkeleton from '@/components/skeletons/ProposalSkeleton.vue'
+import ProposalDocumentSkeleton from '@/components/skeletons/ProposalDocumentSkeleton.vue'
+import PriceDetailsSkeleton from '@/components/skeletons/ProposalSkeleton.vue'
 import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router/composables'
@@ -612,8 +631,6 @@ const updateAdderSelections = () => {
     }
     // For custom adders, ALWAYS include them, regardless of selection state
     else if (adder.adderType === 'custom_adders') {
-      // Handle custom adders - include ALL of them even with 0 values
-      console.log("Processing custom adder in updateAdderSelections:", adder);
       const amount = adder.customProposalAdderAmount === 0 ? 0 : (adder.customProposalAdderAmount || 0);
 
       // Only include in visual selection and total if amount > 0
@@ -711,12 +728,6 @@ const handleAppliedCosts = async (costs) => {
       if (adder.adderType !== 'auto_applied_adder') {
         adder.selectedProposalAdder = false;
       }
-
-      // Don't reset custom adder amounts - we want to preserve zeros for sending to API
-      // Only reset the visual selected state
-      // if (adder.adderType === 'custom_adders') {
-      //   adder.customProposalAdderAmount = 0;
-      // }
     });
 
     // STEP 1: Get comprehensive state from allItems - this is the most complete view
@@ -1574,6 +1585,9 @@ const saveCustomFieldValues = async () => {
       proposalId: proposalId.value
     })
 
+    // Refresh adder data to ensure all components have the latest data
+    await getProposalAdders()
+
     handleHidingGlobalLoader(status)
   } catch (e) {
     const msg = e?.data?.message || 'Error Saving Proposal'
@@ -1852,6 +1866,14 @@ const handleAdderDialogCancel = () => {
 
 // Track if adders state has changed and dialog needs refresh
 const adderStateChanged = ref(false);
+
+// Handle mousedown event to ensure dialog opens even with readonly field
+const handleAdderFieldMousedown = (event) => {
+  // Prevent default to avoid focus issues
+  event.preventDefault();
+  // Open the dialog
+  openAdderDialog();
+};
 
 const openAdderDialog = () => {
   // Update refs for configuration fields
@@ -2273,6 +2295,36 @@ $expansion-panel-inactive-margin: 0 0 0 0;
     position: sticky;
     top: 0;
     z-index: 1000;
+  }
+}
+
+/* Make the entire adder combobox and all its children clickable */
+.v-combobox[readonly] {
+  cursor: pointer !important;
+
+  /* Apply pointer cursor to all descendant elements */
+  * {
+    cursor: pointer !important;
+  }
+
+  /* Specific selectors for common child elements */
+  .v-input__slot,
+  .v-input__append-inner,
+  .v-select__selections,
+  .v-chip,
+  .v-chip__content,
+  .v-icon,
+  .v-label {
+    cursor: pointer !important;
+  }
+
+  /* Ensure chips within the combobox are also clickable */
+  .v-chip {
+    cursor: pointer !important;
+
+    &:hover {
+      cursor: pointer !important;
+    }
   }
 }
 </style>

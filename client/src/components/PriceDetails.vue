@@ -1,24 +1,22 @@
 <template>
   <div class="price-details">
-    <!-- Notification Alert -->
-    <v-alert
-      v-if="showNotification"
-      dismissible
-      color="amber lighten-4"
-      border="left"
-      colored-border
-      class="mb-4"
-      @input="showNotification = false"
-    >
-      <div class="d-flex align-center">
-        <div>
-          {{ notificationText }}
-        </div>
-      </div>
-    </v-alert>
-
-    <!-- Base Price Card -->
-    <v-expansion-panels multiple v-model="expandedPanels">
+          <!-- Notification Alert -->
+          <v-alert
+            v-if="showNotification"
+            dismissible
+            color="amber lighten-4"
+            border="left"
+            colored-border
+            class="mb-4"
+            @input="showNotification = false"
+          >
+            <div class="d-flex align-center">
+              <div>
+                {{ notificationText }}
+              </div>
+            </div>
+          </v-alert>
+          <v-expansion-panels multiple v-model="expandedPanels">
       <v-expansion-panel readonly class="my-2">
         <v-expansion-panel-header hide-actions>
           <span class="text-subtitle-1 font-weight-medium">
@@ -139,7 +137,7 @@
                       </template>
 
                       <!-- Only show difference styling if adder is explicitly selected on project or proposal (not auto-applied) -->
-                      <template v-else-if="(adder.selectedOnProjectOnly || adder.selectedOnProposalOnly || adder.adderType === 'custom_adders') && hasReviewDate">
+                      <template v-else-if="(adder.selectedOnProjectOnly || adder.selectedOnProposalOnly || adder.adderType === 'custom_adders')">
                         <!-- Custom adders: Handle display based on value comparison -->
                         <template v-if="adder.adderType === 'custom_adders'">
                           <!-- When both values exist and are greater than 0 -->
@@ -247,7 +245,6 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-
 import { getRequest } from '@/helpers/helpers'
 import { useAppStore } from '@/stores/AppStore.js'
 
@@ -274,6 +271,7 @@ const notificationText = ref('')
 const basePrice = ref(0)
 const commissionBase = ref(0)
 const adders = ref([])
+const hasLoadedPriceDetails = ref(false) // Cache flag to track if price details have been loaded
 
 // Direct reference to basePrice since they're equivalent
 const commissionBaseTotal = computed(() => basePrice.value)
@@ -286,9 +284,10 @@ const hasReviewDate = computed(() => props.projectAddersLastReviewedDate !== nul
  * Excludes adders with zero difference.
  */
 const adderDifferences = computed(() => {
-  if (!hasReviewDate.value) {
-    return [];
-  }
+  // TODO: Uncomment check when review date is implemented
+  // if (!hasReviewDate.value) {
+  //   return [];
+  // }
 
   return adders.value
     .filter(adder => {
@@ -348,8 +347,6 @@ const commissionTotal = computed(() => {
  */
 const adderTotal = computed(() => {
   return adders.value.reduce((total, adder) => {
-    // Only use project amounts for the calculation
-
     // For custom adders
     if (adder.adderType === 'custom_adders') {
       // Only add to total if there's a project amount
@@ -365,9 +362,11 @@ const adderTotal = computed(() => {
       // Only add if selected on project or has project amount
       if (adder.selectedOnProjectOnly || adder.projectAdderAmount > 0) {
         return total + (adder.projectAdderAmount || 0);
+      } else {
+        // Skip if not selected on project or project has not been altered
+        return total;
       }
-      // Skip if not selected on project
-      return total;
+
     }
 
     // For auto-applied adders - always include these in the subtotal
@@ -388,11 +387,13 @@ const adderTotal = computed(() => {
 const processAdderData = (adderData) => {
   // Filter relevant adders first - keep only those that should be displayed
   const filteredAdders = adderData.filter(adder => {
-    // Exclude project-only adders when projectAddersLastReviewedDate is null
-    if (!hasReviewDate.value &&
+    // TODO: Add project-only adders if date is set
+    // if (!hasReviewDate.value &&
+    if (
       adder.adderType === 'selected_adders' &&
       adder.selectedProjectAdder &&
-      !adder.selectedProposalAdder) {
+      !adder.selectedProposalAdder
+    ) {
       return false;
     }
 
@@ -431,11 +432,13 @@ const processAdderData = (adderData) => {
 
     // Set selection flags, only if adder is explicitly selected
     result.selectedOnProjectOnly = isSelectedOnProject && !isSelectedOnProposal;
-    result.selectedOnProposalOnly = hasReviewDate.value
-      ? (isSelectedOnProposal && !isSelectedOnProject)
-      : false;
+    result.selectedOnProposalOnly = isSelectedOnProposal && !isSelectedOnProject;
+    // TODO: Replace with review date check when implemented
+    // result.selectedOnProposalOnly = hasReviewDate.value
+    //   ? (isSelectedOnProposal && !isSelectedOnProject)
+    //   : false;
 
-    // Process based on adder type
+    // Process based on an adder type
     switch (adder.adderType) {
       case 'selected_adders':
         // Apply differences only if explicitly selected on project or proposal
@@ -462,9 +465,11 @@ const processAdderData = (adderData) => {
         break;
 
       case 'custom_adders':
-        if (hasReviewDate.value) {
-          result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
-        }
+        // TODO: Uncomment when review date is implemented
+        // if (hasReviewDate.value) {
+        //   result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
+        // }
+        result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
         result.customProposalAdderAmount = adder.customProposalAdderAmount || 0;
 
         // Flag custom adders with only project amount
@@ -473,10 +478,10 @@ const processAdderData = (adderData) => {
           result.selectedOnProjectOnly = true;
         }
 
+        // TODO: Implement review date logic when available
         // Flag custom adders with only proposal amount
         if (adder.customProposalAdderAmount > 0 &&
-          (!adder.customProjectAdderAmount || adder.customProjectAdderAmount <= 0)
-          && hasReviewDate.value) {
+          (!adder.customProjectAdderAmount || adder.customProjectAdderAmount <= 0)) {
           result.selectedOnProposalOnly = true;
         }
         break;
@@ -522,11 +527,16 @@ const isCustomProjectOnly = (adder) => {
 }
 
 // Function to fetch base and commission amounts from the backend
-const fetchPriceDetailAmounts = async () => {
+const fetchPriceDetailAmounts = async (forceRefresh = false) => {
   if (!props.proposalId) return;
 
+  // Skip if already loaded and not forcing refresh
+  if (hasLoadedPriceDetails.value && !forceRefresh) {
+    return;
+  }
+
   try {
-    appStore.loading = true;
+    // Don't set appStore.loading here as it's managed by the parent component
 
     const { data } = await getRequest(
       `/proposal/${props.proposalId}/adders/details`,
@@ -536,13 +546,12 @@ const fetchPriceDetailAmounts = async () => {
     if (data) {
       basePrice.value = data.commission_amount || 0;
       commissionBase.value = data.base_amount || 0;
+      hasLoadedPriceDetails.value = true;
     }
   } catch (error) {
     console.error('Error fetching price detail amounts:', error);
     showNotification.value = true;
     notificationText.value = 'Error loading price details. Please refresh the page.';
-  } finally {
-    appStore.loading = false;
   }
 };
 
@@ -581,19 +590,16 @@ const shouldShowGreen = (adder) => {
 watch(() => props.adderData, (newAdderData) => {
   if (newAdderData && newAdderData.length > 0) {
     processAdderData(newAdderData);
-    // Also refresh price details when adders change
+    // Refresh price details when adders change
     fetchPriceDetailAmounts();
   }
 }, { immediate: true, deep: true })
 
-// Call fetchPriceDetailAmounts when component mounts
-onMounted(() => {
-  fetchPriceDetailAmounts();
-});
-
 // Watch for changes in proposal ID and refetch data when it changes
 watch(() => props.proposalId, (newProposalId, oldProposalId) => {
   if (newProposalId && newProposalId !== oldProposalId) {
+    // Clear cache when proposal changes
+    hasLoadedPriceDetails.value = false;
     fetchPriceDetailAmounts();
   }
 });
@@ -610,6 +616,8 @@ watch(() => props.proposalId, (newProposalId, oldProposalId) => {
 
 .text-decoration-line-through {
   text-decoration: line-through;
+  text-decoration-color: grey;
+  color: grey;
 }
 
 .v-expansion-panel-content ::v-deep .v-expansion-panel-content__wrap {
