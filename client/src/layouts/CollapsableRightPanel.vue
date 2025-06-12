@@ -18,8 +18,10 @@
 *
 */
 
-import {getCurrentInstance, computed} from 'vue'
-import { useProjectStore } from '@/stores/ProjectStore.js'
+import {getCurrentInstance, computed,onUnmounted} from 'vue'
+import { useProjectStore } from '@/stores/ProjectStore.js';
+import { useNoteStore } from '../stores/NoteStore';
+const noteStore=useNoteStore()
 
 
 const vueInstance = getCurrentInstance().proxy
@@ -44,6 +46,9 @@ const selectView = (viewOption) => {
     collapseExpandSide()
   }
 }
+onUnmounted(() => {
+  noteStore.clearNote()
+})
 
 //collapsed or expanded
 const isSidebarCollapsed = computed(() => {
