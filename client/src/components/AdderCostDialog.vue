@@ -43,6 +43,10 @@ const props = defineProps({
   financialProductId: {
     type: [Number, String],
     default: 123
+  },
+  adderData: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -80,24 +84,31 @@ const fetchAdderData = async () => {
   try {
     appStore.loading = true;
 
-    const params = {
-      proposalId: props.proposalId,
-      commissionStrategyId: props.commissionStrategyId ?? 123,
-      storageId: props.storageId ?? 123,
-      financialProductId: props.financialProductId ?? 123
-    };
+    // Use the adder data passed from parent component instead of making API call
+    if (props.adderData && props.adderData.length > 0) {
+      // Store all adder data without filtering out auto adders
+      adderData.value = props.adderData;
+    } else {
+      // Fallback to API call if no data is provided (backward compatibility)
+      const params = {
+        proposalId: props.proposalId,
+        commissionStrategyId: props.commissionStrategyId ?? 123,
+        storageId: props.storageId ?? 123,
+        financialProductId: props.financialProductId ?? 123
+      };
 
-    const { data } = await postRequest(
-      `/proposal/${props.proposalId}/adders`,
-      params,
-      'blueraven'
-    );
+      const { data } = await postRequest(
+        `/proposal/${props.proposalId}/adders`,
+        params,
+        'blueraven'
+      );
 
-    // Store all adder data without filtering out auto adders
-    adderData.value = data;
+      // Store all adder data without filtering out auto adders
+      adderData.value = data;
+    }
 
     // Transform the adder data into the format needed for the dialog
-    const transformedItems = data.map(adder => {
+    const transformedItems = adderData.value.map(adder => {
       // Determine the adder type and set fields accordingly
       let itemType, amount, applied, rawAmount;
 
@@ -175,6 +186,14 @@ const fetchAdderData = async () => {
   }
 };
 
+// Watch for changes in adder data from parent
+watch(() => props.adderData, (newAdderData) => {
+  if (newAdderData && newAdderData.length > 0) {
+    // Refresh data regardless of dialog state to keep it current
+    fetchAdderData();
+  }
+}, { immediate: false, deep: true });
+
 watch(() => props.existingAdders, (newValue) => {
   if (newValue && Object.keys(newValue).length > 0) {
     try {
@@ -220,11 +239,9 @@ const dataFetched = ref(false);
 
 watch(() => props.openDialog, (isOpen) => {
   if (isOpen) {
-    // Only fetch data the first time or when explicitly requested
-    if (!dataFetched.value) {
-      fetchAdderData();
-      dataFetched.value = true;
-    }
+    // Always fetch data when dialog opens to ensure we have the latest data
+    fetchAdderData();
+    dataFetched.value = true;
   }
   // We don't need to do anything when the dialog closes
   // as the parent component will handle this through event handlers

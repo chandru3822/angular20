@@ -384,14 +384,18 @@ public class ContactLeadService {
       .findFirst()
       .orElse(null);
 
-    if (DIGITAL_LEAD_SOURCES.contains(leadSourceVal)) {
       try {
-        klaviyoService.handleContact(contactId, cfvList, false);
+        if (DIGITAL_LEAD_SOURCES.contains(leadSourceVal)) {
+          klaviyoService.handleContact(contactId, cfvList, false, true);
+        }
+        else {
+          klaviyoService.handleContact(contactId, cfvList, false, false);
+        }
+
       } catch (Exception e) {
         String msg = "KLAVIYO: Error adding contact: {}";
         log.error(msg, e.getMessage());
       }
-    }
 
     if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
       try {
