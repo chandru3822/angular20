@@ -2,6 +2,13 @@ package com.albatross.api.v1.flow.queries;
 
 public class AvailabilityQuery {
 
+  public static final String archiveSlot = """
+    UPDATE flow.user_slot_schedules
+    SET archived = true
+    WHERE user_id = :positionid
+      AND slot_schedule_id = :scheduleId
+""";
+
   //language=PostgreSQL
   public final static String getAllForResource = """
     SELECT
@@ -99,10 +106,39 @@ public class AvailabilityQuery {
     """;
 
 
-  public final static String insertslot = """
-    insert into flow.user_slot_schedules(position_id,slot_schedule_id)
-    values (:positionid,:scheduleId)
-    """;
+  public static final String INSERT_NEW = """
+    INSERT INTO flow.user_slot_schedules (user_id, slot_schedule_id,created_by_id,modified_by_id,date_created,date_modified)
+    SELECT :positionid, slot_id,:createdById,:createdById,now(),now()
+    FROM unnest(:newScheduleIds::bigint[]) AS slot_id
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM flow.user_slot_schedules
+        WHERE user_id = :positionid
+          AND slot_schedule_id = slot_id
+          AND archived = false
+    );
+""";
+
+//  public static final String UNARCHIVE = """
+//    UPDATE flow.user_slot_schedules
+//    SET archived = false
+//    WHERE user_id = :positionid
+//      AND slot_schedule_id IN (
+//          SELECT slot_id FROM unnest(:newScheduleIds::bigint[]) AS slot_id
+//      )
+//      AND archived = true;
+//""";
+
+  public static final String ARCHIVE_OLD = """
+    UPDATE flow.user_slot_schedules
+    SET date_modified=now(),modified_by_id=:createdById,archived = true
+    WHERE user_id = :positionid
+      AND slot_schedule_id NOT IN (
+          SELECT slot_id FROM unnest(:newScheduleIds::bigint[]) AS slot_id
+      )
+      AND archived = false;
+""";
+
 
   //language=PostgreSQL
   public final static String getOne = """
@@ -530,6 +566,17 @@ public class AvailabilityQuery {
     where rss.id = :id
     """;
 
+
+
+
+  public static final String getAllSlotSchedulesUser = """
+    SELECT DISTINCT uss.slot_schedule_id AS id, rss.schedule_name
+    FROM flow.user_slot_schedules uss
+    INNER JOIN flow.resource_slot_schedule rss ON uss.slot_schedule_id = rss.id
+    WHERE uss.user_id = :userId
+      AND uss.archived = false;
+""";
+
   //language=PostgreSQL
   public final static String getAllSlotSchedules = """
     select *,
@@ -546,14 +593,21 @@ public class AvailabilityQuery {
                                    AND rst.archived is not true
                                  order by rst.start_time, rst.end_time) wlp), '[]') AS "slotTimes"
     from flow.resource_slot_schedule rss
-    where rss.archived is not true
-      AND case when :isAdmin::boolean is not true
-        and :positionId IN ( 1,2,3,517 )
-                   then
-                       rss.id in (1,2)
-               else true end
-    order by rss.schedule_name
-    """;
+   WHERE rss.archived IS NOT TRUE
+       AND CASE
+               WHEN :isAdmin::boolean IS NOT TRUE
+                    AND :positionId IN (1,2,3,517)
+               THEN
+                   rss.id IN (
+                       SELECT slot_schedule_id
+                       FROM flow.user_slot_schedules as uss
+                       WHERE user_id = :userId AND uss.archived =false
+                       UNION
+                       SELECT unnest(ARRAY[1, 2])
+                   )
+               ELSE TRUE
+           END
+     ORDER BY rss.schedule_name;""";
 
   //language=PostgreSQL
   public final static String updateSlotTime = """

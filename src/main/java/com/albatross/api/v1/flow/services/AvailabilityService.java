@@ -40,6 +40,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -960,6 +961,15 @@ public class AvailabilityService {
       new SlotScheduleMapper<>(SlotSchedule.class, om));
   }
 
+  public List<SlotScheduleUser> getSlotUsers(boolean b, Long userId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    return sqlCache.queryBySql(AvailabilityQuery.getAllSlotSchedulesUser,
+      params,
+      new SlotScheduleMapper<>(SlotScheduleUser.class, om));
+
+  }
+
   public List<SlotSchedule> getAllSlotSchedules(Boolean isAdmin, Long userId) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
@@ -967,7 +977,7 @@ public class AvailabilityService {
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("isAdmin", isAdmin);
-
+    params.put("userId", userId);
     Long positionId = null;
 
     if (!isAdmin) {
@@ -1054,20 +1064,22 @@ public class AvailabilityService {
       .orElse(null);
   }
 
-  public List<Long> saveSolts(SlotManagement slotManagement) {
-    List<Long> insertedIds = new ArrayList<>();
+  @Transactional
+  public void saveSlots(SlotManagement slotManagement) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = new HashMap<>();
+    params.put("positionid", slotManagement.getPositionid());
+    params.put("newScheduleIds", slotManagement.getScheduleId().toArray(new Long[0]));
+    params.put("createdById", user.trueUserId());
 
-    for (Long scheduleId : slotManagement.getScheduleId()) {
-      Map<String, Object> params = new HashMap<>();
-      params.put("positionid", slotManagement.getPositionid());
-      params.put("scheduleId", scheduleId);
+   // if needed
 
-      Long id = sqlCache.updateBySqlReturningId(AvailabilityQuery.insertslot, params, "id").longValue();
-      insertedIds.add(id);
-    }
-
-    return insertedIds;
+    sqlCache.updateBySql(AvailabilityQuery.INSERT_NEW, params);
+//    sqlCache.updateBySql(AvailabilityQuery.UNARCHIVE, params);
+    sqlCache.updateBySql(AvailabilityQuery.ARCHIVE_OLD, params);
   }
+
+
 
 
   @Data

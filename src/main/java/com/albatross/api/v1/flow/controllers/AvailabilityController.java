@@ -140,11 +140,17 @@ public class AvailabilityController {
     return availabilityService.getAllSlotSchedules(false, userId);
   }
 
-  @PostMapping(value = "/availabilitySlotSchedule")
-  public List<Long> availabilitySlotSchedule(@RequestBody SlotManagement slotManagement)
-    throws Exception {
-    return availabilityService.saveSolts(slotManagement);
+  @GetMapping(value = "/slotSchedulesUser/{userId}")  // Define path variable in URL
+  public List<SlotScheduleUser> getSlotSchedulesUser(
+    @PathVariable(required = true) Long userId) {  // Use @PathVariable
+    return availabilityService.getSlotUsers(true, userId);
   }
+
+  @PostMapping(value = "/availabilitySlotSchedule")
+  public void availabilitySlotSchedule(@RequestBody SlotManagement slotManagement) throws Exception {
+    availabilityService.saveSlots(slotManagement);
+  }
+
 
   @GetMapping(value = "/slotSchedule/{id}")
   public Optional<SlotSchedule> getSlotSchedule(@PathVariable Long id) {
