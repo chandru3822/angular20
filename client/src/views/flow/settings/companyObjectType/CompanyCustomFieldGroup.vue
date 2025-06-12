@@ -1172,6 +1172,25 @@ const deleteFieldFromGroup = async () => {
   cFieldToDelete.value = null
   cfgToDelete.value = null
 }
+const deleteField = async (item, customFieldGroupId) => {
+  appStore.loading = true
+  try {
+    const { status } = await deleteRequest(
+      `/customFieldGroup/${customFieldGroupId}`,
+      'blueraven'
+    )
+    fieldsInUse.value = []
+    item.archived = true
+    appStore.showSnack('SUCCESS', 'Item Deleted')
+
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Deleting')
+
+    appStore.loading = false
+  }
+}
 const saveFieldChanges = async (fields,item) => {
   try {
 
