@@ -209,7 +209,7 @@ http.interceptors.response.use((response) => {
 })
 
 const getChangeLog = async() => {
-  showChangeLog.value = !showChangeLog.value
+  showChangeLog.value = showChangeLog.value == false ? !showChangeLog.value : showChangeLog.value
   
   if (hasManageAccess.value === true && showChangeLog.value) {
     appStore.loading = true
