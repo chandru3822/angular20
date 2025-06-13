@@ -33,10 +33,11 @@
                       placeholder=" "
                       :rules="userPhoneRule"
                       :readonly="!userCanEdit"
-                      v-model="tempUser.phoneNumber"></a-text-field>
+                      v-model="tempUser.phoneNumber"></a-text-field> 
         <a-text-field
                       label="Phone Extension"
                       placeholder=" "
+                      :rules="userPhoneExtensionRule"
                       :readonly="!userCanEdit"
                       v-model="tempUser.phoneExtension"></a-text-field>
         <a-text-field
@@ -293,6 +294,7 @@ const breadcrumbs = ref([
   {text: 'Back to Users',disabled: false,exact: true,to: `/users`},
 ])
 const userPhoneRule = ref([v => !!v || 'Field is required',v => (!v || (v && v.length !== 0)) || 'Field is required',v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"])
+const userPhoneExtensionRule = ref([v => (!v || (v && (v.length <= 10))) || 'Must be 10 characters or less']);
 const usernameRule = ref(constants.USERNAME_RULES)
 const passwordRule = ref(constants.PASSWORD_RULES)
 const emailRule = ref(constants.EMAIL_RULES)
