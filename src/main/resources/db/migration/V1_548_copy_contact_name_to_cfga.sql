@@ -25,7 +25,7 @@ INSERT INTO flow.db_function_param (db_function_id, parameter_name, archived, di
    where not exists (select id from flow.db_function_param where parameter_name = 'Process Step ID' and
                                                                  db_function_id = (select id from flow.db_function where function_name = 'flow.flow.set_project_contact_full_name_to_custom_field')));
                                                                  
-                                                                 -- Insert parameter: Process Step ID (helps contextualize execution point)                                                                 
+-- Insert parameter: User Id (helps contextualize execution point)                                                                 
 INSERT INTO flow.db_function_param (db_function_id, parameter_name, archived, display_order, data_type_id, parameter_type_id, system_value_id, description, nullable, system_list_id)
   (select  (select id from flow.db_function where function_name = 'flow.flow.set_project_contact_full_name_to_custom_field'), 'User Id', false, 4, 6, 1, 1, null, false, null
    where not exists (select id from flow.db_function_param where parameter_name = 'User Id' and
