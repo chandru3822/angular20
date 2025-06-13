@@ -64,6 +64,7 @@
                   v-model="at.show"
                   :label="at.activityType"
                   :ripple="false"
+                   @change="onCheckboxChange(at)"
                 />
               </v-list-item-title>
             </v-list-item-content>
@@ -514,7 +515,14 @@ const mentionableItems = ref([
     itemList: teamMentionables.value
   }
 ])
-
+const onCheckboxChange=(at)=>
+{
+  if(at.id===1 && at.show===true)
+  {
+    getActivities();
+  }
+  
+}
 const applyMention = (item, keyWord, value, clearSearchData = true) => {
   if (item.mentionType === 1) {
     searchByClick(item.text, item.id, SearchTypeEnum.USER, clearSearchData)
