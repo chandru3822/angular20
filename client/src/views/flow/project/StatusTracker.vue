@@ -5,8 +5,9 @@
       <!--        <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>-->
       <!--      </div>-->
       <div>
-
-        <div class="headline-small stage-header">
+        
+          <div v-if="milestones.length>0">
+               <div class="headline-small stage-header">
           Current Stage:
           <span :class="{'cancelled-text': cancelled}">{{currentStatus.projectStatusType}}
           </span>
@@ -44,6 +45,12 @@
             </div>
           </div>
         </div>
+          </div>
+       <div v-else>
+         <div class="headline-small stage-header">
+              No milestones configured
+        </div>
+       </div>
       </div>
     </v-col>
   </v-row>
