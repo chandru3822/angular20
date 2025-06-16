@@ -107,128 +107,138 @@
                 :key="index"
                 :class="[
                   {'shaded-row': index % 2},
-                  {'grey lighten-3 text-decoration-line-through': shouldShowStrikethrough(adder)},
-                  {'green lighten-5': shouldShowGreen(adder)}
+                  {'grey lighten-3 text-decoration-line-through': hasReviewDate && shouldShowStrikethrough(adder)},
+                  {'green lighten-5': hasReviewDate && shouldShowGreen(adder)}
                 ]"
                 class="dense-row"
               >
                 <td class="caption" :class="{
-                  'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
-                  'green-text-color': shouldShowGreen(adder)
+                  'text-decoration-line-through grey--text': hasReviewDate && shouldShowStrikethrough(adder),
+                  'green-text-color': hasReviewDate && shouldShowGreen(adder)
                 }">{{ adder.name }}</td>
                 <td class="text-center caption" :class="{
-                  'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
-                  'green-text-color': shouldShowGreen(adder)
+                  'text-decoration-line-through grey--text': hasReviewDate && shouldShowStrikethrough(adder),
+                  'green-text-color': hasReviewDate && shouldShowGreen(adder)
                 }">{{ adder.unitPrice }}</td>
                 <td class="text-right caption">
                   <div class="d-flex justify-end align-center">
-                    <!-- For custom adders with project amount but no proposal amount -->
-                    <span v-if="isCustomProjectOnly(adder)" class="text-no-wrap" :class="{ 'green-text-color': shouldShowGreen(adder) }">
-                      ${{ formatNumber(adder.customProjectAdderAmount || adder.projectAdderAmount, true) }}
-                    </span>
-
-                    <!-- For normal cases with both values -->
+                    <!-- When hasReviewDate is null, only show proposal prices -->
+                    <template v-if="!hasReviewDate">
+                      <span class="text-no-wrap">
+                        ${{ formatNumber(adder.proposalAdderAmount || adder.customProposalAdderAmount || adder.amount || 0, true) }}
+                      </span>
+                    </template>
+                    
+                    <!-- When hasReviewDate is not null, show price comparisons -->
                     <template v-else>
-                      <!-- Auto-applied adders always shown as regular without styling -->
-                      <template v-if="adder.adderType === 'auto_applied_adder'">
-                        <span class="text-no-wrap">
-                          ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
-                        </span>
-                      </template>
+                      <!-- For custom adders with project amount but no proposal amount -->
+                      <span v-if="isCustomProjectOnly(adder)" class="text-no-wrap" :class="{ 'green-text-color': shouldShowGreen(adder) }">
+                        ${{ formatNumber(adder.customProjectAdderAmount || adder.projectAdderAmount, true) }}
+                      </span>
 
-                      <!-- Only show difference styling if adder is explicitly selected on project or proposal (not auto-applied) -->
-                      <template v-else-if="(adder.selectedOnProjectOnly || adder.selectedOnProposalOnly || adder.adderType === 'custom_adders')">
-                        <!-- Custom adders: Handle display based on value comparison -->
-                        <template v-if="adder.adderType === 'custom_adders'">
-                          <!-- When both values exist and are greater than 0 -->
-                          <template v-if="adder.customProjectAdderAmount > 0 && adder.customProposalAdderAmount > 0">
-                            <!-- When values are equal and both > 0, show in black with no strikethrough -->
-                            <template v-if="adder.customProjectAdderAmount === adder.customProposalAdderAmount">
-                              <span class="text-no-wrap">
-                                ${{ formatNumber(adder.customProjectAdderAmount, true) }}
-                              </span>
-                            </template>
-                            <!-- When project amount is GREATER than proposal amount -->
-                            <template v-else-if="adder.customProjectAdderAmount > adder.customProposalAdderAmount">
-                              <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
-                                ${{ formatNumber(adder.customProposalAdderAmount, true) }}
-                              </span>
-                              <span class="green-text-color text-no-wrap">
-                                ${{ formatNumber(adder.customProjectAdderAmount, true) }}
-                              </span>
-                            </template>
-                            <!-- When proposal amount is GREATER than project amount -->
-                            <template v-else>
-                              <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
-                                ${{ formatNumber(adder.customProposalAdderAmount, true) }}
-                              </span>
-                              <span class="green-text-color text-no-wrap">
-                                ${{ formatNumber(adder.customProjectAdderAmount, true) }}
-                              </span>
-                            </template>
-                          </template>
-                          <!-- When only one value exists or other cases -->
-                          <template v-else>
-                            <span class="text-no-wrap" :class="{
-                            'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
-                            'green-text-color': shouldShowGreen(adder)
-                            }">
-                              ${{ formatNumber(shouldShowGreen(adder) ? adder.customProjectAdderAmount : (adder.customProposalAdderAmount || adder.customProjectAdderAmount || 0), true) }}
-                            </span>
-                          </template>
+                      <!-- For normal cases with both values -->
+                      <template v-else>
+                        <!-- Auto-applied adders always shown as regular without styling -->
+                        <template v-if="adder.adderType === 'auto_applied_adder'">
+                          <span class="text-no-wrap">
+                            ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
+                          </span>
                         </template>
 
-                        <!-- For selected adders -->
-                        <template v-else>
-                          <!-- If both selectedProjectAdder and selectedProposalAdder are null, show regular styling -->
-                          <template v-if="adder.adderType === 'selected_adders' &&
-                                       adder.selectedOnProjectOnly === null &&
-                                       adder.selectedOnProposalOnly === null">
-                            <span class="text-no-wrap">
-                              ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
-                            </span>
+                        <!-- Only show difference styling if adder is explicitly selected on project or proposal (not auto-applied) -->
+                        <template v-else-if="(adder.selectedOnProjectOnly || adder.selectedOnProposalOnly || adder.adderType === 'custom_adders')">
+                          <!-- Custom adders: Handle display based on value comparison -->
+                          <template v-if="adder.adderType === 'custom_adders'">
+                            <!-- When both values exist and are greater than 0 -->
+                            <template v-if="adder.customProjectAdderAmount > 0 && adder.customProposalAdderAmount > 0">
+                              <!-- When values are equal and both > 0, show in black with no strikethrough -->
+                              <template v-if="adder.customProjectAdderAmount === adder.customProposalAdderAmount">
+                                <span class="text-no-wrap">
+                                  ${{ formatNumber(adder.customProjectAdderAmount, true) }}
+                                </span>
+                              </template>
+                              <!-- When project amount is GREATER than proposal amount -->
+                              <template v-else-if="adder.customProjectAdderAmount > adder.customProposalAdderAmount">
+                                <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                                  ${{ formatNumber(adder.customProposalAdderAmount, true) }}
+                                </span>
+                                <span class="green-text-color text-no-wrap">
+                                  ${{ formatNumber(adder.customProjectAdderAmount, true) }}
+                                </span>
+                              </template>
+                              <!-- When proposal amount is GREATER than project amount -->
+                              <template v-else>
+                                <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                                  ${{ formatNumber(adder.customProposalAdderAmount, true) }}
+                                </span>
+                                <span class="green-text-color text-no-wrap">
+                                  ${{ formatNumber(adder.customProjectAdderAmount, true) }}
+                                </span>
+                              </template>
+                            </template>
+                            <!-- When only one value exists or other cases -->
+                            <template v-else>
+                              <span class="text-no-wrap" :class="{
+                              'text-decoration-line-through grey--text': shouldShowStrikethrough(adder),
+                              'green-text-color': shouldShowGreen(adder)
+                              }">
+                                ${{ formatNumber(shouldShowGreen(adder) ? adder.customProjectAdderAmount : (adder.customProposalAdderAmount || adder.customProjectAdderAmount || 0), true) }}
+                              </span>
+                            </template>
                           </template>
 
-                          <!-- Otherwise, apply normal difference styling -->
+                          <!-- For selected adders -->
                           <template v-else>
-                            <!-- When selected on project but NOT on proposal -->
-                            <template v-if="adder.selectedOnProjectOnly">
-                              <span class="green-text-color text-no-wrap">
-                                ${{ formatNumber(adder.projectAdderAmount, true) }}
-                              </span>
-                            </template>
-
-                            <!-- When selected on proposal but NOT on project -->
-                            <template v-else-if="adder.selectedOnProposalOnly">
-                              <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
-                                ${{ formatNumber(adder.proposalAdderAmount, true) }}
-                              </span>
-                            </template>
-
-                            <!-- When amounts are different but both are selected -->
-                            <template v-else-if="adder.proposalAdderAmount !== adder.projectAdderAmount &&
-                                    adder.projectAdderAmount !== null &&
-                                    adder.proposalAdderAmount !== null">
-                              <span class="text-no-wrap">
-                                ${{ formatNumber(adder.proposalAdderAmount, true) }}
-                              </span>
-                            </template>
-
-                            <!-- When both amounts are the same -->
-                            <template v-else>
+                            <!-- If both selectedProjectAdder and selectedProposalAdder are null, show regular styling -->
+                            <template v-if="adder.adderType === 'selected_adders' &&
+                                         adder.selectedOnProjectOnly === null &&
+                                         adder.selectedOnProposalOnly === null">
                               <span class="text-no-wrap">
                                 ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
                               </span>
                             </template>
+
+                            <!-- Otherwise, apply normal difference styling -->
+                            <template v-else>
+                              <!-- When selected on project but NOT on proposal -->
+                              <template v-if="adder.selectedOnProjectOnly">
+                                <span class="green-text-color text-no-wrap">
+                                  ${{ formatNumber(adder.projectAdderAmount, true) }}
+                                </span>
+                              </template>
+
+                              <!-- When selected on proposal but NOT on project -->
+                              <template v-else-if="adder.selectedOnProposalOnly">
+                                <span class="text-decoration-line-through mr-2 grey--text text-no-wrap">
+                                  ${{ formatNumber(adder.proposalAdderAmount, true) }}
+                                </span>
+                              </template>
+
+                              <!-- When amounts are different but both are selected -->
+                              <template v-else-if="adder.proposalAdderAmount !== adder.projectAdderAmount &&
+                                      adder.projectAdderAmount !== null &&
+                                      adder.proposalAdderAmount !== null">
+                                <span class="text-no-wrap">
+                                  ${{ formatNumber(adder.proposalAdderAmount, true) }}
+                                </span>
+                              </template>
+
+                              <!-- When both amounts are the same -->
+                              <template v-else>
+                                <span class="text-no-wrap">
+                                  ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
+                                </span>
+                              </template>
+                            </template>
                           </template>
                         </template>
-                      </template>
 
-                      <!-- For non-selected adders, just show the regular amount without styling -->
-                      <template v-else>
-                        <span class="text-no-wrap">
-                          ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
-                        </span>
+                        <!-- For non-selected adders, just show the regular amount without styling -->
+                        <template v-else>
+                          <span class="text-no-wrap">
+                            ${{ formatNumber(adder.proposalAdderAmount || adder.amount || 0, true) }}
+                          </span>
+                        </template>
                       </template>
                     </template>
                   </div>
@@ -284,10 +294,9 @@ const hasReviewDate = computed(() => props.projectAddersLastReviewedDate !== nul
  * Excludes adders with zero difference.
  */
 const adderDifferences = computed(() => {
-  // TODO: Uncomment check when review date is implemented
-  // if (!hasReviewDate.value) {
-  //   return [];
-  // }
+  if (!hasReviewDate.value) {
+    return [];
+  }
 
   return adders.value
     .filter(adder => {
@@ -347,6 +356,15 @@ const commissionTotal = computed(() => {
  */
 const adderTotal = computed(() => {
   return adders.value.reduce((total, adder) => {
+    // When review date is not set, only show proposal amounts
+    if (!hasReviewDate.value) {
+      if (adder.adderType === 'custom_adders') {
+        return total + (adder.customProposalAdderAmount || 0);
+      }
+      return total + (adder.proposalAdderAmount || adder.amount || 0);
+    }
+    
+    // When review date is set, show project amounts
     // For custom adders
     if (adder.adderType === 'custom_adders') {
       // Only add to total if there's a project amount
@@ -387,9 +405,8 @@ const adderTotal = computed(() => {
 const processAdderData = (adderData) => {
   // Filter relevant adders first - keep only those that should be displayed
   const filteredAdders = adderData.filter(adder => {
-    // TODO: Add project-only adders if date is set
-    // if (!hasReviewDate.value &&
-    if (
+    // Only show project-only adders if review date is set
+    if (!hasReviewDate.value &&
       adder.adderType === 'selected_adders' &&
       adder.selectedProjectAdder &&
       !adder.selectedProposalAdder
@@ -433,10 +450,9 @@ const processAdderData = (adderData) => {
     // Set selection flags, only if adder is explicitly selected
     result.selectedOnProjectOnly = isSelectedOnProject && !isSelectedOnProposal;
     result.selectedOnProposalOnly = isSelectedOnProposal && !isSelectedOnProject;
-    // TODO: Replace with review date check when implemented
-    // result.selectedOnProposalOnly = hasReviewDate.value
-    //   ? (isSelectedOnProposal && !isSelectedOnProject)
-    //   : false;
+    result.selectedOnProposalOnly = hasReviewDate.value
+      ? (isSelectedOnProposal && !isSelectedOnProject)
+      : false;
 
     // Process based on an adder type
     switch (adder.adderType) {
@@ -465,22 +481,21 @@ const processAdderData = (adderData) => {
         break;
 
       case 'custom_adders':
-        // TODO: Uncomment when review date is implemented
-        // if (hasReviewDate.value) {
-        //   result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
-        // }
-        result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
+        if (hasReviewDate.value) {
+          result.customProjectAdderAmount = adder.customProjectAdderAmount || 0;
+        }
         result.customProposalAdderAmount = adder.customProposalAdderAmount || 0;
 
-        // Flag custom adders with only project amount
-        if (adder.customProjectAdderAmount > 0 &&
+        // Flag custom adders with only project amount when review date is set
+        if (hasReviewDate.value &&
+          adder.customProjectAdderAmount > 0 &&
           (!adder.customProposalAdderAmount || adder.customProposalAdderAmount <= 0)) {
           result.selectedOnProjectOnly = true;
         }
 
-        // TODO: Implement review date logic when available
-        // Flag custom adders with only proposal amount
-        if (adder.customProposalAdderAmount > 0 &&
+        // Flag custom adders with only proposal amount when review date is set
+        if (hasReviewDate.value &&
+          adder.customProposalAdderAmount > 0 &&
           (!adder.customProjectAdderAmount || adder.customProjectAdderAmount <= 0)) {
           result.selectedOnProposalOnly = true;
         }

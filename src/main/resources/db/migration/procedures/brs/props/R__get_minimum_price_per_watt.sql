@@ -17,29 +17,58 @@ declare
   v_base_price_per_watt         numeric;
   v_user_commission_strategy_id bigint[];
   v_redline_amount numeric;
+  v_override_plan_id_from_proposal bigint;
 BEGIN
 
+  select plh.override_plan_id
+  into v_override_plan_id_from_proposal
+  from brs.proposal_log_history plh
+  where proposal_log_id = p_proposal_id;
 
-  select p.proposal_version_id,
-         pd.closer_user_id,
-         pd.closer_office,
-         opau.override_plan_id,
-         pd.closer_name,
-         coalesce(cocfv.numeric_value,cocfv1.numeric_value)
-  into v_proposal_version_id,v_closer_user_id,v_closer_org_id,v_override_plan_id,v_closer_name,v_base_price_per_watt
-  from brs.proposal p
-         inner join flow.project_process_step pps on pps.id = p.project_process_step_id
-         inner join brs.project_details pd on pd.project_id = pps.project_id
-         inner join brs.financial_details fd on fd.project_id = pd.project_id
-         left join brs.override_plan o on o.id = fd.override_plan_id
+  if v_override_plan_id_from_proposal is not null then
+    select p.proposal_version_id,
+           pd.closer_user_id,
+           pd.closer_office,
+           opau.override_plan_id,
+           pd.closer_name,
+           coalesce(cocfv.numeric_value,cocfv1.numeric_value)
+    into v_proposal_version_id,v_closer_user_id,v_closer_org_id,v_override_plan_id,v_closer_name,v_base_price_per_watt
+    from brs.proposal p
+           inner join flow.project_process_step pps on pps.id = p.project_process_step_id
+           inner join brs.project_details pd on pd.project_id = pps.project_id
+           inner join brs.financial_details fd on fd.project_id = pd.project_id
+           left join brs.override_plan o on o.id = fd.override_plan_id
 
-         left join brs.commission_override_custom_field_value cocfv
-                   on cocfv.override_plan_id = o.id and cocfv.custom_field_group_assignment_id = 871 --stage
-         left join brs.override_plan_assigned_user opau on opau.user_id = pd.closer_user_id and
-                                                           opau.end_date is null
-         left join brs.commission_override_custom_field_value cocfv1
-                   on cocfv1.override_plan_id = opau.override_plan_id and cocfv1.custom_field_group_assignment_id = 871 --stage
-  where p.id = p_proposal_id;
+           left join brs.commission_override_custom_field_value cocfv
+                     on cocfv.override_plan_id = o.id and cocfv.custom_field_group_assignment_id = 871 --stage
+           left join brs.override_plan_assigned_user opau on o.id = opau.override_plan_id
+           left join brs.commission_override_custom_field_value cocfv1
+                     on cocfv1.override_plan_id = opau.override_plan_id and cocfv1.custom_field_group_assignment_id = 871 --stage
+    where p.id = p_proposal_id and o.id = v_override_plan_id_from_proposal;
+  end if;
+
+  if v_override_plan_id is null then
+    select p.proposal_version_id,
+           pd.closer_user_id,
+           pd.closer_office,
+           opau.override_plan_id,
+           pd.closer_name,
+           coalesce(cocfv.numeric_value,cocfv1.numeric_value)
+    into v_proposal_version_id,v_closer_user_id,v_closer_org_id,v_override_plan_id,v_closer_name,v_base_price_per_watt
+    from brs.proposal p
+           inner join flow.project_process_step pps on pps.id = p.project_process_step_id
+           inner join brs.project_details pd on pd.project_id = pps.project_id
+           inner join brs.financial_details fd on fd.project_id = pd.project_id
+           left join brs.override_plan o on o.id = fd.override_plan_id
+
+           left join brs.commission_override_custom_field_value cocfv
+                     on cocfv.override_plan_id = o.id and cocfv.custom_field_group_assignment_id = 871 --stage
+           left join brs.override_plan_assigned_user opau on opau.user_id = pd.closer_user_id and
+                                                             opau.end_date is null
+           left join brs.commission_override_custom_field_value cocfv1
+                     on cocfv1.override_plan_id = opau.override_plan_id and cocfv1.custom_field_group_assignment_id = 871 --stage
+    where p.id = p_proposal_id;
+  end if;
 
   select int_array_value
   into v_user_commission_strategy_id
