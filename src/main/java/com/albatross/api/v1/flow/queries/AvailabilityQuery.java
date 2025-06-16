@@ -554,7 +554,6 @@ public class AvailabilityQuery {
 
 
 //language=PostgreSQL
-
   public static final String getAllSlotSchedulesUser = """
     SELECT DISTINCT uss.slot_schedule_id AS id, rss.schedule_name
     FROM flow.user_slot_schedules uss

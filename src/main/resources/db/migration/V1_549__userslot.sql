@@ -9,6 +9,13 @@ CREATE TABLE IF NOT EXISTS flow.user_slot_schedules (
     modified_by_id INTEGER,
     archived BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES flow.user(id),
-    CONSTRAINT fk_slot_schedule FOREIGN KEY (slot_schedule_id) REFERENCES flow.resource_slot_schedule(id)
+    CONSTRAINT flow_user_slot_schedules_user_id_fk
+        FOREIGN KEY (user_id)
+        REFERENCES flow.user(id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+
+    CONSTRAINT flow_user_slot_schedules_slot_schedule_id_fk
+        FOREIGN KEY (slot_schedule_id)
+        REFERENCES flow.resource_slot_schedule(id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT
 );
