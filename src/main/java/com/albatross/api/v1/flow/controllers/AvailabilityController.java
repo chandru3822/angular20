@@ -147,7 +147,7 @@ public class AvailabilityController {
   }
 
   @PostMapping(value = "/availabilitySlotSchedule")
-  public void availabilitySlotSchedule(@RequestBody SlotManagement slotManagement) throws Exception {
+  public void saveAvailabilitySlotSchedule(@RequestBody SlotManagement slotManagement) throws Exception {
     availabilityService.saveSlots(slotManagement);
   }
 

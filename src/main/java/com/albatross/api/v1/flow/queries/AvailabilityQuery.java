@@ -2,13 +2,6 @@ package com.albatross.api.v1.flow.queries;
 
 public class AvailabilityQuery {
 
-  public static final String archiveSlot = """
-    UPDATE flow.user_slot_schedules
-    SET archived = true
-    WHERE user_id = :positionid
-      AND slot_schedule_id = :scheduleId
-""";
-
   //language=PostgreSQL
   public final static String getAllForResource = """
     SELECT
@@ -105,7 +98,7 @@ public class AvailabilityQuery {
     values (:companyId, :userId, :orgId, :startDate, :endDate, :createdById, now(), :createdById, now())
     """;
 
-
+  //language=PostgreSQL
   public static final String insertNewUserSlot = """
     INSERT INTO flow.user_slot_schedules (user_id, slot_schedule_id,created_by_id,modified_by_id,date_created,date_modified)
     SELECT :positionid, slot_id,:createdById,:createdById,now(),now()
@@ -560,6 +553,7 @@ public class AvailabilityQuery {
 
 
 
+//language=PostgreSQL
 
   public static final String getAllSlotSchedulesUser = """
     SELECT DISTINCT uss.slot_schedule_id AS id, rss.schedule_name

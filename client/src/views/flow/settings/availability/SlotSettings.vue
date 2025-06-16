@@ -107,11 +107,12 @@ const submitSlotMapping = async () => {
     if(response){
        appStore.showSnack('SUCCESS', 'Slot has been successfully added to the user.')
     }
-
   } catch (error) {
-
+       appStore.showSnack('ERROR', 'An error occurred while assigning the slot.');
   }
 };
+
+
 </script>
 
 <style scoped>
