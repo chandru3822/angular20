@@ -113,7 +113,7 @@ public class AvailabilityQuery {
 """;
 
 
-
+  //language=PostgreSQL
   public static final String userSlotArchive = """
     UPDATE flow.user_slot_schedules
     SET date_modified=now(),modified_by_id=:createdById,archived = true

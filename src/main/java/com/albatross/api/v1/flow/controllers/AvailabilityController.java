@@ -140,9 +140,9 @@ public class AvailabilityController {
     return availabilityService.getAllSlotSchedules(false, userId);
   }
 
-  @GetMapping(value = "/slotSchedulesUser/{userId}")  // Define path variable in URL
+  @GetMapping(value = "/slotSchedulesUser/{userId}")
   public List<SlotScheduleUser> getSlotSchedulesUser(
-    @PathVariable(required = true) Long userId) {  // Use @PathVariable
+    @PathVariable(required = true) Long userId) {
     return availabilityService.getSlotUsers(true, userId);
   }
 
