@@ -236,6 +236,7 @@
         color="primary"
         v-else-if="!savingActivity && activitiesLoading"
       />
+
       <ActivityList
         v-else-if="!savingActivity && !activitiesLoading"
         :activities="sortedFilteredActivities"
@@ -404,7 +405,7 @@ import {
   computed,
   ref,
   onMounted,
-  watch
+  watch,nextTick
 } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
@@ -851,6 +852,7 @@ const getActivities = async () => {
         return acc
       }, [])
       activities.value = data
+      scrollConversation()
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error loading notes')
@@ -982,7 +984,31 @@ const saveActivity = (isNew) => {
   } else {
     editActivity()
   }
+
+
 }
+
+const scrollConversation = async () => {
+  await nextTick() // wait for new DOM elements to appear
+
+  const container = document.querySelector('.conversation-activity-inner-container')
+  if (!container) return
+
+  if (sortDirection.value !== 'asc') {
+    // Scroll to top
+    container.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  } else {
+    // Scroll to bottom
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth'
+    })
+  }
+}
+
 const saveNewActivity = async () => {
   savingActivity.value = true
   //in this case a NEW activity's hashtags are the root level ones
@@ -1015,7 +1041,8 @@ const saveNewActivity = async () => {
     addActivity.value = false
     editedActivity.value = {}
     savingActivity.value = false
-    emit('scrollToTop')
+    // emit('scrollToTop')
+      scrollConversation()
     appStore.showSnack('SUCCESS', 'Note Added')
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -1081,7 +1108,8 @@ const editActivity = async () => {
     editedIndex = null
     if (!timelineView.value) {
       //only reset the scroll if we're editing in the topics view
-      emit('scrollToTop')
+      // emit('scrollToTop')
+        scrollConversation()
     }
     savingActivity.value = false
     appStore.showSnack('SUCCESS', 'Note Edited')
