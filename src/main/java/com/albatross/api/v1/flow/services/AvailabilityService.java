@@ -1072,11 +1072,8 @@ public class AvailabilityService {
     params.put("newScheduleIds", slotManagement.getScheduleId().toArray(new Long[0]));
     params.put("createdById", user.trueUserId());
 
-   // if needed
-
-    sqlCache.updateBySql(AvailabilityQuery.INSERT_NEW, params);
-//    sqlCache.updateBySql(AvailabilityQuery.UNARCHIVE, params);
-    sqlCache.updateBySql(AvailabilityQuery.ARCHIVE_OLD, params);
+    sqlCache.updateBySql(AvailabilityQuery.insertNewUserSlot, params);
+    sqlCache.updateBySql(AvailabilityQuery.userSlotArchive, params);
   }
 
 

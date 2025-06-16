@@ -105,7 +105,7 @@ const submitSlotMapping = async () => {
 
     const response = await postRequest(`/availability/availabilitySlotSchedule`, payload);
     if(response){
-       appStore.showSnack('SUCCESS', 'slot has been added to the user.')
+       appStore.showSnack('SUCCESS', 'Slot has been successfully added to the user.')
     }
 
   } catch (error) {

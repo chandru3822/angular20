@@ -1,11 +1,14 @@
 -- schedule slot to particular user
-CREATE TABLE flow.user_slot_schedules (
+CREATE TABLE IF NOT EXISTS flow.user_slot_schedules (
     id SERIAL PRIMARY KEY,
     user_id BIGINT,
     slot_schedule_id BIGINT,
-    date_created TIMESTAMP,
-    date_modified TIMESTAMP,
-    created_by_id BIGINT,
-    modified_by_id BIGINT,
-	  archived boolean default false
+    date_created TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    date_modified TIMESTAMP WITHOUT TIME ZONE,
+    created_by_id INTEGER NOT NULL,
+    modified_by_id INTEGER,
+    archived BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES flow.users(id),
+    CONSTRAINT fk_slot_schedule FOREIGN KEY (slot_schedule_id) REFERENCES flow.slot_schedules(id)
 );

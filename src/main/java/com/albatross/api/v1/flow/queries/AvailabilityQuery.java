@@ -106,7 +106,7 @@ public class AvailabilityQuery {
     """;
 
 
-  public static final String INSERT_NEW = """
+  public static final String insertNewUserSlot = """
     INSERT INTO flow.user_slot_schedules (user_id, slot_schedule_id,created_by_id,modified_by_id,date_created,date_modified)
     SELECT :positionid, slot_id,:createdById,:createdById,now(),now()
     FROM unnest(:newScheduleIds::bigint[]) AS slot_id
@@ -119,17 +119,9 @@ public class AvailabilityQuery {
     );
 """;
 
-//  public static final String UNARCHIVE = """
-//    UPDATE flow.user_slot_schedules
-//    SET archived = false
-//    WHERE user_id = :positionid
-//      AND slot_schedule_id IN (
-//          SELECT slot_id FROM unnest(:newScheduleIds::bigint[]) AS slot_id
-//      )
-//      AND archived = true;
-//""";
 
-  public static final String ARCHIVE_OLD = """
+
+  public static final String userSlotArchive = """
     UPDATE flow.user_slot_schedules
     SET date_modified=now(),modified_by_id=:createdById,archived = true
     WHERE user_id = :positionid
@@ -654,7 +646,7 @@ public class AvailabilityQuery {
     SELECT * from flow.company_holiday where id = :id and company_id = :companyId
   """;
 
-  //language=PostgreSQLḥ
+  //language=PostgreSQL
   public final static String insertCompanyHoliday = """
       insert into flow.company_holiday (name, date, date_created, date_modified, created_by_id, modified_by_id, company_id, archived)
       VALUES (:name, :date, now(), now(), :createdById, :modifiedById, :companyId, false)
