@@ -223,6 +223,7 @@
                     :highlightPinnedActivity="false"
                     :query="queryText"
                     @reload="getActivities"
+                      @remove-deleted="removeDeletedActivity"
                   ></ActivityList>
                 </v-expansion-panel-content>
               </v-expansion-panel>
@@ -255,6 +256,7 @@
         :state-loaded="stateLoadedStatus"
         @bottomHitCount="bottomHitCallback"
         @reload="getActivities"
+          @remove-deleted="removeDeletedActivity"
       ></ActivityList>
       <!--      <div v-if="sortedFilteredActivities">-->
       <!--        sfa: {{ sortedFilteredActivities.length }}-->
@@ -1123,7 +1125,8 @@ const editActivity = async () => {
 const removeDeletedActivity = (activityId) => {
   const deletedActivity = activities.value.find((a) => a.id === activityId)
   if (deletedActivity) {
-    deletedActivity.archived = true
+    deletedActivity.archived = true;
+     getActivities();
   }
 }
 
