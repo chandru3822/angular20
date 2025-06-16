@@ -555,9 +555,9 @@ public class AvailabilityQuery {
 
 //language=PostgreSQL
   public static final String getAllSlotSchedulesUser = """
-    SELECT DISTINCT uss.slot_schedule_id AS id, rss.schedule_name
+    SELECT DISTINCT uss.resource_slot_schedule_id AS id, rss.schedule_name
     FROM flow.user_slot_schedules uss
-    INNER JOIN flow.resource_slot_schedule rss ON uss.slot_schedule_id = rss.id
+    INNER JOIN flow.resource_slot_schedule rss ON uss.resource_slot_schedule_id = rss.id
     WHERE uss.user_id = :userId
       AND uss.archived = false;
 """;
@@ -584,7 +584,7 @@ public class AvailabilityQuery {
                     AND :positionId IN (1,2,3,517)
                THEN
                    rss.id IN (
-                       SELECT slot_schedule_id
+                       SELECT resource_slot_schedule_id
                        FROM flow.user_slot_schedules as uss
                        WHERE user_id = :userId AND uss.archived =false
                        UNION
