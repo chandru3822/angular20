@@ -3,7 +3,7 @@ DROP FUNCTION IF EXISTS flow.set_project_contact_full_name_to_custom_field(
 );
 
 CREATE OR REPLACE FUNCTION flow.set_project_contact_full_name_to_custom_field(
-  p_group_id bigint,
+  p_cfga_id bigint,
   p_project_id bigint,
   p_process_step_id bigint,
   p_user_id bigint
@@ -22,7 +22,7 @@ BEGIN
   FROM flow.custom_field_group_assignment cfga
   JOIN flow.custom_field_group cfg ON cfg.id = cfga.custom_field_group_id
   JOIN flow.custom_field cf ON cf.id = cfga.custom_field_id
-  WHERE cfga.id = p_group_id;
+  WHERE cfga.id = p_cfga_id;
 
   IF v_data_type_id != 1 THEN
     RAISE NOTICE 'Custom field is not of text type.';
@@ -51,7 +51,7 @@ BEGIN
       SET text_value = v_full_name,
           date_modified = NOW(),
           modified_by_id = p_user_id
-      WHERE pcv.custom_field_group_assignment_id = p_group_id
+      WHERE pcv.custom_field_group_assignment_id = p_cfga_id
         AND pcv.project_id = p_project_id
       RETURNING *
     )
@@ -62,7 +62,7 @@ BEGIN
       date_created, date_modified, created_by_id, modified_by_id, rich_text_value
     )
     SELECT
-      p_project_id, p_group_id,
+      p_project_id, p_cfga_id,
       NULL, NULL, NULL, v_full_name,
       NULL, NULL, NULL,
       NOW(), NOW(), p_user_id, p_user_id, NULL
@@ -75,7 +75,7 @@ BEGIN
       SET text_value = v_full_name,
           date_modified = NOW(),
           modified_by_id = p_user_id
-      WHERE ppscfv.custom_field_group_assignment_id = p_group_id
+      WHERE ppscfv.custom_field_group_assignment_id = p_cfga_id
         AND ppscfv.project_process_step_id = v_pps_id
       RETURNING *
     )
@@ -87,7 +87,7 @@ BEGIN
       json_value, rich_text_value
     )
     SELECT
-      v_pps_id, p_group_id,
+      v_pps_id, p_cfga_id,
       NULL, NULL, NULL, v_full_name,
       NULL, NULL, NULL,
       NOW(), NOW(), p_user_id, p_user_id,
