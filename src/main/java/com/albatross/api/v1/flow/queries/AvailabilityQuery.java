@@ -100,14 +100,14 @@ public class AvailabilityQuery {
 
   //language=PostgreSQL
   public static final String insertNewUserSlot = """
-    INSERT INTO flow.user_slot_schedules (user_id, slot_schedule_id,created_by_id,modified_by_id,date_created,date_modified)
+    INSERT INTO flow.user_slot_schedules (user_id, resource_slot_schedule_id,created_by_id,modified_by_id,date_created,date_modified)
     SELECT :positionid, slot_id,:createdById,:createdById,now(),now()
     FROM unnest(:newScheduleIds::bigint[]) AS slot_id
     WHERE NOT EXISTS (
         SELECT 1
         FROM flow.user_slot_schedules
         WHERE user_id = :positionid
-          AND slot_schedule_id = slot_id
+          AND resource_slot_schedule_id = slot_id
           AND archived = false
     );
 """;
@@ -118,7 +118,7 @@ public class AvailabilityQuery {
     UPDATE flow.user_slot_schedules
     SET date_modified=now(),modified_by_id=:createdById,archived = true
     WHERE user_id = :positionid
-      AND slot_schedule_id NOT IN (
+      AND resource_slot_schedule_id NOT IN (
           SELECT slot_id FROM unnest(:newScheduleIds::bigint[]) AS slot_id
       )
       AND archived = false;

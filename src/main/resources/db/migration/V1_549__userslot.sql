@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS flow.user_slot_schedules (
     id SERIAL PRIMARY KEY,
     user_id BIGINT,
-    slot_schedule_id BIGINT,
+    resource_slot_schedule_id BIGINT,
     date_created TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
     date_modified TIMESTAMP WITHOUT TIME ZONE,
     created_by_id INTEGER NOT NULL,
@@ -14,8 +14,9 @@ CREATE TABLE IF NOT EXISTS flow.user_slot_schedules (
         REFERENCES flow.user(id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
 
-    CONSTRAINT flow_user_slot_schedules_slot_schedule_id_fk
-        FOREIGN KEY (slot_schedule_id)
+    CONSTRAINT flow_user_slot_schedules_resource_slot_schedule_id_fk
+        FOREIGN KEY (resource_slot_schedule_id)
         REFERENCES flow.resource_slot_schedule(id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT
 );
+
