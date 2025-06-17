@@ -121,14 +121,14 @@ const router = new Router({
             // From login page - redirect back to the original page after session is expired
             if(from.query?.redirect) {
               next()
-            } 
+            }
             // had to do the matching or it just does a continuous loop if the user has a homepagepath
-            else if (userStore?.details?.homePagePath && to.path !== userStore?.details?.homePagePath ) { 
+            else if  (userStore?.details?.homePagePath && to.path !== userStore?.details?.homePagePath ) {
               router.push({ path: userStore.details.homePagePath })
             } else {
               next()
             }
-          }
+           }
         }
       },
       children: [
@@ -1719,6 +1719,15 @@ const router = new Router({
                       component: () =>
                         import(
                           './views/flow/settings/availability/Schedule.vue'
+                          )
+                    },
+                    {
+                      path: 'slotsetting',
+                      meta: { title: 'Albatross - slotsetting' },
+                      props: true,
+                      component: () =>
+                        import(
+                          './views/flow/settings/availability/SlotSettings.vue'
                           )
                     },
                     {

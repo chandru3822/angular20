@@ -148,7 +148,7 @@ const items = computed(() => {
       header: 'User Management',
       show: hasSettingsAccess.value
     }, {
-      path: '/settings/availability/main/schedule',
+      path: '/settings/availability/main/slotsetting',
       title: 'Availability',
       show: hasSettingsAccess.value || userStore.userHasFeature('AVAILABILITY')
     }, {

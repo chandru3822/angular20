@@ -1120,12 +1120,16 @@ where contact_id = :contactId
                                                                     on cpsfa.company_project_status_type_id = cpst.id
                                                                         and case when :companyProjectStatusTypeId::int is not null then
                                                                                          cpst.id = :companyProjectStatusTypeId::int else true end
+                                                         inner join flow.object_category_company_project_status_type occpst
+                                                            on cpst.id = occpst.company_project_status_type_id
                                                          left join flow.data_view_field_config dvfc on cpsfa.data_view_field_config_id = dvfc.id
                                                          left join flow.data_view_child_field_config dvcfc
                                                                    on cpsfa.data_view_child_field_config_id = dvcfc.id
                                                          left join flow.default_field def on def.id = dvfc.default_field_id
                                                          left join flow.unique_behavior_type ubt on ubt.id = dvcfc.unique_behavior_type_id
                                                 where cpsfa.archived is false
+                                                  and occpst.object_category_id = (select object_category_id from flow.project where id = :projectId)
+                                                  and occpst.archived is false
                                                   and cpst.company_id = :companyId)
                                 select cpst.id,
                                        cpst.project_status_type_id,
@@ -1147,9 +1151,13 @@ where contact_id = :contactId
                                                              WHERE f.company_project_status_type_id = cpst.id
                                                              order by f.display_order) assignedFields), '[]') AS "assignedFields"
                                 from flow.company_project_status_type cpst
+                                inner join flow.object_category_company_project_status_type occpst
+                                on cpst.id = occpst.company_project_status_type_id
                                 where cpst.archived is false
                                   and cpst.is_milestone is true
                                   and cpst.company_id = :companyId
+                                  and occpst.object_category_id = (select object_category_id from flow.project where id = :projectId)
+                                  and occpst.archived is false
                                   and case when :companyProjectStatusTypeId::int is not null then
                                                    cpst.id = :companyProjectStatusTypeId::int else true end
                                 order by cpst.display_order;
