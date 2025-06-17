@@ -99,6 +99,33 @@ public class AvailabilityQuery {
     """;
 
   //language=PostgreSQL
+  public static final String insertNewUserSlot = """
+    INSERT INTO flow.user_slot_schedules (user_id, resource_slot_schedule_id,created_by_id,modified_by_id,date_created,date_modified)
+    SELECT :positionid, slot_id,:createdById,:createdById,now(),now()
+    FROM unnest(:newScheduleIds::bigint[]) AS slot_id
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM flow.user_slot_schedules
+        WHERE user_id = :positionid
+          AND resource_slot_schedule_id = slot_id
+          AND archived = false
+    );
+""";
+
+
+  //language=PostgreSQL
+  public static final String userSlotArchive = """
+    UPDATE flow.user_slot_schedules
+    SET date_modified=now(),modified_by_id=:createdById,archived = true
+    WHERE user_id = :positionid
+      AND resource_slot_schedule_id NOT IN (
+          SELECT slot_id FROM unnest(:newScheduleIds::bigint[]) AS slot_id
+      )
+      AND archived = false;
+""";
+
+
+  //language=PostgreSQL
   public final static String getOne = """
     SELECT
             rs.id,
@@ -524,6 +551,17 @@ public class AvailabilityQuery {
     where rss.id = :id
     """;
 
+
+
+//language=PostgreSQL
+  public static final String getAllSlotSchedulesUser = """
+    SELECT DISTINCT uss.resource_slot_schedule_id AS id, rss.schedule_name
+    FROM flow.user_slot_schedules uss
+    INNER JOIN flow.resource_slot_schedule rss ON uss.resource_slot_schedule_id = rss.id
+    WHERE uss.user_id = :userId
+      AND uss.archived = false;
+""";
+
   //language=PostgreSQL
   public final static String getAllSlotSchedules = """
     select *,
@@ -540,14 +578,21 @@ public class AvailabilityQuery {
                                    AND rst.archived is not true
                                  order by rst.start_time, rst.end_time) wlp), '[]') AS "slotTimes"
     from flow.resource_slot_schedule rss
-    where rss.archived is not true
-      AND case when :isAdmin::boolean is not true
-        and :positionId IN ( 1,2,3,517 )
-                   then
-                       rss.id in (1,2)
-               else true end
-    order by rss.schedule_name
-    """;
+   WHERE rss.archived IS NOT TRUE
+       AND CASE
+               WHEN :isAdmin::boolean IS NOT TRUE
+                    AND :positionId IN (1,2,3,517)
+               THEN
+                   rss.id IN (
+                       SELECT resource_slot_schedule_id
+                       FROM flow.user_slot_schedules as uss
+                       WHERE user_id = :userId AND uss.archived =false
+                       UNION
+                       SELECT unnest(ARRAY[1, 2])
+                   )
+               ELSE TRUE
+           END
+     ORDER BY rss.schedule_name;""";
 
   //language=PostgreSQL
   public final static String updateSlotTime = """
