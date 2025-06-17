@@ -1136,6 +1136,13 @@ watch(
     noteStore.setNote(newVal)
   }
 );
+
+watch(
+  () => editedActivity.value.id,
+  (newVal) => {
+    noteStore.setNoteId(newVal)
+  }
+);
 watch(
   ()=>selectedTopics.value,
   (newVal)=>{
