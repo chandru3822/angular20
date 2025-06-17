@@ -8,6 +8,7 @@
           </v-toolbar-title>
         </v-toolbar>
         <div class="px-4">
+
           <a-autocomplete v-if="viewAll"
                     v-model="orgId"
                     :items="orgs"
@@ -107,6 +108,12 @@
   const usersLoading = ref(false)
   const model = ref('')
   const tabs = ref([
+        {
+      label: 'SETTINGS',
+      qaId: 'qa-slotsetting',
+      path: '/settings/availability/main/slotsetting',
+      display: userStore.userHasFeature('AVAILABILITY')
+    },
     {
       label: 'Schedule',
       qaId: 'qa-schedule',
@@ -139,6 +146,9 @@
       return { userId: userId.value, useSlotSchedule: useSlotSchedule() }}
     if (orgId.value) { return { orgId: orgId.value, useSlotSchedule: false }}
   })
+
+
+
 
   onMounted(() => {
       if (null !== userId.value) {
