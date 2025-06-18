@@ -84,7 +84,7 @@ public class UserController {
       throw new ResponseStatusException(
         HttpStatus.BAD_REQUEST, "Invalid Username", new Exception());
     }
-    
+
     if (user.getPhoneExtension().length() > 10) {
         throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Phone extension exceeds the maximum allowed length of 10 characters.", new Exception());
@@ -238,23 +238,34 @@ public class UserController {
     @RequestBody PasswordResetRequest passwordResetRequest) {
     String result = null;
 
-    if (null != passwordResetRequest.getUserId() && null != passwordResetRequest.getNewPassword()) {
+    if (passwordResetRequest.getUserId() != null && passwordResetRequest.getNewPassword() != null) {
       // todo: remove this check after we turn it on and mobile is working
       if (doCompanyDefaultValidation) {
         Boolean passwordIsCompanyDefault =
           securityService.passwordIsCompanyDefault(
             passwordResetRequest.getUserId(), passwordResetRequest.getNewPassword());
         if (passwordIsCompanyDefault) {
-          // NOT_ACCEPTABLE = 406
           throw new ResponseStatusException(
             HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
         } else {
           result = userService.updatePassword(passwordResetRequest);
-          securityService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+          securityService.updateLoginAttempts(
+            0,
+            passwordResetRequest.getUserId(),
+            true,
+            passwordResetRequest.getAccessType(),
+            passwordResetRequest.getMobileVersion()
+          );
         }
       } else {
         result = userService.updatePassword(passwordResetRequest);
-        securityService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+        securityService.updateLoginAttempts(
+          0,
+          passwordResetRequest.getUserId(),
+          true,
+          passwordResetRequest.getAccessType(),
+          passwordResetRequest.getMobileVersion()
+        );
       }
     }
 

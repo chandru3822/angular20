@@ -63,12 +63,13 @@ public class SecurityService implements UserDetailsService {
       .orElse(null);
   }
 
-
-  public void updateLoginAttempts(int loginAttempts, Long userId) {
-    // update count of login attempts
+  public void updateLoginAttempts(int loginAttempts, Long userId, boolean loginSuccessful, String accessType, String mobileVersion) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("loginAttempts", loginAttempts);
     params.put("userId", userId);
+    params.put("loginSuccessful", loginSuccessful);
+    params.put("accessType", accessType);
+    params.put("mobileVersion", mobileVersion);
     sqlCache.updateBySql(UserQuery.updateLoginAttempts, params);
   }
 

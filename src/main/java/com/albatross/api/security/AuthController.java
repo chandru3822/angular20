@@ -59,7 +59,8 @@ public class AuthController {
   }
 
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> getJwtToken(@RequestBody Credentials creds) {
+  public ResponseEntity<?> getJwtToken(@RequestBody Credentials creds,
+                                       @RequestHeader(value = "User-Agent", required = false) String userAgent) {
     User user = securityService.getUser(creds.getUsername());
     if (user == null) {
       log.debug("AUTH: Login attempted with unknown username. {}", creds.getUsername());
@@ -70,66 +71,83 @@ public class AuthController {
       return ResponseEntity.badRequest().body(msg);
     }
 
-    Boolean validPassword = securityService.validatePassword(user, creds.getPassword());
-    if (!validPassword) {
-      int attempts = user.getLoginAttempts() + 1;
-      securityService.updateLoginAttempts(attempts, user.getId());
-      log.debug(
-          "AUTH: Login attempted with bad password for user={}, count={}",
-          creds.getUsername(),
-          attempts);
-      return ResponseEntity.badRequest().body("Invalid Username or Password");
-    } else if (user.getLoginAttempts() > 0) {
-      // after successful login, if any previous unsuccessful, reset the count
-      securityService.updateLoginAttempts(0, user.getId());
-    }
-
     if (!user.isUnlocked()) {
       log.debug("AUTH: Cannot log in; user does not have access: {}", creds.getUsername());
       return ResponseEntity.badRequest().body("This account does not have access.");
     }
 
-    // cannot turn this on in prod until mobile is ready
-    // todo: remove this check after we turn it on and mobile is working
+    // Determine device type from User-Agent
+    String accessType = "web";
+    String mobileVersion = creds.getVersion();
+
+    if (userAgent != null) {
+      String ua = userAgent.toLowerCase();
+      if (ua.contains("android")) {
+        accessType = "mobile";
+        mobileVersion = (creds.getVersion() != null ? creds.getVersion() : "") + "-android";
+      } else if (ua.contains("iphone")) {
+        accessType = "mobile";
+        mobileVersion = (creds.getVersion() != null ? creds.getVersion() : "") + "-iphone";
+      } else if (ua.contains("ipad")) {
+        accessType = "mobile";
+        mobileVersion = (creds.getVersion() != null ? creds.getVersion() : "") + "-ipad";
+      }
+    }
+
+    // Log or process the app version if present
+    if (creds.getVersion() != null) {
+      log.info("Login attempt with app version: {}", creds.getVersion());
+      // Optionally: validate or use the version value here
+    }
+
+    Boolean validPassword = securityService.validatePassword(user, creds.getPassword());
+    if (!validPassword) {
+      int attempts = user.getLoginAttempts() + 1;
+      securityService.updateLoginAttempts(attempts, user.getId(), false, accessType, mobileVersion);
+      log.debug(
+        "AUTH: Login attempted with bad password for user={}, count={}",
+        creds.getUsername(),
+        attempts);
+      return ResponseEntity.badRequest().body("Invalid Username or Password");
+    } else {
+      // after successful login, if any previous unsuccessful, reset the count
+      securityService.updateLoginAttempts(0, user.getId(), true, accessType, mobileVersion);
+    }
+
     if (doCompanyDefaultValidation) {
       if (creds.newPassword != null && !creds.newPassword.isEmpty()) {
-        // called after user was already told they needed to reset their password
         if(creds.newPassword.length() < 8) {
-          // NOT_ACCEPTABLE = 406
           return ResponseEntity.status(NOT_ACCEPTABLE)
             .body("New Password is too short. Please try a new password.");
         } else {
           securityService.updateUserPassword(user.getId(), creds.newPassword);
         }
       } else {
-        // validate that the user's password is not the same as the company default for any company
-        // they have access to
         Boolean passwordIsCompanyDefault =
-            securityService.passwordIsCompanyDefault(user.getId(), creds.getPassword());
+          securityService.passwordIsCompanyDefault(user.getId(), creds.getPassword());
         if (passwordIsCompanyDefault) {
           log.warn(
-              "AUTH: Login attempted with company default password for user={}",
-              creds.getUsername());
-          // NOT_ACCEPTABLE = 406
+            "AUTH: Login attempted with company default password for user={}",
+            creds.getUsername());
           return ResponseEntity.status(NOT_ACCEPTABLE)
-              .body("You must reset your password.");
+            .body("You must reset your password.");
         }
       }
     }
 
     List<FeatureAccessControl> results =
-        securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+      securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
     user.setFeatureAccess(results);
 
     if (maintenanceMode
-        && !securityService.userHasFeatureAccessLevel(
-            user.getId(),
-            user.getCompanyId(),
-            user.getHighestCompanyId(),
-            "MAINTENANCE_MODE",
-            List.of("ADMIN"))) {
+      && !securityService.userHasFeatureAccessLevel(
+      user.getId(),
+      user.getCompanyId(),
+      user.getHighestCompanyId(),
+      "MAINTENANCE_MODE",
+      List.of("ADMIN"))) {
       return ResponseEntity.status(FORBIDDEN)
-          .body(Map.of("message", "Site is under maintenance.", "maintenanceMode", true));
+        .body(Map.of("message", "Site is under maintenance.", "maintenanceMode", true));
     }
 
     JwtClaims body = createJwtBody(user);
@@ -217,7 +235,7 @@ public class AuthController {
 
   @Data
   public static class Credentials {
-    private String username, password, newPassword;
+    private String username, password, newPassword, version;
   }
 
   /** This class defines what is returned from POST /auth/login */
