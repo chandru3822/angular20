@@ -6,6 +6,7 @@ import com.albatross.api.security.jwt.JwtClaimsSerializer;
 import com.albatross.api.security.jwt.JwtUtils;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.UserQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
@@ -103,7 +104,9 @@ public class AuthController {
     Boolean validPassword = securityService.validatePassword(user, creds.getPassword());
     if (!validPassword) {
       int attempts = user.getLoginAttempts() + 1;
-      securityService.updateLoginAttempts(attempts, user.getId(), false, accessType, mobileVersion);
+      securityService.updateLoginAttempts(
+        attempts, user.getId(), false, accessType, mobileVersion, user.getId(), user.getId()
+      );
       log.debug(
         "AUTH: Login attempted with bad password for user={}, count={}",
         creds.getUsername(),
@@ -111,7 +114,9 @@ public class AuthController {
       return ResponseEntity.badRequest().body("Invalid Username or Password");
     } else {
       // after successful login, if any previous unsuccessful, reset the count
-      securityService.updateLoginAttempts(0, user.getId(), true, accessType, mobileVersion);
+      securityService.updateLoginAttempts(
+        0, user.getId(), true, accessType, mobileVersion, user.getId(), user.getId()
+      );
     }
 
     if (doCompanyDefaultValidation) {

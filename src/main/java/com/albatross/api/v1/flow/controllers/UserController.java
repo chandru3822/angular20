@@ -239,7 +239,6 @@ public class UserController {
     String result = null;
 
     if (passwordResetRequest.getUserId() != null && passwordResetRequest.getNewPassword() != null) {
-      // todo: remove this check after we turn it on and mobile is working
       if (doCompanyDefaultValidation) {
         Boolean passwordIsCompanyDefault =
           securityService.passwordIsCompanyDefault(
@@ -254,7 +253,9 @@ public class UserController {
             passwordResetRequest.getUserId(),
             true,
             passwordResetRequest.getAccessType(),
-            passwordResetRequest.getMobileVersion()
+            passwordResetRequest.getMobileVersion(),
+            passwordResetRequest.getUserId(),
+            passwordResetRequest.getUserId()
           );
         }
       } else {
@@ -264,7 +265,9 @@ public class UserController {
           passwordResetRequest.getUserId(),
           true,
           passwordResetRequest.getAccessType(),
-          passwordResetRequest.getMobileVersion()
+          passwordResetRequest.getMobileVersion(),
+          passwordResetRequest.getUserId(),
+          passwordResetRequest.getUserId()
         );
       }
     }

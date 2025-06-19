@@ -437,10 +437,30 @@ public class UserQuery {
          date_modified = now(),
          modified_by_id = :userId
    where id = :userId;
-
-  insert into flow.user_login (user_id, date_created, login_successful, access_type, mobile_version)
-    values (:userId, now(), :loginSuccessful, :accessType, :mobileVersion);
 """;
+
+  //language=PostgreSQL
+  public final static String insertUserLogin = """
+  insert into flow.user_login (
+    user_id,
+    access_type,
+    mobile_version,
+    login_successful,
+    created_by_id,
+    date_created,
+    modified_by_id,
+    date_modified
+  ) values (
+    :userId,
+    :accessType,
+    :mobileVersion,
+    :loginSuccessful,
+    :createdById,
+    now(),
+    :modifiedById,
+    now()
+  );
+  """;
 
   //language=PostgreSQL
   public final static String findByUsernameOrEmailIgnoreCase = """
