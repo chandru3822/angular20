@@ -104,7 +104,7 @@ const onSubmit = async () => {
       userStore.loginError = e.data
 
       if (e?.status === 406) {
-        //this means the user tried to login with the company default password. redirect to the reset password screen
+        // This means the user tried to login with the company default password. Redirect to the reset password screen.
         router.push({ path: `/resetPassword` })
       }
     }
