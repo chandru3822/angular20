@@ -258,6 +258,8 @@ public class Five9Service {
           b.addParameter("unqualified_reason", value);
         } else if (cfv.getFieldName().equals("Lead Follow-up Date")) {
           b.addParameter("follow_up_date_time", cfv.getTimestampValue() == null ? "" : cfv.getTimestampValue().toString());
+        } else if (cfv.getFieldName().equals("Company Brand")) {
+          b.addParameter("company_brand", value);
         }
       }
     }
