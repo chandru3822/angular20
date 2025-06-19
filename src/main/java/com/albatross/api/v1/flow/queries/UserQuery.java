@@ -432,12 +432,12 @@ public class UserQuery {
 
   //language=PostgreSQL
   public final static String updateLoginAttempts = """
-  update flow."user"
-     set login_attempts = :loginAttempts,
-         date_modified = now(),
-         modified_by_id = :userId
-   where id = :userId;
-""";
+    update flow."user"
+    set login_attempts = :loginAttempts,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+    where id = :userId;
+    """;
 
   //language=PostgreSQL
   public final static String insertUserLogin = """
