@@ -520,11 +520,12 @@ const mentionableItems = ref([
 ])
 const onCheckboxChange=(at)=>
 {
-  if(at.id===1 && at.show===true)
+  if(at.id===1 && at.show===true || at.id===2 && at.show===true)
   {
     getActivities();
+    getActivityTopics();
   }
-    emit('scrollToTop')
+  emit('scrollToTop')
 }
 const applyMention = (item, keyWord, value, clearSearchData = true) => {
   if (item.mentionType === 1) {
@@ -1005,7 +1006,7 @@ const scrollConversation = async () => {
   } else {
     // Scroll to bottom
     container.scrollTo({
-      top: container.scrollHeight,
+      top: container.scrollHeight+1000,
       behavior: 'smooth'
     })
   }
