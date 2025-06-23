@@ -524,7 +524,7 @@ const onCheckboxChange=(at)=>
   {
     getActivities();
   }
-  
+    emit('scrollToTop')
 }
 const applyMention = (item, keyWord, value, clearSearchData = true) => {
   if (item.mentionType === 1) {
