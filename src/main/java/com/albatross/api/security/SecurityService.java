@@ -63,15 +63,19 @@ public class SecurityService implements UserDetailsService {
       .orElse(null);
   }
 
-
-  public void updateLoginAttempts(int loginAttempts, Long userId) {
-    // update count of login attempts
+  public void updateLoginAttempts(int loginAttempts, Long userId, boolean loginSuccessful, String accessType, String mobileVersion, Long createdById, Long modifiedById) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("loginAttempts", loginAttempts);
     params.put("userId", userId);
-    sqlCache.updateBySql(UserQuery.updateLoginAttempts, params);
-  }
+    params.put("loginSuccessful", loginSuccessful);
+    params.put("accessType", accessType);
+    params.put("mobileVersion", mobileVersion);
+    params.put("createdById", createdById);
+    params.put("modifiedById", modifiedById);
 
+    sqlCache.updateBySql(UserQuery.updateLoginAttempts, params);
+    sqlCache.updateBySql(UserQuery.insertUserLogin, params);
+  }
   public Optional<UserAccountDetails> getUserDetailsById(Long id) {
     User userById = findUserById(id);
     return Optional.ofNullable(userById)
