@@ -1,18 +1,28 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.services.UserPositionService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -53,5 +63,17 @@ public class UserPositionController {
                                       @RequestParam Long orgId) {
     return userPositionService.getAvailableSalesOrgs(positionId, orgId);
   }
-
+  
+	/**
+	 * @param positionId
+	 * @param query
+	 * @param pageable
+	 * @return
+	 */
+	@GetMapping(value = "/search")
+	public ResponseEntity<List<UserPosition>> searchContacts(@RequestParam Integer positionId,
+			@RequestParam String query, Pageable pageable) {
+		return new ResponseEntity<>(userPositionService.searchContacts(positionId, query, pageable), HttpStatus.OK);
+	}
+  
 }

@@ -1,5 +1,16 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.BeanWrapper;
+import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.stereotype.Service;
+
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
@@ -10,17 +21,9 @@ import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.queries.UserPositionQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -191,4 +194,28 @@ public class UserPositionService {
       bw.registerCustomEditor(List.class, new JsonCollectionDeserializer(partnerIdsRef, objectMapper));
     }
   }
+
+	/**
+	 * @param positionId
+	 * @param query
+	 * @param pageable
+	 * @return
+	 */
+	public List<UserPosition> searchContacts(Integer positionId, String query, Pageable pageable) {
+		List<UserPosition> results = null;
+		try {
+			HashMap<String, Object> params = new HashMap<>();
+			params.put("positionId", positionId);
+			params.put("query", query);
+			params.put("limit", pageable.getPageSize());
+			params.put("offset", pageable.getOffset());
+			String searchSql = UserPositionQuery.searchPositionUser;
+			String json = sqlCache.queryForObjectBySql(searchSql, params, String.class);
+			results = om.readValue(json, new TypeReference<List<UserPosition>>() {
+			});
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return results;
+	}
 }

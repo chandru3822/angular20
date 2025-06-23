@@ -207,4 +207,25 @@ public class UserPositionQuery {
       upv.primary_flag is true
     order by full_name
   """;
+
+    //language=PostgreSQL
+  public static final String searchPositionUser = """
+		   SELECT COALESCE((
+		     SELECT json_agg(logic)
+		    FROM( SELECT
+		      u.username as "fullName",
+		      u.id as id,
+		      up.primary_flag as "primaryFlag"
+		    FROM flow.user_position up
+		    INNER JOIN flow."user" u ON u.id = up.user_id
+		    WHERE up.position_id = :positionId
+		      AND up.archived = false
+		      AND (
+		        :query IS NULL OR TRIM(CAST(:query AS TEXT)) = ''
+		        OR u.user_full_name_search ILIKE '%' || CAST(:query AS TEXT) || '%'
+		      )
+		    ORDER BY up.date_created
+		    LIMIT :limit OFFSET :offset
+		    )logic), '[]')
+		""";
 }
