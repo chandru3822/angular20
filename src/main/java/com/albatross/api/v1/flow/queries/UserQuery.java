@@ -433,11 +433,34 @@ public class UserQuery {
   //language=PostgreSQL
   public final static String updateLoginAttempts = """
     update flow."user"
-           set login_attempts = :loginAttempts,
-               date_modified = now(),
-               modified_by_id = :userId
-       where id = :userId
+    set login_attempts = :loginAttempts,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+    where id = :userId;
     """;
+
+  //language=PostgreSQL
+  public final static String insertUserLogin = """
+  insert into flow.user_login (
+    user_id,
+    access_type,
+    mobile_version,
+    login_successful,
+    created_by_id,
+    date_created,
+    modified_by_id,
+    date_modified
+  ) values (
+    :userId,
+    :accessType,
+    :mobileVersion,
+    :loginSuccessful,
+    :createdById,
+    now(),
+    :modifiedById,
+    now()
+  );
+  """;
 
   //language=PostgreSQL
   public final static String findByUsernameOrEmailIgnoreCase = """
