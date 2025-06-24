@@ -93,6 +93,7 @@
           :edit-callback="setEditedActivity"
           :search-callback="searchByClick"
           @reload="getActivities"
+         @reloadtopic="getActivityTopics"
           ref="activityList"
           :use-infinite-loader="false"
           @remove-deleted="removeDeletedActivity"
@@ -129,6 +130,7 @@
               multiple
               flat><!--Topic # header-->
               <v-expansion-panel
+
                 v-for="h in orderBy(
                   searchfilteredActivityTypeHashtags(type.activityTypeHashtags),
                   'lastUpdated',
@@ -223,6 +225,8 @@
                     :highlightPinnedActivity="false"
                     :query="queryText"
                     @reload="getActivities"
+                    @reloadtopic="getActivityTopics"
+
                   ></ActivityList>
                 </v-expansion-panel-content>
               </v-expansion-panel>
@@ -236,6 +240,7 @@
         color="primary"
         v-else-if="!savingActivity && activitiesLoading"
       />
+
       <ActivityList
         v-else-if="!savingActivity && !activitiesLoading"
         :activities="sortedFilteredActivities"
@@ -254,6 +259,7 @@
         :state-loaded="stateLoadedStatus"
         @bottomHitCount="bottomHitCallback"
         @reload="getActivities"
+        @reloadtopic="getActivityTopics"
       ></ActivityList>
       <!--      <div v-if="sortedFilteredActivities">-->
       <!--        sfa: {{ sortedFilteredActivities.length }}-->
@@ -779,6 +785,7 @@ const activityContainsSearch = (activity) => {
     activity.createdByPosition?.toLowerCase().includes(lowerSearch) ||
     activity.createdByPositionOrg?.toLowerCase().includes(lowerSearch) ||
     activity.modifiedBy?.toLowerCase().includes(lowerSearch) ||
+    activity.pinned ||
     activity.pinnedBy?.toLowerCase().includes(lowerSearch) ||
     activity.linkedPpsId?.toString().includes(lowerSearch) ||
     activity.linkedPpseId?.toString().includes(lowerSearch) ||

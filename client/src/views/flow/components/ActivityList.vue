@@ -54,9 +54,10 @@
       </v-toolbar>
 
       <v-card-text class="py-0 default-text-color">
-        <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
-        <div class="text-formatting">
-          <a  @click="props.searchCallback(a.note)" :inner-html.prop="a.note | searchHighlight(query) | filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))"></a>
+       <div class="text-formatting">
+          <a  @click="props.searchCallback(a.note)">
+            <span>{{ a.note }}</span>
+          </a>
         </div>
       </v-card-text>
       <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
@@ -66,6 +67,7 @@
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="`| Edited by ${ a.modifiedBy }` | searchHighlight(query)"/>
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="a.dateModified | formatDate('timestamp', ' [on] M/D/YY [at] h:mm a')"/>
         <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
+        <span v-if="!a.pinned" :inner-html.prop="` | Unpinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
       </v-card-actions>
     </v-card>
     <infinite-loading v-if="useInfiniteLoader" @infinite="infiniteHandler">
@@ -109,6 +111,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const unpinnedActivity = ref(false)
 
 const urlRegex = /\bhttps?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_+.~#?&\/=]*\b/gi // thank you https://uibakery.io/regex-library/url
 const taggedUserRegex = /@\w+(?: [\w&]+)*(?=\s*\(|\s|$)/g // thank you chat gpt
@@ -155,13 +158,12 @@ const loaderState = ref(null)
 const editedIndex = ref(null)
 const activityToDelete = ref(null)
 
-const emit = defineEmits(['bottomHitCount', 'reload', 'remove-deleted'])
+const emit = defineEmits(['bottomHitCount', 'reload', 'reloadtopic','remove-deleted'])
 
 const removeNoteTagEmail = (note) => {
   const emailRegex = /\((([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\)/g
       return note.replaceAll(emailRegex, '')
 }
-
 /**
  * Escapes special HTML characters in a string to prevent XSS (Cross-Site Scripting) attacks.
  */
@@ -209,12 +211,16 @@ const goToPath = (activity) => {
 const pinActivity = async (activity) => {
   try {
     activity.pinned = !activity.pinned
+    console.log(activity.pinned);
+
     let params = {
       pinned: activity.pinned
     }
     await postRequestWithRequestParams(`/activity/${activity.id}/pin/${sectionType.value}`, null, params)
     let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
-    emit('reload');
+    emit('reload')
+    emit('reloadtopic')
+
     appStore.showSnack('SUCCESS', msg)
 
   } catch (e) {
