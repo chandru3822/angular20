@@ -54,11 +54,12 @@
       </v-toolbar>
 
       <v-card-text class="py-0 default-text-color">
-       <div class="text-formatting">
-          <a  @click="props.searchCallback(a.note)">
-            <span>{{ a.note }}</span>
-          </a>
-        </div>
+        <div
+  style="cursor: pointer;"
+  @click="props.searchCallback(a.note)"
+  v-html="highlightHtmlString(a.note, props.query)"
+></div>
+     <!-- <div style="cursor: pointer;" @click="props.searchCallback(a.note)" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))"/> -->
       </v-card-text>
       <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
         <span class="clickable" @click="props.searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)" :inner-html.prop="a.createdBy | searchHighlight(query)"/>
@@ -150,6 +151,35 @@ const props = defineProps({
     default: false,
   }
 })
+
+function highlightHtmlString(html, query) {
+  if (!html || !query) return html;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
+
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.nodeValue.trim() !== '') {
+      const spanWrapped = node.nodeValue.replace(regex, '<span class="highlight">$1</span>');
+      const temp = document.createElement('span');
+      temp.innerHTML = spanWrapped;
+      node.parentNode.replaceChild(temp, node);
+    }
+  }
+
+  return doc.body.innerHTML;
+}
+
+function getHighlightedNote(note, query) {
+  const clean = filterFormatting(removeNoteTagEmail(escapeHtml(note)));
+  return highlightHtmlString(clean, query);
+}
+
 const { contactId, orgId, userId, currentUserId,
   projectId, sectionType, highlightPinnedActivity, query, useInfiniteLoader } = toRefs(props)
 
@@ -193,6 +223,12 @@ const infiniteStateLoaded = (loadedState) => {
     loaderState.value?.loaded()
   }
 }
+
+const processedNote = computed(() => {
+  const cleanText = filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))
+  return searchHighlight(cleanText, props.query)
+})
+
 const editItem = (item) => {
   props.editCallback(item)
 }
