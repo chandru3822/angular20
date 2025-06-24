@@ -111,7 +111,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const unpinnedActivity = ref(false)
 
 const urlRegex = /\bhttps?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_+.~#?&\/=]*\b/gi // thank you https://uibakery.io/regex-library/url
 const taggedUserRegex = /@\w+(?: [\w&]+)*(?=\s*\(|\s|$)/g // thank you chat gpt
@@ -211,8 +210,6 @@ const goToPath = (activity) => {
 const pinActivity = async (activity) => {
   try {
     activity.pinned = !activity.pinned
-    console.log(activity.pinned);
-
     let params = {
       pinned: activity.pinned
     }
@@ -220,7 +217,6 @@ const pinActivity = async (activity) => {
     let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
     emit('reload')
     emit('reloadtopic')
-
     appStore.showSnack('SUCCESS', msg)
 
   } catch (e) {

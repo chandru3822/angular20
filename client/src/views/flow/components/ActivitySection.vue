@@ -130,7 +130,6 @@
               multiple
               flat><!--Topic # header-->
               <v-expansion-panel
-
                 v-for="h in orderBy(
                   searchfilteredActivityTypeHashtags(type.activityTypeHashtags),
                   'lastUpdated',
@@ -226,7 +225,6 @@
                     :query="queryText"
                     @reload="getActivities"
                     @reloadtopic="getActivityTopics"
-
                   ></ActivityList>
                 </v-expansion-panel-content>
               </v-expansion-panel>
@@ -240,7 +238,6 @@
         color="primary"
         v-else-if="!savingActivity && activitiesLoading"
       />
-
       <ActivityList
         v-else-if="!savingActivity && !activitiesLoading"
         :activities="sortedFilteredActivities"
