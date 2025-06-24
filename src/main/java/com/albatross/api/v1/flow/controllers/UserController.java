@@ -85,7 +85,7 @@ public class UserController {
         HttpStatus.BAD_REQUEST, "Invalid Username", new Exception());
     }
 
-    if (user.getPhoneExtension().length() > 10) {
+    if (user.getPhoneExtension() != null && user.getPhoneExtension().length() > 10) {
         throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Phone extension exceeds the maximum allowed length of 10 characters.", new Exception());
       }
