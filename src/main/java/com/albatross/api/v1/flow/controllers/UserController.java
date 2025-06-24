@@ -233,23 +233,37 @@ public class UserController {
     @RequestBody PasswordResetRequest passwordResetRequest) {
     String result = null;
 
-    if (null != passwordResetRequest.getUserId() && null != passwordResetRequest.getNewPassword()) {
-      // todo: remove this check after we turn it on and mobile is working
+    if (passwordResetRequest.getUserId() != null && passwordResetRequest.getNewPassword() != null) {
       if (doCompanyDefaultValidation) {
         Boolean passwordIsCompanyDefault =
           securityService.passwordIsCompanyDefault(
             passwordResetRequest.getUserId(), passwordResetRequest.getNewPassword());
         if (passwordIsCompanyDefault) {
-          // NOT_ACCEPTABLE = 406
           throw new ResponseStatusException(
             HttpStatus.NOT_ACCEPTABLE, "Please use a different password.", new Exception());
         } else {
           result = userService.updatePassword(passwordResetRequest);
-          securityService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+          securityService.updateLoginAttempts(
+            0,
+            passwordResetRequest.getUserId(),
+            true,
+            passwordResetRequest.getAccessType(),
+            passwordResetRequest.getMobileVersion(),
+            passwordResetRequest.getUserId(),
+            passwordResetRequest.getUserId()
+          );
         }
       } else {
         result = userService.updatePassword(passwordResetRequest);
-        securityService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+        securityService.updateLoginAttempts(
+          0,
+          passwordResetRequest.getUserId(),
+          true,
+          passwordResetRequest.getAccessType(),
+          passwordResetRequest.getMobileVersion(),
+          passwordResetRequest.getUserId(),
+          passwordResetRequest.getUserId()
+        );
       }
     }
 
