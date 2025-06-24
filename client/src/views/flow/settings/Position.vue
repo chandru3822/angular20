@@ -119,12 +119,58 @@
           </div>
           <div v-show="positionId && (!clonePositionId || (clonePositionId && !position.cloneAccess))">
             <v-divider class="my-2"></v-divider>
-            <h3>Access Control</h3>
-            <AccessControl v-if="positionLoaded"
-                           :key="accessControlKey"
-                           :user-can-edit="userCanEditAccessControl"
-                           :companyFeatures="getCompanyFeatures()" :callback="companyFeatureCallback"
-                           :dirtyFieldsCallback="setFieldsDirty"></AccessControl>
+            <v-expansion-panels>
+              <v-expansion-panel>
+                <v-expansion-panel-header>
+                  <h3>Access Control</h3>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                  <AccessControl v-if="positionLoaded" 
+                  :key="accessControlKey"
+                  :user-can-edit="userCanEditAccessControl"
+                  :companyFeatures="getCompanyFeatures()" :callback="companyFeatureCallback"
+                  :dirtyFieldsCallback="setFieldsDirty"></AccessControl>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+              <v-expansion-panel>
+                <v-expansion-panel-header>
+                  <h3>Active Users</h3>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                  <v-card class="square-card">
+                    <v-card-title class="pt-0">
+                      <a-text-field v-model="search" @input="debounceGetActiveUsers" prepend-inner-icon="search"
+                        label="Search" single-line clearable hide-details></a-text-field>
+                    </v-card-title>
+                    <v-data-table id="custom-fields-table" :headers="headersUsers" :items="filterActiveUsersFields"
+                      :fixed-header="true" :server-items-length="totalActiveUsers" :loading="dataLoading"
+                      :options.sync="options" :footer-props="footerProps"
+                      class="elevation-1 mt-1 square-card table-striped">
+                      <template #no-data>
+                        <span class="default-text-color">No available fields</span>
+                      </template>
+                      <template #no-results>
+                        <span class="default-text-color">No available fields</span>
+                      </template>
+                      <template #item="{ item, index }">
+                        <tr>
+                          <td class="text-left clickable field-name-col">
+                            <router-link class="router-link-td elevation-0 square-card"
+                              :to="`/user/${item.id}/details`">
+
+                              {{ item.fullName }}
+                            </router-link>
+                          </td>
+                          <td>
+                            {{ item.primaryFlag }}
+                          </td>
+                        </tr>
+                      </template>
+                    </v-data-table>
+                  </v-card>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+            </v-expansion-panels>
           </div>
         </v-card>
 
@@ -137,14 +183,17 @@
 <script setup>
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
-  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
-
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest,  getRequestWithParams} from '@/helpers/helpers'
   import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
   import {onBeforeRouteLeave} from 'vue-router/composables'
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
   import { useUserStore } from '@/stores/UserStore.js'
   import {useRouter, useRoute} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStore.js'
+  import debounce from 'lodash.debounce'
+  import constants from '@/helpers/constants'
+
+
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
 
@@ -181,6 +230,20 @@
   const positionId = computed(() => {
     return route.params.id
   })
+  const search = ref("")
+  const filterActiveUsersFields = ref([])
+  const headersUsers = ref([
+    { text: "User Name", value: "fullName", showFilter: false },
+    { text: "Primary Position", value: "primaryFlag", showFilter: true },
+  ])
+  const footerProps = ref({
+    'items-per-page-options': [10, 25, 50],
+    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+  })
+  const options = ref({ itemsPerPage: 10 })
+  const initialLoad = ref(true)
+  const totalActiveUsers = ref(0)
+  const dataLoading = ref(true)
 
   watch(selectedRows, () => {
     alterEnabledFlagForRows()
@@ -194,6 +257,7 @@
       getPositions()
     }
     getAllOrgTypes()
+    getActiveUser()
   })
   onBeforeRouteLeave(async (to, from, next) => {
     // called when the route that renders this component is about to
@@ -306,6 +370,49 @@
       router.push(path)
     }
   }
+
+  const debounceGetActiveUsers = debounce(async () => {
+  //don't allow search to be null - causes issues
+  dataLoading.value = true
+  search.value = search.value || ''
+  localStorage.setItem('contactSearch', search.value)
+  getActiveUser()
+}, 500)
+
+
+watch(
+  () => options,
+  (newValue, oldValue) => {
+    if (!initialLoad.value) {
+      getActiveUser();
+    }
+  },
+  { deep: true }
+)
+const getActiveUser = async () => {
+  try {
+    const { page, itemsPerPage } = options.value
+    const { data } = await getRequestWithParams(
+      `/userPosition/search`,
+      {
+        params: {
+          positionId: positionId.value,
+          query: search.value,
+          page: page - 1,
+          size: itemsPerPage
+        }
+      },
+      null,
+      []
+    );
+    totalActiveUsers.value = data.length
+    filterActiveUsersFields.value = data
+    dataLoading.value = false
+    initialLoad.value = false
+  } catch (error) {
+    console.error("Error fetching active users:", error);
+  }
+};
 </script>
 
 <style lang="scss">
