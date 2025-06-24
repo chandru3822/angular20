@@ -123,11 +123,11 @@
             </div>
             <v-expansion-panels
               v-else
-              accordion
+              v-show="!type.hidden"
+              v-model="openPanels[type.activityType]"
+              :key="type.activityType"
               multiple
-              flat
-              class=".rounded-0"
-              ><!--Topic # header-->
+              flat><!--Topic # header-->
               <v-expansion-panel
                 v-for="h in orderBy(
                   searchfilteredActivityTypeHashtags(type.activityTypeHashtags),
@@ -135,6 +135,7 @@
                   sortDirection
                 )"
                 :key="h.hashtagId"
+                 :value="h.hashtagId"
               >
                 <v-expansion-panel-header class="expansion-panel-header px-0">
                   <template v-slot:default="{ open }">
@@ -284,9 +285,6 @@
           limit="3"
           width="400"
         >
-       
-      
-        
           <a-textarea
             class="body-large note-text-area"
             hide-details
@@ -403,7 +401,8 @@ import {
   computed,
   ref,
   onMounted,
-  watch
+  watch,
+  reactive
 } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
@@ -474,13 +473,14 @@ const savingActivity = ref(false)
 const sortDirection = ref('desc')
 const sectionType = ref('')
 const primaryId = ref(null)
-const filterMenuOpen = ref(false)
+const filterMenuOpen = ref(false);
+const openPanels = reactive({});
 const activityTypes = ref([
   {
     id: 1,
     activityType: 'Activities',
     activityTypeSingularLabel: 'Activity',
-    show: false
+    show: true
   },
   {
     id: 2,
@@ -591,17 +591,43 @@ const currentUserId = computed(() => {
 })
 const filteredTopics = computed(() => {
   const shownActivityTypes =
-    activityTypes?.value?.filter((at) => at.show)?.map((at) => at.id) ?? []
-  const result = activityTopics?.value?.filter((a) => {
+    activityTypes?.value?.filter((at) => at.show)?.map((at) => at.id) ?? [];
+  return activityTopics?.value?.map((a) => {
+    // Ensure sortDirection defaults
     for (let h of a.activityTypeHashtags) {
       if (h.sortDirection === undefined) {
-        h.sortDirection = 'desc'
+        h.sortDirection = 'desc';
       }
     }
-    return shownActivityTypes.includes(a.id)
-  })
-  return result
-})
+
+    return {
+      ...a,
+      hidden: !shownActivityTypes.includes(a.id),
+    };
+  }) ?? [];
+});
+
+onMounted(() => {
+  const saved = localStorage.getItem('openPanels');
+  if (saved) {
+    openPanels.value = JSON.parse(saved);
+  }
+});
+
+watch(openPanels, (newVal) => {
+  localStorage.setItem('openPanels', JSON.stringify(newVal));
+});
+
+watch(activityTypes, (newTypes) => {
+  for (const type of newTypes) {
+    const key = type.activityType;
+    if (type.show && !(key in openPanels)) {
+      openPanels[key] = [];
+    }
+  }
+}, { deep: true });
+
+
 const sortedFilteredActivities = computed(() => {
   let sortedList = orderBy(
     activities.value?.filter((a) => {

@@ -56,13 +56,7 @@
       <v-card-text class="py-0 default-text-color">
         <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
         <div class="text-formatting">
-          <div v-if="query && query !== ''" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note))) | searchHighlight(`(?<!<[^>]*)${query}(?![^<]*>)`)"/>
-          <vue-clamp v-else ellipsis="" autoresize :max-lines="5" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))">
-            <template #after="{ toggle, clamped, expanded }">
-              <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
-              <button v-if="expanded" @click="toggle" class="see-more-btn"> see less</button>
-            </template>
-          </vue-clamp>
+          <a  @click="props.searchCallback(a.note)" :inner-html.prop="a.note | searchHighlight(query) | filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))"></a>
         </div>
       </v-card-text>
       <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
@@ -180,7 +174,7 @@ const escapeHtml = (unsafe) => {
     // Replace greater-than sign (>) with HTML entity
     ?.replace(/>/g, "&gt;")
     // Replace double quotes (") with HTML entity
-    ?.replace(/"/g, "&quot;")   
+    ?.replace(/"/g, "&quot;")
     // Replace single quotes (') with HTML entity
     ?.replace(/'/g, "&#039;");
 }
