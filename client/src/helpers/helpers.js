@@ -197,7 +197,7 @@ export function formatUSPhoneNumberFlexible(phoneNumberString) {
     match = cleaned.match(/^(\d{3})(\d{3})(\d{3})$/);
     if (match) {
       // Example format for 9 digits (you might adjust this)
-      return match[1] + '-' + match[2] + '-' + match[3];
+      return '(' + match[1] + ') ' + '-' + match[2] + '-' + match[3];
     }
   }
  
@@ -214,7 +214,7 @@ export function formatUSPhoneNumberFlexible(phoneNumberString) {
   if (cleaned.length === 11) {
     match = cleaned.match(/^(\d{3})(\d{4})(\d{4})$/); // Example pattern for 11 digits
     if (match) {
-      return match[1] + '-' + match[2] + '-' + match[3]; // Example format
+      return '(' + match[1] + ') ' + '-' + match[2] + '-' + match[3]; // Example format
     }
   }
  

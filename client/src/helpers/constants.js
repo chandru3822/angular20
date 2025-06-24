@@ -108,7 +108,6 @@ constants.PASSWORD_RULES = [
   v => (!v || v.length <= 100) || 'Must be at most 100 characters'
 ]
 
-
 constants.PHONE_RULES = [
   v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
   v => /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v) || "Please reformat the Phone field with a valid phone number"
@@ -147,11 +146,16 @@ constants.USERNAME_RULES = [
   v => (!!v && v.length <= 100) || 'Must be at most 100 characters'
 ]
 
-constants.FIRST_LAST_NAME=[
+constants.FIRST_NAME=[
  v => !!v || 'Username is required',
    v => !!v && v.length >= 3 || 'Must be at least 3 characters',
   v => !!v && v.length <= 50 || 'Must be at most 50 characters'
 ]
+
+constants.LAST_NAME=[
+  v => !!v || 'Username is required',
+   v => !!v && v.length <= 50 || 'Must be at most 50 characters'
+ ]
 
 constants.COLOR_LIST = [
     '#e6194b', '#3cb44b', '#FFC700', '#4363d8',

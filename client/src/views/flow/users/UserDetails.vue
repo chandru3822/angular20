@@ -18,13 +18,13 @@
         <a-text-field
                       label="User First Name"
                       placeholder=" "
-                      :rules="firstLastNameRules"
+                      :rules="firstNameRules"
                       :readonly="!userCanEdit"
                       v-model="tempUser.firstName"
         ></a-text-field>
         <a-text-field
                       label="User Last Name"
-                      :rules="firstLastNameRules"
+                      :rules="lastNameRules"
                       :readonly="!userCanEdit"
                       v-model="tempUser.lastName"
         ></a-text-field>
@@ -294,7 +294,7 @@ const breadcrumbs = ref([
   {text: 'Back to Users',disabled: false,exact: true,to: `/users`},
 ])
 const userPhoneRule = ref([v => !!v || 'Field is required',v => (!v || (v && v.length !== 0)) || 'Field is required',v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"])
-const userPhoneExtensionRule = ref([v => !!v || 'Field is required',v => (!v || (v && (v.length <= 10))) || 'Must be 10 characters or less']);
+const userPhoneExtensionRule = ref([v => (!v || (v && (v.length <= 10))) || 'Must be 10 characters or less']);
 const usernameRule = ref(constants.USERNAME_RULES)
 const passwordRule = ref(constants.PASSWORD_RULES)
 const emailRule = ref(constants.EMAIL_RULES)
@@ -306,7 +306,8 @@ const userForm = ref(null)
 const user = ref({})
 const showEditModal = ref(false)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
-const firstLastNameRules=ref(constants.FIRST_LAST_NAME)
+const firstNameRules=ref(constants.FIRST_NAME)
+const lastNameRules = ref(constants.LAST_NAME)
 const fieldsSaving = ref(false)
 const fieldsLoading = ref(true)
 const customFieldGroups = ref([])
