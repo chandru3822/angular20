@@ -119,7 +119,7 @@
           </div>
           <div v-show="positionId && (!clonePositionId || (clonePositionId && !position.cloneAccess))">
             <v-divider class="my-2"></v-divider>
-            <v-expansion-panels>
+            <v-expansion-panels   v-model="panel" multiple>
               <v-expansion-panel>
                 <v-expansion-panel-header>
                   <h3>Access Control</h3>
@@ -132,8 +132,29 @@
                   :dirtyFieldsCallback="setFieldsDirty"></AccessControl>
                 </v-expansion-panel-content>
               </v-expansion-panel>
-              <v-expansion-panel>
+
+               <v-expansion-panel  v-if="!userStore.userHasFeatureAccessLevel('USERS', 'ADMIN')" 
+                 :style="{
+                 display: 'inline-block',
+                 cursor: 'pointer',
+                  backgroundColor: !userStore.userHasFeatureAccessLevel('USERS', 'ADMIN') ? '#eeeeee' : ''
+                }">
+                <v-expansion-panel-header >
+                 <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                  <span
+                  v-bind="attrs"
+                    v-on="on"
+                  >Active Users</span>
+                </template>
+                    <span>Insufficient permission to view user profile</span>
+                </v-tooltip>
+                </v-expansion-panel-header>
+               </v-expansion-panel>
+               
+              <v-expansion-panel v-else >
                 <v-expansion-panel-header>
+                  
                   <h3>Active Users</h3>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
@@ -142,27 +163,42 @@
                       <a-text-field v-model="search" @input="debounceGetActiveUsers" prepend-inner-icon="search"
                         label="Search" single-line clearable hide-details></a-text-field>
                     </v-card-title>
-                    <v-data-table id="custom-fields-table" :headers="headersUsers" :items="filterActiveUsersFields"
+                    <v-data-table  id="custom-fields-table" :headers="headersUsers" :items="filterActiveUsersFields"
                       :fixed-header="true" :server-items-length="totalActiveUsers" :loading="dataLoading"
                       :options.sync="options" :footer-props="footerProps"
                       class="elevation-1 mt-1 square-card table-striped">
+                      <div style="height: 72vh;"></div>
                       <template #no-data>
-                        <span class="default-text-color">No available fields</span>
+                        <span class="default-text-color">No active users currently assigned this Position.</span>
                       </template>
                       <template #no-results>
                         <span class="default-text-color">No available fields</span>
                       </template>
-                      <template #item="{ item, index }">
+                      <template #item="{ item, index }" >
                         <tr>
                           <td class="text-left clickable field-name-col">
                             <router-link class="router-link-td elevation-0 square-card"
                               :to="`/user/${item.id}/details`">
 
-                              {{ item.fullName }}
+                              {{ item.firstName }}
+                            </router-link>
+                          </td>
+                          <td class="text-left clickable field-name-col">
+                            <router-link class="router-link-td elevation-0 square-card"
+                              :to="`/user/${item.id}/details`">
+
+                              {{ item.lastName }}
+                            </router-link>
+                          </td>
+                          <td class="text-left clickable field-name-col">
+                            <router-link class="router-link-td elevation-0 square-card"
+                              :to="`/user/${item.id}/details`">
+
+                              {{ item.email }}
                             </router-link>
                           </td>
                           <td>
-                            {{ item.primaryFlag }}
+                            {{ item.isPrimary }}
                           </td>
                         </tr>
                       </template>
@@ -233,8 +269,10 @@
   const search = ref("")
   const filterActiveUsersFields = ref([])
   const headersUsers = ref([
-    { text: "User Name", value: "fullName", showFilter: false },
-    { text: "Primary Position", value: "primaryFlag", showFilter: true },
+    { text: "First Name", value: "firstName", sortable: false },
+    { text: "Last Name", value: "lastName", sortable: false },
+    { text: "User ID", value: "email", sortable: false },
+    { text: "Primary Position", value: "isPrimary", sortable: false },
   ])
   const footerProps = ref({
     'items-per-page-options': [10, 25, 50],
@@ -244,6 +282,8 @@
   const initialLoad = ref(true)
   const totalActiveUsers = ref(0)
   const dataLoading = ref(true)
+const panel = ref([0]) // open first panel only
+
 
   watch(selectedRows, () => {
     alterEnabledFlagForRows()
@@ -397,7 +437,7 @@ const getActiveUser = async () => {
       {
         params: {
           positionId: positionId.value,
-          query: search.value,
+          searchQuery: search.value,
           page: page - 1,
           size: itemsPerPage
         }
@@ -405,8 +445,9 @@ const getActiveUser = async () => {
       null,
       []
     );
-    totalActiveUsers.value = data.length
-    filterActiveUsersFields.value = data
+ 
+    totalActiveUsers.value =  data.totalElements
+    filterActiveUsersFields.value = data.content || []
     dataLoading.value = false
     initialLoad.value = false
   } catch (error) {

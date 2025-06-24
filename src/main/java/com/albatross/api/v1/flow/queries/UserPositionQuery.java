@@ -209,23 +209,44 @@ public class UserPositionQuery {
   """;
 
     //language=PostgreSQL
-  public static final String searchPositionUser = """
-		   SELECT COALESCE((
-		     SELECT json_agg(logic)
-		    FROM( SELECT
-		      u.username as "fullName",
-		      u.id as id,
-		      up.primary_flag as "primaryFlag"
-		    FROM flow.user_position up
-		    INNER JOIN flow."user" u ON u.id = up.user_id
-		    WHERE up.position_id = :positionId
-		      AND up.archived = false
-		      AND (
-		        :query IS NULL OR TRIM(CAST(:query AS TEXT)) = ''
-		        OR u.user_full_name_search ILIKE '%' || CAST(:query AS TEXT) || '%'
-		      )
-		    ORDER BY up.date_created
-		    LIMIT :limit OFFSET :offset
-		    )logic), '[]')
-		""";
+	public static final String searchPositionUser = """
+			  SELECT COALESCE((
+			    SELECT json_agg(logic)
+			    FROM (
+			      SELECT
+			        u.first_name as "firstName",
+			        u.last_name as "lastName",
+			        u.email as "email",
+			        u.id as id,
+			        CASE WHEN up.primary_flag THEN 'Yes' ELSE 'No' END as "isPrimary"
+			      FROM flow.user_position up
+			      INNER JOIN flow."user" u ON u.id = up.user_id
+			      WHERE up.position_id = :positionId
+			        AND up.archived = false
+			        AND (
+			          :query IS NULL OR TRIM(CAST(:query AS TEXT)) = ''
+			          OR u.user_full_name_search ILIKE '%' || CAST(:query AS TEXT) || '%'
+			          OR u.email ILIKE '%' || CAST(:query AS TEXT) || '%'
+			          OR (CASE WHEN up.primary_flag THEN 'Yes' ELSE 'No' END) ILIKE '%' || CAST(:query AS TEXT) || '%'
+			        )
+			      ORDER BY up.date_created
+			      LIMIT :limit OFFSET :offset
+			    ) logic
+			  ), '[]')
+			""";
+	
+	public static final String countPositionUser = """
+			  SELECT COUNT(*)
+			  FROM flow.user_position up
+			  INNER JOIN flow."user" u ON u.id = up.user_id
+			  WHERE up.position_id = :positionId
+			    AND up.archived = false
+			    AND (
+			      :query IS NULL OR TRIM(CAST(:query AS TEXT)) = ''
+			      OR u.user_full_name_search ILIKE '%' || CAST(:query AS TEXT) || '%'
+			      OR u.email ILIKE '%' || CAST(:query AS TEXT) || '%'
+			      OR (CASE WHEN up.primary_flag THEN 'Yes' ELSE 'No' END) ILIKE '%' || CAST(:query AS TEXT) || '%'
+			    )
+			""";
+
 }

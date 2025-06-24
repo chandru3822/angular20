@@ -6,18 +6,26 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanWrapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.ActiveUserPosition;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserOrgHierarchy;
 import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.org.Org;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.UserPositionQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -197,25 +205,33 @@ public class UserPositionService {
 
 	/**
 	 * @param positionId
-	 * @param query
+	 * @param searchQuery
 	 * @param pageable
 	 * @return
 	 */
-	public List<UserPosition> searchContacts(Integer positionId, String query, Pageable pageable) {
-		List<UserPosition> results = null;
+	public Page<ActiveUserPosition> searchActiveUser(Integer positionId, String searchQuery, Pageable pageable) {
+		List<ActiveUserPosition> results = null;
+		Long totalCount = 1000L;
 		try {
 			HashMap<String, Object> params = new HashMap<>();
 			params.put("positionId", positionId);
-			params.put("query", query);
+			params.put("query", searchQuery);
 			params.put("limit", pageable.getPageSize());
 			params.put("offset", pageable.getOffset());
 			String searchSql = UserPositionQuery.searchPositionUser;
+			String searchSqlCount = UserPositionQuery.countPositionUser;
 			String json = sqlCache.queryForObjectBySql(searchSql, params, String.class);
-			results = om.readValue(json, new TypeReference<List<UserPosition>>() {
+			results = om.readValue(json, new TypeReference<List<ActiveUserPosition>>() {
 			});
+			totalCount = sqlCache.queryForObjectBySql(searchSqlCount, params, Long.class);
+			if (StringUtils.hasText(searchQuery)) {
+				totalCount = sqlCache.queryForObjectBySql(searchSqlCount, params, Long.class);
+			}
+			return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
+					totalCount);
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Could not convert object category ids to sql array.", new Exception());
 		}
-		return results;
 	}
 }
