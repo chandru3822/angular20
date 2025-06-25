@@ -72,7 +72,7 @@ public class UserPositionController {
 	 * @param pageable
 	 * @return
 	 */
-	@GetMapping(value = "/search")
+	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<ActiveUserPosition>> searchActiveUser(@RequestParam Integer positionId,
 			@RequestParam String searchQuery, Pageable pageable) {
 		return new ResponseEntity<>(userPositionService.searchActiveUser(positionId, searchQuery, pageable),

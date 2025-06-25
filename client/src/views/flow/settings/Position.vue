@@ -142,7 +142,7 @@
                 <v-expansion-panel-header >
                  <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
-                  <span
+                  <span class="activeUser_font_size"
                   v-bind="attrs"
                     v-on="on"
                   >Active Users</span>
@@ -297,7 +297,11 @@ const panel = ref([0]) // open first panel only
       getPositions()
     }
     getAllOrgTypes()
+    if(userStore.userHasFeatureAccessLevel('USERS', 'ADMIN'))
+    {
     getActiveUser()
+    }
+
   })
   onBeforeRouteLeave(async (to, from, next) => {
     // called when the route that renders this component is about to
@@ -474,6 +478,9 @@ const getActiveUser = async () => {
   .positions-table {
     margin-top: 2px;
   }
-
+.activeUser_font_size{
+  font-size: 1.17em;
+  font-weight: bold;
+}
 </style>
 
