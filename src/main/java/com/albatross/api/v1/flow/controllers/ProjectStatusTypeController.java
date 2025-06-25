@@ -54,8 +54,8 @@ public class ProjectStatusTypeController {
   }
 
   @PutMapping(value = "/companyStatuses")
-  public void saveCompanyProjectStatuses(@RequestBody List<ProjectStatusType> statuses) {
-    projectStatusService.saveCompanyProjectStatuses(statuses);
+  public ResponseEntity<List<ProjectStatusType>> saveCompanyProjectStatuses(@RequestBody List<ProjectStatusType> statuses) {
+      return new ResponseEntity<>(projectStatusService.saveCompanyProjectStatuses(statuses),HttpStatus.OK);
   }
 
   @GetMapping(value = "/wqt")
