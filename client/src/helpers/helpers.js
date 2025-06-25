@@ -181,6 +181,63 @@ export function formatPhoneNumber(phoneNumberString) {
   return null
 }
 
+export function formatUSPhoneNumberFlexible(phoneNumberString) {
+  let cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+ 
+ 
+  if (cleaned.startsWith('1')) {
+    cleaned = cleaned.substring(1); // Remove the first character (the '1')
+  }
+ 
+  let match;
+ 
+  // Case 1: If a leading '1' was removed AND the remaining length is 9
+  // This implies the original number was 10 digits, formatted as 9.
+  if (cleaned.length === 9) {
+    match = cleaned.match(/^(\d{3})(\d{3})(\d{3})$/);
+    if (match) {
+      // Example format for 9 digits (you might adjust this)
+      return '(' + match[1] + ') ' + '-' + match[2] + '-' + match[3];
+    }
+  }
+ 
+  // Case 2: Handle 10-digit numbers (without a leading '1' or if '1' wasn't present originally)
+  // This handles the original requirement for 10-digit numbers.
+  if (cleaned.length === 10) {
+    match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    }
+  }
+ 
+  // Case 3: Handle 11-digit numbers
+  if (cleaned.length === 11) {
+    match = cleaned.match(/^(\d{3})(\d{4})(\d{4})$/); // Example pattern for 11 digits
+    if (match) {
+      return '(' + match[1] + ') ' + '-' + match[2] + '-' + match[3]; // Example format
+    }
+  }
+ 
+  // Case 4: Handle 12-digit numbers
+  if (cleaned.length === 12) {
+    match = cleaned.match(/^(\d{3})(\d{3})(\d{3})(\d{3})$/); // Example pattern for 12 digits
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3] + '-' + match[4]; // Example format
+    }
+  }
+ 
+  // Case 5: Handle 13-digit numbers
+  if (cleaned.length === 13) {
+    match = cleaned.match(/^(\d{3})(\d{3})(\d{3})(\d{4})$/); // Example pattern for 13 digits
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3] + '-' + match[4]; // Example format
+    }
+  }
+ 
+  // If none of the above conditions met, return null
+  return null;
+}
+
 export function cleanPhoneNumberForCopying(phoneNumberString) {
     let cleaned = ('' + phoneNumberString).replace(/\D/g, '')
     //dont allow a 1 to be the first char
