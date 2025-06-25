@@ -1127,7 +1127,8 @@ const removeDeletedActivity = (activityId) => {
   const deletedActivity = activities.value.find((a) => a.id === activityId)
   if (deletedActivity) {
     deletedActivity.archived = true;
-     getActivities();
+      getActivities();
+      getActivityTopics();
   }
 }
 
