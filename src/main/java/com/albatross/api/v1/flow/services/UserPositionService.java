@@ -210,28 +210,17 @@ public class UserPositionService {
 	 * @return
 	 */
 	public Page<ActiveUserPosition> searchActiveUser(Integer positionId, String searchQuery, Pageable pageable) {
-		List<ActiveUserPosition> results = null;
-		Long totalCount = 1000L;
+		List<ActiveUserPosition> activeUserList;
+		long activeUserCount;
 		try {
-			HashMap<String, Object> params = new HashMap<>();
-			params.put("positionId", positionId);
-			params.put("query", searchQuery);
-			params.put("limit", pageable.getPageSize());
-			params.put("offset", pageable.getOffset());
-			String searchSql = UserPositionQuery.searchPositionUser;
-			String searchSqlCount = UserPositionQuery.countPositionUser;
-			String json = sqlCache.queryForObjectBySql(searchSql, params, String.class);
-			results = om.readValue(json, new TypeReference<List<ActiveUserPosition>>() {
-			});
-			totalCount = sqlCache.queryForObjectBySql(searchSqlCount, params, Long.class);
-			if (StringUtils.hasText(searchQuery)) {
-				totalCount = sqlCache.queryForObjectBySql(searchSqlCount, params, Long.class);
-			}
-			return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
-					totalCount);
+			Map<String, Object> params = Map.of("positionId", positionId, "query", searchQuery, "limit",
+					pageable.getPageSize(), "offset", pageable.getOffset());
+			String activeUserListJson = sqlCache.queryForObjectBySql(UserPositionQuery.searchPositionUser, params, String.class);
+			activeUserList = om.readValue(activeUserListJson, new TypeReference<>() { });
+			activeUserCount = sqlCache.queryForObjectBySql(UserPositionQuery.countPositionUser, params, Long.class);
+			return new PageImpl<>(activeUserList, pageable, activeUserCount);
 		} catch (Exception ex) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"Could not convert object category ids to sql array.", new Exception());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not fetch or parse user positions.", ex);
 		}
 	}
 }
