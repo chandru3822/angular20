@@ -294,7 +294,13 @@ const getObjectCategories = async () => {
 const saveOrderChanges = async (types) => {
   appStore.loading = true
   try {
-    const { status } = await putRequest(`/projectStatus/companyStatuses`, types)
+    const { data , status } = await putRequest(`/projectStatus/companyStatuses`, types)
+      data.forEach(element => {
+      const existingData = statusTypes.value.find(el=>el.id == element.id);
+      if(existingData){
+         existingData.displayOrder = element.displayOrder
+      } 
+    });
     appStore.showSnack('SUCCESS', 'Status Types Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
