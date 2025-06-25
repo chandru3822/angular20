@@ -123,13 +123,10 @@ public class ProjectStatusService {
     }
   }
 
-  public List<ProjectStatusType> saveCompanyProjectStatuses(List<ProjectStatusType> statuses) {
-    List<ProjectStatusType> projectStatusTypes = new ArrayList<>();
+  public void saveCompanyProjectStatuses(List<ProjectStatusType> statuses) {
     for (ProjectStatusType s : statuses) {
-      Optional<ProjectStatusType> projectStatusTypeOptional = saveCompanyProjectStatus(s);
-      projectStatusTypeOptional.ifPresent(projectStatusTypes::add);
+      saveCompanyProjectStatus(s);
     }
-    return projectStatusTypes;
   }
 
   public List<ProjectStatusType> getProjectStatuses() {
