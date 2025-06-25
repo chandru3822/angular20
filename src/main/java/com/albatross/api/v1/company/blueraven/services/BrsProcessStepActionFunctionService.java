@@ -17,6 +17,7 @@ import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
 import com.albatross.api.v1.flow.queries.ContactQuery;
+import com.albatross.api.v1.flow.queries.ApiQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.ProcessStepCfvQuery;
 import com.albatross.api.v1.flow.services.ListOfValueService;
@@ -26,6 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
 /**
@@ -85,26 +90,6 @@ public class BrsProcessStepActionFunctionService {
     throw new RuntimeException("PPS: Unable to perform %s action for java function: %s *** %s".formatted(functionType, functionName, message));
   }
 
-  // inverters should maybe be an enum if they start to get used anywhere else in the codebase
-  private String getMappedAuroraInverter(String inverter) {
-    var inverterMap = new HashMap<String, String>();
-    inverterMap.put("IQ 7+ (240V)", "Enphase IQ7+ Microinverters");
-    inverterMap.put("IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters");
-    inverterMap.put("IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters");
-    inverterMap.put("IQ7A-72-2-INT", "Enphase IQ7A Microinverters");
-    inverterMap.put("IQ7HS-66-M-US (240V)", "Enphase IQ7HS Microinverters");
-    inverterMap.put("IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters");
-    inverterMap.put("IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters");
-    inverterMap.put("IQ7X-96-2-INT", "Enphase IQ7X Microinverters");
-    inverterMap.put("IQ8A-72-2-US", "Enphase IQ8A Microinverters");
-    inverterMap.put("IQ8M-72-M-US", "Enphase IQ8M Microinverters");
-    inverterMap.put("IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters");
-    inverterMap.put("GW9600A-MS (240V)", "GoodWe GW9600A-MS");
-    inverterMap.put("Powerwall 3 (integrated inverter)", "Tesla Powerwall 3 (integrated inverter)");
-    inverterMap.put("IQ8MC-72-M-US (240V)", "Enphase IQ8MC Microinverters");
-    inverterMap.put("IQ8HC-72-M-US (240V)", "Enphase IQ8HC Microinverters");
-    return inverterMap.getOrDefault(inverter, null);
-  }
 
   public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
 
@@ -307,7 +292,7 @@ public class BrsProcessStepActionFunctionService {
   @Transactional
   public void getSolargrafSummary(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
     try {
-
+      List<Map<String, Object>> apiConfigs = sqlCache.queryBySql(ApiQuery.getApiConfig,null, new ColumnMapRowMapper());
       Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
       String solargrafCfgaId = func.getActionParamDynamicValues().stream()
         .filter(p -> p.getParameterName().contains("Solargraf Design ID"))
@@ -319,10 +304,22 @@ public class BrsProcessStepActionFunctionService {
         throw new RuntimeException("Unable to locate Solargraf ID custom field");
       }
 
-      String solargrafId = solargrafService.getSolargrafId(ppsId, Long.parseLong(solargrafCfgaId));
+      String solargrafUrl = solargrafService.getSolargrafId(ppsId, Long.parseLong(solargrafCfgaId));
       //solargrafId = "2408140";
-      if (solargrafId == null) {
+      if (solargrafUrl == null) {
         throw new RuntimeException("Unable to fetch Solargraf ID from Solargraf");
+      }
+
+      Pattern pattern = Pattern.compile("/projects/(\\d+)/proposals/([a-f0-9\\-]+)/");
+      Matcher matcher = pattern.matcher(solargrafUrl);
+      String projectId = null;
+      String proposalId = null;
+      if (matcher.find()) {
+        projectId = matcher.group(1);
+        proposalId = matcher.group(2);
+
+      } else {
+        System.out.println("No match found.");
       }
 
       SolargrafProxy.SolargrafPanelArrays panelArrays;
@@ -330,50 +327,47 @@ public class BrsProcessStepActionFunctionService {
       SolargrafProxy.SolargrafProductions productions;
       SolargrafProxy.SolargrafStorage storage;
 
+
       try {
-        panelArrays = solargrafService.getSolargrafPanelArrays(solargrafId);
+        panelArrays = solargrafService.getSolargrafPanelArrays(projectId);
       } catch (Exception e) {
         throw new RuntimeException("Unable to fetch panel arrays from solargraf");
       }
 
       try {
-        panelArrays = solargrafService.getSolargrafPanelArrays(solargrafId);
+        materials = solargrafService.getSolargrafMaterials(projectId);
       } catch (Exception e) {
         throw new RuntimeException("Unable to fetch panel arrays from solargraf");
       }
 
       try {
-        materials = solargrafService.getSolargrafMaterials(solargrafId);
-      } catch (Exception e) {
-        throw new RuntimeException("Unable to fetch panel arrays from solargraf");
-      }
-
-      try {
-        productions = solargrafService.getSolargrafProduction(solargrafId);
+        productions = solargrafService.getSolargrafProduction(projectId);
       } catch (Exception e) {
         throw new RuntimeException("Unable to fetch Production from solargraf");
       }
 
       try {
-        storage = solargrafService.getSolargrafStorage(solargrafId);
+        storage = solargrafService.getSolargrafStorage(projectId);
       } catch (Exception e) {
         throw new RuntimeException("Unable to fetch panel arrays from solargraf");
       }
 
-      //System Size
-      int storageTypeId = 0;
+      JsonNode pa = null;
+      for (JsonNode items : panelArrays.getFields().path("data")) {
+        for (JsonNode item : items) {
+          JsonNode attributes = item.path("attributes");
+          String proposal = attributes.path("proposalId").asText();
+          if (proposal.equalsIgnoreCase(proposalId)) {
+            pa = items;
+            break;
+          }
+        }
+      }
+
+
       String storageType = storage.getFields().get("data").get(0).get("attributes").get("batteryProfile").asText();
-      if (storageType.equals("selfConsumption")){
-        storageTypeId = 29139;
-      }
-      else if (storageType.equals("backupDuringOutage")){
-        storageTypeId = 26298;
-      }
-      else if (storageType.equals("savingsOnElectricityBill")){
-        storageTypeId = 26299;
-      }
-      JsonNode pa = panelArrays.getFields().get("data").get(0);
-      JsonNode production = productions.getFields().get("data").get(0);
+      int storageTypeId  =  getIdForAPI(storageType,apiConfigs);
+
       double systemSize = StreamSupport.stream(pa.spliterator(), false)
         .map(jn -> jn.get("attributes").get("panelArrays").get("sizeInWatts"))
         .map(JsonNode::toString)
@@ -391,66 +385,51 @@ public class BrsProcessStepActionFunctionService {
       String panelBrand = pa.get(0).get("attributes").get("panelArrays").get("panelManufacturer").asText();
       double panelSizeInWatts = pa.get(0).get("attributes").get("panelArrays").get("panelSizeInWatts").asDouble();
       String panelName = pa.get(0).get("attributes").get("panelArrays").get("panelName").asText();
-      //production Estimate
-      double productionEstimate = production.get("attributes").get("dcAnnual").asDouble();
 
-      int panelBrandId = 0;
-      if (panelBrand != null) {
-        if ("REC Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 243;
-        } else if ("Silfab Solar Inc.".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 23877;
-        } else if ("Jinko Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 247;
-        } else if ("Hanwha Q CELLS".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 242;
-        } else if ("SEG SOLAR INC.".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 248;
-        } else if ("JA Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 26296;
-        } else if ("LONGi Solar".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 252;
-        } else if ("Seraphim Solar System Co., Ltd.".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 24669;
-        } else if ("CertainTeed".toLowerCase().contains(panelBrand.toLowerCase())) {
-          panelBrandId = 20372;
-        }
+      //production Estimate
+      JsonNode ps = productions.getFields().get("data");
+      JsonNode production = null;
+      for (JsonNode prodItems : ps) {
+
+          JsonNode attributes = prodItems.path("attributes");
+          String proposal = attributes.path("proposalId").asText();
+          if (proposal.equalsIgnoreCase(proposalId)) {
+            production = prodItems;
+            break;
+          }
       }
+      double productionEstimate = 0;
+      if (production != null) {
+       productionEstimate = production.get("attributes").get("dcAnnual").asDouble();
+      }
+
+      int panelBrandId  =  getIdForAPI(panelBrand,apiConfigs);
 
       String inverterName = null;
       String manufacturerName = null;
       for (JsonNode item : materials.getFields().get("data")) {
         String materialType = item.path("attributes").path("materialType").asText();
-        if ("panel".equalsIgnoreCase(materialType)) {
-          manufacturerName = item.path("attributes")
-            .path("manufacturer")
-            .path("name")
-            .path("en")
-            .asText();
-        }
-        else if ("inverter".equalsIgnoreCase(materialType)) {
-           inverterName = item.path("attributes")
-            .path("name")
-            .path("en")
-            .asText();
-        }
-      }
-
-
-      int inverterId = 0;
-      if (inverterName != null) {
-        if (inverterName.toLowerCase().contains("IQ8M-72-2-US [240V]".toLowerCase())) {
-          inverterId = 23914;
-        } else if (inverterName.toLowerCase().contains("IQ8X-80-M-US [240V]".toLowerCase())) {
-          inverterId = 24094;
-        } else if (inverterName.toLowerCase().contains("IQ8PLUS-72-M-US [240V]".toLowerCase())) {
-          inverterId = 20285;
-        } else if (inverterName.toLowerCase().contains("IQ8MC-72-2-US [240V]".toLowerCase())) {
-          inverterId = 28308;
-        } else if (inverterName.toLowerCase().contains("IQ8HC-72-2-US [240V]".toLowerCase())) {
-          inverterId = 29236;
+        JsonNode proposalIdsNode = item.path("attributes").path("proposalIds");
+        if (proposalId != null){
+        for (JsonNode pid : proposalIdsNode) {
+            if (proposalId.equals(pid.asText())) {
+              if ("panel".equalsIgnoreCase(materialType)) {
+                manufacturerName = item.path("attributes")
+                  .path("manufacturer")
+                  .path("name")
+                  .path("en")
+                  .asText();
+              } else if ("inverter".equalsIgnoreCase(materialType)) {
+                inverterName = item.path("attributes")
+                  .path("name")
+                  .path("en")
+                  .asText();
+              }
+            }
+          }
         }
       }
+      int inverterId  =  getIdForAPI(inverterName,apiConfigs);
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
@@ -537,7 +516,7 @@ public class BrsProcessStepActionFunctionService {
   @Transactional
   public void getDesignSummary(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
     try {
-
+      List<Map<String, Object>> apiConfigs = sqlCache.queryBySql(ApiQuery.getApiConfig,null, new ColumnMapRowMapper());
       Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
       String designCfgaId = func.getActionParamDynamicValues().stream()
         .filter(p -> p.getParameterName().contains("Aurora Design ID"))
@@ -571,7 +550,7 @@ public class BrsProcessStepActionFunctionService {
       String inverter = null;
       String panelName = null;
       String storageType = design.get("storage_selected_operating_mode").toString().replace("\"", "");
-
+      int inverterId = 20063;
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
@@ -586,7 +565,8 @@ public class BrsProcessStepActionFunctionService {
         }
 
         if (arrays.get(0).get("microinverter") != null) {
-          inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString().replace("\"", ""));
+          inverter = arrays.get(0).get("microinverter").get("name").toString().replace("\"", "");
+           inverterId  =  getIdForAPI(inverter,apiConfigs);
         }
 
         for (JsonNode array : arrays) {
@@ -599,14 +579,11 @@ public class BrsProcessStepActionFunctionService {
       if (inverter == null) {
         var inverters = design.get("string_inverters");
         if (!inverters.isEmpty()) {
-          inverter = getMappedAuroraInverter(inverters.get(0).get("name").toString().replace("\"", ""));
+          inverter = inverters.get(0).get("name").toString().replace("\"", "");
+           inverterId  =  getIdForAPI(inverter,apiConfigs);
         }
       }
 
-      // if we haven't found an inverter yet, check for sunpower. In that case, inverters are integrated on panel
-      if (inverter == null && null != manufacturer && manufacturer.toLowerCase().contains("sunpower")) {
-        inverter = "Sunpower";
-      }
 
       HashMap<String, Object> params = new HashMap<>();
       params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
@@ -655,27 +632,8 @@ public class BrsProcessStepActionFunctionService {
             throw new RuntimeException("Unable to find list item for given panel brand");
           }
         } else if (paramName.contains("Inverter Brand")) {
-          if (inverter != null) {
-            final String javaSucksInverter = inverter.replace("\"", "");
-            //this is as general as I can make it as of now...
-            final long companyId = Long.parseLong(systemValues.get("companyId").toString());
-            final String sql = "select id from flow.custom_field cf where field_name = 'Inverter Brand' and company_id = " + companyId;
-            Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
-            List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
-            final Long inverterLovId = values.stream()
-              .filter(i -> Objects.equals(i.getName(), javaSucksInverter))
-              .map(ListOfValue::getId)
-              .findFirst()
-              .orElse(null);
-            if (inverterLovId != null) {
-              params.put("intValue", inverterLovId);
-              sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-            } else {
-              if(!ignoreAuroraErrors) {
-                throw new RuntimeException("Unable to find list item for given inverter brand");
-              }
-            }
-          }
+          params.put("intValue", inverterId);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } else if (paramName.contains("Panel Watts")) {
           params.put("intValue", panelWatts);
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
@@ -687,26 +645,8 @@ public class BrsProcessStepActionFunctionService {
           params.put("textValue", panelName);
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         } else if (paramName.contains("Storage Type") && !storageType.equals("null")) {
-          final long companyId = Long.parseLong(systemValues.get("companyId").toString());
-          final String sql = "select id from flow.custom_field cf where field_name = 'Storage Type' and company_id = " + companyId;
-          Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
-          List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
-          String finalStorageType;
-          if(storageType.equals("energy_arbitrage") || storageType.equals("energy arbitrage")) {
-            //(right now it's energy_arbitrage but just in case it changes to a space instead)
-            finalStorageType = "Grid-Tied";
-            //we're using a different name than Aurora is for these two that don't have _ in them
-          } else if(storageType.equals("self_consumption") || storageType.equals("self consumption")){
-            finalStorageType = "Partial Home";
-          }else {
-            finalStorageType = storageType;
-          }
-          final Long storageTypeLovId = values.stream()
-            .filter(i -> Objects.equals(i.getName().toLowerCase(), finalStorageType.toLowerCase()))
-            .map(ListOfValue::getId)
-            .findFirst()
-            .orElse(null);
-          if (storageTypeLovId != null) {
+          int storageTypeLovId =  getIdForAPI(storageType,apiConfigs);
+          if (storageTypeLovId != 0) {
             params.put("intValue", storageTypeLovId);
             sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
           } else {
@@ -1026,4 +966,27 @@ public class BrsProcessStepActionFunctionService {
     params.put("jsonValue", null);
     sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
   }
+
+  public static int getIdForAPI(String name, List<Map<String, Object>> apiConfigs) {
+    int id = 0;
+
+    if (name != null) {
+      for (Map<String, Object> row : apiConfigs) {
+        Object nameObj = row.get("value");
+        Object idObj = row.get("list_of_value_id");
+
+        if (nameObj != null && idObj instanceof Number) {
+          String configName = nameObj.toString().toLowerCase();
+
+          if (name.toLowerCase().contains(configName)) {
+            id = ((Number) idObj).intValue();
+            break;
+          }
+        }
+      }
+    }
+
+    return id;
+  }
+
 }
