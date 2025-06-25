@@ -1026,6 +1026,17 @@ const router = new Router({
                     import(
                       './views/flow/settings/defaults/CloserDashboardSettings.vue'
                       )
+                },
+                {
+                  path: 'apiConfigurations',
+                  meta: { title: 'Albatross - API Configurations' },
+                  component: () => {
+                    if (userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                      return import('./views/flow/settings/ApiConfigurations.vue')
+                    } else {
+                      return accessDenied()
+                    }
+                  }
                 }
               ]
             },
