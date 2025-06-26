@@ -18,13 +18,13 @@
         <a-text-field
                       label="User First Name"
                       placeholder=" "
-                      :rules="requiredRules"
+                      :rules="firstNameRules"
                       :readonly="!userCanEdit"
                       v-model="tempUser.firstName"
         ></a-text-field>
         <a-text-field
                       label="User Last Name"
-                      :rules="requiredRules"
+                      :rules="lastNameRules"
                       :readonly="!userCanEdit"
                       v-model="tempUser.lastName"
         ></a-text-field>
@@ -306,6 +306,8 @@ const userForm = ref(null)
 const user = ref({})
 const showEditModal = ref(false)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const firstNameRules=ref(constants.FIRST_NAME)
+const lastNameRules = ref(constants.LAST_NAME)
 const fieldsSaving = ref(false)
 const fieldsLoading = ref(true)
 const customFieldGroups = ref([])
