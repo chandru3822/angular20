@@ -77,28 +77,52 @@ public class AuthController {
       return ResponseEntity.badRequest().body("This account does not have access.");
     }
 
-    // Determine device type from User-Agent
+// Determine device type from User-Agent with error handling
     String accessType = "web";
-    String mobileVersion = creds.getVersion();
+    String mobileVersion = null;
 
-    if (userAgent != null) {
-      String ua = userAgent.toLowerCase();
-      if (ua.contains("android")) {
-        accessType = "mobile";
-        mobileVersion = (creds.getVersion() != null ? creds.getVersion() : "") + "-android";
-      } else if (ua.contains("iphone")) {
-        accessType = "mobile";
-        mobileVersion = (creds.getVersion() != null ? creds.getVersion() : "") + "-iphone";
-      } else if (ua.contains("ipad")) {
-        accessType = "mobile";
-        mobileVersion = (creds.getVersion() != null ? creds.getVersion() : "") + "-ipad";
+    try {
+      // Safely get version from credentials
+      String credentialsVersion = creds.getVersion();
+
+      if (userAgent != null && !userAgent.trim().isEmpty()) {
+        String ua = userAgent.toLowerCase().trim();
+
+        if (ua.contains("android")) {
+          accessType = "mobile";
+          mobileVersion = (credentialsVersion != null && !credentialsVersion.trim().isEmpty()
+            ? credentialsVersion + "-android" : "android");
+        } else if (ua.contains("iphone")) {
+          accessType = "mobile";
+          mobileVersion = (credentialsVersion != null && !credentialsVersion.trim().isEmpty()
+            ? credentialsVersion + "-iphone" : "iphone");
+        } else if (ua.contains("ipad")) {
+          accessType = "mobile";
+          mobileVersion = (credentialsVersion != null && !credentialsVersion.trim().isEmpty()
+            ? credentialsVersion + "-ipad" : "ipad");
+        } else {
+          // For web browsers, explicitly set mobileVersion to null
+          accessType = "web";
+          mobileVersion = null;
+        }
+      } else {
+        // No user agent provided, default to web with null mobile version
+        accessType = "web";
+        mobileVersion = null;
       }
-    }
 
-    // Log or process the app version if present
-    if (creds.getVersion() != null) {
-      log.info("Login attempt with app version: {}", creds.getVersion());
-      // Optionally: validate or use the version value here
+      // Log the app version if present
+      if (credentialsVersion != null && !credentialsVersion.trim().isEmpty()) {
+        log.info("Login attempt with app version: {}", credentialsVersion);
+      } else {
+        log.info("Login attempt with no version information provided");
+      }
+
+    } catch (Exception e) {
+      // Fallback to safe defaults if any error occurs
+      log.warn("Error processing user agent or version information, defaulting to web with null mobile version: {}", e.getMessage());
+      accessType = "web";
+      mobileVersion = null;
     }
 
     Boolean validPassword = securityService.validatePassword(user, creds.getPassword());
