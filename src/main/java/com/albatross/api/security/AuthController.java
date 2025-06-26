@@ -110,14 +110,6 @@ public class AuthController {
         accessType = "web";
         mobileVersion = null;
       }
-
-      // Log the app version if present
-      if (credentialsVersion != null && !credentialsVersion.trim().isEmpty()) {
-        log.info("Login attempt with app version: {}", credentialsVersion);
-      } else {
-        log.info("Login attempt with no version information provided");
-      }
-
     } catch (Exception e) {
       // Fallback to safe defaults if any error occurs
       log.warn("Error processing user agent or version information, defaulting to web with null mobile version: {}", e.getMessage());
