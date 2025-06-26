@@ -364,27 +364,47 @@ public class BrsProcessStepActionFunctionService {
         }
       }
 
-
-      String storageType = storage.getFields().get("data").get(0).get("attributes").get("batteryProfile").asText();
-      int storageTypeId  =  getIdForAPI(storageType,apiConfigs);
-
-      double systemSize = StreamSupport.stream(pa.spliterator(), false)
-        .map(jn -> jn.get("attributes").get("panelArrays").get("sizeInWatts"))
-        .map(JsonNode::toString)
-        .mapToDouble(Double::parseDouble)
-        .sum();
+      JsonNode st = null;
+      for (JsonNode storageItems : storage.getFields().path("data")) {
+          String storageProposalId = storageItems.path("id").asText();
+          if (storageProposalId.equalsIgnoreCase(proposalId)) {
+            st = storageItems;
+            break;
+          }
+      }
+      String storageType = null;
+      int storageTypeId = 0;
+      if (st != null) {
+        storageType = st.get("attributes").get("batteryProfile").asText();
+        storageTypeId  =  getIdForAPI(storageType,apiConfigs);
+      }
+      double systemSize = 0;
+      if(pa != null) {
+           systemSize = StreamSupport.stream(pa.spliterator(), false)
+          .map(jn -> jn.get("attributes").get("panelArrays").get("sizeInWatts"))
+          .map(JsonNode::toString)
+          .mapToDouble(Double::parseDouble)
+          .sum();
+      }
 
       //panel quantity
-      double panelQuantity = StreamSupport.stream(pa.spliterator(), false)
-        .map(jn -> jn.get("attributes").get("panelArrays").get("count"))
-        .map(JsonNode::toString)
-        .mapToDouble(Double::parseDouble)
-        .sum();
-
+      double panelQuantity = 0;
+      if(pa != null) {
+           panelQuantity = StreamSupport.stream(pa.spliterator(), false)
+          .map(jn -> jn.get("attributes").get("panelArrays").get("count"))
+          .map(JsonNode::toString)
+          .mapToDouble(Double::parseDouble)
+          .sum();
+      }
       //panel Manufacturer
-      String panelBrand = pa.get(0).get("attributes").get("panelArrays").get("panelManufacturer").asText();
-      double panelSizeInWatts = pa.get(0).get("attributes").get("panelArrays").get("panelSizeInWatts").asDouble();
-      String panelName = pa.get(0).get("attributes").get("panelArrays").get("panelName").asText();
+      String panelBrand = null;
+      double panelSizeInWatts = 0;
+      String panelName = null;
+      if(pa != null) {
+        panelBrand = pa.get(0).get("attributes").get("panelArrays").get("panelManufacturer").asText();
+        panelSizeInWatts = pa.get(0).get("attributes").get("panelArrays").get("panelSizeInWatts").asDouble();
+        panelName = pa.get(0).get("attributes").get("panelArrays").get("panelName").asText();
+      }
 
       //production Estimate
       JsonNode ps = productions.getFields().get("data");
@@ -971,6 +991,7 @@ public class BrsProcessStepActionFunctionService {
     int id = 0;
 
     if (name != null) {
+      name = name.toLowerCase();
       for (Map<String, Object> row : apiConfigs) {
         Object nameObj = row.get("value");
         Object idObj = row.get("list_of_value_id");
@@ -978,7 +999,7 @@ public class BrsProcessStepActionFunctionService {
         if (nameObj != null && idObj instanceof Number) {
           String configName = nameObj.toString().toLowerCase();
 
-          if (name.toLowerCase().contains(configName)) {
+          if (configName.contains(name) || name.contains(configName)) {
             id = ((Number) idObj).intValue();
             break;
           }
