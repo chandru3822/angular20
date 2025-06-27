@@ -64,6 +64,7 @@
                   v-model="at.show"
                   :label="at.activityType"
                   :ripple="false"
+                  @change="togglePanel(at)"
                 />
               </v-list-item-title>
             </v-list-item-content>
@@ -124,11 +125,12 @@
             </div>
             <v-expansion-panels
               v-else
-              v-show="!type.hidden"
               v-model="openPanels[type.activityType]"
+              v-show="!type.hidden"
               :key="type.activityType"
               multiple
-              flat><!--Topic # header-->
+              flat
+              ><!--Topic # header-->
               <v-expansion-panel
                 v-for="h in orderBy(
                   searchfilteredActivityTypeHashtags(type.activityTypeHashtags),
@@ -136,7 +138,7 @@
                   sortDirection
                 )"
                 :key="h.hashtagId"
-                 :value="h.hashtagId"
+                :value="idx"
               >
                 <v-expansion-panel-header class="expansion-panel-header px-0">
                   <template v-slot:default="{ open }">
@@ -405,7 +407,7 @@ import {
   ref,
   onMounted,
   watch,
-  reactive
+  nextTick
 } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
@@ -477,7 +479,8 @@ const sortDirection = ref('desc')
 const sectionType = ref('')
 const primaryId = ref(null)
 const filterMenuOpen = ref(false);
-const openPanels = reactive({});
+const openPanels = ref({})
+const panelBackup = ref({})
 const activityTypes = ref([
   {
     id: 1,
@@ -546,6 +549,22 @@ const UpdateMentionableList = (keyFilter) => {
       ].itemList
   }
 }
+
+// Whenever checkbox is unchecked/checked
+const togglePanel = (at) => {
+  const type = at.activityType
+  if (!at.show) {
+    // Checkbox is being unchecked — save current state
+    panelBackup.value[type] = [...(openPanels.value[type] ?? [])]
+    openPanels.value[type] = []
+  } else {
+    // Checkbox is being re-checked — restore previous state
+    nextTick(() => {
+      openPanels.value[type] = [...(panelBackup.value[type] ?? [])]
+    })
+  }
+}
+
 
 const CloseMentionableList = () => {
   mentionableList.value = []
