@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.unit.DataSize;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
@@ -45,7 +47,11 @@ public class SolargrafProxy {
 
     @PostConstruct
     public void init() {
-        client = WebClient.create(host);
+        int maxSize = (int)DataSize.ofMegabytes(5).toBytes();
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(codecs->codecs.defaultCodecs().maxInMemorySize(maxSize))
+                .build();
+        client = WebClient.builder().exchangeStrategies(exchangeStrategies).baseUrl(host).build();
     }
 
     public SolargrafPanelArrays getSolargrafPanelArrays(@NotBlank String solargrafId) throws IOException {

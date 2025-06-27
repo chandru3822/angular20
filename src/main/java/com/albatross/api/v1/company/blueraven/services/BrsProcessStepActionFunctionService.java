@@ -337,7 +337,7 @@ public class BrsProcessStepActionFunctionService {
       try {
         materials = solargrafService.getSolargrafMaterials(projectId);
       } catch (Exception e) {
-        throw new RuntimeException("Unable to fetch panel arrays from solargraf");
+        throw new RuntimeException("Unable to fetch materials from solargraf");
       }
 
       try {
@@ -349,7 +349,7 @@ public class BrsProcessStepActionFunctionService {
       try {
         storage = solargrafService.getSolargrafStorage(projectId);
       } catch (Exception e) {
-        throw new RuntimeException("Unable to fetch panel arrays from solargraf");
+        throw new RuntimeException("Unable to fetch storage from solargraf");
       }
 
       JsonNode pa = null;
