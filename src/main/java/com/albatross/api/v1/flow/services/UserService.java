@@ -313,9 +313,11 @@ public class UserService {
   }
 
   public void unlockUser(Long userId) {
+    User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("loginAttempts", 0);
+    params.put("modifiedById", user.trueUserId());
 
     sqlCache.updateBySql(UserQuery.updateLoginAttempts, params);
   }

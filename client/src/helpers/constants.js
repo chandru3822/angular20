@@ -71,8 +71,9 @@ constants.MAX_FILE_UPLOADS = 10
 //TODO: rules likely need to be adjusted
 constants.EMAIL_RULES = [
   v => !!v || "E-mail is required",
-  v => /.+@.+[.].+/.test(v) || "E-mail must be valid" //br request to allow 1 char domain
+  v => /.+@.+[.].+/.test(v) || "E-mail must be valid", //br request to allow 1 char domain
   // v => /.+@.+.[.].+/.test(v) || "E-mail must be valid"
+  v => (v && v.length <= 100) || "E-mail must be at most 100 characters"
 ]
 
 constants.POSTAL_CODE_RULES = [
@@ -103,7 +104,8 @@ constants.ADDRESS_RULES = [
 ]
 
 constants.PASSWORD_RULES = [
-  v => (!v || (v && (v.length >= 8))) || 'Must be at least 8 characters',
+  v => (!v || v.length >= 8) || 'Must be at least 8 characters',
+  v => (!v || v.length <= 100) || 'Must be at most 100 characters'
 ]
 
 constants.PHONE_RULES = [
@@ -140,8 +142,21 @@ constants.BASIC_ARRAY_REQUIRED_RULE = [
 ]
 constants.USERNAME_RULES = [
   v => !!v || 'Username is required',
-  v => !!v && v.length >= 3 || 'Must be at least 3 characters'
+  v => !!v && v.length >= 3 || 'Must be at least 3 characters',
+  v => (!!v && v.length <= 100) || 'Must be at most 100 characters'
 ]
+
+constants.FIRST_NAME=[
+ v => !!v || 'Username is required',
+   v => !!v && v.length >= 3 || 'Must be at least 3 characters',
+  v => !!v && v.length <= 50 || 'Must be at most 50 characters'
+]
+
+constants.LAST_NAME=[
+  v => !!v || 'Username is required',
+   v => !!v && v.length <= 50 || 'Must be at most 50 characters'
+ ]
+
 constants.COLOR_LIST = [
     '#e6194b', '#3cb44b', '#FFC700', '#4363d8',
     '#f58231', '#911eb4', '#46f0f0', '#f032e6',

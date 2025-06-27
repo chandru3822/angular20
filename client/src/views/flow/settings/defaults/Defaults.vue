@@ -51,6 +51,11 @@ const tabs = ref([
     label: 'Closer Dashboard',
     path:`/settings/company/closerDashboard`,
     display: userStore.userHasFeatureAccessLevel('SETTINGS','ADMIN')
+  },
+  {
+    label: 'API Configurations',
+      path: `/settings/company/apiConfigurations`,
+    display: userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
   }
 ])
 

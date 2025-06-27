@@ -246,7 +246,7 @@ watch(
     () => options.value,
     () => {
       if(!initialLoad.value) {
-        getProjects()
+        debouncedGetProjects();
       }
     }
 )
@@ -296,6 +296,8 @@ const searchProjects = debounce((query) => {
 const closeKeyboard = () => {
   document.activeElement.blur()
 }
+
+const debouncedGetProjects = debounce(getProjects, 100); // 100ms debounce
 </script>
 
 <style lang="scss">
