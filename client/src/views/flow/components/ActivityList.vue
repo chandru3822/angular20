@@ -59,7 +59,7 @@
   @click="props.searchCallback(a.note)"
   v-html="highlightHtmlString(a.note, props.query)"
 ></div>
-     <!-- <div style="cursor: pointer;" @click="props.searchCallback(a.note)" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))"/> -->
+
     </v-card-text>
       <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
         <span class="clickable" @click="props.searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)" :inner-html.prop="a.createdBy | searchHighlight(query)"/>
