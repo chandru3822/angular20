@@ -76,7 +76,7 @@ Vue.filter(
       if (ignoreWhiteSpace === true) {
         query = query.replace(/\s+/g, '\\s*')
       }
-
+      query = query.split('').map(char => `\\s*${char}`).join(''); // fuzzy search pattern
       return value.replace(
         new RegExp(`(${query})`, 'ig'),
         (v) => `<span class="highlight">${v}</span>`

@@ -76,7 +76,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             solargraf_proudction jsonb,
             solargraf_materials jsonb,
             solargraf_panel jsonb,
-            pricing_strategy_id bigint
+            pricing_strategy_id bigint,
+            ground_mount_cost   numeric
           )
 
 AS
@@ -163,7 +164,8 @@ BEGIN
            ppscfv90.json_value,--prodction
            ppscfv91.json_value,--materials
            ppscfv92.json_value,--panel
-             pcfv71.int_value
+             pcfv71.int_value,
+           pcfv72.numeric_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -226,6 +228,8 @@ BEGIN
                                                                pcfv70.custom_field_group_assignment_id =  1317   -- prod 1317
            left join brs.proposal_custom_field_value pcfv71 on prop.id = pcfv71.proposal_id and
                                                                pcfv71.custom_field_group_assignment_id =  581
+           left join brs.proposal_custom_field_value pcfv72 on prop.id = pcfv72.proposal_id and
+                                                               pcfv72.custom_field_group_assignment_id =  1340
            left join flow.project_process_step_custom_field_value ppscfv30
                      on pps.id = ppscfv30.project_process_step_id and
                         ppscfv30.custom_field_group_assignment_id = 22573
