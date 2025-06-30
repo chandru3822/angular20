@@ -64,7 +64,8 @@
                   v-model="at.show"
                   :label="at.activityType"
                   :ripple="false"
-                  @change="togglePanel(at)"
+
+                   @change="onCheckboxChange(at)"
                 />
               </v-list-item-title>
             </v-list-item-content>
@@ -227,6 +228,7 @@
                     :query="queryText"
                     @reload="getActivities"
                     @reloadtopic="getActivityTopics"
+                      @remove-deleted="removeDeletedActivity"
                   ></ActivityList>
                 </v-expansion-panel-content>
               </v-expansion-panel>
@@ -240,6 +242,7 @@
         color="primary"
         v-else-if="!savingActivity && activitiesLoading"
       />
+
       <ActivityList
         v-else-if="!savingActivity && !activitiesLoading"
         :activities="sortedFilteredActivities"
@@ -259,6 +262,7 @@
         @bottomHitCount="bottomHitCallback"
         @reload="getActivities"
         @reloadtopic="getActivityTopics"
+          @remove-deleted="removeDeletedActivity"
       ></ActivityList>
       <!--      <div v-if="sortedFilteredActivities">-->
       <!--        sfa: {{ sortedFilteredActivities.length }}-->
@@ -520,7 +524,26 @@ const mentionableItems = ref([
     itemList: teamMentionables.value
   }
 ])
-
+const onCheckboxChange=(at)=>
+{
+  if(at.id===1 && at.show===true || at.id===2 && at.show===true)
+  {
+    getActivities();
+    getActivityTopics();
+  }
+   const type = at.activityType
+  if (!at.show) {
+    // Checkbox is being unchecked — save current state
+    panelBackup.value[type] = [...(openPanels.value[type] ?? [])]
+    openPanels.value[type] = []
+  } else {
+    // Checkbox is being re-checked — restore previous state
+    nextTick(() => {
+      openPanels.value[type] = [...(panelBackup.value[type] ?? [])]
+    })
+  }
+  emit('scrollToTop')
+}
 const applyMention = (item, keyWord, value, clearSearchData = true) => {
   if (item.mentionType === 1) {
     searchByClick(item.text, item.id, SearchTypeEnum.USER, clearSearchData)
@@ -550,20 +573,8 @@ const UpdateMentionableList = (keyFilter) => {
   }
 }
 
-// Whenever checkbox is unchecked/checked
-const togglePanel = (at) => {
-  const type = at.activityType
-  if (!at.show) {
-    // Checkbox is being unchecked — save current state
-    panelBackup.value[type] = [...(openPanels.value[type] ?? [])]
-    openPanels.value[type] = []
-  } else {
-    // Checkbox is being re-checked — restore previous state
-    nextTick(() => {
-      openPanels.value[type] = [...(panelBackup.value[type] ?? [])]
-    })
-  }
-}
+
+
 
 
 const CloseMentionableList = () => {
@@ -892,6 +903,7 @@ const getActivities = async () => {
         return acc
       }, [])
       activities.value = data
+      scrollConversation()
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error loading notes')
@@ -1023,7 +1035,31 @@ const saveActivity = (isNew) => {
   } else {
     editActivity()
   }
+
+
 }
+
+const scrollConversation = async () => {
+  await nextTick() // wait for new DOM elements to appear
+
+  const container = document.querySelector('.conversation-activity-inner-container')
+  if (!container) return
+
+  if (sortDirection.value !== 'asc') {
+    // Scroll to top
+    container.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  } else {
+    // Scroll to bottom
+    container.scrollTo({
+      top: container.scrollHeight+1000,
+      behavior: 'smooth'
+    })
+  }
+}
+
 const saveNewActivity = async () => {
   savingActivity.value = true
   //in this case a NEW activity's hashtags are the root level ones
@@ -1056,7 +1092,8 @@ const saveNewActivity = async () => {
     addActivity.value = false
     editedActivity.value = {}
     savingActivity.value = false
-    emit('scrollToTop')
+    // emit('scrollToTop')
+      scrollConversation()
     appStore.showSnack('SUCCESS', 'Note Added')
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -1122,7 +1159,8 @@ const editActivity = async () => {
     editedIndex = null
     if (!timelineView.value) {
       //only reset the scroll if we're editing in the topics view
-      emit('scrollToTop')
+      // emit('scrollToTop')
+        scrollConversation()
     }
     savingActivity.value = false
     appStore.showSnack('SUCCESS', 'Note Edited')
@@ -1136,7 +1174,9 @@ const editActivity = async () => {
 const removeDeletedActivity = (activityId) => {
   const deletedActivity = activities.value.find((a) => a.id === activityId)
   if (deletedActivity) {
-    deletedActivity.archived = true
+    deletedActivity.archived = true;
+      getActivities();
+      getActivityTopics();
   }
 }
 
@@ -1144,6 +1184,13 @@ watch(
   () => editedActivity.value.note,
   (newVal) => {
     noteStore.setNote(newVal)
+  }
+);
+
+watch(
+  () => editedActivity.value.id,
+  (newVal) => {
+    noteStore.setNoteId(newVal)
   }
 );
 watch(

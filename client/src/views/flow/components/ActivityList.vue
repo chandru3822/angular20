@@ -43,10 +43,10 @@
               </v-list-item-content>
             </v-list-item>
             <v-list-item v-if="a.activityTypeId !== 1"
-                         :disabled="a.createdById !== currentUserId"
+                         :disabled="noteStore.hasNoteID && noteStore.hasNoteID===a.id?true:a.createdById !== currentUserId"
                          @click="activityToDelete = a">
               <v-list-item-content>
-                <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== currentUserId}">Delete</v-list-item-title>
+                <v-list-item-title class="error--text" :class="{'grey--text':noteStore.hasNoteID && noteStore.hasNoteID===a.id?true: a.createdById !== currentUserId}">Delete</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -105,6 +105,7 @@ import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import { useNoteStore } from '../../../stores/NoteStore';
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -112,6 +113,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const noteStore=useNoteStore()
 
 const urlRegex = /\bhttps?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_+.~#?&\/=]*\b/gi // thank you https://uibakery.io/regex-library/url
 const taggedUserRegex = /@\w+(?: [\w&]+)*(?=\s*\(|\s|$)/g // thank you chat gpt
