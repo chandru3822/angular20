@@ -587,6 +587,7 @@ declare
   v_total_cost_20_years                                  numeric;
   v_total_savings_20_years                               numeric;
   v_override_plan_id   bigint;
+  v_ground_mount_cost numeric;
 
 --Base Price CFGA - 1329
 --Commission Amount CFGA - 1330
@@ -670,7 +671,8 @@ BEGIN
          proposal_template_id,
          solargraf_proudction,
          solargraf_materials,
-         solargraf_panel
+         solargraf_panel,
+         ground_mount_cost
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -744,7 +746,8 @@ BEGIN
     v_proposal_template_id,
     v_solargraf_production_summary,
     v_solargraf_materials_summary,
-    v_solargraf_panel_summary
+    v_solargraf_panel_summary,
+    v_ground_mount_cost
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -1425,7 +1428,8 @@ BEGIN
                             coalesce(v_reroof_cost, 0)::numeric +
                             coalesce(v_tree_trimming_cost, 0)::numeric +
                             coalesce(v_trenching_cost, 0)::numeric +
-                            coalesce(v_ac_unit_relocation_cost, 0)::numeric;
+                            coalesce(v_ac_unit_relocation_cost, 0)::numeric +
+                            coalesce(v_ground_mount_cost,0)::numeric;
   ---todo add these thing for Michael and make sure it's perfect  all_ancillary_costs
 
   --raise notice 'v_total_ancillary_costs = %',v_total_ancillary_costs;

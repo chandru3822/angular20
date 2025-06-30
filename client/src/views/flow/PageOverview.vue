@@ -84,7 +84,7 @@
                :class="{'clickable':!!detail.value}"
                @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value), detail.label)">
             <span class="detail-label label-small pr-2"><v-icon small>mdi-phone</v-icon></span>
-            <span v-if="detail.value" class="detail-item body-medium">{{ formatPhoneNumber(detail.value) }}</span>
+            <span v-if="detail.value" class="detail-item body-medium">{{ formatUSPhoneNumberFlexible(detail.value) }}</span>
             <span v-else class="d-inline-block detail-item body-medium">N/A</span>
           </div>
           <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.EXTENSION" class="flex-display mb-2"
@@ -167,7 +167,7 @@
 </template>
 
 <script setup>
-import {formatPhoneNumber, cleanPhoneNumberForCopying, getRequest} from "@/helpers/helpers";
+import {formatPhoneNumber, cleanPhoneNumberForCopying, getRequest, formatUSPhoneNumberFlexible} from "@/helpers/helpers";
 import constants from '@/helpers/constants'
 import {getStatusColorClass} from "@/services/projectStatusTypeService";
 import NewMessageDialog from "./settings/inbox/NewMessageDialog";
