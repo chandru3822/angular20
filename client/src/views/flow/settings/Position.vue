@@ -177,28 +177,68 @@
                       <template #item="{ item, index }" >
                         <tr>
                           <td class="text-left clickable field-name-col">
-                            <router-link class="router-link-td elevation-0 square-card"
-                              :to="`/user/${item.id}/details`">
-
-                              {{ item.firstName }}
-                            </router-link>
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.firstName }}
+                                </router-link></span>
+                              </template>
+                                  <span>Click to view profile</span>
+                            </v-tooltip>
                           </td>
+                         
+
+                         <td class="text-left clickable field-name-col">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.lastName }}
+                                </router-link></span>
+                              </template>
+                                <span>Click to view profile</span>
+                            </v-tooltip>
+                          </td>
+
                           <td class="text-left clickable field-name-col">
-                            <router-link class="router-link-td elevation-0 square-card"
-                              :to="`/user/${item.id}/details`">
-
-                              {{ item.lastName }}
-                            </router-link>
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.email }}
+                                </router-link></span>
+                              </template>
+                                <span>Click to view profile</span>
+                            </v-tooltip>
                           </td>
+                          
                           <td class="text-left clickable field-name-col">
-                            <router-link class="router-link-td elevation-0 square-card"
-                              :to="`/user/${item.id}/details`">
-
-                              {{ item.email }}
-                            </router-link>
-                          </td>
-                          <td>
-                            {{ item.isPrimary }}
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.isPrimary }}
+                                </router-link></span>
+                              </template>
+                                  <span>Click to view profile</span>
+                            </v-tooltip>
                           </td>
                         </tr>
                       </template>
