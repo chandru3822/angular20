@@ -235,6 +235,7 @@ public class UserPositionQuery {
 			  ), '[]')
 			""";
 	
+	//language=PostgreSQL
 	public static final String countPositionUser = """
 			  SELECT COUNT(*)
 			  FROM flow.user_position up
