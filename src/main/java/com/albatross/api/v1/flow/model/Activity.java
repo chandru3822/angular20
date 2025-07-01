@@ -16,7 +16,7 @@ public class Activity {
 
   private Long id, createdById, modifiedById, createdByPositionOrgId, activityTypeId, linkedPpsId, linkedPpseId, pinnedById;
   private String note, createdBy, modifiedBy, createdByPosition, createdByPositionOrg, linkLabel, pinnedBy;
-  private Boolean archived, pinned, linked;
+  private Boolean archived, pinned, linked , unpinned;
 
   private List<ActivityHashtag> activityHashtags;
 
