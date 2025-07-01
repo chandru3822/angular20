@@ -43,10 +43,10 @@
               </v-list-item-content>
             </v-list-item>
             <v-list-item v-if="a.activityTypeId !== 1"
-                         :disabled="a.createdById !== currentUserId"
+                         :disabled="noteStore.hasNoteID && noteStore.hasNoteID===a.id?true:a.createdById !== currentUserId"
                          @click="activityToDelete = a">
               <v-list-item-content>
-                <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== currentUserId}">Delete</v-list-item-title>
+                <v-list-item-title class="error--text" :class="{'grey--text':noteStore.hasNoteID && noteStore.hasNoteID===a.id?true: a.createdById !== currentUserId}">Delete</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -54,17 +54,13 @@
       </v-toolbar>
 
       <v-card-text class="py-0 default-text-color">
-        <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
-        <div class="text-formatting">
-          <div v-if="query && query !== ''" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note))) | searchHighlight(`(?<!<[^>]*)${query}(?![^<]*>)`)"/>
-          <vue-clamp v-else ellipsis="" autoresize :max-lines="5" :inner-html.prop="filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))">
-            <template #after="{ toggle, clamped, expanded }">
-              <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
-              <button v-if="expanded" @click="toggle" class="see-more-btn"> see less</button>
-            </template>
-          </vue-clamp>
-        </div>
-      </v-card-text>
+        <div
+  style="cursor: pointer;"
+  @click="props.searchCallback(a.note)"
+  v-html="highlightHtmlString(a.note, props.query)"
+></div>
+
+    </v-card-text>
       <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
         <span class="clickable" @click="props.searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)" :inner-html.prop="a.createdBy | searchHighlight(query)"/>
         <span v-if="a.createdByPosition" class="clickable" @click="props.searchCallback(a.createdByPosition, null, SearchTypeEnum.POSITION)" :inner-html.prop="', ' + a.createdByPosition | searchHighlight(query)"/>
@@ -72,6 +68,7 @@
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="`| Edited by ${ a.modifiedBy }` | searchHighlight(query)"/>
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="a.dateModified | formatDate('timestamp', ' [on] M/D/YY [at] h:mm a')"/>
         <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
+        <span v-if="!a.pinned" :inner-html.prop="` | Unpinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
       </v-card-actions>
     </v-card>
     <infinite-loading v-if="useInfiniteLoader" @infinite="infiniteHandler">
@@ -108,6 +105,7 @@ import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import { useNoteStore } from '../../../stores/NoteStore';
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -115,6 +113,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const noteStore=useNoteStore()
 
 const urlRegex = /\bhttps?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_+.~#?&\/=]*\b/gi // thank you https://uibakery.io/regex-library/url
 const taggedUserRegex = /@\w+(?: [\w&]+)*(?=\s*\(|\s|$)/g // thank you chat gpt
@@ -154,6 +153,35 @@ const props = defineProps({
     default: false,
   }
 })
+
+function highlightHtmlString(html, query) {
+  if (!html || !query) return html;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
+
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.nodeValue.trim() !== '') {
+      const spanWrapped = node.nodeValue.replace(regex, '<span class="highlight">$1</span>');
+      const temp = document.createElement('span');
+      temp.innerHTML = spanWrapped;
+      node.parentNode.replaceChild(temp, node);
+    }
+  }
+
+  return doc.body.innerHTML;
+}
+
+function getHighlightedNote(note, query) {
+  const clean = filterFormatting(removeNoteTagEmail(escapeHtml(note)));
+  return highlightHtmlString(clean, query);
+}
+
 const { contactId, orgId, userId, currentUserId,
   projectId, sectionType, highlightPinnedActivity, query, useInfiniteLoader } = toRefs(props)
 
@@ -161,13 +189,12 @@ const loaderState = ref(null)
 const editedIndex = ref(null)
 const activityToDelete = ref(null)
 
-const emit = defineEmits(['bottomHitCount', 'reload', 'remove-deleted'])
+const emit = defineEmits(['bottomHitCount', 'reload', 'reloadtopic','remove-deleted'])
 
 const removeNoteTagEmail = (note) => {
   const emailRegex = /\((([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\)/g
       return note.replaceAll(emailRegex, '')
 }
-
 /**
  * Escapes special HTML characters in a string to prevent XSS (Cross-Site Scripting) attacks.
  */
@@ -180,7 +207,7 @@ const escapeHtml = (unsafe) => {
     // Replace greater-than sign (>) with HTML entity
     ?.replace(/>/g, "&gt;")
     // Replace double quotes (") with HTML entity
-    ?.replace(/"/g, "&quot;")   
+    ?.replace(/"/g, "&quot;")
     // Replace single quotes (') with HTML entity
     ?.replace(/'/g, "&#039;");
 }
@@ -198,6 +225,12 @@ const infiniteStateLoaded = (loadedState) => {
     loaderState.value?.loaded()
   }
 }
+
+const processedNote = computed(() => {
+  const cleanText = filterFormatting(removeNoteTagEmail(escapeHtml(a.note)))
+  return searchHighlight(cleanText, props.query)
+})
+
 const editItem = (item) => {
   props.editCallback(item)
 }
@@ -220,7 +253,8 @@ const pinActivity = async (activity) => {
     }
     await postRequestWithRequestParams(`/activity/${activity.id}/pin/${sectionType.value}`, null, params)
     let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
-    emit('reload');
+    emit('reload')
+    emit('reloadtopic')
     appStore.showSnack('SUCCESS', msg)
 
   } catch (e) {

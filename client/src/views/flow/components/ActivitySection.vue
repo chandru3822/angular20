@@ -64,6 +64,8 @@
                   v-model="at.show"
                   :label="at.activityType"
                   :ripple="false"
+
+                   @change="onCheckboxChange(at)"
                 />
               </v-list-item-title>
             </v-list-item-content>
@@ -93,6 +95,7 @@
           :edit-callback="setEditedActivity"
           :search-callback="searchByClick"
           @reload="getActivities"
+         @reloadtopic="getActivityTopics"
           ref="activityList"
           :use-infinite-loader="false"
           @remove-deleted="removeDeletedActivity"
@@ -123,10 +126,11 @@
             </div>
             <v-expansion-panels
               v-else
-              accordion
+              v-model="openPanels[type.activityType]"
+              v-show="!type.hidden"
+              :key="type.activityType"
               multiple
               flat
-              class=".rounded-0"
               ><!--Topic # header-->
               <v-expansion-panel
                 v-for="h in orderBy(
@@ -135,6 +139,7 @@
                   sortDirection
                 )"
                 :key="h.hashtagId"
+                :value="idx"
               >
                 <v-expansion-panel-header class="expansion-panel-header px-0">
                   <template v-slot:default="{ open }">
@@ -222,6 +227,8 @@
                     :highlightPinnedActivity="false"
                     :query="queryText"
                     @reload="getActivities"
+                    @reloadtopic="getActivityTopics"
+                      @remove-deleted="removeDeletedActivity"
                   ></ActivityList>
                 </v-expansion-panel-content>
               </v-expansion-panel>
@@ -235,6 +242,7 @@
         color="primary"
         v-else-if="!savingActivity && activitiesLoading"
       />
+
       <ActivityList
         v-else-if="!savingActivity && !activitiesLoading"
         :activities="sortedFilteredActivities"
@@ -253,6 +261,8 @@
         :state-loaded="stateLoadedStatus"
         @bottomHitCount="bottomHitCallback"
         @reload="getActivities"
+        @reloadtopic="getActivityTopics"
+          @remove-deleted="removeDeletedActivity"
       ></ActivityList>
       <!--      <div v-if="sortedFilteredActivities">-->
       <!--        sfa: {{ sortedFilteredActivities.length }}-->
@@ -284,9 +294,6 @@
           limit="3"
           width="400"
         >
-       
-      
-        
           <a-textarea
             class="body-large note-text-area"
             hide-details
@@ -403,7 +410,8 @@ import {
   computed,
   ref,
   onMounted,
-  watch
+  watch,
+  nextTick
 } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
@@ -474,13 +482,15 @@ const savingActivity = ref(false)
 const sortDirection = ref('desc')
 const sectionType = ref('')
 const primaryId = ref(null)
-const filterMenuOpen = ref(false)
+const filterMenuOpen = ref(false);
+const openPanels = ref({})
+const panelBackup = ref({})
 const activityTypes = ref([
   {
     id: 1,
     activityType: 'Activities',
     activityTypeSingularLabel: 'Activity',
-    show: false
+    show: true
   },
   {
     id: 2,
@@ -514,7 +524,26 @@ const mentionableItems = ref([
     itemList: teamMentionables.value
   }
 ])
-
+const onCheckboxChange=(at)=>
+{
+  if(at.id===1 && at.show===true || at.id===2 && at.show===true)
+  {
+    getActivities();
+    getActivityTopics();
+  }
+   const type = at.activityType
+  if (!at.show) {
+    // Checkbox is being unchecked — save current state
+    panelBackup.value[type] = [...(openPanels.value[type] ?? [])]
+    openPanels.value[type] = []
+  } else {
+    // Checkbox is being re-checked — restore previous state
+    nextTick(() => {
+      openPanels.value[type] = [...(panelBackup.value[type] ?? [])]
+    })
+  }
+  emit('scrollToTop')
+}
 const applyMention = (item, keyWord, value, clearSearchData = true) => {
   if (item.mentionType === 1) {
     searchByClick(item.text, item.id, SearchTypeEnum.USER, clearSearchData)
@@ -543,6 +572,10 @@ const UpdateMentionableList = (keyFilter) => {
       ].itemList
   }
 }
+
+
+
+
 
 const CloseMentionableList = () => {
   mentionableList.value = []
@@ -591,17 +624,43 @@ const currentUserId = computed(() => {
 })
 const filteredTopics = computed(() => {
   const shownActivityTypes =
-    activityTypes?.value?.filter((at) => at.show)?.map((at) => at.id) ?? []
-  const result = activityTopics?.value?.filter((a) => {
+    activityTypes?.value?.filter((at) => at.show)?.map((at) => at.id) ?? [];
+  return activityTopics?.value?.map((a) => {
+    // Ensure sortDirection defaults
     for (let h of a.activityTypeHashtags) {
       if (h.sortDirection === undefined) {
-        h.sortDirection = 'desc'
+        h.sortDirection = 'desc';
       }
     }
-    return shownActivityTypes.includes(a.id)
-  })
-  return result
-})
+
+    return {
+      ...a,
+      hidden: !shownActivityTypes.includes(a.id),
+    };
+  }) ?? [];
+});
+
+onMounted(() => {
+  const saved = localStorage.getItem('openPanels');
+  if (saved) {
+    openPanels.value = JSON.parse(saved);
+  }
+});
+
+watch(openPanels, (newVal) => {
+  localStorage.setItem('openPanels', JSON.stringify(newVal));
+});
+
+watch(activityTypes, (newTypes) => {
+  for (const type of newTypes) {
+    const key = type.activityType;
+    if (type.show && !(key in openPanels)) {
+      openPanels[key] = [];
+    }
+  }
+}, { deep: true });
+
+
 const sortedFilteredActivities = computed(() => {
   let sortedList = orderBy(
     activities.value?.filter((a) => {
@@ -753,6 +812,7 @@ const activityContainsSearch = (activity) => {
     activity.createdByPosition?.toLowerCase().includes(lowerSearch) ||
     activity.createdByPositionOrg?.toLowerCase().includes(lowerSearch) ||
     activity.modifiedBy?.toLowerCase().includes(lowerSearch) ||
+    activity.pinned ||
     activity.pinnedBy?.toLowerCase().includes(lowerSearch) ||
     activity.linkedPpsId?.toString().includes(lowerSearch) ||
     activity.linkedPpseId?.toString().includes(lowerSearch) ||
@@ -843,6 +903,7 @@ const getActivities = async () => {
         return acc
       }, [])
       activities.value = data
+      scrollConversation()
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error loading notes')
@@ -974,7 +1035,31 @@ const saveActivity = (isNew) => {
   } else {
     editActivity()
   }
+
+
 }
+
+const scrollConversation = async () => {
+  await nextTick() // wait for new DOM elements to appear
+
+  const container = document.querySelector('.conversation-activity-inner-container')
+  if (!container) return
+
+  if (sortDirection.value !== 'asc') {
+    // Scroll to top
+    container.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  } else {
+    // Scroll to bottom
+    container.scrollTo({
+      top: container.scrollHeight+1000,
+      behavior: 'smooth'
+    })
+  }
+}
+
 const saveNewActivity = async () => {
   savingActivity.value = true
   //in this case a NEW activity's hashtags are the root level ones
@@ -1007,7 +1092,8 @@ const saveNewActivity = async () => {
     addActivity.value = false
     editedActivity.value = {}
     savingActivity.value = false
-    emit('scrollToTop')
+    // emit('scrollToTop')
+      scrollConversation()
     appStore.showSnack('SUCCESS', 'Note Added')
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -1073,7 +1159,8 @@ const editActivity = async () => {
     editedIndex = null
     if (!timelineView.value) {
       //only reset the scroll if we're editing in the topics view
-      emit('scrollToTop')
+      // emit('scrollToTop')
+        scrollConversation()
     }
     savingActivity.value = false
     appStore.showSnack('SUCCESS', 'Note Edited')
@@ -1087,7 +1174,9 @@ const editActivity = async () => {
 const removeDeletedActivity = (activityId) => {
   const deletedActivity = activities.value.find((a) => a.id === activityId)
   if (deletedActivity) {
-    deletedActivity.archived = true
+    deletedActivity.archived = true;
+      getActivities();
+      getActivityTopics();
   }
 }
 
@@ -1095,6 +1184,13 @@ watch(
   () => editedActivity.value.note,
   (newVal) => {
     noteStore.setNote(newVal)
+  }
+);
+
+watch(
+  () => editedActivity.value.id,
+  (newVal) => {
+    noteStore.setNoteId(newVal)
   }
 );
 watch(
