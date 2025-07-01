@@ -1,26 +1,37 @@
 package com.albatross.api.v1.flow.services;
 
-import com.albatross.api.convert.JsonCollectionDeserializer;
-import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserOrgHierarchy;
-import com.albatross.api.v1.flow.model.UserPosition;
-import com.albatross.api.v1.flow.model.org.Org;
-import com.albatross.api.v1.flow.queries.UserPositionQuery;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.BeanWrapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.ActiveUserPosition;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserOrgHierarchy;
+import com.albatross.api.v1.flow.model.UserPosition;
+import com.albatross.api.v1.flow.model.org.Org;
+import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.queries.UserPositionQuery;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -191,4 +202,25 @@ public class UserPositionService {
       bw.registerCustomEditor(List.class, new JsonCollectionDeserializer(partnerIdsRef, objectMapper));
     }
   }
+
+	/**
+	 * @param positionId
+	 * @param searchQuery
+	 * @param pageable
+	 * @return
+	 */
+	public Page<ActiveUserPosition> searchActiveUser(Integer positionId, String searchQuery, Pageable pageable) {
+		List<ActiveUserPosition> activeUserList;
+		long activeUserCount;
+		try {
+			Map<String, Object> params = Map.of("positionId", positionId, "query", searchQuery, "limit",
+					pageable.getPageSize(), "offset", pageable.getOffset());
+			String activeUserListJson = sqlCache.queryForObjectBySql(UserPositionQuery.searchPositionUser, params, String.class);
+			activeUserList = om.readValue(activeUserListJson, new TypeReference<>() { });
+			activeUserCount = sqlCache.queryForObjectBySql(UserPositionQuery.countPositionUser, params, Long.class);
+			return new PageImpl<>(activeUserList, pageable, activeUserCount);
+		} catch (Exception ex) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not fetch or parse user positions.", ex);
+		}
+	}
 }
