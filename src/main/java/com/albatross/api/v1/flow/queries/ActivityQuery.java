@@ -41,6 +41,7 @@ public class ActivityQuery {
                                                                         )
                                                                    end as "linkLabel",
                                                                pa2.pinned,
+                                                               pa2.unpinned,
                                                                pa2.created_by_id as "createdById",
                                                                concat(cb.first_name, ' ', cb.last_name) as "createdBy",
                                                                upv.position as "createdByPosition",
@@ -121,6 +122,7 @@ public class ActivityQuery {
                                                                         )
                                                                    end as "linkLabel",
                                                                pa2.pinned,
+                                                               pa2.unpinned,
                                                                pa2.created_by_id as "createdById",
                                                                concat(cb.first_name, ' ', cb.last_name) as "createdBy",
                                                                upv.position as "createdByPosition",
@@ -189,6 +191,7 @@ public class ActivityQuery {
                       where pps.id = pa.linked_pps_id)
                  end                                                 as link_label,
              pa.pinned,
+             pa.unpinned,
              pa.created_by_id,
              concat(cb.first_name, ' ', cb.last_name)                  as "createdBy",
              upv.position  as "createdByPosition",
@@ -243,7 +246,8 @@ public class ActivityQuery {
       update flow.project_activity
       set pinned = :pinned,
           date_pinned = now(),
-          pinned_by_id = :userId
+          pinned_by_id = :userId,
+          unpinned = :unpinned
       where id = :activityId
     """;
 

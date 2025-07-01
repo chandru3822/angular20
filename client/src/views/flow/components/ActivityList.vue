@@ -56,7 +56,7 @@
       <v-card-text class="py-0 default-text-color">
         <div
   style="cursor: pointer;"
-  @click="props.searchCallback(a.note)"
+  @click="props.searchCallback(getDisplayText(a.note))"
   v-html="highlightHtmlString(a.note, props.query)"
 ></div>
 
@@ -68,7 +68,7 @@
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="`| Edited by ${ a.modifiedBy }` | searchHighlight(query)"/>
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="a.dateModified | formatDate('timestamp', ' [on] M/D/YY [at] h:mm a')"/>
         <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
-        <span v-if="!a.pinned" :inner-html.prop="` | Unpinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
+        <span v-if="a.unpinned" :inner-html.prop="` | Unpinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
       </v-card-actions>
     </v-card>
     <infinite-loading v-if="useInfiniteLoader" @infinite="infiniteHandler">
@@ -153,6 +153,11 @@ const props = defineProps({
     default: false,
   }
 })
+
+function getDisplayText(note) {
+  const match = note.match(/^([^()]+)\s*\(/);
+  return match ? match[1].trim() : note.trim();
+}
 
 function highlightHtmlString(html, query) {
   if (!html || !query) return html;
