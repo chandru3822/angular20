@@ -974,6 +974,7 @@ const removeOwner = async () => {
       `/projectProcessStep/${projectProcessStepId.value}/owner`,
       processStep.value.owner
     )
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     appStore.showSnack('SUCCESS', 'Owner Removed')
 
     handleHidingGlobalLoader(status)
@@ -993,6 +994,7 @@ const updateOwner = async () => {
       processStep.value.owner
     )
     emit('refresh-upcoming-pps')
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -1019,6 +1021,7 @@ const updateMain = async (pps) => {
       `/projectProcessStep/${pps.projectProcessStepId}/main`,
       pps.newStatusToUse
     )
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     const status = await getProcessStep(false)
     handleHidingGlobalLoader(status)
   } catch (e) {

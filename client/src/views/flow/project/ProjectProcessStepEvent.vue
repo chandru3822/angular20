@@ -1166,6 +1166,7 @@ const saveCloserAppointment = async() => {
       eventActionMissingRequirements.value = false
       saveErrorMsg.value = ''
       showUnperformableActions.value = true
+      activitiesData.triggerFlag= !activitiesData.triggerFlag;
 
     }
   } catch (e) {
