@@ -11,6 +11,11 @@ export async function getCompanyProjectStatusType(id) {
   return await getRequest(`/project/companyStatus/${id}`, null, {})
 }
 
+export async function getCompanyProjectStatusList(objectCategoryId)
+{
+  return await getRequest(`/project/objectCategoryCompanyStatus/${objectCategoryId}`, null, {})
+}
+
 export async function getProjectStatusTypes() {
   //these are at the root level
   return await getRequest(`/projectStatus`)
