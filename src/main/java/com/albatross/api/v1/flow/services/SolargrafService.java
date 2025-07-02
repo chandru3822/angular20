@@ -57,16 +57,19 @@ public class SolargrafService {
 
   public SolargrafProjectResponse cloneProposal(String originalProposalId, SolargrafProjectRequest newProjectData) {
     try {
-      Map<String, Object> cloneData = new HashMap<>();
-      cloneData.put("source_proposal_id", originalProposalId);
-      cloneData.put("name", newProjectData.getName());
-      cloneData.put("address", newProjectData.getAddress());
-      cloneData.put("project_id", newProjectData.getProjectId());
+      Map<String, Object> attributes = new HashMap<>();
+      attributes.put("name", newProjectData.getName());
+
+      Map<String, Object> data = new HashMap<>();
+      data.put("attributes", attributes);
+
+      Map<String, Object> requestBody = new HashMap<>();
+      requestBody.put("data", data);
 
       String apiEndpoint = String.format("%s/v1/projects/%d/proposals/%s/clone",
         this.apiUrl, newProjectData.getProjectId(), originalProposalId);
 
-      HttpEntity<Map<String, Object>> entity = new HttpEntity<>(cloneData, headers);
+      HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
       ResponseEntity<Map> response = restTemplate.postForEntity(
         apiEndpoint,
