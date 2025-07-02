@@ -113,6 +113,11 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("activityId", activityId);
     params.put("pinned", pinned);
+    if(!pinned){
+      params.put("unpinned",true);
+    }else{
+      params.put("unpinned",false);
+    }
     params.put("userId", user.trueUserId());
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.saveProjectActivityPinned :
       objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.saveContactActivityPinned :
