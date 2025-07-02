@@ -57,9 +57,10 @@
               item-value="id"
               label="Object Category"
               solo
+              @change="ProjectStatuesList(selectedObjectCategory)"
             >
               <template #prepend-item>
-                <v-list-item ripple @click="selectedObjectCategory = -1">
+                <v-list-item ripple @click="getCompanyStatusTypes();selectedObjectCategory = -1" >
                   <v-list-item-content>
                     <v-list-item-title> Select All </v-list-item-title>
                   </v-list-item-content>
@@ -141,7 +142,7 @@
               icon
               size="small"
               class="handle"
-              v-if="userCanEdit"
+               v-if="userCanEdit && selectedObjectCategory !== null && selectedObjectCategory !== -1"
               prepend-icon="drag_handle"
             ></a-btn>
           </template>
@@ -211,7 +212,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 
 import {
   getCompanyProjectStatusTypes,
-  getProjectStatusTypes
+  getProjectStatusTypes,getCompanyProjectStatusList
 } from '@/services/projectStatusTypeService'
 import {
   handleHidingGlobalLoader,
@@ -236,7 +237,7 @@ const filteredProjectStatuses = computed(() => {
       if (selectedObjectCategory.value === -1) {
         return true
       }
-      return s.objectCategoryIds?.includes(selectedObjectCategory.value)
+      return s
     })
 
   return types
@@ -251,7 +252,7 @@ const toDeleteStatusType = computed(() => {
 })
 
 onMounted(async () => {
-  defineSortableTable('tbody', statusTypes, 'displayOrder', saveOrderChanges)
+  defineSortableTable('tbody', statusTypes, 'displayOrder', saveOrderChangesList)
 
   await Promise.allSettled([
     getCompanyStatusTypes(),
@@ -292,6 +293,7 @@ const getObjectCategories = async () => {
 }
 
 const saveOrderChanges = async (types) => {
+
   appStore.loading = true
   try {
     const { status } = await putRequest(`/projectStatus/companyStatuses`, types)
@@ -300,6 +302,46 @@ const saveOrderChanges = async (types) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Status Type Changes')
+    appStore.loading = false
+  }
+}
+
+
+const saveOrderChangesList = async (types) => {
+  types = types.map((data) => {
+  return {
+    ...data,
+    objectCategoryIds: [selectedObjectCategory.value],
+  };
+});
+
+  appStore.loading = true
+  try {
+    const {data ,status } = await putRequest(`/projectStatus/dragUpdate`, types)
+    data.forEach(element => {
+      const existingData = statusTypes.value.find(el=>el.id == element.id);
+      if(existingData){
+         existingData.displayOrder = element.displayOrder
+      } 
+    });
+    appStore.showSnack('SUCCESS', 'Status Types Updated')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Saving Status Type Changes')
+    appStore.loading = false
+  }
+}
+
+const ProjectStatuesList = async(id)=>{
+  try {
+    const { data, status } = await getCompanyProjectStatusList(id)
+    statusTypes.value = data
+    companyStatusesLoading.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }

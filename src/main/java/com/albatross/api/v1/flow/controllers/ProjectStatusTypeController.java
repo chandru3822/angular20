@@ -53,6 +53,11 @@ public class ProjectStatusTypeController {
     return new ResponseEntity<>(projectStatusService.saveCompanyProjectStatus(status), HttpStatus.OK);
   }
 
+  @PutMapping(value = "/dragUpdate")
+  public ResponseEntity<List<ProjectStatusType>> updateObjectCategoryProjectStatus(
+    @RequestBody List<ProjectStatusType> statuses) {
+    return new ResponseEntity<>(projectStatusService.updateCompanyProjectDisplayOrder(statuses), HttpStatus.OK);
+  }
   @PutMapping(value = "/companyStatuses")
   public void saveCompanyProjectStatuses(@RequestBody List<ProjectStatusType> statuses) {
     projectStatusService.saveCompanyProjectStatuses(statuses);
