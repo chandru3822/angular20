@@ -567,6 +567,8 @@ import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 
 import ShowLogicPopup from '@/views/flow/project/projectPopup/ShowLogicPopup.vue';
+import { activitiesData } from '@/helpers//activitiesData.js' 
+
 
 
 const appStore = useAppStore()
@@ -888,6 +890,7 @@ const getCustomFieldGroups = async () => {
       []
     )
     customFieldGroups.value = data
+     activitiesData.triggerFlag= !activitiesData.triggerFlag;
     return status
   } catch (e) {
     logError(e)
@@ -930,6 +933,7 @@ const updateFieldGroups = async () => {
     )
     dirtyCfvs.value = []
     customFieldGroups.value = data
+     activitiesData.triggerFlag= !activitiesData.triggerFlag;
     emit('refresh-upcoming-pps')
     await getProcessStep(false)
     //not sure why $refs.value.ppsFieldsContainer.scrollTop = 0 works everywhere else in the app but not here
@@ -970,6 +974,7 @@ const removeOwner = async () => {
       `/projectProcessStep/${projectProcessStepId.value}/owner`,
       processStep.value.owner
     )
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     appStore.showSnack('SUCCESS', 'Owner Removed')
 
     handleHidingGlobalLoader(status)
@@ -989,6 +994,7 @@ const updateOwner = async () => {
       processStep.value.owner
     )
     emit('refresh-upcoming-pps')
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -1015,6 +1021,7 @@ const updateMain = async (pps) => {
       `/projectProcessStep/${pps.projectProcessStepId}/main`,
       pps.newStatusToUse
     )
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     const status = await getProcessStep(false)
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -1055,6 +1062,7 @@ const completeAction = async (action) => {
     const { data, status } = await postRequest(
       `/projectProcessStep/${projectProcessStepId.value}/action/${action.id}`
     )
+     activitiesData.triggerFlag= !activitiesData.triggerFlag;
     if (status === 204 || status === 200) {
       handleActionCompleted(data)
     } else {
@@ -1117,6 +1125,7 @@ const addEvent = async () => {
       {}
     )
     emit('refresh-upcoming-events')
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     await router.push(
       `/project/${projectId.value}/processStep/${data.projectProcessStepId}/event/${data.id}`
     )

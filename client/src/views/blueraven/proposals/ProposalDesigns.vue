@@ -483,6 +483,7 @@ import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import AuroraProposalDialog from "@/views/blueraven/proposals/AuroraProposalDialog.vue";
 import {ProposalCFGAIDs} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
+import { activitiesData } from '@/helpers//activitiesData.js' 
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -686,6 +687,8 @@ const syncAuroraDesignDetails = async () => {
       `/projectProcessStep/${activeDesign.value.projectProcessStepId}/action/10293`,
       {}
     )
+    
+     activitiesData.triggerFlag= !activitiesData.triggerFlag;
     if (status === 204 || status === 200) {
       //sync updates the pps status to complete and grabs assets from Aurora and uploads them to our side
       // let designId = "ba92c16d-b674-464d-a220-3dd0a0b4daf8" <--use to test a design that for sure has the right asset you need
@@ -817,6 +820,7 @@ const saveDesignField = async (design) => {
     )
     design.edit = false
     design.designName = design.tempDesignName
+     activitiesData.triggerFlag= !activitiesData.triggerFlag;
     handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
