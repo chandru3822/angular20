@@ -418,6 +418,8 @@ import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import AMentionable from '@/components/AMentionable.vue'
 import { useNoteStore } from '../../../stores/NoteStore'
+import { activitiesData } from '@/helpers//activitiesData' 
+
 
 const appStore = useAppStore()
 const projectStore = useProjectStore()
@@ -544,6 +546,22 @@ const onCheckboxChange=(at)=>
   }
   emit('scrollToTop')
 }
+
+// Set up a watcher that observes changes to `activities.triggerFlag`
+watch(
+  () => activitiesData.triggerFlag, // This is the reactive property being watched
+  (newValue, oldValue) => {          // This function runs when the value changes
+    // Compare the new value with the old value
+    if (newValue != oldValue) {
+      // If the value has actually changed, call the  getActivities(); getActivityTopics();function
+      getActivities();
+      getActivityTopics();
+    }
+  }
+);
+
+
+
 const applyMention = (item, keyWord, value, clearSearchData = true) => {
   if (item.mentionType === 1) {
     searchByClick(item.text, item.id, SearchTypeEnum.USER, clearSearchData)
