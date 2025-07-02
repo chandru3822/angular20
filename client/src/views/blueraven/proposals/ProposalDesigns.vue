@@ -369,7 +369,7 @@
           <a-btn variant="text" color="primary" @click="handleCreateSolargrafDesign">
             <v-icon :size="60">add</v-icon>
           </a-btn>
-          <div class="mt-5 primary--text">Create My Own Solargraf Design</div>
+          <div class="mt-5 primary--text">Create my own design in Solargraf</div>
         </div>
       </v-card>
     </v-row>
@@ -961,6 +961,7 @@ const handleCreateSolargrafDesign = async () => {
     // Prepare new project data using the parent design and proposal
     const newProjectData = {
       name: design.designName || project.value.projectName,
+      projectId: projectId.value,
       address: {
         street: project.value.street1,
         city: project.value.city,

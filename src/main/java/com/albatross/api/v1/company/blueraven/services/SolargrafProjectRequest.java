@@ -10,10 +10,12 @@ import java.util.Map;
 public class SolargrafProjectRequest {
   private String name;
   private Map<String, String> address;
+  private Long projectId;
 
-  public SolargrafProjectRequest(String name, Map<String, String> address) {
+  public SolargrafProjectRequest(String name, Map<String, String> address, Long projectId) {
     this.name = name;
     this.address = address;
+    this.projectId = projectId;
   }
 
 }

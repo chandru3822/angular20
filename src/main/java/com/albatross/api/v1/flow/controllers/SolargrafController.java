@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/solargraf")
+@RequestMapping("/api/v1/flow/solargraf")
 public class SolargrafController {
 
   @Autowired
