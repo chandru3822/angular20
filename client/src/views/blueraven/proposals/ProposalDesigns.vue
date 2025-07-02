@@ -358,6 +358,20 @@
           </a-btn>
         </v-card-text>
       </v-card>
+      <v-card
+        v-if="canEdit && designs.length > 0 && !activeDesign.projectId"
+        color="transparent"
+        width="355"
+        :height="cardHeight"
+        class="proposal-card request-new solargraf-design-card solargraf-design-request"
+      >
+        <div>
+          <a-btn variant="text" color="primary" @click="handleCreateSolargrafDesign">
+            <v-icon :size="60">add</v-icon>
+          </a-btn>
+          <div class="mt-5 primary--text">Create My Own Solargraf Design</div>
+        </div>
+      </v-card>
     </v-row>
     <v-dialog width="500" persistent v-model="showNewDesignRequestForm">
       <v-card>
@@ -483,7 +497,7 @@ import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import AuroraProposalDialog from "@/views/blueraven/proposals/AuroraProposalDialog.vue";
 import {ProposalCFGAIDs} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
-import { activitiesData } from '@/helpers//activitiesData.js' 
+import { activitiesData } from '@/helpers//activitiesData.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -687,7 +701,7 @@ const syncAuroraDesignDetails = async () => {
       `/projectProcessStep/${activeDesign.value.projectProcessStepId}/action/10293`,
       {}
     )
-    
+
      activitiesData.triggerFlag= !activitiesData.triggerFlag;
     if (status === 204 || status === 200) {
       //sync updates the pps status to complete and grabs assets from Aurora and uploads them to our side
@@ -902,6 +916,92 @@ const uploadFiles = (files) => {
 const uploadUtilityBillFiles = (files) => {
   newDesignRequest.value.utilityBillAttachments = files
 }
+
+const handleCreateSolargrafDesign = async () => {
+  try {
+    // Log all designs and their proposals for debugging
+    console.log('All Designs:', designs.value);
+    designs.value.forEach((d, idx) => {
+      console.log(`Design #${idx + 1}:`, d);
+      if (d.proposals && d.proposals.length > 0) {
+        d.proposals.forEach((p, pIdx) => {
+          console.log(`  Proposal #${pIdx + 1}:`, p);
+        });
+      } else {
+        console.log('  No proposals for this design.');
+      }
+    });
+
+    // Ensure designs is an array
+    const designsArray = Array.isArray(designs.value) ? designs.value : [];
+
+    // Flatten all proposals from all designs, keeping reference to parent design
+    const allProposals = designsArray.flatMap(design =>
+      (Array.isArray(design.proposals) ? design.proposals : []).map(proposal => ({
+        proposal,
+        design
+      }))
+    );
+
+    // Find the proposal with the earliest dateCreated
+    const earliestProposalObj = allProposals.reduce((earliest, current) => {
+      if (!earliest) return current;
+      const earliestDate = new Date(earliest.proposal.dateCreated);
+      const currentDate = new Date(current.proposal.dateCreated);
+      return currentDate < earliestDate ? current : earliest;
+    }, null);
+
+    if (!earliestProposalObj) {
+      appStore.showSnack('ERROR', 'No proposals found to use.');
+      return;
+    }
+
+    const { design, proposal } = earliestProposalObj;
+
+    // Prepare new project data using the parent design and proposal
+    const newProjectData = {
+      name: design.designName || project.value.projectName,
+      address: {
+        street: project.value.street1,
+        city: project.value.city,
+        state: project.value.state,
+        postalCode: project.value.postalCode
+      }
+    };
+
+    console.log('New Project Data:', newProjectData);
+    console.log(proposal.id);
+
+    // Use postRequest helper to call backend with the correct proposal ID
+    const response = await postRequest(
+      `/solargraf/proposals/clone/${proposal.id}`,
+      newProjectData
+    );
+    if (response && response.success && response.projectUrl) {
+      // Open Solargraf preview in new tab
+      const url = `https://app.solargraf.com/preview/${response.projectUrl.split('/').pop()}?view=demo`;
+      window.open(url, '_blank');
+
+      // Update Solargraf Design ID field (ID: 31560)
+      await saveCustomFieldValue(31560, response.projectUrl.split('/').pop());
+      appStore.showSnack('SUCCESS', 'Solargraf design created and opened successfully.');
+    } else {
+      appStore.showSnack('ERROR', response?.message || 'Failed to create Solargraf design.');
+    }
+  } catch (error) {
+    appStore.showSnack('ERROR', 'Error creating Solargraf design.');
+    logError(error);
+  }
+};
+
+// Helper to update custom field value (ID: 31560)
+async function saveCustomFieldValue(fieldId, value) {
+  try {
+    await postRequest(`/custom-field-value/${project.projectId}/${fieldId}`, { value });
+  } catch (e) {
+    logError(e);
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -993,5 +1093,9 @@ const uploadUtilityBillFiles = (files) => {
 
 .disable-new {
   color: var(--v-grey-darken1);
+}
+
+.solargraf-design-request {
+  border: solid 4px var(--v-anchor-base) !important;
 }
 </style>
