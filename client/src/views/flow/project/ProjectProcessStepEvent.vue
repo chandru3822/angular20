@@ -477,6 +477,8 @@ import { useAppStore } from '@/stores/AppStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 
 import ShowLogicPopup from '@/views/flow/project/projectPopup/ShowLogicPopup.vue';
+import { activitiesData } from '@/helpers//activitiesData.js' 
+
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
@@ -857,6 +859,8 @@ const doEventAction = async (action) => {
     emit('refresh-upcoming-pps')
     emit('refresh-upcoming-events')
 
+     activitiesData.triggerFlag= !activitiesData.triggerFlag;
+
     if (data.uniqueBehaviorTypeId === 1) {
       uniqueAlreadyHasValue.value = null != selectedEvent.value.startTime || null != selectedEvent.value.endTime || null != selectedEvent.value.resourceId
       getRoundRobinNumDays()
@@ -1162,6 +1166,7 @@ const saveCloserAppointment = async() => {
       eventActionMissingRequirements.value = false
       saveErrorMsg.value = ''
       showUnperformableActions.value = true
+      activitiesData.triggerFlag= !activitiesData.triggerFlag;
 
     }
   } catch (e) {
