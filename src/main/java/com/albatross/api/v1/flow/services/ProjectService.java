@@ -1001,6 +1001,6 @@ public class ProjectService {
 		if (StringUtils.hasText(query) && StringUtils.hasText(query)) {
 			totalCount = sqlCacheRO.queryForObjectBySql(ProjectQuery.getChildProjectCount, params, Long.class);
 		}
-		return new PageImpl<>(result, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
+		return new PageImpl<>(result.get(0).getChildProjects(), PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
 	}
 }
