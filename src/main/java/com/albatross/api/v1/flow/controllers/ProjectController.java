@@ -286,4 +286,16 @@ public class ProjectController {
   public static class ProcessStepEventData {
     private String actionName, eventName, processStepName;
   }
+  
+	/**
+	 * @param projectId
+	 * @param query
+	 * @param pageable
+	 * @return
+	 */
+	@GetMapping(value = "/childProject")
+	public Optional<Project> getChildProject(@RequestParam Long projectId, @RequestParam String query,
+			Pageable pageable) {
+		return projectService.getChildProjectDetails(projectId, query, pageable);
+	}
 }

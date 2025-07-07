@@ -984,4 +984,22 @@ public class ProjectService {
 
     }
   }
+
+	/**
+	 * @param projectId
+	 * @param query
+	 * @param pageable
+	 * @return
+	 */
+	public Optional<Project> getChildProjectDetails(Long projectId, String query, Pageable pageable) {
+		Map<String, Object> params = Map.of("projectId", projectId, "query", query, "offset", pageable.getOffset(),
+				"limit", pageable.getPageSize());
+		Optional<Project> result = sqlCache.getBySql(ProjectQuery.getChildProject, params,
+				new ProjectMapper<>(Project.class, om));
+		if (result.isPresent()) {
+			return result;
+		} else {
+			throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+		}
+	}
 }
