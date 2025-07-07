@@ -46,6 +46,8 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import { activitiesData } from '@/helpers//activitiesData' 
+
 
 const appStore = useAppStore()
 const projectStore = useProjectStore()
@@ -108,6 +110,7 @@ const getEvents = async () => {
     activeEventsLoading.value = true
     const {data} = await getRequest(`/project/${projectId.value}/activeEvents`, null, [])
     events.value = data
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
   } catch (e) {
     logError(e)
   } finally {

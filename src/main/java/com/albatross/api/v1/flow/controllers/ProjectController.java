@@ -242,6 +242,11 @@ public class ProjectController {
     return new ResponseEntity<>(projectStatusService.getCompanyProjectStatuses(projectId, excludeAttachments), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/objectCategoryCompanyStatus/{objectCategoryId}")
+  public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatusesByObjectCategory(@PathVariable Long objectCategoryId){
+    return new ResponseEntity<>(projectStatusService.getCompanyProjectStatusesByObjectCategory(objectCategoryId),HttpStatus.OK);
+  }
+
   @GetMapping(value = "/companyStatus/{id}")
   public Optional<ProjectStatusType> getCompanyProjectStatusById(
     @PathVariable Long id) {

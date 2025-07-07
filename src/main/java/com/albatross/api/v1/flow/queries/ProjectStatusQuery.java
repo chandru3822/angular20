@@ -104,6 +104,31 @@ where cpst.company_id = :companyId
 order by cpst.display_order
     """;
 
+  //language=PostgreSQL
+  public final static String getCompanyStatusesForObjectCategory = """
+select cpst.id,
+       cpst.project_status_type,
+       occpst.display_order,
+       cpst.description,
+       cpst.icon_tag,
+       cpst.is_default,
+       cpst.is_milestone,
+       pst.id                                                  as "projectStatusTypeId",
+       cpst.archived,
+       pst.project_status_type                                 as "rootProjectStatusType",
+       (select coalesce(array_to_json(array_agg(occpst.object_category_id)), '[]')
+        from flow.object_category_company_project_status_type occpst
+        where occpst.company_project_status_type_id = cpst.id and occpst.archived is false) as "objectCategoryIds"
+from flow.company_project_status_type cpst
+         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+         inner join flow.object_category_company_project_status_type occpst on occpst.company_project_status_type_id = cpst.id
+where cpst.company_id = :companyId
+  and cpst.archived is not true
+  and occpst.object_category_id = :objectCategoryId
+  and occpst.archived = false
+order by occpst.display_order;
+    """;
+
 
   public final static String getCompanyStatusesForProjectId = """
 select cpst.id,
@@ -154,6 +179,28 @@ order by cpst.display_order
     """;
 
   //language=PostgreSQL
+  public final static String getOneCompanyStatusOfObjectCategory = """
+    select
+        cpst.id,
+        cpst.project_status_type,
+        cpst.description,
+        occpst.display_order,
+        cpst.icon_tag,
+        cpst.is_default,
+        cpst.is_milestone,
+        pst.id as "projectStatusTypeId",
+        cpst.archived,
+        pst.project_status_type as "rootProjectStatusType",
+    (select coalesce(array_to_json(array_agg(occpst.object_category_id)), '[]')
+            from flow.object_category_company_project_status_type occpst
+            where occpst.company_project_status_type_id = cpst.id and occpst.archived is false) as "objectCategoryIds"
+    from flow.company_project_status_type cpst
+    inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+    inner join flow.object_category_company_project_status_type occpst on occpst.company_project_status_type_id = cpst.id
+    where occpst.company_project_status_type_id = :cpstId and occpst.object_category_id = :objectCategoryId;
+    """;
+
+  //language=PostgreSQL
   public final static String getStatuses = """
     select
         pst.id,
@@ -196,6 +243,14 @@ from object_categories oc
 where oc.company_project_status_type_id = ocat.company_project_status_type_id
   and ocat.object_category_id not in (select unnest(:objectCategoryIds::int[]))
     """;
+
+  //language=PostgreSQL
+  public final static String updateCompanyStatusOnDragAndDrop = """
+    update flow.object_category_company_project_status_type
+      set   display_order = :displayOrder , date_modified = now() , modified_by_id = :currentUserId
+      where object_category_id=:objectCategoryId and company_project_status_type_id = :companyProjectStatusTypeId;
+    """;
+
 
   //language=PostgreSQL
   public final static String getStatusInUseByProjects = """
@@ -306,10 +361,15 @@ with project_status as (
      object_categories as (
          insert
              into flow.object_category_company_project_status_type (object_category_id, company_project_status_type_id,
-                                                                    created_by_id, modified_by_id)
-                 select c.id, att.id, att.created_by_id, att.modified_by_id
+                                                                    created_by_id, modified_by_id,display_order)
+                 select c.id, att.id, att.created_by_id, att.modified_by_id, coalesce(max_oc.display_order, 0)
                  from project_status att
-                          cross join (select unnest(:objectCategoryIds) as id) c
+                          cross join lateral unnest(:objectCategoryIds) as c(id)
+                  left join lateral (
+                              select max(display_order) + 1 as display_order
+                              from flow.object_category_company_project_status_type
+                              where object_category_id = c.id
+                          ) max_oc on true
                  returning company_project_status_type_id)
 select distinct company_project_status_type_id
 from object_categories

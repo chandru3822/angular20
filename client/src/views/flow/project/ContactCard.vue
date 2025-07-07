@@ -273,6 +273,7 @@ import constants from "@/helpers/constants.js"
 import debounce from "lodash.debounce";
 import axios from "axios";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { activitiesData } from '@/helpers//activitiesData.js' 
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
@@ -395,8 +396,9 @@ const assignContact = async () => {
       params.id = selectedExistingContact.value.id
     }
     await postRequest(`/contact/createFromProject/${project.value.id}`, params)
-
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     window.location.reload()
+   
   } catch (e) {
     appStore.loading = false
     logError(e)
@@ -411,6 +413,7 @@ const resetContact = async () => {
     await postRequest(`/project/${project.value.id}/resetContact`, {})
 
     window.location.reload()
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
   } catch (e) {
     appStore.loading = false
     logError(e)

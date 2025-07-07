@@ -119,12 +119,134 @@
           </div>
           <div v-show="positionId && (!clonePositionId || (clonePositionId && !position.cloneAccess))">
             <v-divider class="my-2"></v-divider>
-            <h3>Access Control</h3>
-            <AccessControl v-if="positionLoaded"
-                           :key="accessControlKey"
-                           :user-can-edit="userCanEditAccessControl"
-                           :companyFeatures="getCompanyFeatures()" :callback="companyFeatureCallback"
-                           :dirtyFieldsCallback="setFieldsDirty"></AccessControl>
+            <v-expansion-panels   v-model="panel" multiple>
+              <v-expansion-panel>
+                <v-expansion-panel-header>
+                  <h3>Access Control</h3>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                  <AccessControl v-if="positionLoaded" 
+                  :key="accessControlKey"
+                  :user-can-edit="userCanEditAccessControl"
+                  :companyFeatures="getCompanyFeatures()" :callback="companyFeatureCallback"
+                  :dirtyFieldsCallback="setFieldsDirty"></AccessControl>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+
+               <v-expansion-panel  v-if="!userStore.userHasFeatureAccessLevel('USERS', 'ADMIN')" 
+                 :style="{
+                 display: 'inline-block',
+                 cursor: 'pointer',
+                  backgroundColor: !userStore.userHasFeatureAccessLevel('USERS', 'ADMIN') ? '#eeeeee' : ''
+                }">
+                <v-expansion-panel-header >
+                 <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                  <span class="activeUser_font_size"
+                  v-bind="attrs"
+                    v-on="on"
+                  >Active Users</span>
+                </template>
+                    <span>Insufficient permission to view user profile</span>
+                </v-tooltip>
+                </v-expansion-panel-header>
+               </v-expansion-panel>
+               
+              <v-expansion-panel v-else >
+                <v-expansion-panel-header>
+                  
+                  <h3>Active Users</h3>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                  <v-card class="square-card">
+                    <v-card-title class="pt-0">
+                      <a-text-field v-model="search" @input="debounceGetActiveUsers" prepend-inner-icon="search"
+                        label="Search" single-line clearable hide-details></a-text-field>
+                    </v-card-title>
+                    <v-data-table  id="custom-fields-table" :headers="headersUsers" :items="filterActiveUsersFields"
+                      :fixed-header="true" :server-items-length="totalActiveUsers" :loading="dataLoading"
+                      :options.sync="options" :footer-props="footerProps"
+                      class="elevation-1 mt-1 square-card table-striped">
+                      <div style="height: 72vh;"></div>
+                      <template #no-data>
+                        <span class="default-text-color">No active users currently assigned this Position.</span>
+                      </template>
+                      <template #no-results>
+                        <span class="default-text-color">No available fields</span>
+                      </template>
+                      <template #item="{ item, index }" >
+                        <tr>
+                          <td class="text-left clickable field-name-col">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.firstName }}
+                                </router-link></span>
+                              </template>
+                                  <span>Click to view profile</span>
+                            </v-tooltip>
+                          </td>
+                         
+
+                         <td class="text-left clickable field-name-col">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.lastName }}
+                                </router-link></span>
+                              </template>
+                                <span>Click to view profile</span>
+                            </v-tooltip>
+                          </td>
+
+                          <td class="text-left clickable field-name-col">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.email }}
+                                </router-link></span>
+                              </template>
+                                <span>Click to view profile</span>
+                            </v-tooltip>
+                          </td>
+                          
+                          <td class="text-left clickable field-name-col">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on, attrs }">
+                              <span class=""
+                              v-bind="attrs"
+                              v-on="on"
+                              > 
+                                <router-link class="router-link-td elevation-0 square-card"
+                                :to="`/user/${item.id}/details`">
+                                  {{ item.isPrimary }}
+                                </router-link></span>
+                              </template>
+                                  <span>Click to view profile</span>
+                            </v-tooltip>
+                          </td>
+                        </tr>
+                      </template>
+                    </v-data-table>
+                  </v-card>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+            </v-expansion-panels>
           </div>
         </v-card>
 
@@ -137,14 +259,17 @@
 <script setup>
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
-  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
-
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest,  getRequestWithParams} from '@/helpers/helpers'
   import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
   import {onBeforeRouteLeave} from 'vue-router/composables'
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
   import { useUserStore } from '@/stores/UserStore.js'
   import {useRouter, useRoute} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStore.js'
+  import debounce from 'lodash.debounce'
+  import constants from '@/helpers/constants'
+
+
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
 
@@ -181,6 +306,24 @@
   const positionId = computed(() => {
     return route.params.id
   })
+  const search = ref("")
+  const filterActiveUsersFields = ref([])
+  const headersUsers = ref([
+    { text: "First Name", value: "firstName", sortable: false },
+    { text: "Last Name", value: "lastName", sortable: false },
+    { text: "User ID", value: "email", sortable: false },
+    { text: "Primary Position", value: "isPrimary", sortable: false },
+  ])
+  const footerProps = ref({
+    'items-per-page-options': [10, 25, 50],
+    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+  })
+  const options = ref({ itemsPerPage: 10 })
+  const initialLoad = ref(true)
+  const totalActiveUsers = ref(0)
+  const dataLoading = ref(true)
+const panel = ref([0]) // open first panel only
+
 
   watch(selectedRows, () => {
     alterEnabledFlagForRows()
@@ -194,6 +337,11 @@
       getPositions()
     }
     getAllOrgTypes()
+    if(userStore.userHasFeatureAccessLevel('USERS', 'ADMIN'))
+    {
+    getActiveUser()
+    }
+
   })
   onBeforeRouteLeave(async (to, from, next) => {
     // called when the route that renders this component is about to
@@ -306,6 +454,50 @@
       router.push(path)
     }
   }
+
+  const debounceGetActiveUsers = debounce(async () => {
+  //don't allow search to be null - causes issues
+  dataLoading.value = true
+  search.value = search.value || ''
+  localStorage.setItem('contactSearch', search.value)
+  getActiveUser()
+}, 500)
+
+
+watch(
+  () => options,
+  (newValue, oldValue) => {
+    if (!initialLoad.value) {
+      getActiveUser();
+    }
+  },
+  { deep: true }
+)
+const getActiveUser = async () => {
+  try {
+    const { page, itemsPerPage } = options.value
+    const { data } = await getRequestWithParams(
+      `/userPosition/search`,
+      {
+        params: {
+          positionId: positionId.value,
+          searchQuery: search.value,
+          page: page - 1,
+          size: itemsPerPage
+        }
+      },
+      null,
+      []
+    );
+ 
+    totalActiveUsers.value =  data.totalElements
+    filterActiveUsersFields.value = data.content || []
+    dataLoading.value = false
+    initialLoad.value = false
+  } catch (error) {
+    console.error("Error fetching active users:", error);
+  }
+};
 </script>
 
 <style lang="scss">
@@ -326,6 +518,9 @@
   .positions-table {
     margin-top: 2px;
   }
-
+.activeUser_font_size{
+  font-size: 1.17em;
+  font-weight: bold;
+}
 </style>
 

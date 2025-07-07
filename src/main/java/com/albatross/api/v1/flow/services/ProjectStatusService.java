@@ -76,9 +76,30 @@ public class ProjectStatusService {
       params, new ProjectStatusTypeMapper<>(ProjectStatusType.class, om));
   }
 
+  public List<ProjectStatusType> getCompanyProjectStatusesByObjectCategory(Long objectCategoryId){
+    User currentUser = securityService.getCurrentUser();
+    Long companyId = currentUser.getCompanyId();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("objectCategoryId",objectCategoryId);
+
+    return sqlCache.queryBySql(
+      ProjectStatusQuery.getCompanyStatusesForObjectCategory,
+      params, new ProjectStatusTypeMapper<>(ProjectStatusType.class, om));
+  }
+
   public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
     return sqlCache.getBySql(
       ProjectStatusQuery.getOneCompanyStatus, Map.of("id", id), new ProjectStatusTypeMapper<>(ProjectStatusType.class, om));
+  }
+
+  public Optional<ProjectStatusType> getOneCompanyObjectCategoryProjectStatusType(Long cpstId,Long objectCategoryId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("cpstId",cpstId);
+    params.put("objectCategoryId",objectCategoryId);
+    return sqlCache.getBySql(
+      ProjectStatusQuery.getOneCompanyStatusOfObjectCategory, params, new ProjectStatusTypeMapper<>(ProjectStatusType.class, om));
   }
 
   public void saveInitialProjectStatusType(Long companyProjectStatusTypeId) {
@@ -90,6 +111,29 @@ public class ProjectStatusService {
     params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.updateBySql(ProjectStatusQuery.saveInitialProjectStatusType, params);
+  }
+
+  public List<ProjectStatusType> updateCompanyProjectDisplayOrder(List<ProjectStatusType> statuses) {
+    List<ProjectStatusType> projectStatusTypes = new ArrayList<>();
+    for (ProjectStatusType s : statuses) {
+      Optional<ProjectStatusType> projectStatusTypeOptional = updateStatusOfObjectCategory(s);
+      projectStatusTypeOptional.ifPresent(projectStatusTypes::add);
+    }
+    return projectStatusTypes;
+  }
+
+
+  public Optional<ProjectStatusType> updateStatusOfObjectCategory(ProjectStatusType status){
+        User currentUser = securityService.getCurrentUser();
+        Map<String, Object> params = new HashMap<>();
+        params.put("currentUserId", currentUser.trueUserId());
+        params.put("companyProjectStatusTypeId", status.getId());
+        params.put("objectCategoryId", status.getObjectCategoryIds().getFirst());
+        params.put("displayOrder", status.getDisplayOrder());
+        sqlCache.updateBySql(ProjectStatusQuery.updateCompanyStatusOnDragAndDrop, params);
+
+        return getOneCompanyObjectCategoryProjectStatusType(status.getId(),status.getObjectCategoryIds().getFirst());
+
   }
 
   public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {

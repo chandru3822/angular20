@@ -147,6 +147,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+import { activitiesData } from '@/helpers//activitiesData.js' 
 const appStore = useAppStore()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -236,7 +237,7 @@ const saveTab = async (tab) => {
     // reset the new process fields
     addNew.value = false
     newTab.value = {}
-
+    activitiesData.triggerFlag= !activitiesData.triggerFlag;
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
