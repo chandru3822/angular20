@@ -298,8 +298,8 @@ public class ProjectController {
 	 * @param pageable
 	 * @return
 	 */
-	@GetMapping(value = "/childProject")
-	public Optional<Project> getChildProject(@RequestParam Long projectId, @RequestParam String query,
+	@GetMapping(value = "/childProject", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Page<Project> getChildProject(@RequestParam Long projectId, @RequestParam String query,
 			Pageable pageable) {
 		return projectService.getChildProjectDetails(projectId, query, pageable);
 	}

@@ -381,6 +381,26 @@ from flow.density_projects_with_down_line(:companyId::bigint,
 			WHERE p.archived IS FALSE AND p.id = :projectId;
 			  		""";
 	
+	
+	//language=PostgreSQL
+	public final static String getChildProjectCount = """
+							SELECT COUNT(*)
+			FROM flow.project p2
+			INNER JOIN flow.company_project_status_type cpst ON p2.company_project_status_type_id = cpst.id
+			INNER JOIN flow.object_category oc ON oc.id = p2.object_category_id
+			INNER JOIN flow.contact c ON c.id = p2.contact_id
+			INNER JOIN flow.project_status_type pst ON cpst.project_status_type_id = pst.id
+			WHERE p2.parent_id = :projectId
+			  AND p2.archived IS FALSE
+			  AND (
+			    p2.project_name ILIKE CONCAT('%', :query, '%') OR
+			    CONCAT(c.first_name, ' ', c.last_name) ILIKE CONCAT('%', :query, '%') OR
+			    c.contact_full_name_search ILIKE CONCAT('%', :query, '%') OR
+			    oc.object_category ILIKE CONCAT('%', :query, '%')
+			  );
+
+							  		""";
+	
   //language=PostgreSQL
   public final static String get = """
 select

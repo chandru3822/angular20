@@ -32,6 +32,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -991,15 +992,15 @@ public class ProjectService {
 	 * @param pageable
 	 * @return
 	 */
-	public Optional<Project> getChildProjectDetails(Long projectId, String query, Pageable pageable) {
+	public Page<Project> getChildProjectDetails(Long projectId, String query, Pageable pageable) {
 		Map<String, Object> params = Map.of("projectId", projectId, "query", query, "offset", pageable.getOffset(),
 				"limit", pageable.getPageSize());
-		Optional<Project> result = sqlCache.getBySql(ProjectQuery.getChildProject, params,
+		List<Project> result = sqlCache.queryBySql(ProjectQuery.getChildProject, params,
 				new ProjectMapper<>(Project.class, om));
-		if (result.isPresent()) {
-			return result;
-		} else {
-			throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
+		Long totalCount = 10000L;
+		if (StringUtils.hasText(query) && StringUtils.hasText(query)) {
+			totalCount = sqlCacheRO.queryForObjectBySql(ProjectQuery.getChildProjectCount, params, Long.class);
 		}
+		return new PageImpl<>(result, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
 	}
 }
