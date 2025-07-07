@@ -51,7 +51,7 @@ public class SolargrafProxy {
         ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(codecs->codecs.defaultCodecs().maxInMemorySize(maxSize))
                 .build();
-        client = WebClient.builder().exchangeStrategies(exchangeStrategies).baseUrl(host).build();
+        client = WebClient.builder().exchangeStrategies(exchangeStrategies).baseUrl("test").build();
     }
 
     public SolargrafPanelArrays getSolargrafPanelArrays(@NotBlank String solargrafId) throws IOException {

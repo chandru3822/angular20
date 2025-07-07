@@ -491,7 +491,7 @@ import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
-import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
@@ -540,6 +540,7 @@ const savingNewAiDesign = ref(false)
 const pendingAuroraAdjustmentsStatusId = ref(1649)
 const allowedModules = ref(null)
 const showingMore = ref(false)
+const redirectUrl = ref(null)
 
 
 onMounted(async () => {
@@ -917,50 +918,18 @@ const uploadUtilityBillFiles = (files) => {
   newDesignRequest.value.utilityBillAttachments = files
 }
 
+watch(redirectUrl, (newVal) => {
+  if (newVal) {
+    window.open(newVal, '_blank', 'noopener,noreferrer')
+  }
+})
+
 const handleCreateSolargrafDesign = async () => {
   try {
-    // Log all designs and their proposals for debugging
-    console.log('All Designs:', designs.value);
-    designs.value.forEach((d, idx) => {
-      console.log(`Design #${idx + 1}:`, d);
-      if (d.proposals && d.proposals.length > 0) {
-        d.proposals.forEach((p, pIdx) => {
-          console.log(`  Proposal #${pIdx + 1}:`, p);
-        });
-      } else {
-        console.log('  No proposals for this design.');
-      }
-    });
-
-    // Ensure designs is an array
-    const designsArray = Array.isArray(designs.value) ? designs.value : [];
-
-    // Flatten all proposals from all designs, keeping reference to parent design
-    const allProposals = designsArray.flatMap(design =>
-      (Array.isArray(design.proposals) ? design.proposals : []).map(proposal => ({
-        proposal,
-        design
-      }))
-    );
-
-    // Find the proposal with the earliest dateCreated
-    const earliestProposalObj = allProposals.reduce((earliest, current) => {
-      if (!earliest) return current;
-      const earliestDate = new Date(earliest.proposal.dateCreated);
-      const currentDate = new Date(current.proposal.dateCreated);
-      return currentDate < earliestDate ? current : earliest;
-    }, null);
-
-    if (!earliestProposalObj) {
-      appStore.showSnack('ERROR', 'No proposals found to use.');
-      return;
-    }
-
-    const { design, proposal } = earliestProposalObj;
-
-    // Prepare new project data using the parent design and proposal
+    console.log('[Solargraf] handleCreateSolargrafDesign called');
+    // Prepare new project data using the current project
     const newProjectData = {
-      name: design.designName || project.value.projectName,
+      name: project.value.projectName,
       projectId: projectId.value,
       address: {
         street: project.value.street1,
@@ -970,26 +939,30 @@ const handleCreateSolargrafDesign = async () => {
       }
     };
 
-    console.log('New Project Data:', newProjectData);
-    console.log(proposal.id);
+    console.log('[Solargraf] newProjectData:', newProjectData);
 
-    // Use postRequest helper to call backend with the correct proposal ID
+    // Use postRequest helper to call backend with the projectId (backend will handle Solargraf logic)
     const response = await postRequest(
-      `/solargraf/proposals/clone/${proposal.id}`,
+      `/solargraf/proposals/clone/by-project/${projectId.value}`,
       newProjectData
     );
-    if (response && response.success && response.projectUrl) {
-      // Open Solargraf preview in new tab
-      const url = `https://app.solargraf.com/preview/${response.projectUrl.split('/').pop()}?view=demo`;
-      window.open(url, '_blank');
-
-      // Update Solargraf Design ID field (ID: 31560)
-      await saveCustomFieldValue(31560, response.projectUrl.split('/').pop());
+    console.log('[Solargraf] Backend response:', response);
+    const resData = response?.data || response;
+    if (resData && resData.success && resData.projectUrl) {
+      let valueToSave = resData.projectUrl;
+      redirectUrl.value = resData.projectUrl;
+      console.log('[Solargraf] Opening Solargraf preview URL:', redirectUrl.value);
+      await saveCustomFieldValue(31560, valueToSave);
       appStore.showSnack('SUCCESS', 'Solargraf design created and opened successfully.');
+    } else if (resData && resData.success) {
+      // Fallback: success but missing projectUrl (should not happen, but handle gracefully)
+      appStore.showSnack('SUCCESS', resData.message || 'Solargraf design created.');
     } else {
-      appStore.showSnack('ERROR', response?.message || 'Failed to create Solargraf design.');
+      console.error('[Solargraf] Error response:', response);
+      appStore.showSnack('ERROR', resData?.message || 'Failed to create Solargraf design.');
     }
   } catch (error) {
+    console.error('[Solargraf] Exception:', error);
     appStore.showSnack('ERROR', 'Error creating Solargraf design.');
     logError(error);
   }
@@ -998,7 +971,7 @@ const handleCreateSolargrafDesign = async () => {
 // Helper to update custom field value (ID: 31560)
 async function saveCustomFieldValue(fieldId, value) {
   try {
-    await postRequest(`/custom-field-value/${project.projectId}/${fieldId}`, { value });
+    await postRequest(`/custom-field-value/${project.value.projectId}/${fieldId}`, { value });
   } catch (e) {
     logError(e);
   }

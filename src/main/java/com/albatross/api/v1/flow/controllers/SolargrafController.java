@@ -17,11 +17,7 @@ public class SolargrafController {
   @PostMapping("/projects")
   public ResponseEntity<SolargrafProjectResponse> createProject(@RequestBody SolargrafProjectRequest request) {
     SolargrafProjectResponse response = solargrafService.createProject(request);
-    if (response.isSuccess()) {
-      return ResponseEntity.ok(response);
-    } else {
-      return ResponseEntity.badRequest().body(response);
-    }
+    return ResponseEntity.ok(response);
   }
 
   @PostMapping("/proposals/clone/{originalProposalId}")
@@ -29,10 +25,14 @@ public class SolargrafController {
     @PathVariable String originalProposalId,
     @RequestBody SolargrafProjectRequest newProjectData) {
     SolargrafProjectResponse response = solargrafService.cloneProposal(originalProposalId, newProjectData);
-    if (response.isSuccess()) {
-      return ResponseEntity.ok(response);
-    } else {
-      return ResponseEntity.badRequest().body(response);
-    }
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/proposals/clone/by-project/{projectId}")
+  public ResponseEntity<SolargrafProjectResponse> cloneProposalByProject(
+    @PathVariable Long projectId,
+    @RequestBody SolargrafProjectRequest newProjectData) {
+    SolargrafProjectResponse response = solargrafService.cloneProposalFromCustomField(projectId, newProjectData);
+    return ResponseEntity.ok(response);
   }
 }
