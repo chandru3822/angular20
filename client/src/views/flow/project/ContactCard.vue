@@ -61,6 +61,14 @@
                 N/A
               </span>
       </div>
+
+      <div class="change-contact">
+        <a-btn
+        @click="getContactInfo,showContactPopup=true"
+        class="change-contact-padding"
+       size="small"
+      text="Change Contact"
+      ></a-btn>
       <a-btn
           variant="outlined"
           size="small"
@@ -73,6 +81,7 @@
           <v-icon small class="pl-2">mdi-open-in-new</v-icon>
         </template>
       </a-btn>
+    </div>
     </v-card>
     <a-btn
         v-if="showResetButton"
@@ -253,10 +262,65 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog max-width="800" v-model="showContactPopup" >
+       <v-card class="square-card contact-popup"  >
+         <h3>Step 1 to 2 Select Child Projects</h3>
+         <p>Choose child projects from the same contact (builder) to update in bulk</p>
+          <v-card-title class="contact-search ">
+            <a-text-field v-model="searchContact" @input="debounceGetContact" prepend-inner-icon="search"
+              label="Search" single-line clearable hide-details></a-text-field>
+          </v-card-title>
+
+            <v-data-table  id="custom-fields-table" :headers="headersContact" :items="filterContactFields"
+            :fixed-header="true" :server-items-length="totalContact" :loading="contactDataLoading"
+            :options.sync="contactOptions" :footer-props="footerPropsContact"
+            class="elevation-1 mt-1  table-striped">
+     
+              <template #no-data>
+                <span class="default-text-color">No active users currently assigned this Position.</span>
+              </template>
+              <template #no-results>
+                <span class="default-text-color">No available fields</span>
+              </template>
+              <template #item="{ item, index }" >
+             <tr>
+              <td class="text-left clickable field-name-col">
+            <v-checkbox
+                v-model="item.select"   
+                color="primary"
+                hide-details
+                dense
+                @change="onCheckboxChange(item, index)"
+              />
+             </td>
+               <td class="text-left clickable field-name-col">
+                       {{ item.projectName }} 
+               </td> 
+               <td class="text-left clickable field-name-col">
+              {{ item.ownerName }} 
+              </td> 
+              <td class="text-left clickable field-name-col">
+              {{ item.objectCategory }} 
+              </td> 
+             </tr>
+           </template>
+         </v-data-table>
+         <div class="d-flex align-center justify-end contact-gap">
+             <span class="close sys-hover" >Close</span>
+          <a-btn
+          @click="getContactInfo,showContactPopup=true"
+          class="change-contact-padding"
+          size="medium"
+          text="Continue"
+          ></a-btn>
+         </div>
+     </v-card>
+    </v-dialog>
   </div>
 </template>
 <script setup>
-import {toRefs, computed, ref} from 'vue'
+import {toRefs, computed, ref,watch ,onMounted} from 'vue'
 import {
   cleanPhoneNumberForCopying,
   formatPhoneNumber,
@@ -271,6 +335,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import {useRouter} from 'vue-router/composables'
 import constants from "@/helpers/constants.js"
 import debounce from "lodash.debounce";
+
 import axios from "axios";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { activitiesData } from '@/helpers//activitiesData.js' 
@@ -311,6 +376,7 @@ const headers = ref([
   { text: 'State', value: 'state', show: true },
   { text: 'Date Created', value: 'dateCreated', show: true },
 ])
+const showContactPopup=ref(false)
 
 const showResetButton = computed(() => {
   //this is a temporary solution so that kevin can fix some data instead of me. will add a better solution when they define it.
@@ -422,6 +488,97 @@ const resetContact = async () => {
   }
 }
 
+// contact start
+
+
+
+const searchContact = ref("")
+const filterContactFields = ref([])
+const headersContact = ref([
+   { text: "Select", value: "select", sortable: false },
+  { text: "Child Project", value: "projectName", sortable: false },
+  { text: "Contact Name", value: "ownerName", sortable: false },
+  { text: "Contact Type", value: "objectCategory", sortable: false },
+  
+])
+const footerPropsContact = ref({
+  'items-per-page-options': [10, 25, 50],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+})
+const contactOptions = ref({ itemsPerPage: 10 })
+const initialLoadContact = ref(true)
+const totalContact = ref(0)
+const contactDataLoading = ref(true)
+const debounceGetContact = debounce(async () => {
+//don't allow search to be null - causes issues
+contactDataLoading.value = true
+searchContact.value = searchContact.value || ''
+// localStorage.setItem('contactSearch', search.value)
+getContactInfo()
+}, 500)
+
+
+watch(
+  () => contactOptions,
+  (newValue, oldValue) => {
+    if (!initialLoadContact.value) {
+      getContactInfo();
+    }
+  },
+  { deep: true }
+)
+const getContactInfo = async () => {
+  try {
+
+    const { page, itemsPerPage } = contactOptions.value
+    const { data } = await getRequestWithParams(
+      `/project/childProject`,
+      {
+        params: {
+          projectId:project.value.id ,
+          query: searchContact.value,
+          page: page - 1,
+          size: itemsPerPage
+        }
+      },
+      null,
+      []
+    );
+ 
+ data.content.forEach(item => {
+    item.select = contactSelectList.value.includes(item.id);
+  });
+    
+    totalContact.value = 100
+    filterContactFields.value = data.content || []
+    contactDataLoading.value = false
+    initialLoadContact.value = false
+  } catch (error) {
+    console.error("Error fetching active users:", error);
+  }
+};
+
+onMounted(()=>{
+  getContactInfo()
+})
+
+const contactSelectList=ref([])
+// contact end
+ const onCheckboxChange = (item, index) => {
+      console.log(`Checkbox for ${item.id} at index ${index} is now`, item.select)
+      // Your custom logic here
+      if(item.select)
+      {
+        contactSelectList.value.push(item.id)
+      }else{
+        const removeIndex = contactSelectList.value.findIndex(id => id === item.id)
+    if (removeIndex !== -1) {
+      contactSelectList.value.splice(removeIndex, 1)
+    }
+      }
+    }
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -455,5 +612,42 @@ const resetContact = async () => {
   background-color: var(--v-success-lighten2) !important;
 }
 
+
+.contact-popup .v-data-table__wrapper{
+  height: 45vh !important;
+}
+
+.change-contact{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+}
+.change-contact-padding
+{
+  padding: 6px !important;
+
+}
+.contact-search 
+{
+  padding: 0px !important;
+}
+.contact-popup{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+.sys-hover:hover {
+    cursor: pointer !important;
+}
+
+.change-contact {
+   color: #1f3c73;
+}
+.contact-gap{
+  gap: 10px;
+}
 </style>
 
