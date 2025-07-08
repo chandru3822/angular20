@@ -37,7 +37,7 @@ public class SolargrafService {
 
   private HttpHeaders getHeaders() {
     HttpHeaders headers = new HttpHeaders();
-    headers.set("Authorization", "Api-Key " + apiKey);
+    headers.set("Authorization", apiKey); // Do not prepend 'Api-Key '
     headers.setContentType(MediaType.APPLICATION_JSON);
     return headers;
   }
@@ -47,6 +47,11 @@ public class SolargrafService {
 
   public SolargrafProjectResponse createProject(SolargrafProjectRequest request) {
     try {
+      log.info("Creating Solargraf project with API key: {}",
+        apiKey != null && apiKey.length() > 16 ?
+          apiKey.substring(0, 8) + "..." + apiKey.substring(apiKey.length() - 8) :
+          "****");
+      log.info("Solargraf API host: {}", apiUrl);
       Map<String, Object> projectData = new HashMap<>();
       projectData.put("name", request.getName());
       projectData.put("address", request.getAddress());
