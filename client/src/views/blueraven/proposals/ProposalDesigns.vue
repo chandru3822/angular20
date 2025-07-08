@@ -926,7 +926,6 @@ watch(redirectUrl, (newVal) => {
 
 const handleCreateSolargrafDesign = async () => {
   try {
-    console.log('[Solargraf] handleCreateSolargrafDesign called');
     // Prepare new project data using the current project
     const newProjectData = {
       name: project.value.projectName,
@@ -939,43 +938,27 @@ const handleCreateSolargrafDesign = async () => {
       }
     };
 
-    console.log('[Solargraf] newProjectData:', newProjectData);
-
     // Use postRequest helper to call backend with the projectId (backend will handle Solargraf logic)
     const response = await postRequest(
       `/solargraf/proposals/clone/by-project/${projectId.value}`,
       newProjectData
     );
-    console.log('[Solargraf] Backend response:', response);
     const resData = response?.data || response;
     if (resData && resData.success && resData.projectUrl) {
       let valueToSave = resData.projectUrl;
       redirectUrl.value = resData.projectUrl;
-      console.log('[Solargraf] Opening Solargraf preview URL:', redirectUrl.value);
-      await saveCustomFieldValue(31560, valueToSave);
       appStore.showSnack('SUCCESS', 'Solargraf design created and opened successfully.');
     } else if (resData && resData.success) {
       // Fallback: success but missing projectUrl (should not happen, but handle gracefully)
       appStore.showSnack('SUCCESS', resData.message || 'Solargraf design created.');
     } else {
-      console.error('[Solargraf] Error response:', response);
       appStore.showSnack('ERROR', resData?.message || 'Failed to create Solargraf design.');
     }
   } catch (error) {
-    console.error('[Solargraf] Exception:', error);
     appStore.showSnack('ERROR', 'Error creating Solargraf design.');
     logError(error);
   }
 };
-
-// Helper to update custom field value (ID: 31560)
-async function saveCustomFieldValue(fieldId, value) {
-  try {
-    await postRequest(`/custom-field-value/${project.value.projectId}/${fieldId}`, { value });
-  } catch (e) {
-    logError(e);
-  }
-}
 </script>
 
 <style scoped lang="scss">

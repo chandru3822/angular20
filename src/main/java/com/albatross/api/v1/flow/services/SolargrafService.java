@@ -80,8 +80,6 @@ public class SolargrafService {
       JSONObject requestBody = new JSONObject();
       requestBody.put("data", data);
 
-      log.info("Request body: {}", requestBody.toString(2)); // Pretty print with 2-space indentation
-
       String apiPath = String.format("/v1/projects/%d/proposals/%s/clone", newProjectData.getProjectId(), originalProposalId);
 
       // Ensure apiUrl has proper protocol
@@ -91,20 +89,7 @@ public class SolargrafService {
       }
 
       String fullUrl = baseUrl + apiPath;
-
-      // Debug logging
-      log.info("=== Solargraf API Debug Info ===");
-      log.info("API Host (raw): {}", this.apiUrl);
-      log.info("API Host (processed): {}", baseUrl);
-      log.info("API Path: {}", apiPath);
-      log.info("Full URL: {}", fullUrl);
-      log.info("Authorization Token: {}", apiKey != null ? apiKey.substring(0, Math.min(10, apiKey.length())) + "..." : "null");
-      log.info("Request Body: {}", requestBody.toString(2)); // Pretty print with 2-space indentation
-      log.info("Request Headers: {}", getHeaders());
-
       HttpEntity<String> entity = new HttpEntity<>(requestBody.toString(), getHeaders());
-
-      log.info("Sending POST request to Solargraf API...");
 
       try {
         ResponseEntity<Map> response = restTemplate.postForEntity(
@@ -124,8 +109,6 @@ public class SolargrafService {
   }
 
   private SolargrafProjectResponse processResponse(ResponseEntity<Map> response, String successMessage, String failureMessage) {
-    log.info("Solargraf API response status: {}", response.getStatusCode());
-    log.info("Solargraf API response body: {}", response.getBody());
     if (response.getStatusCode() == HttpStatus.CREATED || response.getStatusCode() == HttpStatus.OK) {
       Map<String, Object> responseBody = response.getBody();
       String projectUrl = null;
@@ -242,35 +225,26 @@ public class SolargrafService {
   // --- 4. Main logic to get correct proposal/project IDs for cloning ---
   public SolargrafProjectResponse cloneProposalFromCustomField(Long projectId, SolargrafProjectRequest newProjectData) {
     try {
-      System.out.println("[Solargraf] cloneProposalFromCustomField called for projectId: " + projectId);
       String customFieldValue = getSolargrafDesignIdForProject(projectId);
-      System.out.println("[Solargraf] Custom field value: " + customFieldValue);
       if (!StringUtils.hasText(customFieldValue)) {
-        System.out.println("[Solargraf] No Solargraf Design ID found for project " + projectId);
         return new SolargrafProjectResponse(null, false, "No Solargraf Design ID found for project");
       }
       SolargrafIdInfo idInfo = parseSolargrafCustomFieldValue(customFieldValue);
-      System.out.println("[Solargraf] Parsed idInfo: projectId=" + idInfo.projectId + ", proposalId=" + idInfo.proposalId + ", url=" + idInfo.url);
       String solargrafProjectId = idInfo.projectId;
       String solargrafProposalId = idInfo.proposalId;
       // If only proposal ID, try to find project ID by listing all proposals
       if (solargrafProposalId != null && solargrafProjectId == null) {
-        System.out.println("[Solargraf] Only proposalId found, fetching proposals from Solargraf for projectId: " + projectId);
         List<Map<String, Object>> proposals = getProposalsFromSolargrafProject(projectId.toString());
-        System.out.println("[Solargraf] Proposals fetched: " + proposals);
         if (proposals != null) {
           for (Map<String, Object> proposal : proposals) {
-            System.out.println("[Solargraf] Checking proposal: " + proposal);
             if (proposal.get("id") != null && proposal.get("id").toString().equals(solargrafProposalId)) {
               solargrafProjectId = projectId.toString();
-              System.out.println("[Solargraf] Matched proposalId, using projectId: " + solargrafProjectId);
               break;
             }
           }
         }
       }
       if (solargrafProjectId == null || solargrafProposalId == null) {
-        System.out.println("[Solargraf] Could not determine both Solargraf project and proposal IDs. projectId=" + solargrafProjectId + ", proposalId=" + solargrafProposalId);
         return new SolargrafProjectResponse(null, false, "Could not determine both Solargraf project and proposal IDs");
       }
       // --- Fetch publicId and installerWebQuoteUrl from Solargraf project ---
@@ -284,8 +258,6 @@ public class SolargrafService {
           new HttpEntity<>(getHeaders()),
           Map.class
         );
-        System.out.println("[Solargraf] Full project info response: " + projectInfoResponse.getBody());
-        log.info("[Solargraf] Full project info response: {}", projectInfoResponse.getBody());
         Map<String, Object> projectData = (Map<String, Object>) projectInfoResponse.getBody().get("data");
         if (projectData != null) {
           Map<String, Object> attributes = (Map<String, Object>) projectData.get("attributes");
@@ -293,20 +265,11 @@ public class SolargrafService {
             publicId = (String) attributes.get("publicId");
             installerWebQuoteUrl = (String) attributes.get("installerWebQuoteUrl");
           }
-          System.out.println("[Solargraf] Retrieved publicId: " + publicId);
-          System.out.println("[Solargraf] Retrieved installerWebQuoteUrl: " + installerWebQuoteUrl);
-          log.info("[Solargraf] Retrieved publicId: {}", publicId);
-          log.info("[Solargraf] Retrieved installerWebQuoteUrl: {}", installerWebQuoteUrl);
-        } else {
-          System.out.println("[Solargraf] No project data found in Solargraf project info response");
-          log.warn("[Solargraf] No project data found in Solargraf project info response");
         }
       } catch (Exception e) {
-        log.warn("Could not fetch publicId/installerWebQuoteUrl for Solargraf project {}", solargrafProjectId, e);
-        System.out.println("[Solargraf] Exception fetching publicId/installerWebQuoteUrl: " + e.getMessage());
+        // Swallow exception or handle as needed
       }
       // Now call cloneProposal with correct IDs
-      System.out.println("[Solargraf] Cloning proposal with projectId=" + solargrafProjectId + ", proposalId=" + solargrafProposalId);
       SolargrafProjectRequest req = new SolargrafProjectRequest(newProjectData.getName(), newProjectData.getAddress(), Long.valueOf(solargrafProjectId));
       SolargrafProjectResponse cloneResponse = cloneProposal(solargrafProposalId, req);
       // Attach publicId and installerWebQuoteUrl to response
@@ -320,8 +283,7 @@ public class SolargrafService {
       }
       return cloneResponse;
     } catch (Exception e) {
-      System.out.println("[Solargraf] Exception in cloneProposalFromCustomField: " + e.getMessage());
-      e.printStackTrace();
+      log.error("[Solargraf] Exception in cloneProposalFromCustomField: " + e.getMessage(), e);
       return new SolargrafProjectResponse(null, false, "Error in Solargraf clone logic: " + e.getMessage());
     }
   }
