@@ -636,4 +636,20 @@ public class ContactService {
         new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
     }
   }
+
+	public Page<Contact> searchChildProjectContacts(String query, Pageable pageable) {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("query", query);
+		params.put("limit", pageable.getPageSize());
+		params.put("offset", pageable.getOffset());
+		String searchSql = ContactQuery.searchChildProjectContacts;
+		String searchCountSql = ContactQuery.searchChildProjectContactsCount;
+		List<Contact> results;
+		results = sqlCacheRO.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
+		Long totalCount = 10000L;
+		if (StringUtils.hasText(query)) {
+			totalCount = sqlCacheRO.queryForObjectBySql(searchCountSql, params, Long.class);
+		}
+		return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
+	}
 }

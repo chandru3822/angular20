@@ -476,5 +476,43 @@ select
         where oat.id = :id
         and oat.company_id = :companyId
     """;
+  
+	public final static String searchChildProjectContacts = """
+					    SELECT
+			  c.id,
+			  CONCAT(c.first_name, ' ', c.last_name) AS full_name,
+			  c.object_category_id,
+			  oc.object_category,
+			  s.state,
+			  c.date_created
+			FROM flow.contact c
+			  LEFT JOIN flow.company_state cs ON cs.id = c.company_state_id  -- ✅ fix join
+			  LEFT JOIN flow.state s ON s.id = cs.state_id
+			  LEFT JOIN flow.object_category oc ON oc.id = c.object_category_id
+			WHERE c.date_created IS NOT NULL
+			  AND c.archived IS NOT TRUE
+			  AND (
+			   (c.contact_full_name_search LIKE '%' || :query || '%')
+			    OR (oc.object_category LIKE '%' || :query || '%')
+			    OR (s.state LIKE '%' || :query || '%')
+			  )
+			ORDER BY c.date_created DESC
+			LIMIT :limit OFFSET :offset
+					    """;
+	
+	public final static String searchChildProjectContactsCount = """
+					    SELECT COUNT(*)
+			FROM flow.contact c
+			  LEFT JOIN flow.company_state cs ON cs.id = c.company_state_id
+			  LEFT JOIN flow.state s ON s.id = cs.state_id
+			  LEFT JOIN flow.object_category oc ON oc.id = c.object_category_id
+			WHERE c.date_created IS NOT NULL
+			  AND c.archived IS NOT TRUE
+			  AND (
+			    c.contact_full_name_search LIKE '%' || :query || '%'
+			    OR oc.object_category LIKE '%' || :query || '%'
+			    OR s.state LIKE '%' || :query || '%'
+			  );
+					    """;
 
 }

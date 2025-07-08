@@ -142,4 +142,9 @@ public class ContactController {
                                                             @RequestParam MultipartFile file) throws IOException {
     return new ResponseEntity<>(contactService.addAttachment(file, contactId, attachmentTypeId, displayName), HttpStatus.OK);
   }
+  
+	@GetMapping(value = "/childProject/contacts")
+	public ResponseEntity<Page<Contact>> searchChildProjectContacts(@RequestParam String query, Pageable pageable) {
+		return new ResponseEntity<>(contactService.searchChildProjectContacts(query, pageable), HttpStatus.OK);
+	}
 }
