@@ -37,7 +37,7 @@ public class SolargrafService {
 
   private HttpHeaders getHeaders() {
     HttpHeaders headers = new HttpHeaders();
-    headers.set("Authorization", apiKey); // Do not prepend 'Api-Key '
+    headers.set("Authorization", "Api-Key " + apiKey); // Prepend 'Api-Key '
     headers.setContentType(MediaType.APPLICATION_JSON);
     return headers;
   }
