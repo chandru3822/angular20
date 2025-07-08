@@ -264,6 +264,7 @@
     </v-dialog>
 
     <v-dialog max-width="800" v-model="showChildProjectsPopup" >
+      <div ref="popupRef">
        <v-card class="square-card contact-popup"  >
          <h3>Step 1 to 2 Select Child Projects</h3>
          <p>Choose child projects from the same contact (builder) to update in bulk</p>
@@ -317,11 +318,13 @@
           ></a-btn>
          </div>
      </v-card>
+     </div>
     </v-dialog>
 
 
 
     <v-dialog max-width="800" v-model="showContactPopup" >
+      <div ref="popupRef">
        <v-card class="square-card contact-popup"  >
          <h3>Step 2 to 2:Assign Contact</h3>
          <p>Updating the Community Project and 20 Selected Child Projects</p>
@@ -379,6 +382,7 @@
           ></a-btn>
          </div>
      </v-card>
+     </div>
     </v-dialog>
 
 
@@ -389,7 +393,7 @@
   </div>
 </template>
 <script setup>
-import {toRefs, computed, ref,watch } from 'vue'
+import {toRefs, computed, ref,watch,onMounted,onBeforeUnmount } from 'vue'
 import {
   cleanPhoneNumberForCopying,
   formatPhoneNumber,
@@ -742,6 +746,24 @@ const closeContactPreviousPopup=()=>{
 // contact end
 
 
+const popupRef = ref(null);
+// Detect outside click
+const handleClickOutside = (event) => {
+  const popup = popupRef.value;
+  if (popup && !popup.contains(event.target)) {
+    ChildProjectsSelectList.value=[]
+  }
+};
+
+onMounted(() => {
+  setTimeout(() => {
+    document.addEventListener("click", handleClickOutside);
+  }, 0);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 
 
 
