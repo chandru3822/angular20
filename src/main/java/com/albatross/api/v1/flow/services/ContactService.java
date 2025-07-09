@@ -661,9 +661,7 @@ public class ContactService {
 		User user = securityService.getCurrentUser();
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("contactId", contactId);
-		 params.put("companyId", user.getCompanyId());
-		 params.put("partnerIds", (user.getPartnerIds() == null) ? List.of() : user.getPartnerIds());
-		Contact contact = sqlCache.getBySql(ContactQuery.getById, params, new ContactMapper<>(Contact.class, om)).get();
+		Contact contact = sqlCache.getBySql(ContactQuery.getContact, params, new ContactMapper<>(Contact.class, om)).get();
 		for (long projectId : projectIds) {
 			insertContactFromChildProject(projectId, contact);
 		}

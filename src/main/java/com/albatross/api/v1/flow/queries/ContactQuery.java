@@ -342,6 +342,13 @@ select * from flow.get_contact_available_owners(:companyId::bigint, :inParentCom
     from flow.contact c
     where c.id = :contactId
     """;
+  
+//language=PostgreSQL
+  public final static String getContact = """
+    select *
+    from flow.contact c
+    where c.id = :contactId
+    """;
 
   //language=PostgreSQL
   public final static String getContactAttachments = """
