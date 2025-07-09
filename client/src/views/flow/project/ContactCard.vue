@@ -63,7 +63,7 @@
       </div>
 
       <div class="change-contact">
-        <a-btn
+        <a-btn v-if="hasCategory"
         @click="getChildProjectsInfo"
         class="change-contact-padding"
        size="small"
@@ -512,7 +512,11 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const props = defineProps({
-  project: Object
+  project: Object,
+ hasCategory: {
+    type: Boolean,
+    default: false
+  }
 })
 const {project} = toRefs(props)
 const newContact = ref({})

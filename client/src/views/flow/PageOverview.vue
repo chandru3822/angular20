@@ -162,7 +162,7 @@
       </template>
     </SidePanelExpansionPanel>
 <!--    the only purpose to hiding these when there are no details is that it causes them to not show in the center screen when we're accidentally navigated to /projectOverview on desktop-->
-    <ContactCard v-if="project && details" :project="project"></ContactCard>
+    <ContactCard v-if="project && details" :project="project" :hasCategory="hasCategory"></ContactCard>
   </v-container>
 </template>
 
@@ -173,7 +173,7 @@ import {getStatusColorClass} from "@/services/projectStatusTypeService";
 import NewMessageDialog from "./settings/inbox/NewMessageDialog";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
-import {getCurrentInstance, onMounted, ref} from 'vue'
+import {getCurrentInstance, onMounted, ref,computed} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
@@ -210,6 +210,10 @@ const props = defineProps({
 
 onMounted(() => {
   fetchTeamsForUser()
+})
+
+const hasCategory = computed(() => {
+  return props.details?.some(item => item.type === 'category' && item.value==="Community")  ?? false
 })
 const formatDate = (value) => {
   return filters.formatDate(value, 'date')
