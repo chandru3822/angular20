@@ -276,7 +276,7 @@
             <v-data-table  id="custom-fields-table" :headers="headersChildProjects" :items="filterChildProjectsFields"
             :fixed-header="true" :server-items-length="totalChildProjects" :loading="ChildProjectsDataLoading"
             :options.sync="childProjectsOptions" :footer-props="footerPropsChildProjects"
-            class="elevation-1 mt-1  table-striped">
+            class="elevation-1 mt-1  table-striped contact-table">
      
               <template #no-data>
                 <span class="default-text-color">No active users currently assigned this Position.</span>
@@ -421,7 +421,7 @@
             <v-data-table  id="custom-fields-table" :headers="headersContact" :items="filterContactFields"
             :fixed-header="true" :server-items-length="totalContact" :loading="ContactDataLoading"
             :options.sync="ContactOptions" :footer-props="footerPropsContact"
-            class="elevation-1 mt-1  table-striped">
+            class="elevation-1 mt-1  table-striped contact-table">
      
               <template #no-data>
                 <span class="default-text-color">No active users currently assigned this Position.</span>
@@ -739,7 +739,9 @@ const getChildProjectsInfo = async () => {
       // Your custom logic here
       if(item.select)
       {
-        ChildProjectsSelectList.value?.push(item.id)
+        if (!ChildProjectsSelectList.value.includes(item.id)) {
+      ChildProjectsSelectList.value.push(item.id)
+    }
       }else{
         const removeIndex = ChildProjectsSelectList.value.findIndex(id => id === item.id)
     if (removeIndex !== -1) {
@@ -855,8 +857,14 @@ const popupRef = ref(null);
 // Detect outside click
 const handleClickOutside = (event) => {
   const popup = popupRef.value;
+
+  if (event.target.closest('.contact-table')) {
+    return
+  }
   if (popup && !popup.contains(event.target)) {
     ChildProjectsSelectList.value=[]
+    createNewContact.value={}
+    selectedContactId.value=null
   }
 };
 
