@@ -143,8 +143,32 @@ public class ContactController {
     return new ResponseEntity<>(contactService.addAttachment(file, contactId, attachmentTypeId, displayName), HttpStatus.OK);
   }
   
+	/**
+	 * @param query
+	 * @param pageable
+	 * @return
+	 */
 	@GetMapping(value = "/childProject/contacts")
 	public ResponseEntity<Page<Contact>> searchChildProjectContacts(@RequestParam String query, Pageable pageable) {
 		return new ResponseEntity<>(contactService.searchChildProjectContacts(query, pageable), HttpStatus.OK);
+	}
+	
+	/**
+	 * @param contactId
+	 * @param projectIds
+	 * @param req
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping(value = "/save")
+	public ResponseEntity<ContactWithCfvs> createContact(@RequestParam(required = false) Long contactId,
+			@RequestParam(required = false) List<Long> projectIds, @RequestBody ContactWithCfvs req) throws Exception {
+		ResponseEntity<ContactWithCfvs> response = null;
+		if (contactId == null) {
+			response = contactService.updateContactCustom(contactId, req);
+			contactId = response.getBody().getContact().getId();
+		}
+		contactService.createContact(contactId, projectIds);
+		return response;
 	}
 }

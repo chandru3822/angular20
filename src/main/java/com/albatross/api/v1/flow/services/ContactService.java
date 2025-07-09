@@ -652,4 +652,17 @@ public class ContactService {
 		}
 		return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), totalCount);
 	}
+
+	/**
+	 * @param contactId
+	 * @param projectIds
+	 */
+	public void createContact(Long contactId, List<Long> projectIds) {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("contactId", contactId);
+		Contact contact = sqlCache.getBySql(ContactQuery.getById, params, new ContactMapper<>(Contact.class, om)).get();
+		for (long projectId : projectIds) {
+			insertContactFromChildProject(projectId, contact);
+		}
+	}
 }
