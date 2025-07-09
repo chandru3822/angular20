@@ -658,7 +658,6 @@ public class ContactService {
 	 * @param projectIds
 	 */
 	public void createContact(Long contactId, List<Long> projectIds) {
-		User user = securityService.getCurrentUser();
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("contactId", contactId);
 		Contact contact = sqlCache.getBySql(ContactQuery.getContact, params, new ContactMapper<>(Contact.class, om)).get();
