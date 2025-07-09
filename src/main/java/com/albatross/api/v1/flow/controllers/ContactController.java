@@ -160,7 +160,7 @@ public class ContactController {
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping(value = "/save")
+	@PostMapping(value = "/createFromProjectCommunity")
 	public ResponseEntity<ContactWithCfvs> createContact(@RequestParam(required = false) Long contactId,
 			@RequestParam(required = false) List<Long> projectIds, @RequestBody ContactWithCfvs req) throws Exception {
 		ResponseEntity<ContactWithCfvs> response = null;
