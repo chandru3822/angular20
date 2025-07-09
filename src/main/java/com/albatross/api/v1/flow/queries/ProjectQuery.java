@@ -378,8 +378,7 @@ from flow.density_projects_with_down_line(:companyId::bigint,
 			    ) projects
 			  ), '[]') AS "childProjects"
 			FROM flow.project p
-			INNER JOIN flow.contact cs ON cs.id = p.contact_id
-			WHERE p.archived IS FALSE AND p.id = :projectId;
+			WHERE p.archived IS FALSE AND p.id = :projectId AND p.contact_id= :contactId;
 			  		""";
 	
 	
@@ -391,7 +390,7 @@ from flow.density_projects_with_down_line(:companyId::bigint,
 			INNER JOIN flow.object_category oc ON oc.id = p2.object_category_id
 			INNER JOIN flow.contact c ON c.id = p2.contact_id
 			INNER JOIN flow.project_status_type pst ON cpst.project_status_type_id = pst.id
-			WHERE p2.parent_id = :projectId
+			WHERE p2.parent_id = :projectId AND p2.contact_id= :contactId
 			  AND p2.archived IS FALSE
 			  AND (
 			    p2.project_name ILIKE CONCAT('%', :query, '%') OR
