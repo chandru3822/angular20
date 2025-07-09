@@ -328,17 +328,92 @@
        <v-card class="square-card contact-popup"  >
          <h3>Step 2 to 2:Assign Contact</h3>
          <p>Updating the Community Project and 20 Selected Child Projects</p>
-          <v-card-title class="contact-search ">
+          <v-card-title class="contact-search contact-gap contact-flex contact-100  contact-column">
+            <div class="contact-flex contact-100">
             <a-text-field v-model="searchContact" @input="debounceGetContact" prepend-inner-icon="search"
               label="Search" single-line clearable hide-details></a-text-field>
-              <a-btn
+              <a-btn v-if="!CreateAndCancelContact"
               variant="outlined"
               size="medium"
               custom-classes="label-medium text-transform-unset px-3 py-1"
               text=" + Create New Contact"
+              @click="CreateAndCancelContact=true,createNewContact.objectCategoryId=7"
               >
-              + Go to contact
+              + Create New Contact
               </a-btn>
+
+              <a-btn v-else
+               variant="outlined"
+               size="medium"
+               custom-classes="label-medium text-transform-unset px-3 py-1"
+               text=" + Create New Contact"
+                @click="CreateAndCancelContact=false"
+               >
+               Cancel Creating Contact
+               </a-btn>
+            </div>
+
+         <v-card class="contact-100 change-contact-padding-1rem" v-if="CreateAndCancelContact">
+          <p>Creating new Contact</p>
+            <v-form  v-model="isFormValid" ref="createNewContactForm"  class="contact-100 contact-flex contact-column contact-gap">
+              <a-select v-model="createNewContact.objectCategoryId"
+                        :items="contactobjectCategories"
+                        label="Contact Type"
+                        :rules="requiredRules"
+                        item-title="name"
+                        item-value="id"
+              ></a-select>
+              <div class="contact-flex contact-gap">
+              <a-text-field
+                  id="qa-first-name-field"
+                  density="compact"
+                  v-model="createNewContact.firstName"
+                  :rules="requiredRules"
+                  label="First Name"
+                  class="body-large"
+              ></a-text-field>
+              <a-text-field
+                  class="body-large"
+                  id="qa-last-name-field"
+                  density="compact"
+                  v-model="createNewContact.lastName"
+                  :rules="requiredRules"
+                  label="Last Name"
+              ></a-text-field>
+              </div>
+              <div class="contact-flex contact-gap">
+              <a-text-field
+                  class="body-large"
+                  label="Phone"
+                  density="compact"
+                  placeholder=" "
+                  id="qa-phone-field"
+                  
+                  v-model="createNewContact.phone"
+                  :rules="newcontatPhoneRule">
+                </a-text-field>
+              <a-text-field
+                  class="body-large"
+                  label="E-Mail"
+                  density="compact"
+                  id="qa-email-field"
+                  placeholder=" "
+                  :rules="emailRules"
+                  v-model="createNewContact.email"></a-text-field>
+                  </div>
+              <a-text-field style="width: 50%;"
+                  class="body-large"
+                  type="text"
+                  density="compact"
+                  v-model="createNewContact.postalCode"
+                  counter
+                  id="qa-zip-field"
+                  :maxlength="10"
+                  :rules="requiredRules.concat(postalCodeRules)"
+                  label="Postal Code"
+              ></a-text-field>
+            </v-form>
+                 </v-card>
 
 
           </v-card-title>
@@ -355,7 +430,11 @@
                 <span class="default-text-color">No available fields</span>
               </template>
               <template #item="{ item, index }" >
-             <tr>
+
+             <tr @click="selectedContactId = item.id"
+                   class="clickable"                 :class="{ 'selected-contact-row': selectedContactId === item.id }"
+
+             >
               <td class="text-left clickable field-name-col">
               {{ item.fullName }} 
               </td> 
@@ -374,13 +453,27 @@
          </v-data-table>
          <div class="d-flex align-center justify-end contact-gap">
              <span class="close sys-hover" @click="closeContactPreviousPopup" >Previous</span>
-          <a-btn
-          @click="closeContactPopup"
+          <a-btn v-if="!CreateAndCancelContact"
+          @click="validateCreateNewContact()"
           class="change-contact-padding"
           size="medium"
-          text="Continue"
+          text="Assign"
           ></a-btn>
+           <a-btn v-else
+            @click="validateCreateNewContact()"
+            class="change-contact-padding"
+            size="medium"
+            text="Save Contact And Assign"
+             :disabled="!isFormValid || createNewContact.objectCategoryId !== 7"
+
+
+            ></a-btn>
          </div>
+
+     
+         <p class="contact-red-color" v-if="CreateAndCancelContact  && createNewContact.objectCategoryId && createNewContact.objectCategoryId !== 7">
+          Select a Builder (new homes builder) to update the community project
+         </p>
      </v-card>
      </div>
     </v-dialog>
@@ -400,7 +493,7 @@ import {
   getRequest,
   postRequest,
   handleHidingGlobalLoader,
-  logError, getRequestWithParams
+  logError, getRequestWithParams,postRequestWithRequestParams
 } from '@/helpers/helpers'
 import {useProjectStore} from '@/stores/ProjectStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
@@ -442,6 +535,8 @@ const showChangeContactModal = ref(false)
 const showResetContactModal = ref(false)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const contactPhoneRule = ref([() => (newContact.value.phone != null && newContact.value.phone !== '') || "Phone is required",v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"])
+
+const newcontatPhoneRule=ref([() => (createNewContact.value.phone != null && createNewContact.value.phone !== '') || "Phone is required",v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"])
 const emailRules = ref(constants.EMAIL_RULES)
 const postalCodeRules = ref(constants.POSTAL_CODE_RULES)
 const headers = ref([
@@ -611,7 +706,8 @@ const getChildProjectsInfo = async () => {
           projectId:project.value.id ,
           query: searchChildProjects.value,
           page: page - 1,
-          size: itemsPerPage
+          size: itemsPerPage,
+          contactId:project.value.contactId
         }
       },
       null,
@@ -658,8 +754,12 @@ const getChildProjectsInfo = async () => {
 
 
 // contact start
-
-
+const selectedContactId =ref(null)
+const createNewContact=ref({})
+const isFormValid = ref(false)
+const createNewContactForm=ref(null)
+const CreateAndCancelContact=ref(false)
+const contactobjectCategories=ref([])
 const showContactPopup=ref(false)
 const searchContact= ref("")
 const filterContactFields = ref([])
@@ -711,7 +811,8 @@ const getContactInfo = async () => {
           projectId:project.value.id ,
           query: searchContact.value,
           page: page - 1,
-          size: itemsPerPage
+          size: itemsPerPage,
+          
         }
       },
       null,
@@ -759,6 +860,7 @@ onMounted(() => {
   setTimeout(() => {
     document.addEventListener("click", handleClickOutside);
   }, 0);
+  getContactObjectCategories()
 });
 
 onBeforeUnmount(() => {
@@ -766,7 +868,55 @@ onBeforeUnmount(() => {
 });
 
 
+const getContactObjectCategories = async () => {
+  appStore.loading = true
+  try {
+    const { data, status } = await getRequest(`/objectCategory?objectTypeId=2`)
+    contactobjectCategories.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Object Categories')
 
+    appStore.loading = false
+  }
+}
+
+
+const validateCreateNewContact = async () => {
+  if(CreateAndCancelContact.value?createNewContactForm.value.validate():true) {
+  appStore.loading = true
+    try {
+      let body = {
+        contact:createNewContact.value,
+        cfv:[],
+        cfgs:[],
+        projectIds:ChildProjectsSelectList.value
+
+
+        
+      }
+      if (Object.keys(body).length === 0) {
+      body = {}
+      }
+
+      let params={
+        contactId:selectedContactId.value,
+        
+      }
+      await postRequestWithRequestParams(`/contact/createFromProjectCommunity`, body,params)
+
+      window.location.reload()
+    
+    } catch (e) {
+      appStore.loading = false
+      logError(e)
+    } finally {
+      newContact.value = {}
+    }
+
+  }
+}
 
 </script>
 
@@ -806,6 +956,13 @@ onBeforeUnmount(() => {
   height: 45vh !important;
 }
 
+.contact-popup .selected-contact-row {
+  background-color: var(--v-success-lighten2) !important;
+}
+
+
+
+
 .change-contact{
   display: flex;
   align-items: center;
@@ -818,9 +975,13 @@ onBeforeUnmount(() => {
   padding: 6px !important;
 
 }
+.change-contact-padding-1rem{
+  padding: 1rem !important;
+}
 .contact-search 
 {
   padding: 0px !important;
+  
 }
 .contact-popup{
   display: flex;
@@ -838,5 +999,22 @@ onBeforeUnmount(() => {
 .contact-gap{
   gap: 10px;
 }
+.contact-column{
+  display: flex;
+  flex-direction: column;
+}
+.contact-flex{
+  display: flex;
+}
+.contact-100{
+  width: 100% !important;
+}
+.contact-red-color{
+  color:red;
+}
+
+
+
+
 </style>
 
