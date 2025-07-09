@@ -378,6 +378,7 @@ from flow.density_projects_with_down_line(:companyId::bigint,
 			    ) projects
 			  ), '[]') AS "childProjects"
 			FROM flow.project p
+			INNER JOIN flow.contact cs ON cs.id = p.contact_id
 			WHERE p.archived IS FALSE AND p.id = :projectId;
 			  		""";
 	
