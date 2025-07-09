@@ -162,13 +162,13 @@ public class ContactController {
 	 */
 	@PostMapping(value = "/createFromProjectCommunity")
 	public ResponseEntity<ContactWithCfvs> createContact(@RequestParam(required = false) Long contactId,
-			 List<Long> projectIds, @RequestBody(required = false) ContactWithCfvs req) throws Exception {
+			@RequestBody(required = false) ContactWithCfvs req) throws Exception {
 		ResponseEntity<ContactWithCfvs> response = null;
 		if (contactId == null) {
 			response = contactService.updateContactCustom(contactId, req);
 			contactId = response.getBody().getContact().getId();
 		}
-		contactService.createContact(contactId, projectIds);
+		contactService.createContact(contactId, req.getProjectIds());
 		return response;
 	}
 }

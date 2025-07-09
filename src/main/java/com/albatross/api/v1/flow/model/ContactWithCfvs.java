@@ -20,4 +20,6 @@ public class ContactWithCfvs {
   //when saving cfvs web and mobile send in dirtyCfvs. but the response we need to send back needs to retun the cfgs, not the cfvs
   //and i am lazy so i am putting it into here
   private List<CustomFieldGroup> cfgs;
+  
+  private List<Long> projectIds;
 }
