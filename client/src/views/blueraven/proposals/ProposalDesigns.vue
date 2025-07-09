@@ -358,6 +358,20 @@
           </a-btn>
         </v-card-text>
       </v-card>
+      <v-card
+        v-if="canEdit && designs.length > 0 && !activeDesign.projectId"
+        color="transparent"
+        width="355"
+        :height="cardHeight"
+        class="proposal-card request-new solargraf-design-card solargraf-design-request"
+      >
+        <div>
+          <a-btn variant="text" color="primary" @click="handleCreateSolargrafDesign">
+            <v-icon :size="60">add</v-icon>
+          </a-btn>
+          <div class="mt-5 primary--text">Create my own design in Solargraf</div>
+        </div>
+      </v-card>
     </v-row>
     <v-dialog width="500" persistent v-model="showNewDesignRequestForm">
       <v-card>
@@ -477,13 +491,13 @@ import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
-import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import AuroraProposalDialog from "@/views/blueraven/proposals/AuroraProposalDialog.vue";
 import {ProposalCFGAIDs} from "@/views/blueraven/proposals/ProposalCFGAIDEnum.js";
-import { activitiesData } from '@/helpers//activitiesData.js' 
+import { activitiesData } from '@/helpers//activitiesData.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -526,6 +540,7 @@ const savingNewAiDesign = ref(false)
 const pendingAuroraAdjustmentsStatusId = ref(1649)
 const allowedModules = ref(null)
 const showingMore = ref(false)
+const redirectUrl = ref(null)
 
 
 onMounted(async () => {
@@ -687,7 +702,7 @@ const syncAuroraDesignDetails = async () => {
       `/projectProcessStep/${activeDesign.value.projectProcessStepId}/action/10293`,
       {}
     )
-    
+
      activitiesData.triggerFlag= !activitiesData.triggerFlag;
     if (status === 204 || status === 200) {
       //sync updates the pps status to complete and grabs assets from Aurora and uploads them to our side
@@ -902,6 +917,48 @@ const uploadFiles = (files) => {
 const uploadUtilityBillFiles = (files) => {
   newDesignRequest.value.utilityBillAttachments = files
 }
+
+watch(redirectUrl, (newVal) => {
+  if (newVal) {
+    window.open(newVal, '_blank', 'noopener,noreferrer')
+  }
+})
+
+const handleCreateSolargrafDesign = async () => {
+  try {
+    // Prepare new project data using the current project
+    const newProjectData = {
+      name: project.value.projectName,
+      projectId: projectId.value,
+      address: {
+        street: project.value.street1,
+        city: project.value.city,
+        state: project.value.state,
+        postalCode: project.value.postalCode
+      }
+    };
+
+    // Use postRequest helper to call backend with the projectId (backend will handle Solargraf logic)
+    const response = await postRequest(
+      `/solargraf/proposals/clone/by-project/${projectId.value}`,
+      newProjectData
+    );
+    const resData = response?.data || response;
+    if (resData && resData.success && resData.projectUrl) {
+      let valueToSave = resData.projectUrl;
+      redirectUrl.value = resData.projectUrl;
+      appStore.showSnack('SUCCESS', 'Solargraf design created and opened successfully.');
+    } else if (resData && resData.success) {
+      // Fallback: success but missing projectUrl (should not happen, but handle gracefully)
+      appStore.showSnack('SUCCESS', resData.message || 'Solargraf design created.');
+    } else {
+      appStore.showSnack('ERROR', resData?.message || 'Failed to create Solargraf design.');
+    }
+  } catch (error) {
+    appStore.showSnack('ERROR', 'Error creating Solargraf design.');
+    logError(error);
+  }
+};
 </script>
 
 <style scoped lang="scss">
@@ -993,5 +1050,9 @@ const uploadUtilityBillFiles = (files) => {
 
 .disable-new {
   color: var(--v-grey-darken1);
+}
+
+.solargraf-design-request {
+  border: solid 4px var(--v-anchor-base) !important;
 }
 </style>

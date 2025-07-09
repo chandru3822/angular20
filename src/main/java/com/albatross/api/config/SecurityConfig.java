@@ -82,6 +82,7 @@ public class SecurityConfig {
           "/auth/login",
           "/public/**",
           "/api/v1/flow/app/latest/**",
+          "/api/v1/flow/solargraf/**",
           "/actuator/**",
           "/api/v1/flow/user/forgotPassword/**",
           "/swagger-ui/**",
