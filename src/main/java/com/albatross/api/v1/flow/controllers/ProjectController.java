@@ -299,8 +299,8 @@ public class ProjectController {
 	 * @return
 	 */
 	@GetMapping(value = "/childProject", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Page<Project> getChildProject(@RequestParam Long projectId, @RequestParam String query,
+	public Page<Project> getChildProject(@RequestParam Long projectId, @RequestParam String query,@RequestParam Long contactId,
 			Pageable pageable) {
-		return projectService.getChildProjectDetails(projectId, query, pageable);
+		return projectService.getChildProjectDetails(projectId, query, contactId, pageable);
 	}
 }

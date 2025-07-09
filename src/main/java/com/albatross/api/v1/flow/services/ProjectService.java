@@ -992,8 +992,8 @@ public class ProjectService {
 	 * @param pageable
 	 * @return
 	 */
-	public Page<Project> getChildProjectDetails(Long projectId, String query, Pageable pageable) {
-		Map<String, Object> params = Map.of("projectId", projectId, "query", query, "offset", pageable.getOffset(),
+	public Page<Project> getChildProjectDetails(Long projectId, String query,Long contactId, Pageable pageable) {
+		Map<String, Object> params = Map.of("projectId", projectId, "query", query, "offset", pageable.getOffset(),"contactId",contactId,
 				"limit", pageable.getPageSize());
 		List<Project> result = sqlCache.queryBySql(ProjectQuery.getChildProject, params,
 				new ProjectMapper<>(Project.class, om));
