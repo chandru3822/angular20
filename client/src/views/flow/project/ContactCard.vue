@@ -64,7 +64,7 @@
 
       <div class="change-contact">
         <a-btn
-        @click="getContactInfo,showContactPopup=true"
+        @click="getChildProjectsInfo"
         class="change-contact-padding"
        size="small"
       text="Change Contact"
@@ -263,18 +263,19 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog max-width="800" v-model="showContactPopup" >
+    <v-dialog max-width="800" v-model="showChildProjectsPopup" >
+      <div ref="popupRef">
        <v-card class="square-card contact-popup"  >
          <h3>Step 1 to 2 Select Child Projects</h3>
          <p>Choose child projects from the same contact (builder) to update in bulk</p>
           <v-card-title class="contact-search ">
-            <a-text-field v-model="searchContact" @input="debounceGetContact" prepend-inner-icon="search"
+            <a-text-field v-model="searchChildProjects" @input="debounceGetChildProjects" prepend-inner-icon="search"
               label="Search" single-line clearable hide-details></a-text-field>
           </v-card-title>
 
-            <v-data-table  id="custom-fields-table" :headers="headersContact" :items="filterContactFields"
-            :fixed-header="true" :server-items-length="totalContact" :loading="contactDataLoading"
-            :options.sync="contactOptions" :footer-props="footerPropsContact"
+            <v-data-table  id="custom-fields-table" :headers="headersChildProjects" :items="filterChildProjectsFields"
+            :fixed-header="true" :server-items-length="totalChildProjects" :loading="ChildProjectsDataLoading"
+            :options.sync="childProjectsOptions" :footer-props="footerPropsChildProjects"
             class="elevation-1 mt-1  table-striped">
      
               <template #no-data>
@@ -307,20 +308,92 @@
            </template>
          </v-data-table>
          <div class="d-flex align-center justify-end contact-gap">
-             <span class="close sys-hover" >Close</span>
+             <span class="close sys-hover" @click="closeChildProjectsPopup" >Close</span>
           <a-btn
-          @click="getContactInfo,showContactPopup=true"
+          @click="getContactInfo"
+          class="change-contact-padding"
+          size="medium"
+          text="Continue"
+          :disabled="ChildProjectsSelectList.length === 0"
+          ></a-btn>
+         </div>
+     </v-card>
+     </div>
+    </v-dialog>
+
+
+
+    <v-dialog max-width="800" v-model="showContactPopup" >
+      <div ref="popupRef">
+       <v-card class="square-card contact-popup"  >
+         <h3>Step 2 to 2:Assign Contact</h3>
+         <p>Updating the Community Project and 20 Selected Child Projects</p>
+          <v-card-title class="contact-search ">
+            <a-text-field v-model="searchContact" @input="debounceGetContact" prepend-inner-icon="search"
+              label="Search" single-line clearable hide-details></a-text-field>
+              <a-btn
+              variant="outlined"
+              size="medium"
+              custom-classes="label-medium text-transform-unset px-3 py-1"
+              text=" + Create New Contact"
+              >
+              + Go to contact
+              </a-btn>
+
+
+          </v-card-title>
+
+            <v-data-table  id="custom-fields-table" :headers="headersContact" :items="filterContactFields"
+            :fixed-header="true" :server-items-length="totalContact" :loading="ContactDataLoading"
+            :options.sync="ContactOptions" :footer-props="footerPropsContact"
+            class="elevation-1 mt-1  table-striped">
+     
+              <template #no-data>
+                <span class="default-text-color">No active users currently assigned this Position.</span>
+              </template>
+              <template #no-results>
+                <span class="default-text-color">No available fields</span>
+              </template>
+              <template #item="{ item, index }" >
+             <tr>
+              <td class="text-left clickable field-name-col">
+              {{ item.fullName }} 
+              </td> 
+
+               <td class="text-left clickable field-name-col">
+                       {{ item.state }} 
+               </td> 
+               <td class="text-left clickable field-name-col">
+              {{ item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}} 
+              </td> 
+              <td class="text-left clickable field-name-col">
+              {{ item.objectCategory }} 
+              </td> 
+             </tr>
+           </template>
+         </v-data-table>
+         <div class="d-flex align-center justify-end contact-gap">
+             <span class="close sys-hover" @click="closeContactPreviousPopup" >Previous</span>
+          <a-btn
+          @click="closeContactPopup"
           class="change-contact-padding"
           size="medium"
           text="Continue"
           ></a-btn>
          </div>
      </v-card>
+     </div>
     </v-dialog>
+
+
+
+
+
+
   </div>
 </template>
 <script setup>
-import {toRefs, computed, ref,watch ,onMounted} from 'vue'
+import {toRefs, computed, ref,watch,onMounted,onBeforeUnmount } from 'vue'
 import {
   cleanPhoneNumberForCopying,
   formatPhoneNumber,
@@ -376,7 +449,7 @@ const headers = ref([
   { text: 'State', value: 'state', show: true },
   { text: 'Date Created', value: 'dateCreated', show: true },
 ])
-const showContactPopup=ref(false)
+
 
 const showResetButton = computed(() => {
   //this is a temporary solution so that kevin can fix some data instead of me. will add a better solution when they define it.
@@ -488,16 +561,112 @@ const resetContact = async () => {
   }
 }
 
-// contact start
+// ChildProjects start
 
-
-
-const searchContact = ref("")
-const filterContactFields = ref([])
-const headersContact = ref([
+const ChildProjectsSelectList=ref([])
+const showChildProjectsPopup=ref(false)
+const searchChildProjects = ref("")
+const filterChildProjectsFields = ref([])
+const headersChildProjects = ref([
    { text: "Select", value: "select", sortable: false },
   { text: "Child Project", value: "projectName", sortable: false },
   { text: "Contact Name", value: "ownerName", sortable: false },
+  { text: "Contact Type", value: "objectCategory", sortable: false },
+  
+])
+const footerPropsChildProjects = ref({
+  'items-per-page-options': [10, 25, 50],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+})
+const childProjectsOptions = ref({ itemsPerPage: 10 ,page:1})
+const initialLoadChildProjects = ref(true)
+const totalChildProjects = ref(0)
+const ChildProjectsDataLoading = ref(true)
+const debounceGetChildProjects = debounce(async () => {
+//don't allow search to be null - causes issues
+ChildProjectsDataLoading.value = true
+searchChildProjects.value = searchChildProjects.value || ''
+// localStorage.setItem('contactSearch', search.value)
+getChildProjectsInfo()
+}, 500)
+
+
+watch(
+  () => childProjectsOptions,
+  (_newValue, oldValue) => {
+    if (!initialLoadChildProjects.value) {
+      getChildProjectsInfo();
+    }
+  },
+  { deep: true }
+)
+const getChildProjectsInfo = async () => {
+  try {
+
+    const { page, itemsPerPage } = childProjectsOptions.value
+    const { data } = await getRequestWithParams(
+      `/project/childProject`,
+      {
+        params: {
+          projectId:project.value.id ,
+          query: searchChildProjects.value,
+          page: page - 1,
+          size: itemsPerPage
+        }
+      },
+      null,
+      []
+    );
+ 
+ data.content.forEach(item => {
+    item.select = ChildProjectsSelectList.value.includes(item.id);
+  });
+    
+    totalChildProjects.value = 100
+    filterChildProjectsFields.value = data.content || []
+    showChildProjectsPopup.value=true
+    ChildProjectsDataLoading.value = false
+    initialLoadChildProjects.value = false
+  } catch (error) {
+    console.error("Error fetching active users:", error);
+  }
+};
+
+
+
+ const onCheckboxChange = (item, index) => {
+      console.log(`Checkbox for ${item.id} at index ${index} is now`, item.select)
+      // Your custom logic here
+      if(item.select)
+      {
+        ChildProjectsSelectList.value?.push(item.id)
+      }else{
+        const removeIndex = ChildProjectsSelectList.value.findIndex(id => id === item.id)
+    if (removeIndex !== -1) {
+      ChildProjectsSelectList.value?.splice(removeIndex, 1)
+    }
+      }
+    }
+  const closeChildProjectsPopup=()=>{
+  showChildProjectsPopup.value=false;
+  ChildProjectsSelectList.value=[]
+}
+
+// ChildProjects end
+
+
+
+
+// contact start
+
+
+const showContactPopup=ref(false)
+const searchContact= ref("")
+const filterContactFields = ref([])
+const headersContact = ref([
+   { text: "Contact Name", value: "fullName", sortable: false },
+  { text: "State", value: "state", sortable: false },
+  { text: "Date Created", value: "dateCreated", sortable: false },
   { text: "Contact Type", value: "objectCategory", sortable: false },
   
 ])
@@ -505,13 +674,13 @@ const footerPropsContact = ref({
   'items-per-page-options': [10, 25, 50],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
 })
-const contactOptions = ref({ itemsPerPage: 10 })
+const ContactOptions = ref({ itemsPerPage: 10 ,page:1})
 const initialLoadContact = ref(true)
 const totalContact = ref(0)
-const contactDataLoading = ref(true)
+const ContactDataLoading = ref(true)
 const debounceGetContact = debounce(async () => {
 //don't allow search to be null - causes issues
-contactDataLoading.value = true
+ContactDataLoading.value = true
 searchContact.value = searchContact.value || ''
 // localStorage.setItem('contactSearch', search.value)
 getContactInfo()
@@ -519,8 +688,8 @@ getContactInfo()
 
 
 watch(
-  () => contactOptions,
-  (newValue, oldValue) => {
+  () => ContactOptions,
+  (_newValue, oldValue) => {
     if (!initialLoadContact.value) {
       getContactInfo();
     }
@@ -529,10 +698,14 @@ watch(
 )
 const getContactInfo = async () => {
   try {
-
-    const { page, itemsPerPage } = contactOptions.value
+   
+  if(ChildProjectsSelectList.value?.length===0)
+  {
+    return
+  }
+    const { page, itemsPerPage } = ContactOptions.value
     const { data } = await getRequestWithParams(
-      `/project/childProject`,
+      `/contact/childProject/contacts`,
       {
         params: {
           projectId:project.value.id ,
@@ -545,38 +718,54 @@ const getContactInfo = async () => {
       []
     );
  
- data.content.forEach(item => {
-    item.select = contactSelectList.value.includes(item.id);
-  });
-    
+    showChildProjectsPopup.value=false
     totalContact.value = 100
     filterContactFields.value = data.content || []
-    contactDataLoading.value = false
+    showContactPopup.value=true
+    ContactDataLoading.value = false
     initialLoadContact.value = false
   } catch (error) {
     console.error("Error fetching active users:", error);
   }
 };
 
-onMounted(()=>{
-  getContactInfo()
-})
 
-const contactSelectList=ref([])
+
+  const closeContactPopup=()=>{
+  showContactPopup.value=false;
+  ChildProjectsSelectList.value=[]
+
+
+}
+const closeContactPreviousPopup=()=>{
+  showContactPopup.value=false;
+  showChildProjectsPopup.value=true;
+}
+
+
 // contact end
- const onCheckboxChange = (item, index) => {
-      console.log(`Checkbox for ${item.id} at index ${index} is now`, item.select)
-      // Your custom logic here
-      if(item.select)
-      {
-        contactSelectList.value.push(item.id)
-      }else{
-        const removeIndex = contactSelectList.value.findIndex(id => id === item.id)
-    if (removeIndex !== -1) {
-      contactSelectList.value.splice(removeIndex, 1)
-    }
-      }
-    }
+
+
+const popupRef = ref(null);
+// Detect outside click
+const handleClickOutside = (event) => {
+  const popup = popupRef.value;
+  if (popup && !popup.contains(event.target)) {
+    ChildProjectsSelectList.value=[]
+  }
+};
+
+onMounted(() => {
+  setTimeout(() => {
+    document.addEventListener("click", handleClickOutside);
+  }, 0);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
+
+
 
 
 </script>
