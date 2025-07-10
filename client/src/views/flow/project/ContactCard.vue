@@ -263,7 +263,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog max-width="800" v-model="showChildProjectsPopup" >
+    <v-dialog max-width="800" v-model="showChildProjectsPopup"  persistent>
       <div ref="popupRef">
        <v-card class="square-card contact-popup"  >
          <h3>Step 1 to 2 Select Child Projects</h3>
@@ -307,7 +307,10 @@
              </tr>
            </template>
          </v-data-table>
-         <div class="d-flex align-center justify-end contact-gap">
+         <div class="d-flex align-center " :class="ChildProjectsSelectList.length !==0 ? 'justify-space-between ' : 'justify-end'">
+          <span v-if="ChildProjectsSelectList.length !==0"style="color: #757575;">{{ ChildProjectsSelectList.length }} Child Projects Selected</span>
+          <div class="d-flex align-center justify-end contact-gap">
+          <span class="close sys-hover" @click="clearChildProjectsPopup" >Clear</span>
              <span class="close sys-hover" @click="closeChildProjectsPopup" >Close</span>
           <a-btn
           @click="getContactInfo"
@@ -315,7 +318,7 @@
           size="medium"
           text="Continue"
           :disabled="ChildProjectsSelectList.length === 0"
-          ></a-btn>
+          ></a-btn></div>
          </div>
      </v-card>
      </div>
@@ -323,7 +326,7 @@
 
 
 
-    <v-dialog max-width="800" v-model="showContactPopup" >
+    <v-dialog max-width="800" v-model="showContactPopup" persistent >
       <div ref="popupRef">
        <v-card class="square-card contact-popup"  >
          <h3>Step 2 to 2:Assign Contact</h3>
@@ -754,6 +757,13 @@ const getChildProjectsInfo = async () => {
   ChildProjectsSelectList.value=[]
 }
 
+const clearChildProjectsPopup=()=>{
+   ChildProjectsSelectList.value=[]
+   filterChildProjectsFields.value.forEach(item => {
+   item.select = false;
+ });
+}
+
 // ChildProjects end
 
 
@@ -855,31 +865,31 @@ const closeContactPreviousPopup=()=>{
 
 const popupRef = ref(null);
 // Detect outside click
-const handleClickOutside = (event) => {
-  const popup = popupRef.value;
-
-  if (event.target.closest('.contact-table')) {
-    return
-  }
-  if (popup && !popup.contains(event.target)) {
-    ChildProjectsSelectList.value=[]
-    createNewContact.value={}
-    selectedContactId.value=null
-  }
-};
-
-onMounted(() => {
-  setTimeout(() => {
-    document.addEventListener("click", handleClickOutside);
-  }, 0);
-  getContactObjectCategories()
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside);
-});
-
-
+// const handleClickOutside = (event) => {
+  // const popup = popupRef.value;
+// 
+  // if (event.target.closest('.contact-table')) {
+    // return
+  // }
+  // if (popup && !popup.contains(event.target)) {
+    // ChildProjectsSelectList.value=[]
+    // createNewContact.value={}
+    // selectedContactId.value=null
+  // }
+// };
+// 
+// onMounted(() => {
+  // setTimeout(() => {
+    // document.addEventListener("click", handleClickOutside);
+  // }, 0);
+  // getContactObjectCategories()
+// });
+// 
+// onBeforeUnmount(() => {
+  // document.removeEventListener("click", handleClickOutside);
+// });
+ 
+ 
 const getContactObjectCategories = async () => {
   appStore.loading = true
   try {
@@ -914,6 +924,7 @@ const validateCreateNewContact = async () => {
 
       let params={
         contactId:selectedContactId.value,
+        projectId:project.value.id 
         
       }
       await postRequestWithRequestParams(`/contact/createFromProjectCommunity`, body,params)
