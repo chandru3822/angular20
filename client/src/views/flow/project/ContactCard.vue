@@ -276,7 +276,7 @@
             <v-data-table  id="custom-fields-table" :headers="headersChildProjects" :items="filterChildProjectsFields"
             :fixed-header="true" :server-items-length="totalChildProjects" :loading="ChildProjectsDataLoading"
             :options.sync="childProjectsOptions" :footer-props="footerPropsChildProjects"
-            class="elevation-1 mt-1  table-striped contact-table">
+            class="elevation-1 mt-1   contact-table">
      
               <template #no-data>
                 <span class="default-text-color">No active users currently assigned this Position.</span>
@@ -285,7 +285,7 @@
                 <span class="default-text-color">No available fields</span>
               </template>
               <template #item="{ item, index }" >
-             <tr>
+             <tr :class="{ 'primary-lighten-9': index % 2}">
               <td class="text-left clickable field-name-col">
             <v-checkbox
                 v-model="item.select"   
@@ -359,7 +359,7 @@
          <v-card class="contact-100 change-contact-padding-1rem" v-if="CreateAndCancelContact">
           <p>Creating new Contact</p>
             <v-form  v-model="isFormValid" ref="createNewContactForm"  class="contact-100 contact-flex contact-column contact-gap">
-              <a-select v-model="createNewContact.objectCategoryId"
+              <a-select  v-model="createNewContact.objectCategoryId"
                         :items="contactobjectCategories"
                         label="Contact Type"
                         :rules="requiredRules"
@@ -420,11 +420,10 @@
 
 
           </v-card-title>
-
             <v-data-table  id="custom-fields-table" :headers="headersContact" :items="filterContactFields"
             :fixed-header="true" :server-items-length="totalContact" :loading="ContactDataLoading"
             :options.sync="ContactOptions" :footer-props="footerPropsContact"
-            class="elevation-1 mt-1  table-striped contact-table">
+            class="elevation-1 mt-1   contact-table">
      
               <template #no-data>
                 <span class="default-text-color">No active users currently assigned this Position.</span>
@@ -434,8 +433,13 @@
               </template>
               <template #item="{ item, index }" >
 
-             <tr @click="selectedContactId = item.id"
-                   class="clickable"                 :class="{ 'selected-contact-row': selectedContactId === item.id }"
+             <tr @click="selectedContactId= item"
+                   class="clickable"  
+          :class="[
+    'table-row',                // your base class
+    { 'selected-contact-row': selectedContactId?.id === item.id },  // green bg when selected
+    { 'primary-lighten-9': index % 2 && selectedContactId?.id !== item.id } // striped bg for even rows only when not selected
+  ]"
 
              >
               <td class="text-left clickable field-name-col">
@@ -461,6 +465,7 @@
           class="change-contact-padding"
           size="medium"
           text="Assign"
+          :disabled="selectedContactId.objectCategoryId !==7"
           ></a-btn>
            <a-btn v-else
             @click="validateCreateNewContact()"
@@ -472,11 +477,16 @@
 
             ></a-btn>
          </div>
-
-     
-         <p class="contact-red-color" v-if="CreateAndCancelContact  && createNewContact.objectCategoryId && createNewContact.objectCategoryId !== 7">
+         <p class="contact-red-color" v-if="CreateAndCancelContact  &&  createNewContact.objectCategoryId !== 7">
           Select a Builder (new homes builder) to update the community project
          </p>
+         <p  class="contact-red-color" v-if="project.contactId === selectedContactId.id">
+        Selected projects already belong to the same contact
+         </p>
+         <p class="contact-red-color" v-if="selectedContactId?.objectCategoryId !== 7 && selectedContactId?.objectCategoryId !==null">
+            Select a Builder (new homes builder) to update the community project
+         </p>
+  
      </v-card>
      </div>
     </v-dialog>
@@ -770,8 +780,8 @@ const clearChildProjectsPopup=()=>{
 
 
 // contact start
-const selectedContactId =ref(null)
-const createNewContact=ref({})
+const selectedContactId =ref({objectCategoryId:null})
+const createNewContact=ref({objectCategoryId:7})
 const isFormValid = ref(false)
 const createNewContactForm=ref(null)
 const CreateAndCancelContact=ref(false)
@@ -907,6 +917,14 @@ const getContactObjectCategories = async () => {
 
 const validateCreateNewContact = async () => {
   if(CreateAndCancelContact.value?createNewContactForm.value.validate():true) {
+  if(project.value.contactId ===selectedContactId.value.id)
+  {
+    
+    return
+  }
+  
+  
+  
   appStore.loading = true
     try {
       let body = {
@@ -923,7 +941,7 @@ const validateCreateNewContact = async () => {
       }
 
       let params={
-        contactId:selectedContactId.value,
+        contactId:selectedContactId.value.id,
         projectId:project.value.id 
         
       }
@@ -979,8 +997,9 @@ const validateCreateNewContact = async () => {
   height: 45vh !important;
 }
 
-.contact-popup .selected-contact-row {
-  background-color: var(--v-success-lighten2) !important;
+.primary-lighten-9 {
+    background-color: var(--v-primary-lighten9) ;
+    border-color: var(--v-primary-lighten9);
 }
 
 
@@ -1035,6 +1054,11 @@ const validateCreateNewContact = async () => {
 .contact-red-color{
   color:red;
 }
+.selected-contact-row {
+    background-color: #66bb6a !important;
+    transition: background-color 0.3s;
+}
+
 
 
 
