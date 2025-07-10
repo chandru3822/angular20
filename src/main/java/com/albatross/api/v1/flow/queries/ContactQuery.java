@@ -366,7 +366,7 @@ select * from flow.get_contact_available_owners(:companyId::bigint, :inParentCom
 				    parent_id = :parentProjectId,
 				    modified_by_id = :modifiedBy,
 				    date_modified = NOW()
-				WHERE id IN :childProjectIds;
+				WHERE id IN (:childProjectIds);
 				    """;
 
   //language=PostgreSQL
