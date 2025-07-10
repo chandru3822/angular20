@@ -669,10 +669,10 @@ public class ContactService {
 		Project project = convertToContact(contactId, process);
 		HashMap<String, Object> updateParams = new HashMap<>();
 		updateParams.put("childProjectIds", projectIds);
-		params.put("contactId", contactId);
-		params.put("parentProjectId", project.getId());
-		params.put("modifiedBy", user.getId());
+		updateParams.put("contactId", contactId);
+		updateParams.put("parentProjectId", project.getId());
+		updateParams.put("modifiedBy", user.getId());
 		// Update the child projects
-		sqlCache.updateBySql(ContactQuery.updateProject, params);
+		sqlCache.updateBySql(ContactQuery.updateProject, updateParams);
 	}
 }
