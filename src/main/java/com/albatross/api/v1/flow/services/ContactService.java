@@ -655,14 +655,24 @@ public class ContactService {
 
 	/**
 	 * @param contactId
+	 * @param projectId 
 	 * @param projectIds
+	 * @throws Exception 
 	 */
-	public void createContact(Long contactId, List<Long> projectIds) {
+	public void createContact(Long contactId, Long projectId, List<Long> projectIds) throws Exception {
+		User user = securityService.getCurrentUser();
 		HashMap<String, Object> params = new HashMap<>();
+		params.put("projectId", projectId);
+		CompanyProcessDTO process = sqlCache
+				.getBySql(ContactQuery.getProject, params, new ContactMapper<>(CompanyProcessDTO.class, om)).get();
+		process.setCreatedById(user.getId());
+		Project project = convertToContact(contactId, process);
+		HashMap<String, Object> updateParams = new HashMap<>();
+		updateParams.put("childProjectIds", projectIds);
 		params.put("contactId", contactId);
-		Contact contact = sqlCache.getBySql(ContactQuery.getContact, params, new ContactMapper<>(Contact.class, om)).get();
-		for (long projectId : projectIds) {
-			insertContactFromChildProject(projectId, contact);
-		}
+		params.put("parentProjectId", project.getId());
+		params.put("modifiedBy", user.getId());
+		// Update the child projects
+		sqlCache.updateBySql(ContactQuery.updateProject, params);
 	}
 }

@@ -343,12 +343,31 @@ select * from flow.get_contact_available_owners(:companyId::bigint, :inParentCom
     where c.id = :contactId
     """;
   
-//language=PostgreSQL
-  public final static String getContact = """
-    select *
-    from flow.contact c
-    where c.id = :contactId
-    """;
+    //language=PostgreSQL
+	public final static String getProject = """
+			    SELECT
+			    cp.company_id AS companyId,
+			    c.company_process_id AS id,
+			    p.parent_company_id AS parentCompanyId,
+			    p.id AS processId,
+			    p.process_name AS processName
+			FROM flow.project c
+			INNER JOIN flow.contact c2 ON c.contact_id = c2.id
+			INNER JOIN flow.company_process cp ON cp.id = c.company_process_id
+			INNER JOIN flow.process p ON p.id = cp.process_id
+			WHERE c.id = :projectId;
+			    """;
+	
+	    //language=PostgreSQL
+		public final static String updateProject = """
+				UPDATE flow.project p
+				SET
+				    contact_id = :contactId,
+				    parent_id = :parentProjectId,
+				    modified_by_id = :modifiedBy,
+				    date_modified = NOW()
+				WHERE id IN :childProjectIds;
+				    """;
 
   //language=PostgreSQL
   public final static String getContactAttachments = """
