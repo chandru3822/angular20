@@ -878,13 +878,13 @@ const popupRef = ref(null);
   // }
 // };
 // 
-// onMounted(() => {
+onMounted(() => {
   // setTimeout(() => {
-    // document.addEventListener("click", handleClickOutside);
+  //   document.addEventListener("click", handleClickOutside);
   // }, 0);
-  // getContactObjectCategories()
-// });
-// 
+  getContactObjectCategories()
+});
+
 // onBeforeUnmount(() => {
   // document.removeEventListener("click", handleClickOutside);
 // });
