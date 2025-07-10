@@ -4,6 +4,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.queries.ContactQuery;
 import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,9 @@ import org.springframework.web.server.ResponseStatusException;
 import retrofit2.http.Path;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -161,14 +164,8 @@ public class ContactController {
 	 * @throws Exception
 	 */
 	@PostMapping(value = "/createFromProjectCommunity")
-	public ResponseEntity<ContactWithCfvs> createContact(@RequestParam(required = false) Long contactId, @RequestParam Long projectId,
+	public String createContact(@RequestParam(required = false) Long contactId, @RequestParam Long projectId,
 			@RequestBody(required = false) ContactWithCfvs req) throws Exception {
-		ResponseEntity<ContactWithCfvs> response = null;
-		if (contactId == null) {
-			response = contactService.updateContactCustom(contactId, req);
-			contactId = response.getBody().getContact().getId();
-		}
-		contactService.createContact(contactId, projectId, req.getProjectIds());
-		return response;
+		return contactService.createContact(contactId, projectId, req.getProjectIds(),req.getContact());
 	}
 }

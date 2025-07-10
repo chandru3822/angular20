@@ -657,10 +657,28 @@ public class ContactService {
 	 * @param contactId
 	 * @param projectId 
 	 * @param projectIds
+	 * @param contact2 
 	 * @throws Exception 
 	 */
-	public void createContact(Long contactId, Long projectId, List<Long> projectIds) throws Exception {
+	public String createContact(Long contactId, Long projectId, List<Long> projectIds, Contact contact)
+			throws Exception {
 		User user = securityService.getCurrentUser();
+		if (null == contactId) {
+			// create the new contact
+			Map<String, Object> params = new HashMap<>();
+			params.put("firstName", contact.getFirstName());
+			params.put("lastName", contact.getLastName());
+			params.put("phone", contact.getPhone());
+			params.put("email", contact.getEmail());
+			params.put("postalCode", contact.getPostalCode());
+			params.put("userId", user.trueUserId());
+			params.put("companyId", user.getCompanyId());
+			params.put("objectCategoryId", contact.getObjectCategoryId());
+			// for now this just uses the default object category cuz i didnt know how to
+			// solve for configurability
+			contactId = sqlCache.updateBySqlReturningId(ContactQuery.insertContactFromChildProject, params, "id")
+					.longValue();
+		}
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("projectId", projectId);
 		CompanyProcessDTO process = sqlCache
@@ -674,5 +692,6 @@ public class ContactService {
 		updateParams.put("modifiedBy", user.getId());
 		// Update the child projects
 		sqlCache.updateBySql(ContactQuery.updateProject, updateParams);
+		return "Success";
 	}
 }
