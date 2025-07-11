@@ -330,7 +330,7 @@
       <div ref="popupRef">
        <v-card class="square-card contact-popup"  >
          <h3>Step 2 to 2:Assign Contact</h3>
-         <p>Updating the Community Project and 20 Selected Child Projects</p>
+         <p>Updating the Community Project and {{ ChildProjectsSelectList.length }} Selected Child Projects</p>
           <v-card-title class="contact-search contact-gap contact-flex contact-100  contact-column">
             <div class="contact-flex contact-100">
             <a-text-field v-model="searchContact" @input="debounceGetContact" prepend-inner-icon="search"
@@ -340,7 +340,7 @@
               size="medium"
               custom-classes="label-medium text-transform-unset px-3 py-1"
               text=" + Create New Contact"
-              @click="CreateAndCancelContact=true,createNewContact.objectCategoryId=7"
+              @click="CreateAndCancelContact=true,createNewContact.objectCategoryId=7,selectedContactId={}"
               >
               + Create New Contact
               </a-btn>
@@ -433,7 +433,7 @@
               </template>
               <template #item="{ item, index }" >
 
-             <tr @click="selectedContactId= item"
+             <tr @click="selectedContact(item)"
                    class="clickable"  
           :class="[
     'table-row',                // your base class
@@ -459,6 +459,7 @@
            </template>
          </v-data-table>
          <div class="d-flex align-center justify-end contact-gap">
+           <span class="close sys-hover" @click="closeChildProjectsPopup" >Close</span>
              <span class="close sys-hover" @click="closeContactPreviousPopup" >Previous</span>
           <a-btn v-if="!CreateAndCancelContact"
           @click="validateCreateNewContact()"
@@ -483,8 +484,8 @@
          <p  class="contact-red-color" v-if="project.contactId === selectedContactId.id">
         Selected projects already belong to the same contact
          </p>
-         <p class="contact-red-color" v-if="selectedContactId?.objectCategoryId !== 7 && selectedContactId?.objectCategoryId !==null">
-            Select a Builder (new homes builder) to update the community project
+         <p class="contact-red-color" v-if="!CreateAndCancelContact && createNewContact.objectCategoryId===null && selectedContactId?.objectCategoryId !== 7 && selectedContactId?.objectCategoryId !==null">
+            Select a Builder (new homes builder) to update the community project  1
          </p>
   
      </v-card>
@@ -764,6 +765,7 @@ const getChildProjectsInfo = async () => {
     }
   const closeChildProjectsPopup=()=>{
   showChildProjectsPopup.value=false;
+  showContactPopup.value=false;
   ChildProjectsSelectList.value=[]
 }
 
@@ -781,7 +783,7 @@ const clearChildProjectsPopup=()=>{
 
 // contact start
 const selectedContactId =ref({objectCategoryId:null})
-const createNewContact=ref({objectCategoryId:7})
+const createNewContact=ref({objectCategoryId:null})
 const isFormValid = ref(false)
 const createNewContactForm=ref(null)
 const CreateAndCancelContact=ref(false)
@@ -858,15 +860,20 @@ const getContactInfo = async () => {
 
 
 
-  const closeContactPopup=()=>{
-  showContactPopup.value=false;
-  ChildProjectsSelectList.value=[]
+  const selectedContact= (item)=>{
+  selectedContactId.value= item
+  CreateAndCancelContact.value=false;
+  createNewContact.value={objectCategoryId:null}
+  }
+  
+  
 
 
-}
+
 const closeContactPreviousPopup=()=>{
   showContactPopup.value=false;
   showChildProjectsPopup.value=true;
+  CreateAndCancelContact.value=false;
 }
 
 
