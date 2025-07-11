@@ -858,55 +858,25 @@ const getContactInfo = async () => {
   }
 };
 
-
-
   const selectedContact= (item)=>{
   selectedContactId.value= item
   CreateAndCancelContact.value=false;
   createNewContact.value={objectCategoryId:null}
   }
-  
-  
-
-
-
-const closeContactPreviousPopup=()=>{
+ const closeContactPreviousPopup=()=>{
   showContactPopup.value=false;
   showChildProjectsPopup.value=true;
-  CreateAndCancelContact.value=false;
+ 
 }
 
 
 // contact end
 
-
 const popupRef = ref(null);
-// Detect outside click
-// const handleClickOutside = (event) => {
-  // const popup = popupRef.value;
-// 
-  // if (event.target.closest('.contact-table')) {
-    // return
-  // }
-  // if (popup && !popup.contains(event.target)) {
-    // ChildProjectsSelectList.value=[]
-    // createNewContact.value={}
-    // selectedContactId.value=null
-  // }
-// };
-// 
 onMounted(() => {
-  // setTimeout(() => {
-  //   document.addEventListener("click", handleClickOutside);
-  // }, 0);
   getContactObjectCategories()
 });
 
-// onBeforeUnmount(() => {
-  // document.removeEventListener("click", handleClickOutside);
-// });
- 
- 
 const getContactObjectCategories = async () => {
   appStore.loading = true
   try {
@@ -925,12 +895,9 @@ const getContactObjectCategories = async () => {
 const validateCreateNewContact = async () => {
   if(CreateAndCancelContact.value?createNewContactForm.value.validate():true) {
   if(project.value.contactId ===selectedContactId.value.id)
-  {
-    
+  {  
     return
   }
-  
-  
   
   appStore.loading = true
     try {
@@ -938,10 +905,7 @@ const validateCreateNewContact = async () => {
         contact:createNewContact.value,
         cfv:[],
         cfgs:[],
-        projectIds:ChildProjectsSelectList.value
-
-
-        
+        projectIds:ChildProjectsSelectList.value   
       }
       if (Object.keys(body).length === 0) {
       body = {}
@@ -953,9 +917,9 @@ const validateCreateNewContact = async () => {
         
       }
       await postRequestWithRequestParams(`/contact/createFromProjectCommunity`, body,params)
-
+   
+      appStore.showSnack('SUCCESS', `Contact Updated for the Community and ${ChildProjectsSelectList.value.length} Child Projects` )
       window.location.reload()
-    
     } catch (e) {
       appStore.loading = false
       logError(e)
