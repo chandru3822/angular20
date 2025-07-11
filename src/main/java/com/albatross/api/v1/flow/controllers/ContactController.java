@@ -164,8 +164,8 @@ public class ContactController {
 	 * @throws Exception
 	 */
 	@PostMapping(value = "/createFromProjectCommunity")
-	public String createContact(@RequestParam(required = false) Long contactId, @RequestParam Long projectId,
+	public ResponseEntity<String> createContact(@RequestParam(required = false) Long contactId, @RequestParam Long projectId,
 			@RequestBody(required = false) ContactWithCfvs req) throws Exception {
-		return contactService.createContact(contactId, projectId, req.getProjectIds(),req.getContact());
+		return new ResponseEntity<>(contactService.createContact(contactId, projectId, req.getProjectIds(),req.getContact()),HttpStatus.OK);
 	}
 }
