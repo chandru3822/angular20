@@ -279,13 +279,19 @@
             class="elevation-1 mt-1   contact-table">
      
               <template #no-data>
-                <span class="default-text-color">No active users currently assigned this Position.</span>
+                <span class="default-text-color">No Child Projects.</span>
               </template>
               <template #no-results>
                 <span class="default-text-color">No available fields</span>
               </template>
               <template #item="{ item, index }" >
-             <tr :class="{ 'primary-lighten-9': index % 2}">
+             <tr 
+                    :class="[
+                    'table-row',                // your base class
+                    { 'selected-contact-row': item.select === true },  // green bg when selected
+                    { 'primary-lighten-9': index % 2  } // striped bg for even rows only when not selected
+                  ]"
+             >
               <td class="text-left clickable field-name-col">
             <v-checkbox
                 v-model="item.select"   
@@ -426,7 +432,7 @@
             class="elevation-1 mt-1   contact-table">
      
               <template #no-data>
-                <span class="default-text-color">No active users currently assigned this Position.</span>
+                <span class="default-text-color">No available contacts.</span>
               </template>
               <template #no-results>
                 <span class="default-text-color">No available fields</span>
@@ -466,7 +472,7 @@
           class="change-contact-padding"
           size="medium"
           text="Assign"
-          :disabled="selectedContactId.objectCategoryId !==7"
+          :disabled="selectedContactId.objectCategoryId !==7 || project.contactId === selectedContactId.id"
           ></a-btn>
            <a-btn v-else
             @click="validateCreateNewContact()"
@@ -1031,7 +1037,7 @@ const validateCreateNewContact = async () => {
   color:red;
 }
 .selected-contact-row {
-    background-color: #66bb6a !important;
+    background-color:var(--v-success-lighten2) !important;
     transition: background-color 0.3s;
 }
 
