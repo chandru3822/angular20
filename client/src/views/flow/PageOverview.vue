@@ -162,7 +162,18 @@
       </template>
     </SidePanelExpansionPanel>
 <!--    the only purpose to hiding these when there are no details is that it causes them to not show in the center screen when we're accidentally navigated to /projectOverview on desktop-->
-    <ContactCard v-if="project && details" :project="project" :hasCategory="hasCategory"></ContactCard>
+<v-expansion-panels v-model="panelContact"  class="pageoverview-expansion">
+    <v-expansion-panel>
+      <v-expansion-panel-header>
+       <h3>Contact</h3>
+      </v-expansion-panel-header>
+      <v-expansion-panel-content>
+       <ContactCard v-if="project && details" :project="project" :hasCategory="hasCategory"></ContactCard>
+      </v-expansion-panel-content>
+    </v-expansion-panel>
+  </v-expansion-panels>
+
+    
   </v-container>
 </template>
 
@@ -191,7 +202,7 @@ const showNewMessageDialog = ref(false)
 const teamsAssociatedToUser = ref([])
 const userCanViewSms = ref(userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'))
 const opened = ref(true) //opens this expansion panel by default
-
+const panelContact = ref(0) 
 const props = defineProps({
   pageName: String,
   isExpandable: {
@@ -293,6 +304,13 @@ const fetchTeamsForUser = async () => {
     padding-top: 8px;
     padding-left: 16px;
   }
+}
+.pageoverview-expansion
+{
+   z-index: auto;
+ border-top: 1px solid rgb(0 0 0 / 7%);
+ border-radius: 0px !important;
+ border-bottom: 1px solid rgb(0 0 0 / 7%);
 }
 
 </style>

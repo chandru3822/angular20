@@ -63,7 +63,7 @@
       </div>
 
       <div class="change-contact">
-        <a-btn v-if="hasCategory"
+        <a-btn v-if="hasCategory && userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
         @click="getChildProjectsInfo"
         class="change-contact-padding"
        size="small"
@@ -104,7 +104,7 @@
       <template v-slot:activator="{ on }">
         <a-btn
             :activation-handler="on"
-            class="ml-7 mb-3"
+            class=" mb-3 mt-2"
             size="small"
             text="Change Contact"
         ></a-btn>
@@ -357,7 +357,7 @@
             </div>
 
          <v-card class="contact-100 change-contact-padding-1rem" v-if="CreateAndCancelContact">
-          <p>Creating new Contact</p>
+          <h4>Creating new Contact</h4>
             <v-form  v-model="isFormValid" ref="createNewContactForm"  class="contact-100 contact-flex contact-column contact-gap">
               <a-select  v-model="createNewContact.objectCategoryId"
                         :items="contactobjectCategories"
@@ -715,6 +715,11 @@ watch(
 )
 const getChildProjectsInfo = async () => {
   try {
+ 
+    CreateAndCancelContact.value=false
+    selectedContactId.value ={objectCategoryId:null}
+    createNewContact.value={objectCategoryId:null}
+    ChildProjectsSelectList.value=[];
 
     const { page, itemsPerPage } = childProjectsOptions.value
     const { data } = await getRequestWithParams(
@@ -936,7 +941,7 @@ const validateCreateNewContact = async () => {
 .contact-snippet {
   border: solid 1px var(--v-grey-lighten1);
   padding: 10px;
-  margin: 0 23px 10px 23px;
+  margin: 0 0px 0px 0px;
   max-width: 480px;
 }
 
